@@ -4,6 +4,7 @@ This file contains my notes about my work: what I have done, what I'm planning t
 
 The sections I'm using are:
 - *Done*: what I've done during the day.
+- *Example*: concrete example of what I've done (so basically, commands to run).
 - *Status*: comments about what I've done, and what I should do.
 - *TODO*: what I plan to do next.
 *Status* and *TODO* kinda overlap some times... maybe I'll merge them.
@@ -16,6 +17,16 @@ __DONE__:
 - minimalist parser/lexer.  
 - AST "pretty-printer" (not that pretty actually).
 - implementation of Kwan's S-box number 4 (it's the shorter one).
+
+__Example__:
+
+Run the following code in your terminal to compile the project and execute the main on the file `s-box-4`. This file contains Kwan's 4th S-box converted to the syntax of my language. `test-native` will create an AST from the code of `s-box-4`, and will then print it.
+
+```bash
+cd src
+make
+./test.native s-box-4
+```
 
 
 __Status__:
@@ -32,3 +43,4 @@ __TODO__:
 
 - generation of OCaml code (with `Parsetree`). Maybe I shouldn't start that too soon though.  
 - take the time to read a small tutorial/doc about menhir?
+- find a name for the language, or a least a file extension.
