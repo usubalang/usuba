@@ -1,0 +1,4 @@
+node node1 ( x : _ :: _ ) returns x : _ :: _
+let
+  x = x
+tel
