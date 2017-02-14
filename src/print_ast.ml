@@ -42,7 +42,7 @@ let rec string_of_expr tab = function
                         (join "\n" (List.map (fun (cstr, e) ->
                                               (indent (tab+1)) ^ "| " ^
                                                 (string_of_ident cstr) ^ " -> " ^
-                                                  (string_of_expr tab e)) l))
+                                                  (string_of_expr (tab+1) e)) l))
                                                                    
 let string_of_pat l = join ", " (List.map string_of_ident l)
 

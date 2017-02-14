@@ -1,0 +1,6 @@
+node node1 ( x : _ :: _ ) returns x : _ :: _
+let
+  x = merge c
+  | True -> v
+  | False -> w
+tel

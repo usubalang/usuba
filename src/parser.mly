@@ -59,7 +59,7 @@ op:
 (* to solve shift/reduce conflicts related to merge, we need exp and exp_no_merge *)
 exp:
   | e=exp_no_merge { e }
-  | TOK_MERGE; ck=TOK_id; c=caselist { AST_demux(ck,(List.rev c)) }
+  | TOK_MERGE; ck=TOK_id; c=caselist { AST_demux(ck,c) }
 
 exp_no_merge:
   | TOK_LPAREN; e=exp; TOK_RPAREN { e }
