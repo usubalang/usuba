@@ -33,11 +33,11 @@
 %token <string> TOK_id
 %token <string> TOK_constr  (* ident with an uppercase 1st letter *)
 %token <int> TOK_int
-/* do we need int ? */
+(* do we need int ? *)
 
 %token TOK_EOF
 
-%nonassoc TOK_MERGE
+
 
 /*******************\
 |*   entry point   *|
@@ -56,24 +56,35 @@ op:
   | TOK_XOR { AST_xor }
   | TOK_NOT { AST_not }
 
+(* to solve shift/reduce conflicts related to merge, we need exp and exp_no_merge *)
 exp:
+  | e=exp_no_merge { e }
+  | TOK_MERGE; ck=TOK_id; c=caselist { AST_demux(ck,(List.rev c)) }
+
+exp_no_merge:
   | TOK_LPAREN; e=exp; TOK_RPAREN { e }
   | x=TOK_int { AST_const x }
   | id=TOK_id  { AST_var(id) }
-  | TOK_LPAREN; t=explist; TOK_RPAREN  { AST_tuple t }
+  | TOK_LPAREN; t=tuple; TOK_RPAREN  { AST_tuple t }
   | o=op; TOK_LPAREN; args=explist; TOK_RPAREN { AST_op(o, args) }
   | f=TOK_id; TOK_LPAREN; args=explist; TOK_RPAREN { AST_fun(f, args) }
-  | e=exp; TOK_WHEN; cstr=TOK_constr; TOK_LPAREN; x=TOK_id; TOK_LPAREN
+  | e=exp_no_merge; TOK_WHEN; cstr=TOK_constr; TOK_LPAREN; x=TOK_id; TOK_RPAREN
     { AST_mux(e,cstr,x) }
-  | TOK_MERGE; ck=TOK_id; c=caselist { AST_demux(ck,(List.rev c)) }
 
+(* a tuple has necessary stricly more than one element *)
+tuple:
+  | x=exp; TOK_COMMA; tail=explist    { x::(List.rev tail) }
+                                     
 explist:
-  | x=exp                           { [ x ]     }
-  | tail=explist; TOK_COMMA; x=exp  { x :: tail }
+  | x=exp                             { [ x ]     }
+  | tail=explist; TOK_COMMA; x=exp    { x :: tail }
 
 caselist:
-  | TOK_PIPE; c=TOK_constr; TOK_ARROW; e=exp  { [ (c,e) ] }
-  | tail=caselist; TOK_PIPE; c=TOK_constr; TOK_ARROW; e=exp  { (c,e)::tail }
+  | front=caselist_no_merge TOK_PIPE; c=TOK_constr; TOK_ARROW; e=exp  { (c,e)::front }
+
+caselist_no_merge:
+  | { [] }
+  | front=caselist_no_merge; TOK_PIPE; c=TOK_constr; TOK_ARROW; e=exp_no_merge  { (c,e)::front }
 
 pat:
   | i=TOK_id                          { [ i ] }
@@ -100,7 +111,7 @@ plist:
 
 def:
   | TOK_NODE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN TOK_RETURN p_out=p TOK_LET body=deq TOK_TEL
-  { (f,p_in,p_out,(List.rev body)) }
+  { (f,p_in,p_out,body) }
   
 defs:
   | d=def              { [ d ] }

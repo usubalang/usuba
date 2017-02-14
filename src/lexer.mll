@@ -19,7 +19,7 @@ let _ =
      "let", TOK_LET;
      "tel", TOK_TEL;
      "when", TOK_WHEN;
-     (* "merge", TOK_MERGE; *)
+     "merge", TOK_MERGE;
    ]
 
 let next_line lexbuf =
@@ -35,7 +35,7 @@ rule token = parse
 
 (* spaces *)
 | [' ' '\t']+  { token lexbuf; }
-| ['\n']+      { next_line lexbuf; token lexbuf; }
+| ['\n']       { next_line lexbuf; token lexbuf; }
 
 (* constructors *)
 | ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as constr

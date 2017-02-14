@@ -7,14 +7,19 @@
    CLOSED: [2017-02-14 mar. 09:51]
 ** DONE Fix the reduce/reduce conflicts of the parser.
    CLOSED: [2017-02-14 mar. 09:51]
-** TODO Implement merge
-*** TODO 
+** DONE Implement merge
+   CLOSED: [2017-02-14 mar. 15:37]
+*** DONE Fix merge conflicts
+    CLOSED: [2017-02-14 mar. 15:37]
 ** DONE Remove useless abstraction in the AST (ex: type pat = AST_pat of ident list)
    CLOSED: [2017-02-14 mar. 10:45]
-** TODO Add line/column number to errors
-** TODO Improve pretty printing (with [[http://gallium.inria.fr/blog/first-release-of-pprint/][Ocaml PPrint]] eventually)
-** TODO Rethink what the examples should be
-
+** DONE Add line/column number to errors
+   CLOSED: [2017-02-14 mar. 15:53]
+** TODO [#C] Improve pretty printing (with [[http://gallium.inria.fr/blog/first-release-of-pprint/][Ocaml PPrint]] eventually)
+** DONE Add a few detailed examples
+   CLOSED: [2017-02-14 mar. 16:20]
+** TODO Generate OCaml code
+** TODO Learn org-mode!
 
 
 * Examples
@@ -23,7 +28,16 @@
 #+BEGIN_SRC bash
     cd src
     make
-    ./test.native s-box-4
+    ./main.native tests/simple_node.prog   # just a basic program
+    ./main.native tests/simple_when.prog   # a simple when
+    ./main.native tests/simple_merge.prog  # a simple merge
+    ./main.native tests/s-box-4.prog       # Kwan's 4th s-box
 #+END_SRC
 
 
+
+
+* Notes
+
+** A tuple has necessary at least 2 elements. 
+First, a tuple of 1 element is just a variable (this element). Secondly, it's easier to parse.

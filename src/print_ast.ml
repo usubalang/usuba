@@ -26,25 +26,29 @@ let string_of_op = function
   | AST_xor -> "xor"
   | AST_not -> "not"
                  
-let rec string_of_expr = function
+let rec string_of_expr tab = function
   | AST_const(i) -> string_of_int i
   | AST_var(x)   -> string_of_ident x
-  | AST_tuple(l) -> join "," (List.map string_of_expr l)
+  | AST_tuple(l) -> join "," (List.map (string_of_expr tab) l)
   | AST_op(o,l)  -> (string_of_op o) ^ "(" ^
-                      (join "," (List.map string_of_expr l))
+                      (join "," (List.map (string_of_expr tab) l))
                       ^ ")"
   | AST_fun(f,l) -> (string_of_ident f) ^ "(" ^
-                      (join "," (List.map string_of_expr l))
+                      (join "," (List.map (string_of_expr tab) l))
                       ^ ")"
-  | AST_mux(e,c,x) -> (string_of_expr e) ^ " when " ^ (string_of_ident c)
+  | AST_mux(e,c,x) -> (string_of_expr tab e) ^ " when " ^ (string_of_ident c)
                       ^ "(" ^ (string_of_ident x) ^ ")"
-  | AST_demux(x,l) -> "demux(...)"
-
+  | AST_demux(x,l) -> "merge " ^ (string_of_ident x) ^ "\n" ^
+                        (join "\n" (List.map (fun (cstr, e) ->
+                                              (indent (tab+1)) ^ "| " ^
+                                                (string_of_ident cstr) ^ " -> " ^
+                                                  (string_of_expr tab e)) l))
+                                                                   
 let string_of_pat l = join ", " (List.map string_of_ident l)
 
 let string_of_deq tab l =
   join ";\n" (List.map (fun (p,e) -> (indent tab) ^
-                                       (string_of_pat p) ^ "=" ^ (string_of_expr e)) l)
+                                       (string_of_pat p) ^ "=" ^ (string_of_expr tab e)) l)
        
                                  
 let string_of_p l =
