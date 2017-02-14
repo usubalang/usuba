@@ -37,6 +37,10 @@ rule token = parse
 | [' ' '\t']+  { token lexbuf; }
 | ['\n']+      { next_line lexbuf; token lexbuf; }
 
+(* constructors *)
+| ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as constr
+{ try Hashtbl.find kwd_table constr with Not_found -> TOK_constr constr }
+
 (* identifiers / keywords *)
 | ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as id
 { try Hashtbl.find kwd_table id with Not_found -> TOK_id id }
@@ -49,9 +53,11 @@ rule token = parse
 | "::"   { TOK_TWO_COLON }
 | ":"    { TOK_COLON     }
 | ";"    { TOK_SEMICOLON }
+| "|"    { TOK_PIPE      }
+| "->"   { TOK_ARROW     }
 
 (* int ?  *)
-| ['0'-'9']+ as i { TOK_int i }
+| ['0'-'9']+ as i { TOK_int (int_of_string i) }
 
 
 (* end of file *)

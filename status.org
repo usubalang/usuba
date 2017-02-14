@@ -1,0 +1,29 @@
+* Tasks
+** DONE Basic parser/lexer
+   CLOSED: [2017-02-14 mar. 09:51]
+** DONE AST pretty-printer
+   CLOSED: [2017-02-14 mar. 09:51]
+** DONE Kwan's 4th S-box
+   CLOSED: [2017-02-14 mar. 09:51]
+** DONE Fix the reduce/reduce conflicts of the parser.
+   CLOSED: [2017-02-14 mar. 09:51]
+** TODO Implement merge
+*** TODO 
+** DONE Remove useless abstraction in the AST (ex: type pat = AST_pat of ident list)
+   CLOSED: [2017-02-14 mar. 10:45]
+** TODO Add line/column number to errors
+** TODO Improve pretty printing (with [[http://gallium.inria.fr/blog/first-release-of-pprint/][Ocaml PPrint]] eventually)
+** TODO Rethink what the examples should be
+
+
+
+* Examples
+
+** First example ([2017-02-14 mar.]) : creating an AST, and printing it.
+#+BEGIN_SRC bash
+    cd src
+    make
+    ./test.native s-box-4
+#+END_SRC
+
+
