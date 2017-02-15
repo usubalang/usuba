@@ -1,7 +1,7 @@
 
 type undef = AST_undef
 
-type typ = AST_bool
+type typ = AST_int | AST_bool
 
 type ident = string
 
@@ -23,7 +23,7 @@ type pat = ident list
                             
 type deq = (pat * expr) list
 
-type p = (ident * typ * undef) list
+type p = (ident * typ * clock) list
                                 
 type def = ident * p * p * deq
                                 

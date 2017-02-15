@@ -17,9 +17,12 @@ let join s l =
 let string_of_undef () = "_"
 
 let string_of_typ = function
+  | AST_int -> "int"
   | AST_bool -> "bool"
 
 let string_of_ident x = x
+
+let string_of_clock ck = ck
 
 let string_of_op = function
   | AST_and -> "and"
@@ -53,8 +56,9 @@ let string_of_deq tab l =
        
                                  
 let string_of_p l =
-  join ", " (List.map (fun (i,t,_) -> (string_of_ident i)
-                                      ^ ":" ^ (string_of_typ t) ^ "::_" ) l)
+  join ", " (List.map (fun (i,t,ck) -> (string_of_ident i)
+                                      ^ ":" ^ (string_of_typ t) ^ "::"
+                                      ^ (string_of_clock ck)) l)
 
 let string_of_def (i,p_in,p_out,body) =
   "node " ^ (string_of_ident i) ^ "(" ^

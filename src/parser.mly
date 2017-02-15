@@ -13,8 +13,6 @@
 %token TOK_WHEN
 %token TOK_MERGE
 
-%token TOK_UNDEF
-
 %token TOK_LPAREN
 %token TOK_RPAREN
 %token TOK_EQUAL
@@ -32,8 +30,8 @@
 
 %token <string> TOK_id
 %token <string> TOK_constr  (* ident with an uppercase 1st letter *)
-(* %token <int> TOK_int *)
-%token <int> TOK_bool                  
+%token <int> TOK_int
+
 %token <Abstract_syntax_tree.typ> TOK_type
 
 %token TOK_EOF
@@ -64,7 +62,7 @@ exp:
 
 exp_no_merge:
   | TOK_LPAREN; e=exp; TOK_RPAREN { e }
-  | x=TOK_bool { AST_const x }
+  | x=TOK_int { AST_const x }
   | id=TOK_id  { AST_var(id) }
   | TOK_LPAREN; t=tuple; TOK_RPAREN  { AST_tuple t }
   | o=op; TOK_LPAREN; args=explist; TOK_RPAREN { AST_op(o, args) }
@@ -103,8 +101,8 @@ p:
   | l=plist         { l }
 
 psingle:
-  | x=TOK_id TOK_COLON t=TOK_type TOK_TWO_COLON TOK_UNDEF
-    { (x, t, AST_undef) }
+  | x=TOK_id TOK_COLON t=TOK_type TOK_TWO_COLON ck=TOK_id
+    { (x, t, ck) }
 
 plist:
   | e=psingle                        { [ e ] }
