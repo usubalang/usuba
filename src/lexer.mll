@@ -20,6 +20,10 @@ let _ =
      "tel", TOK_TEL;
      "when", TOK_WHEN;
      "merge", TOK_MERGE;
+     "and", TOK_AND;
+     "or", TOK_OR;
+     "xor", TOK_XOR;
+     "not", TOK_NOT;
    ]
 
 let next_line lexbuf =
@@ -36,7 +40,10 @@ rule token = parse
 (* spaces *)
 | [' ' '\t']+  { token lexbuf; }
 | ['\n']       { next_line lexbuf; token lexbuf; }
+| '#' [^ '\n' '\r']*     { token lexbuf; }
 
+| "bool"       { TOK_type (AST_bool) }
+                           
 (* constructors *)
 | ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as constr
 { try Hashtbl.find kwd_table constr with Not_found -> TOK_constr constr }
@@ -56,8 +63,11 @@ rule token = parse
 | "|"    { TOK_PIPE      }
 | "->"   { TOK_ARROW     }
 
-(* int ?  *)
-| ['0'-'9']+ as i { TOK_int (int_of_string i) }
+
+| ['0' '1'] as b { TOK_bool (int_of_char b) }
+                 
+(* int might be needed in the future  *)
+(* | ['0'-'9']+ as i { TOK_int (int_of_string i) } *)
 
 
 (* end of file *)

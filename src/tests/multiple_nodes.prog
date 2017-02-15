@@ -1,0 +1,11 @@
+node nxor ( x : bool :: _, y : bool :: _ ) returns z : bool :: _
+let
+  tmp = xor(x,y);
+  z = not(tmp)
+tel
+
+node nand ( x : bool :: _, y : bool :: _ ) returns z : bool :: _
+let
+    tmp = and(x,y);
+    z = not(tmp)
+tel

@@ -18,7 +18,15 @@
 ** TODO [#C] Improve pretty printing (with [[http://gallium.inria.fr/blog/first-release-of-pprint/][Ocaml PPrint]] eventually)
 ** DONE Add a few detailed examples
    CLOSED: [2017-02-14 mar. 16:20]
-** TODO Generate OCaml code
+** DONE Generate OCaml code (string concatenation)
+   CLOSED: [2017-02-15 mer. 10:50]
+** DONE Implement generation of multiplexeur
+   CLOSED: [2017-02-15 mer. 11:52]
+** DONE Modify parser/lexer to use boolean as base type
+   CLOSED: [2017-02-15 mer. 11:52]
+** TODO Think about the convertion of the demultiplexer to OCaml.
+   in particular, for now, I change True to 1 and False to 0. 
+   This might not work in the future.
 ** TODO Learn org-mode!
 
 

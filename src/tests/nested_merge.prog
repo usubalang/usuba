@@ -1,4 +1,4 @@
-node node1 ( x : _ :: _ ) returns x : _ :: _
+node node1 ( x : bool :: _ ) returns x : bool :: _
 let
   x = merge c
   | True -> v

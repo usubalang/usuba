@@ -1,6 +1,6 @@
 
 %{
-    open Abstract_syntax_tree
+  open Abstract_syntax_tree
 %}
 
 /*******************\
@@ -32,8 +32,9 @@
 
 %token <string> TOK_id
 %token <string> TOK_constr  (* ident with an uppercase 1st letter *)
-%token <int> TOK_int
-(* do we need int ? *)
+(* %token <int> TOK_int *)
+%token <int> TOK_bool                  
+%token <Abstract_syntax_tree.typ> TOK_type
 
 %token TOK_EOF
 
@@ -63,7 +64,7 @@ exp:
 
 exp_no_merge:
   | TOK_LPAREN; e=exp; TOK_RPAREN { e }
-  | x=TOK_int { AST_const x }
+  | x=TOK_bool { AST_const x }
   | id=TOK_id  { AST_var(id) }
   | TOK_LPAREN; t=tuple; TOK_RPAREN  { AST_tuple t }
   | o=op; TOK_LPAREN; args=explist; TOK_RPAREN { AST_op(o, args) }
@@ -99,11 +100,11 @@ deq: (* returns a tuple list, is converted to AST by def *)
   | tail=deq; TOK_SEMICOLON; p=pat; TOK_EQUAL; e=exp  { (p,e) :: tail }
 
 p:
-  | l=plist         { List.rev l }
+  | l=plist         { l }
 
 psingle:
-  | x=TOK_id TOK_COLON TOK_UNDEF TOK_TWO_COLON TOK_UNDEF
-    { (x, AST_undef, AST_undef) }
+  | x=TOK_id TOK_COLON t=TOK_type TOK_TWO_COLON TOK_UNDEF
+    { (x, t, AST_undef) }
 
 plist:
   | e=psingle                        { [ e ] }

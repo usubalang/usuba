@@ -1,5 +1,9 @@
-node sbox_4 (a1:_::_, a2:_::_, a3:_::_, a4:_::_, a5:_::_, a6:_::_ )
-     returns out1:_::_, out2:_::_, out3:_::_, out4:_::_
+# Note: this isn't exactly the s-box of Kwan, as his implementation is more optimized.
+# in particular, the output are modified in place.
+# for instance, he does "out2 = xor(out2,x24)" where I do "out2 = x24"
+
+node sbox_4 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_ )
+     returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_
 let
     x1 = not(a1);
 	x2 = not(a3);
@@ -25,11 +29,11 @@ let
 	x22 = xor(x16,x21);
 	x23 = and(a6,x22);
 	x24 = xor(x13,x23);
-	out2 = xor(out2,x24);
+	out2 = x24;
 	x25 = not(x13);
 	x26 = or(a6,x22);
 	x27 = xor(x25,x26);
-	out1 = xor(out1,x27);
+	out1 = x27;
 	x28 = and(a2,x11);
 	x29 = xor(x28,x17);
 	x30 = xor(a3,x10);
@@ -43,8 +47,8 @@ let
 	x38 = xor(x36,x37);
 	x39 = and(a6,x38);
 	x40 = xor(x33,x39);
-	out4 = xor(out4,x40);
+	out4 = x40;
 	x41 = xor(x26,x38);
 	x42 = xor(x41,x40);
-	out3 = xor(out3,x42)
+	out3 = x42
 tel
