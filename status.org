@@ -32,14 +32,19 @@
 
 * Examples
 
-** First example ([2017-02-14 mar.]) : creating an AST, and printing it.
+The program main.native parses a file, creates an AST, print this AST (which looks 
+quite like the original program), and generates the OCaml code corresponding to it.
 #+BEGIN_SRC bash
     cd src
     make
-    ./main.native tests/simple_node.prog   # just a basic program
-    ./main.native tests/simple_when.prog   # a simple when
-    ./main.native tests/simple_merge.prog  # a simple merge
-    ./main.native tests/s-box-4.prog       # Kwan's 4th s-box
+    ./main.native tests/simple_node.prog      # just a basic program
+    ./main.native tests/simple_when.prog      # a simple when
+    ./main.native tests/simple_merge.prog     # a simple merge
+    ./main.native tests/s-box-4.prog          # Kwan's 4th s-box
+    ./main.native tests/nested_merge.prog     # a nested merge (to make sure the 
+                                              # parser works fine on those)
+    ./main.native tests/multiple_nodes.prog   # definition of multiple nodes. 
+    ./main.native tests/complete_prog_1.prog  # a little more complex program
 #+END_SRC
 
 

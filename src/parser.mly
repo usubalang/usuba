@@ -115,7 +115,7 @@ def:
   { (f,p_in,p_out,body) }
   
 defs:
-  | d=def              { [ d ] }
-  | d=def; dl=defs     { d::dl }
+  | d=def                { [ d ] }
+  | dl=defs; d=def       { d::dl }
 
 %%

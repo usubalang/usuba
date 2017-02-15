@@ -38,7 +38,7 @@ let rec expr_to_ml tab e =
                                   | _ -> raise Invalid_ast )
                                 ^ "(" ^ (expr_to_ml tab b) ^ ")"
   | AST_op (AST_not,x::[]) -> "lnot (" ^ (expr_to_ml tab x) ^ ")"
-  | AST_fun (f, l) -> (ident_to_ml f) ^
+  | AST_fun (f, l) -> (ident_to_ml f) ^ " " ^
                         (join " "
                               (List.map (fun x -> "(" ^ x ^ ")")
                                         (List.map (expr_to_ml tab) l)))
