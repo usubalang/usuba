@@ -7,7 +7,7 @@ open Parser
 
 exception SyntaxError of string
 
-    (* keyword table *)
+(* keyword table *)
 let kwd_table = Hashtbl.create 10
 let _ = 
   List.iter (fun (a,b) -> Hashtbl.add kwd_table a b)

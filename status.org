@@ -15,7 +15,6 @@
    CLOSED: [2017-02-14 mar. 10:45]
 ** DONE Add line/column number to errors
    CLOSED: [2017-02-14 mar. 15:53]
-** TODO [#C] Improve pretty printing (with [[http://gallium.inria.fr/blog/first-release-of-pprint/][Ocaml PPrint]] eventually)
 ** DONE Add a few detailed examples
    CLOSED: [2017-02-14 mar. 16:20]
 ** DONE Generate OCaml code (string concatenation)
@@ -24,13 +23,20 @@
    CLOSED: [2017-02-15 mer. 11:52]
 ** DONE Modify parser/lexer to use boolean as base type
    CLOSED: [2017-02-15 mer. 11:52]
-** TODO Think about the convertion of the demultiplexer to OCaml.
+** DONE Verify that the logical s-box is indeed equivalent to the lookup table 
+   CLOSED: [2017-02-15 mer. 16:21]
+** TODO [#C] Improve pretty printing (with [[http://gallium.inria.fr/blog/first-release-of-pprint/][Ocaml PPrint]] eventually)
+** TODO [#B] Think about the convertion of the demultiplexer to OCaml.
    in particular, for now, I change True to 1 and False to 0. 
    This might not work in the future.
+** TODO [#B] Get familiar with ppx, parsetree, and co.
+** TODO Switch from bool -> bool to int -> int
 ** TODO Learn org-mode!
 
 
 * Examples
+
+** Compilation (parsing, generating OCaml code...)
 
 The program main.native parses a file, creates an AST, print this AST (which looks 
 quite like the original program), and generates the OCaml code corresponding to it.
@@ -44,9 +50,17 @@ quite like the original program), and generates the OCaml code corresponding to 
     ./main.native tests/nested_merge.prog     # a nested merge (to make sure the 
                                               # parser works fine on those)
     ./main.native tests/multiple_nodes.prog   # definition of multiple nodes. 
-    ./main.native tests/complete_prog_1.prog  # a little more complex program
+    ./main.native tests/complete_prog_1.prog  # a slightly more complex program
 #+END_SRC
 
+
+** Equivalence of the lookup based and logical gate based s-box
+
+A standart (ie. with a lookup table) implementation of the 4-th S-box, as well as a
+logical one, generated with the command =./main.native tests/s-box-4.prog= are available
+in the file =src/tests/verif_sbox.ml= .
+It allows you to check that both implementations are equivalent: you just need to run
+=ocaml src/tests/verif_sbox.ml=
 
 
 
