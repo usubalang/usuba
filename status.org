@@ -29,8 +29,10 @@
    CLOSED: [2017-02-15 mer. 18:42]
 ** DONE Convert data to bitsliced format.
    CLOSED: [2017-02-16 jeu. 16:01]
+** DONE Complete the DES implementation (at least 1 round)
+   CLOSED: [2017-02-16 jeu. 18:48]
+** TODO Try to run DES.
 ** TODO Improved orthogonalization algorithm
-** TODO Complete the DES implementation (at least 1 round)
 ** TODO [#B] Think about the convertion of the demultiplexer to OCaml.
    in particular, for now, I change True to 1 and False to 0. 
    This might not work in the future.
@@ -57,6 +59,14 @@ quite like the original program), and generates the OCaml code corresponding to 
     ./main.native tests/multiple_nodes.prog   # definition of multiple nodes. 
     ./main.native tests/complete_prog_1.prog  # a slightly more complex program
 #+END_SRC
+
+** DES
+
+A bitsliced implementation of the first round of DES is in src/tests/des.prog.
+Run =./main.native tests/des.prog= to generate the des.ml inside src/tests/ocaml_run .
+You can then compile it with =ocamlopt ocaml_runtime.ml des.ml -o des= 
+(ocaml_runtime.ml contains a few functions (just one for now) needed to run the
+generated programs).
 
 
 ** Equivalence of the lookup based and logical gate based s-box
