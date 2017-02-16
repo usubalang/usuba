@@ -67,4 +67,4 @@ let string_of_def (i,p_in,p_out,body) =
       ^ "let\n" ^ (string_of_deq 1 body) ^ "\ntel\n"
 
 let string_of_prog p =
-  List.fold_left (^) "" (List.map string_of_def p)
+  join "" (List.map string_of_def p)

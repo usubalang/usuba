@@ -4,10 +4,11 @@ open Lexing
 open Abstract_syntax_tree
 open Print_ast
 open Ocaml_gen
+open Printf
        
 let print_position outx lexbuf =
   let pos = lexbuf.lex_curr_p in
-  Printf.fprintf outx "%s:%d:%d" pos.pos_fname
+  fprintf outx "%s:%d:%d" pos.pos_fname
           pos.pos_lnum (pos.pos_cnum - pos.pos_bol + 1)
 
 let parse_file (filename:string) : prog =
@@ -18,16 +19,29 @@ let parse_file (filename:string) : prog =
     Parser.prog Lexer.token lex
   with
   | SyntaxError msg ->
-     Printf.fprintf stderr "%a: %s\n" print_position lex msg;
+     fprintf stderr "%a: %s\n" print_position lex msg;
      exit (-1)
   | Parser.Error ->
-     Printf.fprintf stderr "%a: syntax error\n" print_position lex;
+     fprintf stderr "%a: syntax error\n" print_position lex;
      exit (-1)
-                   
-let p = parse_file (Sys.argv.(1)) ;;
-  
-  print_string (string_of_prog p) ;
-  print_string "\n\n************************************\n";
-  print_string "Ocaml code:\n\n";
-  print_string (prog_to_ml p) 
-               
+
+
+let main () =
+  let file_in = Sys.argv.(1) in
+  let p = parse_file file_in in
+
+  (* uncomment to print the program that was read*)
+  (* print_string (string_of_prog p) ; *)
+
+  (* Generating OCaml code *)
+  let full_name = match (String.split_on_char '.' file_in) with
+    | []   -> file_in
+    | x::_ ->  x in
+  let path = String.split_on_char '/' full_name in
+  let out_name = List.nth path (List.length path - 1) in
+  let out = open_out ("tests/ocaml_run/" ^ out_name ^ ".ml") in
+  fprintf out "open Ocaml_runtime\n";
+  fprintf out "%s" (prog_to_ml p);
+  close_out out
+
+let () = main ()

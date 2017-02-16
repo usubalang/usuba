@@ -27,12 +27,15 @@
    CLOSED: [2017-02-15 mer. 16:21]
 ** DONE Switch from bool -> bool to int -> int
    CLOSED: [2017-02-15 mer. 18:42]
-** TODO [#C] Improve pretty printing (with [[http://gallium.inria.fr/blog/first-release-of-pprint/][Ocaml PPrint]] eventually)
+** DONE Convert data to bitsliced format.
+   CLOSED: [2017-02-16 jeu. 16:01]
+** TODO Improved orthogonalization algorithm
+** TODO Complete the DES implementation (at least 1 round)
 ** TODO [#B] Think about the convertion of the demultiplexer to OCaml.
    in particular, for now, I change True to 1 and False to 0. 
    This might not work in the future.
 ** TODO [#B] Get familiar with ppx, parsetree, and co.
-** TODO Move to bitslicing code. (need to think about it)
+*** TODO [#C] Improve pretty printing (with [[http://gallium.inria.fr/blog/first-release-of-pprint/][Ocaml PPrint]] eventually)
 ** TODO Learn org-mode!
 
 
