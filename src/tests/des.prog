@@ -1,5 +1,5 @@
-node sbox_1 (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_ )
-     returns out1:int::_, out2:int::_, out3:int::_, out4:int::_
+node sbox_1 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_ )
+     returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_
 let
     x1 = not(a4);
 	x2 = not(a1);
@@ -70,8 +70,8 @@ let
 	out3 = x63
 tel
 
-node sbox_2 (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_ )
-     returns out1:int::_, out2:int::_, out3:int::_, out4:int::_
+node sbox_2 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_ )
+     returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_
 let
     	x1 = not(a5);
 	x2 = not(a1);
@@ -135,8 +135,8 @@ let
 	out4 = x56
 tel
 
-node sbox_3 (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_ )
-     returns out1:int::_, out2:int::_, out3:int::_, out4:int::_
+node sbox_3 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_ )
+     returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_
 let
     x1 = not(a5);
 	x2 = not(a6);
@@ -201,8 +201,8 @@ let
 	out2 = x57
 tel
 
-node sbox_4 (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_ )
-     returns out1:int::_, out2:int::_, out3:int::_, out4:int::_
+node sbox_4 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_ )
+     returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_
 let
     x1 = not(a1);
 	x2 = not(a3);
@@ -253,8 +253,8 @@ let
 tel
 
 
-node sbox_5 (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_ )
-     returns out1:int::_, out2:int::_, out3:int::_, out4:int::_
+node sbox_5 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_ )
+     returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_
 let
     	x1 = not(a6);
 	x2 = not(a3);
@@ -324,8 +324,8 @@ let
 	out4 = x62
 tel
 
-node sbox_6 (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_ )
-     returns out1:int::_, out2:int::_, out3:int::_, out4:int::_
+node sbox_6 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_ )
+     returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_
 let
     x1 = not(a2);
 	x2 = not(a5);
@@ -391,8 +391,8 @@ let
 tel
 
 
-node sbox_7 (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_ )
-     returns out1:int::_, out2:int::_, out3:int::_, out4:int::_
+node sbox_7 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_ )
+     returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_
 let
     x1 = not(a2);
 	x2 = not(a5);
@@ -458,8 +458,8 @@ let
 tel
 
 
-node sbox_8 (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_ )
-     returns out1:int::_, out2:int::_, out3:int::_, out4:int::_
+node sbox_8 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_ )
+     returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_
 let
     x1 = not(a1);
 	x2 = not(a4);
@@ -522,22 +522,22 @@ let
 tel
 
 
-node expand (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_,
-        a7:int::_, a8:int::_, a9:int::_, a10:int::_, a11:int::_, a12:int::_,
-        a13:int::_, a14:int::_, a15:int::_, a16:int::_, a17:int::_, a18:int::_,
-        a19:int::_, a20:int::_, a21:int::_, a22:int::_, a23:int::_, a24:int::_,
-        a25:int::_, a26:int::_, a27:int::_, a28:int::_, a29:int::_, a30:int::_,
-        a31:int::_, a32:int::_  )
-     returns out1:int::_, out2:int::_, out3:int::_, out4:int::_, out5:int::_,
-             out6:int::_, out7:int::_, out8:int::_, out9:int::_, out10:int::_,
-             out11:int::_, out12:int::_, out13:int::_, out14:int::_, out15:int::_,
-             out16:int::_, out17:int::_, out18:int::_, out19:int::_, out20:int::_,
-             out21:int::_, out22:int::_, out23:int::_, out24:int::_, out25:int::_,
-             out26:int::_, out27:int::_, out28:int::_, out29:int::_, out30:int::_,
-             out31:int::_, out32:int::_, out33:int::_, out34:int::_, out35:int::_,
-             out36:int::_, out37:int::_, out38:int::_, out39:int::_, out40:int::_,
-             out41:int::_, out42:int::_, out43:int::_, out44:int::_, out45:int::_,
-             out46:int::_, out47:int::_, out48:int::_ 
+node expand (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_,
+        a7:bool::_, a8:bool::_, a9:bool::_, a10:bool::_, a11:bool::_, a12:bool::_,
+        a13:bool::_, a14:bool::_, a15:bool::_, a16:bool::_, a17:bool::_, a18:bool::_,
+        a19:bool::_, a20:bool::_, a21:bool::_, a22:bool::_, a23:bool::_, a24:bool::_,
+        a25:bool::_, a26:bool::_, a27:bool::_, a28:bool::_, a29:bool::_, a30:bool::_,
+        a31:bool::_, a32:bool::_  )
+     returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_, out5:bool::_,
+             out6:bool::_, out7:bool::_, out8:bool::_, out9:bool::_, out10:bool::_,
+             out11:bool::_, out12:bool::_, out13:bool::_, out14:bool::_, out15:bool::_,
+             out16:bool::_, out17:bool::_, out18:bool::_, out19:bool::_, out20:bool::_,
+             out21:bool::_, out22:bool::_, out23:bool::_, out24:bool::_, out25:bool::_,
+             out26:bool::_, out27:bool::_, out28:bool::_, out29:bool::_, out30:bool::_,
+             out31:bool::_, out32:bool::_, out33:bool::_, out34:bool::_, out35:bool::_,
+             out36:bool::_, out37:bool::_, out38:bool::_, out39:bool::_, out40:bool::_,
+             out41:bool::_, out42:bool::_, out43:bool::_, out44:bool::_, out45:bool::_,
+             out46:bool::_, out47:bool::_, out48:bool::_ 
 let
     out1 = a32;
     out2 = a1;
@@ -590,30 +590,30 @@ let
 tel
 
 
-node init_p (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_,
-         a7:int::_, a8:int::_, a9:int::_, a10:int::_, a11:int::_, a12:int::_,
-         a13:int::_, a14:int::_, a15:int::_, a16:int::_, a17:int::_, a18:int::_,
-         a19:int::_, a20:int::_, a21:int::_, a22:int::_, a23:int::_, a24:int::_,
-         a25:int::_, a26:int::_, a27:int::_, a28:int::_, a29:int::_, a30:int::_,
-         a31:int::_, a32:int::_, a33:int::_, a34:int::_, a35:int::_, a36:int::_,
-         a37:int::_, a38:int::_, a39:int::_, a40:int::_, a41:int::_, a42:int::_,
-         a43:int::_, a44:int::_, a45:int::_, a46:int::_, a47:int::_, a48:int::_,
-         a49:int::_, a50:int::_, a51:int::_, a52:int::_, a53:int::_, a54:int::_,
-         a55:int::_, a56:int::_, a57:int::_, a58:int::_, a59:int::_, a60:int::_,
-         a61:int::_, a62:int::_, a63:int::_, a64:int::_)
-    returns out1:int::_, out2:int::_, out3:int::_, out4:int::_, out5:int::_,
-            out6:int::_, out7:int::_, out8:int::_, out9:int::_, out10:int::_,
-            out11:int::_, out12:int::_, out13:int::_, out14:int::_, out15:int::_,
-            out16:int::_, out17:int::_, out18:int::_, out19:int::_, out20:int::_,
-            out21:int::_, out22:int::_, out23:int::_, out24:int::_, out25:int::_,
-            out26:int::_, out27:int::_, out28:int::_, out29:int::_, out30:int::_,
-            out31:int::_, out32:int::_, out33:int::_, out34:int::_, out35:int::_,
-            out36:int::_, out37:int::_, out38:int::_, out39:int::_, out40:int::_,
-            out41:int::_, out42:int::_, out43:int::_, out44:int::_, out45:int::_,
-            out46:int::_, out47:int::_, out48:int::_, out49:int::_, out50:int::_,
-            out51:int::_, out52:int::_, out53:int::_, out54:int::_, out55:int::_,
-            out56:int::_, out57:int::_, out58:int::_, out59:int::_, out60:int::_,
-            out61:int::_, out62:int::_, out63:int::_, out64:int::_
+node init_p (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_,
+         a7:bool::_, a8:bool::_, a9:bool::_, a10:bool::_, a11:bool::_, a12:bool::_,
+         a13:bool::_, a14:bool::_, a15:bool::_, a16:bool::_, a17:bool::_, a18:bool::_,
+         a19:bool::_, a20:bool::_, a21:bool::_, a22:bool::_, a23:bool::_, a24:bool::_,
+         a25:bool::_, a26:bool::_, a27:bool::_, a28:bool::_, a29:bool::_, a30:bool::_,
+         a31:bool::_, a32:bool::_, a33:bool::_, a34:bool::_, a35:bool::_, a36:bool::_,
+         a37:bool::_, a38:bool::_, a39:bool::_, a40:bool::_, a41:bool::_, a42:bool::_,
+         a43:bool::_, a44:bool::_, a45:bool::_, a46:bool::_, a47:bool::_, a48:bool::_,
+         a49:bool::_, a50:bool::_, a51:bool::_, a52:bool::_, a53:bool::_, a54:bool::_,
+         a55:bool::_, a56:bool::_, a57:bool::_, a58:bool::_, a59:bool::_, a60:bool::_,
+         a61:bool::_, a62:bool::_, a63:bool::_, a64:bool::_)
+    returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_, out5:bool::_,
+            out6:bool::_, out7:bool::_, out8:bool::_, out9:bool::_, out10:bool::_,
+            out11:bool::_, out12:bool::_, out13:bool::_, out14:bool::_, out15:bool::_,
+            out16:bool::_, out17:bool::_, out18:bool::_, out19:bool::_, out20:bool::_,
+            out21:bool::_, out22:bool::_, out23:bool::_, out24:bool::_, out25:bool::_,
+            out26:bool::_, out27:bool::_, out28:bool::_, out29:bool::_, out30:bool::_,
+            out31:bool::_, out32:bool::_, out33:bool::_, out34:bool::_, out35:bool::_,
+            out36:bool::_, out37:bool::_, out38:bool::_, out39:bool::_, out40:bool::_,
+            out41:bool::_, out42:bool::_, out43:bool::_, out44:bool::_, out45:bool::_,
+            out46:bool::_, out47:bool::_, out48:bool::_, out49:bool::_, out50:bool::_,
+            out51:bool::_, out52:bool::_, out53:bool::_, out54:bool::_, out55:bool::_,
+            out56:bool::_, out57:bool::_, out58:bool::_, out59:bool::_, out60:bool::_,
+            out61:bool::_, out62:bool::_, out63:bool::_, out64:bool::_
 let
     out1=a58;
     out2=a50;
@@ -681,30 +681,30 @@ let
     out64=a7
 tel
 
-node final_p (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_,
-         a7:int::_, a8:int::_, a9:int::_, a10:int::_, a11:int::_, a12:int::_,
-         a13:int::_, a14:int::_, a15:int::_, a16:int::_, a17:int::_, a18:int::_,
-         a19:int::_, a20:int::_, a21:int::_, a22:int::_, a23:int::_, a24:int::_,
-         a25:int::_, a26:int::_, a27:int::_, a28:int::_, a29:int::_, a30:int::_,
-         a31:int::_, a32:int::_, a33:int::_, a34:int::_, a35:int::_, a36:int::_,
-         a37:int::_, a38:int::_, a39:int::_, a40:int::_, a41:int::_, a42:int::_,
-         a43:int::_, a44:int::_, a45:int::_, a46:int::_, a47:int::_, a48:int::_,
-         a49:int::_, a50:int::_, a51:int::_, a52:int::_, a53:int::_, a54:int::_,
-         a55:int::_, a56:int::_, a57:int::_, a58:int::_, a59:int::_, a60:int::_,
-         a61:int::_, a62:int::_, a63:int::_, a64:int::_)
-    returns out1:int::_, out2:int::_, out3:int::_, out4:int::_, out5:int::_,
-            out6:int::_, out7:int::_, out8:int::_, out9:int::_, out10:int::_,
-            out11:int::_, out12:int::_, out13:int::_, out14:int::_, out15:int::_,
-            out16:int::_, out17:int::_, out18:int::_, out19:int::_, out20:int::_,
-            out21:int::_, out22:int::_, out23:int::_, out24:int::_, out25:int::_,
-            out26:int::_, out27:int::_, out28:int::_, out29:int::_, out30:int::_,
-            out31:int::_, out32:int::_, out33:int::_, out34:int::_, out35:int::_,
-            out36:int::_, out37:int::_, out38:int::_, out39:int::_, out40:int::_,
-            out41:int::_, out42:int::_, out43:int::_, out44:int::_, out45:int::_,
-            out46:int::_, out47:int::_, out48:int::_, out49:int::_, out50:int::_,
-            out51:int::_, out52:int::_, out53:int::_, out54:int::_, out55:int::_,
-            out56:int::_, out57:int::_, out58:int::_, out59:int::_, out60:int::_,
-            out61:int::_, out62:int::_, out63:int::_, out64:int::_
+node final_p (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_,
+         a7:bool::_, a8:bool::_, a9:bool::_, a10:bool::_, a11:bool::_, a12:bool::_,
+         a13:bool::_, a14:bool::_, a15:bool::_, a16:bool::_, a17:bool::_, a18:bool::_,
+         a19:bool::_, a20:bool::_, a21:bool::_, a22:bool::_, a23:bool::_, a24:bool::_,
+         a25:bool::_, a26:bool::_, a27:bool::_, a28:bool::_, a29:bool::_, a30:bool::_,
+         a31:bool::_, a32:bool::_, a33:bool::_, a34:bool::_, a35:bool::_, a36:bool::_,
+         a37:bool::_, a38:bool::_, a39:bool::_, a40:bool::_, a41:bool::_, a42:bool::_,
+         a43:bool::_, a44:bool::_, a45:bool::_, a46:bool::_, a47:bool::_, a48:bool::_,
+         a49:bool::_, a50:bool::_, a51:bool::_, a52:bool::_, a53:bool::_, a54:bool::_,
+         a55:bool::_, a56:bool::_, a57:bool::_, a58:bool::_, a59:bool::_, a60:bool::_,
+         a61:bool::_, a62:bool::_, a63:bool::_, a64:bool::_)
+    returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_, out5:bool::_,
+            out6:bool::_, out7:bool::_, out8:bool::_, out9:bool::_, out10:bool::_,
+            out11:bool::_, out12:bool::_, out13:bool::_, out14:bool::_, out15:bool::_,
+            out16:bool::_, out17:bool::_, out18:bool::_, out19:bool::_, out20:bool::_,
+            out21:bool::_, out22:bool::_, out23:bool::_, out24:bool::_, out25:bool::_,
+            out26:bool::_, out27:bool::_, out28:bool::_, out29:bool::_, out30:bool::_,
+            out31:bool::_, out32:bool::_, out33:bool::_, out34:bool::_, out35:bool::_,
+            out36:bool::_, out37:bool::_, out38:bool::_, out39:bool::_, out40:bool::_,
+            out41:bool::_, out42:bool::_, out43:bool::_, out44:bool::_, out45:bool::_,
+            out46:bool::_, out47:bool::_, out48:bool::_, out49:bool::_, out50:bool::_,
+            out51:bool::_, out52:bool::_, out53:bool::_, out54:bool::_, out55:bool::_,
+            out56:bool::_, out57:bool::_, out58:bool::_, out59:bool::_, out60:bool::_,
+            out61:bool::_, out62:bool::_, out63:bool::_, out64:bool::_
 let
     out1=a40;
     out2=a8;
@@ -773,19 +773,19 @@ let
 tel
 
 
-node permut (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_,
-         a7:int::_, a8:int::_, a9:int::_, a10:int::_, a11:int::_, a12:int::_,
-         a13:int::_, a14:int::_, a15:int::_, a16:int::_, a17:int::_, a18:int::_,
-         a19:int::_, a20:int::_, a21:int::_, a22:int::_, a23:int::_, a24:int::_,
-         a25:int::_, a26:int::_, a27:int::_, a28:int::_, a29:int::_, a30:int::_,
-         a31:int::_, a32:int::_ )
-    returns out1:int::_, out2:int::_, out3:int::_, out4:int::_, out5:int::_,
-            out6:int::_, out7:int::_, out8:int::_, out9:int::_, out10:int::_,
-            out11:int::_, out12:int::_, out13:int::_, out14:int::_, out15:int::_,
-            out16:int::_, out17:int::_, out18:int::_, out19:int::_, out20:int::_,
-            out21:int::_, out22:int::_, out23:int::_, out24:int::_, out25:int::_,
-            out26:int::_, out27:int::_, out28:int::_, out29:int::_, out30:int::_,
-            out31:int::_, out32:int::_
+node permut (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_,
+         a7:bool::_, a8:bool::_, a9:bool::_, a10:bool::_, a11:bool::_, a12:bool::_,
+         a13:bool::_, a14:bool::_, a15:bool::_, a16:bool::_, a17:bool::_, a18:bool::_,
+         a19:bool::_, a20:bool::_, a21:bool::_, a22:bool::_, a23:bool::_, a24:bool::_,
+         a25:bool::_, a26:bool::_, a27:bool::_, a28:bool::_, a29:bool::_, a30:bool::_,
+         a31:bool::_, a32:bool::_ )
+    returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_, out5:bool::_,
+            out6:bool::_, out7:bool::_, out8:bool::_, out9:bool::_, out10:bool::_,
+            out11:bool::_, out12:bool::_, out13:bool::_, out14:bool::_, out15:bool::_,
+            out16:bool::_, out17:bool::_, out18:bool::_, out19:bool::_, out20:bool::_,
+            out21:bool::_, out22:bool::_, out23:bool::_, out24:bool::_, out25:bool::_,
+            out26:bool::_, out27:bool::_, out28:bool::_, out29:bool::_, out30:bool::_,
+            out31:bool::_, out32:bool::_
 let
     out1=a16;
     out2=a7;
@@ -822,29 +822,29 @@ let
 tel
 
 
-node pc_1 (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_,
-         a7:int::_, a8:int::_, a9:int::_, a10:int::_, a11:int::_, a12:int::_,
-         a13:int::_, a14:int::_, a15:int::_, a16:int::_, a17:int::_, a18:int::_,
-         a19:int::_, a20:int::_, a21:int::_, a22:int::_, a23:int::_, a24:int::_,
-         a25:int::_, a26:int::_, a27:int::_, a28:int::_, a29:int::_, a30:int::_,
-         a31:int::_, a32:int::_, a33:int::_, a34:int::_, a35:int::_, a36:int::_,
-         a37:int::_, a38:int::_, a39:int::_, a40:int::_, a41:int::_, a42:int::_,
-         a43:int::_, a44:int::_, a45:int::_, a46:int::_, a47:int::_, a48:int::_,
-         a49:int::_, a50:int::_, a51:int::_, a52:int::_, a53:int::_, a54:int::_,
-         a55:int::_, a56:int::_, a57:int::_, a58:int::_, a59:int::_, a60:int::_,
-         a61:int::_, a62:int::_, a63:int::_, a64:int::_ )
-    returns out1:int::_, out2:int::_, out3:int::_, out4:int::_, out5:int::_,
-            out6:int::_, out7:int::_, out8:int::_, out9:int::_, out10:int::_,
-            out11:int::_, out12:int::_, out13:int::_, out14:int::_, out15:int::_,
-            out16:int::_, out17:int::_, out18:int::_, out19:int::_, out20:int::_,
-            out21:int::_, out22:int::_, out23:int::_, out24:int::_, out25:int::_,
-            out26:int::_, out27:int::_, out28:int::_, out29:int::_, out30:int::_,
-            out31:int::_, out32:int::_, out33:int::_, out34:int::_, out35:int::_,
-            out36:int::_, out37:int::_, out38:int::_, out39:int::_, out40:int::_,
-            out41:int::_, out42:int::_, out43:int::_, out44:int::_, out45:int::_,
-            out46:int::_, out47:int::_, out48:int::_, out49:int::_, out50:int::_,
-            out51:int::_, out52:int::_, out53:int::_, out54:int::_, out55:int::_,
-            out56:int::_
+node pc_1 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_,
+         a7:bool::_, a8:bool::_, a9:bool::_, a10:bool::_, a11:bool::_, a12:bool::_,
+         a13:bool::_, a14:bool::_, a15:bool::_, a16:bool::_, a17:bool::_, a18:bool::_,
+         a19:bool::_, a20:bool::_, a21:bool::_, a22:bool::_, a23:bool::_, a24:bool::_,
+         a25:bool::_, a26:bool::_, a27:bool::_, a28:bool::_, a29:bool::_, a30:bool::_,
+         a31:bool::_, a32:bool::_, a33:bool::_, a34:bool::_, a35:bool::_, a36:bool::_,
+         a37:bool::_, a38:bool::_, a39:bool::_, a40:bool::_, a41:bool::_, a42:bool::_,
+         a43:bool::_, a44:bool::_, a45:bool::_, a46:bool::_, a47:bool::_, a48:bool::_,
+         a49:bool::_, a50:bool::_, a51:bool::_, a52:bool::_, a53:bool::_, a54:bool::_,
+         a55:bool::_, a56:bool::_, a57:bool::_, a58:bool::_, a59:bool::_, a60:bool::_,
+         a61:bool::_, a62:bool::_, a63:bool::_, a64:bool::_ )
+    returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_, out5:bool::_,
+            out6:bool::_, out7:bool::_, out8:bool::_, out9:bool::_, out10:bool::_,
+            out11:bool::_, out12:bool::_, out13:bool::_, out14:bool::_, out15:bool::_,
+            out16:bool::_, out17:bool::_, out18:bool::_, out19:bool::_, out20:bool::_,
+            out21:bool::_, out22:bool::_, out23:bool::_, out24:bool::_, out25:bool::_,
+            out26:bool::_, out27:bool::_, out28:bool::_, out29:bool::_, out30:bool::_,
+            out31:bool::_, out32:bool::_, out33:bool::_, out34:bool::_, out35:bool::_,
+            out36:bool::_, out37:bool::_, out38:bool::_, out39:bool::_, out40:bool::_,
+            out41:bool::_, out42:bool::_, out43:bool::_, out44:bool::_, out45:bool::_,
+            out46:bool::_, out47:bool::_, out48:bool::_, out49:bool::_, out50:bool::_,
+            out51:bool::_, out52:bool::_, out53:bool::_, out54:bool::_, out55:bool::_,
+            out56:bool::_
 let
     out1=a57;
     out2=a49;
@@ -904,26 +904,26 @@ let
     out56=a4
 tel
 
-node pc_2 (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_,
-         a7:int::_, a8:int::_, a9:int::_, a10:int::_, a11:int::_, a12:int::_,
-         a13:int::_, a14:int::_, a15:int::_, a16:int::_, a17:int::_, a18:int::_,
-         a19:int::_, a20:int::_, a21:int::_, a22:int::_, a23:int::_, a24:int::_,
-         a25:int::_, a26:int::_, a27:int::_, a28:int::_, a29:int::_, a30:int::_,
-         a31:int::_, a32:int::_, a33:int::_, a34:int::_, a35:int::_, a36:int::_,
-         a37:int::_, a38:int::_, a39:int::_, a40:int::_, a41:int::_, a42:int::_,
-         a43:int::_, a44:int::_, a45:int::_, a46:int::_, a47:int::_, a48:int::_,
-         a49:int::_, a50:int::_, a51:int::_, a52:int::_, a53:int::_, a54:int::_,
-         a55:int::_, a56:int::_ )
-    returns out1:int::_, out2:int::_, out3:int::_, out4:int::_, out5:int::_,
-            out6:int::_, out7:int::_, out8:int::_, out9:int::_, out10:int::_,
-            out11:int::_, out12:int::_, out13:int::_, out14:int::_, out15:int::_,
-            out16:int::_, out17:int::_, out18:int::_, out19:int::_, out20:int::_,
-            out21:int::_, out22:int::_, out23:int::_, out24:int::_, out25:int::_,
-            out26:int::_, out27:int::_, out28:int::_, out29:int::_, out30:int::_,
-            out31:int::_, out32:int::_, out33:int::_, out34:int::_, out35:int::_,
-            out36:int::_, out37:int::_, out38:int::_, out39:int::_, out40:int::_,
-            out41:int::_, out42:int::_, out43:int::_, out44:int::_, out45:int::_,
-            out46:int::_, out47:int::_, out48:int::_
+node pc_2 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_,
+         a7:bool::_, a8:bool::_, a9:bool::_, a10:bool::_, a11:bool::_, a12:bool::_,
+         a13:bool::_, a14:bool::_, a15:bool::_, a16:bool::_, a17:bool::_, a18:bool::_,
+         a19:bool::_, a20:bool::_, a21:bool::_, a22:bool::_, a23:bool::_, a24:bool::_,
+         a25:bool::_, a26:bool::_, a27:bool::_, a28:bool::_, a29:bool::_, a30:bool::_,
+         a31:bool::_, a32:bool::_, a33:bool::_, a34:bool::_, a35:bool::_, a36:bool::_,
+         a37:bool::_, a38:bool::_, a39:bool::_, a40:bool::_, a41:bool::_, a42:bool::_,
+         a43:bool::_, a44:bool::_, a45:bool::_, a46:bool::_, a47:bool::_, a48:bool::_,
+         a49:bool::_, a50:bool::_, a51:bool::_, a52:bool::_, a53:bool::_, a54:bool::_,
+         a55:bool::_, a56:bool::_ )
+    returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_, out5:bool::_,
+            out6:bool::_, out7:bool::_, out8:bool::_, out9:bool::_, out10:bool::_,
+            out11:bool::_, out12:bool::_, out13:bool::_, out14:bool::_, out15:bool::_,
+            out16:bool::_, out17:bool::_, out18:bool::_, out19:bool::_, out20:bool::_,
+            out21:bool::_, out22:bool::_, out23:bool::_, out24:bool::_, out25:bool::_,
+            out26:bool::_, out27:bool::_, out28:bool::_, out29:bool::_, out30:bool::_,
+            out31:bool::_, out32:bool::_, out33:bool::_, out34:bool::_, out35:bool::_,
+            out36:bool::_, out37:bool::_, out38:bool::_, out39:bool::_, out40:bool::_,
+            out41:bool::_, out42:bool::_, out43:bool::_, out44:bool::_, out45:bool::_,
+            out46:bool::_, out47:bool::_, out48:bool::_
 let
     out1=a14;
     out2=a17;
@@ -976,17 +976,17 @@ let
 tel
 
 
-node rol_1 (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_,
-            a7:int::_, a8:int::_, a9:int::_, a10:int::_, a11:int::_, a12:int::_,
-            a13:int::_, a14:int::_, a15:int::_, a16:int::_, a17:int::_, a18:int::_,
-            a19:int::_, a20:int::_, a21:int::_, a22:int::_, a23:int::_, a24:int::_,
-            a25:int::_, a26:int::_, a27:int::_, a28:int::_ )
-    returns out1:int::_, out2:int::_, out3:int::_, out4:int::_, out5:int::_,
-            out6:int::_, out7:int::_, out8:int::_, out9:int::_, out10:int::_,
-            out11:int::_, out12:int::_, out13:int::_, out14:int::_, out15:int::_,
-            out16:int::_, out17:int::_, out18:int::_, out19:int::_, out20:int::_,
-            out21:int::_, out22:int::_, out23:int::_, out24:int::_, out25:int::_,
-            out26:int::_, out27:int::_, out28:int::_
+node rol_1 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_,
+            a7:bool::_, a8:bool::_, a9:bool::_, a10:bool::_, a11:bool::_, a12:bool::_,
+            a13:bool::_, a14:bool::_, a15:bool::_, a16:bool::_, a17:bool::_, a18:bool::_,
+            a19:bool::_, a20:bool::_, a21:bool::_, a22:bool::_, a23:bool::_, a24:bool::_,
+            a25:bool::_, a26:bool::_, a27:bool::_, a28:bool::_ )
+    returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_, out5:bool::_,
+            out6:bool::_, out7:bool::_, out8:bool::_, out9:bool::_, out10:bool::_,
+            out11:bool::_, out12:bool::_, out13:bool::_, out14:bool::_, out15:bool::_,
+            out16:bool::_, out17:bool::_, out18:bool::_, out19:bool::_, out20:bool::_,
+            out21:bool::_, out22:bool::_, out23:bool::_, out24:bool::_, out25:bool::_,
+            out26:bool::_, out27:bool::_, out28:bool::_
 let
     out1 = a28;
     out2 = a1;
@@ -1019,17 +1019,17 @@ let
 tel
 
 
-node rol_2 (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_,
-            a7:int::_, a8:int::_, a9:int::_, a10:int::_, a11:int::_, a12:int::_,
-            a13:int::_, a14:int::_, a15:int::_, a16:int::_, a17:int::_, a18:int::_,
-            a19:int::_, a20:int::_, a21:int::_, a22:int::_, a23:int::_, a24:int::_,
-            a25:int::_, a26:int::_, a27:int::_, a28:int::_ )
-    returns out1:int::_, out2:int::_, out3:int::_, out4:int::_, out5:int::_,
-            out6:int::_, out7:int::_, out8:int::_, out9:int::_, out10:int::_,
-            out11:int::_, out12:int::_, out13:int::_, out14:int::_, out15:int::_,
-            out16:int::_, out17:int::_, out18:int::_, out19:int::_, out20:int::_,
-            out21:int::_, out22:int::_, out23:int::_, out24:int::_, out25:int::_,
-            out26:int::_, out27:int::_, out28:int::_
+node rol_2 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_,
+            a7:bool::_, a8:bool::_, a9:bool::_, a10:bool::_, a11:bool::_, a12:bool::_,
+            a13:bool::_, a14:bool::_, a15:bool::_, a16:bool::_, a17:bool::_, a18:bool::_,
+            a19:bool::_, a20:bool::_, a21:bool::_, a22:bool::_, a23:bool::_, a24:bool::_,
+            a25:bool::_, a26:bool::_, a27:bool::_, a28:bool::_ )
+    returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_, out5:bool::_,
+            out6:bool::_, out7:bool::_, out8:bool::_, out9:bool::_, out10:bool::_,
+            out11:bool::_, out12:bool::_, out13:bool::_, out14:bool::_, out15:bool::_,
+            out16:bool::_, out17:bool::_, out18:bool::_, out19:bool::_, out20:bool::_,
+            out21:bool::_, out22:bool::_, out23:bool::_, out24:bool::_, out25:bool::_,
+            out26:bool::_, out27:bool::_, out28:bool::_
 let
     out1 = a27;
     out2 = a28;
@@ -1062,32 +1062,32 @@ let
 tel
 
 
-node xor48 (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_,
-         a7:int::_, a8:int::_, a9:int::_, a10:int::_, a11:int::_, a12:int::_,
-         a13:int::_, a14:int::_, a15:int::_, a16:int::_, a17:int::_, a18:int::_,
-         a19:int::_, a20:int::_, a21:int::_, a22:int::_, a23:int::_, a24:int::_,
-         a25:int::_, a26:int::_, a27:int::_, a28:int::_, a29:int::_, a30:int::_,
-         a31:int::_, a32:int::_, a33:int::_, a34:int::_, a35:int::_, a36:int::_,
-         a37:int::_, a38:int::_, a39:int::_, a40:int::_, a41:int::_, a42:int::_,
-         a43:int::_, a44:int::_, a45:int::_, a46:int::_, a47:int::_, a48:int::_,
-         b1:int::_, b2:int::_, b3:int::_, b4:int::_, b5:int::_, b6:int::_,
-         b7:int::_, b8:int::_, b9:int::_, b10:int::_, b11:int::_, b12:int::_,
-         b13:int::_, b14:int::_, b15:int::_, b16:int::_, b17:int::_, b18:int::_,
-         b19:int::_, b20:int::_, b21:int::_, b22:int::_, b23:int::_, b24:int::_,
-         b25:int::_, b26:int::_, b27:int::_, b28:int::_, b29:int::_, b30:int::_,
-         b31:int::_, b32:int::_, b33:int::_, b34:int::_, b35:int::_, b36:int::_,
-         b37:int::_, b38:int::_, b39:int::_, b40:int::_, b41:int::_, b42:int::_,
-         b43:int::_, b44:int::_, b45:int::_, b46:int::_, b47:int::_, b48:int::_)
-     returns out1:int::_, out2:int::_, out3:int::_, out4:int::_, out5:int::_,
-             out6:int::_, out7:int::_, out8:int::_, out9:int::_, out10:int::_,
-             out11:int::_, out12:int::_, out13:int::_, out14:int::_, out15:int::_,
-             out16:int::_, out17:int::_, out18:int::_, out19:int::_, out20:int::_,
-             out21:int::_, out22:int::_, out23:int::_, out24:int::_, out25:int::_,
-             out26:int::_, out27:int::_, out28:int::_, out29:int::_, out30:int::_,
-             out31:int::_, out32:int::_, out33:int::_, out34:int::_, out35:int::_,
-             out36:int::_, out37:int::_, out38:int::_, out39:int::_, out40:int::_,
-             out41:int::_, out42:int::_, out43:int::_, out44:int::_, out45:int::_,
-             out46:int::_, out47:int::_, out48:int::_
+node xor48 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_,
+         a7:bool::_, a8:bool::_, a9:bool::_, a10:bool::_, a11:bool::_, a12:bool::_,
+         a13:bool::_, a14:bool::_, a15:bool::_, a16:bool::_, a17:bool::_, a18:bool::_,
+         a19:bool::_, a20:bool::_, a21:bool::_, a22:bool::_, a23:bool::_, a24:bool::_,
+         a25:bool::_, a26:bool::_, a27:bool::_, a28:bool::_, a29:bool::_, a30:bool::_,
+         a31:bool::_, a32:bool::_, a33:bool::_, a34:bool::_, a35:bool::_, a36:bool::_,
+         a37:bool::_, a38:bool::_, a39:bool::_, a40:bool::_, a41:bool::_, a42:bool::_,
+         a43:bool::_, a44:bool::_, a45:bool::_, a46:bool::_, a47:bool::_, a48:bool::_,
+         b1:bool::_, b2:bool::_, b3:bool::_, b4:bool::_, b5:bool::_, b6:bool::_,
+         b7:bool::_, b8:bool::_, b9:bool::_, b10:bool::_, b11:bool::_, b12:bool::_,
+         b13:bool::_, b14:bool::_, b15:bool::_, b16:bool::_, b17:bool::_, b18:bool::_,
+         b19:bool::_, b20:bool::_, b21:bool::_, b22:bool::_, b23:bool::_, b24:bool::_,
+         b25:bool::_, b26:bool::_, b27:bool::_, b28:bool::_, b29:bool::_, b30:bool::_,
+         b31:bool::_, b32:bool::_, b33:bool::_, b34:bool::_, b35:bool::_, b36:bool::_,
+         b37:bool::_, b38:bool::_, b39:bool::_, b40:bool::_, b41:bool::_, b42:bool::_,
+         b43:bool::_, b44:bool::_, b45:bool::_, b46:bool::_, b47:bool::_, b48:bool::_)
+     returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_, out5:bool::_,
+             out6:bool::_, out7:bool::_, out8:bool::_, out9:bool::_, out10:bool::_,
+             out11:bool::_, out12:bool::_, out13:bool::_, out14:bool::_, out15:bool::_,
+             out16:bool::_, out17:bool::_, out18:bool::_, out19:bool::_, out20:bool::_,
+             out21:bool::_, out22:bool::_, out23:bool::_, out24:bool::_, out25:bool::_,
+             out26:bool::_, out27:bool::_, out28:bool::_, out29:bool::_, out30:bool::_,
+             out31:bool::_, out32:bool::_, out33:bool::_, out34:bool::_, out35:bool::_,
+             out36:bool::_, out37:bool::_, out38:bool::_, out39:bool::_, out40:bool::_,
+             out41:bool::_, out42:bool::_, out43:bool::_, out44:bool::_, out45:bool::_,
+             out46:bool::_, out47:bool::_, out48:bool::_
 let
     out1 = xor(a1,b1);
     out2 = xor(a2,b2);
@@ -1140,25 +1140,25 @@ let
 tel
 
 
-node xor32 (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_,
-         a7:int::_, a8:int::_, a9:int::_, a10:int::_, a11:int::_, a12:int::_,
-         a13:int::_, a14:int::_, a15:int::_, a16:int::_, a17:int::_, a18:int::_,
-         a19:int::_, a20:int::_, a21:int::_, a22:int::_, a23:int::_, a24:int::_,
-         a25:int::_, a26:int::_, a27:int::_, a28:int::_, a29:int::_, a30:int::_,
-         a31:int::_, a32:int::_,
-         b1:int::_, b2:int::_, b3:int::_, b4:int::_, b5:int::_, b6:int::_,
-         b7:int::_, b8:int::_, b9:int::_, b10:int::_, b11:int::_, b12:int::_,
-         b13:int::_, b14:int::_, b15:int::_, b16:int::_, b17:int::_, b18:int::_,
-         b19:int::_, b20:int::_, b21:int::_, b22:int::_, b23:int::_, b24:int::_,
-         b25:int::_, b26:int::_, b27:int::_, b28:int::_, b29:int::_, b30:int::_,
-         b31:int::_, b32:int::_)
-     returns out1:int::_, out2:int::_, out3:int::_, out4:int::_, out5:int::_,
-             out6:int::_, out7:int::_, out8:int::_, out9:int::_, out10:int::_,
-             out11:int::_, out12:int::_, out13:int::_, out14:int::_, out15:int::_,
-             out16:int::_, out17:int::_, out18:int::_, out19:int::_, out20:int::_,
-             out21:int::_, out22:int::_, out23:int::_, out24:int::_, out25:int::_,
-             out26:int::_, out27:int::_, out28:int::_, out29:int::_, out30:int::_,
-             out31:int::_, out32:int::_
+node xor32 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_,
+         a7:bool::_, a8:bool::_, a9:bool::_, a10:bool::_, a11:bool::_, a12:bool::_,
+         a13:bool::_, a14:bool::_, a15:bool::_, a16:bool::_, a17:bool::_, a18:bool::_,
+         a19:bool::_, a20:bool::_, a21:bool::_, a22:bool::_, a23:bool::_, a24:bool::_,
+         a25:bool::_, a26:bool::_, a27:bool::_, a28:bool::_, a29:bool::_, a30:bool::_,
+         a31:bool::_, a32:bool::_,
+         b1:bool::_, b2:bool::_, b3:bool::_, b4:bool::_, b5:bool::_, b6:bool::_,
+         b7:bool::_, b8:bool::_, b9:bool::_, b10:bool::_, b11:bool::_, b12:bool::_,
+         b13:bool::_, b14:bool::_, b15:bool::_, b16:bool::_, b17:bool::_, b18:bool::_,
+         b19:bool::_, b20:bool::_, b21:bool::_, b22:bool::_, b23:bool::_, b24:bool::_,
+         b25:bool::_, b26:bool::_, b27:bool::_, b28:bool::_, b29:bool::_, b30:bool::_,
+         b31:bool::_, b32:bool::_)
+     returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_, out5:bool::_,
+             out6:bool::_, out7:bool::_, out8:bool::_, out9:bool::_, out10:bool::_,
+             out11:bool::_, out12:bool::_, out13:bool::_, out14:bool::_, out15:bool::_,
+             out16:bool::_, out17:bool::_, out18:bool::_, out19:bool::_, out20:bool::_,
+             out21:bool::_, out22:bool::_, out23:bool::_, out24:bool::_, out25:bool::_,
+             out26:bool::_, out27:bool::_, out28:bool::_, out29:bool::_, out30:bool::_,
+             out31:bool::_, out32:bool::_
 let
     out1 = xor(a1,b1);
     out2 = xor(a2,b2);
@@ -1196,41 +1196,41 @@ tel
 
 
 
-node des (a1:int::_, a2:int::_, a3:int::_, a4:int::_, a5:int::_, a6:int::_,
-          a7:int::_, a8:int::_, a9:int::_, a10:int::_, a11:int::_, a12:int::_,
-          a13:int::_, a14:int::_, a15:int::_, a16:int::_, a17:int::_, a18:int::_,
-          a19:int::_, a20:int::_, a21:int::_, a22:int::_, a23:int::_, a24:int::_,
-          a25:int::_, a26:int::_, a27:int::_, a28:int::_, a29:int::_, a30:int::_,
-          a31:int::_, a32:int::_, a33:int::_, a34:int::_, a35:int::_, a36:int::_,
-          a37:int::_, a38:int::_, a39:int::_, a40:int::_, a41:int::_, a42:int::_,
-          a43:int::_, a44:int::_, a45:int::_, a46:int::_, a47:int::_, a48:int::_,
-          a49:int::_, a50:int::_, a51:int::_, a52:int::_, a53:int::_, a54:int::_,
-          a55:int::_, a56:int::_, a57:int::_, a58:int::_, a59:int::_, a60:int::_,
-          a61:int::_, a62:int::_, a63:int::_, a64:int::_,
-          k1:int::_, k2:int::_, k3:int::_, k4:int::_, k5:int::_, k6:int::_,
-          k7:int::_, k8:int::_, k9:int::_, k10:int::_, k11:int::_, k12:int::_,
-          k13:int::_, k14:int::_, k15:int::_, k16:int::_, k17:int::_, k18:int::_,
-          k19:int::_, k20:int::_, k21:int::_, k22:int::_, k23:int::_, k24:int::_,
-          k25:int::_, k26:int::_, k27:int::_, k28:int::_, k29:int::_, k30:int::_,
-          k31:int::_, k32:int::_, k33:int::_, k34:int::_, k35:int::_, k36:int::_,
-          k37:int::_, k38:int::_, k39:int::_, k40:int::_, k41:int::_, k42:int::_,
-          k43:int::_, k44:int::_, k45:int::_, k46:int::_, k47:int::_, k48:int::_,
-          k49:int::_, k50:int::_, k51:int::_, k52:int::_, k53:int::_, k54:int::_,
-          k55:int::_, k56:int::_, k57:int::_, k58:int::_, k59:int::_, k60:int::_,
-          k61:int::_, k62:int::_, k63:int::_, k64:int::_)
-    returns out1:int::_, out2:int::_, out3:int::_, out4:int::_, out5:int::_,
-            out6:int::_, out7:int::_, out8:int::_, out9:int::_, out10:int::_,
-            out11:int::_, out12:int::_, out13:int::_, out14:int::_, out15:int::_,
-            out16:int::_, out17:int::_, out18:int::_, out19:int::_, out20:int::_,
-            out21:int::_, out22:int::_, out23:int::_, out24:int::_, out25:int::_,
-            out26:int::_, out27:int::_, out28:int::_, out29:int::_, out30:int::_,
-            out31:int::_, out32:int::_, out33:int::_, out34:int::_, out35:int::_,
-            out36:int::_, out37:int::_, out38:int::_, out39:int::_, out40:int::_,
-            out41:int::_, out42:int::_, out43:int::_, out44:int::_, out45:int::_,
-            out46:int::_, out47:int::_, out48:int::_, out49:int::_, out50:int::_,
-            out51:int::_, out52:int::_, out53:int::_, out54:int::_, out55:int::_,
-            out56:int::_, out57:int::_, out58:int::_, out59:int::_, out60:int::_,
-            out61:int::_, out62:int::_, out63:int::_, out64:int::_
+node des (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_,
+          a7:bool::_, a8:bool::_, a9:bool::_, a10:bool::_, a11:bool::_, a12:bool::_,
+          a13:bool::_, a14:bool::_, a15:bool::_, a16:bool::_, a17:bool::_, a18:bool::_,
+          a19:bool::_, a20:bool::_, a21:bool::_, a22:bool::_, a23:bool::_, a24:bool::_,
+          a25:bool::_, a26:bool::_, a27:bool::_, a28:bool::_, a29:bool::_, a30:bool::_,
+          a31:bool::_, a32:bool::_, a33:bool::_, a34:bool::_, a35:bool::_, a36:bool::_,
+          a37:bool::_, a38:bool::_, a39:bool::_, a40:bool::_, a41:bool::_, a42:bool::_,
+          a43:bool::_, a44:bool::_, a45:bool::_, a46:bool::_, a47:bool::_, a48:bool::_,
+          a49:bool::_, a50:bool::_, a51:bool::_, a52:bool::_, a53:bool::_, a54:bool::_,
+          a55:bool::_, a56:bool::_, a57:bool::_, a58:bool::_, a59:bool::_, a60:bool::_,
+          a61:bool::_, a62:bool::_, a63:bool::_, a64:bool::_,
+          k1:bool::_, k2:bool::_, k3:bool::_, k4:bool::_, k5:bool::_, k6:bool::_,
+          k7:bool::_, k8:bool::_, k9:bool::_, k10:bool::_, k11:bool::_, k12:bool::_,
+          k13:bool::_, k14:bool::_, k15:bool::_, k16:bool::_, k17:bool::_, k18:bool::_,
+          k19:bool::_, k20:bool::_, k21:bool::_, k22:bool::_, k23:bool::_, k24:bool::_,
+          k25:bool::_, k26:bool::_, k27:bool::_, k28:bool::_, k29:bool::_, k30:bool::_,
+          k31:bool::_, k32:bool::_, k33:bool::_, k34:bool::_, k35:bool::_, k36:bool::_,
+          k37:bool::_, k38:bool::_, k39:bool::_, k40:bool::_, k41:bool::_, k42:bool::_,
+          k43:bool::_, k44:bool::_, k45:bool::_, k46:bool::_, k47:bool::_, k48:bool::_,
+          k49:bool::_, k50:bool::_, k51:bool::_, k52:bool::_, k53:bool::_, k54:bool::_,
+          k55:bool::_, k56:bool::_, k57:bool::_, k58:bool::_, k59:bool::_, k60:bool::_,
+          k61:bool::_, k62:bool::_, k63:bool::_, k64:bool::_)
+    returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_, out5:bool::_,
+            out6:bool::_, out7:bool::_, out8:bool::_, out9:bool::_, out10:bool::_,
+            out11:bool::_, out12:bool::_, out13:bool::_, out14:bool::_, out15:bool::_,
+            out16:bool::_, out17:bool::_, out18:bool::_, out19:bool::_, out20:bool::_,
+            out21:bool::_, out22:bool::_, out23:bool::_, out24:bool::_, out25:bool::_,
+            out26:bool::_, out27:bool::_, out28:bool::_, out29:bool::_, out30:bool::_,
+            out31:bool::_, out32:bool::_, out33:bool::_, out34:bool::_, out35:bool::_,
+            out36:bool::_, out37:bool::_, out38:bool::_, out39:bool::_, out40:bool::_,
+            out41:bool::_, out42:bool::_, out43:bool::_, out44:bool::_, out45:bool::_,
+            out46:bool::_, out47:bool::_, out48:bool::_, out49:bool::_, out50:bool::_,
+            out51:bool::_, out52:bool::_, out53:bool::_, out54:bool::_, out55:bool::_,
+            out56:bool::_, out57:bool::_, out58:bool::_, out59:bool::_, out60:bool::_,
+            out61:bool::_, out62:bool::_, out63:bool::_, out64:bool::_
 let
     # Initial permutation, and splitting into left and right 
     (l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15, l16,
@@ -1353,8 +1353,9 @@ let
             t23, t24, t25, t26, t27, t28, t29, t30, t31, t32);
 
     
-    ##### Round 2 #####
+    ##### Round 2-16 not implemented #####
 
+    # .....
 
 
     # Regrouping left and right and computing final permuation

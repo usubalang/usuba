@@ -25,18 +25,18 @@
    CLOSED: [2017-02-15 mer. 11:52]
 ** DONE Verify that the logical s-box is indeed equivalent to the lookup table 
    CLOSED: [2017-02-15 mer. 16:21]
-** DONE Switch from bool -> bool to int -> int
-   CLOSED: [2017-02-15 mer. 18:42]
 ** DONE Convert data to bitsliced format.
    CLOSED: [2017-02-16 jeu. 16:01]
 ** DONE Complete the DES implementation (at least 1 round)
    CLOSED: [2017-02-16 jeu. 18:48]
+** TODO Think about how to actually run usuba code (orthogonalization + streams & co)
+** TODO Add Stream interface
 ** TODO Try to run DES.
 ** TODO Improved orthogonalization algorithm
 ** TODO [#B] Think about the convertion of the demultiplexer to OCaml.
    in particular, for now, I change True to 1 and False to 0. 
    This might not work in the future.
-** TODO [#B] Get familiar with ppx, parsetree, and co.
+** TODO [#B] Get familiar with [[https://whitequark.org/blog/2014/04/16/a-guide-to-extension-points-in-ocaml/][ppx]], parsetree, and co.
 *** TODO [#C] Improve pretty printing (with [[http://gallium.inria.fr/blog/first-release-of-pprint/][Ocaml PPrint]] eventually)
 ** TODO Learn org-mode!
 
@@ -83,3 +83,6 @@ It allows you to check that both implementations are equivalent: you just need t
 
 ** A tuple has necessary at least 2 elements. 
 First, a tuple of 1 element is just a variable (this element). Secondly, it's easier to parse.
+
+** By convention, the =main= is the last node declared.
+(this might change in the future, but it's easier to do this for now)
