@@ -42,6 +42,7 @@ let main () =
   let out = open_out ("tests/ocaml_run/" ^ out_name ^ ".ml") in
   fprintf out "open Ocaml_runtime\n";
   fprintf out "%s" (prog_to_ml p);
+  naive_code p;
   close_out out
 
 let () = main ()

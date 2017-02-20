@@ -3,6 +3,7 @@ open Abstract_syntax_tree
 
 exception Not_implemented of string
 exception Invalid_ast
+exception Empty_list
 
 
 (* ************************************************** *)
@@ -81,9 +82,35 @@ let prog_to_ml p =
 (* ************************************************** *)
 (*      The boilerplate around the bitsliced code     *)
 (* ************************************************** *)
+let rec get_last l =
+  match l with
+  | [] -> raise Empty_list
+  | x::[] -> x
+  | x::tl -> get_last tl
 
-(* what follows is what should actually be generated for the usuba implementation of DES *)
+let size_of_typ = function
+  | AST_int64 -> 64
+  | AST_bool  -> 1
+
+let str_size_of_typ = function
+  | AST_int64 -> "64"
+  | AST_bool  -> "1"
+                
+let naive_code p =
+  let (main_id,main_arg,_) = get_last p in
+  let decl =
+    join "\n" (List.map (fun (x,t,_) ->
+                         "let " ^ x ^ " = ortho " ^ (str_size_of_typ t)
+                         ^ "_" ^ x ^ "in") main_arg) in
+  let header = "let _" ^ main_id ^
+                 (join " " (List.map (fun (x,_,_) -> "_" ^ x) main_arg)) in
+  let body = "" in
+  let func = header ^ "\n" ^ decl ^ "\n" ^ body in
+  print_string func
+
        
+(* what follows is what should actually be generated for the usuba implementation of DES *)
+    
 (* ortho_block is already inside ocaml_runtime.ml *)
 let ortho_block (size: int) (input: int array) : int array =
   let out = Array.make size 0 in
@@ -144,7 +171,7 @@ let main (plaintext : int Stream.t) (key : int) : int array Stream.t =
                                                  (Stream.npeek 64 ciphered_stream))))
   in
   ciphered
-
+    
 
 
                  

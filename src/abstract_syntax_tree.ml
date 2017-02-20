@@ -1,7 +1,7 @@
 
 type undef = AST_undef
 
-type typ = AST_int | AST_bool
+type typ = AST_int64 | AST_bool
 
 type ident = string
 
@@ -11,7 +11,7 @@ type clock = string
 
 type op = AST_and | AST_or | AST_xor | AST_not
                             
-type expr = AST_const of int (* it's actually a boolean *)
+type expr = AST_const of int
           | AST_var   of ident
           | AST_tuple of expr list
           | AST_op    of op * (expr list)

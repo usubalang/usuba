@@ -17,8 +17,8 @@ let join s l =
 let string_of_undef () = "_"
 
 let string_of_typ = function
-  | AST_int -> "int"
-  | AST_bool -> "bool"
+  | AST_int64 -> "int64"
+  | AST_bool  -> "bool"
 
 let string_of_ident x = x
 
@@ -53,8 +53,7 @@ let string_of_pat l = join ", " (List.map string_of_ident l)
 let string_of_deq tab l =
   join ";\n" (List.map (fun (p,e) -> (indent tab) ^
                                        (string_of_pat p) ^ "=" ^ (string_of_expr tab e)) l)
-       
-                                 
+                                        
 let string_of_p l =
   join ", " (List.map (fun (i,t,ck) -> (string_of_ident i)
                                       ^ ":" ^ (string_of_typ t) ^ "::"

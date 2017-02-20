@@ -1196,65 +1196,22 @@ tel
 
 
 
-node des (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_,
-          a7:bool::_, a8:bool::_, a9:bool::_, a10:bool::_, a11:bool::_, a12:bool::_,
-          a13:bool::_, a14:bool::_, a15:bool::_, a16:bool::_, a17:bool::_, a18:bool::_,
-          a19:bool::_, a20:bool::_, a21:bool::_, a22:bool::_, a23:bool::_, a24:bool::_,
-          a25:bool::_, a26:bool::_, a27:bool::_, a28:bool::_, a29:bool::_, a30:bool::_,
-          a31:bool::_, a32:bool::_, a33:bool::_, a34:bool::_, a35:bool::_, a36:bool::_,
-          a37:bool::_, a38:bool::_, a39:bool::_, a40:bool::_, a41:bool::_, a42:bool::_,
-          a43:bool::_, a44:bool::_, a45:bool::_, a46:bool::_, a47:bool::_, a48:bool::_,
-          a49:bool::_, a50:bool::_, a51:bool::_, a52:bool::_, a53:bool::_, a54:bool::_,
-          a55:bool::_, a56:bool::_, a57:bool::_, a58:bool::_, a59:bool::_, a60:bool::_,
-          a61:bool::_, a62:bool::_, a63:bool::_, a64:bool::_,
-          k1:bool::_, k2:bool::_, k3:bool::_, k4:bool::_, k5:bool::_, k6:bool::_,
-          k7:bool::_, k8:bool::_, k9:bool::_, k10:bool::_, k11:bool::_, k12:bool::_,
-          k13:bool::_, k14:bool::_, k15:bool::_, k16:bool::_, k17:bool::_, k18:bool::_,
-          k19:bool::_, k20:bool::_, k21:bool::_, k22:bool::_, k23:bool::_, k24:bool::_,
-          k25:bool::_, k26:bool::_, k27:bool::_, k28:bool::_, k29:bool::_, k30:bool::_,
-          k31:bool::_, k32:bool::_, k33:bool::_, k34:bool::_, k35:bool::_, k36:bool::_,
-          k37:bool::_, k38:bool::_, k39:bool::_, k40:bool::_, k41:bool::_, k42:bool::_,
-          k43:bool::_, k44:bool::_, k45:bool::_, k46:bool::_, k47:bool::_, k48:bool::_,
-          k49:bool::_, k50:bool::_, k51:bool::_, k52:bool::_, k53:bool::_, k54:bool::_,
-          k55:bool::_, k56:bool::_, k57:bool::_, k58:bool::_, k59:bool::_, k60:bool::_,
-          k61:bool::_, k62:bool::_, k63:bool::_, k64:bool::_)
-    returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_, out5:bool::_,
-            out6:bool::_, out7:bool::_, out8:bool::_, out9:bool::_, out10:bool::_,
-            out11:bool::_, out12:bool::_, out13:bool::_, out14:bool::_, out15:bool::_,
-            out16:bool::_, out17:bool::_, out18:bool::_, out19:bool::_, out20:bool::_,
-            out21:bool::_, out22:bool::_, out23:bool::_, out24:bool::_, out25:bool::_,
-            out26:bool::_, out27:bool::_, out28:bool::_, out29:bool::_, out30:bool::_,
-            out31:bool::_, out32:bool::_, out33:bool::_, out34:bool::_, out35:bool::_,
-            out36:bool::_, out37:bool::_, out38:bool::_, out39:bool::_, out40:bool::_,
-            out41:bool::_, out42:bool::_, out43:bool::_, out44:bool::_, out45:bool::_,
-            out46:bool::_, out47:bool::_, out48:bool::_, out49:bool::_, out50:bool::_,
-            out51:bool::_, out52:bool::_, out53:bool::_, out54:bool::_, out55:bool::_,
-            out56:bool::_, out57:bool::_, out58:bool::_, out59:bool::_, out60:bool::_,
-            out61:bool::_, out62:bool::_, out63:bool::_, out64:bool::_
+node des (a:int64::_,k:int64::_) returns out:int64::_
 let
+
     # Initial permutation, and splitting into left and right 
     (l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15, l16,
      l17, l18, l19, l20, l21, l22, l23, l24, l25, l26, l27, l28, l29, l30, l31, l32,
      r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16,
      r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31, r32)
-          = init_p(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12,
-               a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24,
-               a25, a26, a27, a28, a29, a30, a31, a32, a33, a34, a35, a36,
-               a37, a38, a39, a40, a41, a42, a43, a44, a45, a46, a47, a48,
-               a49, a50, a51, a52, a53, a54, a55, a56, a57, a58, a59, a60,
-               a61, a62, a63, a64);
+          = init_p(a);
 
     # Initial key splitting and mixing.
     (kl1, kl2, kl3, kl4, kl5, kl6, kl7, kl8, kl9, kl10, kl11, kl12, kl13, kl14, kl15, kl16,
      kl17, kl18, kl19, kl20, kl21, kl22, kl23, kl24, kl25, kl26, kl27, kl28,
      kr1, kr2, kr3, kr4, kr5, kr6, kr7, kr8, kr9, kr10, kr11, kr12, kr13, kr14, kr15, kr16,
      kr17, kr18, kr19, kr20, kr21, kr22, kr23, kr24, kr25, kr26, kr27, kr28)
-           = pc_1(k1, k2, k3, k4, k5, k6, k7, k8, k9, k10, k11, k12,
-               k13, k14, k15, k16, k17, k18, k19, k20, k21, k22, k23, k24,
-               k25, k26, k27, k28, k29, k30, k31, k32, k33, k34, k35, k36,
-               k37, k38, k39, k40, k41, k42, k43, k44, k45, k46, k47, k48,
-               k49, k50, k51, k52, k53, k54, k55, k56, k57, k58, k59, k60,
-               k61, k62, k63, k64);
+           = pc_1(k);
 
     ################## Main part (the 16 rounds) ##################
 
@@ -1359,13 +1316,7 @@ let
 
 
     # Regrouping left and right and computing final permuation
-    (out1, out2, out3, out4, out5, out6, out7, out8, out9, out10, out11, out12,
-     out13, out14, out15, out16, out17, out18, out19, out20, out21, out22, out23, out24,
-     out25, out26, out27, out28, out29, out30, out31, out32, out33, out34, out35, out36,
-     out37, out38, out39, out40, out41, out42, out43, out44, out45, out46, out47, out48,
-     out49, out50, out51, out52, out53, out54, out55, out56, out57, out58, out59, out60,
-     out61, out62, out63, out64)
-       = final_p(l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15, l16,
+    out = final_p(l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15, l16,
      l17, l18, l19, l20, l21, l22, l23, l24, l25, l26, l27, l28, l29, l30, l31, l32,
      r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16,
      r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31, r32)

@@ -40,7 +40,7 @@ rule token = parse
 | ['\n']       { next_line lexbuf; token lexbuf; }
 | '#' [^ '\n' '\r']*     { token lexbuf; }
 
-| "int"        { TOK_type (AST_int)  }
+| "int64"      { TOK_type (AST_int64)  }
 | "bool"       { TOK_type (AST_bool)  }
                
 (* constructors *)
