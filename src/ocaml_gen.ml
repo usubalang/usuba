@@ -89,11 +89,11 @@ let rec get_last l =
   | x::tl -> get_last tl
 
 let size_of_typ = function
-  | Int -> 64
+  | Int _ -> 64
   | Bool  -> 1
 
 let str_size_of_typ = function
-  | Int -> "64"
+  | Int _ -> "64"
   | Bool  -> "1"
                    
 let naive_code (p: prog) =

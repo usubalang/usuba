@@ -36,7 +36,9 @@
 
 %token TOK_EOF
 
-
+%nonassoc TOK_MERGE
+%nonassoc TOK_PIPE
+%nonassoc TOK_WHEN
 
 /*******************\
 |*   entry point   *|
@@ -55,35 +57,26 @@ op:
   | TOK_XOR { Xor }
   | TOK_NOT { Not }
 
-(* to solve shift/reduce conflicts related to merge, we need exp and exp_no_merge *)
 exp:
-  | e=exp_no_merge { e }
-  | TOK_MERGE; ck=TOK_id; c=caselist { Demux(ck,c) }
+   | TOK_LPAREN; e=exp; TOK_RPAREN { e }
+   | x=TOK_int { Const x }
+   | id=TOK_id  { Var(id) }
+   | TOK_LPAREN; t=tuple; TOK_RPAREN  { Tuple t }
+   | o=op; TOK_LPAREN; args=explist; TOK_RPAREN { Op(o, args) }
+   | f=TOK_id; TOK_LPAREN; args=explist; TOK_RPAREN { Fun(f, args) }
+   | e=exp; TOK_WHEN; cstr=TOK_constr; TOK_LPAREN; x=TOK_id; TOK_RPAREN { Mux(e,cstr,x) }
+   | TOK_MERGE; ck=TOK_id; c=caselist %prec TOK_MERGE { Demux(ck,c) }
 
-exp_no_merge:
-  | TOK_LPAREN; e=exp; TOK_RPAREN { e }
-  | x=TOK_int { Const x }
-  | id=TOK_id  { Var(id) }
-  | TOK_LPAREN; t=tuple; TOK_RPAREN  { Tuple t }
-  | o=op; TOK_LPAREN; args=explist; TOK_RPAREN { Op(o, args) }
-  | f=TOK_id; TOK_LPAREN; args=explist; TOK_RPAREN { Fun(f, args) }
-  | e=exp_no_merge; TOK_WHEN; cstr=TOK_constr; TOK_LPAREN; x=TOK_id; TOK_RPAREN
-    { Mux(e,cstr,x) }
+caselist:
+   | { [] }                                  
+   | front=caselist TOK_PIPE; c=TOK_constr; TOK_ARROW; e=exp %prec TOK_PIPE { (c,e)::front }
 
-(* a tuple has necessary stricly more than one element *)
 tuple:
   | x=exp; TOK_COMMA; tail=explist    { x::(List.rev tail) }
                                      
 explist:
   | x=exp                             { [ x ]     }
   | tail=explist; TOK_COMMA; x=exp    { x :: tail }
-
-caselist:
-  | front=caselist_no_merge TOK_PIPE; c=TOK_constr; TOK_ARROW; e=exp  { (c,e)::front }
-
-caselist_no_merge:
-  | { [] }
-  | front=caselist_no_merge; TOK_PIPE; c=TOK_constr; TOK_ARROW; e=exp_no_merge  { (c,e)::front }
 
 pat:
   | i=TOK_id                          { [ i ] }

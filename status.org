@@ -38,7 +38,10 @@
 *** TODO Implement CBC
 *** DONE Implement CFB
     CLOSED: [2017-02-21 mar. 17:30]
-*** TODO Implement OFB
+*** DONE Implement OFB
+    CLOSED: [2017-02-21 mar. 18:21]
+** DONE Add variable uint_n (with n an integer) notation.
+   CLOSED: [2017-02-21 mar. 18:55]
 ** TODO Think about how to actually run usuba code (orthogonalization + streams & co)
 ** TODO Add Stream interface
 ** TODO General question: why are the s-boxes the way the are? 
@@ -89,6 +92,18 @@ in the file =src/tests/verif_sbox.ml= .
 It allows you to check that both implementations are equivalent: you just need to run
 =ocaml src/tests/verif_sbox.ml=
 
+** Standart DES implementation
+
+A standart implementation of DES is available (file =src/des/des.ml=). This file includes
+a few test to verify the correctness of the code. This tests consists in encrypting 2 blocks,
+then decrypting them. If the code is correct, this should be equivalent to the identity.
+To run those tests:
+#+BEGIN_SRC bash
+    cd src/des
+    ocamlc -o des des.ml
+    ./des
+#+END
+You'll see that each test yields the same result, that's a good sign.
 
 
 * Notes

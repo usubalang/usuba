@@ -17,7 +17,7 @@ let join s l =
 let string_of_undef () = "_"
 
 let string_of_typ = function
-  | Int -> "int64"
+  | Int _ -> "int64"
   | Bool  -> "bool"
 
 let string_of_ident x = x

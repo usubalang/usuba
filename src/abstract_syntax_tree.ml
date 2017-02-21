@@ -1,7 +1,7 @@
 
 type undef
 
-type typ = Bool | Int
+type typ = Bool | Int of int
 
 type ident = string
 

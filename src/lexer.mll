@@ -40,8 +40,8 @@ rule token = parse
 | ['\n']       { next_line lexbuf; token lexbuf; }
 | '#' [^ '\n' '\r']*     { token lexbuf; }
 
-| "int64"      { TOK_type (Int)  }
-| "bool"       { TOK_type (Bool)  }
+| "uint_" (['0' - '9']+ as n)    { TOK_type (Int(int_of_string n))  }
+| "bool"                         { TOK_type (Bool)  }
                
 (* constructors *)
 | ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as constr

@@ -326,7 +326,7 @@ let des_cbc_decrypt (ciphered: int64 Stream.t) (key: int64) (iv: int64)
                   Some v )
                with
                  Stream.Failure -> None )
-
+              
 let test_cbc () =
   let ciphered = des_cbc_encrypt test_stream_cbc test_key test_iv in
   let decrypted = des_cbc_decrypt ciphered test_key test_iv in
@@ -372,7 +372,7 @@ let des_ofb_encrypt (plaintext: int64 Stream.t) (key: int64) (iv: int64)
                try
                  let x = Stream.next plaintext in
                  (let v = Int64.logxor !prev x in
-                  prev := des_single x key true;
+                  prev := des_single !prev key true;
                   Some v)
                with
                  Stream.Failure -> None )
@@ -383,8 +383,8 @@ let des_ofb_decrypt (ciphered: int64 Stream.t) (key: int64) (iv: int64)
   Stream.from (fun _ ->
                try
                  let x = Stream.next ciphered in
-                 (let v = (Int64.logxor x !prev) in
-                  prev := des_single !prev key true;
+                 let v = Int64.logxor !prev x in
+                 (prev := des_single !prev key true;
                   Some v)
                with
                  Stream.Failure -> None )
