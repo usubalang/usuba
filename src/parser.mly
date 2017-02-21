@@ -50,25 +50,25 @@ prog:
   | d=defs TOK_EOF { d }
 
 op:
-  | TOK_AND { AST_and }
-  | TOK_OR  { AST_or  }
-  | TOK_XOR { AST_xor }
-  | TOK_NOT { AST_not }
+  | TOK_AND { And }
+  | TOK_OR  { Or  }
+  | TOK_XOR { Xor }
+  | TOK_NOT { Not }
 
 (* to solve shift/reduce conflicts related to merge, we need exp and exp_no_merge *)
 exp:
   | e=exp_no_merge { e }
-  | TOK_MERGE; ck=TOK_id; c=caselist { AST_demux(ck,c) }
+  | TOK_MERGE; ck=TOK_id; c=caselist { Demux(ck,c) }
 
 exp_no_merge:
   | TOK_LPAREN; e=exp; TOK_RPAREN { e }
-  | x=TOK_int { AST_const x }
-  | id=TOK_id  { AST_var(id) }
-  | TOK_LPAREN; t=tuple; TOK_RPAREN  { AST_tuple t }
-  | o=op; TOK_LPAREN; args=explist; TOK_RPAREN { AST_op(o, args) }
-  | f=TOK_id; TOK_LPAREN; args=explist; TOK_RPAREN { AST_fun(f, args) }
+  | x=TOK_int { Const x }
+  | id=TOK_id  { Var(id) }
+  | TOK_LPAREN; t=tuple; TOK_RPAREN  { Tuple t }
+  | o=op; TOK_LPAREN; args=explist; TOK_RPAREN { Op(o, args) }
+  | f=TOK_id; TOK_LPAREN; args=explist; TOK_RPAREN { Fun(f, args) }
   | e=exp_no_merge; TOK_WHEN; cstr=TOK_constr; TOK_LPAREN; x=TOK_id; TOK_RPAREN
-    { AST_mux(e,cstr,x) }
+    { Mux(e,cstr,x) }
 
 (* a tuple has necessary stricly more than one element *)
 tuple:

@@ -1,7 +1,7 @@
 
-type undef = AST_undef
+type undef
 
-type typ = AST_int64 | AST_bool
+type typ = Bool | Int
 
 type ident = string
 
@@ -9,15 +9,15 @@ type constr = string
 
 type clock = string
 
-type op = AST_and | AST_or | AST_xor | AST_not
+type op = And | Or | Xor | Not
                             
-type expr = AST_const of int
-          | AST_var   of ident
-          | AST_tuple of expr list
-          | AST_op    of op * (expr list)
-          | AST_fun   of ident * (expr list)
-          | AST_mux   of expr * constr * ident
-          | AST_demux of ident * ((constr * expr) list)
+type expr = Const of int
+          | Var   of ident
+          | Tuple of expr list
+          | Op    of op * (expr list)
+          | Fun   of ident * expr list
+          | Mux   of expr * constr * ident
+          | Demux of ident * ((constr * expr) list)
 
 type pat = ident list
                             

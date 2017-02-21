@@ -29,9 +29,21 @@
    CLOSED: [2017-02-16 jeu. 16:01]
 ** DONE Complete the DES implementation (at least 1 round)
    CLOSED: [2017-02-16 jeu. 18:48]
+** DONE Implement a standart DES
+   CLOSED: [2017-02-21 mar. 10:33]
+*** DONE The implementation of the key scheduling is weird, need to figure it out. 
+    CLOSED: [2017-02-21 mar. 10:15]
+*** DONE Implement ECB
+    CLOSED: [2017-02-21 mar. 11:59]
+*** TODO Implement CBC
+*** DONE Implement CFB
+    CLOSED: [2017-02-21 mar. 17:30]
+*** TODO Implement OFB
 ** TODO Think about how to actually run usuba code (orthogonalization + streams & co)
 ** TODO Add Stream interface
-** TODO Try to run DES.
+** TODO General question: why are the s-boxes the way the are? 
+   (a single array would be enough)
+** TODO Complete implementation of usuba DES
 ** TODO Improved orthogonalization algorithm
 ** TODO [#B] Think about the convertion of the demultiplexer to OCaml.
    in particular, for now, I change True to 1 and False to 0. 

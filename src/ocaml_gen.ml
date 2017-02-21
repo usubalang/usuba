@@ -33,23 +33,23 @@ let constructor_to_ml = function
                                   
 let rec expr_to_ml tab e =
   match e with
-  | AST_const c -> const_to_ml c
-  | AST_var v   -> ident_to_ml v
-  | AST_tuple t -> "(" ^ (join "," (List.map (expr_to_ml tab) t)) ^ ")"
-  | AST_op (op,a::b::[]) -> "(" ^ (expr_to_ml tab a) ^  ")" ^
+  | Const c -> const_to_ml c
+  | Var v   -> ident_to_ml v
+  | Tuple t -> "(" ^ (join "," (List.map (expr_to_ml tab) t)) ^ ")"
+  | Op (op,a::b::[]) -> "(" ^ (expr_to_ml tab a) ^  ")" ^
                                 ( match op with
-                                  | AST_and -> " land "
-                                  | AST_or  -> " lor "
-                                  | AST_xor -> " lxor "
+                                  | And -> " land "
+                                  | Or  -> " lor "
+                                  | Xor -> " lxor "
                                   | _ -> raise Invalid_ast )
                                 ^ "(" ^ (expr_to_ml tab b) ^ ")"
-  | AST_op (AST_not,x::[]) -> "lnot (" ^ (expr_to_ml tab x) ^ ")"
-  | AST_fun (f, l) -> (ident_to_ml f) ^ " " ^
+  | Op (Not,x::[]) -> "lnot (" ^ (expr_to_ml tab x) ^ ")"
+  | Fun (f, l) -> (ident_to_ml f) ^ " " ^
                         (join " "
                               (List.map (fun x -> "(" ^ x ^ ")")
                                         (List.map (expr_to_ml tab) l)))
-  | AST_mux (e,_,_) -> expr_to_ml tab e
-  | AST_demux (id,l) -> "match " ^ (ident_to_ml id) ^ " with\n" ^
+  | Mux (e,_,_) -> expr_to_ml tab e
+  | Demux (id,l) -> "match " ^ (ident_to_ml id) ^ " with\n" ^
                           (join "\n"
                                 (List.map (fun (c,e) ->
                                            (indent tab) ^ "  | " ^
@@ -89,15 +89,15 @@ let rec get_last l =
   | x::tl -> get_last tl
 
 let size_of_typ = function
-  | AST_int64 -> 64
-  | AST_bool  -> 1
+  | Int -> 64
+  | Bool  -> 1
 
 let str_size_of_typ = function
-  | AST_int64 -> "64"
-  | AST_bool  -> "1"
-                
-let naive_code p =
-  let (main_id,main_arg,_) = get_last p in
+  | Int -> "64"
+  | Bool  -> "1"
+                   
+let naive_code (p: prog) =
+  let (main_id,main_arg,_,_) = get_last p in
   let decl =
     join "\n" (List.map (fun (x,t,_) ->
                          "let " ^ x ^ " = ortho " ^ (str_size_of_typ t)
@@ -106,7 +106,8 @@ let naive_code p =
                  (join " " (List.map (fun (x,_,_) -> "_" ^ x) main_arg)) in
   let body = "" in
   let func = header ^ "\n" ^ decl ^ "\n" ^ body in
-  print_string func
+  print_string func;
+  ()
 
        
 (* what follows is what should actually be generated for the usuba implementation of DES *)
