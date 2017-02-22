@@ -5,6 +5,8 @@ exception Not_implemented of string
 exception Invalid_ast
 exception Empty_list
 exception Undeclared_var of string
+exception Invalid_param_size
+exception Invalid_operator_call
 
 (* ************************************************** *)
 (*            Renaming variables and nodes            *) 
@@ -93,6 +95,26 @@ let rec flatten_expr (l: expr list) : expr list =
                | Tuple l -> flatten_expr l
                | _ -> [ hd ]) @ (flatten_expr tl)
 
+let rec distrib_not (l: expr list) : expr list =
+  match l with
+  | [] -> []
+  | hd::tl -> (Op(Not,[hd])) :: (distrib_not tl)
+
+let rec combine_op op l1 l2 =
+  match l1, l2 with
+  | [], [] -> []
+  | hd1::tl1, hd2::tl2 -> (Op(op,[hd1;hd2])) :: (combine_op op tl1 tl2)
+  | _ -> raise Invalid_param_size
+
+let rec combine_xor l1 l2 =
+  match l1, l2 with
+  | [], [] -> []
+  | hd1::tl1, hd2::tl2 -> ( Op(Or,
+                               [ Op(And, [ hd1; Op(Not, [ hd2 ]) ]) ;
+                                 Op(And, [ Op(Not, [ hd1 ]); hd2 ])]) )
+                            :: (combine_xor tl1 tl2)
+  | _ -> raise Invalid_param_size
+
                                   
 let rec rewrite_expr (env: (ident, int) Hashtbl.t) (e: expr) : expr =
   match e with
@@ -104,19 +126,25 @@ let rec rewrite_expr (env: (ident, int) Hashtbl.t) (e: expr) : expr =
                  with Not_found -> raise (Undeclared_var id))
   | Field (id,n) -> Var (id ^ (string_of_int n))
   | Tuple (l)    -> Tuple (flatten_expr (List.map (rewrite_expr env) l))
-  | Op (op,l)    -> (match op with
-                     | And -> Op(And, List.map (rewrite_expr env) l)
-                     | Or  -> Op(Or, List.map (rewrite_expr env) l)
-                     | Not -> Op(Not, List.map (rewrite_expr env) l)
-                     (* a ^ b == ( a && ! b ) || ( ! a && b ) *)
-                     | Xor -> (match l with
-                               | e1::e2::[] ->
-                                  Op(Or,
-                                     [ Op(And, [ rewrite_expr env e1;
-                                                 Op(Not, [ rewrite_expr env e2 ]) ]) ;
-                                       Op(And, [ Op(Not, [ rewrite_expr env e1 ]);
-                                                 rewrite_expr env e2 ])])
-                               | _ -> raise (Not_implemented "n-ary XOR")))
+  | Op (And,x1::x2::[]) -> let t1 = rewrite_expr env x1 in
+                           let t2 = rewrite_expr env x2 in
+                           (match t1,t2 with
+                            | Tuple l1, Tuple l2 -> Tuple(combine_op And l1 l2)
+                            | _ -> Op(And,[t1;t2]) )
+  | Op (Or, x1::x2::[]) -> let t1 = rewrite_expr env x1 in
+                           let t2 = rewrite_expr env x2 in
+                           (match t1,t2 with
+                            | Tuple l1, Tuple l2 -> Tuple(combine_op Or l1 l2)
+                            | _ -> Op(Or,[t1;t2]) )
+  | Op (Xor,x1::x2::[]) -> let t1 = rewrite_expr env x1 in
+                           let t2 = rewrite_expr env x2 in
+                           (match t1,t2 with
+                            | Tuple l1, Tuple l2 -> Tuple(combine_xor l1 l2)
+                            | _ -> Op(Or,
+                                      [ Op(And, [ t1; Op(Not,[t2])] ) ;
+                                        Op(And, [ Op(Not,[t1]);t2])]) )
+  | Op (Not,l) -> Tuple(distrib_not (List.map (rewrite_expr env) l))
+  | Op _ -> raise Invalid_operator_call
   | Fun (f,l)    -> Fun(f, List.map (rewrite_expr env) l)
   | Mux (e,c,id) -> raise (Not_implemented "Mux")
   | Demux(id,l)  -> raise (Not_implemented "Demux")

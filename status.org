@@ -52,6 +52,10 @@
    CLOSED: [2017-02-22 mer. 15:59]
    That's because notations like x.1 generates a variable x1, which can conflict with
    a user-defined variable.
+** DONE Allow operators to work on tuples.
+   CLOSED: [2017-02-22 mer. 17:41]
+   Concrecly, it means allowing to write "a xor b" instead of "a.1 xor b.1; ... ; a.n xor b.n"
+** TODO Fix operators on tuple 
 ** TODO Think about how to actually run usuba code (orthogonalization + streams & co)
 ** TODO General question: why are the s-boxes the way the are? 
    (a single array would be enough)

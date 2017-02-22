@@ -1062,263 +1062,45 @@ let
 tel
 
 
-node xor48 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_,
-         a7:bool::_, a8:bool::_, a9:bool::_, a10:bool::_, a11:bool::_, a12:bool::_,
-         a13:bool::_, a14:bool::_, a15:bool::_, a16:bool::_, a17:bool::_, a18:bool::_,
-         a19:bool::_, a20:bool::_, a21:bool::_, a22:bool::_, a23:bool::_, a24:bool::_,
-         a25:bool::_, a26:bool::_, a27:bool::_, a28:bool::_, a29:bool::_, a30:bool::_,
-         a31:bool::_, a32:bool::_, a33:bool::_, a34:bool::_, a35:bool::_, a36:bool::_,
-         a37:bool::_, a38:bool::_, a39:bool::_, a40:bool::_, a41:bool::_, a42:bool::_,
-         a43:bool::_, a44:bool::_, a45:bool::_, a46:bool::_, a47:bool::_, a48:bool::_,
-         b1:bool::_, b2:bool::_, b3:bool::_, b4:bool::_, b5:bool::_, b6:bool::_,
-         b7:bool::_, b8:bool::_, b9:bool::_, b10:bool::_, b11:bool::_, b12:bool::_,
-         b13:bool::_, b14:bool::_, b15:bool::_, b16:bool::_, b17:bool::_, b18:bool::_,
-         b19:bool::_, b20:bool::_, b21:bool::_, b22:bool::_, b23:bool::_, b24:bool::_,
-         b25:bool::_, b26:bool::_, b27:bool::_, b28:bool::_, b29:bool::_, b30:bool::_,
-         b31:bool::_, b32:bool::_, b33:bool::_, b34:bool::_, b35:bool::_, b36:bool::_,
-         b37:bool::_, b38:bool::_, b39:bool::_, b40:bool::_, b41:bool::_, b42:bool::_,
-         b43:bool::_, b44:bool::_, b45:bool::_, b46:bool::_, b47:bool::_, b48:bool::_)
-     returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_, out5:bool::_,
-             out6:bool::_, out7:bool::_, out8:bool::_, out9:bool::_, out10:bool::_,
-             out11:bool::_, out12:bool::_, out13:bool::_, out14:bool::_, out15:bool::_,
-             out16:bool::_, out17:bool::_, out18:bool::_, out19:bool::_, out20:bool::_,
-             out21:bool::_, out22:bool::_, out23:bool::_, out24:bool::_, out25:bool::_,
-             out26:bool::_, out27:bool::_, out28:bool::_, out29:bool::_, out30:bool::_,
-             out31:bool::_, out32:bool::_, out33:bool::_, out34:bool::_, out35:bool::_,
-             out36:bool::_, out37:bool::_, out38:bool::_, out39:bool::_, out40:bool::_,
-             out41:bool::_, out42:bool::_, out43:bool::_, out44:bool::_, out45:bool::_,
-             out46:bool::_, out47:bool::_, out48:bool::_
-let
-    out1 = xor(a1,b1);
-    out2 = xor(a2,b2);
-    out3 = xor(a3,b3);
-    out4 = xor(a4,b4);
-    out5 = xor(a5,b5);
-    out6 = xor(a6,b6);
-    out7 = xor(a7,b7);
-    out8 = xor(a8,b8);
-    out9 = xor(a9,b9);
-    out10 = xor(a10,b10);
-    out11 = xor(a11,b11);
-    out12 = xor(a12,b12);
-    out13 = xor(a13,b13);
-    out14 = xor(a14,b14);
-    out15 = xor(a15,b15);
-    out16 = xor(a16,b16);
-    out17 = xor(a17,b17);
-    out18 = xor(a18,b18);
-    out19 = xor(a19,b19);
-    out20 = xor(a20,b20);
-    out21 = xor(a21,b21);
-    out22 = xor(a22,b22);
-    out23 = xor(a23,b23);
-    out24 = xor(a24,b24);
-    out25 = xor(a25,b25);
-    out26 = xor(a26,b26);
-    out27 = xor(a27,b27);
-    out28 = xor(a28,b28);
-    out29 = xor(a29,b29);
-    out30 = xor(a30,b30);
-    out31 = xor(a31,b31);
-    out32 = xor(a32,b32);
-    out33 = xor(a33,b33);
-    out34 = xor(a34,b34);
-    out35 = xor(a35,b35);
-    out36 = xor(a36,b36);
-    out37 = xor(a37,b37);
-    out38 = xor(a38,b38);
-    out39 = xor(a39,b39);
-    out40 = xor(a40,b40);
-    out41 = xor(a41,b41);
-    out42 = xor(a42,b42);
-    out43 = xor(a43,b43);
-    out44 = xor(a44,b44);
-    out45 = xor(a45,b45);
-    out46 = xor(a46,b46);
-    out47 = xor(a47,b47);
-    out48 = xor(a48,b48)
-tel
-
-
-node xor32 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool::_,
-         a7:bool::_, a8:bool::_, a9:bool::_, a10:bool::_, a11:bool::_, a12:bool::_,
-         a13:bool::_, a14:bool::_, a15:bool::_, a16:bool::_, a17:bool::_, a18:bool::_,
-         a19:bool::_, a20:bool::_, a21:bool::_, a22:bool::_, a23:bool::_, a24:bool::_,
-         a25:bool::_, a26:bool::_, a27:bool::_, a28:bool::_, a29:bool::_, a30:bool::_,
-         a31:bool::_, a32:bool::_,
-         b1:bool::_, b2:bool::_, b3:bool::_, b4:bool::_, b5:bool::_, b6:bool::_,
-         b7:bool::_, b8:bool::_, b9:bool::_, b10:bool::_, b11:bool::_, b12:bool::_,
-         b13:bool::_, b14:bool::_, b15:bool::_, b16:bool::_, b17:bool::_, b18:bool::_,
-         b19:bool::_, b20:bool::_, b21:bool::_, b22:bool::_, b23:bool::_, b24:bool::_,
-         b25:bool::_, b26:bool::_, b27:bool::_, b28:bool::_, b29:bool::_, b30:bool::_,
-         b31:bool::_, b32:bool::_)
-     returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_, out5:bool::_,
-             out6:bool::_, out7:bool::_, out8:bool::_, out9:bool::_, out10:bool::_,
-             out11:bool::_, out12:bool::_, out13:bool::_, out14:bool::_, out15:bool::_,
-             out16:bool::_, out17:bool::_, out18:bool::_, out19:bool::_, out20:bool::_,
-             out21:bool::_, out22:bool::_, out23:bool::_, out24:bool::_, out25:bool::_,
-             out26:bool::_, out27:bool::_, out28:bool::_, out29:bool::_, out30:bool::_,
-             out31:bool::_, out32:bool::_
-let
-    out1 = xor(a1,b1);
-    out2 = xor(a2,b2);
-    out3 = xor(a3,b3);
-    out4 = xor(a4,b4);
-    out5 = xor(a5,b5);
-    out6 = xor(a6,b6);
-    out7 = xor(a7,b7);
-    out8 = xor(a8,b8);
-    out9 = xor(a9,b9);
-    out10 = xor(a10,b10);
-    out11 = xor(a11,b11);
-    out12 = xor(a12,b12);
-    out13 = xor(a13,b13);
-    out14 = xor(a14,b14);
-    out15 = xor(a15,b15);
-    out16 = xor(a16,b16);
-    out17 = xor(a17,b17);
-    out18 = xor(a18,b18);
-    out19 = xor(a19,b19);
-    out20 = xor(a20,b20);
-    out21 = xor(a21,b21);
-    out22 = xor(a22,b22);
-    out23 = xor(a23,b23);
-    out24 = xor(a24,b24);
-    out25 = xor(a25,b25);
-    out26 = xor(a26,b26);
-    out27 = xor(a27,b27);
-    out28 = xor(a28,b28);
-    out29 = xor(a29,b29);
-    out30 = xor(a30,b30);
-    out31 = xor(a31,b31);
-    out32 = xor(a32,b32)
-tel
-
-
-
-node des (a:int64::_,k:int64::_) returns out:int64::_
+node des (plaintext : uint_64::_, key : uint_64::_) returns ciphered : uint_64::_
+vars
+    left  : uint_32::_,
+    right : uint_32::_,
+    roundkey : uint_48::_,
+    expanded : uint_48::_,
+    s1 : uint_6::_, s2 : uint_6::_, s3 : uint_6::_,
+    s4 : uint_6::_, s5 : uint_6::_, s6 : uint_6::_, 
+    c : uint_32::_,
+    permuted_c : uint_32::_
 let
 
     # Initial permutation, and splitting into left and right 
-    (l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15, l16,
-     l17, l18, l19, l20, l21, l22, l23, l24, l25, l26, l27, l28, l29, l30, l31, l32,
-     r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16,
-     r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31, r32)
-          = init_p(a);
-
-    # Initial key splitting and mixing.
-    (kl1, kl2, kl3, kl4, kl5, kl6, kl7, kl8, kl9, kl10, kl11, kl12, kl13, kl14, kl15, kl16,
-     kl17, kl18, kl19, kl20, kl21, kl22, kl23, kl24, kl25, kl26, kl27, kl28,
-     kr1, kr2, kr3, kr4, kr5, kr6, kr7, kr8, kr9, kr10, kr11, kr12, kr13, kr14, kr15, kr16,
-     kr17, kr18, kr19, kr20, kr21, kr22, kr23, kr24, kr25, kr26, kr27, kr28)
-           = pc_1(k);
+    (left, right) = init_p(a);
 
     ################## Main part (the 16 rounds) ##################
 
     ##### Round 1 #####
 
     # Expantion of R
-    (a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16,
-    a17, a18, a19, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a30, a31, a32,
-    a33, a34, a35, a36, a37, a38, a39, a40, a41, a42, a43, a44, a45, a46, a47, a48)
-         = expand(r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12,
-                  r13, r14, r15, r16, r17, r18, r19, r20, r21, r22,
-                  r23, r24, r25, r26, r27, r28, r29, r30, r31, r32);
-
-    # Computation of the round key
-    (kl1, kl2, kl3, kl4, kl5, kl6, kl7, kl8, kl9, kl10, kl11, kl12, kl13, kl14, kl15, kl16,
-     kl17, kl18, kl19, kl20, kl21, kl22, kl23, kl24, kl25, kl26, kl27, kl28)
-           = rol_1(kl1, kl2, kl3, kl4, kl5, kl6, kl7, kl8, kl9, kl10, kl11,
-                  kl12, kl13, kl14, kl15, kl16, kl17, kl18, kl19, kl20, kl21,
-                  kl22, kl23, kl24, kl25, kl26, kl27, kl28);
-    (kr1, kr2, kr3, kr4, kr5, kr6, kr7, kr8, kr9, kr10, kr11, kr12, kr13, kr14, kr15, kr16,
-     kr17, kr18, kr19, kr20, kr21, kr22, kr23, kr24, kr25, kr26, kr27, kr28)
-           = rol_1(kr1, kr2, kr3, kr4, kr5, kr6, kr7, kr8, kr9, kr10, kr11,
-                  kr12, kr13, kr14, kr15, kr16, kr17, kr18, kr19, kr20, kr21,
-                  kr22, kr23, kr24, kr25, kr26, kr27, kr28);
-    (k1, k2, k3, k4, k5, k6, k7, k8, k9, k10, k11, k12,
-     k13, k14, k15, k16, k17, k18, k19, k20, k21, k22, k23, k24,
-     k25, k26, k27, k28, k29, k30, k31, k32, k33, k34, k35, k36,
-     k37, k38, k39, k40, k41, k42, k43, k44, k45, k46, k47, k48)
-          = pc_2(kl1, kl2, kl3, kl4, kl5, kl6, kl7, kl8, kl9, kl10, kl11, kl12, kl13,
-                 kl14, kl15, kl16,  kl17, kl18, kl19, kl20, kl21, kl22, kl23, kl24,
-                 kl25, kl26, kl27, kl28, kr1, kr2, kr3, kr4, kr5, kr6, kr7, kr8,
-                 kr9, kr10, kr11, kr12, kr13, kr14, kr15, kr16, kr17, kr18,
-                 kr19, kr20, kr21, kr22, kr23, kr24, kr25, kr26, kr27, kr28);
+    expanded = expand(r);
+    roundkey = roundkey1(key); # Note: roundkey1 isn't defined yet.
+    
 
     # Xoring key and R
-    (s1_1, s1_2, s1_3, s1_4, s1_5, s1_6,
-     s2_1, s2_2, s2_3, s2_4, s2_5, s2_6,
-     s3_1, s3_2, s3_3, s3_4, s3_5, s3_6,
-     s4_1, s4_2, s4_3, s4_4, s4_5, s4_6,
-     s5_1, s5_2, s5_3, s5_4, s5_5, s5_6,
-     s6_1, s6_2, s6_3, s6_4, s6_5, s6_6,
-     s7_1, s7_2, s7_3, s7_4, s7_5, s7_6,
-     s8_1, s8_2, s8_3, s8_4, s8_5, s8_6)
-          = xor48(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12,
-                  a13, a14, a15, a16, a17, a18, a19, a20, a21, a22, a23, a24,
-                  a25, a26, a27, a28, a29, a30, a31, a32, a33, a34, a35, a36,
-                  a37, a38, a39, a40, a41, a42, a43, a44, a45, a46, a47, a48,
-                  k1, k2, k3, k4, k5, k6, k7, k8, k9, k10, k11, k12,
-                  k13, k14, k15, k16, k17, k18, k19, k20, k21, k22, k23, k24,
-                  k25, k26, k27, k28, k29, k30, k31, k32, k33, k34, k35, k36,
-                  k37, k38, k39, k40, k41, k42, k43, k44, k45, k46, k47, k48);
+    (s1,s2,s3,s4,s5,s6)
+          = xor(expanded, roundkey);
+          
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
 
-    # Sboxes.
-    (c1, c2, c3, c4) = sbox_1(s1_1, s1_2, s1_3, s1_4, s1_5, s1_6);
-    (c5, c6, c7, c8) = sbox_2(s2_1, s2_2, s2_3, s2_4, s2_5, s2_6);
-    (c9, c10, c11, c12) = sbox_3(s3_1, s3_2, s3_3, s3_4, s3_5, s3_6);
-    (c13, c14, c15, c16) = sbox_4(s4_1, s4_2, s4_3, s4_4, s4_5, s4_6);
-    (c17, c18, c19, c20) = sbox_5(s5_1, s5_2, s5_3, s5_4, s5_5, s5_6);
-    (c21, c22, c23, c24) = sbox_6(s6_1, s6_2, s6_3, s6_4, s6_5, s6_6);
-    (c25, c26, c27, c28) = sbox_7(s7_1, s7_2, s7_3, s7_4, s7_5, s7_6);
-    (c29, c30, c31, c32) = sbox_8(s8_1, s8_2, s8_3, s8_4, s8_5, s8_6);
+    (left,right) = (right,xor(left,c);
 
-    # Permutation
-    (c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12,
-    c13, c14, c15, c16, c17, c18, c19, c20, c21, c22,
-    c23, c24, c25, c26, c27, c28, c29, c30, c31, c32)
-      = permut(c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12,
-               c13, c14, c15, c16, c17, c18, c19, c20, c21, c22,
-               c23, c24, c25, c26, c27, c28, c29, c30, c31, c32);
-
-    # Temporary saving R
-    (t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12,
-    t13, t14, t15, t16, t17, t18, t19, t20, t21, t22,
-    t23, t24, t25, t26, t27, t28, t29, t30, t31, t32)
-         = (r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12,
-            r13, r14, r15, r16, r17, r18, r19, r20, r21, r22,
-            r23, r24, r25, r26, r27, r28, r29, r30, r31, r32);
-
-    # The new R is C XOR L
-    (r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12,
-     r13, r14, r15, r16, r17, r18, r19, r20, r21, r22,
-     r23, r24, r25, r26, r27, r28, r29, r30, r31, r32)
-          = xor32(c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12,
-                  c13, c14, c15, c16, c17, c18, c19, c20, c21, c22,
-                  c23, c24, c25, c26, c27, c28, c29, c30, c31, c32,
-                  l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12,
-                  l13, l14, l15, l16, l17, l18, l19, l20, l21, l22,
-                  l23, l24, l25, l26, l27, l28, l29, l30, l31, l32 );
-
-    # The new L is the old R
-    (l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12,
-    l13, l14, l15, l16, l17, l18, l19, l20, l21, l22,
-    l23, l24, l25, l26, l27, l28, l29, l30, l31, l32)
-         = (t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12,
-            t13, t14, t15, t16, t17, t18, t19, t20, t21, t22,
-            t23, t24, t25, t26, t27, t28, t29, t30, t31, t32);
-
-    
     ##### Round 2-16 not implemented #####
 
     # .....
 
 
     # Regrouping left and right and computing final permuation
-    out = final_p(l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15, l16,
-     l17, l18, l19, l20, l21, l22, l23, l24, l25, l26, l27, l28, l29, l30, l31, l32,
-     r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16,
-     r17, r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31, r32)
-    
+    out = final_p(left, right)    
 tel
