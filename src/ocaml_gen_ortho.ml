@@ -9,6 +9,14 @@ exception Empty_list
 (* ************************************************** *)
 (*        Convertion of the AST to OCaml code         *)
 (* ************************************************** *)       
+
+let size_of_typ = function
+  | Int _ -> 64
+  | Bool  -> 1
+
+let str_size_of_typ = function
+  | Int _ -> "64"
+  | Bool  -> "1"
             
 let indent tab =
   String.make (tab * 4) ' '
@@ -71,13 +79,28 @@ let deq_to_ml tab l =
   join "\n" (List.map (fun (p,e) -> (indent tab) ^ "let "
                                   ^ (pat_to_ml tab p) ^ " = "
                                   ^ (expr_to_ml tab e) ^ " in ") l)
-                       
+
+let expand_int prefix n =
+  let rec aux prefix n acc =
+    if n <= 0 then acc
+    else aux prefix (n-1) ((prefix ^ (string_of_int n)) :: acc)
+  in aux prefix n []
+
+(* print p (~ a list of variables). It expands int_n into n boolean *)
+let p_to_ml tab p sep =
+  match p with
+  | [] -> ""
+  | (v,typ,_)::tl -> ( match typ with
+                       | Bool -> ident_to_ml v
+                       | Int n -> join sep (expand_int v n))
+
+                         
 (* print a node *)
 let def_to_ml tab (id, p_in, p_out, body) =
   "let " ^ (ident_to_ml id) ^ " "
-  ^ (join " " (List.map (fun (id, _, _) -> (ident_to_ml id)) p_in)) ^ " = \n"
+  ^ (p_to_ml tab p_in " ") ^ " = \n"
   ^ (deq_to_ml (tab+1) body) ^ "\n" ^ (indent (tab+1)) ^ "("
-  ^ (join "," (List.map (fun (id,_,_) -> (ident_to_ml id)) p_out)) ^ ")\n"
+  ^ (p_to_ml tab p_out ",") ^ ")\n"
                                                                       
 let prog_to_ml (p:prog) : string =
   join "\n\n" (List.map (def_to_ml 0) p)
@@ -93,13 +116,7 @@ let rec get_last l =
   | x::[] -> x
   | x::tl -> get_last tl
 
-let size_of_typ = function
-  | Int _ -> 64
-  | Bool  -> 1
 
-let str_size_of_typ = function
-  | Int _ -> "64"
-  | Bool  -> "1"
                    
 let naive_code (p: prog) =
   let (main_id,main_arg,_,_) = get_last p in

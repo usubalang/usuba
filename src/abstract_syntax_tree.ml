@@ -15,10 +15,10 @@ type expr = Const of int
           | Var   of ident
           | Field of ident * int
           | Tuple of expr list
-          | Op    of op * (expr list)
+          | Op    of op * expr list
           | Fun   of ident * expr list
           | Mux   of expr * constr * ident
-          | Demux of ident * ((constr * expr) list)
+          | Demux of ident * (constr * expr) list
 
 type left_asgn =
   | Ident of ident
@@ -30,6 +30,6 @@ type deq = (pat * expr) list
 
 type p = (ident * typ * clock) list
                                 
-type def = ident * p * p * deq
+type def = ident * p * p * p * deq
                                 
 type prog = def list

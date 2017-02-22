@@ -59,7 +59,7 @@ let string_of_p l =
                                       ^ ":" ^ (string_of_typ t) ^ "::"
                                       ^ (string_of_clock ck)) l)
 
-let string_of_def (i,p_in,p_out,body) =
+let string_of_def (i,p_in,p_out,vars,body) =
   "node " ^ (string_of_ident i) ^ "(" ^
     (string_of_p p_in) ^ ")\n" ^ (indent 1) ^
       "returns " ^ (string_of_p p_out) ^ "\n"

@@ -3,7 +3,7 @@ open Lexer
 open Lexing
 open Abstract_syntax_tree
 open Print_ast
-open Ocaml_gen
+open Ocaml_gen_naive
 open Printf
        
 let print_position outx lexbuf =
@@ -39,10 +39,10 @@ let main () =
     | x::_ ->  x in
   let path = String.split_on_char '/' full_name in
   let out_name = List.nth path (List.length path - 1) in
-  let out = open_out ("tests/ocaml_run/" ^ out_name ^ ".ml") in
+  let out = open_out ("tests/ocaml_run/" ^ out_name ^ "_naive.ml") in
   fprintf out "open Ocaml_runtime\n";
-  fprintf out "%s" (prog_to_ml p);
-  naive_code p;
+  fprintf out "%s" (Ocaml_gen_naive.prog_to_ml p);
+  (* naive_code p; *)
   close_out out
 
 let () = main ()

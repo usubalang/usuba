@@ -52,7 +52,7 @@
 %%
 
 prog:
-  | d=defs TOK_EOF { d }
+  | d=defs TOK_EOF { List.rev d }
 
 op:
   | TOK_AND { And }
@@ -65,27 +65,27 @@ exp:
    | x=TOK_int { Const x }
    | id=TOK_id  { Var(id) }
    | v=TOK_dotted { Field(fst v,snd v) }
-   | TOK_LPAREN t=tuple TOK_RPAREN  { Tuple t }
-   | o=op TOK_LPAREN args=explist TOK_RPAREN { Op(o, args) }
-   | f=TOK_id TOK_LPAREN args=explist TOK_RPAREN { Fun(f, args) }
+   | TOK_LPAREN t=tuple TOK_RPAREN  { Tuple (List.rev t) }
+   | o=op TOK_LPAREN args=explist TOK_RPAREN { Op(o, List.rev args) }
+   | f=TOK_id TOK_LPAREN args=explist TOK_RPAREN { Fun(f, List.rev args) }
    | e=exp TOK_WHEN cstr=TOK_constr TOK_LPAREN x=TOK_id TOK_RPAREN { Mux(e,cstr,x) }
-   | TOK_MERGE ck=TOK_id c=caselist %prec TOK_MERGE { Demux(ck,c) }
+   | TOK_MERGE ck=TOK_id c=caselist %prec TOK_MERGE { Demux(ck,List.rev c) }
 
 caselist:
    | { [] }                                  
    | front=caselist TOK_PIPE c=TOK_constr TOK_ARROW e=exp %prec TOK_PIPE { (c,e)::front }
 
 tuple:
-  | x=exp TOK_COMMA tail=explist    { x::(List.rev tail) }
+  | tail=explist TOK_COMMA x=exp    { x::tail }
                                      
 explist:
-  | x=exp                             { [ x ]     }
+  | x=exp                           { [ x ]     }
   | tail=explist TOK_COMMA x=exp    { x :: tail }
 
 pat:
   | i=TOK_id                          { [ Ident i ] }
   | v=TOK_dotted                      { [ Dotted(fst v,snd v) ] }
-  | TOK_LPAREN l=patlist TOK_RPAREN   { l }
+  | TOK_LPAREN l=patlist TOK_RPAREN   { List.rev l }
 
 patlist:
   | i=TOK_id                              { [ Ident i ]     }
@@ -95,7 +95,7 @@ patlist:
 
 deq: (* returns a tuple list, is converted to AST by def *)
   | p=pat TOK_EQUAL e=exp                           { [ ( p, e ) ]  }
-  | tail=deq TOK_SEMICOLON p=pat TOK_EQUAL e=exp  { (p,e) :: tail }
+  | tail=deq TOK_SEMICOLON p=pat TOK_EQUAL e=exp    { (p,e) :: tail }
 
 p:
   | { [ ] }
@@ -107,7 +107,7 @@ p:
 def:
   | TOK_NODE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN TOK_RETURN p_out=p
     TOK_VAR vars=p TOK_LET body=deq TOK_TEL
-  { (f,p_in,p_out,body) }
+  { (f,List.rev p_in,List.rev p_out,vars,List.rev body) }
   
 defs:
   | d=def               { [ d ] }
