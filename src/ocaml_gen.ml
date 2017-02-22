@@ -26,6 +26,10 @@ let ident_to_ml id = id
                        
 let const_to_ml c = string_of_int c
 
+let left_asgn_to_ml = function
+  | Ident x -> ident_to_ml x
+  | Dotted(x,i) -> (ident_to_ml x)  ^ (const_to_ml i)
+                                  
 let constructor_to_ml = function
   | "True"  -> "1"
   | "False" -> "0"
@@ -35,6 +39,7 @@ let rec expr_to_ml tab e =
   match e with
   | Const c -> const_to_ml c
   | Var v   -> ident_to_ml v
+  | Field(x,i) -> (ident_to_ml x) ^ (const_to_ml i)
   | Tuple t -> "(" ^ (join "," (List.map (expr_to_ml tab) t)) ^ ")"
   | Op (op,a::b::[]) -> "(" ^ (expr_to_ml tab a) ^  ")" ^
                                 ( match op with
@@ -59,8 +64,8 @@ let rec expr_to_ml tab e =
                        
 let pat_to_ml tab pat =
   match pat with
-  | e::[] -> ident_to_ml e
-  | l -> "(" ^ (join "," (List.map ident_to_ml l)) ^ ")"
+  | e::[] -> left_asgn_to_ml e
+  | l -> "(" ^ (join "," (List.map left_asgn_to_ml l)) ^ ")"
 
 let deq_to_ml tab l =
   join "\n" (List.map (fun (p,e) -> (indent tab) ^ "let "
@@ -74,7 +79,7 @@ let def_to_ml tab (id, p_in, p_out, body) =
   ^ (deq_to_ml (tab+1) body) ^ "\n" ^ (indent (tab+1)) ^ "("
   ^ (join "," (List.map (fun (id,_,_) -> (ident_to_ml id)) p_out)) ^ ")\n"
                                                                       
-let prog_to_ml p =
+let prog_to_ml (p:prog) : string =
   join "\n\n" (List.map (def_to_ml 0) p)
        
 

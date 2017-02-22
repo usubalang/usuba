@@ -14,6 +14,7 @@ let _ =
     [
      "node",  TOK_NODE;
      "returns", TOK_RETURN;
+     "vars", TOK_VAR;
      "let", TOK_LET;
      "tel", TOK_TEL;
      "when", TOK_WHEN;
@@ -51,6 +52,9 @@ rule token = parse
 | ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as id
 { try Hashtbl.find kwd_table id with Not_found -> TOK_id id }
 
+| (['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as id)
+    "." (['0'-'9']+ as n) { TOK_dotted(id,int_of_string n) }
+
 (* symbols *)
 | "("    { TOK_LPAREN    }
 | ")"    { TOK_RPAREN    }
@@ -61,14 +65,10 @@ rule token = parse
 | ";"    { TOK_SEMICOLON }
 | "|"    { TOK_PIPE      }
 | "->"   { TOK_ARROW     }
-
+         
 (* integers *)
 | ['0'-'9']+ as i { TOK_int (int_of_string i) }
                  
-(* int might be needed in the future  *)
-(* | ['0'-'9']+ as i { TOK_int (int_of_string i) } *)
-
-
 (* end of file *)
 | eof   { TOK_EOF }
 

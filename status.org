@@ -42,6 +42,10 @@
     CLOSED: [2017-02-21 mar. 18:21]
 ** DONE Add variable uint_n (with n an integer) notation.
    CLOSED: [2017-02-21 mar. 18:55]
+** DONE Add variables declaration at the begining of nodes
+   CLOSED: [2017-02-22 mer. 10:14]
+** DONE Add dotted notation (x.n) to access bits of an integer.
+   CLOSED: [2017-02-22 mer. 10:14]
 ** TODO Think about how to actually run usuba code (orthogonalization + streams & co)
 ** TODO Add Stream interface
 ** TODO General question: why are the s-boxes the way the are? 
@@ -57,6 +61,12 @@
 
 
 * Examples
+
+Note ([2017-02-22 mer.]) : uint_n types have been added, a "vars" section must be 
+at the begining of every node, and a few syntaxic modifications have been done over
+the past few days. Therefore, some of the following examples might not work on the 
+current version. I'll fix that as soon as I can.
+
 
 ** Compilation (parsing, generating OCaml code...)
 
