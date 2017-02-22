@@ -117,7 +117,8 @@ To run those tests:
     cd src/des
     ocamlc -o des des.ml
     ./des
-#+END
+#+END_SRC
+
 You'll see that each test yields the same result, that's a good sign.
 
 

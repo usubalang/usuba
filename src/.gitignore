@@ -5,3 +5,4 @@ _build
 *.cmi
 *.cmx
 *.o
+*.out
