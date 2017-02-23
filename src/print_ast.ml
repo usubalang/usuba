@@ -47,6 +47,7 @@ let rec string_of_expr tab = function
                                               (indent (tab+1)) ^ "| " ^
                                                 (string_of_ident cstr) ^ " -> " ^
                                                   (string_of_expr (tab+1) e)) l))
+  | _ -> raise (Failure "print_ast is only partial")
                                                                    
 let string_of_pat l = join ", " (List.map string_of_ident l)
 

@@ -1,10 +1,10 @@
 
 type undef
 
-type typ = Bool | Int of int
-
 type ident = string
-
+               
+type typ = Bool | Int of int
+                           
 type constr = string
 
 type clock = string

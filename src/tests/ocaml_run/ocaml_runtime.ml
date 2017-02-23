@@ -12,4 +12,5 @@ let convert_ortho (size: int) (input: int array) : int array =
   done;
   out
 
-    
+(* Probably won't be needed once enough optim have been implemented *)
+let id x = x

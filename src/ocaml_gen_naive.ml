@@ -4,7 +4,7 @@ open Abstract_syntax_tree
 exception Not_implemented of string
 exception Invalid_ast
 exception Empty_list
-exception Undeclared_var of string
+exception Undeclared of string
 exception Invalid_param_size
 exception Invalid_operator_call
 
@@ -22,7 +22,7 @@ let rec rename_expr = function
   | Field(id,n) -> Field(id^"_",n)
   | Tuple l  -> Tuple(List.map rename_expr l)
   | Op(op,l) -> Op(op,List.map rename_expr l)
-  | Fun(f,l) -> Fun(f,List.map rename_expr l)
+  | Fun(f,l) -> Fun(f^"_",List.map rename_expr l)
   | Mux(e,c,i) -> Mux(rename_expr e, c, i ^ "_")
   | Demux(i,l) -> Demux(i ^ "_", List.map (fun (c,e) -> c,rename_expr e) l)
                
@@ -46,7 +46,7 @@ let rename_def (name, p_in, p_out, p_var, body) =
 let rec rename_defs = function
   | [] -> []
   | hd::tl -> (rename_def hd) :: (rename_defs tl)
-               
+                                   
 let rename_prog (p: prog) : prog =
   rename_defs p
 
@@ -56,15 +56,41 @@ let rename_prog (p: prog) : prog =
 (*   AST transformation to match naive bool backend   *)
 (* ************************************************** *)
 
-(* Adds the variables vars to env *)
-let rec add_vars (vars: p) (env: (ident, int) Hashtbl.t) : unit =
+let id_generator =
+  let current = ref 0 in
+  fun () -> incr current; !current
+                
+              
+(* Auxiliary functions that need to be embeded in the code *)
+let aux_fun = ref []
+              
+(* Adds the variables vars to env_var *)
+let rec env_add_var (vars: p) (env_var: (ident, int) Hashtbl.t) : unit =
   match vars with
   | [] -> ()
-  | (id,typ,_)::tl -> ( Hashtbl.add env id
+  | (id,typ,_)::tl -> ( Hashtbl.add env_var id
                                     (match typ with
                                      | Bool  -> 1
                                      | Int n -> n);
-                        add_vars tl env )
+                        env_add_var tl env_var )
+
+(* Add a function (name,p_in,p_out) to env_fun *)
+let env_add_fun (name: ident) (p_in: p) (p_out: p)
+                (env_fun: (ident, int list * int) Hashtbl.t) : unit =
+  let rec get_param_in_size = function
+    | [] -> []
+    | (id,typ,_)::tl -> (match typ with
+                         | Bool -> 1
+                         | Int n -> n) :: (get_param_in_size tl)
+  in
+  let rec get_param_out_size = function
+    | [] -> 0
+    | (_,typ,_)::tl -> (match typ with
+                        | Bool -> 1
+                        | Int n -> n)
+  in
+  Hashtbl.add env_fun name (get_param_in_size p_in,get_param_out_size p_out)
+
 
 (* converts an uint_n to n bools (with types and clock) *)
 let expand_intn_typed (id: ident) (n: int) (ck: clock) =
@@ -85,6 +111,12 @@ let rec expand_intn_expr (id: ident) (n: int) : expr list =
   let rec aux i =
     if i > n then []
     else (Var (id ^ (string_of_int i))) :: (aux (i+1))
+  in aux 1
+
+let rec expand_intn_list (id: ident) (n: int) : ident list =
+  let rec aux i =
+    if i > n then []
+    else (id ^ (string_of_int i)) :: (aux (i+1))
   in aux 1
 
 (* Flatten a list of expr inside a tuple *)
@@ -115,37 +147,96 @@ let rec combine_xor l1 l2 =
                             :: (combine_xor tl1 tl2)
   | _ -> raise Invalid_param_size
 
+let rec get_size e env =
+  match e with
+  | Const _ -> 1
+  | Var _   -> 1 (* at this point, Var are only Bool *)
+  | Field _ -> 1
+  | Tuple l -> List.length l
+  | Op _    -> 1 (* at this point, Op have already been normalized *)
+  | Fun(f,_) -> (try
+                    let (_,v) = Hashtbl.find env f in v
+                  with Not_found -> raise @@ Undeclared("function " ^ f))
+  | Mux _ -> raise (Not_implemented "Mux")
+  | Demux _  -> raise (Not_implemented "Demux")
+                                      
+let gen_conv target orig =
+  if target = orig then "id"
+  else begin
+      let id = "convert" ^ (string_of_int @@ id_generator ()) in
+      let num_param = ref 0 in
+      let param = List.map (fun n -> incr num_param;
+                                     ("in"^(string_of_int !num_param),
+                                      Int n,
+                                      "_")) orig in
+      let num_ret = ref 0 in
+      let ret = List.map (fun n -> incr num_ret;
+                                   ("out"^(string_of_int !num_ret),
+                                    Int n,
+                                    "_")) target in
+      let rec make_body id_p num_p id_r num_r size_curr_p size_curr_r next_p next_r :
+        (pat * expr) list =
+        if size_curr_p = 0 then
+          match next_p with
+          | [] -> []
+          | hd::tl -> make_body (id_p+1) 0 id_r num_r hd size_curr_r tl next_r
+        else if size_curr_r = 0 then
+          match next_r with
+          | [] -> []
+          | hd::tl -> make_body id_p num_p (id_r+1) 0 size_curr_p hd next_p tl
+        else
+          ([Dotted("out"^(string_of_int id_r),num_r)], Field("int"^(string_of_int id_p),num_p)) ::
+            (make_body id_p (num_p+1) id_r (num_r+1) (size_curr_p-1) (size_curr_r-1) next_p next_r)
+      in
+      let f = (id,param,ret,[], make_body 0 0 0 0 0 0 orig target) in
+      aux_fun := (!aux_fun) @ [f];
+      id
+    end
+                      
+let rec get_sizes l env =
+  match l with
+  | [] -> []
+  | hd::tl -> ( get_size hd env ) :: (get_sizes tl env)
+               
+let format_param f l env =
+  try
+    let (params,_) = Hashtbl.find env f in
+    let sizes = get_sizes l env in
+    [ Fun (gen_conv params sizes, l) ]
+  with Not_found -> raise @@ Undeclared("function " ^ f)
+               
                                   
-let rec rewrite_expr (env: (ident, int) Hashtbl.t) (e: expr) : expr =
+let rec rewrite_expr (env_var: (ident, int) Hashtbl.t)
+                     (env_fun: (ident, int list * int) Hashtbl.t) (e: expr) : expr =
   match e with
   | Const c -> Const c (* TODO: convert potential integer to list of bool? *)
   | Var id  -> (try
-                   let size = Hashtbl.find env id in
+                   let size = Hashtbl.find env_var id in
                    if size > 1 then Tuple (expand_intn_expr id size)
                    else e
-                 with Not_found -> raise (Undeclared_var id))
+                 with Not_found -> e) (* Not_found -> it's a boolean *)
   | Field (id,n) -> Var (id ^ (string_of_int n))
-  | Tuple (l)    -> Tuple (flatten_expr (List.map (rewrite_expr env) l))
-  | Op (And,x1::x2::[]) -> let t1 = rewrite_expr env x1 in
-                           let t2 = rewrite_expr env x2 in
+  | Tuple (l)    -> Tuple (flatten_expr (List.map (rewrite_expr env_var env_fun) l))
+  | Op (And,x1::x2::[]) -> let t1 = rewrite_expr env_var env_fun x1 in
+                           let t2 = rewrite_expr env_var env_fun x2 in
                            (match t1,t2 with
                             | Tuple l1, Tuple l2 -> Tuple(combine_op And l1 l2)
                             | _ -> Op(And,[t1;t2]) )
-  | Op (Or, x1::x2::[]) -> let t1 = rewrite_expr env x1 in
-                           let t2 = rewrite_expr env x2 in
+  | Op (Or, x1::x2::[]) -> let t1 = rewrite_expr env_var env_fun x1 in
+                           let t2 = rewrite_expr env_var env_fun x2 in
                            (match t1,t2 with
                             | Tuple l1, Tuple l2 -> Tuple(combine_op Or l1 l2)
                             | _ -> Op(Or,[t1;t2]) )
-  | Op (Xor,x1::x2::[]) -> let t1 = rewrite_expr env x1 in
-                           let t2 = rewrite_expr env x2 in
+  | Op (Xor,x1::x2::[]) -> let t1 = rewrite_expr env_var env_fun x1 in
+                           let t2 = rewrite_expr env_var env_fun x2 in
                            (match t1,t2 with
                             | Tuple l1, Tuple l2 -> Tuple(combine_xor l1 l2)
                             | _ -> Op(Or,
                                       [ Op(And, [ t1; Op(Not,[t2])] ) ;
                                         Op(And, [ Op(Not,[t1]);t2])]) )
-  | Op (Not,l) -> Tuple(distrib_not (List.map (rewrite_expr env) l))
+  | Op (Not,l) -> Tuple(distrib_not (List.map (rewrite_expr env_var env_fun) l))
   | Op _ -> raise Invalid_operator_call
-  | Fun (f,l)    -> Fun(f, List.map (rewrite_expr env) l)
+  | Fun (f,l)    -> Fun(f, format_param f (List.map (rewrite_expr env_var env_fun) l) env_fun)
   | Mux (e,c,id) -> raise (Not_implemented "Mux")
   | Demux(id,l)  -> raise (Not_implemented "Demux")
                          
@@ -158,15 +249,15 @@ let rec rewrite_pat (pat: pat) (env: (ident, int) Hashtbl.t) : pat =
                                  let size = Hashtbl.find env id in
                                  if size > 1 then expand_intn_pat id size
                                  else [ Ident id ]
-                               with Not_found -> raise (Undeclared_var id) )
+                               with Not_found -> [ Ident id ] )
                | Dotted(id,n) -> [ Ident (id ^ (string_of_int n)) ] )
               @ (rewrite_pat tl env)
                   
-let rec rewrite_deq (deq: deq) (env: (ident, int) Hashtbl.t) : deq =
+let rec rewrite_deq (deq: deq) (env_var: (ident, int) Hashtbl.t) env_fun : deq =
   match deq with
   | [] -> []
-  | (pat,expr) :: tl -> (rewrite_pat pat env, rewrite_expr env expr)
-                        :: (rewrite_deq tl env)
+  | (pat,expr) :: tl -> (rewrite_pat pat env_var, rewrite_expr env_var env_fun expr)
+                        :: (rewrite_deq tl env_var env_fun)
 
 
 (* mostly converting the uint_n to bools *)
@@ -178,21 +269,26 @@ let rec rewrite_p (p: p) =
                         | Int x -> expand_intn_typed id x ck ) @ (rewrite_p tl)
 
                                                              
-let rewrite_def (name, p_in, p_out, p_var, body) =
-  let env = Hashtbl.create 10 in
-  add_vars p_in env;
-  add_vars p_out env;
-  add_vars p_var env;
-  (name, rewrite_p p_in, rewrite_p p_out, p_var, rewrite_deq body env)
+let rewrite_def (name, p_in, p_out, p_var, body) env_fun =
+  let env_var = Hashtbl.create 10 in
+  env_add_var p_in env_var;
+  env_add_var p_out env_var;
+  env_add_var p_var env_var;
+  env_add_fun name p_in p_out env_fun;
+  (name, p_in, rewrite_p p_out, p_var, rewrite_deq body env_var env_fun)
        
-let rec rewrite_defs (l: def list) : def list =
+let rec rewrite_defs (l: def list)
+                     (env_fun: (ident, int list * int) Hashtbl.t)
+        : def list =
   match l with
   | [] -> []
-  | hd::tl -> (rewrite_def hd) :: (rewrite_defs tl)
+  | hd::tl -> let hd' = (rewrite_def hd env_fun) in
+              hd' :: (rewrite_defs tl env_fun)
 
 let rewrite_prog (p: prog) : prog =
-  rewrite_defs (rename_prog p)
-
+  let env_fun = Hashtbl.create 10 in
+  let p' = rewrite_defs (rename_prog p) env_fun in
+  (!aux_fun) @ p'
 
                
 
@@ -219,7 +315,7 @@ let rec join s l =
   | [] -> ""
   | e::[] -> e
   | hd::tl -> hd ^ s ^ (join s tl)
-
+                         
 let ident_to_ml id = id
                        
 let const_to_ml c = string_of_int c
@@ -232,7 +328,7 @@ let constructor_to_ml = function
   | "True"  -> "1"
   | "False" -> "0"
   | _ -> raise (Not_implemented "only constructor True and False are allowed for now.")
-                                  
+               
 let rec expr_to_ml tab e =
   match e with
   | Const c -> const_to_ml c
@@ -246,10 +342,10 @@ let rec expr_to_ml tab e =
                                   | _ -> raise Invalid_ast )
                                 ^ "(" ^ (expr_to_ml tab b) ^ ")"
   | Op (Not,x::[]) -> "not (" ^ (expr_to_ml tab x) ^ ")"
-  | Fun (f, l) -> (ident_to_ml f) ^ " " ^
-                        (join " "
-                              (List.map (fun x -> "(" ^ x ^ ")")
-                                        (List.map (expr_to_ml tab) l)))
+  | Fun (f, l) -> (ident_to_ml f) ^ " (" ^
+                        (join ","
+                              (List.map (fun x -> x )
+                                        (List.map (expr_to_ml tab) l))) ^ ")"
   | Mux (e,_,_) -> expr_to_ml tab e
   | Demux (id,l) -> "match " ^ (ident_to_ml id) ^ " with\n" ^
                           (join "\n"
@@ -268,13 +364,20 @@ let deq_to_ml tab l =
   join "\n" (List.map (fun (p,e) -> (indent tab) ^ "let "
                                   ^ (pat_to_ml tab p) ^ " = "
                                   ^ (expr_to_ml tab e) ^ " in ") l)
-                         
+let p_to_ml tab p =
+  join "," (List.map (fun (id,typ,_) ->
+                      match typ with
+                      | Bool -> (ident_to_ml id)
+                      | Int n -> "(" ^
+                                   (join "," (List.map (fun id -> ident_to_ml id )
+                                                       (expand_intn_list id n))) ^ ")") p)
+       
 (* print a node *)
 let def_to_ml tab (id, p_in, p_out, _, body) =
-  "let " ^ (ident_to_ml id) ^ " "
-  ^ (join " " (List.map (fun (id, _, _) -> (ident_to_ml id)) p_in)) ^ " = \n"
+  "let " ^ (ident_to_ml id) ^ " ("
+  ^ (p_to_ml tab p_in) ^ ") = \n"
   ^ (deq_to_ml (tab+1) body) ^ "\n" ^ (indent (tab+1)) ^ "("
-  ^ (join "," (List.map (fun (id,_,_) -> (ident_to_ml id)) p_out)) ^ ")\n"
+  ^ (p_to_ml tab p_out) ^ ")\n"
                                                                            
 let prog_to_ml (p:prog) : string =
   join "\n\n" (List.map (def_to_ml 0) (rewrite_prog p))

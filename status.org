@@ -55,12 +55,23 @@
 ** DONE Allow operators to work on tuples.
    CLOSED: [2017-02-22 mer. 17:41]
    Concrecly, it means allowing to write "a xor b" instead of "a.1 xor b.1; ... ; a.n xor b.n"
+** DONE Improve projections.
+   CLOSED: [2017-02-23 jeu. 17:50]
+   say we have =s1: intn -> int4= and =s2: intn -> int4=
+   and =permut: int8 -> intk=
+   if we do =permut(s1(...),s2(...))=
+   then, the translation to OCaml results in a call looking like =permut(...,...)=,
+   ie, =permut: int4 * int4 -> intk=, which is in conflict with =permut: int8 -> intk=
+   To solve this, a function =convert: int4 -> int4 -> int8= sould be automatically generated,
+   so the OCaml code should look like =permut(convert(s1(...),s2(...))=.
+   From this, it will be easy to have n-ary operators.
+** TODO Regroup env_var and env_fun into a single env, add helpers to manipulate it
 ** TODO Fix operators on tuple 
 ** TODO Think about how to actually run usuba code (orthogonalization + streams & co)
 ** TODO General question: why are the s-boxes the way the are? 
    (a single array would be enough)
 ** TODO Complete implementation of usuba DES
-** TODO Improved orthogonalization algorithm
+** TODO Improve orthogonalization algorithm
 ** TODO [#B] Think about the convertion of the demultiplexer to OCaml.
    in particular, for now, I change True to 1 and False to 0. 
    This might not work in the future.
