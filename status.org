@@ -65,8 +65,11 @@
    To solve this, a function =convert: int4 -> int4 -> int8= sould be automatically generated,
    so the OCaml code should look like =permut(convert(s1(...),s2(...))=.
    From this, it will be easy to have n-ary operators.
+** DONE Fix operators on tuple
+   CLOSED: [2017-02-24 ven. 10:23]
+** TODO Implement fby on boolean backend
+** TODO Don't generate several times the same "convert" function
 ** TODO Regroup env_var and env_fun into a single env, add helpers to manipulate it
-** TODO Fix operators on tuple 
 ** TODO Think about how to actually run usuba code (orthogonalization + streams & co)
 ** TODO General question: why are the s-boxes the way the are? 
    (a single array would be enough)

@@ -25,6 +25,7 @@ let rec rename_expr = function
   | Fun(f,l) -> Fun(f^"_",List.map rename_expr l)
   | Mux(e,c,i) -> Mux(rename_expr e, c, i ^ "_")
   | Demux(i,l) -> Demux(i ^ "_", List.map (fun (c,e) -> c,rename_expr e) l)
+  | Fby(ei,ef)   -> Fby(rename_expr ei,rename_expr ef)
                
 let rec rename_pat = function
   | [] -> []
@@ -159,7 +160,8 @@ let rec get_size e env =
                   with Not_found -> raise @@ Undeclared("function " ^ f))
   | Mux _ -> raise (Not_implemented "Mux")
   | Demux _  -> raise (Not_implemented "Demux")
-                                      
+  | Fby(ei,_) -> get_size ei env
+                      
 let gen_conv target orig =
   if target = orig then "id"
   else begin
@@ -239,6 +241,7 @@ let rec rewrite_expr (env_var: (ident, int) Hashtbl.t)
   | Fun (f,l)    -> Fun(f, format_param f (List.map (rewrite_expr env_var env_fun) l) env_fun)
   | Mux (e,c,id) -> raise (Not_implemented "Mux")
   | Demux(id,l)  -> raise (Not_implemented "Demux")
+  | Fby(ei,ef)   -> Fby(rewrite_expr env_var env_fun ei, rewrite_expr env_var env_fun ef)
                          
                                                
 let rec rewrite_pat (pat: pat) (env: (ident, int) Hashtbl.t) : pat =
@@ -291,21 +294,9 @@ let rewrite_prog (p: prog) : prog =
   (!aux_fun) @ p'
 
                
-
-
-
-               
 (* ************************************************** *)
 (*        Convertion of the AST to OCaml code         *)
 (* ************************************************** *)       
-
-let size_of_typ = function
-  | Int _ -> 64
-  | Bool  -> 1
-
-let str_size_of_typ = function
-  | Int _ -> "64"
-  | Bool  -> "1"
             
 let indent tab =
   String.make (tab * 4) ' '
@@ -315,78 +306,137 @@ let rec join s l =
   | [] -> ""
   | e::[] -> e
   | hd::tl -> hd ^ s ^ (join s tl)
-                         
-let ident_to_ml id = id
-                       
-let const_to_ml c = string_of_int c
 
-let left_asgn_to_ml = function
-  | Ident x -> ident_to_ml x
-  | Dotted(x,i) -> (ident_to_ml x)  ^ (const_to_ml i)
+
+let prologue_prog : string list ref = ref []
+let prologue_fun : string list ref = ref []
+
+let generate_ref_fun =
+  let rec upto_list n acc =
+    if n = 0 then acc
+    else upto_list (n-1) (("x"^(string_of_int n))::acc) in
+  let counter = ref 0 in
+  fun size -> (incr counter;
+               let l = upto_list size [] in
+               let name = "referencize"^(string_of_int !counter) in
+               let fn = "let " ^ name ^ " (" ^
+                 (join "," l) ^ ") = "
+                 ^ (join "," (List.map (fun x -> "ref " ^ x) l)) in
+               prologue_prog := (!prologue_prog) @ [fn];
+               name)
+                         
+                       
+                       
+let size_of_typ = function
+  | Int _ -> 64
+  | Bool  -> 1
+
+let str_size_of_typ = function
+  | Int _ -> "64"
+  | Bool  -> "1"
+                         
+let ident_to_str_ml id = id
+                       
+let const_to_str_ml = function
+  | 0 -> "false"
+  | 1 -> "true"
+  | _ -> "illegal value for a bool"
+
+let left_asgn_to_str_ml = function
+  | Ident x -> ident_to_str_ml x
+  | Dotted(x,i) -> (ident_to_str_ml x)  ^ (const_to_str_ml i)
                                   
-let constructor_to_ml = function
-  | "True"  -> "1"
-  | "False" -> "0"
+let constructor_to_str_ml = function
+  | "True"  -> "true"
+  | "False" -> "false"
   | _ -> raise (Not_implemented "only constructor True and False are allowed for now.")
                
-let rec expr_to_ml tab e =
+let rec expr_to_str_ml tab e =
   match e with
-  | Const c -> const_to_ml c
-  | Var v   -> ident_to_ml v
-  | Field(x,i) -> (ident_to_ml x) ^ (const_to_ml i)
-  | Tuple t -> "(" ^ (join "," (List.map (expr_to_ml tab) t)) ^ ")"
-  | Op (op,a::b::[]) -> "(" ^ (expr_to_ml tab a) ^  ")" ^
+  | Const c -> const_to_str_ml c
+  | Var v   -> ident_to_str_ml v
+  | Field(x,i) -> (ident_to_str_ml x) ^ (const_to_str_ml i)
+  | Tuple t -> "(" ^ (join "," (List.map (expr_to_str_ml tab) t)) ^ ")"
+  | Op (op,a::b::[]) -> "(" ^ (expr_to_str_ml tab a) ^  ")" ^
                                 ( match op with
                                   | And -> " && "
                                   | Or  -> " || "
                                   | _ -> raise Invalid_ast )
-                                ^ "(" ^ (expr_to_ml tab b) ^ ")"
-  | Op (Not,x::[]) -> "not (" ^ (expr_to_ml tab x) ^ ")"
-  | Fun (f, l) -> (ident_to_ml f) ^ " (" ^
+                                ^ "(" ^ (expr_to_str_ml tab b) ^ ")"
+  | Op (Not,x::[]) -> "not (" ^ (expr_to_str_ml tab x) ^ ")"
+  | Fun (f, l) -> (ident_to_str_ml f) ^ " (" ^
                         (join ","
                               (List.map (fun x -> x )
-                                        (List.map (expr_to_ml tab) l))) ^ ")"
-  | Mux (e,_,_) -> expr_to_ml tab e
-  | Demux (id,l) -> "match " ^ (ident_to_ml id) ^ " with\n" ^
+                                        (List.map (expr_to_str_ml tab) l))) ^ ")"
+  | Mux (e,_,_) -> expr_to_str_ml tab e
+  | Demux (id,l) -> "match " ^ (ident_to_str_ml id) ^ " with\n" ^
                           (join "\n"
                                 (List.map (fun (c,e) ->
                                            (indent tab) ^ "  | " ^
-                                             (constructor_to_ml c) ^ " -> " ^
-                                               (expr_to_ml (tab+1) e)) l))
+                                             (constructor_to_str_ml c) ^ " -> " ^
+                                               (expr_to_str_ml (tab+1) e)) l))
+  | Fby _  -> raise (Not_implemented "fby may not be part of a larger expression")
   | _ -> raise Invalid_ast
-                       
-let pat_to_ml tab pat =
-  match pat with
-  | e::[] -> left_asgn_to_ml e
-  | l -> "(" ^ (join "," (List.map left_asgn_to_ml l)) ^ ")"
 
-let deq_to_ml tab l =
-  join "\n" (List.map (fun (p,e) -> (indent tab) ^ "let "
-                                  ^ (pat_to_ml tab p) ^ " = "
-                                  ^ (expr_to_ml tab e) ^ " in ") l)
-let p_to_ml tab p =
+let fby_to_str_ml tab p ei ef =
+  let len = List.length p in
+  let ref_fun = generate_ref_fun len in
+  let p' = List.map (fun x -> (left_asgn_to_str_ml x) ^ "'") p in
+  let prologue = "let (" ^ (join "," p') ^ ") = " ^ ref_fun ^ " ("
+                 ^ (expr_to_str_ml tab ei) ^ ") in\n" in
+  prologue_fun := (!prologue_fun) @ [prologue];
+  let p'' = List.map (fun x -> (left_asgn_to_str_ml x) ^ "''") p in
+  (indent tab) ^
+    "let (" ^ (join "," (List.map left_asgn_to_str_ml p)) ^ ") = ("
+    ^ (join "," (List.map (fun x -> let v = left_asgn_to_str_ml x in
+                                              "!" ^ v ^ "'") p)) ^ ") in\n"
+    ^ "let (" ^ (join "," p'') ^ ") = (" ^ (expr_to_str_ml tab ef) ^ ") in\n"
+    ^ (join "\n" (List.map (fun x ->
+                            let v = left_asgn_to_str_ml x in
+                                      (indent tab) ^ (v ^ "' := " ^ v ^ "'';")) p))
+        
+let pat_to_str_ml tab pat =
+  match pat with
+  | e::[] -> left_asgn_to_str_ml e
+  | l -> "(" ^ (join "," (List.map left_asgn_to_str_ml l)) ^ ")"
+
+let deq_to_str_ml tab l =
+  join "\n" (List.map (fun (p,e) ->
+                       (match e with
+                        | Fby(ei,ef) -> fby_to_str_ml tab p ei ef
+                        | _ -> (indent tab) ^ "let "
+                               ^ (pat_to_str_ml tab p) ^ " = "
+                               ^ (expr_to_str_ml tab e) ^ " in ")) l)
+let p_to_str_ml tab p =
   join "," (List.map (fun (id,typ,_) ->
                       match typ with
-                      | Bool -> (ident_to_ml id)
+                      | Bool -> (ident_to_str_ml id)
                       | Int n -> "(" ^
-                                   (join "," (List.map (fun id -> ident_to_ml id )
+                                   (join "," (List.map (fun id -> ident_to_str_ml id )
                                                        (expand_intn_list id n))) ^ ")") p)
        
 (* print a node *)
-let def_to_ml tab (id, p_in, p_out, _, body) =
-  "let " ^ (ident_to_ml id) ^ " ("
-  ^ (p_to_ml tab p_in) ^ ") = \n"
-  ^ (deq_to_ml (tab+1) body) ^ "\n" ^ (indent (tab+1)) ^ "("
-  ^ (p_to_ml tab p_out) ^ ")\n"
+let def_to_str_ml tab (id, p_in, p_out, _, body) =
+  prologue_fun := [];
+  let body_str = deq_to_str_ml (tab+1) body in
+  match !prologue_fun with
+  | [] -> ("let " ^ (ident_to_str_ml id) ^ " ("
+           ^ (p_to_str_ml tab p_in) ^ ") = \n"
+           ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
+           ^ (p_to_str_ml tab p_out) ^ ")\n")
+  | l  -> ("let " ^ (ident_to_str_ml id) ^ " = \n" ^
+             (join "\n" (List.map (fun x -> (indent (tab+1)) ^ x) l)) ^ "\n"
+             ^ (indent (tab+1)) ^ "fun (" ^ (p_to_str_ml tab p_in) ^ ") -> \n"
+             ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
+             ^ (p_to_str_ml tab p_out) ^ ")\n")
                                                                            
-let prog_to_ml (p:prog) : string =
-  join "\n\n" (List.map (def_to_ml 0) (rewrite_prog p))
-
-
-
-
-
-
+let prog_to_str_ml (p:prog) : string =
+  prologue_prog := [];
+  let body = List.map (def_to_str_ml 0) (rewrite_prog p) in
+  match !prologue_prog with
+  | [] -> join "\n\n" body
+  | l  -> (join "\n\n" !prologue_prog)
+          ^ "\n\n" ^  (join "\n\n" body)
 
 
 

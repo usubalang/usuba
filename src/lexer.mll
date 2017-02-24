@@ -18,6 +18,7 @@ let _ =
      "let", TOK_LET;
      "tel", TOK_TEL;
      "when", TOK_WHEN;
+     "fby", TOK_FBY;
      "merge", TOK_MERGE;
      "and", TOK_AND;
      "or", TOK_OR;

@@ -19,6 +19,7 @@ type expr = Const of int
           | Fun   of ident * expr list
           | Mux   of expr * constr * ident
           | Demux of ident * (constr * expr) list
+          | Fby   of expr * expr
 
 type left_asgn =
   | Ident of ident

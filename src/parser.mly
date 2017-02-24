@@ -13,6 +13,7 @@
 %token TOK_TEL
 %token TOK_WHEN
 %token TOK_MERGE
+%token TOK_FBY
 
 %token TOK_LPAREN
 %token TOK_RPAREN
@@ -42,7 +43,8 @@
 %nonassoc TOK_MERGE
 %nonassoc TOK_PIPE
 %nonassoc TOK_WHEN
-
+%nonassoc TOK_FBY
+          
 /*******************\
 |*   entry point   *|
 \*******************/
@@ -70,6 +72,7 @@ exp:
    | f=TOK_id TOK_LPAREN args=explist TOK_RPAREN { Fun(f, List.rev args) }
    | e=exp TOK_WHEN cstr=TOK_constr TOK_LPAREN x=TOK_id TOK_RPAREN { Mux(e,cstr,x) }
    | TOK_MERGE ck=TOK_id c=caselist %prec TOK_MERGE { Demux(ck,List.rev c) }
+   | init=exp TOK_FBY follow=exp { Fby(init,follow) }
 
 caselist:
    | { [] }                                  
