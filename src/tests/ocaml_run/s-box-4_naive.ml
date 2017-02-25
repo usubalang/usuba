@@ -1,5 +1,5 @@
 open Ocaml_runtime
-let sbox_4_ a_1 a_2 a_3 a_4 a_5 a_6 = 
+let sbox_4_ ((a_1,a_2,a_3,a_4,a_5,a_6)) = 
     let x_1 = (not (a_1)) in 
     let x_2 = (not (a_3)) in 
     let x_3 = (a_1) || (a_3) in 
@@ -47,3 +47,14 @@ let sbox_4_ a_1 a_2 a_3 a_4 a_5 a_6 =
     let x_42 = ((x_41) && (not (x_40))) || ((not (x_41)) && (x_40)) in 
     let out_3 = x_42 in 
     (out_1,out_2,out_3,out_4)
+
+
+let main a_stream = 
+    Stream.from
+    (fun _ -> 
+    try
+        let a = Stream.next a_stream in
+        let (a1,a2,a3,a4,a5,a6) = (a lsr 5 land 1 = 1,a lsr 4 land 1 = 1,a lsr 3 land 1 = 1,a lsr 2 land 1 = 1,a lsr 1 land 1 = 1,a lsr 0 land 1 = 1) in
+        let (out1',out2',out3',out4') = sbox_4_ ((a1,a2,a3,a4,a5,a6)) in
+        let out' = (if out1' then 8 else 0)lor(if out2' then 4 else 0)lor(if out3' then 2 else 0)lor(if out4' then 1 else 0) in Some out'
+    with Stream.Failure -> None)

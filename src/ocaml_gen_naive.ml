@@ -57,6 +57,23 @@ let rename_prog (p: prog) : prog =
 (*   AST transformation to match naive bool backend   *)
 (* ************************************************** *)
 
+let rec pow a = function
+  | 0 -> 1
+  | 1 -> a
+  | n -> 
+     let b = pow a (n / 2) in
+     b * b * (if n mod 2 = 0 then 1 else a)             
+
+let rec join s l =
+  match l with
+  | [] -> ""
+  | e::[] -> e
+  | hd::tl -> hd ^ s ^ (join s tl)
+
+let indent tab =
+  String.make (tab * 4) ' '
+
+                         
 let id_generator =
   let current = ref 0 in
   fun () -> incr current; !current
@@ -64,6 +81,7 @@ let id_generator =
               
 (* Auxiliary functions that need to be embeded in the code *)
 let aux_fun = ref []
+let entry   = ref ""
               
 (* Adds the variables vars to env_var *)
 let rec env_add_var (vars: p) (env_var: (ident, int) Hashtbl.t) : unit =
@@ -288,8 +306,60 @@ let rec rewrite_defs (l: def list)
   | hd::tl -> let hd' = (rewrite_def hd env_fun) in
               hd' :: (rewrite_defs tl env_fun)
 
+let gen_ortho (id,size) =
+  let rec aux i =
+    if i > size then ([],[])
+    else let stri = (string_of_int i) in
+         let stri_m1 = (string_of_int (i-1)) in
+         let (left,right) = aux (i+1) in
+         ((id^stri)::left, (id ^ " lsr " ^ stri_m1 ^ " land 1 = 1")::right)
+  in
+  let (left,right) = aux 1 in
+  (join "," left,
+   "let " ^ id ^ " = Stream.next " ^ id ^ "_stream in\n" ^
+     (indent 2) ^ "let (" ^ (join "," left) ^ ") = (" ^ (join "," (List.rev right)) ^ ") in")
+
+let gen_unortho (id,size) =
+  let rec aux i =
+    if i > size then ([],[])
+    else let mul = string_of_int (pow 2 (i-1)) in
+         let (left, right) = aux (i+1) in
+         let id_curr_l = id^(string_of_int i)^"'" in
+         let id_curr_r = id^(string_of_int (size-i+1))^"'" in
+         (id_curr_l::left, ("(if " ^ id_curr_r ^ " then " ^ mul ^ " else 0)")::right)
+  in
+  let (left,right) = aux 1 in
+    (join "," left,
+     "let " ^ id ^ "' = " ^ (join "lor" (List.rev right)) ^ " in Some " ^ id ^ "'")
+    
+let gen_entry_point (name, p_in, p_out, _, _) =
+  match p_out with
+  | [] -> raise (Not_implemented "node with no return")
+  | x::y::tl -> raise (Not_implemented "multiple return values node")
+  | (out_id,out_typ,_)::[] ->
+     let params = List.map (fun (id,typ,_) -> match typ with
+                                              | Bool  -> (id,1)
+                                              | Int n -> (id,n)) p_in in
+     let ortho = List.map gen_ortho params in
+     let in_streams = List.map (fun (id,_) -> id ^ "_stream") params in
+     let head = "let main " ^ (join " " in_streams) ^ " = " in
+     let out_size = (match out_typ with
+                     | Bool  -> 1
+                     | Int n -> n) in
+     let (left,right) = gen_unortho (out_id,out_size) in
+     head ^ "\n" ^ (indent 1) ^ "Stream.from\n" ^ (indent 1) ^ "(fun _ -> \n"
+     ^ (indent 1) ^ "try\n"
+     ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho)) ^ "\n"
+     ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ "_ ("
+     ^ (join "," (List.map (fun (x,_)->"("^x^")") ortho)) ^ ") in\n"
+     ^ (indent 2) ^ right ^ "\n"
+     ^ (indent 1) ^ "with Stream.Failure -> None)\n"
+  
+                       
 let rewrite_prog (p: prog) : prog =
   let env_fun = Hashtbl.create 10 in
+  let entry_point = gen_entry_point (List.nth p (List.length p -1)) in
+  entry := entry_point ;
   let p' = rewrite_defs (rename_prog p) env_fun in
   (!aux_fun) @ p'
 
@@ -298,14 +368,6 @@ let rewrite_prog (p: prog) : prog =
 (*        Convertion of the AST to OCaml code         *)
 (* ************************************************** *)       
             
-let indent tab =
-  String.make (tab * 4) ' '
-              
-let rec join s l =
-  match l with
-  | [] -> ""
-  | e::[] -> e
-  | hd::tl -> hd ^ s ^ (join s tl)
 
 
 let prologue_prog : string list ref = ref []
@@ -429,19 +491,15 @@ let def_to_str_ml tab (id, p_in, p_out, _, body) =
              ^ (indent (tab+1)) ^ "fun (" ^ (p_to_str_ml tab p_in) ^ ") -> \n"
              ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
              ^ (p_to_str_ml tab p_out) ^ ")\n")
-                                                                           
+
+            
 let prog_to_str_ml (p:prog) : string =
   prologue_prog := [];
   let body = List.map (def_to_str_ml 0) (rewrite_prog p) in
   match !prologue_prog with
-  | [] -> join "\n\n" body
+  | [] -> (join "\n\n" body) ^ "\n\n" ^ !entry
   | l  -> (join "\n\n" !prologue_prog)
-          ^ "\n\n" ^  (join "\n\n" body)
-
-
-
-
-
+          ^ "\n\n" ^  (join "\n\n" body) ^ "\n\n" ^ !entry
 
 
        

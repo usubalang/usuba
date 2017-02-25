@@ -53,6 +53,18 @@ let f_naive =
    let tmp = (!c1,!c2,!c3,!c4) in
    c1 := c1'; c2 := c2'; c3 := c3'; c4 := c4';
    tmp)
+
+(* exactly the same sub as f_naive, but with its own internal state *)
+let f_naive_real =
+  let (c1,c2,c3,c4) = (ref false, ref false, ref false, ref true) in
+  fun (b1, b2, b3, b4) ->
+  (let c4' = b4 || !c4 in
+   let c3' = b3 || !c3 in
+   let c2' = b2 || !c2 in
+   let c1' = b1 || !c1 in
+   let tmp = (!c1,!c2,!c3,!c4) in
+   c1 := c1'; c2 := c2'; c3 := c3'; c4 := c4';
+   tmp)
     
 let main_naive (in_stream: (bool*bool*bool*bool) Stream.t)
     : (bool*bool*bool*bool) Stream.t =
@@ -61,6 +73,21 @@ let main_naive (in_stream: (bool*bool*bool*bool) Stream.t)
      try Some (f_naive @@ Stream.next in_stream)
      with Stream.Failure -> None)
 
+let real_main_naive (in_stream: int Stream.t) : int Stream.t =
+  Stream.from
+    (fun _ ->
+     try
+       let n = Stream.next in_stream in
+       let (x1,x2,x3,x4) = (n lsr 3 land 1 = 1, n lsr 2 land 1 = 1,
+                            n lsr 1 land 1 = 1, n lsr 0 land 0 = 1) in
+       let (x1',x2',x3',x4') = f_naive_stable (x1,x2,x3,x4) in
+       let n' = (if x1' then 8 else 0) lor
+                  (if x2' then 4 else 0) lor
+                    (if x3' then 2 else 0) lor
+                      (if x4' then 1 else 0) in
+       Some n'
+     with Stream.Failure -> None)
+                                        
     
 (* ************************************************ *)
 (*            Orthogonalized version                *)
@@ -181,21 +208,24 @@ let stream2 = Stream.of_list [ (true,true,false,true);
                                (false,false,true,false);
                                (true,false,true,true);
                                (false,false,true,true) ]
+let stream3 = Stream.of_list [ 13; 6; 4; 2; 11; 3 ]
 
 
 let stream1' = main_naive stream1
 let stream2' = main_ortho stream2
+let stream3' = real_main_naive stream3
 
                           
 let () =
   print_endline "Naive:";
   Stream.iter (fun (a,b,c,d) -> print_endline("("^(string_of_bool a)^","
-                                              ^(string_of_bool a)^","
                                               ^(string_of_bool b)^","
-                                              ^(string_of_bool c)^")")) stream1';
+                                              ^(string_of_bool c)^","
+                                              ^(string_of_bool d)^")")) stream1';
   print_endline "\nOrtho:";
   Stream.iter (fun (a,b,c,d) -> print_endline("("^(string_of_bool a)^","
-                                              ^(string_of_bool a)^","
                                               ^(string_of_bool b)^","
-                                              ^(string_of_bool c)^")")) stream2'
-              
+                                              ^(string_of_bool c)^","
+                                              ^(string_of_bool d)^")")) stream2';
+  print_endline "\nReal naive:";
+  Stream.iter (fun x -> print_endline(string_of_int x)) stream3'

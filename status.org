@@ -67,12 +67,13 @@
    From this, it will be easy to have n-ary operators.
 ** DONE Fix operators on tuple
    CLOSED: [2017-02-24 ven. 10:23]
-** TODO Implement fby on boolean backend
+** DONE Implement fby on boolean backend
+   CLOSED: [2017-02-25 sam. 20:19]
+** DONE Think about how to actually run usuba code (orthogonalization + streams & co), naive.
+   CLOSED: [2017-02-25 sam. 20:20]
+** TODO Generate bitsliced code from usuba code.
 ** TODO Don't generate several times the same "convert" function
 ** TODO Regroup env_var and env_fun into a single env, add helpers to manipulate it
-** TODO Think about how to actually run usuba code (orthogonalization + streams & co)
-** TODO General question: why are the s-boxes the way the are? 
-   (a single array would be enough)
 ** TODO Complete implementation of usuba DES
 ** TODO Improve orthogonalization algorithm
 ** TODO [#B] Think about the convertion of the demultiplexer to OCaml.
