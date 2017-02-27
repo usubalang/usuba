@@ -25,14 +25,7 @@ let parse_file (filename:string) : prog =
      fprintf stderr "%a: syntax error\n" print_position lex;
      exit (-1)
 
-
-let main () =
-  let file_in = Sys.argv.(1) in
-  let p = parse_file file_in in
-
-  (* uncomment to print the program that was read*)
-  (* print_string (string_of_prog p) ; *)
-
+let print_naive_ml (file_in: string) (prog: prog) =
   (* Generating OCaml code *)
   let full_name = match (String.split_on_char '.' file_in) with
     | []   -> file_in
@@ -40,9 +33,30 @@ let main () =
   let path = String.split_on_char '/' full_name in
   let out_name = List.nth path (List.length path - 1) in
   let out = open_out ("tests/ocaml_run/" ^ out_name ^ "_naive.ml") in
-  fprintf out "open Ocaml_runtime\n";
-  fprintf out "%s" (Ocaml_gen_naive.prog_to_str_ml p);
-  (* naive_code p; *)
+  fprintf out "%s" (Ocaml_gen_naive.prog_to_str_ml prog);
   close_out out
+
+let print_ortho_ml (file_in: string) (prog: prog) =
+  (* Generating OCaml code *)
+  let full_name = match (String.split_on_char '.' file_in) with
+    | []   -> file_in
+    | x::_ ->  x in
+  let path = String.split_on_char '/' full_name in
+  let out_name = List.nth path (List.length path - 1) in
+  let out = open_out ("tests/ocaml_run/" ^ out_name ^ "_ortho.ml") in
+  fprintf out "%s" (Ocaml_gen_ortho.prog_to_str_ml prog);
+  close_out out
+            
+
+let main () =
+  let file_in = Sys.argv.(1) in
+  let prog = parse_file file_in in
+
+  (* uncomment to print the program that was read*)
+  (* print_string (string_of_prog p) ; *)
+
+  print_naive_ml file_in prog;
+  print_ortho_ml file_in prog                 
+  
 
 let () = main ()

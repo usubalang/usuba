@@ -77,6 +77,10 @@ let indent tab =
 let id_generator =
   let current = ref 0 in
   fun () -> incr current; !current
+                           
+let id_generator_var =
+  let current = ref 0 in
+  fun () -> incr current; !current
                 
               
 (* Auxiliary functions that need to be embeded in the code *)
@@ -106,7 +110,7 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
     | [] -> 0
     | (_,typ,_)::tl -> (match typ with
                         | Bool -> 1
-                        | Int n -> n)
+                        | Int n -> n) + (get_param_out_size tl)
   in
   Hashtbl.add env_fun name (get_param_in_size p_in,get_param_out_size p_out)
 
@@ -199,16 +203,16 @@ let gen_conv target orig =
         if size_curr_p = 0 then
           match next_p with
           | [] -> []
-          | hd::tl -> make_body (id_p+1) 0 id_r num_r hd size_curr_r tl next_r
+          | hd::tl -> make_body (id_p+1) 1 id_r num_r hd size_curr_r tl next_r
         else if size_curr_r = 0 then
           match next_r with
           | [] -> []
-          | hd::tl -> make_body id_p num_p (id_r+1) 0 size_curr_p hd next_p tl
+          | hd::tl -> make_body id_p num_p (id_r+1) 1 size_curr_p hd next_p tl
         else
-          ([Dotted("out"^(string_of_int id_r),num_r)], Field("int"^(string_of_int id_p),num_p)) ::
+          ([Dotted("out"^(string_of_int id_r),num_r)], Field("in"^(string_of_int id_p),num_p)) ::
             (make_body id_p (num_p+1) id_r (num_r+1) (size_curr_p-1) (size_curr_r-1) next_p next_r)
       in
-      let f = (id,param,ret,[], make_body 0 0 0 0 0 0 orig target) in
+      let f = (id,param,ret,[], make_body 0 1 0 1 0 0 orig target) in
       aux_fun := (!aux_fun) @ [f];
       id
     end
@@ -312,50 +316,64 @@ let gen_ortho (id,size) =
     else let stri = (string_of_int i) in
          let stri_m1 = (string_of_int (i-1)) in
          let (left,right) = aux (i+1) in
-         ((id^stri)::left, (id ^ " lsr " ^ stri_m1 ^ " land 1 = 1")::right)
+         ((id^stri)::left, ("Int64.logand (Int64.shift_right " ^ id ^ " " ^ stri_m1
+                            ^ ") Int64.one = Int64.one")::right)
   in
   let (left,right) = aux 1 in
   (join "," left,
    "let " ^ id ^ " = Stream.next " ^ id ^ "_stream in\n" ^
      (indent 2) ^ "let (" ^ (join "," left) ^ ") = (" ^ (join "," (List.rev right)) ^ ") in")
 
-let gen_unortho (id,size) =
-  let rec aux i =
-    if i > size then ([],[])
-    else let mul = string_of_int (pow 2 (i-1)) in
-         let (left, right) = aux (i+1) in
-         let id_curr_l = id^(string_of_int i)^"'" in
-         let id_curr_r = id^(string_of_int (size-i+1))^"'" in
-         (id_curr_l::left, ("(if " ^ id_curr_r ^ " then " ^ mul ^ " else 0)")::right)
+let gen_list (id: string) (n: int) : string list =
+  let rec aux n acc =
+    if n <= 0 then acc
+    else aux (n-1) ((id ^ (string_of_int n))::acc) 
+  in aux n []
+         
+let combine_out p_out =
+  let rec aux = function
+    | [] -> []
+    | (id,typ,_)::tl -> ( match typ with
+                          | Bool -> [ id ]
+                          | Int n -> gen_list id n ) @ (aux tl)
+  in aux p_out
+         
+let gen_unortho p_out =
+  let l = combine_out p_out in
+  let rec aux size i =
+    if i > size then []
+    else ( let mul = "(Int64.shift_left Int64.one " ^ (string_of_int (size-i)) ^ ")" in
+           let id_curr  = "ret" ^ (string_of_int i) in
+           ("(if " ^ id_curr ^ " then " ^ mul ^ " else Int64.zero)")::(aux size (i+1)))
   in
-  let (left,right) = aux 1 in
-    (join "," left,
-     "let " ^ id ^ "' = " ^ (join "lor" (List.rev right)) ^ " in Some " ^ id ^ "'")
-    
+  let left = gen_list "ret" (List.length l) in
+  let right = List.map (fun (_,typ,_) ->
+                        let size = match typ with Bool -> 1 | Int n -> n in
+                        ( List.fold_left (fun x y -> "(Int64.logor " ^ x ^ " " ^ y ^ ")")
+                                         "Int64.zero" (aux size 1) )) p_out in
+  let ret = join "," (List.map (fun (id,_,_) -> id^"'") p_out) in
+  (join "," left,
+   "let (" ^ ret ^ ") = " ^ (join "," right) ^ "\n"
+   ^ (indent 2) ^ "in Some (" ^ ret ^ ")")    
+
+      
 let gen_entry_point (name, p_in, p_out, _, _) =
-  match p_out with
-  | [] -> raise (Not_implemented "node with no return")
-  | x::y::tl -> raise (Not_implemented "multiple return values node")
-  | (out_id,out_typ,_)::[] ->
-     let params = List.map (fun (id,typ,_) -> match typ with
-                                              | Bool  -> (id,1)
-                                              | Int n -> (id,n)) p_in in
-     let ortho = List.map gen_ortho params in
-     let in_streams = List.map (fun (id,_) -> id ^ "_stream") params in
-     let head = "let main " ^ (join " " in_streams) ^ " = " in
-     let out_size = (match out_typ with
-                     | Bool  -> 1
-                     | Int n -> n) in
-     let (left,right) = gen_unortho (out_id,out_size) in
-     head ^ "\n" ^ (indent 1) ^ "Stream.from\n" ^ (indent 1) ^ "(fun _ -> \n"
-     ^ (indent 1) ^ "try\n"
-     ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho)) ^ "\n"
-     ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ "_ ("
-     ^ (join "," (List.map (fun (x,_)->"("^x^")") ortho)) ^ ") in\n"
-     ^ (indent 2) ^ right ^ "\n"
-     ^ (indent 1) ^ "with Stream.Failure -> None)\n"
-  
-                       
+  let params = List.map (fun (id,typ,_) -> match typ with
+                                           | Bool  -> (id,1)
+                                           | Int n -> (id,n)) p_in in
+  let ortho = List.map gen_ortho params in
+  let in_streams = List.map (fun (id,_) -> id ^ "_stream") params in
+  let head = "let main " ^ (join " " in_streams) ^ " = " in
+  let (left,right) = gen_unortho p_out in
+  head ^ "\n" ^ (indent 1) ^ "Stream.from\n" ^ (indent 1) ^ "(fun _ -> \n"
+  ^ (indent 1) ^ "try\n"
+  ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho)) ^ "\n"
+  ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ "_ ("
+  ^ (join "," (List.map (fun (x,_)->"("^x^")") ortho)) ^ ") in\n"
+  ^ (indent 2) ^ right ^ "\n"
+  ^ (indent 1) ^ "with Stream.Failure -> None)\n"
+                   
+                   
 let rewrite_prog (p: prog) : prog =
   let env_fun = Hashtbl.create 10 in
   let entry_point = gen_entry_point (List.nth p (List.length p -1)) in
@@ -406,7 +424,7 @@ let const_to_str_ml = function
 
 let left_asgn_to_str_ml = function
   | Ident x -> ident_to_str_ml x
-  | Dotted(x,i) -> (ident_to_str_ml x)  ^ (const_to_str_ml i)
+  | Dotted(x,i) -> (ident_to_str_ml x)  ^ (string_of_int i)
                                   
 let constructor_to_str_ml = function
   | "True"  -> "true"
@@ -417,7 +435,7 @@ let rec expr_to_str_ml tab e =
   match e with
   | Const c -> const_to_str_ml c
   | Var v   -> ident_to_str_ml v
-  | Field(x,i) -> (ident_to_str_ml x) ^ (const_to_str_ml i)
+  | Field(x,i) -> (ident_to_str_ml x) ^ (string_of_int i)
   | Tuple t -> "(" ^ (join "," (List.map (expr_to_str_ml tab) t)) ^ ")"
   | Op (op,a::b::[]) -> "(" ^ (expr_to_str_ml tab a) ^  ")" ^
                                 ( match op with
@@ -425,7 +443,10 @@ let rec expr_to_str_ml tab e =
                                   | Or  -> " || "
                                   | _ -> raise Invalid_ast )
                                 ^ "(" ^ (expr_to_str_ml tab b) ^ ")"
-  | Op (Not,x::[]) -> "not (" ^ (expr_to_str_ml tab x) ^ ")"
+  | Op (Not,l) -> "(" ^ (join ","
+                              (List.map
+                                 (fun x -> "not ("
+                                           ^ (expr_to_str_ml tab x) ^ ")") l)) ^ ")"
   | Fun (f, l) -> (ident_to_str_ml f) ^ " (" ^
                         (join ","
                               (List.map (fun x -> x )
@@ -440,12 +461,21 @@ let rec expr_to_str_ml tab e =
   | Fby _  -> raise (Not_implemented "fby may not be part of a larger expression")
   | _ -> raise Invalid_ast
 
+let const_to_tuple c size =
+  let rec aux c n =
+    if n > size then []
+    else (string_of_bool ((c mod 2) = 1))::(aux (c/2) (n+1)) in
+  join "," (List.rev (aux c 1))
+               
 let fby_to_str_ml tab p ei ef =
   let len = List.length p in
   let ref_fun = generate_ref_fun len in
   let p' = List.map (fun x -> (left_asgn_to_str_ml x) ^ "'") p in
+  let init = (match ei with
+              | Const c -> const_to_tuple c (List.length p)
+              | _ -> expr_to_str_ml tab ei) in
   let prologue = "let (" ^ (join "," p') ^ ") = " ^ ref_fun ^ " ("
-                 ^ (expr_to_str_ml tab ei) ^ ") in\n" in
+                 ^ init ^ ") in\n" in
   prologue_fun := (!prologue_fun) @ [prologue];
   let p'' = List.map (fun x -> (left_asgn_to_str_ml x) ^ "''") p in
   (indent tab) ^
@@ -494,7 +524,7 @@ let def_to_str_ml tab (id, p_in, p_out, _, body) =
 
             
 let prog_to_str_ml (p:prog) : string =
-  prologue_prog := [];
+  prologue_prog := ["let id x = x"];
   let body = List.map (def_to_str_ml 0) (rewrite_prog p) in
   match !prologue_prog with
   | [] -> (join "\n\n" body) ^ "\n\n" ^ !entry
