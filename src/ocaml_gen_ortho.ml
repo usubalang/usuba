@@ -72,7 +72,8 @@ let rec join s l =
 
 let indent tab =
   String.make (tab * 4) ' '
-
+let indent_small tab =
+  String.make (tab * 2) ' '
                          
 let id_generator =
   let current = ref 0 in
@@ -261,7 +262,7 @@ let rec rewrite_expr (env_var: (ident, int) Hashtbl.t)
   | Op (Not,l) -> Tuple(distrib_not (List.map (rewrite_expr env_var env_fun) l))
   | Op _ -> raise Invalid_operator_call
   | Fun (f,l)    -> Fun(f, format_param f (List.map (rewrite_expr env_var env_fun) l) env_fun)
-  | Mux (e,c,id) -> raise (Not_implemented "Mux")
+  | Mux (e,c,id) -> rewrite_expr env_var env_fun e
   | Demux(id,l)  -> raise (Not_implemented "Demux")
   | Fby(ei,ef)   -> Fby(rewrite_expr env_var env_fun ei, rewrite_expr env_var env_fun ef)
                          
@@ -313,16 +314,19 @@ let rec rewrite_defs (l: def list)
 let gen_ortho (id,size) =
   let rec aux i =
     if i > size then ([],[])
-    else let stri = (string_of_int i) in
-         let stri_m1 = (string_of_int (i-1)) in
-         let (left,right) = aux (i+1) in
-         ((id^stri)::left, ("Int64.logand (Int64.shift_right " ^ id ^ " " ^ stri_m1
-                            ^ ") Int64.one = Int64.one")::right)
+    else let (left,right) = aux (i+1) in
+         ((id^(string_of_int i))::left, (id ^ "'.(" ^ (string_of_int (i-1)) ^ ")")::right)
   in
   let (left,right) = aux 1 in
+  let get_from_stream = "let " ^ id ^ " = Array.make 63 Int64.zero in\n"
+                        ^ (indent 2) ^ "for i = 0 to 62 do\n"
+                        ^ (indent_small 5) ^ id ^ ".(i) <- Stream.next " ^ id ^ "_stream\n"
+                        ^ (indent 2) ^ "done;\n" in
+  let grab_ortho = (indent 2) ^ "let ("^ (join "," left) ^ ") = (" ^ (join "," right) ^ ") in\n" in
   (join "," left,
-   "let " ^ id ^ " = Stream.next " ^ id ^ "_stream in\n" ^
-     (indent 2) ^ "let (" ^ (join "," left) ^ ") = (" ^ (join "," (List.rev right)) ^ ") in")
+   get_from_stream
+   ^ (indent 2) ^ "let " ^ id  ^ "' = convert_ortho " ^ (string_of_int size) ^ " " ^ id ^ " in\n"
+   ^ grab_ortho)
 
 let gen_list (id: string) (n: int) : string list =
   let rec aux n acc =
@@ -340,38 +344,55 @@ let combine_out p_out =
          
 let gen_unortho p_out =
   let l = combine_out p_out in
-  let rec aux size i =
-    if i > size then []
-    else ( let mul = "(Int64.shift_left Int64.one " ^ (string_of_int (size-i)) ^ ")" in
-           let id_curr  = "ret" ^ (string_of_int i) in
-           ("(if " ^ id_curr ^ " then " ^ mul ^ " else Int64.zero)")::(aux size (i+1)))
-  in
   let left = gen_list "ret" (List.length l) in
-  let right = List.map (fun (_,typ,_) ->
-                        let size = match typ with Bool -> 1 | Int n -> n in
-                        ( List.fold_left (fun x y -> "(Int64.logor " ^ x ^ " " ^ y ^ ")")
-                                         "Int64.zero" (aux size 1) )) p_out in
-  let ret = join "," (List.map (fun (id,_,_) -> id^"'") p_out) in
+  let rec aux p i =
+    match p with
+    | [] -> []
+    | (id,typ,_)::tl -> let size = match typ with Bool -> 1 | Int n -> n in
+                        let tmp = ref ((indent 2) ^ "let " ^ id ^ " = Array.make "
+                                       ^ (string_of_int size) ^ " 0 in\n")  in
+                        for c = 1 to size do
+                          tmp := !tmp ^ (indent 2) ^ id ^ ".(" ^ (string_of_int c)
+                                 ^ ") <- ret" ^ (string_of_int (i+c)) ^ ";\n"
+                        done;
+                        tmp := !tmp ^ (indent 2) ^ "stack_" ^ id
+                               ^ " := convert_unortho " ^ id ^ ";\n";
+                        !tmp::(aux tl (i+size)) in
+  let right = aux p_out 0 in
   (join "," left,
-   "let (" ^ ret ^ ") = " ^ (join "," right) ^ "\n"
-   ^ (indent 2) ^ "in Some (" ^ ret ^ ")")    
+   (join "\n" right) ^ "\n"
+   )    
 
-      
+    
 let gen_entry_point (name, p_in, p_out, _, _) =
   let params = List.map (fun (id,typ,_) -> match typ with
                                            | Bool  -> (id,1)
                                            | Int n -> (id,n)) p_in in
   let ortho = List.map gen_ortho params in
   let in_streams = List.map (fun (id,_) -> id ^ "_stream") params in
-  let head = "let main " ^ (join " " in_streams) ^ " = " in
+  let head = "let main " ^ (join " " in_streams) ^ " = \n"
+             ^ (indent_small 1) ^ "let cpt = ref 0 in" in
+  let stacks = join ("\n" ^ (indent_small 1))
+                    (List.map (fun (id,_,_) ->
+                               "let stack_" ^ id ^ " = ref [| |] in") p_out) in
+  let ret = join ","
+                 (List.map (fun (id,_,_) ->
+                            "!stack_" ^ id ^ ".(!cpt)") p_out) in
   let (left,right) = gen_unortho p_out in
-  head ^ "\n" ^ (indent 1) ^ "Stream.from\n" ^ (indent 1) ^ "(fun _ -> \n"
-  ^ (indent 1) ^ "try\n"
-  ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho)) ^ "\n"
+  head ^ "\n" ^ (indent_small 1) ^ stacks ^ "\n"
+  ^ (indent_small 1) ^ "Stream.from\n" ^ (indent 1) ^ "(fun _ -> \n"
+  ^ (indent 1) ^ "if !cpt < 64 then let ret = (" ^ ret ^ ") in\n"
+  ^ (indent_small 13) ^ "incr cpt;\n" ^ (indent_small 13) ^ "Some ret\n"
+  ^ (indent 1) ^ "else\n" ^ (indent_small 3) ^ "try\n"
+  ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho))
   ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ "_ ("
   ^ (join "," (List.map (fun (x,_)->"("^x^")") ortho)) ^ ") in\n"
-  ^ (indent 2) ^ right ^ "\n"
-  ^ (indent 1) ^ "with Stream.Failure -> None)\n"
+  ^ right
+  ^ (indent 2) ^ "cpt := 0;\n"
+  ^ (indent 2) ^ "let return = Some (" ^ ret ^ ") in \n"
+  ^ (indent 2) ^ "incr cpt;" ^ "\n"
+  ^ (indent 2) ^ "return\n"
+  ^ (indent_small 3) ^ "with Stream.Failure -> None)\n"
                    
                    
 let rewrite_prog (p: prog) : prog =
@@ -418,8 +439,8 @@ let str_size_of_typ = function
 let ident_to_str_ml id = id
                        
 let const_to_str_ml = function
-  | 0 -> "false"
-  | 1 -> "true"
+  | 0 -> "0"
+  | 1 -> "-1"
   | _ -> "illegal value for a bool"
 
 let left_asgn_to_str_ml = function
@@ -439,8 +460,8 @@ let rec expr_to_str_ml tab e =
   | Tuple t -> "(" ^ (join "," (List.map (expr_to_str_ml tab) t)) ^ ")"
   | Op (op,a::b::[]) -> "(" ^ (expr_to_str_ml tab a) ^  ")" ^
                                 ( match op with
-                                  | And -> " && "
-                                  | Or  -> " || "
+                                  | And -> " land "
+                                  | Or  -> " lor "
                                   | _ -> raise Invalid_ast )
                                 ^ "(" ^ (expr_to_str_ml tab b) ^ ")"
   | Op (Not,l) -> "(" ^ (join ","
@@ -464,7 +485,7 @@ let rec expr_to_str_ml tab e =
 let const_to_tuple c size =
   let rec aux c n =
     if n > size then []
-    else (string_of_bool ((c mod 2) = 1))::(aux (c/2) (n+1)) in
+    else (string_of_int (if c mod 2 = 1 then -1 else 0))::(aux (c/2) (n+1)) in
   join "," (List.rev (aux c 1))
                
 let fby_to_str_ml tab p ei ef =
@@ -524,7 +545,26 @@ let def_to_str_ml tab (id, p_in, p_out, _, body) =
 
             
 let prog_to_str_ml (p:prog) : string =
-  prologue_prog := ["let id x = x"];
+  prologue_prog := ["let id x = x";
+"let convert_ortho (size: int) (input: int64 array) : int array =
+  let out = Array.make size 0 in
+  for i = 0 to Array.length input - 1 do
+    for j = 0 to size-1 do
+      let b = Int64.to_int (Int64.logand (Int64.shift_right input.(i) j) Int64.one) in
+      out.(j) <- out.(j) lor (b lsl i)
+    done
+  done;
+  out
+ ";
+"let convert_unortho (input: int array) : int64 array =
+  let out = Array.make 63 Int64.zero in
+  for i = 0 to Array.length input - 1 do
+    for j = 0 to 62 do
+      let b = Int64.of_int (input.(i) lsr j land 1) in
+      out.(j) <- Int64.logor out.(j) (Int64.shift_left b i)
+    done
+  done;
+  out"];
   let body = List.map (def_to_str_ml 0) (rewrite_prog p) in
   match !prologue_prog with
   | [] -> (join "\n\n" body) ^ "\n\n" ^ !entry

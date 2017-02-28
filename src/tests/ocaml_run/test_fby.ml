@@ -22,23 +22,16 @@ tel
 (* "or" will be boring, "xor" is nicer *)
 let ( || ) = fun x y -> (x && not y) || (not x && y)
 
+let or_n = fun x y ->
+  let ret = Array.make (Array.length x) false in
+  for i = 0 to Array.length x -1 do
+    ret.(i) <- x.(i) || y.(i)
+  done;
+  ret
 
 (* ************************************************ *)
 (*                   Naive version                  *)
 (* ************************************************ *)
-
-
-(* this following implementation can be simplified into the second version of f_naive *)
-(* let f_naive = *)
-(*   let (c1,c2,c3,c4) = (ref false, ref false, ref false, ref true) in *)
-(*   fun (b1, b2, b3, b4) -> *)
-(*   let (_,_,_,c4') = (b1 || !c1, b2|| !c2, b3 || !c3, b4 || !c4) in *)
-(*   let (_,_,c3',_) = (b1 || !c1, b2|| !c2, b3 || c4', b4 || !c4) in *)
-(*   let (_,c2',_,_) = (b1 || !c1, b2|| c3', b3 || c4', b4 || !c4) in *)
-(*   let (c1',_,_,_) = (b1 || c2', b2|| c3', b3 || c4', b4 || !c4) in *)
-(*   let tmp = (!c1,!c2,!c3,!c4) in *)
-(*   c1 := c1'; c2 := c2'; c3 := c3'; c4 := c4'; *)
-(*   tmp *) 
 
 (*
 f_naive: (bool * bool * bool * bool) -> (bool * bool * bool * bool)
@@ -80,7 +73,7 @@ let real_main_naive (in_stream: int Stream.t) : int Stream.t =
        let n = Stream.next in_stream in
        let (x1,x2,x3,x4) = (n lsr 3 land 1 = 1, n lsr 2 land 1 = 1,
                             n lsr 1 land 1 = 1, n lsr 0 land 0 = 1) in
-       let (x1',x2',x3',x4') = f_naive_stable (x1,x2,x3,x4) in
+       let (x1',x2',x3',x4') = f_naive_real (x1,x2,x3,x4) in
        let n' = (if x1' then 8 else 0) lor
                   (if x2' then 4 else 0) lor
                     (if x3' then 2 else 0) lor
@@ -114,7 +107,7 @@ let f_ortho =
    c1 := c1'; c2 := c2'; c3 := c3'; c4 := c4';
    tmp)
 
-(* This one yields the same results as the naive (not orthohonalized) version. *)
+(* This one yields the same results as the naive (not orthogonalized) version. *)
 (* However, it appears that we don't need 4 arrays as temporary variables. *)
 (* Hence f_ortho_v3 bellow *)
 let f_ortho_v2 =
@@ -152,7 +145,29 @@ let f_ortho_v3 =
   t1.(2) <- !c1; t2.(2) <- !c2; t3.(2) <- !c3; t4.(2) <- !c4;
   c1 := b1.(2) || !c1; c2 := b2.(2) || !c2;
   c3 := b3.(2) || !c3; c4 := b4.(2) || !c4;
-  (t1,t2,t3,t4))    
+  (t1,t2,t3,t4))
+
+let f_ortho_v4 =
+  let (c1,c2,c3,c4) = (Array.make 3 false, Array.make 3 false,
+                       Array.make 3 false, Array.make 3 false) in
+  c4.(0) <- true;
+  fun (b1, b2, b3, b4) ->
+  (
+    for i = 1 to 2 do
+      let t1 = or_n b1 c1 in
+      let t2 = or_n b2 c2 in
+      let t3 = or_n b3 c3 in
+      let t4 = or_n b4 c4 in 
+      c1.(i) <- t1.(i-1); c2.(i) <- t2.(i-1); c3.(i) <- t3.(i-1); c4.(i) <- t4.(i-1);
+    done;
+    let tmp = (Array.copy c1,Array.copy c2,Array.copy c3,Array.copy c4) in
+    let t1 = or_n b1 c1 in
+    let t2 = or_n b2 c2 in
+    let t3 = or_n b3 c3 in
+    let t4 = or_n b4 c4 in 
+    c1.(0) <- t1.(2); c2.(0) <- t2.(2); c3.(0) <- t3.(2); c4.(0) <- t4.(2);
+    
+    tmp) 
     
 
 let main_ortho (in_stream: (bool*bool*bool*bool) Stream.t)
@@ -176,7 +191,7 @@ let main_ortho (in_stream: (bool*bool*bool*bool) Stream.t)
                  w.(0) <- a3; w.(1) <- b3; w.(2) <- c3;
                  x.(0) <- a4; x.(1) <- b4; x.(2) <- c4;
 
-                 let (u',v',w',x') = f_ortho_v3 (u,v,w,x) in
+                 let (u',v',w',x') = f_ortho_v4 (u,v,w,x) in
                  
                  (* unorthogolize the returned values *)
                  let (a1',a2',a3',a4') = (u'.(0),v'.(0),w'.(0),x'.(0)) in

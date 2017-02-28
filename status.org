@@ -71,7 +71,8 @@
    CLOSED: [2017-02-25 sam. 20:19]
 ** DONE Think about how to actually run usuba code (orthogonalization + streams & co), naive.
    CLOSED: [2017-02-25 sam. 20:20]
-** TODO Generate bitsliced code from usuba code.
+** DONE Generate bitsliced code from usuba code.
+   CLOSED: [2017-02-28 mar. 15:53]
 ** TODO Don't generate several times the same "convert" function
 ** TODO Regroup env_var and env_fun into a single env, add helpers to manipulate it
 ** TODO Complete implementation of usuba DES

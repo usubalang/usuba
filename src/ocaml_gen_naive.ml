@@ -261,7 +261,7 @@ let rec rewrite_expr (env_var: (ident, int) Hashtbl.t)
   | Op (Not,l) -> Tuple(distrib_not (List.map (rewrite_expr env_var env_fun) l))
   | Op _ -> raise Invalid_operator_call
   | Fun (f,l)    -> Fun(f, format_param f (List.map (rewrite_expr env_var env_fun) l) env_fun)
-  | Mux (e,c,id) -> raise (Not_implemented "Mux")
+  | Mux (e,c,id) -> rewrite_expr env_var env_fun e
   | Demux(id,l)  -> raise (Not_implemented "Demux")
   | Fby(ei,ef)   -> Fby(rewrite_expr env_var env_fun ei, rewrite_expr env_var env_fun ef)
                          

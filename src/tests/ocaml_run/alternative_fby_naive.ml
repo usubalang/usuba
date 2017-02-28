@@ -20,8 +20,8 @@ let main d_stream =
     (fun _ -> 
     try
         let d = Stream.next d_stream in
-        let (d1,d2,d3,d4) = (d lsr 3 land 1 = 1,d lsr 2 land 1 = 1,d lsr 1 land 1 = 1,d lsr 0 land 1 = 1) in
-        let (c1',c2',c3',c4') = f_ ((d1,d2,d3,d4)) in
-        let (retc1,retc2,retc3,retc4) = (if c1' then 8 else 0)lor(if c2' then 4 else 0)lor(if c3' then 2 else 0)lor(if c4' then 1 else 0)
-        in Some ((retc1,retc2,retc3,retc4))
+        let (d1,d2,d3,d4) = (Int64.logand (Int64.shift_right d 3) Int64.one = Int64.one,Int64.logand (Int64.shift_right d 2) Int64.one = Int64.one,Int64.logand (Int64.shift_right d 1) Int64.one = Int64.one,Int64.logand (Int64.shift_right d 0) Int64.one = Int64.one) in
+        let (ret1,ret2,ret3,ret4) = f_ ((d1,d2,d3,d4)) in
+        let (c') = (Int64.logor (Int64.logor (Int64.logor (Int64.logor Int64.zero (if ret1 then (Int64.shift_left Int64.one 3) else Int64.zero)) (if ret2 then (Int64.shift_left Int64.one 2) else Int64.zero)) (if ret3 then (Int64.shift_left Int64.one 1) else Int64.zero)) (if ret4 then (Int64.shift_left Int64.one 0) else Int64.zero))
+        in Some (c')
     with Stream.Failure -> None)
