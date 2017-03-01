@@ -23,7 +23,7 @@ let _ =
      "and", TOK_AND;
      "or", TOK_OR;
      "xor", TOK_XOR;
-     "not", TOK_NOT;
+     "not", TOK_NOT
    ]
 
 let next_line lexbuf =

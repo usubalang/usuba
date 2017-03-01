@@ -184,39 +184,48 @@ let rec get_size e env =
   | Mux _ -> raise (Not_implemented "Mux")
   | Demux _  -> raise (Not_implemented "Demux")
   | Fby(ei,_) -> get_size ei env
-                      
-let gen_conv target orig =
+
+let gen_conv =
+  let cache = Hashtbl.create 10 in
+  fun target orig ->
   if target = orig then "id"
-  else begin
-      let id = "convert" ^ (string_of_int @@ id_generator ()) in
-      let num_param = ref 0 in
-      let param = List.map (fun n -> incr num_param;
-                                     ("in"^(string_of_int !num_param),
+  else
+    let key = (join " " (List.map string_of_int orig)) ^ "_" ^
+                (join " " (List.map string_of_int target)) in
+    try let name = Hashtbl.find cache key in
+        name
+    with Not_found ->
+      begin
+        let id = "convert" ^ (string_of_int @@ id_generator ()) in
+        let num_param = ref 0 in
+        let param = List.map (fun n -> incr num_param;
+                                       ("in"^(string_of_int !num_param),
+                                        Int n,
+                                        "_")) orig in
+        let num_ret = ref 0 in
+        let ret = List.map (fun n -> incr num_ret;
+                                     ("out"^(string_of_int !num_ret),
                                       Int n,
-                                      "_")) orig in
-      let num_ret = ref 0 in
-      let ret = List.map (fun n -> incr num_ret;
-                                   ("out"^(string_of_int !num_ret),
-                                    Int n,
-                                    "_")) target in
-      let rec make_body id_p num_p id_r num_r size_curr_p size_curr_r next_p next_r :
-        (pat * expr) list =
-        if size_curr_p = 0 then
-          match next_p with
-          | [] -> []
-          | hd::tl -> make_body (id_p+1) 1 id_r num_r hd size_curr_r tl next_r
-        else if size_curr_r = 0 then
-          match next_r with
-          | [] -> []
-          | hd::tl -> make_body id_p num_p (id_r+1) 1 size_curr_p hd next_p tl
-        else
-          ([Dotted("out"^(string_of_int id_r),num_r)], Field("in"^(string_of_int id_p),num_p)) ::
-            (make_body id_p (num_p+1) id_r (num_r+1) (size_curr_p-1) (size_curr_r-1) next_p next_r)
-      in
-      let f = (id,param,ret,[], make_body 0 1 0 1 0 0 orig target) in
-      aux_fun := (!aux_fun) @ [f];
-      id
-    end
+                                      "_")) target in
+        let rec make_body id_p num_p id_r num_r size_curr_p size_curr_r next_p next_r :
+                  (pat * expr) list =
+          if size_curr_p = 0 then
+            match next_p with
+            | [] -> []
+            | hd::tl -> make_body (id_p+1) 1 id_r num_r hd size_curr_r tl next_r
+          else if size_curr_r = 0 then
+            match next_r with
+            | [] -> []
+            | hd::tl -> make_body id_p num_p (id_r+1) 1 size_curr_p hd next_p tl
+          else
+            ([Dotted("out"^(string_of_int id_r),num_r)], Field("in"^(string_of_int id_p),num_p)) ::
+              (make_body id_p (num_p+1) id_r (num_r+1) (size_curr_p-1) (size_curr_r-1) next_p next_r)
+        in
+        let f = (id,param,ret,[], make_body 0 1 0 1 0 0 orig target) in
+        aux_fun := (!aux_fun) @ [f];
+        Hashtbl.add cache key id;
+        id
+      end
                       
 let rec get_sizes l env =
   match l with

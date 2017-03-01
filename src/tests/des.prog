@@ -75,7 +75,7 @@ node sbox_2 (a1:bool::_, a2:bool::_, a3:bool::_, a4:bool::_, a5:bool::_, a6:bool
      returns out1:bool::_, out2:bool::_, out3:bool::_, out4:bool::_
 vars
 let
-    	x1 = not(a5);
+    x1 = not(a5);
 	x2 = not(a1);
 	x3 = xor(a5,a6);
 	x4 = xor(x3,x2);
@@ -755,7 +755,7 @@ let
     out.27 = a.30;
     out.28 = a.6;
     out.29 = a.22;
-    out.30 = a.1;
+    out.30 = a.11;
     out.31 = a.4;
     out.32 = a.25
 tel
@@ -906,6 +906,800 @@ let
     roundkey.48 = key.31
 tel
 
+node roundkey2 (key : uint_64::_) returns roundkey : uint_48::_
+vars
+let
+    roundkey.1 = key.2;
+    roundkey.2 = key.43;
+    roundkey.3 = key.26;
+    roundkey.4 = key.52;
+    roundkey.5 = key.41;
+    roundkey.6 = key.9;
+    roundkey.7 = key.25;
+    roundkey.8 = key.49;
+    roundkey.9 = key.59;
+    roundkey.10 = key.1;
+    roundkey.11 = key.11;
+    roundkey.12 = key.34;
+    roundkey.13 = key.60;
+    roundkey.14 = key.27;
+    roundkey.15 = key.18;
+    roundkey.16 = key.17;
+    roundkey.17 = key.36;
+    roundkey.18 = key.50;
+    roundkey.19 = key.51;
+    roundkey.20 = key.58;
+    roundkey.21 = key.57;
+    roundkey.22 = key.19;
+    roundkey.23 = key.10;
+    roundkey.24 = key.33;
+    roundkey.25 = key.14;
+    roundkey.26 = key.20;
+    roundkey.27 = key.31;
+    roundkey.28 = key.46;
+    roundkey.29 = key.29;
+    roundkey.30 = key.63;
+    roundkey.31 = key.39;
+    roundkey.32 = key.22;
+    roundkey.33 = key.28;
+    roundkey.34 = key.45;
+    roundkey.35 = key.15;
+    roundkey.36 = key.21;
+    roundkey.37 = key.53;
+    roundkey.38 = key.13;
+    roundkey.39 = key.30;
+    roundkey.40 = key.55;
+    roundkey.41 = key.7;
+    roundkey.42 = key.12;
+    roundkey.43 = key.37;
+    roundkey.44 = key.6;
+    roundkey.45 = key.5;
+    roundkey.46 = key.54;
+    roundkey.47 = key.47;
+    roundkey.48 = key.23
+tel
+
+node roundkey3 (key : uint_64::_) returns roundkey : uint_48::_
+vars
+let
+    roundkey.1 = key.51;
+    roundkey.2 = key.27;
+    roundkey.3 = key.10;
+    roundkey.4 = key.36;
+    roundkey.5 = key.25;
+    roundkey.6 = key.58;
+    roundkey.7 = key.9;
+    roundkey.8 = key.33;
+    roundkey.9 = key.43;
+    roundkey.10 = key.50;
+    roundkey.11 = key.60;
+    roundkey.12 = key.18;
+    roundkey.13 = key.44;
+    roundkey.14 = key.11;
+    roundkey.15 = key.2;
+    roundkey.16 = key.1;
+    roundkey.17 = key.49;
+    roundkey.18 = key.34;
+    roundkey.19 = key.35;
+    roundkey.20 = key.42;
+    roundkey.21 = key.41;
+    roundkey.22 = key.3;
+    roundkey.23 = key.59;
+    roundkey.24 = key.17;
+    roundkey.25 = key.61;
+    roundkey.26 = key.4;
+    roundkey.27 = key.15;
+    roundkey.28 = key.30;
+    roundkey.29 = key.13;
+    roundkey.30 = key.47;
+    roundkey.31 = key.23;
+    roundkey.32 = key.6;
+    roundkey.33 = key.12;
+    roundkey.34 = key.29;
+    roundkey.35 = key.62;
+    roundkey.36 = key.5;
+    roundkey.37 = key.37;
+    roundkey.38 = key.28;
+    roundkey.39 = key.14;
+    roundkey.40 = key.39;
+    roundkey.41 = key.54;
+    roundkey.42 = key.63;
+    roundkey.43 = key.21;
+    roundkey.44 = key.53;
+    roundkey.45 = key.20;
+    roundkey.46 = key.38;
+    roundkey.47 = key.31;
+    roundkey.48 = key.7
+tel
+
+node roundkey4 (key : uint_64::_) returns roundkey : uint_48::_
+vars
+let
+    roundkey.1 = key.35;
+    roundkey.2 = key.11;
+    roundkey.3 = key.59;
+    roundkey.4 = key.49;
+    roundkey.5 = key.9;
+    roundkey.6 = key.42;
+    roundkey.7 = key.58;
+    roundkey.8 = key.17;
+    roundkey.9 = key.27;
+    roundkey.10 = key.34;
+    roundkey.11 = key.44;
+    roundkey.12 = key.2;
+    roundkey.13 = key.57;
+    roundkey.14 = key.60;
+    roundkey.15 = key.51;
+    roundkey.16 = key.50;
+    roundkey.17 = key.33;
+    roundkey.18 = key.18;
+    roundkey.19 = key.19;
+    roundkey.20 = key.26;
+    roundkey.21 = key.25;
+    roundkey.22 = key.52;
+    roundkey.23 = key.43;
+    roundkey.24 = key.1;
+    roundkey.25 = key.45;
+    roundkey.26 = key.55;
+    roundkey.27 = key.62;
+    roundkey.28 = key.14;
+    roundkey.29 = key.28;
+    roundkey.30 = key.31;
+    roundkey.31 = key.7;
+    roundkey.32 = key.53;
+    roundkey.33 = key.63;
+    roundkey.34 = key.13;
+    roundkey.35 = key.46;
+    roundkey.36 = key.20;
+    roundkey.37 = key.21;
+    roundkey.38 = key.12;
+    roundkey.39 = key.61;
+    roundkey.40 = key.23;
+    roundkey.41 = key.38;
+    roundkey.42 = key.47;
+    roundkey.43 = key.5;
+    roundkey.44 = key.37;
+    roundkey.45 = key.4;
+    roundkey.46 = key.22;
+    roundkey.47 = key.15;
+    roundkey.48 = key.54
+tel
+
+node roundkey5 (key : uint_64::_) returns roundkey : uint_48::_
+vars
+let
+    roundkey.1 = key.19;
+    roundkey.2 = key.60;
+    roundkey.3 = key.43;
+    roundkey.4 = key.33;
+    roundkey.5 = key.58;
+    roundkey.6 = key.26;
+    roundkey.7 = key.42;
+    roundkey.8 = key.1;
+    roundkey.9 = key.11;
+    roundkey.10 = key.18;
+    roundkey.11 = key.57;
+    roundkey.12 = key.51;
+    roundkey.13 = key.41;
+    roundkey.14 = key.44;
+    roundkey.15 = key.35;
+    roundkey.16 = key.34;
+    roundkey.17 = key.17;
+    roundkey.18 = key.2;
+    roundkey.19 = key.3;
+    roundkey.20 = key.10;
+    roundkey.21 = key.9;
+    roundkey.22 = key.36;
+    roundkey.23 = key.27;
+    roundkey.24 = key.50;
+    roundkey.25 = key.29;
+    roundkey.26 = key.39;
+    roundkey.27 = key.46;
+    roundkey.28 = key.61;
+    roundkey.29 = key.12;
+    roundkey.30 = key.15;
+    roundkey.31 = key.54;
+    roundkey.32 = key.37;
+    roundkey.33 = key.47;
+    roundkey.34 = key.28;
+    roundkey.35 = key.30;
+    roundkey.36 = key.4;
+    roundkey.37 = key.5;
+    roundkey.38 = key.63;
+    roundkey.39 = key.45;
+    roundkey.40 = key.7;
+    roundkey.41 = key.22;
+    roundkey.42 = key.31;
+    roundkey.43 = key.20;
+    roundkey.44 = key.21;
+    roundkey.45 = key.55;
+    roundkey.46 = key.6;
+    roundkey.47 = key.62;
+    roundkey.48 = key.38
+tel
+
+node roundkey6 (key : uint_64::_) returns roundkey : uint_48::_
+vars
+let
+    roundkey.1 = key.3;
+    roundkey.2 = key.44;
+    roundkey.3 = key.27;
+    roundkey.4 = key.17;
+    roundkey.5 = key.42;
+    roundkey.6 = key.10;
+    roundkey.7 = key.26;
+    roundkey.8 = key.50;
+    roundkey.9 = key.60;
+    roundkey.10 = key.2;
+    roundkey.11 = key.41;
+    roundkey.12 = key.35;
+    roundkey.13 = key.25;
+    roundkey.14 = key.57;
+    roundkey.15 = key.19;
+    roundkey.16 = key.18;
+    roundkey.17 = key.1;
+    roundkey.18 = key.51;
+    roundkey.19 = key.52;
+    roundkey.20 = key.59;
+    roundkey.21 = key.58;
+    roundkey.22 = key.49;
+    roundkey.23 = key.11;
+    roundkey.24 = key.34;
+    roundkey.25 = key.13;
+    roundkey.26 = key.23;
+    roundkey.27 = key.30;
+    roundkey.28 = key.45;
+    roundkey.29 = key.63;
+    roundkey.30 = key.62;
+    roundkey.31 = key.38;
+    roundkey.32 = key.21;
+    roundkey.33 = key.31;
+    roundkey.34 = key.12;
+    roundkey.35 = key.14;
+    roundkey.36 = key.55;
+    roundkey.37 = key.20;
+    roundkey.38 = key.47;
+    roundkey.39 = key.29;
+    roundkey.40 = key.54;
+    roundkey.41 = key.6;
+    roundkey.42 = key.15;
+    roundkey.43 = key.4;
+    roundkey.44 = key.5;
+    roundkey.45 = key.39;
+    roundkey.46 = key.53;
+    roundkey.47 = key.46;
+    roundkey.48 = key.22
+tel
+
+node roundkey7 (key : uint_64::_) returns roundkey : uint_48::_
+vars
+let
+    roundkey.1 = key.52;
+    roundkey.2 = key.57;
+    roundkey.3 = key.11;
+    roundkey.4 = key.1;
+    roundkey.5 = key.26;
+    roundkey.6 = key.59;
+    roundkey.7 = key.10;
+    roundkey.8 = key.34;
+    roundkey.9 = key.44;
+    roundkey.10 = key.51;
+    roundkey.11 = key.25;
+    roundkey.12 = key.19;
+    roundkey.13 = key.9;
+    roundkey.14 = key.41;
+    roundkey.15 = key.3;
+    roundkey.16 = key.2;
+    roundkey.17 = key.50;
+    roundkey.18 = key.35;
+    roundkey.19 = key.36;
+    roundkey.20 = key.43;
+    roundkey.21 = key.42;
+    roundkey.22 = key.33;
+    roundkey.23 = key.60;
+    roundkey.24 = key.18;
+    roundkey.25 = key.28;
+    roundkey.26 = key.7;
+    roundkey.27 = key.14;
+    roundkey.28 = key.29;
+    roundkey.29 = key.47;
+    roundkey.30 = key.46;
+    roundkey.31 = key.22;
+    roundkey.32 = key.5;
+    roundkey.33 = key.15;
+    roundkey.34 = key.63;
+    roundkey.35 = key.61;
+    roundkey.36 = key.39;
+    roundkey.37 = key.4;
+    roundkey.38 = key.31;
+    roundkey.39 = key.13;
+    roundkey.40 = key.38;
+    roundkey.41 = key.53;
+    roundkey.42 = key.62;
+    roundkey.43 = key.55;
+    roundkey.44 = key.20;
+    roundkey.45 = key.23;
+    roundkey.46 = key.37;
+    roundkey.47 = key.30;
+    roundkey.48 = key.6
+tel
+
+node roundkey8 (key : uint_64::_) returns roundkey : uint_48::_
+vars
+let
+    roundkey.1 = key.36;
+    roundkey.2 = key.41;
+    roundkey.3 = key.60;
+    roundkey.4 = key.50;
+    roundkey.5 = key.10;
+    roundkey.6 = key.43;
+    roundkey.7 = key.59;
+    roundkey.8 = key.18;
+    roundkey.9 = key.57;
+    roundkey.10 = key.35;
+    roundkey.11 = key.9;
+    roundkey.12 = key.3;
+    roundkey.13 = key.58;
+    roundkey.14 = key.25;
+    roundkey.15 = key.52;
+    roundkey.16 = key.51;
+    roundkey.17 = key.34;
+    roundkey.18 = key.19;
+    roundkey.19 = key.49;
+    roundkey.20 = key.27;
+    roundkey.21 = key.26;
+    roundkey.22 = key.17;
+    roundkey.23 = key.44;
+    roundkey.24 = key.2;
+    roundkey.25 = key.12;
+    roundkey.26 = key.54;
+    roundkey.27 = key.61;
+    roundkey.28 = key.13;
+    roundkey.29 = key.31;
+    roundkey.30 = key.30;
+    roundkey.31 = key.6;
+    roundkey.32 = key.20;
+    roundkey.33 = key.62;
+    roundkey.34 = key.47;
+    roundkey.35 = key.45;
+    roundkey.36 = key.23;
+    roundkey.37 = key.55;
+    roundkey.38 = key.15;
+    roundkey.39 = key.28;
+    roundkey.40 = key.22;
+    roundkey.41 = key.37;
+    roundkey.42 = key.46;
+    roundkey.43 = key.39;
+    roundkey.44 = key.4;
+    roundkey.45 = key.7;
+    roundkey.46 = key.21;
+    roundkey.47 = key.14;
+    roundkey.48 = key.53
+tel
+
+node roundkey9 (key : uint_64::_) returns roundkey : uint_48::_
+vars
+let
+    roundkey.1 = key.57;
+    roundkey.2 = key.33;
+    roundkey.3 = key.52;
+    roundkey.4 = key.42;
+    roundkey.5 = key.2;
+    roundkey.6 = key.35;
+    roundkey.7 = key.51;
+    roundkey.8 = key.10;
+    roundkey.9 = key.49;
+    roundkey.10 = key.27;
+    roundkey.11 = key.1;
+    roundkey.12 = key.60;
+    roundkey.13 = key.50;
+    roundkey.14 = key.17;
+    roundkey.15 = key.44;
+    roundkey.16 = key.43;
+    roundkey.17 = key.26;
+    roundkey.18 = key.11;
+    roundkey.19 = key.41;
+    roundkey.20 = key.19;
+    roundkey.21 = key.18;
+    roundkey.22 = key.9;
+    roundkey.23 = key.36;
+    roundkey.24 = key.59;
+    roundkey.25 = key.4;
+    roundkey.26 = key.46;
+    roundkey.27 = key.53;
+    roundkey.28 = key.5;
+    roundkey.29 = key.23;
+    roundkey.30 = key.22;
+    roundkey.31 = key.61;
+    roundkey.32 = key.12;
+    roundkey.33 = key.54;
+    roundkey.34 = key.39;
+    roundkey.35 = key.37;
+    roundkey.36 = key.15;
+    roundkey.37 = key.47;
+    roundkey.38 = key.7;
+    roundkey.39 = key.20;
+    roundkey.40 = key.14;
+    roundkey.41 = key.29;
+    roundkey.42 = key.38;
+    roundkey.43 = key.31;
+    roundkey.44 = key.63;
+    roundkey.45 = key.62;
+    roundkey.46 = key.13;
+    roundkey.47 = key.6;
+    roundkey.48 = key.45
+tel
+
+node roundkey10 (key : uint_64::_) returns roundkey : uint_48::_
+vars
+let
+    roundkey.1 = key.41;
+    roundkey.2 = key.17;
+    roundkey.3 = key.36;
+    roundkey.4 = key.26;
+    roundkey.5 = key.51;
+    roundkey.6 = key.19;
+    roundkey.7 = key.35;
+    roundkey.8 = key.59;
+    roundkey.9 = key.33;
+    roundkey.10 = key.11;
+    roundkey.11 = key.50;
+    roundkey.12 = key.44;
+    roundkey.13 = key.34;
+    roundkey.14 = key.1;
+    roundkey.15 = key.57;
+    roundkey.16 = key.27;
+    roundkey.17 = key.10;
+    roundkey.18 = key.60;
+    roundkey.19 = key.25;
+    roundkey.20 = key.3;
+    roundkey.21 = key.2;
+    roundkey.22 = key.58;
+    roundkey.23 = key.49;
+    roundkey.24 = key.43;
+    roundkey.25 = key.55;
+    roundkey.26 = key.30;
+    roundkey.27 = key.37;
+    roundkey.28 = key.20;
+    roundkey.29 = key.7;
+    roundkey.30 = key.6;
+    roundkey.31 = key.45;
+    roundkey.32 = key.63;
+    roundkey.33 = key.38;
+    roundkey.34 = key.23;
+    roundkey.35 = key.21;
+    roundkey.36 = key.62;
+    roundkey.37 = key.31;
+    roundkey.38 = key.54;
+    roundkey.39 = key.4;
+    roundkey.40 = key.61;
+    roundkey.41 = key.13;
+    roundkey.42 = key.22;
+    roundkey.43 = key.15;
+    roundkey.44 = key.47;
+    roundkey.45 = key.46;
+    roundkey.46 = key.28;
+    roundkey.47 = key.53;
+    roundkey.48 = key.29
+tel
+
+node roundkey11 (key : uint_64::_) returns roundkey : uint_48::_
+vars
+let
+    roundkey.1 = key.25;
+    roundkey.2 = key.1;
+    roundkey.3 = key.49;
+    roundkey.4 = key.10;
+    roundkey.5 = key.35;
+    roundkey.6 = key.3;
+    roundkey.7 = key.19;
+    roundkey.8 = key.43;
+    roundkey.9 = key.17;
+    roundkey.10 = key.60;
+    roundkey.11 = key.34;
+    roundkey.12 = key.57;
+    roundkey.13 = key.18;
+    roundkey.14 = key.50;
+    roundkey.15 = key.41;
+    roundkey.16 = key.11;
+    roundkey.17 = key.59;
+    roundkey.18 = key.44;
+    roundkey.19 = key.9;
+    roundkey.20 = key.52;
+    roundkey.21 = key.51;
+    roundkey.22 = key.42;
+    roundkey.23 = key.33;
+    roundkey.24 = key.27;
+    roundkey.25 = key.39;
+    roundkey.26 = key.14;
+    roundkey.27 = key.21;
+    roundkey.28 = key.4;
+    roundkey.29 = key.54;
+    roundkey.30 = key.53;
+    roundkey.31 = key.29;
+    roundkey.32 = key.47;
+    roundkey.33 = key.22;
+    roundkey.34 = key.7;
+    roundkey.35 = key.5;
+    roundkey.36 = key.46;
+    roundkey.37 = key.15;
+    roundkey.38 = key.38;
+    roundkey.39 = key.55;
+    roundkey.40 = key.45;
+    roundkey.41 = key.28;
+    roundkey.42 = key.6;
+    roundkey.43 = key.62;
+    roundkey.44 = key.31;
+    roundkey.45 = key.30;
+    roundkey.46 = key.12;
+    roundkey.47 = key.37;
+    roundkey.48 = key.13
+tel
+
+node roundkey12 (key : uint_64::_) returns roundkey : uint_48::_
+vars
+let
+    roundkey.1 = key.9;
+    roundkey.2 = key.50;
+    roundkey.3 = key.33;
+    roundkey.4 = key.59;
+    roundkey.5 = key.19;
+    roundkey.6 = key.52;
+    roundkey.7 = key.3;
+    roundkey.8 = key.27;
+    roundkey.9 = key.1;
+    roundkey.10 = key.44;
+    roundkey.11 = key.18;
+    roundkey.12 = key.41;
+    roundkey.13 = key.2;
+    roundkey.14 = key.34;
+    roundkey.15 = key.25;
+    roundkey.16 = key.60;
+    roundkey.17 = key.43;
+    roundkey.18 = key.57;
+    roundkey.19 = key.58;
+    roundkey.20 = key.36;
+    roundkey.21 = key.35;
+    roundkey.22 = key.26;
+    roundkey.23 = key.17;
+    roundkey.24 = key.11;
+    roundkey.25 = key.23;
+    roundkey.26 = key.61;
+    roundkey.27 = key.5;
+    roundkey.28 = key.55;
+    roundkey.29 = key.38;
+    roundkey.30 = key.37;
+    roundkey.31 = key.13;
+    roundkey.32 = key.31;
+    roundkey.33 = key.6;
+    roundkey.34 = key.54;
+    roundkey.35 = key.20;
+    roundkey.36 = key.30;
+    roundkey.37 = key.62;
+    roundkey.38 = key.22;
+    roundkey.39 = key.39;
+    roundkey.40 = key.29;
+    roundkey.41 = key.12;
+    roundkey.42 = key.53;
+    roundkey.43 = key.46;
+    roundkey.44 = key.15;
+    roundkey.45 = key.14;
+    roundkey.46 = key.63;
+    roundkey.47 = key.21;
+    roundkey.48 = key.28
+tel
+
+node roundkey13 (key : uint_64::_) returns roundkey : uint_48::_
+vars
+let
+    roundkey.1 = key.58;
+    roundkey.2 = key.34;
+    roundkey.3 = key.17;
+    roundkey.4 = key.43;
+    roundkey.5 = key.3;
+    roundkey.6 = key.36;
+    roundkey.7 = key.52;
+    roundkey.8 = key.11;
+    roundkey.9 = key.50;
+    roundkey.10 = key.57;
+    roundkey.11 = key.2;
+    roundkey.12 = key.25;
+    roundkey.13 = key.51;
+    roundkey.14 = key.18;
+    roundkey.15 = key.9;
+    roundkey.16 = key.44;
+    roundkey.17 = key.27;
+    roundkey.18 = key.41;
+    roundkey.19 = key.42;
+    roundkey.20 = key.49;
+    roundkey.21 = key.19;
+    roundkey.22 = key.10;
+    roundkey.23 = key.1;
+    roundkey.24 = key.60;
+    roundkey.25 = key.7;
+    roundkey.26 = key.45;
+    roundkey.27 = key.20;
+    roundkey.28 = key.39;
+    roundkey.29 = key.22;
+    roundkey.30 = key.21;
+    roundkey.31 = key.28;
+    roundkey.32 = key.15;
+    roundkey.33 = key.53;
+    roundkey.34 = key.38;
+    roundkey.35 = key.4;
+    roundkey.36 = key.14;
+    roundkey.37 = key.46;
+    roundkey.38 = key.6;
+    roundkey.39 = key.23;
+    roundkey.40 = key.13;
+    roundkey.41 = key.63;
+    roundkey.42 = key.37;
+    roundkey.43 = key.30;
+    roundkey.44 = key.62;
+    roundkey.45 = key.61;
+    roundkey.46 = key.47;
+    roundkey.47 = key.5;
+    roundkey.48 = key.12
+tel
+
+node roundkey14 (key : uint_64::_) returns roundkey : uint_48::_
+vars
+let
+    roundkey.1 = key.42;
+    roundkey.2 = key.18;
+    roundkey.3 = key.1;
+    roundkey.4 = key.27;
+    roundkey.5 = key.52;
+    roundkey.6 = key.49;
+    roundkey.7 = key.36;
+    roundkey.8 = key.60;
+    roundkey.9 = key.34;
+    roundkey.10 = key.41;
+    roundkey.11 = key.51;
+    roundkey.12 = key.9;
+    roundkey.13 = key.35;
+    roundkey.14 = key.2;
+    roundkey.15 = key.58;
+    roundkey.16 = key.57;
+    roundkey.17 = key.11;
+    roundkey.18 = key.25;
+    roundkey.19 = key.26;
+    roundkey.20 = key.33;
+    roundkey.21 = key.3;
+    roundkey.22 = key.59;
+    roundkey.23 = key.50;
+    roundkey.24 = key.44;
+    roundkey.25 = key.54;
+    roundkey.26 = key.29;
+    roundkey.27 = key.4;
+    roundkey.28 = key.23;
+    roundkey.29 = key.6;
+    roundkey.30 = key.5;
+    roundkey.31 = key.12;
+    roundkey.32 = key.62;
+    roundkey.33 = key.37;
+    roundkey.34 = key.22;
+    roundkey.35 = key.55;
+    roundkey.36 = key.61;
+    roundkey.37 = key.30;
+    roundkey.38 = key.53;
+    roundkey.39 = key.7;
+    roundkey.40 = key.28;
+    roundkey.41 = key.47;
+    roundkey.42 = key.21;
+    roundkey.43 = key.14;
+    roundkey.44 = key.46;
+    roundkey.45 = key.45;
+    roundkey.46 = key.31;
+    roundkey.47 = key.20;
+    roundkey.48 = key.63
+tel
+
+node roundkey15 (key : uint_64::_) returns roundkey : uint_48::_
+vars
+let
+    roundkey.1 = key.26;
+    roundkey.2 = key.2;
+    roundkey.3 = key.50;
+    roundkey.4 = key.11;
+    roundkey.5 = key.36;
+    roundkey.6 = key.33;
+    roundkey.7 = key.49;
+    roundkey.8 = key.44;
+    roundkey.9 = key.18;
+    roundkey.10 = key.25;
+    roundkey.11 = key.35;
+    roundkey.12 = key.58;
+    roundkey.13 = key.19;
+    roundkey.14 = key.51;
+    roundkey.15 = key.42;
+    roundkey.16 = key.41;
+    roundkey.17 = key.60;
+    roundkey.18 = key.9;
+    roundkey.19 = key.10;
+    roundkey.20 = key.17;
+    roundkey.21 = key.52;
+    roundkey.22 = key.43;
+    roundkey.23 = key.34;
+    roundkey.24 = key.57;
+    roundkey.25 = key.38;
+    roundkey.26 = key.13;
+    roundkey.27 = key.55;
+    roundkey.28 = key.7;
+    roundkey.29 = key.53;
+    roundkey.30 = key.20;
+    roundkey.31 = key.63;
+    roundkey.32 = key.46;
+    roundkey.33 = key.21;
+    roundkey.34 = key.6;
+    roundkey.35 = key.39;
+    roundkey.36 = key.45;
+    roundkey.37 = key.14;
+    roundkey.38 = key.37;
+    roundkey.39 = key.54;
+    roundkey.40 = key.12;
+    roundkey.41 = key.31;
+    roundkey.42 = key.5;
+    roundkey.43 = key.61;
+    roundkey.44 = key.30;
+    roundkey.45 = key.29;
+    roundkey.46 = key.15;
+    roundkey.47 = key.4;
+    roundkey.48 = key.47
+tel
+
+node roundkey16 (key : uint_64::_) returns roundkey : uint_48::_
+vars
+let
+    roundkey.1 = key.18;
+    roundkey.2 = key.59;
+    roundkey.3 = key.42;
+    roundkey.4 = key.3;
+    roundkey.5 = key.57;
+    roundkey.6 = key.25;
+    roundkey.7 = key.41;
+    roundkey.8 = key.36;
+    roundkey.9 = key.10;
+    roundkey.10 = key.17;
+    roundkey.11 = key.27;
+    roundkey.12 = key.50;
+    roundkey.13 = key.11;
+    roundkey.14 = key.43;
+    roundkey.15 = key.34;
+    roundkey.16 = key.33;
+    roundkey.17 = key.52;
+    roundkey.18 = key.1;
+    roundkey.19 = key.2;
+    roundkey.20 = key.9;
+    roundkey.21 = key.44;
+    roundkey.22 = key.35;
+    roundkey.23 = key.26;
+    roundkey.24 = key.49;
+    roundkey.25 = key.30;
+    roundkey.26 = key.5;
+    roundkey.27 = key.47;
+    roundkey.28 = key.62;
+    roundkey.29 = key.45;
+    roundkey.30 = key.12;
+    roundkey.31 = key.55;
+    roundkey.32 = key.38;
+    roundkey.33 = key.13;
+    roundkey.34 = key.61;
+    roundkey.35 = key.31;
+    roundkey.36 = key.37;
+    roundkey.37 = key.6;
+    roundkey.38 = key.29;
+    roundkey.39 = key.46;
+    roundkey.40 = key.4;
+    roundkey.41 = key.23;
+    roundkey.42 = key.28;
+    roundkey.43 = key.53;
+    roundkey.44 = key.22;
+    roundkey.45 = key.21;
+    roundkey.46 = key.7;
+    roundkey.47 = key.63;
+    roundkey.48 = key.39
+tel
 
 node des (plaintext : uint_64::_, key : uint_64::_) returns ciphered : uint_64::_
 vars
@@ -916,7 +1710,8 @@ vars
     s1 : uint_6::_, s2 : uint_6::_, s3 : uint_6::_, s4 : uint_6::_,
     s5 : uint_6::_, s6 : uint_6::_, s7 : uint_6::_, s8 : uint_6::_,
     c : uint_32::_,
-    permuted_c : uint_32::_
+    permuted_c : uint_32::_,
+    xored : uint_32::_
 let
 
     # Initial permutation, and splitting into left and right 
@@ -928,24 +1723,290 @@ let
 
     # Expantion of R
     expanded = expand(right);
-    roundkey = roundkey1(key); # Note: roundkey1 isn't defined yet.
-    
+    roundkey = roundkey1(key);
 
     # Xoring key and R
     (s1,s2,s3,s4,s5,s6,s7,s8)
           = xor48(expanded, roundkey);
-          
+
     # Sboxes (and permutation)
     c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
                 sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
+    
+    ###################
+    ##### Round 2 #####
 
-    (left,right) = (right,xor32(left,c));
+    # Expantion of R
+    expanded = expand(right);
+    roundkey = roundkey2(key);
 
-    ##### Round 2-16 not implemented #####
+    # Xoring key and R
+    (s1,s2,s3,s4,s5,s6,s7,s8)
+          = xor48(expanded, roundkey);
 
-    # .....
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
+    
+    ###################
+    ##### Round 3 #####
+
+    # Expantion of R
+    expanded = expand(right);
+    roundkey = roundkey3(key);
+    
+    # Xoring key and R
+    (s1,s2,s3,s4,s5,s6,s7,s8)
+          = xor48(expanded, roundkey);
+
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
+    
+    ###################
+    ##### Round 4 #####
+
+    # Expantion of R
+    expanded = expand(right);
+    roundkey = roundkey4(key);
+
+    # Xoring key and R
+    (s1,s2,s3,s4,s5,s6,s7,s8)
+          = xor48(expanded, roundkey);
+
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
+    
+    ###################
+    ##### Round 5 #####
+
+    # Expantion of R
+    expanded = expand(right);
+    roundkey = roundkey5(key);
+
+    # Xoring key and R
+    (s1,s2,s3,s4,s5,s6,s7,s8)
+          = xor48(expanded, roundkey);
+
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
+    
+    ###################
+    ##### Round 6 #####
+
+    # Expantion of R
+    expanded = expand(right);
+    roundkey = roundkey6(key);
+
+    # Xoring key and R
+    (s1,s2,s3,s4,s5,s6,s7,s8)
+          = xor48(expanded, roundkey);
+
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
+    
+    ###################
+    ##### Round 7 #####
+
+    # Expantion of R
+    expanded = expand(right);
+    roundkey = roundkey7(key);
+
+    # Xoring key and R
+    (s1,s2,s3,s4,s5,s6,s7,s8)
+          = xor48(expanded, roundkey);
+
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
+    
+    ###################
+    ##### Round 8 #####
+
+    # Expantion of R
+    expanded = expand(right);
+    roundkey = roundkey8(key);
+
+    # Xoring key and R
+    (s1,s2,s3,s4,s5,s6,s7,s8)
+          = xor48(expanded, roundkey);
+
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
+    
+    ###################
+    ##### Round 9 #####
+
+    # Expantion of R
+    expanded = expand(right);
+    roundkey = roundkey9(key);
+
+    # Xoring key and R
+    (s1,s2,s3,s4,s5,s6,s7,s8)
+          = xor48(expanded, roundkey);
+
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
+    
+    ####################
+    ##### Round 10 #####
+
+    # Expantion of R
+    expanded = expand(right);
+    roundkey = roundkey10(key);
+
+    # Xoring key and R
+    (s1,s2,s3,s4,s5,s6,s7,s8)
+          = xor48(expanded, roundkey);
+
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
+    
+    ####################
+    ##### Round 11 #####
+
+    # Expantion of R
+    expanded = expand(right);
+    roundkey = roundkey11(key);
+
+    # Xoring key and R
+    (s1,s2,s3,s4,s5,s6,s7,s8)
+          = xor48(expanded, roundkey);
+
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
+    
+    ####################
+    ##### Round 12 #####
+
+    # Expantion of R
+    expanded = expand(right);
+    roundkey = roundkey12(key);
+
+    # Xoring key and R
+    (s1,s2,s3,s4,s5,s6,s7,s8)
+          = xor48(expanded, roundkey);
+
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
+    
+    ####################
+    ##### Round 13 #####
+
+    # Expantion of R
+    expanded = expand(right);
+    roundkey = roundkey13(key);
+
+    # Xoring key and R
+    (s1,s2,s3,s4,s5,s6,s7,s8)
+          = xor48(expanded, roundkey);
+
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
+    
+    ####################
+    ##### Round 14 #####
+
+    # Expantion of R
+    expanded = expand(right);
+    roundkey = roundkey14(key);
+
+    # Xoring key and R
+    (s1,s2,s3,s4,s5,s6,s7,s8)
+          = xor48(expanded, roundkey);
+
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
+    
+    ####################
+    ##### Round 15 #####
+
+    # Expantion of R
+    expanded = expand(right);
+    roundkey = roundkey15(key);
+
+    # Xoring key and R
+    (s1,s2,s3,s4,s5,s6,s7,s8)
+          = xor48(expanded, roundkey);
+
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
+    
+    ####################
+    ##### Round 16 #####
+
+    # Expantion of R
+    expanded = expand(right);
+    roundkey = roundkey16(key);
+
+    # Xoring key and R
+    (s1,s2,s3,s4,s5,s6,s7,s8)
+          = xor48(expanded, roundkey);
+
+    # Sboxes (and permutation)
+    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
+                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
+                
+    xored = xor32(left,c);
+    (left,right) = (right,xored);
 
 
     # Regrouping left and right and computing final permuation
-    ciphered = final_p(left, right)    
+    ciphered = final_p(right, left)    
 tel

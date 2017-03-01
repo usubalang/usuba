@@ -73,9 +73,11 @@
    CLOSED: [2017-02-25 sam. 20:20]
 ** DONE Generate bitsliced code from usuba code.
    CLOSED: [2017-02-28 mar. 15:53]
-** TODO Don't generate several times the same "convert" function
+** DONE Don't generate several times the same "convert" function
+   CLOSED: [2017-03-01 mer. 13:56]
+** DONE Complete implementation of usuba DES
+   CLOSED: [2017-03-01 mer. 13:56]
 ** TODO Regroup env_var and env_fun into a single env, add helpers to manipulate it
-** TODO Complete implementation of usuba DES
 ** TODO Improve orthogonalization algorithm
 ** TODO [#B] Think about the convertion of the demultiplexer to OCaml.
    in particular, for now, I change True to 1 and False to 0. 

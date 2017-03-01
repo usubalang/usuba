@@ -236,7 +236,7 @@ let round_key k r =
 let des_single (plaintext: int64) (key: int64) (crypt: bool) : int64 =
   let left  = ref (Int64.to_int (permut64 plaintext init_p_left)) in
   let right = ref (Int64.to_int (permut64 plaintext init_p_right)) in
-  
+
   for i = 0 to 15 do
     
     let tmp = expand !right in
@@ -250,11 +250,12 @@ let des_single (plaintext: int64) (key: int64) (crypt: bool) : int64 =
     let c6 = sbox ((xored lsr 30) land 63) s3 in
     let c7 = sbox ((xored lsr 36) land 63) s2 in
     let c8 = sbox ((xored lsr 42) land 63) s1 in
+    
     let c  = c1 lor (c2 lsl 4) lor (c3 lsl 8) lor (c4 lsl 12) lor
                (c5 lsl 16) lor (c6 lsl 20) lor (c7 lsl 24) lor (c8 lsl 28) in
     let tmp2 = !left lxor (permut_p c) in
     left  := !right;
-    right := tmp2
+    right := tmp2;
     
   done;
   let pre_ciphered = Int64.logor (Int64.shift_left (Int64.of_int !right) 32)
@@ -403,3 +404,18 @@ let () =
          test_cfb ();
          print_endline "Test OFB:";
          test_ofb ()
+          
+                  (*
+The code to call the code generated from the usuba DES.
+let hex_print x = 
+  let _ = Sys.command ("perl -e 'printf\"%X\n\"," ^ x ^ "'") in ()
+let test_int64  = Int64.of_string "0x0123456789ABCDEF"
+let test_key    = Int64.of_string "0x133457799BBCDFF1"
+let test_res    = Int64.of_string "0x85E813540F0AB405"
+                                  
+let input_stream = Stream.of_list [ test_int64; test_res ]
+let key_stream = Stream.of_list [ test_key; test_key ]
+
+let _ =
+  Stream.iter (fun x -> hex_print (Int64.to_string x)) (main input_stream key_stream)
+                   *)

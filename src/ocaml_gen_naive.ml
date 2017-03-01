@@ -22,7 +22,8 @@ let rec rename_expr = function
   | Field(id,n) -> Field(id^"_",n)
   | Tuple l  -> Tuple(List.map rename_expr l)
   | Op(op,l) -> Op(op,List.map rename_expr l)
-  | Fun(f,l) -> Fun(f^"_",List.map rename_expr l)
+  | Fun(f,l) -> if f = "print" then Fun(f,List.map rename_expr l)
+                else Fun(f^"_",List.map rename_expr l)
   | Mux(e,c,i) -> Mux(rename_expr e, c, i ^ "_")
   | Demux(i,l) -> Demux(i ^ "_", List.map (fun (c,e) -> c,rename_expr e) l)
   | Fby(ei,ef)   -> Fby(rename_expr ei,rename_expr ef)
@@ -73,6 +74,12 @@ let rec join s l =
 let indent tab =
   String.make (tab * 4) ' '
 
+let gen_list (id: string) (n: int) : string list =
+  let rec aux n acc =
+    if n <= 0 then acc
+    else aux (n-1) ((id ^ (string_of_int n))::acc) 
+  in aux n []
+
                          
 let id_generator =
   let current = ref 0 in
@@ -85,7 +92,21 @@ let id_generator_var =
               
 (* Auxiliary functions that need to be embeded in the code *)
 let aux_fun = ref []
+let print_fun = ref []
 let entry   = ref ""
+
+let gen_print l =
+  let name = "print" ^ (string_of_int (id_generator ())) in
+  let size = List.length l in
+  let param = gen_list "p" size in
+  let body = "let " ^ name ^ " (" ^ (join "," param) ^ ") =\n"
+             ^ (join "\n"
+                     (List.map
+                        (fun x -> "print_int (if " ^ x ^ " then 1 else 0);") param))
+             ^ "\nprint_endline \"\";\ntrue" in
+  print_fun := body :: !print_fun;
+  name
+  
               
 (* Adds the variables vars to env_var *)
 let rec env_add_var (vars: p) (env_var: (ident, int) Hashtbl.t) : unit =
@@ -179,14 +200,23 @@ let rec get_size e env =
   | Op _    -> 1 (* at this point, Op have already been normalized *)
   | Fun(f,_) -> (try
                     let (_,v) = Hashtbl.find env f in v
-                  with Not_found -> raise @@ Undeclared("function " ^ f))
+                  with Not_found -> if f = "print" then 1
+                                    else raise @@ Undeclared("function " ^ f))
   | Mux _ -> raise (Not_implemented "Mux")
   | Demux _  -> raise (Not_implemented "Demux")
   | Fby(ei,_) -> get_size ei env
                       
-let gen_conv target orig =
+let gen_conv =
+  let cache = Hashtbl.create 10 in
+  fun target orig ->
   if target = orig then "id"
-  else begin
+  else
+    let key = (join " " (List.map string_of_int orig)) ^ "_" ^
+                (join " " (List.map string_of_int target)) in
+    try let name = Hashtbl.find cache key in
+        name
+    with Not_found ->
+    begin
       let id = "convert" ^ (string_of_int @@ id_generator ()) in
       let num_param = ref 0 in
       let param = List.map (fun n -> incr num_param;
@@ -214,6 +244,7 @@ let gen_conv target orig =
       in
       let f = (id,param,ret,[], make_body 0 1 0 1 0 0 orig target) in
       aux_fun := (!aux_fun) @ [f];
+      Hashtbl.add cache key id;
       id
     end
                       
@@ -228,7 +259,7 @@ let format_param f l env =
     let sizes = get_sizes l env in
     [ Fun (gen_conv params sizes, l) ]
   with Not_found -> raise @@ Undeclared("function " ^ f)
-               
+                                       
                                   
 let rec rewrite_expr (env_var: (ident, int) Hashtbl.t)
                      (env_fun: (ident, int list * int) Hashtbl.t) (e: expr) : expr =
@@ -260,7 +291,19 @@ let rec rewrite_expr (env_var: (ident, int) Hashtbl.t)
                                         Op(And, [ Op(Not,[t1]);t2])]) )
   | Op (Not,l) -> Tuple(distrib_not (List.map (rewrite_expr env_var env_fun) l))
   | Op _ -> raise Invalid_operator_call
-  | Fun (f,l)    -> Fun(f, format_param f (List.map (rewrite_expr env_var env_fun) l) env_fun)
+  | Fun (f,l)    -> if f = "print" then
+                      match l with
+                      | (Var id)::[] ->
+                         (let size = Hashtbl.find env_var id in
+
+                          if size > 1 then
+                            let l = expand_intn_expr id size in
+                            let name = gen_print l in
+                            Fun(name, l)
+                          else Fun(f, l))
+                      | _ -> raise Invalid_operator_call
+                    else
+                      Fun(f, format_param f (List.map (rewrite_expr env_var env_fun) l) env_fun)
   | Mux (e,c,id) -> rewrite_expr env_var env_fun e
   | Demux(id,l)  -> raise (Not_implemented "Demux")
   | Fby(ei,ef)   -> Fby(rewrite_expr env_var env_fun ei, rewrite_expr env_var env_fun ef)
@@ -324,11 +367,7 @@ let gen_ortho (id,size) =
    "let " ^ id ^ " = Stream.next " ^ id ^ "_stream in\n" ^
      (indent 2) ^ "let (" ^ (join "," left) ^ ") = (" ^ (join "," (List.rev right)) ^ ") in")
 
-let gen_list (id: string) (n: int) : string list =
-  let rec aux n acc =
-    if n <= 0 then acc
-    else aux (n-1) ((id ^ (string_of_int n))::acc) 
-  in aux n []
+
          
 let combine_out p_out =
   let rec aux = function
@@ -526,10 +565,11 @@ let def_to_str_ml tab (id, p_in, p_out, _, body) =
 let prog_to_str_ml (p:prog) : string =
   prologue_prog := ["let id x = x"];
   let body = List.map (def_to_str_ml 0) (rewrite_prog p) in
-  match !prologue_prog with
-  | [] -> (join "\n\n" body) ^ "\n\n" ^ !entry
-  | l  -> (join "\n\n" !prologue_prog)
-          ^ "\n\n" ^  (join "\n\n" body) ^ "\n\n" ^ !entry
+  (join "\n\n" !print_fun) ^ "\n\n" ^ 
+    (match !prologue_prog with
+     | [] -> (join "\n\n" body) ^ "\n\n" ^ !entry
+     | l  -> (join "\n\n" !prologue_prog)
+             ^ "\n\n" ^  (join "\n\n" body) ^ "\n\n" ^ !entry)
 
 
        
