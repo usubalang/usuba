@@ -77,6 +77,8 @@
    CLOSED: [2017-03-01 mer. 13:56]
 ** DONE Complete implementation of usuba DES
    CLOSED: [2017-03-01 mer. 13:56]
+** DONE Implement fby on orthogonal backend
+   CLOSED: [2017-03-01 mer. 17:58]
 ** TODO Regroup env_var and env_fun into a single env, add helpers to manipulate it
 ** TODO Improve orthogonalization algorithm
 ** TODO [#B] Think about the convertion of the demultiplexer to OCaml.

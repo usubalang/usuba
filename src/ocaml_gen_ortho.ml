@@ -25,7 +25,9 @@ let rec rename_expr = function
   | Fun(f,l) -> Fun(f^"_",List.map rename_expr l)
   | Mux(e,c,i) -> Mux(rename_expr e, c, i ^ "_")
   | Demux(i,l) -> Demux(i ^ "_", List.map (fun (c,e) -> c,rename_expr e) l)
-  | Fby(ei,ef)   -> Fby(rename_expr ei,rename_expr ef)
+  | Fby(ei,ef,f)   -> Fby(rename_expr ei,rename_expr ef,match f with
+                                                        | Some id -> Some (id^"_")
+                                                        | None -> None)
                
 let rec rename_pat = function
   | [] -> []
@@ -116,6 +118,19 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
   Hashtbl.add env_fun name (get_param_in_size p_in,get_param_out_size p_out)
 
 
+let gen_list (id: string) (n: int) : string list =
+  let rec aux n acc =
+    if n <= 0 then acc
+    else aux (n-1) ((id ^ (string_of_int n))::acc) 
+  in aux n []
+
+let gen_list_0 (id: string) (n: int) : string list =
+  let rec aux n acc =
+    if n <= 0 then acc
+    else aux (n-1) ((id ^ (string_of_int (n-1)))::acc) 
+  in aux n []
+
+         
 (* converts an uint_n to n bools (with types and clock) *)
 let expand_intn_typed (id: ident) (n: int) (ck: clock) =
   let rec aux i =
@@ -183,7 +198,7 @@ let rec get_size e env =
                   with Not_found -> raise @@ Undeclared("function " ^ f))
   | Mux _ -> raise (Not_implemented "Mux")
   | Demux _  -> raise (Not_implemented "Demux")
-  | Fby(ei,_) -> get_size ei env
+  | Fby(ei,_,_) -> get_size ei env
 
 let gen_conv =
   let cache = Hashtbl.create 10 in
@@ -273,7 +288,7 @@ let rec rewrite_expr (env_var: (ident, int) Hashtbl.t)
   | Fun (f,l)    -> Fun(f, format_param f (List.map (rewrite_expr env_var env_fun) l) env_fun)
   | Mux (e,c,id) -> rewrite_expr env_var env_fun e
   | Demux(id,l)  -> raise (Not_implemented "Demux")
-  | Fby(ei,ef)   -> Fby(rewrite_expr env_var env_fun ei, rewrite_expr env_var env_fun ef)
+  | Fby(ei,ef,f)   -> Fby(rewrite_expr env_var env_fun ei, rewrite_expr env_var env_fun ef,f)
                          
                                                
 let rec rewrite_pat (pat: pat) (env: (ident, int) Hashtbl.t) : pat =
@@ -337,11 +352,6 @@ let gen_ortho (id,size) =
    ^ (indent 2) ^ "let " ^ id  ^ "' = convert_ortho " ^ (string_of_int size) ^ " " ^ id ^ " in\n"
    ^ grab_ortho)
 
-let gen_list (id: string) (n: int) : string list =
-  let rec aux n acc =
-    if n <= 0 then acc
-    else aux (n-1) ((id ^ (string_of_int n))::acc) 
-  in aux n []
          
 let combine_out p_out =
   let rec aux = function
@@ -473,9 +483,13 @@ let rec expr_to_str_ml tab e =
                                   | Or  -> " lor "
                                   | _ -> raise Invalid_ast )
                                 ^ "(" ^ (expr_to_str_ml tab b) ^ ")"
+  | Op (Not,[Tuple l]) -> "(" ^ (join ","
+                                      (List.map
+                                         (fun x -> "lnot ("
+                                                   ^ (expr_to_str_ml tab x) ^ ")") l)) ^ ")"
   | Op (Not,l) -> "(" ^ (join ","
                               (List.map
-                                 (fun x -> "not ("
+                                 (fun x -> "lnot ("
                                            ^ (expr_to_str_ml tab x) ^ ")") l)) ^ ")"
   | Fun (f, l) -> (ident_to_str_ml f) ^ " (" ^
                         (join ","
@@ -494,18 +508,58 @@ let rec expr_to_str_ml tab e =
 let const_to_tuple c size =
   let rec aux c n =
     if n > size then []
-    else (string_of_int (if c mod 2 = 1 then -1 else 0))::(aux (c/2) (n+1)) in
+    else (string_of_int (c mod 2))::(aux (c/2) (n+1)) in
   join "," (List.rev (aux c 1))
-               
-let fby_to_str_ml tab p ei ef =
+
+(* TODO: this function could easily be improved. 
+   with something like "if x mod 2 = 1 then -1 else 0" *)
+let gen_expand_identity size =
+  let name = "expand_identity_" ^ (string_of_int size) in
+  let body = ref ("let " ^ name ^ " (" ^ (join "," (gen_list "in" size)) ^ ") =\n") in
+  for i = 1 to size do
+    body := !body ^ (indent 1) ^ "let out" ^ (string_of_int i) ^ " = "
+            ^ (join " lor " (List.map (fun x -> "(in" ^ (string_of_int i)
+                                                ^ " lsl " ^ x ^ ")")
+                                      (gen_list_0 "" 63))) ^ " in\n"
+  done;
+  body := !body ^ (indent 1) ^ "(" ^ (join "," (gen_list "out" size)) ^ ")";
+  prologue_prog := !prologue_prog @ [!body];
+  name
+
+let gen_expand_fun f size =
+  let name = "expand_fun_" ^ (string_of_int (id_generator ())) in
+  let body = ref ("let " ^ name ^ " (" ^ (join "," (gen_list "in_0_" size)) ^ ") =\n") in
+  for i = 1 to 62 do
+    body := !body ^ (indent 1) ^ "let ("
+            ^ (join "," (gen_list ("in_" ^ (string_of_int i) ^ "_") size))
+            ^ ") = " ^ f ^ " ("
+            ^ (join "," (gen_list ("in_" ^ (string_of_int (i-1)) ^ "_") size)) ^ ") in\n"
+  done;
+  for i = 1 to size do
+    body := !body ^ (indent 1) ^ "let out" ^ (string_of_int i) ^ " = "
+            ^ (join " lor " (List.map (fun x -> "(in_" ^ x ^ "_" ^ (string_of_int i)
+                                                ^ " lsl " ^ x ^ ")")
+                                      (gen_list_0 "" 63))) ^ " in\n"
+  done;
+  body := !body ^ (indent 1) ^ "(" ^ (join "," (gen_list "out" size)) ^ ")";
+  prologue_prog := !prologue_prog @ [!body];
+  name
+       
+let expand_init_fby size f =
+  match f with
+  | None -> gen_expand_identity size
+  | Some f -> gen_expand_fun f size
+       
+let fby_to_str_ml tab p ei ef f =
   let len = List.length p in
   let ref_fun = generate_ref_fun len in
   let p' = List.map (fun x -> (left_asgn_to_str_ml x) ^ "'") p in
   let init = (match ei with
               | Const c -> const_to_tuple c (List.length p)
               | _ -> expr_to_str_ml tab ei) in
-  let prologue = "let (" ^ (join "," p') ^ ") = " ^ ref_fun ^ " ("
-                 ^ init ^ ") in\n" in
+  let expand = expand_init_fby len f in
+  let prologue = "let (" ^ (join "," p') ^ ") = " ^ ref_fun ^ " (" ^ expand ^ "(" 
+                 ^ init ^ ")) in\n" in
   prologue_fun := (!prologue_fun) @ [prologue];
   let p'' = List.map (fun x -> (left_asgn_to_str_ml x) ^ "''") p in
   (indent tab) ^
@@ -525,7 +579,7 @@ let pat_to_str_ml tab pat =
 let deq_to_str_ml tab l =
   join "\n" (List.map (fun (p,e) ->
                        (match e with
-                        | Fby(ei,ef) -> fby_to_str_ml tab p ei ef
+                        | Fby(ei,ef,f) -> fby_to_str_ml tab p ei ef f
                         | _ -> (indent tab) ^ "let "
                                ^ (pat_to_str_ml tab p) ^ " = "
                                ^ (expr_to_str_ml tab e) ^ " in ")) l)

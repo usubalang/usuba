@@ -59,6 +59,8 @@ rule token = parse
 (* symbols *)
 | "("    { TOK_LPAREN    }
 | ")"    { TOK_RPAREN    }
+| "["    { TOK_LBRACKET  }
+| "]"    { TOK_RBRACKET  }
 | "="    { TOK_EQUAL     }
 | ","    { TOK_COMMA     }
 | "::"   { TOK_TWO_COLON }

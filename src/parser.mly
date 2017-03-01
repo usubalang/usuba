@@ -17,6 +17,8 @@
 
 %token TOK_LPAREN
 %token TOK_RPAREN
+%token TOK_LBRACKET
+%token TOK_RBRACKET
 %token TOK_EQUAL
 %token TOK_COMMA
 %token TOK_TWO_COLON
@@ -43,6 +45,7 @@
 %nonassoc TOK_MERGE
 %nonassoc TOK_PIPE
 %nonassoc TOK_WHEN
+%nonassoc TOK_LBRACKET
 %nonassoc TOK_FBY
           
 /*******************\
@@ -72,8 +75,10 @@ exp:
    | f=TOK_id TOK_LPAREN args=explist TOK_RPAREN { Fun(f, List.rev args) }
    | e=exp TOK_WHEN cstr=TOK_constr TOK_LPAREN x=TOK_id TOK_RPAREN { Mux(e,cstr,x) }
    | TOK_MERGE ck=TOK_id c=caselist %prec TOK_MERGE { Demux(ck,List.rev c) }
-   | init=exp TOK_FBY follow=exp { Fby(init,follow) }
-
+   | init=exp TOK_FBY follow=exp { Fby(init,follow,None) }
+   | init=exp TOK_LBRACKET f=TOK_id TOK_RBRACKET TOK_FBY follow=exp
+     { Fby(init,follow,Some f) }
+ 
 caselist:
    | { [] }                                  
    | front=caselist TOK_PIPE c=TOK_constr TOK_ARROW e=exp %prec TOK_PIPE { (c,e)::front }

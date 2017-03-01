@@ -26,7 +26,7 @@ let rec rename_expr = function
                 else Fun(f^"_",List.map rename_expr l)
   | Mux(e,c,i) -> Mux(rename_expr e, c, i ^ "_")
   | Demux(i,l) -> Demux(i ^ "_", List.map (fun (c,e) -> c,rename_expr e) l)
-  | Fby(ei,ef)   -> Fby(rename_expr ei,rename_expr ef)
+  | Fby(ei,ef,_)   -> Fby(rename_expr ei,rename_expr ef,None)
                
 let rec rename_pat = function
   | [] -> []
@@ -204,7 +204,7 @@ let rec get_size e env =
                                     else raise @@ Undeclared("function " ^ f))
   | Mux _ -> raise (Not_implemented "Mux")
   | Demux _  -> raise (Not_implemented "Demux")
-  | Fby(ei,_) -> get_size ei env
+  | Fby(ei,_,_) -> get_size ei env
                       
 let gen_conv =
   let cache = Hashtbl.create 10 in
@@ -306,7 +306,7 @@ let rec rewrite_expr (env_var: (ident, int) Hashtbl.t)
                       Fun(f, format_param f (List.map (rewrite_expr env_var env_fun) l) env_fun)
   | Mux (e,c,id) -> rewrite_expr env_var env_fun e
   | Demux(id,l)  -> raise (Not_implemented "Demux")
-  | Fby(ei,ef)   -> Fby(rewrite_expr env_var env_fun ei, rewrite_expr env_var env_fun ef)
+  | Fby(ei,ef,_)   -> Fby(rewrite_expr env_var env_fun ei, rewrite_expr env_var env_fun ef,None)
                          
                                                
 let rec rewrite_pat (pat: pat) (env: (ident, int) Hashtbl.t) : pat =
@@ -534,7 +534,7 @@ let pat_to_str_ml tab pat =
 let deq_to_str_ml tab l =
   join "\n" (List.map (fun (p,e) ->
                        (match e with
-                        | Fby(ei,ef) -> fby_to_str_ml tab p ei ef
+                        | Fby(ei,ef,_) -> fby_to_str_ml tab p ei ef
                         | _ -> (indent tab) ^ "let "
                                ^ (pat_to_str_ml tab p) ^ " = "
                                ^ (expr_to_str_ml tab e) ^ " in ")) l)
