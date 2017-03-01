@@ -8,5 +8,5 @@ tel
 node f (d: uint_4::_) returns c: uint_4::_
 vars
 let
-    c = 1 [cst_not] fby or(d, c)
+    c = 1 [custom_not] fby or(d, c)
 tel

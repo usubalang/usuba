@@ -430,6 +430,7 @@ let rewrite_prog (p: prog) : prog =
 
 let prologue_prog : string list ref = ref []
 let prologue_fun : string list ref = ref []
+let before_fun : string list ref = ref []
 
 let generate_ref_fun =
   let rec upto_list n acc =
@@ -523,7 +524,7 @@ let gen_expand_identity size =
                                       (gen_list_0 "" 63))) ^ " in\n"
   done;
   body := !body ^ (indent 1) ^ "(" ^ (join "," (gen_list "out" size)) ^ ")";
-  prologue_prog := !prologue_prog @ [!body];
+  before_fun := !before_fun @ [!body];
   name
 
 let gen_expand_fun f size =
@@ -542,7 +543,7 @@ let gen_expand_fun f size =
                                       (gen_list_0 "" 63))) ^ " in\n"
   done;
   body := !body ^ (indent 1) ^ "(" ^ (join "," (gen_list "out" size)) ^ ")";
-  prologue_prog := !prologue_prog @ [!body];
+  before_fun := !before_fun @ [!body];
   name
        
 let expand_init_fby size f =
@@ -594,17 +595,20 @@ let p_to_str_ml tab p =
 (* print a node *)
 let def_to_str_ml tab (id, p_in, p_out, _, body) =
   prologue_fun := [];
+  before_fun := [];
   let body_str = deq_to_str_ml (tab+1) body in
   match !prologue_fun with
-  | [] -> ("let " ^ (ident_to_str_ml id) ^ " ("
-           ^ (p_to_str_ml tab p_in) ^ ") = \n"
-           ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
-           ^ (p_to_str_ml tab p_out) ^ ")\n")
-  | l  -> ("let " ^ (ident_to_str_ml id) ^ " = \n" ^
-             (join "\n" (List.map (fun x -> (indent (tab+1)) ^ x) l)) ^ "\n"
-             ^ (indent (tab+1)) ^ "fun (" ^ (p_to_str_ml tab p_in) ^ ") -> \n"
+  | [] -> (join "\n\n" !before_fun) ^ "\n"
+          ^ ("let " ^ (ident_to_str_ml id) ^ " ("
+             ^ (p_to_str_ml tab p_in) ^ ") = \n"
              ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
              ^ (p_to_str_ml tab p_out) ^ ")\n")
+  | l  -> (join "\n\n" !before_fun) ^ "\n"
+          ^ ("let " ^ (ident_to_str_ml id) ^ " = \n" ^
+               (join "\n" (List.map (fun x -> (indent (tab+1)) ^ x) l)) ^ "\n"
+               ^ (indent (tab+1)) ^ "fun (" ^ (p_to_str_ml tab p_in) ^ ") -> \n"
+               ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
+               ^ (p_to_str_ml tab p_out) ^ ")\n")
 
             
 let prog_to_str_ml (p:prog) : string =

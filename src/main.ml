@@ -55,7 +55,7 @@ let main () =
   (* uncomment to print the program that was read*)
   (* print_string (string_of_prog p) ; *)
 
-  (* print_naive_ml file_in prog; *)
+  print_naive_ml file_in prog;
   print_ortho_ml file_in prog
   
 

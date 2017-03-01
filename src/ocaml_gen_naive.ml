@@ -482,12 +482,16 @@ let rec expr_to_str_ml tab e =
                                   | Or  -> " || "
                                   | _ -> raise Invalid_ast )
                                 ^ "(" ^ (expr_to_str_ml tab b) ^ ")"
+  | Op (Not,[Tuple l]) -> "(" ^ (join ","
+                                      (List.map
+                                         (fun x -> "not ("
+                                                   ^ (expr_to_str_ml tab x) ^ ")") l)) ^ ")"
   | Op (Not,l) -> "(" ^ (join ","
                               (List.map
                                  (fun x -> "not ("
                                            ^ (expr_to_str_ml tab x) ^ ")") l)) ^ ")"
   | Fun (f, l) -> (ident_to_str_ml f) ^ " (" ^
-                        (join ","
+                    (join ","
                               (List.map (fun x -> x )
                                         (List.map (expr_to_str_ml tab) l))) ^ ")"
   | Mux (e,_,_) -> expr_to_str_ml tab e
