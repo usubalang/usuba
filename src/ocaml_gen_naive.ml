@@ -139,7 +139,6 @@ let p_to_str_ml tab p =
                                    (join "," (List.map (fun id -> ident_to_str_ml id )
                                                        (expand_intn_list id n))) ^ ")") p)
        
-(* print a node *)
 let def_to_str_ml tab (id, p_in, p_out, _, body) =
   prologue_fun := [];
   let body_str = deq_to_str_ml (tab+1) body in

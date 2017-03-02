@@ -189,8 +189,10 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
   let rec rewrite_deq (deq: deq) (env_var: (ident, int) Hashtbl.t) env_fun : deq =
     match deq with
     | [] -> []
-    | (pat,expr) :: tl -> (rewrite_pat pat env_var, rewrite_expr env_var env_fun expr)
-                          :: (rewrite_deq tl env_var env_fun)
+    | (pat,expr) :: tl -> match expr with
+                          | Nop -> rewrite_deq tl env_var env_fun
+                          | _ -> (rewrite_pat pat env_var, rewrite_expr env_var env_fun expr)
+                                 :: (rewrite_deq tl env_var env_fun)
 
 
   (* mostly converting the uint_n to bools *)

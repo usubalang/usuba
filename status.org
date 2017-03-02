@@ -79,7 +79,14 @@
    CLOSED: [2017-03-01 mer. 13:56]
 ** DONE Implement fby on orthogonal backend
    CLOSED: [2017-03-01 mer. 17:58]
-** TODO Regroup env_var and env_fun into a single env, add helpers to manipulate it
+** DONE Improve the architecture of the compiler
+   CLOSED: [2017-03-02 jeu. 14:38]
+** DONE Regroup env_var and env_fun into a single env, add helpers to manipulate it
+   CLOSED: [2017-03-02 jeu. 14:38]
+   Actually, I couldn't regroup them in a single environement, as they don't have the 
+   same scope. However, I added some helpers (mainly env_fetch, with returns a "'a option",
+   which allows us to use the pattern matching instead of try/catch.
+** TODO Add a syntax to loop: either the "fill" operator, or some "for" loop
 ** TODO Improve orthogonalization algorithm
 ** TODO [#B] Think about the convertion of the demultiplexer to OCaml.
    in particular, for now, I change True to 1 and False to 0. 
