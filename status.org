@@ -88,6 +88,12 @@
    which allows us to use the pattern matching instead of try/catch.
 ** TODO Add a syntax to loop: either the "fill" operator, or some "for" loop
 ** TODO Improve orthogonalization algorithm
+** TODO Fix bug of nested function calls.
+   doing "a = f(b,g(c))" seems to be not working. This needs to be fixed.
+** DONE Add arrays of node
+   CLOSED: [2017-03-02 jeu. 17:59]
+** TODO Add arrays (as a basic type, that will be expanded at compile time)
+** TODO Add fill_i operator (and the special nodes going with it)
 ** TODO [#B] Think about the convertion of the demultiplexer to OCaml.
    in particular, for now, I change True to 1 and False to 0. 
    This might not work in the future.

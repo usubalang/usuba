@@ -3,7 +3,6 @@ open Abstract_syntax_tree
 open Utils
 
 exception Not_implemented of string
-exception Invalid_ast
 exception Empty_list
 exception Undeclared of string
 exception Invalid_param_size
@@ -38,10 +37,12 @@ let generate_ref_fun =
 let size_of_typ = function
   | Int _ -> 64
   | Bool  -> 1
+  | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
 
 let str_size_of_typ = function
   | Int _ -> "64"
   | Bool  -> "1"
+  | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
                          
 let ident_to_str_ml id = id
                        
@@ -69,7 +70,7 @@ let rec expr_to_str_ml tab e =
                                 ( match op with
                                   | And -> " && "
                                   | Or  -> " || "
-                                  | _ -> raise Invalid_ast )
+                                  | _ -> raise (Invalid_AST "Unknown binary operator") )
                                 ^ "(" ^ (expr_to_str_ml tab b) ^ ")"
   | Op (Not,[Tuple l]) -> "(" ^ (join ","
                                       (List.map
@@ -91,7 +92,7 @@ let rec expr_to_str_ml tab e =
                                              (constructor_to_str_ml c) ^ " -> " ^
                                                (expr_to_str_ml (tab+1) e)) l))
   | Fby _  -> raise (Not_implemented "fby may not be part of a larger expression")
-  | _ -> raise Invalid_ast
+  | _ -> raise (Invalid_AST "Unrecognized expression")
 
 let const_to_tuple c size =
   let rec aux c n =
@@ -137,23 +138,28 @@ let p_to_str_ml tab p =
                       | Bool -> (ident_to_str_ml id)
                       | Int n -> "(" ^
                                    (join "," (List.map (fun id -> ident_to_str_ml id )
-                                                       (expand_intn_list id n))) ^ ")") p)
+                                                       (expand_intn_list id n))) ^ ")"
+                      | Array _ -> raise
+                                     (Invalid_AST
+                                        "Arrays should have been cleaned by now")) p)
        
-let def_to_str_ml tab (id, p_in, p_out, _, body) =
-  prologue_fun := [];
-  let body_str = deq_to_str_ml (tab+1) body in
-  match !prologue_fun with
-  | [] -> ("let " ^ (ident_to_str_ml id) ^ " ("
-           ^ (p_to_str_ml tab p_in) ^ ") = \n"
-           ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
-           ^ (p_to_str_ml tab p_out) ^ ")\n")
-  | l  -> ("let " ^ (ident_to_str_ml id) ^ " = \n" ^
-             (join "\n" (List.map (fun x -> (indent (tab+1)) ^ x) l)) ^ "\n"
-             ^ (indent (tab+1)) ^ "fun (" ^ (p_to_str_ml tab p_in) ^ ") -> \n"
-             ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
-             ^ (p_to_str_ml tab p_out) ^ ")\n")
+let def_to_str_ml tab = function
+  | Single(id, p_in, p_out, _, body) ->
+     prologue_fun := [];
+     let body_str = deq_to_str_ml (tab+1) body in
+     (match !prologue_fun with
+      | [] -> ("let " ^ (ident_to_str_ml id) ^ " ("
+               ^ (p_to_str_ml tab p_in) ^ ") = \n"
+               ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
+               ^ (p_to_str_ml tab p_out) ^ ")\n")
+      | l  -> ("let " ^ (ident_to_str_ml id) ^ " = \n" ^
+                 (join "\n" (List.map (fun x -> (indent (tab+1)) ^ x) l)) ^ "\n"
+                 ^ (indent (tab+1)) ^ "fun (" ^ (p_to_str_ml tab p_in) ^ ") -> \n"
+                 ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
+                 ^ (p_to_str_ml tab p_out) ^ ")\n"))
+  | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
 
-            
+       
 let prog_to_str_ml (p:prog) : string =
   prologue_prog := ["let id x = x"];
   let body = List.map (def_to_str_ml 0) (Rewriter.rewrite_prog p) in

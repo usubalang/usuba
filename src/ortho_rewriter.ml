@@ -58,36 +58,37 @@ module Ortho_rewriter =
       )    
 
         
-    let gen_entry_point (name, p_in, p_out, _, _) =
-      let params = List.map (fun (id,typ,_) -> match typ with
-                                               | Bool  -> (id,1)
-                                               | Int n -> (id,n)) p_in in
-      let ortho = List.map gen_ortho params in
-      let in_streams = List.map (fun (id,_) -> id ^ "_stream") params in
-      let head = "let main " ^ (join " " in_streams) ^ " = \n"
-                 ^ (indent_small 1) ^ "let cpt = ref 0 in" in
-      let stacks = join ("\n" ^ (indent_small 1))
+    let gen_entry_point = function
+      | Single(name, p_in, p_out, _, _) ->
+         let params = List.map (fun (id,typ,_) -> match typ with
+                                                  | Bool  -> (id,1)
+                                                  | Int n -> (id,n)) p_in in
+         let ortho = List.map gen_ortho params in
+         let in_streams = List.map (fun (id,_) -> id ^ "_stream") params in
+         let head = "let main " ^ (join " " in_streams) ^ " = \n"
+                    ^ (indent_small 1) ^ "let cpt = ref 0 in" in
+         let stacks = join ("\n" ^ (indent_small 1))
+                           (List.map (fun (id,_,_) ->
+                                      "let stack_" ^ id ^ " = ref [| |] in") p_out) in
+         let ret = join ","
                         (List.map (fun (id,_,_) ->
-                                   "let stack_" ^ id ^ " = ref [| |] in") p_out) in
-      let ret = join ","
-                     (List.map (fun (id,_,_) ->
-                                "!stack_" ^ id ^ ".(!cpt)") p_out) in
-      let (left,right) = gen_unortho p_out in
-      ([],
-       head ^ "\n" ^ (indent_small 1) ^ stacks ^ "\n"
-       ^ (indent_small 1) ^ "Stream.from\n" ^ (indent 1) ^ "(fun _ -> \n"
-       ^ (indent 1) ^ "if !cpt < 64 then let ret = (" ^ ret ^ ") in\n"
-       ^ (indent_small 13) ^ "incr cpt;\n" ^ (indent_small 13) ^ "Some ret\n"
-       ^ (indent 1) ^ "else\n" ^ (indent_small 3) ^ "try\n"
-       ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho))
-       ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ "_ ("
-       ^ (join "," (List.map (fun (x,_)->"("^x^")") ortho)) ^ ") in\n"
-       ^ right
-       ^ (indent 2) ^ "cpt := 0;\n"
-       ^ (indent 2) ^ "let return = Some (" ^ ret ^ ") in \n"
-       ^ (indent 2) ^ "incr cpt;" ^ "\n"
-       ^ (indent 2) ^ "return\n"
-       ^ (indent_small 3) ^ "with Stream.Failure -> None)\n")
-                             
+                                   "!stack_" ^ id ^ ".(!cpt)") p_out) in
+         let (left,right) = gen_unortho p_out in
+         ([],
+          head ^ "\n" ^ (indent_small 1) ^ stacks ^ "\n"
+          ^ (indent_small 1) ^ "Stream.from\n" ^ (indent 1) ^ "(fun _ -> \n"
+          ^ (indent 1) ^ "if !cpt < 64 then let ret = (" ^ ret ^ ") in\n"
+          ^ (indent_small 13) ^ "incr cpt;\n" ^ (indent_small 13) ^ "Some ret\n"
+          ^ (indent 1) ^ "else\n" ^ (indent_small 3) ^ "try\n"
+          ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho))
+          ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ "_ ("
+          ^ (join "," (List.map (fun (x,_)->"("^x^")") ortho)) ^ ") in\n"
+          ^ right
+          ^ (indent 2) ^ "cpt := 0;\n"
+          ^ (indent 2) ^ "let return = Some (" ^ ret ^ ") in \n"
+          ^ (indent 2) ^ "incr cpt;" ^ "\n"
+          ^ (indent 2) ^ "return\n"
+          ^ (indent_small 3) ^ "with Stream.Failure -> None)\n")
+      | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
 
   end : SPECIFIC_REWRITER )

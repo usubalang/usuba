@@ -14,6 +14,7 @@
 %token TOK_WHEN
 %token TOK_MERGE
 %token TOK_FBY
+%token TOK_FILL
 
 %token TOK_LPAREN
 %token TOK_RPAREN
@@ -26,6 +27,8 @@
 %token TOK_SEMICOLON
 %token TOK_PIPE
 %token TOK_ARROW
+%token TOK_LT
+%token TOK_GT
        
 %token TOK_AND
 %token TOK_OR
@@ -115,8 +118,18 @@ p:
 def:
   | TOK_NODE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN TOK_RETURN p_out=p
     TOK_VAR vars=p TOK_LET body=deq TOK_TEL
-  { (f,List.rev p_in,List.rev p_out,vars,List.rev body) }
-  
+  { Single(f,List.rev p_in,List.rev p_out,vars,List.rev body) }
+  | TOK_NODE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
+    TOK_RPAREN TOK_RETURN p_out=p TOK_EQUAL TOK_LBRACKET
+    l = def_list TOK_RBRACKET
+  { Array(f,List.rev p_in, List.rev p_out, List.rev l) }
+
+def_list:
+  | TOK_VAR vars=p TOK_LET body=deq TOK_TEL { [(vars,body)] }
+  | tail=def_list; TOK_SEMICOLON
+    TOK_VAR vars=p TOK_LET body=deq TOK_TEL { (vars,body)::tail }
+    
+
 defs:
   | d=def               { [ d ] }
   | dl=defs d=def       { d::dl }

@@ -43,7 +43,11 @@ module Naive_rewriter =
         | [] -> []
         | (id,typ,_)::tl -> ( match typ with
                               | Bool -> [ id ]
-                              | Int n -> gen_list id n ) @ (aux tl)
+                              | Int n -> gen_list id n 
+                              | Array _ -> raise
+                                             (Invalid_AST
+                                                "Arrays should have been cleaned by now"))
+                            @ (aux tl)
       in aux p_out
              
     let gen_unortho p_out =
@@ -56,7 +60,11 @@ module Naive_rewriter =
       in
       let left = gen_list "ret" (List.length l) in
       let right = List.map (fun (_,typ,_) ->
-                            let size = match typ with Bool -> 1 | Int n -> n in
+                            let size = match typ with
+                                Bool -> 1
+                              | Int n -> n
+                              | Array _ -> raise (Invalid_AST
+                                                    "Arrays should have been cleaned by now") in
                             ( List.fold_left (fun x y -> "(Int64.logor " ^ x ^ " " ^ y ^ ")")
                                              "Int64.zero" (aux size 1) )) p_out in
       let ret = join "," (List.map (fun (id,_,_) -> id^"'") p_out) in
@@ -65,21 +73,26 @@ module Naive_rewriter =
        ^ (indent 2) ^ "in Some (" ^ ret ^ ")")    
 
         
-    let gen_entry_point (name, p_in, p_out, _, _) =
-      let params = List.map (fun (id,typ,_) -> match typ with
-                                               | Bool  -> (id,1)
-                                               | Int n -> (id,n)) p_in in
-      let ortho = List.map gen_ortho params in
-      let in_streams = List.map (fun (id,_) -> id ^ "_stream") params in
-      let head = "let main " ^ (join " " in_streams) ^ " = " in
-      let (left,right) = gen_unortho p_out in
-      (!print_fun,
-       head ^ "\n" ^ (indent 1) ^ "Stream.from\n" ^ (indent 1) ^ "(fun _ -> \n"
-       ^ (indent 1) ^ "try\n"
-       ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho)) ^ "\n"
-       ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ "_ ("
-       ^ (join "," (List.map (fun (x,_)->"("^x^")") ortho)) ^ ") in\n"
-       ^ (indent 2) ^ right ^ "\n"
-       ^ (indent 1) ^ "with Stream.Failure -> None)\n")
+    let gen_entry_point = function
+      | Single(name, p_in, p_out, _, _) -> 
+         let params = List.map (fun (id,typ,_) ->
+                                match typ with
+                                | Bool  -> (id,1)
+                                | Int n -> (id,n)
+                                | Array _ -> raise (Invalid_AST
+                                                      "Arrays should have been cleaned by now")) p_in in
+         let ortho = List.map gen_ortho params in
+         let in_streams = List.map (fun (id,_) -> id ^ "_stream") params in
+         let head = "let main " ^ (join " " in_streams) ^ " = " in
+         let (left,right) = gen_unortho p_out in
+         (!print_fun,
+          head ^ "\n" ^ (indent 1) ^ "Stream.from\n" ^ (indent 1) ^ "(fun _ -> \n"
+          ^ (indent 1) ^ "try\n"
+          ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho)) ^ "\n"
+          ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ "_ ("
+          ^ (join "," (List.map (fun (x,_)->"("^x^")") ortho)) ^ ") in\n"
+          ^ (indent 2) ^ right ^ "\n"
+          ^ (indent 1) ^ "with Stream.Failure -> None)\n")
+      | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
 
   end : SPECIFIC_REWRITER)

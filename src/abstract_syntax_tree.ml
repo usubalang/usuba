@@ -1,10 +1,15 @@
 
+exception Invalid_AST of string
+
 type undef
 
 type ident = string
                
-type typ = Bool | Int of int
-                           
+type typ = (* usuba0 only has Bool and Int *)
+    Bool
+  | Int of int
+  | Array of typ * int
+             
 type constr = string
 
 type clock = string
@@ -32,6 +37,8 @@ type deq = (pat * expr) list
 
 type p = (ident * typ * clock) list
                                 
-type def = ident * p * p * p * deq
+type def = (* usuba0 only has Single *)
+  | Single of ident * p * p * p * deq
+  | Array  of ident * p * p * (p * deq) list
                                 
 type prog = def list

@@ -5,7 +5,6 @@ open Specific_rewriter
 open Rename
 
 exception Not_implemented of string
-exception Invalid_ast
 exception Empty_list
 exception Undeclared of string
 exception Invalid_param_size
@@ -110,7 +109,7 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
               ([Dotted("out"^(string_of_int id_r),num_r)], Field("in"^(string_of_int id_p),num_p)) ::
                 (make_body id_p (num_p+1) id_r (num_r+1) (size_curr_p-1) (size_curr_r-1) next_p next_r)
           in
-          let f = (id,param,ret,[], make_body 0 1 0 1 0 0 orig target) in
+          let f = Single(id,param,ret,[], make_body 0 1 0 1 0 0 orig target) in
           aux_fun := (!aux_fun) @ [f];
           env_add cache key id;
           id
@@ -201,17 +200,23 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
     | [] -> []
     | (id,typ,ck)::tl -> ( match typ with
                            | Bool  -> [ (id,Bool,ck) ]
-                           | Int x -> expand_intn_typed id x ck ) @ (rewrite_p tl)
+                           | Int x -> expand_intn_typed id x ck
+                           | Array _ -> raise (Invalid_AST
+                                                 "Arrays should have been cleaned by now")
+                         ) @ (rewrite_p tl)
 
                                                                       
-  let rewrite_def (name, p_in, p_out, p_var, body) env_fun =
-    let env_var = Hashtbl.create 10 in
-    env_add_var p_in env_var;
-    env_add_var p_out env_var;
-    env_add_var p_var env_var;
-    env_add_fun name p_in p_out env_fun;
-    (name, p_in, rewrite_p p_out, p_var, rewrite_deq body env_var env_fun)
-      
+  let rewrite_def (def: def) env_fun : def =
+    match def with
+    | Single (name, p_in, p_out, p_var, body) ->
+       let env_var = Hashtbl.create 10 in
+       env_add_var p_in env_var;
+       env_add_var p_out env_var;
+       env_add_var p_var env_var;
+       env_add_fun name p_in p_out env_fun;
+       Single(name, p_in, rewrite_p p_out, p_var, rewrite_deq body env_var env_fun)
+    | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
+         
   let rec rewrite_defs (l: def list)
                        (env_fun: (ident, int list * int) Hashtbl.t)
           : def list =
@@ -227,7 +232,7 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
       Aux.gen_entry_point (List.nth p (List.length p -1)) in
     print_fun := prints;
     entry := entry_point ;
-    let p' = rewrite_defs (rename_prog p) env_fun in
+    let p' = rewrite_defs (rename_prog (Usuba1_rewriter.rewrite_prog p)) env_fun in
     (!aux_fun) @ p'
 
 end

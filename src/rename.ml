@@ -34,8 +34,10 @@ let rec rename_p = function
   | [] -> []
   | (id,typ,ck)::tl -> (id^"_",typ,ck)::(rename_p tl)
                                           
-let rename_def (name, p_in, p_out, p_var, body) =
-  (name^"_", rename_p p_in, rename_p p_out, rename_p p_var, rename_deq body)
+let rename_def = function
+  | Single (name, p_in, p_out, p_var, body) ->
+     Single(name^"_", rename_p p_in, rename_p p_out, rename_p p_var, rename_deq body)
+  | Array _ -> raise (Invalid_AST "Array should have been cleaned by now")
     
 let rec rename_defs = function
   | [] -> []

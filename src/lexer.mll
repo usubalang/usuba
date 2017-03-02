@@ -23,7 +23,8 @@ let _ =
      "and", TOK_AND;
      "or", TOK_OR;
      "xor", TOK_XOR;
-     "not", TOK_NOT
+     "not", TOK_NOT;
+     "fill", TOK_FILL;
    ]
 
 let next_line lexbuf =
@@ -42,6 +43,7 @@ rule token = parse
 | ['\n']       { next_line lexbuf; token lexbuf; }
 | '#' [^ '\n' '\r']*     { token lexbuf; }
 
+                           
 | "uint_" (['0' - '9']+ as n)    { TOK_type (Int(int_of_string n))  }
 | "bool"                         { TOK_type (Bool)  }
                
@@ -68,6 +70,8 @@ rule token = parse
 | ";"    { TOK_SEMICOLON }
 | "|"    { TOK_PIPE      }
 | "->"   { TOK_ARROW     }
+| "<"    { TOK_LT        }
+| ">"    { TOK_GT        }
          
 (* integers *)
 | ['0'-'9']+ as i { TOK_int (int_of_string i) }
