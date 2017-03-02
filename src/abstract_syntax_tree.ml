@@ -20,6 +20,7 @@ type expr = Const of int
           | Mux   of expr * constr * ident
           | Demux of ident * (constr * expr) list
           | Fby   of expr * expr * ident option
+          | Nop
 
 type left_asgn =
   | Ident of ident
