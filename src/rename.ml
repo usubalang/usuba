@@ -1,4 +1,5 @@
 open Abstract_syntax_tree
+exception Syntax_error
        
 (* Since the transformation of the code will produce new variable names,
    we must rename the old variables to make there won't be any conflicts 
@@ -8,7 +9,9 @@ open Abstract_syntax_tree
 let rec rename_expr = function
   | Const c -> Const c
   | Var v   -> Var (v ^ "_")
-  | Field(id,n) -> Field(id^"_",n)
+  | Field(e,n) -> Field((match e with
+                         | Var id -> Var (id ^ "_")
+                         | _ -> raise Syntax_error), n)
   | Tuple l  -> Tuple(List.map rename_expr l)
   | Op(op,l) -> Op(op,List.map rename_expr l)
   | Fun(f,l) -> if f = "print" then Fun(f,List.map rename_expr l)
@@ -19,12 +22,20 @@ let rec rename_expr = function
                                                         | None -> None
                                                         | Some id -> Some (id^"_"))
   | Nop -> Nop
-             
+  | Fun_i _ -> raise (Invalid_AST "A fun_i")
+  | Fun_v _ -> raise (Invalid_AST "A fun_v")
+  | Access _ -> raise (Invalid_AST "An Access")
+  | Fill_i _ -> raise (Invalid_AST "A fill_i")
+  | _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^"Non-conform AST"))
+
+let rec rename_pat_single = function
+  | Ident id -> Ident (id ^ "_")
+  | Dotted(p,n) -> Dotted(rename_pat_single p,n)
+  | _ -> raise Syntax_error
+               
 let rec rename_pat = function
   | [] -> []
-  | hd::tl -> ( match hd with
-                | Ident id -> Ident (id ^ "_")
-                | Dotted(id,n) -> Dotted(id ^ "_", n) ) :: (rename_pat tl)
+  | hd::tl -> ( rename_pat_single hd ) :: (rename_pat tl)
                                                              
 let rec rename_deq = function
   | [] -> []
@@ -37,8 +48,11 @@ let rec rename_p = function
 let rename_def = function
   | Single (name, p_in, p_out, p_var, body) ->
      Single(name^"_", rename_p p_in, rename_p p_out, rename_p p_var, rename_deq body)
-  | Array _ -> raise (Invalid_AST "Array should have been cleaned by now")
-    
+  | Multiple _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                        "Array should have been cleaned by now"))
+  | Temporary _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                         "Temporary should be gone by now"))
+                         
 let rec rename_defs = function
   | [] -> []
   | hd::tl -> (rename_def hd) :: (rename_defs tl)

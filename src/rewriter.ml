@@ -55,7 +55,7 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
   let rec get_size e env =
     match e with
     | Const _ -> 1
-    | Var _   -> 1 (* at this point, Var are only Bool *)
+    | Var x   -> print_endline ("Var!" ^ x);1 (* at this point, Var are only Bool *)
     | Field _ -> 1
     | Tuple l -> List.length l
     | Op _    -> 1 (* at this point, Op have already been normalized *)
@@ -67,6 +67,7 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
     | Demux _  -> raise (Not_implemented "Demux")
     | Fby(ei,_,_) -> get_size ei env
     | Nop -> 0
+    | _ -> raise (Invalid_AST "Non-conform AST")
 
   let rec get_sizes l env =
     match l with
@@ -106,7 +107,8 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
               | [] -> []
               | hd::tl -> make_body id_p num_p (id_r+1) 1 size_curr_p hd next_p tl
             else
-              ([Dotted("out"^(string_of_int id_r),num_r)], Field("in"^(string_of_int id_p),num_p)) ::
+              ([Dotted(Ident("out"^(string_of_int id_r)),num_r)],
+               Field(Var("in"^(string_of_int id_p)),num_p)) ::
                 (make_body id_p (num_p+1) id_r (num_r+1) (size_curr_p-1) (size_curr_r-1) next_p next_r)
           in
           let f = Single(id,param,ret,[], make_body 0 1 0 1 0 0 orig target) in
@@ -131,7 +133,7 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                   | Some size -> if size > 1 then Tuple (expand_intn_expr id size)
                                  else e
                   | None -> e) (* Not_found -> it's a boolean *)
-    | Field (id,n) -> Var (id ^ (string_of_int n))
+    | Field (Var id,n) -> Var (id ^ (string_of_int n))
     | Tuple (l)    -> Tuple (flatten_expr (List.map (rewrite_expr env_var env_fun) l))
     | Op (And,x1::x2::[]) -> let t1 = rewrite_expr env_var env_fun x1 in
                              let t2 = rewrite_expr env_var env_fun x2 in
@@ -171,6 +173,7 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
     | Demux(id,l)  -> raise (Not_implemented "Demux")
     | Fby(ei,ef,f)   -> Fby(rewrite_expr env_var env_fun ei, rewrite_expr env_var env_fun ef,f)
     | Nop -> Nop
+    | _ -> raise (Invalid_AST "Non-conform AST")
                            
                            
   let rec rewrite_pat (pat: pat) (env: (ident, int) Hashtbl.t) : pat =
@@ -182,7 +185,8 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                                     if size > 1 then expand_intn_pat id size
                                     else [ Ident id ]
                                  | None -> [ Ident id ] )
-                 | Dotted(id,n) -> [ Ident (id ^ (string_of_int n)) ] )
+                 | Dotted(Ident id,n) -> [ Ident (id ^ (string_of_int n)) ]
+                 | _ -> raise (Invalid_AST "Non-conform AST"))
                 @ (rewrite_pat tl env)
                     
   let rec rewrite_deq (deq: deq) (env_var: (ident, int) Hashtbl.t) env_fun : deq =
@@ -215,8 +219,10 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
        env_add_var p_var env_var;
        env_add_fun name p_in p_out env_fun;
        Single(name, p_in, rewrite_p p_out, p_var, rewrite_deq body env_var env_fun)
-    | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
-         
+    | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
+    | Temporary _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                           "Temporary should be gone by now"))
+                           
   let rec rewrite_defs (l: def list)
                        (env_fun: (ident, int list * int) Hashtbl.t)
           : def list =
@@ -228,11 +234,13 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                      
   let rewrite_prog (p: prog) : prog =
     let env_fun = Hashtbl.create 10 in
+    let usuba0_prog = (Usuba1_rewriter.rewrite_prog p) in
+    let renamed_prog = rename_prog usuba0_prog in
     let (prints,entry_point) =
-      Aux.gen_entry_point (List.nth p (List.length p -1)) in
+      Aux.gen_entry_point (Utils.last renamed_prog) in
     print_fun := prints;
     entry := entry_point ;
-    let p' = rewrite_defs (rename_prog (Usuba1_rewriter.rewrite_prog p)) env_fun in
+    let p' = rewrite_defs renamed_prog env_fun in
     (!aux_fun) @ p'
 
 end

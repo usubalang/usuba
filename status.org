@@ -86,14 +86,20 @@
    Actually, I couldn't regroup them in a single environement, as they don't have the 
    same scope. However, I added some helpers (mainly env_fetch, with returns a "'a option",
    which allows us to use the pattern matching instead of try/catch.
-** TODO Add a syntax to loop: either the "fill" operator, or some "for" loop
-** TODO Improve orthogonalization algorithm
-** TODO Fix bug of nested function calls.
+** DONE Add a syntax to loop: either the "fill" operator, or some "for" loop
+   CLOSED: [2017-03-03 ven. 18:05]
+** DONE Fix bug of nested function calls.
+   CLOSED: [2017-03-03 ven. 18:05]
    doing "a = f(b,g(c))" seems to be not working. This needs to be fixed.
 ** DONE Add arrays of node
    CLOSED: [2017-03-02 jeu. 17:59]
-** TODO Add arrays (as a basic type, that will be expanded at compile time)
-** TODO Add fill_i operator (and the special nodes going with it)
+** DONE Add arrays (as a basic type, that will be expanded at compile time)
+   CLOSED: [2017-03-03 ven. 14:00]
+** DONE Add fill_i operator (and the special nodes going with it)
+   CLOSED: [2017-03-03 ven. 18:05]
+** TODO Add a nicer syntax to describe permutations
+** TODO Add a nicer syntax to desribe sboxes, and convert them to circuits
+** TODO [#B] Improve orthogonalization algorithm
 ** TODO [#B] Think about the convertion of the demultiplexer to OCaml.
    in particular, for now, I change True to 1 and False to 0. 
    This might not work in the future.

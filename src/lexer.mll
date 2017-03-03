@@ -24,7 +24,7 @@ let _ =
      "or", TOK_OR;
      "xor", TOK_XOR;
      "not", TOK_NOT;
-     "fill", TOK_FILL;
+     "fill_i", TOK_FILL_I;
    ]
 
 let next_line lexbuf =
@@ -55,9 +55,6 @@ rule token = parse
 | ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as id
 { try Hashtbl.find kwd_table id with Not_found -> TOK_id id }
 
-| (['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as id)
-    "." (['0'-'9']+ as n) { TOK_dotted(id,int_of_string n) }
-
 (* symbols *)
 | "("    { TOK_LPAREN    }
 | ")"    { TOK_RPAREN    }
@@ -72,6 +69,7 @@ rule token = parse
 | "->"   { TOK_ARROW     }
 | "<"    { TOK_LT        }
 | ">"    { TOK_GT        }
+| "."    { TOK_DOT       }
          
 (* integers *)
 | ['0'-'9']+ as i { TOK_int (int_of_string i) }

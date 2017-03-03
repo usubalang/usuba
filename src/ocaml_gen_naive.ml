@@ -53,7 +53,8 @@ let const_to_str_ml = function
 
 let left_asgn_to_str_ml = function
   | Ident x -> ident_to_str_ml x
-  | Dotted(x,i) -> (ident_to_str_ml x)  ^ (string_of_int i)
+  | Dotted(Ident x,i) -> (ident_to_str_ml x)  ^ (string_of_int i)
+  | _ -> raise (Invalid_AST "non-conform AST")
                                   
 let constructor_to_str_ml = function
   | "True"  -> "true"
@@ -64,7 +65,7 @@ let rec expr_to_str_ml tab e =
   match e with
   | Const c -> const_to_str_ml c
   | Var v   -> ident_to_str_ml v
-  | Field(x,i) -> (ident_to_str_ml x) ^ (string_of_int i)
+  | Field(Var x,i) -> (ident_to_str_ml x) ^ (string_of_int i)
   | Tuple t -> "(" ^ (join "," (List.map (expr_to_str_ml tab) t)) ^ ")"
   | Op (op,a::b::[]) -> "(" ^ (expr_to_str_ml tab a) ^  ")" ^
                                 ( match op with
@@ -157,7 +158,9 @@ let def_to_str_ml tab = function
                  ^ (indent (tab+1)) ^ "fun (" ^ (p_to_str_ml tab p_in) ^ ") -> \n"
                  ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
                  ^ (p_to_str_ml tab p_out) ^ ")\n"))
-  | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
+  | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
+  | Temporary _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                         "Temporary should be gone by now"))
 
        
 let prog_to_str_ml (p:prog) : string =

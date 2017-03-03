@@ -19,7 +19,7 @@ module Ortho_rewriter =
       let (left,right) = aux 1 in
       let get_from_stream = "let " ^ id ^ " = Array.make 63 Int64.zero in\n"
                             ^ (indent 2) ^ "for i = 0 to 62 do\n"
-                            ^ (indent_small 5) ^ id ^ ".(i) <- Stream.next " ^ id ^ "_stream\n"
+                            ^ (indent_small 5) ^ id ^ ".(i) <- Stream.next " ^ id ^ "stream\n"
                             ^ (indent 2) ^ "done;\n" in
       let grab_ortho = (indent 2) ^ "let ("^ (join "," left) ^ ") = (" ^ (join "," right) ^ ") in\n" in
       (join "," left,
@@ -33,7 +33,11 @@ module Ortho_rewriter =
         | [] -> []
         | (id,typ,_)::tl -> ( match typ with
                               | Bool -> [ id ]
-                              | Int n -> gen_list id n ) @ (aux tl)
+                              | Int n -> gen_list id n
+                              | Array _ -> raise
+                                             (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                                "Arrays should have been cleaned by now") ))
+                            @ (aux tl)
       in aux p_out
              
     let gen_unortho p_out =
@@ -42,7 +46,12 @@ module Ortho_rewriter =
       let rec aux p i =
         match p with
         | [] -> []
-        | (id,typ,_)::tl -> let size = match typ with Bool -> 1 | Int n -> n in
+        | (id,typ,_)::tl -> let size = match typ with
+                              | Bool -> 1
+                              | Int n -> n
+                              | Array _ -> raise
+                                             (Invalid_AST
+                                                "Arrays should have been cleaned by now") in
                             let tmp = ref ((indent 2) ^ "let " ^ id ^ " = Array.make "
                                            ^ (string_of_int size) ^ " 0 in\n")  in
                             for c = 1 to size do
@@ -60,13 +69,18 @@ module Ortho_rewriter =
         
     let gen_entry_point = function
       | Single(name, p_in, p_out, _, _) ->
-         let params = List.map (fun (id,typ,_) -> match typ with
-                                                  | Bool  -> (id,1)
-                                                  | Int n -> (id,n)) p_in in
+         let params = List.map (fun (id,typ,_) ->
+                                match typ with
+                                | Bool  -> (id,1)
+                                | Int n -> (id,n)
+                                | Array _ -> raise
+                                               (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                                  "Arrays should have been cleaned by now")))
+                               p_in in
          let ortho = List.map gen_ortho params in
-         let in_streams = List.map (fun (id,_) -> id ^ "_stream") params in
+         let in_streams = List.map (fun (id,_) -> id ^ "stream") params in
          let head = "let main " ^ (join " " in_streams) ^ " = \n"
-                    ^ (indent_small 1) ^ "let cpt = ref 0 in" in
+                    ^ (indent_small 1) ^ "let cpt = ref 64 in" in
          let stacks = join ("\n" ^ (indent_small 1))
                            (List.map (fun (id,_,_) ->
                                       "let stack_" ^ id ^ " = ref [| |] in") p_out) in
@@ -81,7 +95,7 @@ module Ortho_rewriter =
           ^ (indent_small 13) ^ "incr cpt;\n" ^ (indent_small 13) ^ "Some ret\n"
           ^ (indent 1) ^ "else\n" ^ (indent_small 3) ^ "try\n"
           ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho))
-          ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ "_ ("
+          ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ "("
           ^ (join "," (List.map (fun (x,_)->"("^x^")") ortho)) ^ ") in\n"
           ^ right
           ^ (indent 2) ^ "cpt := 0;\n"
@@ -89,6 +103,9 @@ module Ortho_rewriter =
           ^ (indent 2) ^ "incr cpt;" ^ "\n"
           ^ (indent 2) ^ "return\n"
           ^ (indent_small 3) ^ "with Stream.Failure -> None)\n")
-      | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
+      | Multiple _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                            "Arrays should have been cleaned by now"))
+      | Temporary _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                             "Temporary should be gone by now"))
 
   end : SPECIFIC_REWRITER )

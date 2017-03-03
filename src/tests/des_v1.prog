@@ -1687,7 +1687,9 @@ let
 tel
 ]
 
-node des (plaintext : uint_64::_, key : uint_64::_) returns ciphered : uint_64::_
+
+node<i> des_single (left_in : uint_32::_, right_in : uint_32::_, key : uint_64::_)
+        returns left_out : uint_32::_, right_out : uint_32::_, key : uint_64::_
 vars
     left  : uint_32::_,
     right : uint_32::_,
@@ -1699,17 +1701,9 @@ vars
     permuted_c : uint_32::_,
     xored : uint_32::_
 let
-
-    # Initial permutation, and splitting into left and right 
-    (left, right) = init_p(plaintext);
-
-    ################## Main part (the 16 rounds) ##################
-
-    ##### Round 1 #####
-
     # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey1(key);
+    expanded = expand(right_in);
+    roundkey = roundkey[i](key);   # <-------------------- "i" is used here.
 
     # Xoring key and R
     (s1,s2,s3,s4,s5,s6,s7,s8)
@@ -1719,280 +1713,21 @@ let
     c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
                 sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
                 
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-    
-    ###################
-    ##### Round 2 #####
+    xored = xor32(left_in,c);
+    (left_out,right_out) = (right_in,xored)
+tel
 
-    # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey2(key);
-
-    # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor48(expanded, roundkey);
-
-    # Sboxes (and permutation)
-    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
-                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
-                
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-    
-    ###################
-    ##### Round 3 #####
-
-    # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey3(key);
-    
-    # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor48(expanded, roundkey);
-
-    # Sboxes (and permutation)
-    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
-                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
-                
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-    
-    ###################
-    ##### Round 4 #####
-
-    # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey4(key);
-
-    # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor48(expanded, roundkey);
-
-    # Sboxes (and permutation)
-    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
-                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
-                
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-    
-    ###################
-    ##### Round 5 #####
-
-    # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey5(key);
-
-    # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor48(expanded, roundkey);
-
-    # Sboxes (and permutation)
-    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
-                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
-                
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-    
-    ###################
-    ##### Round 6 #####
-
-    # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey6(key);
-
-    # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor48(expanded, roundkey);
-
-    # Sboxes (and permutation)
-    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
-                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
-                
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-    
-    ###################
-    ##### Round 7 #####
-
-    # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey7(key);
-
-    # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor48(expanded, roundkey);
-
-    # Sboxes (and permutation)
-    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
-                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
-                
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-    
-    ###################
-    ##### Round 8 #####
-
-    # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey8(key);
-
-    # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor48(expanded, roundkey);
-
-    # Sboxes (and permutation)
-    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
-                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
-                
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-    
-    ###################
-    ##### Round 9 #####
-
-    # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey9(key);
-
-    # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor48(expanded, roundkey);
-
-    # Sboxes (and permutation)
-    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
-                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
-                
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-    
-    ####################
-    ##### Round 10 #####
-
-    # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey10(key);
-
-    # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor48(expanded, roundkey);
-
-    # Sboxes (and permutation)
-    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
-                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
-                
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-    
-    ####################
-    ##### Round 11 #####
-
-    # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey11(key);
-
-    # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor48(expanded, roundkey);
-
-    # Sboxes (and permutation)
-    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
-                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
-                
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-    
-    ####################
-    ##### Round 12 #####
-
-    # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey12(key);
-
-    # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor48(expanded, roundkey);
-
-    # Sboxes (and permutation)
-    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
-                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
-                
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-    
-    ####################
-    ##### Round 13 #####
-
-    # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey13(key);
-
-    # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor48(expanded, roundkey);
-
-    # Sboxes (and permutation)
-    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
-                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
-                
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-    
-    ####################
-    ##### Round 14 #####
-
-    # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey14(key);
-
-    # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor48(expanded, roundkey);
-
-    # Sboxes (and permutation)
-    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
-                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
-                
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-    
-    ####################
-    ##### Round 15 #####
-
-    # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey15(key);
-
-    # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor48(expanded, roundkey);
-
-    # Sboxes (and permutation)
-    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
-                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
-                
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-    
-    ####################
-    ##### Round 16 #####
-
-    # Expantion of R
-    expanded = expand(right);
-    roundkey = roundkey16(key);
-
-    # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor48(expanded, roundkey);
-
-    # Sboxes (and permutation)
-    c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
-                sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
-                
-    xored = xor32(left,c);
-    (left,right) = (right,xored);
-
+node des (plaintext : uint_64::_, key : uint_64::_) returns ciphered : uint_64::_
+vars
+    left  : uint_32[17]::_,
+    right : uint_32[17]::_,
+    key_tmp : uint_64[17]::_,
+    left_init: uint_32::_,
+    right_init: uint_32::_
+let
+    (left_init,right_init) = init_p(plaintext);
+    (left,right,key_tmp) = fill_i<des_single;17>(left_init,right_init,key);
 
     # Regrouping left and right and computing final permuation
-    ciphered = final_p(right, left)    
+    ciphered = final_p(right[17], left[17])    
 tel

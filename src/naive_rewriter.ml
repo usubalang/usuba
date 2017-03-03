@@ -33,7 +33,7 @@ module Naive_rewriter =
       in
       let (left,right) = aux 1 in
       (join "," left,
-       "let " ^ id ^ " = Stream.next " ^ id ^ "_stream in\n" ^
+       "let " ^ id ^ " = Stream.next " ^ id ^ "stream in\n" ^
          (indent 2) ^ "let (" ^ (join "," left) ^ ") = (" ^ (join "," (List.rev right)) ^ ") in")
 
 
@@ -45,8 +45,8 @@ module Naive_rewriter =
                               | Bool -> [ id ]
                               | Int n -> gen_list id n 
                               | Array _ -> raise
-                                             (Invalid_AST
-                                                "Arrays should have been cleaned by now"))
+                                             (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^ 
+                                                "Arrays should have been cleaned by now")))
                             @ (aux tl)
       in aux p_out
              
@@ -63,8 +63,9 @@ module Naive_rewriter =
                             let size = match typ with
                                 Bool -> 1
                               | Int n -> n
-                              | Array _ -> raise (Invalid_AST
-                                                    "Arrays should have been cleaned by now") in
+                              | Array _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__)
+                                                               ^ 
+                                                    "Arrays should have been cleaned by now")) in
                             ( List.fold_left (fun x y -> "(Int64.logor " ^ x ^ " " ^ y ^ ")")
                                              "Int64.zero" (aux size 1) )) p_out in
       let ret = join "," (List.map (fun (id,_,_) -> id^"'") p_out) in
@@ -80,19 +81,24 @@ module Naive_rewriter =
                                 | Bool  -> (id,1)
                                 | Int n -> (id,n)
                                 | Array _ -> raise (Invalid_AST
-                                                      "Arrays should have been cleaned by now")) p_in in
+                                                      (__FILE__ ^ (string_of_int __LINE__)
+                                                       ^ "Arrays should have been cleaned by now")))
+                               p_in in
          let ortho = List.map gen_ortho params in
-         let in_streams = List.map (fun (id,_) -> id ^ "_stream") params in
+         let in_streams = List.map (fun (id,_) -> id ^ "stream") params in
          let head = "let main " ^ (join " " in_streams) ^ " = " in
          let (left,right) = gen_unortho p_out in
          (!print_fun,
           head ^ "\n" ^ (indent 1) ^ "Stream.from\n" ^ (indent 1) ^ "(fun _ -> \n"
           ^ (indent 1) ^ "try\n"
           ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho)) ^ "\n"
-          ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ "_ ("
+          ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ " ("
           ^ (join "," (List.map (fun (x,_)->"("^x^")") ortho)) ^ ") in\n"
           ^ (indent 2) ^ right ^ "\n"
           ^ (indent 1) ^ "with Stream.Failure -> None)\n")
-      | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
+      | Multiple _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                            "Arrays should have been cleaned by now"))
+      | Temporary _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                             "Temporary should be gone by now"))
 
   end : SPECIFIC_REWRITER)

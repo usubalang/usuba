@@ -1,5 +1,5 @@
 
-open Abstract_syntax_tree
+open Abstract_syntax_tree       
 
 let rec pow a = function
   | 0 -> 1
@@ -70,7 +70,7 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
                 (env_fun: (ident, int list * int) Hashtbl.t) : unit =
   let rec get_param_in_size = function
     | [] -> []
-    | (id,typ,_)::tl -> (match typ with
+    | (_,typ,_)::tl -> (match typ with
                          | Bool -> 1
                          | Int n -> n
                          | Array _ -> raise
@@ -91,7 +91,10 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
   env_add env_fun name (get_param_in_size p_in,get_param_out_size p_out)
 
 
-          
+let rec get_typ (id: ident) (vars: p) =
+  match vars with
+  | [] -> print_endline("Type not found for " ^ id);Bool
+  | (id',typ,_) :: tl -> if id = id' then typ else get_typ id tl
 
 (* converts an uint_n to n bools (with types and clock) *)
 let expand_intn_typed (id: ident) (n: int) (ck: clock) =
