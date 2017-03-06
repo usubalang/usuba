@@ -15,11 +15,14 @@
 %token TOK_MERGE
 %token TOK_FBY
 %token TOK_FILL_I
+%token TOK_PERM
 
 %token TOK_LPAREN
 %token TOK_RPAREN
 %token TOK_LBRACKET
 %token TOK_RBRACKET
+%token TOK_LCURLY
+%token TOK_RCURLY
 %token TOK_EQUAL
 %token TOK_COMMA
 %token TOK_TWO_COLON
@@ -139,16 +142,32 @@ def:
     TOK_VAR vars=p TOK_LET body=deq TOK_TEL
   { Single(f,List.rev p_in,List.rev p_out,vars,List.rev body) }
   | TOK_NODE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
-    TOK_RPAREN TOK_RETURN p_out=p TOK_EQUAL TOK_LBRACKET
+    TOK_RPAREN TOK_RETURN p_out=p TOK_LBRACKET
     l = def_list TOK_RBRACKET
   { Multiple(f,List.rev p_in, List.rev p_out, List.rev l) }
   | TOK_NODE TOK_LT TOK_id TOK_GT  f=TOK_id  TOK_LPAREN p_in=p TOK_RPAREN TOK_RETURN p_out=p
     TOK_VAR vars=p TOK_LET body=deq TOK_TEL
   { Temporary(f,List.rev p_in,List.rev p_out,vars,List.rev body) }
+  | TOK_PERM f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN TOK_RETURN p_out=p
+    TOK_LCURLY l=intlist TOK_RCURLY
+  { Perm(f,List.rev p_in, List.rev p_out, List.rev l) }
+  | TOK_PERM TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
+    TOK_RPAREN TOK_RETURN p_out=p TOK_LBRACKET
+    l = permlist TOK_RBRACKET
+  { MultiplePerm(f,List.rev p_in, List.rev p_out, List.rev l) }
 
+intlist:
+  | i=TOK_int { [ i ] }
+  | tail=intlist TOK_COMMA i=TOK_int { i::tail }
+
+permlist:
+  | TOK_LCURLY l=intlist TOK_RCURLY { [ List.rev l ] }
+  | tail=permlist TOK_SEMICOLON TOK_LCURLY l=intlist TOK_RCURLY
+    { (List.rev l) :: tail }
+  
 def_list:
   | TOK_VAR vars=p TOK_LET body=deq TOK_TEL { [(vars,body)] }
-  | tail=def_list; TOK_SEMICOLON
+  | tail=def_list  TOK_SEMICOLON
     TOK_VAR vars=p TOK_LET body=deq TOK_TEL { (vars,body)::tail }
     
 

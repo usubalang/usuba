@@ -161,6 +161,11 @@ let def_to_str_ml tab = function
   | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
   | Temporary _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
                                          "Temporary should be gone by now"))
+  | Perm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                    "Perm should be gone by now"))
+  | MultiplePerm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                            "MultiplePerm should have been cleaned by now"))
+
 
        
 let prog_to_str_ml (p:prog) : string =

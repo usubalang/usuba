@@ -219,10 +219,15 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
        env_add_var p_var env_var;
        env_add_fun name p_in p_out env_fun;
        Single(name, p_in, rewrite_p p_out, p_var, rewrite_deq body env_var env_fun)
-    | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
+    | Multiple _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                          "Multiple nodes should have been cleaned by now"))
     | Temporary _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
                                            "Temporary should be gone by now"))
-                           
+    | Perm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                      "Perm should be gone by now"))
+    | MultiplePerm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                          "MultiplePerm should have been cleaned by now"))
+                              
   let rec rewrite_defs (l: def list)
                        (env_fun: (ident, int list * int) Hashtbl.t)
           : def list =

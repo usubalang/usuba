@@ -25,6 +25,7 @@ let _ =
      "xor", TOK_XOR;
      "not", TOK_NOT;
      "fill_i", TOK_FILL_I;
+     "perm", TOK_PERM;
    ]
 
 let next_line lexbuf =
@@ -60,6 +61,8 @@ rule token = parse
 | ")"    { TOK_RPAREN    }
 | "["    { TOK_LBRACKET  }
 | "]"    { TOK_RBRACKET  }
+| "{"    { TOK_LCURLY    }
+| "}"    { TOK_RCURLY    }
 | "="    { TOK_EQUAL     }
 | ","    { TOK_COMMA     }
 | "::"   { TOK_TWO_COLON }

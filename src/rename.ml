@@ -26,7 +26,6 @@ let rec rename_expr = function
   | Fun_v _ -> raise (Invalid_AST "A fun_v")
   | Access _ -> raise (Invalid_AST "An Access")
   | Fill_i _ -> raise (Invalid_AST "A fill_i")
-  | _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^"Non-conform AST"))
 
 let rec rename_pat_single = function
   | Ident id -> Ident (id ^ "_")
@@ -52,6 +51,10 @@ let rename_def = function
                                         "Array should have been cleaned by now"))
   | Temporary _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
                                          "Temporary should be gone by now"))
+  | Perm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                    "Perm should be gone by now"))
+  | MultiplePerm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                            "MultiplePerm should have been cleaned by now"))
                          
 let rec rename_defs = function
   | [] -> []

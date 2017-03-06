@@ -100,5 +100,7 @@ module Naive_rewriter =
                                             "Arrays should have been cleaned by now"))
       | Temporary _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
                                              "Temporary should be gone by now"))
+      | Perm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                        "Perm should be gone by now"))
 
   end : SPECIFIC_REWRITER)

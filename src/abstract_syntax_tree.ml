@@ -46,5 +46,7 @@ type def =
   | Single of ident * p * p * p * deq
   | Temporary of ident * p * p * p * deq
   | Multiple  of ident * p * p * (p * deq) list (* usuba1 *)
+  | Perm of ident * p * p * int list (* usuba1 *)
+  | MultiplePerm of ident * p * p * (int list) list (* usuba1 *)
                                 
 type prog = def list
