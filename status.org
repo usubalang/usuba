@@ -99,7 +99,8 @@
    CLOSED: [2017-03-03 ven. 18:05]
 ** DONE Add a nicer syntax to describe permutations
    CLOSED: [2017-03-06 lun. 11:37]
-** TODO Implement operators on uint_n
+** DONE Implement operators on uint_n
+   CLOSED: [2017-03-06 lun. 15:41]
 ** TODO Add a nicer syntax to desribe sboxes, and convert them to circuits
 ** TODO [#B] Improve orthogonalization algorithm
 ** TODO [#B] Think about the convertion of the demultiplexer to OCaml.

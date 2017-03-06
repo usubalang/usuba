@@ -22,10 +22,10 @@ let rec rename_expr = function
                                                         | None -> None
                                                         | Some id -> Some (id^"_"))
   | Nop -> Nop
-  | Fun_i _ -> raise (Invalid_AST "A fun_i")
-  | Fun_v _ -> raise (Invalid_AST "A fun_v")
-  | Access _ -> raise (Invalid_AST "An Access")
-  | Fill_i _ -> raise (Invalid_AST "A fill_i")
+  | Fun_i _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^ "A fun_i"))
+  | Fun_v _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^ "A fun_v"))
+  | Access _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^ "An Access"))
+  | Fill_i _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^ "A fill_i"))
 
 let rec rename_pat_single = function
   | Ident id -> Ident (id ^ "_")

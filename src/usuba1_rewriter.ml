@@ -8,7 +8,7 @@ let add_vars : p ref = ref []
                      
 let rec rewrite_expr (e: expr) : expr =
   match e with
-  | Fun_i(f,i,l) -> Fun(f^(string_of_int i),l)
+  | Fun_i(f,i,l) -> Fun(f^(string_of_int i),List.map rewrite_expr l)
   | Access(id,i) -> Var(id^(string_of_int i))
   | Field(e,i)   -> Field(rewrite_expr e,i)
   | Tuple l -> Tuple(List.map rewrite_expr l)
@@ -33,6 +33,11 @@ let make_node_i (node: def) (i: int) : def * ident =
   let rec replace_i (e: expr) : expr =
     match e with 
     | Fun_v(f,v,l) -> rewrite_expr(Fun_i(f,i,List.map replace_i l))
+    | Fun_i(f,i,l) -> rewrite_expr(Fun_i(f,i,List.map replace_i l))
+    | Tuple l -> rewrite_expr(Tuple (List.map replace_i l))
+    | Op(o,l) -> rewrite_expr(Op(o,List.map replace_i l))
+    | Mux(e,c,i) -> rewrite_expr(Mux(replace_i e,c,i))
+    | Fby(ei,ef,i) -> rewrite_expr(Fby(replace_i ei,replace_i ef,i))
     | _ -> rewrite_expr e in
   match node with
   | Multiple _ -> raise ( Error ("Illegal node array."))
@@ -46,7 +51,7 @@ let make_node_i (node: def) (i: int) : def * ident =
      let id = id ^ (string_of_int i) in
      let body = List.map (fun (x,y) -> (x,replace_i y)) body in
      (Single(id,p_in,p_out,vars,body),id)
-
+       
        
 let rewrite_fill (pat:pat) ((id:ident),(n:int),(l:pat)) env : deq =
   let node = (match env_fetch env id with

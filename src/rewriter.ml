@@ -22,6 +22,12 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
   let aux_fun = ref []
   let print_fun = ref []
   let entry   = ref ""
+  let before_deq : (pat * expr) list ref = ref []
+
+  let tmp_generator =
+    let counter = ref 0 in
+    fun () -> incr counter;
+              "tmp" ^ (string_of_int !counter)
 
                     
   (* Flatten a list of expr inside a tuple *)
@@ -55,7 +61,7 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
   let rec get_size e env =
     match e with
     | Const _ -> 1
-    | Var x   -> print_endline ("Var!" ^ x);1 (* at this point, Var are only Bool *)
+    | Var x   -> 1 (* at this point, Var are only Bool *)
     | Field _ -> 1
     | Tuple l -> List.length l
     | Op _    -> 1 (* at this point, Op have already been normalized *)
@@ -109,7 +115,8 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
             else
               ([Dotted(Ident("out"^(string_of_int id_r)),num_r)],
                Field(Var("in"^(string_of_int id_p)),num_p)) ::
-                (make_body id_p (num_p+1) id_r (num_r+1) (size_curr_p-1) (size_curr_r-1) next_p next_r)
+                (make_body id_p (num_p+1) id_r (num_r+1) (size_curr_p-1)
+                           (size_curr_r-1) next_p next_r)
           in
           let f = Single(id,param,ret,[], make_body 0 1 0 1 0 0 orig target) in
           aux_fun := (!aux_fun) @ [f];
@@ -123,8 +130,8 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
        let sizes = get_sizes l env in
        [ Fun (gen_conv params sizes, l) ]
     | None -> raise @@ Undeclared("function " ^ f)
-                                         
-                                         
+         
+         
   let rec rewrite_expr (env_var: (ident, int) Hashtbl.t)
                        (env_fun: (ident, int list * int) Hashtbl.t) (e: expr) : expr =
     match e with
@@ -135,23 +142,67 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                   | None -> e) (* Not_found -> it's a boolean *)
     | Field (Var id,n) -> Var (id ^ (string_of_int n))
     | Tuple (l)    -> Tuple (flatten_expr (List.map (rewrite_expr env_var env_fun) l))
-    | Op (And,x1::x2::[]) -> let t1 = rewrite_expr env_var env_fun x1 in
-                             let t2 = rewrite_expr env_var env_fun x2 in
-                             (match t1,t2 with
-                              | Tuple l1, Tuple l2 -> Tuple(combine_op And l1 l2)
-                              | _ -> Op(And,[t1;t2]) )
-    | Op (Or, x1::x2::[]) -> let t1 = rewrite_expr env_var env_fun x1 in
-                             let t2 = rewrite_expr env_var env_fun x2 in
-                             (match t1,t2 with
-                              | Tuple l1, Tuple l2 -> Tuple(combine_op Or l1 l2)
-                              | _ -> Op(Or,[t1;t2]) )
     | Op (Xor,x1::x2::[]) -> let t1 = rewrite_expr env_var env_fun x1 in
                              let t2 = rewrite_expr env_var env_fun x2 in
-                             (match t1,t2 with
-                              | Tuple l1, Tuple l2 -> Tuple(combine_xor l1 l2)
-                              | _ -> Op(Or,
+                             ( match t1, t2 with
+                               | Var _, Var _ | Var _, Const _ | Var _, Field _
+                               | Const _, Var _ | Const _, Const _ | Const _, Field _
+                               | Field _, Var _ | Field _, Const _ | Field _, Field _
+                                    -> Op(Or,
                                         [ Op(And, [ t1; Op(Not,[t2])] ) ;
-                                          Op(And, [ Op(Not,[t1]);t2])]) )
+                                          Op(And, [ Op(Not,[t1]);t2])])
+                               | _ -> 
+                                  let tmp1 = tmp_generator () in
+                                  let tmp2 = tmp_generator () in
+                                  env_add env_var tmp1 (get_size t1 env_fun);
+                                  env_add env_var tmp2 (get_size t2 env_fun);
+                                  let tmp1_pat = rewrite_pat [Ident tmp1] env_var in
+                                  let tmp2_pat = rewrite_pat [Ident tmp2] env_var in
+                                  let tmp1_expr = rewrite_expr env_var env_fun (Var tmp1) in
+                                  let tmp2_expr = rewrite_expr env_var env_fun (Var tmp2) in
+                                  before_deq := (tmp1_pat,t1) :: (tmp2_pat,t2) ::
+                                                  !before_deq;
+                                  (match tmp1_expr, tmp2_expr with
+                                   | Tuple l1, Tuple l2 -> Tuple(combine_xor l1 l2)
+                                   | _ -> Op(Or,
+                                             [ Op(And, [ tmp1_expr; Op(Not,[tmp2_expr])] ) ;
+                                               Op(And, [ Op(Not,[tmp1_expr]);tmp2_expr])])))
+    | Op (op,x1::x2::[]) -> let t1 = rewrite_expr env_var env_fun x1 in
+                            let t2 = rewrite_expr env_var env_fun x2 in
+                            ( match t1, t2 with
+                              | Var _, Var _ | Var _, Const _ | Var _, Field _
+                              | Const _, Var _ | Const _, Const _ | Const _, Field _
+                              | Field _, Var _ | Field _, Const _ | Field _, Field _
+                                                                    -> Op(op,[t1;t2])
+                              | _ -> 
+                                 let tmp1 = tmp_generator () in
+                                 let tmp2 = tmp_generator () in
+                                 env_add env_var tmp1 (get_size t1 env_fun);
+                                 env_add env_var tmp2 (get_size t2 env_fun);
+                                 let tmp1_pat = rewrite_pat [Ident tmp1] env_var in
+                                 let tmp2_pat = rewrite_pat [Ident tmp2] env_var in
+                                 let tmp1_expr = rewrite_expr env_var env_fun (Var tmp1) in
+                                 let tmp2_expr = rewrite_expr env_var env_fun (Var tmp2) in
+                                 before_deq := (tmp1_pat,t1) :: (tmp2_pat,t2) ::
+                                                 !before_deq;
+                                 (match tmp1_expr, tmp2_expr with
+                                  | Tuple l1, Tuple l2 -> Tuple(combine_op And l1 l2)
+                                  | _ -> Op(op,[tmp1_expr;tmp2_expr])))
+    | Op (Not,x::[]) -> let x = rewrite_expr env_var env_fun x in
+                        ( match x with
+                          | Var _ | Const _ | Access _ | Field _
+                                                         -> Op(Not,[x])
+                          | _ -> 
+                             let tmp = tmp_generator () in
+                             env_add env_var tmp (get_size x env_fun);
+                             let tmp_pat = rewrite_pat [Ident tmp] env_var in
+                             let tmp_expr = rewrite_expr env_var env_fun (Var tmp) in
+                             before_deq := (tmp_pat,x) ::
+                                             !before_deq;
+                             ( match tmp_expr with
+                               | Tuple l -> Tuple(distrib_not
+                                                    (List.map (rewrite_expr env_var env_fun) l))
+                               | _ -> Op(Not,[tmp_expr])))
     | Op (Not,l) -> Tuple(distrib_not (List.map (rewrite_expr env_var env_fun) l))
     | Op _ -> raise Invalid_operator_call
     | Fun (f,l)    -> if f = "print" then
@@ -176,7 +227,7 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
     | _ -> raise (Invalid_AST "Non-conform AST")
                            
                            
-  let rec rewrite_pat (pat: pat) (env: (ident, int) Hashtbl.t) : pat =
+  and rewrite_pat (pat: pat) (env: (ident, int) Hashtbl.t) : pat =
     match pat with
     | [] -> []
     | hd::tl -> (match hd with
@@ -189,17 +240,20 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                  | _ -> raise (Invalid_AST "Non-conform AST"))
                 @ (rewrite_pat tl env)
                     
-  let rec rewrite_deq (deq: deq) (env_var: (ident, int) Hashtbl.t) env_fun : deq =
+  and rewrite_deq (deq: deq) (env_var: (ident, int) Hashtbl.t) env_fun : deq =
     match deq with
     | [] -> []
     | (pat,expr) :: tl -> match expr with
                           | Nop -> rewrite_deq tl env_var env_fun
-                          | _ -> (rewrite_pat pat env_var, rewrite_expr env_var env_fun expr)
-                                 :: (rewrite_deq tl env_var env_fun)
+                          | _ -> before_deq := [];
+                                 let e = (rewrite_pat pat env_var,
+                                          rewrite_expr env_var env_fun expr) in
+                                 let head = !before_deq @ [e] in
+                                 head @ (rewrite_deq tl env_var env_fun)
 
 
   (* mostly converting the uint_n to bools *)
-  let rec rewrite_p (p: p) =
+  and rewrite_p (p: p) =
     match p with
     | [] -> []
     | (id,typ,ck)::tl -> ( match typ with
@@ -210,7 +264,7 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                          ) @ (rewrite_p tl)
 
                                                                       
-  let rewrite_def (def: def) env_fun : def =
+  and rewrite_def (def: def) env_fun : def =
     match def with
     | Single (name, p_in, p_out, p_var, body) ->
        let env_var = Hashtbl.create 10 in
@@ -228,7 +282,7 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
     | MultiplePerm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
                                           "MultiplePerm should have been cleaned by now"))
                               
-  let rec rewrite_defs (l: def list)
+  and rewrite_defs (l: def list)
                        (env_fun: (ident, int list * int) Hashtbl.t)
           : def list =
     match l with
@@ -237,7 +291,7 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                 hd' :: (rewrite_defs tl env_fun)
                      
                      
-  let rewrite_prog (p: prog) : prog =
+  and rewrite_prog (p: prog) : prog =
     let env_fun = Hashtbl.create 10 in
     let usuba0_prog = (Usuba1_rewriter.rewrite_prog p) in
     let renamed_prog = rename_prog usuba0_prog in
