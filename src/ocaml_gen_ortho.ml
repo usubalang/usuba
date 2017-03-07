@@ -238,7 +238,8 @@ let prog_to_str_ml (p:prog) : string =
   done;
   out"];
   let body = List.map (def_to_str_ml 0) (Rewriter.rewrite_prog p) in
-  match !prologue_prog with
-  | [] -> (join "\n\n" body) ^ "\n\n" ^ !(Rewriter.entry)
-  | l  -> (join "\n\n" !prologue_prog)
-          ^ "\n\n" ^  (join "\n\n" body) ^ "\n\n" ^ !(Rewriter.entry)
+  (join "\n\n" !(Rewriter.print_fun)) ^ "\n\n" ^ 
+    (match !prologue_prog with
+     | [] -> (join "\n\n" body) ^ "\n\n" ^ !(Rewriter.entry)
+     | l  -> (join "\n\n" !prologue_prog)
+             ^ "\n\n" ^  (join "\n\n" body) ^ "\n\n" ^ !(Rewriter.entry))

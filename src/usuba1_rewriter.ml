@@ -53,7 +53,7 @@ let make_node_i (node: def) (i: int) : def * ident =
      (Single(id,p_in,p_out,vars,body),id)
        
        
-let rewrite_fill (pat:pat) ((id:ident),(n:int),(l:pat)) env : deq =
+let rewrite_fill (pat:pat) ((id:ident),(n:int),(l:expr)) env : deq =
   let node = (match env_fetch env id with
               | Some x -> x
               | None -> raise (Error ("Undeclared node " ^ id))) in
@@ -62,9 +62,7 @@ let rewrite_fill (pat:pat) ((id:ident),(n:int),(l:pat)) env : deq =
                                   match x with
                                   | Ident id -> Ident (id ^ "1")
                                   | _ -> raise (Error "")) pat,
-                               Tuple(List.map (fun x -> match x with
-                                                        | Ident id -> Var id
-                                                        | _ -> raise (Error "")) l))] in
+                               rewrite_expr l)] in
   for i = 2 to n do
     let (node_i,id_i) = make_node_i node (i-1) in
     prev_node := !prev_node @ [node_i];

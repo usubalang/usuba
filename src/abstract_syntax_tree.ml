@@ -18,7 +18,7 @@ type op = And | Or | Xor | Not
                             
 type expr = Const  of int
           | Var    of ident
-          | Access of ident * int
+          | Access of ident * int (* usuba1 *)
           | Field  of expr * int
           | Tuple  of expr list
           | Op     of op * expr list
@@ -28,7 +28,7 @@ type expr = Const  of int
           | Mux    of expr * constr * ident
           | Demux  of ident * (constr * expr) list
           | Fby    of expr * expr * ident option
-          | Fill_i of ident * int * pat
+          | Fill_i of ident * int * expr
           | Nop
 
 and left_asgn =

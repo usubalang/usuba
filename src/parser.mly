@@ -91,13 +91,8 @@ exp:
    | init=exp TOK_LBRACKET f=TOK_id TOK_RBRACKET TOK_FBY follow=exp
      { Fby(init,follow,Some f) }
    | TOK_FILL_I TOK_LT f=TOK_id TOK_SEMICOLON n=TOK_int TOK_GT
-     TOK_LPAREN l=idlist TOK_RPAREN
-     { Fill_i(f,n,List.rev l) }
-
-idlist:
-   | id=TOK_id { [Ident(id)] }
-   | tail=idlist TOK_COMMA id=TOK_id { (Ident id) :: tail }
-
+     TOK_LPAREN l=explist TOK_RPAREN
+     { Fill_i(f,n,Tuple(List.rev l)) }
 caselist:
    | { [] }                                  
    | front=caselist TOK_PIPE c=TOK_constr TOK_ARROW e=exp %prec TOK_PIPE { (c,e)::front }

@@ -35,7 +35,8 @@
     CLOSED: [2017-02-21 mar. 10:15]
 *** DONE Implement ECB
     CLOSED: [2017-02-21 mar. 11:59]
-*** TODO Implement CBC
+*** DONE Implement CBC
+    CLOSED: [2017-03-07 mar. 11:43]
 *** DONE Implement CFB
     CLOSED: [2017-02-21 mar. 17:30]
 *** DONE Implement OFB
@@ -97,19 +98,24 @@
    CLOSED: [2017-03-03 ven. 14:00]
 ** DONE Add fill_i operator (and the special nodes going with it)
    CLOSED: [2017-03-03 ven. 18:05]
+** DONE Allow fill_i to have an arbitrary expression as initial value
+   CLOSED: [2017-03-06 lun. 15:55]
+   For now, the initial value of fill_i needs to be variables. This is pretty
+   bad; any expression should be fine.
 ** DONE Add a nicer syntax to describe permutations
    CLOSED: [2017-03-06 lun. 11:37]
 ** DONE Implement operators on uint_n
    CLOSED: [2017-03-06 lun. 15:41]
-** TODO Add a nicer syntax to desribe sboxes, and convert them to circuits
-** TODO [#B] Improve orthogonalization algorithm
-** TODO [#B] Think about the convertion of the demultiplexer to OCaml.
-   in particular, for now, I change True to 1 and False to 0. 
-   This might not work in the future.
-** TODO [#B] Get familiar with [[https://whitequark.org/blog/2014/04/16/a-guide-to-extension-points-in-ocaml/][ppx]], parsetree, and co.
-*** TODO [#C] Improve pretty printing (with [[http://gallium.inria.fr/blog/first-release-of-pprint/][Ocaml PPrint]] eventually)
-** TODO Learn org-mode!
+** TODO [#B] Allow fill_i to have additional fixed parameters
+   For now, in DES, fill_i needs the key, but in order to do so, we have to 
+** DONE Rust syntax for uint (un instead of uint_n)
+   CLOSED: [2017-03-07 mar. 11:43]
 
+** TODO Automatic unit tests (naif vs ortho vs standart)
+** TODO Biblio (applications, usage, compilation)
+** TODO Add a nicer syntax to desribe sboxes, and convert them to circuits
+** TODO [#B] Get familiar with [[https://whitequark.org/blog/2014/04/16/a-guide-to-extension-points-in-ocaml/][ppx]], parsetree, and co.
+** TODO [#C] Improve pretty printing (with [[http://gallium.inria.fr/blog/first-release-of-pprint/][Ocaml PPrint]] eventually)
 
 * Examples
 

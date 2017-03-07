@@ -3,6 +3,7 @@ open Abstract_syntax_tree
 open Utils
 open Specific_rewriter
 open Rename
+open Print_ast
 
 exception Not_implemented of string
 exception Empty_list
@@ -22,12 +23,11 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
   let aux_fun = ref []
   let print_fun = ref []
   let entry   = ref ""
-  let before_deq : (pat * expr) list ref = ref []
 
   let tmp_generator =
     let counter = ref 0 in
     fun () -> incr counter;
-              "tmp" ^ (string_of_int !counter)
+              "__tmp" ^ (string_of_int !counter) ^ "_"
 
                     
   (* Flatten a list of expr inside a tuple *)
@@ -63,11 +63,11 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
     | Const _ -> 1
     | Var x   -> 1 (* at this point, Var are only Bool *)
     | Field _ -> 1
-    | Tuple l -> List.length l
+    | Tuple l -> List.fold_left (+) 0 (List.map (fun x -> get_size x env) l)
     | Op _    -> 1 (* at this point, Op have already been normalized *)
     | Fun(f,_) -> (match env_fetch env f with
                    | Some (_,v) -> v
-                   | None -> if f = "print" then 1
+                   | None -> if contains f "print" then 1
                              else raise @@ Undeclared("function " ^ f))
     | Mux _ -> raise (Not_implemented "Mux")
     | Demux _  -> raise (Not_implemented "Demux")
@@ -79,6 +79,23 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
     match l with
     | [] -> []
     | hd::tl -> ( get_size hd env ) :: (get_sizes tl env)
+
+  let rec sizes_from_expr e env =
+    match e with
+    | Const _ -> [1]
+    | Var x   -> [1] (* at this point, Var are only Bool *)
+    | Field _ -> [1]
+    | Tuple l -> List.map (fun x -> get_size x env) l
+    | Op _    -> [1] (* at this point, Op have already been normalized *)
+    | Fun(f,_) -> (match env_fetch env f with
+                   | Some (_,v) -> [v]
+                   | None -> if contains f "print" then [1]
+                             else raise @@ Undeclared("function " ^ f))
+    | Mux _ -> raise (Not_implemented "Mux")
+    | Demux _  -> raise (Not_implemented "Demux")
+    | Fby(ei,_,_) -> [get_size ei env]
+    | Nop -> [0]
+    | _ -> raise (Invalid_AST "Non-conform AST")
                                          
   let gen_conv =
     let cache = Hashtbl.create 10 in
@@ -94,12 +111,12 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
           let id = "convert" ^ (string_of_int @@ id_generator ()) in
           let num_param = ref 0 in
           let param = List.map (fun n -> incr num_param;
-                                         ("in"^(string_of_int !num_param),
+                                         ("in"^(string_of_int !num_param)^"_",
                                           Int n,
                                           "_")) orig in
           let num_ret = ref 0 in
           let ret = List.map (fun n -> incr num_ret;
-                                       ("out"^(string_of_int !num_ret),
+                                       ("out"^(string_of_int !num_ret)^"_",
                                         Int n,
                                         "_")) target in
           let rec make_body id_p num_p id_r num_r size_curr_p size_curr_r next_p next_r :
@@ -113,8 +130,8 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
               | [] -> []
               | hd::tl -> make_body id_p num_p (id_r+1) 1 size_curr_p hd next_p tl
             else
-              ([Dotted(Ident("out"^(string_of_int id_r)),num_r)],
-               Field(Var("in"^(string_of_int id_p)),num_p)) ::
+              ([Dotted(Ident("out"^(string_of_int id_r)^"_"),num_r)],
+               Field(Var("in"^(string_of_int id_p)^"_"),num_p)) ::
                 (make_body id_p (num_p+1) id_r (num_r+1) (size_curr_p-1)
                            (size_curr_r-1) next_p next_r)
           in
@@ -130,10 +147,27 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
        let sizes = get_sizes l env in
        [ Fun (gen_conv params sizes, l) ]
     | None -> raise @@ Undeclared("function " ^ f)
-         
+
+  let rec is_one_only = function
+    | [] -> true
+    | hd::tl -> hd = 1 && (is_one_only tl)
+
+  let gen_conv_to_size (size:int) (e:expr) env =
+    let sizes = sizes_from_expr e env in
+    if is_one_only sizes then e
+    else match sizes with
+         | x::[] -> e
+         | _ -> let sizes = sizes_from_expr e env in
+                let params = [size] in
+                Fun(gen_conv params sizes, [e])
+                   
+                   
          
   let rec rewrite_expr (env_var: (ident, int) Hashtbl.t)
-                       (env_fun: (ident, int list * int) Hashtbl.t) (e: expr) : expr =
+                       (env_fun: (ident, int list * int) Hashtbl.t) (e: expr)
+          : deq * expr =
+    let before_deq = ref [] in
+    let res = (
     match e with
     | Const c -> Const c (* TODO: convert potential integer to list of bool? *)
     | Var id  -> (match env_fetch env_var id with
@@ -141,9 +175,15 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                                  else e
                   | None -> e) (* Not_found -> it's a boolean *)
     | Field (Var id,n) -> Var (id ^ (string_of_int n))
-    | Tuple (l)    -> Tuple (flatten_expr (List.map (rewrite_expr env_var env_fun) l))
-    | Op (Xor,x1::x2::[]) -> let t1 = rewrite_expr env_var env_fun x1 in
-                             let t2 = rewrite_expr env_var env_fun x2 in
+    | Tuple (l)    -> Tuple (flatten_expr
+                               (List.map
+                                  (fun x ->
+                                   let (deq,e) = rewrite_expr env_var env_fun x in
+                                   before_deq := deq @ !before_deq;
+                                   e) l))
+    | Op (Xor,x1::x2::[]) -> let (deq1, t1) = rewrite_expr env_var env_fun x1 in
+                             let (deq2, t2) = rewrite_expr env_var env_fun x2 in
+                             before_deq := deq1 @ deq2 @ !before_deq;
                              ( match t1, t2 with
                                | Var _, Var _ | Var _, Const _ | Var _, Field _
                                | Const _, Var _ | Const _, Const _ | Const _, Field _
@@ -158,17 +198,18 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                                   env_add env_var tmp2 (get_size t2 env_fun);
                                   let tmp1_pat = rewrite_pat [Ident tmp1] env_var in
                                   let tmp2_pat = rewrite_pat [Ident tmp2] env_var in
-                                  let tmp1_expr = rewrite_expr env_var env_fun (Var tmp1) in
-                                  let tmp2_expr = rewrite_expr env_var env_fun (Var tmp2) in
-                                  before_deq := (tmp1_pat,t1) :: (tmp2_pat,t2) ::
-                                                  !before_deq;
+                                  let (d1,tmp1_expr) = rewrite_expr env_var env_fun (Var tmp1) in
+                                  let (d2,tmp2_expr) = rewrite_expr env_var env_fun (Var tmp2) in
+                                  before_deq := !before_deq @ d1 @ d2 @
+                                                  [(tmp1_pat,t1); (tmp2_pat,t2)];
                                   (match tmp1_expr, tmp2_expr with
                                    | Tuple l1, Tuple l2 -> Tuple(combine_xor l1 l2)
                                    | _ -> Op(Or,
                                              [ Op(And, [ tmp1_expr; Op(Not,[tmp2_expr])] ) ;
                                                Op(And, [ Op(Not,[tmp1_expr]);tmp2_expr])])))
-    | Op (op,x1::x2::[]) -> let t1 = rewrite_expr env_var env_fun x1 in
-                            let t2 = rewrite_expr env_var env_fun x2 in
+    | Op (op,x1::x2::[]) -> let (deq1,t1) = rewrite_expr env_var env_fun x1 in
+                            let (deq2,t2) = rewrite_expr env_var env_fun x2 in
+                            before_deq := deq1 @ deq2 @ !before_deq;
                             ( match t1, t2 with
                               | Var _, Var _ | Var _, Const _ | Var _, Field _
                               | Const _, Var _ | Const _, Const _ | Const _, Field _
@@ -181,14 +222,15 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                                  env_add env_var tmp2 (get_size t2 env_fun);
                                  let tmp1_pat = rewrite_pat [Ident tmp1] env_var in
                                  let tmp2_pat = rewrite_pat [Ident tmp2] env_var in
-                                 let tmp1_expr = rewrite_expr env_var env_fun (Var tmp1) in
-                                 let tmp2_expr = rewrite_expr env_var env_fun (Var tmp2) in
-                                 before_deq := (tmp1_pat,t1) :: (tmp2_pat,t2) ::
-                                                 !before_deq;
+                                 let (d1,tmp1_expr) = rewrite_expr env_var env_fun (Var tmp1) in
+                                 let (d2,tmp2_expr) = rewrite_expr env_var env_fun (Var tmp2) in
+                                 before_deq := !before_deq @ d1 @ d2 @ 
+                                                 [(tmp1_pat,t1); (tmp2_pat,t2)] ;
                                  (match tmp1_expr, tmp2_expr with
-                                  | Tuple l1, Tuple l2 -> Tuple(combine_op And l1 l2)
+                                  | Tuple l1, Tuple l2 -> Tuple(combine_op op l1 l2)
                                   | _ -> Op(op,[tmp1_expr;tmp2_expr])))
-    | Op (Not,x::[]) -> let x = rewrite_expr env_var env_fun x in
+    | Op (Not,x::[]) -> let (deq,x) = rewrite_expr env_var env_fun x in
+                        before_deq := deq @ !before_deq;
                         ( match x with
                           | Var _ | Const _ | Access _ | Field _
                                                          -> Op(Not,[x])
@@ -196,14 +238,24 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                              let tmp = tmp_generator () in
                              env_add env_var tmp (get_size x env_fun);
                              let tmp_pat = rewrite_pat [Ident tmp] env_var in
-                             let tmp_expr = rewrite_expr env_var env_fun (Var tmp) in
+                             let (_,tmp_expr) = rewrite_expr env_var env_fun (Var tmp) in
                              before_deq := (tmp_pat,x) ::
                                              !before_deq;
                              ( match tmp_expr with
-                               | Tuple l -> Tuple(distrib_not
-                                                    (List.map (rewrite_expr env_var env_fun) l))
+                               | Tuple l ->
+                                  Tuple(distrib_not
+                                          (List.map
+                                             (fun x ->
+                                              let (d,e) = rewrite_expr env_var env_fun x in
+                                              before_deq := d @ !before_deq;
+                                              e) l))
                                | _ -> Op(Not,[tmp_expr])))
-    | Op (Not,l) -> Tuple(distrib_not (List.map (rewrite_expr env_var env_fun) l))
+    | Op (Not,l) -> Tuple(distrib_not
+                            (List.map
+                               (fun x ->
+                                let (d,e) = rewrite_expr env_var env_fun x in
+                                before_deq := d @ !before_deq;
+                                e) l))
     | Op _ -> raise Invalid_operator_call
     | Fun (f,l)    -> if f = "print" then
                         if Aux.keep_print then
@@ -219,12 +271,22 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                            | _ -> raise Invalid_operator_call)
                         else Nop
                       else
-                        Fun(f, format_param f (List.map (rewrite_expr env_var env_fun) l) env_fun)
-    | Mux (e,c,id) -> rewrite_expr env_var env_fun e
+                        Fun(f, format_param f (List.map (fun x ->
+                                   let (deq,e) = rewrite_expr env_var env_fun x in
+                                   before_deq := deq @ !before_deq;
+                                   e) l) env_fun)
+    | Mux (e,c,id) -> let (deq,e) = rewrite_expr env_var env_fun e in
+                      before_deq := deq @ !before_deq;
+                      e
     | Demux(id,l)  -> raise (Not_implemented "Demux")
-    | Fby(ei,ef,f)   -> Fby(rewrite_expr env_var env_fun ei, rewrite_expr env_var env_fun ef,f)
+    | Fby(ei,ef,f)   -> let (di,ei') = rewrite_expr env_var env_fun ei in
+                        let (df,ef') = rewrite_expr env_var env_fun ef in
+                        before_deq := di @ df @ !before_deq;
+                        Fby(ei', ef' ,f)
     | Nop -> Nop
     | _ -> raise (Invalid_AST "Non-conform AST")
+    ) in
+    (!before_deq, res)
                            
                            
   and rewrite_pat (pat: pat) (env: (ident, int) Hashtbl.t) : pat =
@@ -245,11 +307,11 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
     | [] -> []
     | (pat,expr) :: tl -> match expr with
                           | Nop -> rewrite_deq tl env_var env_fun
-                          | _ -> before_deq := [];
-                                 let e = (rewrite_pat pat env_var,
-                                          rewrite_expr env_var env_fun expr) in
-                                 let head = !before_deq @ [e] in
-                                 head @ (rewrite_deq tl env_var env_fun)
+                          | _ -> let pat' = rewrite_pat pat env_var in
+                                 let (head,e) = rewrite_expr env_var env_fun expr in
+                                 let left_size = List.length pat' in
+                                 head @ [(pat',gen_conv_to_size left_size e env_fun)]
+                                 @ (rewrite_deq tl env_var env_fun)
 
 
   (* mostly converting the uint_n to bools *)
@@ -295,11 +357,12 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
     let env_fun = Hashtbl.create 10 in
     let usuba0_prog = (Usuba1_rewriter.rewrite_prog p) in
     let renamed_prog = rename_prog usuba0_prog in
+    let p' = rewrite_defs renamed_prog env_fun in
     let (prints,entry_point) =
       Aux.gen_entry_point (Utils.last renamed_prog) in
     print_fun := prints;
     entry := entry_point ;
-    let p' = rewrite_defs renamed_prog env_fun in
     (!aux_fun) @ p'
+                  
 
 end

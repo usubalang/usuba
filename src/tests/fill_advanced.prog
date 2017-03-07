@@ -1,4 +1,4 @@
-node[] key(in:uint_4::_,in2:uint_2::_) returns out:uint_4::_ =
+node[] key(in:uint_4::_,in2:uint_2::_) returns out:uint_4::_
 [
     vars
     let
@@ -29,6 +29,6 @@ vars
     tmp: uint_4[3]::_,
     tmp2: uint_2[3]::_
 let
-    (tmp,tmp2) = fill_i<f;3>(init,supp);
+    (tmp,tmp2) = fill_i<f;3>(and(and(init,init),init),supp);
     out = tmp[3]
 tel

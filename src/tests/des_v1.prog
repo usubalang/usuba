@@ -537,16 +537,16 @@ perm expand (a: uint_32::_) returns out:uint_48::_  {
 
 perm init_p (a:uint_64::_) returns out:uint_64::_ {
      58, 50, 42, 34, 26, 18, 10, 2, 60, 52, 44, 36, 28, 20, 12, 4,
-	 62, 54, 46, 38, 30, 22, 14, 6, 64, 56, 48, 40, 32, 24, 16, 8,
-	 57, 49, 41, 33, 25, 17, 9, 1, 59, 51, 43, 35, 27, 19, 11, 3,
-	 61, 53, 45, 37, 29, 21, 13, 5, 63, 55, 47, 39, 31, 23, 15, 7
+     62, 54, 46, 38, 30, 22, 14, 6, 64, 56, 48, 40, 32, 24, 16, 8,
+     57, 49, 41, 33, 25, 17, 9, 1, 59, 51, 43, 35, 27, 19, 11, 3,
+     61, 53, 45, 37, 29, 21, 13, 5, 63, 55, 47, 39, 31, 23, 15, 7
 }
 
 perm final_p (a:uint_64::_) returns out:uint_64::_ {
      40, 8, 48, 16, 56, 24, 64, 32, 39, 7, 47, 15, 55, 23, 63, 31,
-	 38, 6, 46, 14, 54, 22, 62, 30, 37, 5, 45, 13, 53, 21, 61, 29,
-	 36, 4, 44, 12, 52, 20, 60, 28, 35, 3, 43, 11, 51, 19, 59, 27,
-	 34, 2, 42, 10, 50, 18, 58, 26, 33, 1, 41, 9, 49, 17, 57, 25
+     38, 6, 46, 14, 54, 22, 62, 30, 37, 5, 45, 13, 53, 21, 61, 29,
+     36, 4, 44, 12, 52, 20, 60, 28, 35, 3, 43, 11, 51, 19, 59, 27,
+     34, 2, 42, 10, 50, 18, 58, 26, 33, 1, 41, 9, 49, 17, 57, 25
 }
 
 perm permut ( a:uint_32::_ ) returns out:uint_32::_ {
@@ -626,43 +626,28 @@ perm[] roundkey (key : uint_64::_) returns roundkey : uint_48::_
 node<i> des_single (left_in : uint_32::_, right_in : uint_32::_, key : uint_64::_)
         returns left_out : uint_32::_, right_out : uint_32::_, key : uint_64::_
 vars
-    left  : uint_32::_,
-    right : uint_32::_,
-    roundkey : uint_48::_,
-    expanded : uint_48::_,
     s1 : uint_6::_, s2 : uint_6::_, s3 : uint_6::_, s4 : uint_6::_,
     s5 : uint_6::_, s6 : uint_6::_, s7 : uint_6::_, s8 : uint_6::_,
-    c : uint_32::_,
-    permuted_c : uint_32::_,
-    xored : uint_32::_
+    c : uint_32::_
 let
-    # Expantion of R
-    # expanded = expand(right_in);
-    # roundkey = roundkey[i](key);
-
     # Xoring key and R
     (s1,s2,s3,s4,s5,s6,s7,s8)
-          # = xor(expanded, roundkey);
-          = xor(expand(right_in),roundkey[i](key));
+          = xor(expand(right_in), roundkey[i](key));
 
     # Sboxes (and permutation)
     c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
                 sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
                 
-    xored = xor(left_in,c);
-    (left_out,right_out) = (right_in,xored)
+    (left_out,right_out) = (right_in,xor(left_in,c))
 tel
 
 node des (plaintext : uint_64::_, key : uint_64::_) returns ciphered : uint_64::_
 vars
     left  : uint_32[17]::_,
     right : uint_32[17]::_,
-    key_tmp : uint_64[17]::_,
-    left_init: uint_32::_,
-    right_init: uint_32::_
+    key_tmp : uint_64[17]::_
 let
-    (left_init,right_init) = init_p(plaintext);
-    (left,right,key_tmp) = fill_i<des_single;17>(left_init,right_init,key);
+    (left,right,key_tmp) = fill_i<des_single;17>(init_p(plaintext),key);
 
     # Regrouping left and right and computing final permuation
     ciphered = final_p(right[17], left[17])    

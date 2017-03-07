@@ -33,7 +33,6 @@ let gen_list_0 (id: string) (n: int) : string list =
     if n <= 0 then acc
     else aux (n-1) ((id ^ (string_of_int (n-1)))::acc) 
   in aux n []
-
          
 let id_generator =
   let current = ref 0 in
@@ -122,3 +121,10 @@ let rec expand_intn_list (id: ident) (n: int) : ident list =
     if i > n then []
     else (id ^ (string_of_int i)) :: (aux (i+1))
   in aux 1
+
+
+let contains s1 s2 =
+  let re = Str.regexp_string s2
+  in
+  try ignore (Str.search_forward re s1 0); true
+  with Not_found -> false

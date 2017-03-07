@@ -6,15 +6,27 @@ open Specific_rewriter
 module Ortho_rewriter =
   ( struct
 
-    let keep_print = false
+    let keep_print = true
+
+    let print_fun = ref []
                        
-    let gen_print l = ""
+    let gen_print l =
+      let name = "print" ^ (string_of_int (id_generator ())) in
+      let size = List.length l in
+      let param = gen_list "p" size in
+      let body = "let " ^ name ^ " (" ^ (join "," param) ^ ") =\n"
+                 ^ (join "\n"
+                         (List.map
+                            (fun x -> "print_int (" ^ x ^ " land 1);") param))
+                 ^ "\nprint_endline \"\";\n1" in
+      print_fun := body :: !print_fun;
+      name
 
     let gen_ortho (id,size) =
       let rec aux i =
         if i > size then ([],[])
         else let (left,right) = aux (i+1) in
-             ((id^(string_of_int i))::left, (id ^ "'.(" ^ (string_of_int (i-1)) ^ ")")::right)
+             ((id^(string_of_int i))::left, (id ^ "'.(" ^ (string_of_int (64-i)) ^ ")")::right)
       in
       let (left,right) = aux 1 in
       let get_from_stream = "let " ^ id ^ " = Array.make 63 Int64.zero in\n"
@@ -55,8 +67,8 @@ module Ortho_rewriter =
                             let tmp = ref ((indent 2) ^ "let " ^ id ^ " = Array.make "
                                            ^ (string_of_int size) ^ " 0 in\n")  in
                             for c = 1 to size do
-                              tmp := !tmp ^ (indent 2) ^ id ^ ".(" ^ (string_of_int c)
-                                     ^ ") <- ret" ^ (string_of_int (i+c)) ^ ";\n"
+                              tmp := !tmp ^ (indent 2) ^ id ^ ".(" ^ (string_of_int (c-1))
+                                     ^ ") <- ret" ^ (string_of_int (i+65-c)) ^ ";\n"
                             done;
                             tmp := !tmp ^ (indent 2) ^ "stack_" ^ id
                                    ^ " := convert_unortho " ^ id ^ ";\n";
@@ -88,10 +100,10 @@ module Ortho_rewriter =
                         (List.map (fun (id,_,_) ->
                                    "!stack_" ^ id ^ ".(!cpt)") p_out) in
          let (left,right) = gen_unortho p_out in
-         ([],
+         (!print_fun, 
           head ^ "\n" ^ (indent_small 1) ^ stacks ^ "\n"
           ^ (indent_small 1) ^ "Stream.from\n" ^ (indent 1) ^ "(fun _ -> \n"
-          ^ (indent 1) ^ "if !cpt < 64 then let ret = (" ^ ret ^ ") in\n"
+          ^ (indent 1) ^ "if !cpt < 63 then let ret = (" ^ ret ^ ") in\n"
           ^ (indent_small 13) ^ "incr cpt;\n" ^ (indent_small 13) ^ "Some ret\n"
           ^ (indent 1) ^ "else\n" ^ (indent_small 3) ^ "try\n"
           ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho))

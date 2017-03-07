@@ -55,7 +55,11 @@ let f2_ ((in_1,in_2,in_3,in_4),(in2_1,in2_2)) =
 
 
 let main_ ((init_1,init_2,init_3,init_4),(supp_1,supp_2)) = 
-    let (tmp1_1,tmp1_2,tmp1_3,tmp1_4,tmp21_1,tmp21_2) = (init_1,init_2,init_3,init_4,supp_1,supp_2) in 
+    let (__tmp1_1,__tmp1_2,__tmp1_3,__tmp1_4) = (init_1,init_2,init_3,init_4) in 
+    let (__tmp2_1,__tmp2_2,__tmp2_3,__tmp2_4) = (init_1,init_2,init_3,init_4) in 
+    let (__tmp3_1,__tmp3_2,__tmp3_3,__tmp3_4) = ((__tmp1_1) land (__tmp2_1),(__tmp1_2) land (__tmp2_2),(__tmp1_3) land (__tmp2_3),(__tmp1_4) land (__tmp2_4)) in 
+    let (__tmp4_1,__tmp4_2,__tmp4_3,__tmp4_4) = (init_1,init_2,init_3,init_4) in 
+    let (tmp1_1,tmp1_2,tmp1_3,tmp1_4,tmp21_1,tmp21_2) = ((__tmp3_1) land (__tmp4_1),(__tmp3_2) land (__tmp4_2),(__tmp3_3) land (__tmp4_3),(__tmp3_4) land (__tmp4_4),supp_1,supp_2) in 
     let (tmp2_1,tmp2_2,tmp2_3,tmp2_4,tmp22_1,tmp22_2) = f1_ (id ((tmp1_1,tmp1_2,tmp1_3,tmp1_4),(tmp21_1,tmp21_2))) in 
     let (tmp3_1,tmp3_2,tmp3_3,tmp3_4,tmp23_1,tmp23_2) = f2_ (id ((tmp2_1,tmp2_2,tmp2_3,tmp2_4),(tmp22_1,tmp22_2))) in 
     let (out_1,out_2,out_3,out_4) = (tmp3_1,tmp3_2,tmp3_3,tmp3_4) in 
