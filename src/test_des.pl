@@ -64,7 +64,7 @@ let make_const_list (e: 'a) (len: int) : 'a list =
          
 let () = Random.self_init ()
 
-let rand_list = make_list_f (fun () -> Random.int64 Int64.max_int) 128
+let rand_list = make_list_f (fun () -> Random.int64 Int64.max_int) 512
 let key = Random.int64 Int64.max_int
                             
 let stream1 = Stream.of_list rand_list
@@ -77,9 +77,9 @@ let out_naive = Des_v1_naive.main stream2 key_stream
 let out_ortho = Des_v1_ortho.main stream3 key_stream
 
 
-let l1 = Stream.npeek 64 out_std
-let l2 = Stream.npeek 64 out_naive
-let l3 = Stream.npeek 64 out_ortho
+let l1 = Stream.npeek 448 out_std
+let l2 = Stream.npeek 448 out_naive
+let l3 = Stream.npeek 448 out_ortho
 
 let status = ref true
 let _ =

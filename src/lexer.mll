@@ -26,6 +26,7 @@ let _ =
      "not", TOK_NOT;
      "fill_i", TOK_FILL_I;
      "perm", TOK_PERM;
+     "table", TOK_TABLE;
    ]
 
 let next_line lexbuf =

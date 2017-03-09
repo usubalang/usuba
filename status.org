@@ -111,9 +111,11 @@
 ** DONE Rust syntax for uint (un instead of uint_n)
    CLOSED: [2017-03-07 mar. 11:43]
 
-** TODO Automatic unit tests (naif vs ortho vs standart)
+** DONE Automatic unit tests (naif vs ortho vs standart)
+   CLOSED: [2017-03-09 jeu. 09:34]
 ** TODO Biblio (applications, usage, compilation)
-** TODO Add a nicer syntax to desribe sboxes, and convert them to circuits
+** DONE Add a nicer syntax to desribe sboxes, and convert them to circuits
+   CLOSED: [2017-03-09 jeu. 09:35]
 ** TODO [#B] Get familiar with [[https://whitequark.org/blog/2014/04/16/a-guide-to-extension-points-in-ocaml/][ppx]], parsetree, and co.
 ** TODO [#C] Improve pretty printing (with [[http://gallium.inria.fr/blog/first-release-of-pprint/][Ocaml PPrint]] eventually)
 

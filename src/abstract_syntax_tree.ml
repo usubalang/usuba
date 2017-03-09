@@ -48,5 +48,6 @@ type def =
   | Multiple  of ident * p * p * (p * deq) list (* usuba1 - array of nodes*)
   | Perm of ident * p * p * int list (* usuba1 - permutation *)
   | MultiplePerm of ident * p * p * (int list) list (* usuba1 - array of perm *)
+  | Table of ident * p * p * int list (* usuba1 - lookup table *)
                                 
 type prog = def list

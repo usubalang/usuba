@@ -55,7 +55,9 @@ let rename_def = function
                                     "Perm should be gone by now"))
   | MultiplePerm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
                                             "MultiplePerm should have been cleaned by now"))
-                         
+  | Table _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                     "Table should be gone by now"))
+                     
 let rec rename_defs = function
   | [] -> []
   | hd::tl -> (rename_def hd) :: (rename_defs tl)

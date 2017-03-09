@@ -16,7 +16,8 @@
 %token TOK_FBY
 %token TOK_FILL_I
 %token TOK_PERM
-
+%token TOK_TABLE
+       
 %token TOK_LPAREN
 %token TOK_RPAREN
 %token TOK_LBRACKET
@@ -150,7 +151,11 @@ def:
     TOK_RPAREN TOK_RETURN p_out=p TOK_LBRACKET
     l = permlist TOK_RBRACKET
   { MultiplePerm(f,List.rev p_in, List.rev p_out, List.rev l) }
+  | TOK_TABLE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN TOK_RETURN p_out=p
+    TOK_LCURLY l=intlist TOK_RCURLY
+  { Table(f,List.rev p_in, List.rev p_out, List.rev l) }
 
+  
 intlist:
   | i=TOK_int { [ i ] }
   | tail=intlist TOK_COMMA i=TOK_int { i::tail }

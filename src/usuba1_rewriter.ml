@@ -43,6 +43,7 @@ let make_node_i (node: def) (i: int) : def * ident =
   | Multiple _ -> raise ( Error ("Illegal node array."))
   | MultiplePerm _ -> raise ( Error ("Illegal node array."))
   | Perm _ -> raise ( Error ("Illegal permutation."))
+  | Table _ -> raise ( Error ("Illegal table."))
   | Single(id,p_in,p_out,vars,body) ->
      let id = id ^ (string_of_int i) in
      let body = List.map (fun (x,y) -> (x,replace_i y)) body in
@@ -128,6 +129,7 @@ let rewrite_def env (def: def) : def list =
        env_add env id return;
        return
     | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
+    | Table _ -> raise (Invalid_AST "Tables should have been cleaned by now")
     | MultiplePerm _ -> raise (Invalid_AST "Perm Arrays should have been cleaned by now")) in
   !prev_node @ [ret]
 
@@ -167,8 +169,9 @@ let rec rewrite_defs (l: def list) env : def list =
            (List.map (rewrite_def env)
                      (expand_array_perm (id,p_in,p_out,perms))))
         @ (rewrite_defs tl env)
+     | Table _ -> hd :: (rewrite_defs tl env)
             
                        
 let rewrite_prog (p: prog) : prog =
   let env = Hashtbl.create 10 in
-  rewrite_defs p env
+  rewrite_defs (Convert_tables.rewrite_prog p) env

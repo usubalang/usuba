@@ -343,7 +343,9 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                                       "Perm should be gone by now"))
     | MultiplePerm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
                                           "MultiplePerm should have been cleaned by now"))
-                              
+    | Table _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
+                                       "Tables should be gone by now"))
+                       
   and rewrite_defs (l: def list)
                        (env_fun: (ident, int list * int) Hashtbl.t)
           : def list =

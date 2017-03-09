@@ -1,5 +1,7 @@
 
-open Abstract_syntax_tree       
+open Abstract_syntax_tree
+
+exception Error of string
 
 let rec pow a = function
   | 0 -> 1
