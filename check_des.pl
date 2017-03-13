@@ -27,15 +27,16 @@ sub error {
 }
 
 # switching to src dir
-my $path = getcwd() =~ s{bitslicing-compiler\K.*}{}r 
-    or die "Can't run this script from outside bitslicing-compiler.";
+my $path = getcwd() =~ s{usuba\K.*}{}r 
+    or die "Can't run this script from outside usuba repo.";
 chdir "$path/src";
 
 # running DES
 say "Compiling...";
 error if system 'make';
+chdir "..";
 say "Regenerating the des OCaml code...";
-error if system './main.native tests/des_v1.prog' ;
+error if system './src/main.native tests/usuba/des_v1.prog' ;
 
 # switching to temporary directory
 say "Preparing the files for the test...";
