@@ -1,0 +1,3 @@
+[submodule "usuba"]
+	path = usuba
+	url = https://github.com/DadaIsCrazy/usuba
