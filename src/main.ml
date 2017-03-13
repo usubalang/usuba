@@ -1,7 +1,7 @@
 
 open Lexer
 open Lexing
-open Abstract_syntax_tree
+open Usuba_AST
 open Print_ast
 open Ocaml_gen_naive
 open Printf

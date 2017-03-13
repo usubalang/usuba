@@ -1,6 +1,6 @@
 
 %{
-  open Abstract_syntax_tree
+  open Usuba_AST
 %}
 
 /*******************\
@@ -45,7 +45,7 @@
 %token <int> TOK_int
 
                
-%token <Abstract_syntax_tree.typ> TOK_type
+%token <Usuba_AST.typ> TOK_type
 
 %token TOK_EOF
 
@@ -59,7 +59,7 @@
 /*******************\
 |*   entry point   *|
 \*******************/
-%start<Abstract_syntax_tree.prog> prog
+%start<Usuba_AST.prog> prog
 
 
 %%

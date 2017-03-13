@@ -1,5 +1,5 @@
 
-open Abstract_syntax_tree
+open Usuba_AST
 open Utils
 open Specific_rewriter
 open Rename
@@ -357,8 +357,9 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                      
   and rewrite_prog (p: prog) : prog =
     let env_fun = Hashtbl.create 10 in
-    let usuba0_prog = (Usuba1_rewriter.rewrite_prog p) in
-    let renamed_prog = rename_prog usuba0_prog in
+    let perm_expanded = Expand_permut.expand_permut p in
+    let array_expanded = Expand_array.expand_array perm_expanded in
+    let renamed_prog = rename_prog array_expanded in
     let p' = rewrite_defs renamed_prog env_fun in
     let (prints,entry_point) =
       Aux.gen_entry_point (Utils.last renamed_prog) in

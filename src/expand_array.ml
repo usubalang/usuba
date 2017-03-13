@@ -1,4 +1,4 @@
-open Abstract_syntax_tree
+open Usuba_AST
 open Utils
        
 exception Error of string
@@ -115,19 +115,7 @@ let rewrite_def env (def: def) : def list =
        let return =  Single(id,p_in', p_out', vars' @ !add_vars,body) in
        env_add env id return;
        return
-    | Perm(id,p_in,p_out,body) ->
-       let p_in' = rewrite_p p_in in
-       let (id_in,_,_) = List.nth p_in 0 in
-       let p_out' = rewrite_p p_out in
-       let (id_out,_,_) = List.nth p_out 0 in
-       let cpt = ref 1 in
-       let body' = List.map (fun x -> let tmp = ([Dotted(Ident id_out,!cpt)],
-                                                 Field(Var id_in, x)) in
-                                      incr cpt;
-                                      tmp) body in
-       let return = Single(id,p_in',p_out',[],body') in
-       env_add env id return;
-       return
+    | Perm _ -> raise (Error "I have no idea how we ended up in that case")
     | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
     | Table _ -> raise (Invalid_AST "Tables should have been cleaned by now")
     | MultiplePerm _ -> raise (Invalid_AST "Perm Arrays should have been cleaned by now")) in
@@ -141,13 +129,6 @@ let expand_array (ident, p_in, p_out, nodes) =
                          :: (aux (i+1) tl)
   in aux 1 nodes
 
-let expand_array_perm (ident, p_in, p_out, perms) =
-  let rec aux i perms =
-    match perms with
-    | [] -> []
-    | perm::tl -> (Perm(ident^(string_of_int i),p_in,p_out,perm))
-                         :: (aux (i+1) tl)
-  in aux 1 perms
        
 let rec rewrite_defs (l: def list) env : def list =
   match l with
@@ -162,16 +143,11 @@ let rec rewrite_defs (l: def list) env : def list =
                                            (List.map (rewrite_def env)
                                                      (expand_array (id,p_in,p_out,nodes))))
                                         @ (rewrite_defs tl env)
-     | Perm _ -> let head = rewrite_def env hd in
-                 head @ (rewrite_defs tl env)
-     | MultiplePerm(id,p_in,p_out,perms) ->
-        (List.flatten
-           (List.map (rewrite_def env)
-                     (expand_array_perm (id,p_in,p_out,perms))))
-        @ (rewrite_defs tl env)
+     | Perm _ -> hd :: (rewrite_defs tl env)
+     | MultiplePerm(id,p_in,p_out,perms) -> hd :: (rewrite_defs tl env)
      | Table _ -> hd :: (rewrite_defs tl env)
             
                        
-let rewrite_prog (p: prog) : prog =
+let expand_array (p: prog) : prog =
   let env = Hashtbl.create 10 in
   rewrite_defs (Convert_tables.rewrite_prog p) env

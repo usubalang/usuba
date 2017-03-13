@@ -1,5 +1,5 @@
 
-open Abstract_syntax_tree
+open Usuba_AST
 
 exception Error of string
 

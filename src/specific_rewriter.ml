@@ -1,5 +1,5 @@
 
-open Abstract_syntax_tree
+open Usuba_AST
 
 module type SPECIFIC_REWRITER =
   sig

@@ -1,4 +1,4 @@
-open Abstract_syntax_tree
+open Usuba_AST
 exception Syntax_error
        
 (* Since the transformation of the code will produce new variable names,
