@@ -179,11 +179,11 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                                (List.map
                                   (fun x ->
                                    let (deq,e) = rewrite_expr env_var env_fun x in
-                                   before_deq := deq @ !before_deq;
+                                   before_deq := deq;
                                    e) l))
     | Op (Xor,x1::x2::[]) -> let (deq1, t1) = rewrite_expr env_var env_fun x1 in
                              let (deq2, t2) = rewrite_expr env_var env_fun x2 in
-                             before_deq := deq1 @ deq2 @ !before_deq;
+                             before_deq := deq1 @ deq2;
                              ( match t1, t2 with
                                | Var _, Var _ | Var _, Const _ | Var _, Field _
                                | Const _, Var _ | Const _, Const _ | Const _, Field _
@@ -209,7 +209,7 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                                                Op(And, [ Op(Not,[tmp1_expr]);tmp2_expr])])))
     | Op (op,x1::x2::[]) -> let (deq1,t1) = rewrite_expr env_var env_fun x1 in
                             let (deq2,t2) = rewrite_expr env_var env_fun x2 in
-                            before_deq := deq1 @ deq2 @ !before_deq;
+                            before_deq := deq1 @ deq2;
                             ( match t1, t2 with
                               | Var _, Var _ | Var _, Const _ | Var _, Field _
                               | Const _, Var _ | Const _, Const _ | Const _, Field _
@@ -230,7 +230,7 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                                   | Tuple l1, Tuple l2 -> Tuple(combine_op op l1 l2)
                                   | _ -> Op(op,[tmp1_expr;tmp2_expr])))
     | Op (Not,x::[]) -> let (deq,x) = rewrite_expr env_var env_fun x in
-                        before_deq := deq @ !before_deq;
+                        before_deq := deq;
                         ( match x with
                           | Var _ | Const _ | Access _ | Field _
                                                          -> Op(Not,[x])
@@ -239,8 +239,7 @@ module Make (Aux : SPECIFIC_REWRITER ) = struct
                              env_add env_var tmp (get_size x env_fun);
                              let tmp_pat = rewrite_pat [Ident tmp] env_var in
                              let (_,tmp_expr) = rewrite_expr env_var env_fun (Var tmp) in
-                             before_deq := (tmp_pat,x) ::
-                                             !before_deq;
+                             before_deq := !before_deq @ [(tmp_pat,x)];
                              ( match tmp_expr with
                                | Tuple l ->
                                   Tuple(distrib_not
