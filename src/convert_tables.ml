@@ -26,7 +26,7 @@ let rec rewrite_p_right (p: p) =
                                               "Arrays should have been cleaned by now")
                       ) @ (rewrite_p_right tl)
 
-(* Duplicated function from Rewriter.ml *)
+(* Duplicated function from Normalizer.ml *)
 let rec rewrite_p_left (p: p) =
   match p with
   | [] -> []
@@ -93,5 +93,5 @@ let rec rewrite_defs (l: def list) : def list =
      | _ -> hd :: (rewrite_defs tl)
             
                        
-let rewrite_prog (p: prog) : prog =
+let convert_tables (p: prog) : prog =
   rewrite_defs p

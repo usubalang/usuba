@@ -5,13 +5,16 @@ open Usuba_AST
 open Print_ast
 open Ocaml_gen_naive
 open Printf
+open Sol_AST
+open Usuba_to_sol
+open Norm_tmp
        
 let print_position outx lexbuf =
   let pos = lexbuf.lex_curr_p in
   fprintf outx "%s:%d:%d" pos.pos_fname
           pos.pos_lnum (pos.pos_cnum - pos.pos_bol + 1)
 
-let parse_file (filename:string) : prog =
+let parse_file (filename:string) : Usuba_AST.prog =
   let f = open_in filename in
   let lex = from_channel f in
   try
@@ -25,7 +28,7 @@ let parse_file (filename:string) : prog =
      fprintf stderr "%a: syntax error\n" print_position lex;
      exit (-1)
 
-let print_naive_ml (file_in: string) (prog: prog) =
+let print_naive_ml (file_in: string) (prog: Usuba_AST.prog) =
   (* Generating OCaml code *)
   let full_name = match (String.split_on_char '.' file_in) with
     | []   -> file_in
@@ -36,7 +39,7 @@ let print_naive_ml (file_in: string) (prog: prog) =
   fprintf out "%s" (Ocaml_gen_naive.prog_to_str_ml prog);
   close_out out
 
-let print_ortho_ml (file_in: string) (prog: prog) =
+let print_ortho_ml (file_in: string) (prog: Usuba_AST.prog) =
   (* Generating OCaml code *)
   let full_name = match (String.split_on_char '.' file_in) with
     | []   -> file_in

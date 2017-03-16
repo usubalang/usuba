@@ -32,17 +32,17 @@ let _ =
   let t = Sys.time () in
   let out_std = Des.des_ecb_encrypt stream1 key in
   unfold_stream out_std;
-  Printf.printf "Standart implem: %f seconds\n"
+  Printf.printf "Standart implem: %.3f seconds\n"
                 (Sys.time () -. t);
   let t = Sys.time () in
   let out_naive = Des_v1_naive.main stream2 key_stream in
   unfold_stream out_naive;
-  Printf.printf "Naive bitsliced: %f seconds\n"
+  Printf.printf "Naive bitsliced: %.3f seconds\n"
                 (Sys.time () -. t);
   let t = Sys.time () in
   let out_ortho = Des_v1_ortho.main stream3 key_stream in
   unfold_stream out_ortho;
-  Printf.printf "Ortho bitsliced: %f seconds\n"
+  Printf.printf "Ortho bitsliced: %.3f seconds\n"
                 (Sys.time () -. t);
   
 

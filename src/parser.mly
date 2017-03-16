@@ -162,14 +162,14 @@ typ:
 def:
   | TOK_NODE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN TOK_RETURN p_out=p
     TOK_VAR vars=p TOK_LET body=deq TOK_TEL
-  { Single(f,List.rev p_in,List.rev p_out,vars,List.rev body) }
+  { Single(f,List.rev p_in,List.rev p_out,List.rev vars,List.rev body) }
   | TOK_NODE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
     TOK_RPAREN TOK_RETURN p_out=p TOK_LBRACKET
     l = def_list TOK_RBRACKET
   { Multiple(f,List.rev p_in, List.rev p_out, List.rev l) }
   | TOK_NODE TOK_LT TOK_id TOK_GT  f=TOK_id  TOK_LPAREN p_in=p TOK_RPAREN TOK_RETURN p_out=p
     TOK_VAR vars=p TOK_LET body=deq TOK_TEL
-  { Temporary(f,List.rev p_in,List.rev p_out,vars,List.rev body) }
+  { Temporary(f,List.rev p_in,List.rev p_out,List.rev vars,List.rev body) }
   | TOK_PERM f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN TOK_RETURN p_out=p
     TOK_LCURLY l=intlist TOK_RCURLY
   { Perm(f,List.rev p_in, List.rev p_out, List.rev l) }

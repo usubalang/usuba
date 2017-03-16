@@ -1,4 +1,4 @@
-node[] f ( input: uint_2::_ ) returns out: uint_2::_ =
+node[] f ( input: uint_2::_ ) returns out: uint_2::_
 [
     vars
     let

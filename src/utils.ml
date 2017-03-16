@@ -2,7 +2,12 @@
 open Usuba_AST
 
 exception Error of string
+exception Not_implemented of string
 
+let unreached () = raise (Error "This point can't be reached")
+
+let format_exn l m = " [" ^ l ^  "] " ^ m
+                         
 let rec pow a = function
   | 0 -> 1
   | 1 -> a

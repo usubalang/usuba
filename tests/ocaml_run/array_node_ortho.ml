@@ -1,3 +1,5 @@
+
+
 let id x = x
 
 let convert_ortho (size: int) (input: int64 array) : int array =
@@ -45,7 +47,7 @@ let main in_stream =
   let stack_out_ = ref [| |] in
   Stream.from
     (fun _ -> 
-    if !cpt < 64 then let ret = (!stack_out_.(!cpt)) in
+    if !cpt < 63 then let ret = (!stack_out_.(!cpt)) in
                           incr cpt;
                           Some ret
     else
@@ -55,11 +57,11 @@ let main in_stream =
           in_.(i) <- Stream.next in_stream
         done;
         let in_' = convert_ortho 2 in_ in
-        let (in_1,in_2) = (in_'.(0),in_'.(1)) in
+        let (in_1,in_2) = (in_'.(63),in_'.(62)) in
         let (ret1,ret2) = main_((in_1,in_2)) in
         let out_ = Array.make 2 0 in
-        out_.(1) <- ret1;
-        out_.(2) <- ret2;
+        out_.(0) <- ret64;
+        out_.(1) <- ret63;
         stack_out_ := convert_unortho out_;
 
         cpt := 0;
