@@ -115,3 +115,6 @@ let def_to_str def =
                                                        
 let prog_to_str prog =
   join "\n\n" (List.map def_to_str prog)
+
+let print_prog prog =
+  print_endline (prog_to_str prog)

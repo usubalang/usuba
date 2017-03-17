@@ -2,7 +2,6 @@
 open Lexer
 open Lexing
 open Usuba_AST
-open Print_ast
 open Ocaml_gen_naive
 open Printf
 open Sol_AST
@@ -56,8 +55,15 @@ let main () =
   let prog = parse_file file_in in
 
   (* uncomment to print the program that was read*)
-  (* print_string (string_of_prog p) ; *)
 
+  (* let normalized = Normalize.norm_prog prog in *)
+  (* Usuba_print.print_prog normalized; *)
+  (* print_endline "\n#####################################\n"; *)
+  (* let sol = Usuba_to_sol.usuba_to_sol normalized in *)
+  (* Sol_print.print_prog sol; *)
+  (* print_endline "\n#####################################\n"; *)
+  (* print_endline (Sol_naive_to_ocaml.prog_to_str_ml sol); *)
+  
   print_naive_ml file_in prog;
   print_ortho_ml file_in prog
   

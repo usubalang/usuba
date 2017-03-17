@@ -1,16 +1,19 @@
-open Usuba_AST
+type ident = string
 
-(* types p and ident come from Usuba_AST *)
-       
-type m = ident list (* no typ : only boolean (or int in orthogonal backend)
-                                are considered *)
-type p = ident list
+type op = And | Or | Xor | Not
+
+type typ = Bool | Int64 | Int128
+
+type m = (ident * typ) list
+                       
+type p = m
                
 type c =
   | Var of ident           (*   x               *)
   | Const of int           (*   v               *)
+  | Tuple of c list        (*   (c, ... , c)    *)
   | State_var of ident     (*   state(x)        *)
-  | Op of ident * c list   (*   op(c, ..., c)   *)
+  | Op of op * c list      (*   op(c, ... , c)  *)
 
                     
 type s =

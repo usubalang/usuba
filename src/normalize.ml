@@ -1,12 +1,31 @@
 open Usuba_AST
 open Utils
 open Rename
-open Print_ast
 
 exception Undeclared of string
 
+module Split_tuples = struct
+  let real_split_tuple (p: pat) (l: expr list) : deq =
+    List.map2 (fun l r -> [l],r) p l
+               
+  let split_tuples_deq (body: deq) : deq =
+    List.flatten (List.map
+                    (fun (p,e) -> match e with
+                                  | Tuple l -> real_split_tuple p l
+                                  | _ -> [p,e])
+                    body)
+                 
+  let split_tuples_def (def: def) : def =
+    match def with
+    | Single(name,p_in,p_out,p_var,body) ->
+       Single(name, p_in, p_out, p_var, split_tuples_deq body)
+    | _ -> unreached ()
+                 
+  let split_tuples (p: prog) : prog =
+    List.map split_tuples_def p
+end
+
 (* ************************************************************************** *)
-            
 
 let rec expand_intn (id: ident) (n: int) : ident list =
   let rec aux i =
@@ -172,16 +191,21 @@ let norm_def env_fun (def: def) : def =
       
 let norm_prog (p: prog)  =
   let env_fun = Hashtbl.create 10 in
-  (* print_endline ("INPUT:\n" ^ (prog_to_str p) ^ "\n\n"); *)
+  (* print_endline ("INPUT:\n" ^ (Usuba_print.prog_to_str p) ^ "\n\n"); *)
   let tables_converted = Convert_tables.convert_tables p in
-  (* print_endline ("TABLES CONVERTED:\n" ^ (prog_to_str tables_converted) ^ "\n\n"); *)
+  (* print_endline ("TABLES CONVERTED:\n" 
+                    ^ (Usuba_print.prog_to_str tables_converted) ^ "\n\n"); *)
   let perm_expanded = Expand_permut.expand_permut tables_converted in
-  (* print_endline ("PERM EXPANDED:\n" ^ (prog_to_str perm_expanded) ^ "\n\n"); *)
+  (* print_endline ("PERM EXPANDED:\n" 
+                     ^ (Usuba_print.prog_to_str perm_expanded) ^ "\n\n"); *)
   let array_expanded = Expand_array.expand_array perm_expanded in
-  (* print_endline ("ARRAYS EXPANDED:\n" ^ (prog_to_str array_expanded) ^ "\n\n"); *)
+  (* print_endline ("ARRAYS EXPANDED:\n" 
+                    ^ (Usuba_print.prog_to_str array_expanded) ^ "\n\n"); *)
   let renamed_prog = rename_prog array_expanded in
-  (* print_endline ("RENAMED:\n" ^ (prog_to_str renamed_prog) ^ "\n\n"); *)
-  let normalized = List.map (norm_def env_fun) renamed_prog in
-  (* print_endline ((prog_to_str normalized) ^ "\n\n") *)
+  (* print_endline ("RENAMED:\n" 
+                    ^ (Usuba_print.prog_to_str renamed_prog) ^ "\n\n"); *)
+  let pre_normalized = List.map (norm_def env_fun) renamed_prog in
+  (* print_endline ((Usuba_print.prog_to_str pre_normalized) ^ "\n\n") *)
+  let normalized = Split_tuples.split_tuples pre_normalized in
   normalized
   

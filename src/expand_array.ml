@@ -150,4 +150,4 @@ let rec rewrite_defs (l: def list) env : def list =
                        
 let expand_array (p: prog) : prog =
   let env = Hashtbl.create 10 in
-  rewrite_defs (Convert_tables.convert_tables p) env
+  rewrite_defs p env
