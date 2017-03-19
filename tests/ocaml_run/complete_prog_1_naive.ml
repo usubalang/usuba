@@ -1,36 +1,36 @@
 
 
 let nxor_ (x_,y_) = 
-    let tmp_ = (((x_1) && ((not (y_1)))) || (((not (x_1))) && (y_1))) in 
-    let z_ = ((not (tmp_))) in 
+    let tmp_ = ((x_) && ((not (y_)))) || (((not (x_))) && (y_)) in 
+    let z_ = (not (tmp_)) in 
     (z_)
 
 
 let nand_ (x_,y_) = 
-    let tmp_ = ((x_1) && (y_1)) in 
-    let z_ = ((not (tmp_))) in 
+    let tmp_ = (x_) && (y_) in 
+    let z_ = (not (tmp_)) in 
     (z_)
 
 
 let triple_nxor_ (x_,y_,z_) = 
-    let tmp1_ = nxor_ (x_1,y_1) in 
-    let b_ = nxor_ (tmp1_,z_1) in 
+    let tmp1_ = nxor_ (x_,y_) in 
+    let b_ = nxor_ (tmp1_,z_) in 
     (b_)
 
 
 let random_box_ (x1_,x2_,x3_,x4_) = 
-    let a_ = (((x1_1) && ((not (x2_1)))) || (((not (x1_1))) && (x2_1))) in 
-    let r1_ = ((x1_1) || (x2_1)) in 
-    let _tmp6_1 = nxor_ (a_,x3_1) in 
-    let b_ = ((not (_tmp6_1))) in 
-    let _tmp7_1 = triple_nxor_ (x2_1,x3_1,x4_1) in 
-    let c_ = nand_ (b_,_tmp7_1) in 
-    let _tmp8_1 = (((x1_1) && ((not (x4_1)))) || (((not (x1_1))) && (x4_1))) in 
-    let d_ = (c_) || ((_tmp8_1)) in 
-    let r2_ = ((d_) && ((not (x3_1)))) || (((not (d_))) && ((x3_1))) in 
-    let _tmp9_1 = (b_) && (d_) in 
-    let _tmp10_1 = ((x2_1) || (x4_1)) in 
-    let r3_ = nand_ (_tmp9_1,_tmp10_1) in 
+    let a_ = ((x1_) && ((not (x2_)))) || (((not (x1_))) && (x2_)) in 
+    let r1_ = (x1_) || (x2_) in 
+    let _tmp1_1 = nxor_ (a_,x3_) in 
+    let b_ = (not (_tmp1_1)) in 
+    let _tmp2_1 = triple_nxor_ (x2_,x3_,x4_) in 
+    let c_ = nand_ (b_,_tmp2_1) in 
+    let _tmp3_1 = ((x1_) && ((not (x4_)))) || (((not (x1_))) && (x4_)) in 
+    let d_ = (c_) || ((_tmp3_1)) in 
+    let r2_ = ((d_) && ((not (x3_)))) || (((not (d_))) && (x3_)) in 
+    let _tmp4_1 = (b_) && (d_) in 
+    let _tmp5_1 = (x2_) || (x4_) in 
+    let r3_ = nand_ (_tmp4_1,_tmp5_1) in 
     (r1_,r2_,r3_)
 
 

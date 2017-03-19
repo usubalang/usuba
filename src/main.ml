@@ -6,7 +6,6 @@ open Ocaml_gen_naive
 open Printf
 open Sol_AST
 open Usuba_to_sol
-open Norm_tmp
        
 let print_position outx lexbuf =
   let pos = lexbuf.lex_curr_p in
@@ -36,6 +35,7 @@ let print_naive_ml (file_in: string) (prog: Usuba_AST.prog) =
   let out_name = List.nth path (List.length path - 1) in
   let out = open_out ("tests/ocaml_run/" ^ out_name ^ "_naive.ml") in
   fprintf out "%s" (Ocaml_gen_naive.prog_to_str_ml prog);
+  (* print_endline (Ocaml_gen_naive.prog_to_str_ml prog); *)
   close_out out
 
 let print_ortho_ml (file_in: string) (prog: Usuba_AST.prog) =
@@ -53,8 +53,6 @@ let print_ortho_ml (file_in: string) (prog: Usuba_AST.prog) =
 let main () =
   let file_in = Sys.argv.(1) in
   let prog = parse_file file_in in
-
-  (* uncomment to print the program that was read*)
 
   (* let normalized = Normalize.norm_prog prog in *)
   (* Usuba_print.print_prog normalized; *)

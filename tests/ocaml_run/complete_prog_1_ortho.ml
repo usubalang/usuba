@@ -21,38 +21,38 @@ let convert_unortho (input: int array) : int64 array =
 
 
 let nxor_ (x_,y_) = 
-    let tmp_ = ((x_1) lxor (y_1)) in 
-    let z_ = ((lnot (tmp_))) in 
+    let tmp_ = (x_) lxor (y_) in 
+    let z_ = (lnot (tmp_)) in 
     (z_)
 
 
 
 let nand_ (x_,y_) = 
-    let tmp_ = ((x_1) land (y_1)) in 
-    let z_ = ((lnot (tmp_))) in 
+    let tmp_ = (x_) land (y_) in 
+    let z_ = (lnot (tmp_)) in 
     (z_)
 
 
 
 let triple_nxor_ (x_,y_,z_) = 
-    let tmp1_ = nxor_ (x_1,y_1) in 
-    let b_ = nxor_ (tmp1_,z_1) in 
+    let tmp1_ = nxor_ (x_,y_) in 
+    let b_ = nxor_ (tmp1_,z_) in 
     (b_)
 
 
 
 let random_box_ (x1_,x2_,x3_,x4_) = 
-    let a_ = ((x1_1) lxor (x2_1)) in 
-    let r1_ = ((x1_1) lor (x2_1)) in 
-    let _tmp11_1 = nxor_ (a_,x3_1) in 
-    let b_ = ((lnot (_tmp11_1))) in 
-    let _tmp12_1 = triple_nxor_ (x2_1,x3_1,x4_1) in 
+    let a_ = (x1_) lxor (x2_) in 
+    let r1_ = (x1_) lor (x2_) in 
+    let _tmp11_1 = nxor_ (a_,x3_) in 
+    let b_ = (lnot (_tmp11_1)) in 
+    let _tmp12_1 = triple_nxor_ (x2_,x3_,x4_) in 
     let c_ = nand_ (b_,_tmp12_1) in 
-    let _tmp13_1 = ((x1_1) lxor (x4_1)) in 
+    let _tmp13_1 = (x1_) lxor (x4_) in 
     let d_ = (c_) lor ((_tmp13_1)) in 
-    let r2_ = (d_) lxor ((x3_1)) in 
+    let r2_ = (d_) lxor (x3_) in 
     let _tmp14_1 = (b_) land (d_) in 
-    let _tmp15_1 = ((x2_1) lor (x4_1)) in 
+    let _tmp15_1 = (x2_) lor (x4_) in 
     let r3_ = nand_ (_tmp14_1,_tmp15_1) in 
     (r1_,r2_,r3_)
 

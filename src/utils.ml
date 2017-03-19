@@ -50,7 +50,7 @@ let id_generator_var =
   fun () -> incr current; !current
 
                            
-let env_fetch (env: (ident, 'a) Hashtbl.t) (name: ident) : 'a option =
+let env_fetch (env: ('b, 'a) Hashtbl.t) (name: 'b) : 'a option =
   try
     let v = Hashtbl.find env name in Some v
   with Not_found -> None
