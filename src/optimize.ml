@@ -15,6 +15,14 @@ module Constant_folding = struct
        | Op(Or,[_;Const 1]) -> fix := false; Const 1
        | Op(Or,[Const 0;x]) -> fix := false; x
        | Op(Or,[x;Const 0]) -> fix := false; x
+       | Op(Xor,[Const 0;Const 0]) -> fix := false; Const 0
+       | Op(Xor,[Const 0;Const 1]) -> fix := false; Const 1
+       | Op(Xor,[Const 1;Const 0]) -> fix := false; Const 1
+       | Op(Xor,[Const 1;Const 1]) -> fix := false; Const 0
+       (* | Op(Xor,[Const 1;x]) -> fix := false; Op(Not,[x]) *)
+       (* | Op(Xor,[x;Const 1]) -> fix := false; Op(Not,[x]) *)
+       | Op(Xor,[Const 0;x]) -> fix := false; x
+       | Op(Xor,[x;Const 0]) -> fix := false; x
        | _ -> e)
                               
   let fold_def (def:def) : def =
@@ -101,6 +109,7 @@ end
        
 let opt_prog (prog: Usuba_AST.prog) : Usuba_AST.prog =
   let res = ref prog in
+  fix := false;
   while not !fix do
     fix := true;
     let p' = CSE.cse_prog !res in

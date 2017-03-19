@@ -240,4 +240,3 @@ let norm_prog (p: prog)  =
   (* print_endline ("TUPLES SIMPLIFIED:\n" *)
   (*                ^ (Usuba_print.prog_to_str tuples_simpl) ^ "\n\n"); *)
   optimized
-    
