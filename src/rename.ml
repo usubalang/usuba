@@ -6,7 +6,8 @@ exception Syntax_error
    with those new names (or with any ocaml builtin name).
    Basically, it means adding an "_" at the end of every identifier name. *)
        
-let rec rename_expr = function
+let rec rename_expr (e:expr) =
+  match e with
   | Const c -> Const c
   | Var v   -> Var (v ^ "_")
   | Field(e,n) -> Field((match e with
@@ -22,10 +23,11 @@ let rec rename_expr = function
                                                         | None -> None
                                                         | Some id -> Some (id^"_"))
   | Nop -> Nop
-  | Fun_i _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^ "A fun_i"))
-  | Fun_v _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^ "A fun_v"))
-  | Access _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^ "An Access"))
-  | Fill_i _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^ "A fill_i"))
+  | Fun_i _ -> raise (Invalid_AST (__LOC__ ^ "A fun_i"))
+  | Fun_v _ -> raise (Invalid_AST (__LOC__ ^ "A fun_v"))
+  | Access _ -> raise (Invalid_AST(__LOC__ ^ "An Access"))
+  | Fill_i _ -> raise (Invalid_AST(__LOC__ ^ "A fill_i"))
+  | Fill _ -> raise (Invalid_AST(__LOC__ ^ "A fill"))
 
 let rec rename_pat_single = function
   | Ident id -> Ident (id ^ "_")
@@ -57,6 +59,8 @@ let rename_def = function
                                             "MultiplePerm should have been cleaned by now"))
   | Table _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
                                      "Table should be gone by now"))
+  | MultipleTable _ -> raise (Invalid_AST (__LOC__ ^
+                                            "MultipleTable should have been cleaned by now"))
                      
 let rec rename_defs = function
   | [] -> []

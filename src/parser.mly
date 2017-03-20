@@ -25,6 +25,7 @@
 %token TOK_MERGE
 %token TOK_FBY
 %token TOK_FILL_I
+%token TOK_FILL
 %token TOK_PERM
 %token TOK_TABLE
        
@@ -116,6 +117,9 @@ exp:
    | TOK_FILL_I TOK_LT f=TOK_id TOK_SEMICOLON n=TOK_int TOK_GT
      TOK_LPAREN l=explist TOK_RPAREN
      { Fill_i(f,n,Tuple(List.rev l)) }
+   | TOK_FILL TOK_LT f=TOK_id TOK_SEMICOLON n=TOK_int TOK_GT
+     TOK_LPAREN l=explist TOK_RPAREN
+     { Fill(f,n,Tuple(List.rev l)) }
 caselist:
    | { [] }                                  
    | front=caselist TOK_PIPE c=TOK_constr TOK_ARROW e=exp %prec TOK_PIPE { (c,e)::front }
@@ -180,6 +184,10 @@ def:
   | TOK_TABLE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN TOK_RETURN p_out=p
     TOK_LCURLY l=intlist TOK_RCURLY
   { Table(f,List.rev p_in, List.rev p_out, List.rev l) }
+  | TOK_TABLE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
+    TOK_RPAREN TOK_RETURN p_out=p TOK_LBRACKET
+    l = permlist TOK_RBRACKET
+  { MultipleTable(f,List.rev p_in, List.rev p_out, List.rev l) }
 
   
 intlist:

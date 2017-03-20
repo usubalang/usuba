@@ -12,7 +12,6 @@ table sbox_2 (a:u6::_ ) returns out:u4::_ {
     0, 13, 14, 8, 7, 10, 11, 1, 10, 3, 4, 15, 13, 4, 1, 2,
     5, 11, 8, 6, 12, 7, 6, 12, 9, 0, 3, 5, 2, 14, 15, 9
 }
-
 table sbox_3 (a:u6::_ ) returns out:u4::_ {
     10, 13, 0, 7, 9, 0, 14, 9, 6, 3, 3, 4, 15, 6, 5, 10,
     1, 2, 13, 8, 12, 5, 7, 14, 11, 12, 4, 11, 2, 15, 8, 1,
@@ -25,7 +24,6 @@ table sbox_4 (a:u6::_ ) returns out:u4::_ {
     10, 3, 6, 15, 9, 0, 0, 6, 12, 10, 11, 1, 7, 13, 13, 8,
     15, 9, 1, 4, 3, 5, 14, 11, 5, 12, 2, 7, 8, 2, 4, 14
 }
-
 table sbox_5 (a:u6::_ ) returns out:u4::_ {
     2, 14, 12, 11, 4, 2, 1, 12, 7, 4, 10, 7, 11, 13, 6, 1,
     8, 5, 5, 0, 3, 15, 15, 10, 13, 3, 0, 9, 14, 8, 9, 6,
@@ -154,14 +152,13 @@ vars
     c : uint_32::_
 let
     # Xoring key and R
-    (s1,s2,s3,s4,s5,s6,s7,s8)
-          = xor(expand(right_in), roundkey[i](key));
+    (s1,s2,s3,s4,s5,s6,s7,s8) = expand(right_in) ^ roundkey[i](key);
 
     # Sboxes (and permutation)
     c = permut( sbox_1(s1), sbox_2(s2), sbox_3(s3), sbox_4(s4),
                 sbox_5(s5), sbox_6(s6), sbox_7(s7), sbox_8(s8) );
                 
-    (left_out,right_out) = (right_in,xor(left_in,c))
+    (left_out,right_out) = (right_in,left_in ^ c)
 tel
 
 node des (plaintext : uint_64::_, key : uint_64::_) returns ciphered : uint_64::_

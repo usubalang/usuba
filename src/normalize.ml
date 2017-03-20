@@ -213,30 +213,41 @@ let norm_def env_fun (def: def) : def =
              norm_deq env_var env_fun body)
   | _ -> raise (Invalid_AST (format_exn __LOC__
                                         "Illegal non-Single def"))
-      
+
+let print title body =
+  if false then
+    begin
+      print_endline title;
+      if false then print_endline body
+    end
+
+(* Note: the print actually if the boolean if the function "print" above 
+         are set to true (or at least the first one) *)
 let norm_prog (p: prog)  =
   let env_fun = Hashtbl.create 10 in
+  print "INPUT:\n" ((Usuba_print.prog_to_str p) ^ "\n\n");
   let tables_converted = Convert_tables.convert_tables p in
+  print "TABLES CONVERTED:\n"
+        ((Usuba_print.prog_to_str tables_converted) ^ "\n\n");
   let perm_expanded = Expand_permut.expand_permut tables_converted in
+  print "PERM EXPANDED:\n"
+        ((Usuba_print.prog_to_str perm_expanded) ^ "\n\n");
   let array_expanded = Expand_array.expand_array perm_expanded in
+  print "ARRAYS EXPANDED:\n"
+        ((Usuba_print.prog_to_str array_expanded) ^ "\n\n");
   let renamed_prog = rename_prog array_expanded in
+  print "RENAMED:\n"
+        ((Usuba_print.prog_to_str renamed_prog) ^ "\n\n");
   let pre_normalized = List.map (norm_def env_fun) renamed_prog in
+  print "PRE NORMALIZED:\n"
+        ((Usuba_print.prog_to_str pre_normalized) ^ "\n\n");
   let tuples_splitted = Split_tuples.split_tuples pre_normalized in
+  print "TUPLES SPLITTED:\n"
+        ((Usuba_print.prog_to_str tuples_splitted) ^ "\n\n");
   let tuples_simpl = Simplify_tuples.simplify_tuples tuples_splitted in
+  print "TUPLES SIMPLIFIED:\n"
+        ((Usuba_print.prog_to_str tuples_simpl) ^ "\n\n");
   let optimized = Optimize.opt_prog tuples_simpl in
-  (* print_endline ("INPUT:\n" ^ (Usuba_print.prog_to_str p) ^ "\n\n"); *)
-  (* print_endline ("TABLES CONVERTED:\n" *)
-  (*                ^ (Usuba_print.prog_to_str tables_converted) ^ "\n\n"); *)
-  (* print_endline ("PERM EXPANDED:\n" *)
-  (*                ^ (Usuba_print.prog_to_str perm_expanded) ^ "\n\n"); *)
-  (* print_endline ("ARRAYS EXPANDED:\n" *)
-  (*                ^ (Usuba_print.prog_to_str array_expanded) ^ "\n\n"); *)
-  (* print_endline ("RENAMED:\n" *)
-  (*                ^ (Usuba_print.prog_to_str renamed_prog) ^ "\n\n"); *)
-  (* print_endline ("PRE NORMALIZED:\n" *)
-  (*                ^ (Usuba_print.prog_to_str pre_normalized) ^ "\n\n"); *)
-  (* print_endline ("TUPLES SPLITTED:\n" *)
-  (*                ^ (Usuba_print.prog_to_str tuples_splitted) ^ "\n\n"); *)
-  (* print_endline ("TUPLES SIMPLIFIED:\n" *)
-  (*                ^ (Usuba_print.prog_to_str tuples_simpl) ^ "\n\n"); *)
+  print "OPTIMIZED:\n"
+        ((Usuba_print.prog_to_str optimized) ^ "\n\n");
   optimized

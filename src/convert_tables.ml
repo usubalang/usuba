@@ -81,17 +81,17 @@ let rewrite_table id p_in p_out l : def =
     body := ([exp_p_out.(i-1)], Var (tmp_var i size_in 0)) :: !body
       
   done;
-    
   Single(id,p_in,p_out,[],List.rev !body)
        
-let rec rewrite_defs (l: def list) : def list =
-  match l with
-  | [] -> []
-  | hd :: tl ->
-     match hd with
-     | Table(id,p_in,p_out,l) -> (rewrite_table id p_in p_out l) :: (rewrite_defs tl)
-     | _ -> hd :: (rewrite_defs tl)
+let rec rewrite_def (def: def) : def list =
+  match def with
+  | Table(id,p_in,p_out,l) -> [ (rewrite_table id p_in p_out l) ]
+  | MultipleTable(id,p_in,p_out,l) ->
+     let cpt = ref 0 in
+     (List.map (fun x -> incr cpt;
+                         rewrite_table (id ^ (string_of_int !cpt)) p_in p_out x) l)
+  | _ -> [ def ]
             
                        
 let convert_tables (p: prog) : prog =
-  rewrite_defs p
+  List.flatten (List.map rewrite_def p)

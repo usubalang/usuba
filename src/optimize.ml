@@ -81,6 +81,14 @@ module CSE = struct
                                        | Some _ -> true
                                        | None -> false) p) > 0
 
+  (* let reset_p (p:pat) env : unit = *)
+  (*   let p_expr = pat_to_expr p in *)
+  (*   Hashtbl.remove env p_expr; *)
+  (*   let _ = match p_expr with *)
+  (*     | Tuple l -> List.map (Hashtbl.remove env) l *)
+  (*     | _ -> [] in *)
+  (*   () *)
+                                                               
   let p_to_pat (p:p) : pat =
     List.map (fun (x,_,_) -> Ident x) p
              
@@ -92,7 +100,10 @@ module CSE = struct
                     (fun (p,e) -> if dont_opti p no_opt_env then
                                     [(p,cse_expr env e)]
                                   else
-                                    cse_single_deq env (p,e)) deq)
+                                    ((* reset_p p env; *)
+                                    let r = cse_single_deq env (p,e) in
+                                    (* reset_p p env; *)
+                                    r)) deq)
                  
 
   let cse_def (def: def) : def =

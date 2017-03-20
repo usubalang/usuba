@@ -29,6 +29,7 @@ type expr = Const  of int
           | Demux  of ident * (constr * expr) list
           | Fby    of expr * expr * ident option
           | Fill_i of ident * int * expr (* arrays *)
+          | Fill   of ident * int * expr (* arrays *)
           | Nop
 
 and left_asgn =
@@ -49,5 +50,6 @@ type def =
   | Perm of ident * p * p * int list (* permutation *)
   | MultiplePerm of ident * p * p * (int list) list (* array of perm *)
   | Table of ident * p * p * int list (* lookup table *)
+  | MultipleTable of ident * p * p * (int list) list (* array of lookup tables *)
                                 
 type prog = def list

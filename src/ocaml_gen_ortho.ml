@@ -113,7 +113,8 @@ module Gen_entry = struct
                                                        "MultiplePerm should have been cleaned by now"))
     | Table _ -> raise (Invalid_AST (format_exn __LOC__
                                                 "Tables should be gone by now"))
-
+    | MultipleTable _ -> raise (Invalid_AST (format_exn __LOC__
+                                                        "MultipleTable should be gone by now"))
 end;;
                      
 (* ************************************************** *)
@@ -156,7 +157,8 @@ let ident_to_str_ml id = id
 let const_to_str_ml = function
   | 0 -> "0"
   | 1 -> "-1"
-  | _ -> "illegal value for a bool"
+  | x -> raise (Error (format_exn __LOC__
+                                  ((string_of_int x) ^ " isn't a boolean")))
 
 let left_asgn_to_str_ml = function
   | Ident x -> ident_to_str_ml x
@@ -320,6 +322,8 @@ let def_to_str_ml tab = function
                                             "MultiplePerm should have been cleaned by now"))
   | Table _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
                                      "Tables should be gone by now"))
+  | MultipleTable _ -> raise (Invalid_AST (format_exn __LOC__
+                                                      "MultipleTable should be gone by now"))
 
                     
 let prog_to_str_ml (p:prog) : string =

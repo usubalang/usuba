@@ -25,6 +25,7 @@ let _ =
      "xor", TOK_WXOR;
      "not", TOK_WNOT;
      "fill_i", TOK_FILL_I;
+     "fill", TOK_FILL_I;
      "perm", TOK_PERM;
      "table", TOK_TABLE;
    ]
@@ -55,7 +56,7 @@ rule token = parse
 { try Hashtbl.find kwd_table constr with Not_found -> TOK_constr constr }
 
 (* identifiers / keywords *)
-| ['a'-'z' 'A'-'Z' '_'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as id
+| ['a'-'z' 'A'-'Z' '_' ] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']* as id
 { try Hashtbl.find kwd_table id with Not_found -> TOK_id id }
 
 (* symbols *)

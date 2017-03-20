@@ -25,8 +25,10 @@ let rec expr_to_str_types = function
   | Mux _ -> "Mux"
   | Demux _ -> "Demux"
   | Fby(ei,ef,id) -> "Fby: " ^ (expr_to_str_types ei) ^ " fby " ^ (expr_to_str_types ef)
-  | Fill_i(id,i,e) -> "Fill: " ^ "fill<" ^ id ^ ";" ^ (string_of_int i)
-                                    ^ ">(" ^ (expr_to_str_types e) ^ ")"
+  | Fill_i(id,i,e) -> "Fill_i: " ^ "fill_i<" ^ id ^ ";" ^ (string_of_int i)
+                      ^ ">(" ^ (expr_to_str_types e) ^ ")"
+  | Fill(id,i,e) -> "Fill: " ^ "fill<" ^ id ^ ";" ^ (string_of_int i)
+                    ^ ">(" ^ (expr_to_str_types e) ^ ")"
   | Nop -> "Nop"
 
 let rec expr_to_str = function
@@ -44,8 +46,10 @@ let rec expr_to_str = function
   | Mux _ -> "Mux"
   | Demux _ -> "Demux"
   | Fby(ei,ef,id) -> (expr_to_str ei) ^ " fby " ^ (expr_to_str ef)
-  | Fill_i(id,i,e) -> "fill<" ^ id ^ ";" ^ (string_of_int i)
+  | Fill_i(id,i,e) -> "fill_i<" ^ id ^ ";" ^ (string_of_int i)
                       ^ ">(" ^ (expr_to_str e) ^ ")"
+  | Fill(id,i,e) -> "fill<" ^ id ^ ";" ^ (string_of_int i)
+                    ^ ">(" ^ (expr_to_str e) ^ ")"
   | Nop -> "Nop"
 
 let rec pat_to_str pat =
@@ -112,6 +116,15 @@ let def_to_str def =
      "table " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
      ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n{\n  "
      ^ (join ", " (List.map string_of_int l)) ^ "\n}\n"
+  | MultipleTable(id,p_in,p_out,l) ->
+     "table[] " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
+     ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[ "
+     ^ (join "\n;\n"
+             (List.map
+                (fun l -> "{"
+                          ^ (join ", " (List.map string_of_int l))
+                          ^ "}") l))
+     ^ "\n]\n"
                                                        
 let prog_to_str prog =
   join "\n\n" (List.map def_to_str prog)
