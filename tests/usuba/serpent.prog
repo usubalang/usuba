@@ -1,10 +1,13 @@
 # Note: this implementation is far from complete, and doesn't compute Serpent
 #       for now. It's just meant to see what difficulties the implementation
 #       of Serpent in Usuba could occur.
-#       So far, the lack of << and <<< operators hurts badly, as well as the
-#       impossibility to use integer operations in array indices (for instance
-#       something like a[i%8] could be helpful).
+#       So far, the lack of << and <<< operators makes things a bit too long
+#       and too verbose. So does the impossibility to use integer operations
+#       in array indices (for instance something like a[i%8] could be helpful).
 #       The key scheduling is also **very** painful.
+#       The fact that variables are immutables (which is in the nature of
+#       data flow languages if I understand correctly) makes things a bit less
+#       friendly as well (see `lt` node).
 #
 #       The compilation of this code to OCaml won't work because it uses a
 #       constant, that should be orthogonalized at compile time, and I didn't 

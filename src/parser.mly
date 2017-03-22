@@ -154,14 +154,16 @@ deq: (* returns a tuple list, is converted to AST by def *)
 
 p:
   | { [ ] }
-  | x=TOK_id TOK_COLON t=typ TOK_TWO_COLON ck=TOK_id
-    { [ (x, t, ck) ] }
-  | tail=p TOK_COMMA x=TOK_id TOK_COLON t=typ TOK_TWO_COLON ck=TOK_id
-    { (x,t,ck) :: tail }
+  | x=TOK_id TOK_COLON t=typ ck=clock { [ (x, t, ck) ] }
+  | tail=p TOK_COMMA x=TOK_id TOK_COLON t=typ ck=clock { (x,t,ck) :: tail }
 
 typ:
   | t=TOK_type { t }
   | t=TOK_type TOK_LBRACKET n=TOK_int TOK_RBRACKET { Array(t,n) }
+
+clock:
+   | { "" }
+   | TOK_TWO_COLON id=TOK_id { id }
 
 def:
   | TOK_NODE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN TOK_RETURN p_out=p
