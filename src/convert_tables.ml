@@ -46,9 +46,9 @@ let get_bits (l:int list) (i:int) : int list =
 let tmp_var i j k =
   "tmp_" ^ (string_of_int i) ^ "_" ^ (string_of_int j) ^ "_" ^ (string_of_int k)
 
-(* let mux c a b = Op(Xor,[Var a; Op(And,[c; Var b])]) *)
-(* let mux c a b = Op(Xor,[Var a; Op(And,[c;Op(Xor,[Var a;Var b])])]) *)
-let mux c a b = Op(Or,[Op(And,[Op(Not,[c]);Var a]);Op(And,[c;Var b])])
+(* let mux c a b = Log(Xor,[Var a; Log(And,[c; Var b])]) *)
+(* let mux c a b = Log(Xor,[Var a; Log(And,[c;Log(Xor,[Var a;Var b])])]) *)
+let mux c a b = Log(Or,Log(And,Not c,Var a),Log(And,c,Var b))
                                        
 let rewrite_table id p_in p_out l : def =
   let exp_p_in  = Array.of_list (rewrite_p_right p_in) in

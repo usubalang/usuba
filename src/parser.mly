@@ -45,25 +45,25 @@
 %token TOK_LT
 %token TOK_GT
 %token TOK_DOT
-       
-%token TOK_WAND
-%token TOK_WOR
-%token TOK_WXOR
-%token TOK_WNOT
+
 %token TOK_AND
 %token TOK_BANG
 %token TOK_XOR
 
+%token TOK_PLUS
+%token TOK_STAR
+%token TOK_DASH
+%token TOK_SLASH
+
 %token <string> TOK_id
 %token <string> TOK_constr  (* ident with an uppercase 1st letter *)
-%token <int> TOK_int
-
-               
+%token <int> TOK_int               
 %token <Usuba_AST.typ> TOK_type
 
 %token TOK_EOF
 
 %left TOK_AND TOK_XOR TOK_BANG 
+%left TOK_PLUS TOK_STAR TOK_DASH TOK_SLASH
 
 %nonassoc TOK_MERGE
 %nonassoc TOK_PIPE
@@ -83,16 +83,18 @@
 prog:
   | d=defs TOK_EOF { List.rev d }
 
-op:
-  | TOK_WAND { And }
-  | TOK_WOR  { Or  }
-  | TOK_WXOR { Xor }
-  | TOK_WNOT { Not }
 
-infop:
+log_op:
   | TOK_AND   { And }
   | TOK_PIPE  { Or  }
   | TOK_XOR   { Xor }
+
+arith_op:
+  | TOK_PLUS { Add }
+  | TOK_STAR { Mul }
+  | TOK_DASH { Sub }
+  | TOK_SLASH { Div }
+
 
 exp:
    | TOK_LPAREN e=exp TOK_RPAREN { e }
@@ -101,9 +103,9 @@ exp:
    | i=TOK_id TOK_LBRACKET n=TOK_int TOK_RBRACKET { Access (i,n) }
    | e=exp TOK_DOT n=TOK_int { Field(e,n) }
    | TOK_LPAREN t=tuple TOK_RPAREN  { Tuple (List.rev t) }
-   | o=op TOK_LPAREN args=explist TOK_RPAREN { Op(o, List.rev args) }
-   | x=exp o=infop y=exp %prec TOK_AND { Op(o,[x;y]) }
-   | TOK_BANG x=exp { Op(Not,[x]) }
+   | x=exp o=log_op y=exp %prec TOK_AND { Log(o,x,y) }
+   | x=exp o=arith_op y=exp %prec TOK_AND { Arith(o,x,y) }
+   | TOK_BANG x=exp { Not x }
    | f=TOK_id TOK_LPAREN args=explist TOK_RPAREN { Fun(f, List.rev args) }
    | f=TOK_id TOK_LBRACKET n=TOK_int TOK_RBRACKET
      TOK_LPAREN args=explist TOK_RPAREN { Fun_i(f, n, List.rev args) }
@@ -146,11 +148,15 @@ patlist:
 
 deq: (* returns a tuple list, is converted to AST by def *)
   | p=pat TOK_EQUAL e=exp                           { [ ( p, e ) ]  }
-  | p=pat op=infop TOK_EQUAL e=exp
-    { [ ( p, Op(op,[left_to_right p;e] )) ]  }
+  | p=pat op=log_op TOK_EQUAL e=exp
+    { [ ( p, Log(op,left_to_right p,e)) ]  }
+  | p=pat op=arith_op TOK_EQUAL e=exp
+    { [ ( p, Arith(op,left_to_right p,e)) ]  }
   | tail=deq TOK_SEMICOLON p=pat TOK_EQUAL e=exp    { (p,e) :: tail }
-  | tail=deq TOK_SEMICOLON p=pat op=infop TOK_EQUAL e=exp
-    { ( p, Op(op,[left_to_right p;e] )) :: tail }
+  | tail=deq TOK_SEMICOLON p=pat op=log_op TOK_EQUAL e=exp
+    { ( p, Log(op,left_to_right p,e )) :: tail }
+  | tail=deq TOK_SEMICOLON p=pat op=arith_op TOK_EQUAL e=exp
+    { ( p, Arith(op,left_to_right p,e )) :: tail }
 
 p:
   | { [ ] }

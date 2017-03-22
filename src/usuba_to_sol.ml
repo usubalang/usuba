@@ -7,12 +7,18 @@ let gen_instance_id =
   fun () -> incr cpt;
             "o" ^ (string_of_int !cpt)
 
-let convert_op (op: Usuba_AST.op) : Sol_AST.op =
+let convert_log_op op =
   match op with
   | Usuba_AST.And -> Sol_AST.And
   | Or  -> Or
   | Xor -> Xor
-  | Not -> Not
+             
+let convert_arith_op op =
+  match op with
+  | Usuba_AST.Add -> Sol_AST.Add
+  | Mul  -> Mul
+  | Sub -> Sub
+  | Div -> Div
                     
 let pat_to_idlist (pat: Usuba_AST.pat) : ident list =
   List.map (function Ident id -> id
@@ -23,7 +29,9 @@ let rec convert_expr (expr: Usuba_AST.expr) : c =
   | Usuba_AST.Const n -> Sol_AST.Const n
   | Var v -> Var v
   | Tuple l -> Tuple (List.map convert_expr l)
-  | Op(o,l) -> Op(convert_op o,List.map convert_expr l)
+  | Log(o,x,y) -> Log(convert_log_op o,convert_expr x,convert_expr y)
+  | Not e -> Not (convert_expr e)
+  | Arith(o,x,y) -> Arith(convert_arith_op o,convert_expr x,convert_expr y)
   | _ -> print_endline (Usuba_print.expr_to_str expr);
          raise (Error (format_exn __LOC__
                                   "Usuba AST isn't normalized."))
@@ -37,7 +45,13 @@ let convert_body (body: Usuba_AST.deq) : s list * j  * m =
               | Usuba_AST.Const n -> Asgn(left,Sol_AST.Const n)
               | Var v    -> Asgn(left,Var v)
               | Tuple l  -> Asgn(left,Tuple(List.map convert_expr l))
-              | Op(op,l) -> Asgn(left,Op(convert_op op,List.map convert_expr l))
+              | Log(op,x,y) -> Asgn(left,Log(convert_log_op op,
+                                             convert_expr x,
+                                             convert_expr y))
+              | Arith(op,x,y) -> Asgn(left,Arith(convert_arith_op op,
+                                                 convert_expr x,
+                                                 convert_expr y))
+              | Not e    -> Asgn(left,Not (convert_expr e))
               | Fun(f,l) -> let id = gen_instance_id() in
                             funs := (id,f) :: !funs;
                             Step(left,id,List.map convert_expr l)

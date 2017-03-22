@@ -5,15 +5,15 @@ let rec c_to_str_ml (c: c) : string =
   | Var v    -> v
   | Const n  -> string_of_int n
   | Tuple l  -> "(" ^ (join "," (List.map c_to_str_ml l)) ^ ")"
-  | Op(op,a::b::[])  -> "(" ^ (c_to_str_ml a) ^  ")" ^
+  | Log(op,a::b::[])  -> "(" ^ (c_to_str_ml a) ^  ")" ^
                           ( match op with
                             | And -> " land "
                             | Or  -> " lor "
                             | Xor -> " lxor "
                             | _ -> unreached () )
                           ^ "(" ^ (c_to_str_ml b) ^ ")"
-  | Op(Not,x::[]) -> "not (" ^ (c_to_str_ml x) ^ ")"
-  | Op(Xor,a::b::[]) ->  
+  | Log(Not,x::[]) -> "not (" ^ (c_to_str_ml x) ^ ")"
+  | Log(Xor,a::b::[]) ->  
                  
        
 let s_to_str_ml (s: s) : string =

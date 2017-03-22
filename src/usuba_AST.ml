@@ -14,14 +14,17 @@ type constr = string
 
 type clock = string
 
-type op = And | Or | Xor | Not
+type log_op = And | Or | Xor
+type arith_op = Add | Mul | Sub | Div
                             
 type expr = Const  of int
           | Var    of ident
           | Access of ident * int (* arrays *)
           | Field  of expr * int
           | Tuple  of expr list
-          | Op     of op * expr list
+          | Not    of expr (* special case for bitwise not *)
+          | Log    of log_op * expr * expr
+          | Arith  of arith_op * expr * expr
           | Fun    of ident * expr list
           | Fun_i  of ident * int * expr list (* nodes arrays *)
           | Fun_v  of ident * ident * expr list (* nodes arrays + fill *)

@@ -20,10 +20,6 @@ let _ =
      "when", TOK_WHEN;
      "fby", TOK_FBY;
      "merge", TOK_MERGE;
-     "and", TOK_WAND;
-     "or", TOK_WOR;
-     "xor", TOK_WXOR;
-     "not", TOK_WNOT;
      "fill_i", TOK_FILL_I;
      "fill", TOK_FILL_I;
      "perm", TOK_PERM;
@@ -79,6 +75,10 @@ rule token = parse
 | "&"    { TOK_AND       }
 | "!"    { TOK_BANG      }
 | "^"    { TOK_XOR       }
+| "+"    { TOK_PLUS      }
+| "*"    { TOK_STAR      }
+| "-"    { TOK_DASH      }
+| "/"    { TOK_SLASH     }
          
 (* integers *)
 | ['0'-'9']+ as i { TOK_int (int_of_string i) }

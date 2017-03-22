@@ -7,22 +7,22 @@ module Constant_folding = struct
 
   let fold_deq ((p,e):pat*expr) : pat*expr =
     p,(match e with
-       | Op(And,[Const 1;x]) -> fix := false; x
-       | Op(And,[x;Const 1]) -> fix := false; x
-       | Op(And,[Const 0;_]) -> fix := false; Const 0
-       | Op(And,[_;Const 0]) -> fix := false; Const 0
-       | Op(Or,[Const 1;_]) -> fix := false; Const 1
-       | Op(Or,[_;Const 1]) -> fix := false; Const 1
-       | Op(Or,[Const 0;x]) -> fix := false; x
-       | Op(Or,[x;Const 0]) -> fix := false; x
-       | Op(Xor,[Const 0;Const 0]) -> fix := false; Const 0
-       | Op(Xor,[Const 0;Const 1]) -> fix := false; Const 1
-       | Op(Xor,[Const 1;Const 0]) -> fix := false; Const 1
-       | Op(Xor,[Const 1;Const 1]) -> fix := false; Const 0
-       (* | Op(Xor,[Const 1;x]) -> fix := false; Op(Not,[x]) *)
-       (* | Op(Xor,[x;Const 1]) -> fix := false; Op(Not,[x]) *)
-       | Op(Xor,[Const 0;x]) -> fix := false; x
-       | Op(Xor,[x;Const 0]) -> fix := false; x
+       | Log(And,Const 1,x) -> fix := false; x
+       | Log(And,x,Const 1) -> fix := false; x
+       | Log(And,Const 0,_) -> fix := false; Const 0
+       | Log(And,_,Const 0) -> fix := false; Const 0
+       | Log(Or,Const 1,_) -> fix := false; Const 1
+       | Log(Or,_,Const 1) -> fix := false; Const 1
+       | Log(Or,Const 0,x) -> fix := false; x
+       | Log(Or,x,Const 0) -> fix := false; x
+       | Log(Xor,Const 0,Const 0) -> fix := false; Const 0
+       | Log(Xor,Const 0,Const 1) -> fix := false; Const 1
+       | Log(Xor,Const 1,Const 0) -> fix := false; Const 1
+       | Log(Xor,Const 1,Const 1) -> fix := false; Const 0
+       (* | Log(Xor,Const 1,x) -> fix := false; Not(x) *)
+       (* | Log(Xor,x,Const 1) -> fix := false; Not(x) *)
+       | Log(Xor,Const 0,x) -> fix := false; x
+       | Log(Xor,x,Const 0) -> fix := false; x
        | _ -> e)
                               
   let fold_def (def:def) : def =
@@ -54,7 +54,9 @@ module CSE = struct
     match env_fetch env e with
     | Some x -> x
     | None -> match e with
-              | Op(op,l) -> Op(op,List.map (cse_expr env) l)
+              | Log(op,x,y) -> Log(op,cse_expr env x,cse_expr env y)
+              | Arith(op,x,y) -> Arith(op,cse_expr env x,cse_expr env y)
+              | Not e -> Not (cse_expr env e)
               | Fun(f,l) -> Fun(f,List.map (cse_expr env) l)
               | _ -> e
 

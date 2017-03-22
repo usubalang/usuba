@@ -75,7 +75,7 @@ perm permut ( a:u32 ) returns out:u32 {
 }
 
 
-perm[] roundkey (key : u64) returns roundkey : u48
+perm[] roundkey (key : u64) returns roundkey : u48 :: _
 [
     { 10, 51, 34, 60, 49, 17, 33, 57, 2, 9, 19, 42, 3, 35, 26, 25,
 	  44, 58, 59, 1, 36, 27, 18, 41, 22, 28, 39, 54, 37, 4, 47, 30,

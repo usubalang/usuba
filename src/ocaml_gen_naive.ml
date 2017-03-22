@@ -158,22 +158,22 @@ let rec expr_to_str_ml tab e =
   | Var v   -> ident_to_str_ml v
   | Field(Var x,i) -> (ident_to_str_ml x) ^ (string_of_int i)
   | Tuple t -> "(" ^ (join "," (List.map (expr_to_str_ml tab) t)) ^ ")"
-  | Op (Xor,a::b::[]) -> expr_to_str_ml tab (Op(Or,[Op(And,[a;Op(Not,[b])]);
-                                                    Op(And,[Op(Not,[a]);b])]))
-  | Op (op,a::b::[]) -> "(" ^ (expr_to_str_ml tab a) ^  ")" ^
-                          ( match op with
-                            | And -> " && "
-                            | Or  -> " || "
-                            | _ -> raise (Invalid_AST "Unknown binary operator") )
-                          ^ "(" ^ (expr_to_str_ml tab b) ^ ")"
-  | Op (Not,[Tuple l]) -> "(" ^ (join ","
-                                      (List.map
-                                         (fun x -> "not ("
-                                                   ^ (expr_to_str_ml tab x) ^ ")") l)) ^ ")"
-  | Op (Not,l) -> "(" ^ (join ","
-                              (List.map
-                                 (fun x -> "not ("
-                                           ^ (expr_to_str_ml tab x) ^ ")") l)) ^ ")"
+  | Log (Xor,a,b) -> expr_to_str_ml tab (Log(Or,Log(And,a,Not b),
+                                             Log(And,Not a,b)))
+  | Log (op,a,b) -> "(" ^ (expr_to_str_ml tab a) ^  ")" ^
+                      ( match op with
+                        | And -> " && "
+                        | Or  -> " || "
+                        | _ -> raise (Invalid_AST "Unknown binary operator") )
+                      ^ "(" ^ (expr_to_str_ml tab b) ^ ")"
+  | Arith (op,a,b) -> "(" ^ (expr_to_str_ml tab a) ^  ")" ^
+                        ( match op with
+                          | Add -> " + "
+                          | Mul  -> " * "
+                          | Sub -> " - "
+                          | Div  -> " / " )
+                        ^ "(" ^ (expr_to_str_ml tab b) ^ ")"
+  | Not e -> "not (" ^ (expr_to_str_ml tab e) ^ ")"
   | Fun (f, l) -> (ident_to_str_ml f) ^ " (" ^
                     (join ","
                           (List.map (fun x -> x )

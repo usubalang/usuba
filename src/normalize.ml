@@ -11,7 +11,6 @@ module Simplify_tuples = struct
     match t with
     | Tuple l -> if List.length l = 1 then List.nth l 0
                  else Tuple(List.map simpl_tuple l)
-    | Op(o,l) -> Op(o,List.map simpl_tuple l)
     | Fun(f,l) -> Fun(f,List.map simpl_tuple l)
     | _ -> t
                  
@@ -76,7 +75,7 @@ let gen_tmp =
 (* Note that when this function is called, Var have already been normalized *)
 let get_expr_size env_fun l =
   match l with
-  | Const _ | Var _ | Op _ -> 1
+  | Const _ | Var _ | Log _ | Not _ -> 1
   | Tuple l -> List.length l
   | Fun(f,_) -> (match env_fetch env_fun f with
                  | Some (_,v) -> v
@@ -151,17 +150,19 @@ and norm_expr env_var env_fun (e: expr) : deq * expr =
        let (deqs,l') = remove_calls env_var env_fun l in
        pre_deqs := deqs;
        Fun(f, l')
-    | Op(op,x1::x2::[]) ->
+    | Log(op,x1,x2) ->
        let (deqs1, x1') = remove_call env_var env_fun x1 in
        let (deqs2, x2') = remove_call env_var env_fun x2 in
        pre_deqs := deqs1 @ deqs2;
        ( match x1', x2' with
-         | Tuple l1,Tuple l2 -> Tuple(List.map2 (fun x y -> Op(op,[x;y])) l1 l2)
-         | _ -> Op(op,[x1';x2']))
-    | Op(Not,l) ->
-       let (deqs,l') = remove_calls env_var env_fun l in
+         | Tuple l1,Tuple l2 -> Tuple(List.map2 (fun x y -> Log(op,x,y)) l1 l2)
+         | _ -> Log(op,x1',x2'))
+    | Not e ->
+       let (deqs,e') = remove_call env_var env_fun e in
        pre_deqs := deqs;
-       Tuple(List.map (fun x -> Op(Not,[x])) l')
+       ( match e' with
+         | Tuple l -> Tuple(List.map (fun x -> Not x) l)
+         | _ -> Not e' )
     | _ -> raise (Invalid_AST (format_exn __LOC__
                                           "Invalid expr")) in
   !pre_deqs, normalized_e
@@ -247,7 +248,7 @@ let norm_prog (p: prog)  =
   let tuples_simpl = Simplify_tuples.simplify_tuples tuples_splitted in
   print "TUPLES SIMPLIFIED:\n"
         ((Usuba_print.prog_to_str tuples_simpl) ^ "\n\n");
-  let optimized = Optimize.opt_prog tuples_simpl in
+  let optimized = tuples_simpl in (*Optimize.opt_prog tuples_simpl in*)
   print "OPTIMIZED:\n"
         ((Usuba_print.prog_to_str optimized) ^ "\n\n");
   optimized

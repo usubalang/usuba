@@ -1,6 +1,8 @@
 type ident = string
 
-type op = And | Or | Xor | Not
+               
+type log_op = And | Or | Xor
+type arith_op = Add | Mul | Sub | Div
 
 type typ = Bool | Int64 | Int128
 
@@ -9,11 +11,13 @@ type m = (ident * typ) list
 type p = m
                
 type c =
-  | Var of ident           (*   x               *)
-  | Const of int           (*   v               *)
-  | Tuple of c list        (*   (c, ... , c)    *)
-  | State_var of ident     (*   state(x)        *)
-  | Op of op * c list      (*   op(c, ... , c)  *)
+  | Var of ident               (*   x               *)
+  | Const of int               (*   v               *)
+  | Tuple of c list            (*   (c, ... , c)    *)
+  | State_var of ident         (*   state(x)        *)
+  | Not of c                   (*   not c           *)
+  | Log of log_op * c * c      (*   c op c          *)
+  | Arith of arith_op * c * c  (*   c op c          *)
 
                     
 type s =

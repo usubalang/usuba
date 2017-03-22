@@ -2,12 +2,16 @@
 open Usuba_AST
 open Utils
 
-
-let op_to_string = function
-  | And -> "and"
-  | Or  -> "or"
-  | Xor -> "xor"
-  | Not -> "not"
+let log_op_to_string = function
+  | And -> "&"
+  | Or  -> "|"
+  | Xor -> "^"
+             
+let arith_op_to_string = function
+  | Add -> "+"
+  | Mul  -> "*"
+  | Sub -> "-"
+  | Div -> "/"
          
 let rec expr_to_str_types = function
   | Const c -> "Const: " ^ (string_of_int c)
@@ -15,8 +19,11 @@ let rec expr_to_str_types = function
   | Access(id,n) -> "Access: " ^ id ^ " " ^ (string_of_int n)
   | Field(e,i) -> "Field: (" ^ (expr_to_str_types e) ^ ", " ^ (string_of_int i) ^ ")"
   | Tuple t -> "Tuple: (" ^ (join "," (List.map expr_to_str_types t)) ^ ")"
-  | Op(o,l) -> "Op: " ^ (op_to_string o)
-                             ^ "(" ^  (join "," (List.map expr_to_str_types l)) ^ ")"
+  | Log(o,x,y) -> "Log: " ^ "(" ^ (expr_to_str_types x) ^ (log_op_to_string o)
+                  ^ (expr_to_str_types y) ^ ")"
+  | Arith(o,x,y) -> "Arith: " ^ "(" ^ (expr_to_str_types x) ^ (arith_op_to_string o)
+                    ^ (expr_to_str_types y) ^ ")"
+  | Not e -> "Not: !" ^ (expr_to_str_types e)
   | Fun(f,l) -> "Fun: " ^ f ^ "(" ^ (join "," (List.map expr_to_str_types l)) ^ ")"
   | Fun_i(f,i,l) -> "Fun_i: " ^ f ^ "[" ^ (string_of_int i) ^ "]"
                                ^ "(" ^ (join "," (List.map expr_to_str_types l)) ^ ")"
@@ -37,7 +44,11 @@ let rec expr_to_str = function
   | Access(id,n) -> id ^ "[" ^ (string_of_int n) ^ "]"
   | Field(e,i) -> (expr_to_str e) ^ "." ^ (string_of_int i)
   | Tuple t -> "(" ^ (join "," (List.map expr_to_str t)) ^ ")"
-  | Op(o,l) -> (op_to_string o) ^ "(" ^  (join "," (List.map expr_to_str l)) ^ ")"
+  | Log(o,x,y) -> "(" ^ (expr_to_str x) ^ (log_op_to_string o)
+                  ^ (expr_to_str y) ^ ")"
+  | Arith(o,x,y) -> "(" ^ (expr_to_str x) ^ (arith_op_to_string o)
+                  ^ (expr_to_str y) ^ ")"
+  | Not e -> "!(" ^ (expr_to_str e) ^ ")"
   | Fun(f,l) -> f ^ "(" ^ (join "," (List.map expr_to_str l)) ^ ")"
   | Fun_i(f,i,l) -> f ^ "[" ^ (string_of_int i) ^ "]"
                                ^ "(" ^ (join "," (List.map expr_to_str l)) ^ ")"

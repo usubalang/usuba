@@ -15,7 +15,7 @@ let rec c_to_str (c: Sol_AST.c) : string =
   | Const n -> (string_of_int n)
   | Tuple l -> "(" ^ (join "," (List.map c_to_str l)) ^ ")"
   | State_var sv -> "state(" ^ sv ^ ")"
-  | Op(op,l) -> (op_to_str op) ^ "(" ^ (join "," (List.map c_to_str l)) ^ ")"
+  | Log(op,l) -> (op_to_str op) ^ "(" ^ (join "," (List.map c_to_str l)) ^ ")"
 
 let s_to_str (s: Sol_AST.s) : string =
   match s with

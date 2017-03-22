@@ -10,15 +10,15 @@ let rec c_to_str_ml (c: c) : string =
                  | 1 -> "true"
                  | _ -> unreached ())
   | Tuple l  -> "(" ^ (join "," (List.map c_to_str_ml l)) ^ ")"
-  | Op(Xor,a::b::[]) ->  c_to_str_ml (Op(Or,[Op(And,[a;Op(Not,[b])]);
-                                             Op(And,[Op(Not,[a]);b])]))
-  | Op(op,a::b::[])  -> "(" ^ (c_to_str_ml a) ^  ")" ^
+  | Log(Xor,a::b::[]) ->  c_to_str_ml (Log(Or,[Log(And,[a;Log(Not,[b])]);
+                                             Log(And,[Log(Not,[a]);b])]))
+  | Log(op,a::b::[])  -> "(" ^ (c_to_str_ml a) ^  ")" ^
                           ( match op with
                             | And -> " && "
                             | Or  -> " || "
                             | _ -> unreached () )
                           ^ "(" ^ (c_to_str_ml b) ^ ")"
-  | Op(Not,x::[]) -> "not (" ^ (c_to_str_ml x) ^ ")"
+  | Log(Not,x::[]) -> "not (" ^ (c_to_str_ml x) ^ ")"
   | _ -> raise (Not_implemented (format_exn __LOC__
                                             "state var to ocaml"))
                
