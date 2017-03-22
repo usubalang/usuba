@@ -8,6 +8,7 @@ type ident = string
 type typ =
     Bool
   | Int of int
+  | Nat of int (* for recurrence variables. Not part of usuba0 normalized *)
   | Array of typ * int (* arrays *)
              
 type constr = string

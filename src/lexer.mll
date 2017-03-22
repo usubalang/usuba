@@ -45,7 +45,8 @@ rule token = parse
                            
 | "uint_" (['0' - '9']+ as n)    { TOK_type (Int(int_of_string n))  }
 | "u" (['0' - '9']+ as n)        { TOK_type (Int(int_of_string n))  }
-| "bool"                         { TOK_type (Bool)  }
+| "bool"                         { TOK_type (Bool)                  }
+| "nat" (['0' - '9']+ as n)      { TOK_type (Nat(int_of_string n))  }
                
 (* constructors *)
 | ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as constr

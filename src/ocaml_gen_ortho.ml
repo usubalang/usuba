@@ -35,6 +35,8 @@ module Gen_entry = struct
       | (id,typ,_)::tl -> ( match typ with
                             | Bool -> [ id ]
                             | Int n -> gen_list id n
+                            | Nat _ -> raise (Invalid_AST
+                                                (format_exn __LOC__ "Illegal Nat"))
                             | Array _ -> raise
                                            (Invalid_AST (format_exn __LOC__
                                                                     "Arrays should have been cleaned by now") ))
@@ -50,6 +52,8 @@ module Gen_entry = struct
       | (id,typ,_)::tl -> let size = match typ with
                             | Bool -> 1
                             | Int n -> n
+                            | Nat _ -> raise (Invalid_AST
+                                                (format_exn __LOC__ "Illegal Nat"))
                             | Array _ -> raise
                                            (Invalid_AST
                                               "Arrays should have been cleaned by now") in
@@ -74,6 +78,8 @@ module Gen_entry = struct
                               match typ with
                               | Bool  -> (id,1)
                               | Int n -> (id,n)
+                              | Nat _ -> raise (Invalid_AST
+                                                  (format_exn __LOC__ "Illegal Nat"))
                               | Array _ -> raise
                                              (Invalid_AST (format_exn __LOC__
                                                                       "Arrays should have been cleaned by now")))
@@ -145,11 +151,13 @@ let generate_ref_fun =
 let size_of_typ = function
   | Int _ -> 64
   | Bool  -> 1
+  | Nat _ -> raise (Invalid_AST (format_exn __LOC__ "Illegal Nat"))
   | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
 
 let str_size_of_typ = function
   | Int _ -> "64"
   | Bool  -> "1"
+  | Nat _ -> raise (Invalid_AST (format_exn __LOC__ "Illegal Nat"))
   | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
                          
 let ident_to_str_ml id = id
@@ -289,6 +297,8 @@ let p_to_str_ml tab p =
                       | Int n -> "(" ^
                                    (join "," (List.map (fun id -> ident_to_str_ml id )
                                                        (expand_intn_list id n))) ^ ")"
+                      | Nat n   -> raise (Invalid_AST (format_exn __LOC__
+                                                                  "Illegal Nat"))
                       | Array _ -> raise
                                      (Invalid_AST
                                         "Arrays should have been cleaned by now")) p)
