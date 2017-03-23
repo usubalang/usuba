@@ -66,9 +66,8 @@ let rec env_add_var (vars: p) (env_var: (ident, int) Hashtbl.t) : unit =
                                 (match typ with
                                  | Bool  -> 1
                                  | Int n -> n
-                                 | Array _ -> raise
-                                                (Invalid_AST
-                                                   "Arrays should have been cleaned by now"));
+                                 | Nat n -> raise (Invalid_AST (format_exn __LOC__ ""))
+                                 | Array _ -> raise (Invalid_AST (format_exn __LOC__ "")));
                         env_add_var tl env_var )
 
 (* Add a function (name,p_in,p_out) to env_fun *)
@@ -79,9 +78,8 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
     | (_,typ,_)::tl -> (match typ with
                          | Bool -> 1
                          | Int n -> n
-                         | Array _ -> raise
-                                        (Invalid_AST
-                                           "Arrays should have been cleaned by now"))
+                         | Nat n -> raise (Invalid_AST (format_exn __LOC__ ""))
+                         | Array _ -> raise (Invalid_AST (format_exn __LOC__ "")))
                         :: (get_param_in_size tl)
   in
   let rec get_param_out_size = function
@@ -89,9 +87,8 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
     | (_,typ,_)::tl -> (match typ with
                         | Bool -> 1
                         | Int n -> n
-                        | Array _ -> raise
-                                       (Invalid_AST
-                                          "Arrays should have been cleaned by now"))
+                        | Nat n -> raise (Invalid_AST (format_exn __LOC__ ""))
+                        | Array _ -> raise (Invalid_AST (format_exn __LOC__ "")))
                        + (get_param_out_size tl)
   in
   env_add env_fun name (get_param_in_size p_in,get_param_out_size p_out)

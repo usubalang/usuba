@@ -17,20 +17,21 @@ let _ =
      "vars", TOK_VAR;
      "let", TOK_LET;
      "tel", TOK_TEL;
-     "when", TOK_WHEN;
      "fby", TOK_FBY;
-     "merge", TOK_MERGE;
      "fill_i", TOK_FILL_I;
      "fill", TOK_FILL_I;
      "perm", TOK_PERM;
      "table", TOK_TABLE;
+     "with", TOK_WITH;
+     "then", TOK_THEN;
+     "else", TOK_ELSE;
    ]
 
 let next_line lexbuf =
     let pos = lexbuf.lex_curr_p in
     lexbuf.lex_curr_p <-
-    { pos with pos_bol = lexbuf.lex_curr_pos;
-           pos_lnum = pos.pos_lnum + 1
+      { pos with pos_bol = pos.pos_cnum; (*lexbuf.lex_curr_pos;*)
+                 pos_lnum = pos.pos_lnum + 1
     }
 
 }
@@ -47,10 +48,6 @@ rule token = parse
 | "u" (['0' - '9']+ as n)        { TOK_type (Int(int_of_string n))  }
 | "bool"                         { TOK_type (Bool)                  }
 | "nat" (['0' - '9']+ as n)      { TOK_type (Nat(int_of_string n))  }
-               
-(* constructors *)
-| ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as constr
-{ try Hashtbl.find kwd_table constr with Not_found -> TOK_constr constr }
 
 (* identifiers / keywords *)
 | ['a'-'z' 'A'-'Z' '_' ] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']* as id
@@ -64,13 +61,15 @@ rule token = parse
 | "{"    { TOK_LCURLY    }
 | "}"    { TOK_RCURLY    }
 | "="    { TOK_EQUAL     }
+| "<>"   { TOK_NOT_EQUAL }
 | ","    { TOK_COMMA     }
 | "::"   { TOK_TWO_COLON }
 | ":"    { TOK_COLON     }
 | ";"    { TOK_SEMICOLON }
 | "|"    { TOK_PIPE      }
-| "->"   { TOK_ARROW     }
+| "<="   { TOK_LEQ       }
 | "<"    { TOK_LT        }
+| ">="   { TOK_GEQ       }
 | ">"    { TOK_GT        }
 | "."    { TOK_DOT       }
 | "&"    { TOK_AND       }
@@ -80,6 +79,7 @@ rule token = parse
 | "*"    { TOK_STAR      }
 | "-"    { TOK_DASH      }
 | "/"    { TOK_SLASH     }
+| "@"    { TOK_AT        }
          
 (* integers *)
 | ['0'-'9']+ as i { TOK_int (int_of_string i) }

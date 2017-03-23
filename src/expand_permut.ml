@@ -8,6 +8,7 @@ let rec rewrite_p p =
      (match typ with
       | Bool -> [ (id,Bool,ck) ]
       | Int n -> [ (id, Int n, ck) ]
+      | Nat n -> [ (id, Nat n, ck) ]
       | Array (typ_in, size) -> List.map (fun x -> (x,typ_in,ck)) (gen_list id size)
      ) @ (rewrite_p tl)
                                                    

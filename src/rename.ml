@@ -19,8 +19,6 @@ let rec rename_expr (e:expr) =
   | Not e -> Not (rename_expr e)
   | Fun(f,l) -> if f = "print" then Fun(f,List.map rename_expr l)
                 else Fun(f^"_",List.map rename_expr l)
-  | Mux(e,c,i) -> Mux(rename_expr e, c, i ^ "_")
-  | Demux(i,l) -> Demux(i ^ "_", List.map (fun (c,e) -> c,rename_expr e) l)
   | Fby(ei,ef,f)   -> Fby(rename_expr ei,rename_expr ef,match f with
                                                         | None -> None
                                                         | Some id -> Some (id^"_"))

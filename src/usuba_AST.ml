@@ -17,6 +17,13 @@ type clock = string
 
 type log_op = And | Or | Xor
 type arith_op = Add | Mul | Sub | Div
+type comp_op = Equal | Not_equal | Leq | Geq | Lt | Gt
+                                    
+type arith_expr =
+  | Const of int
+  | Var of ident
+  | Op of arith_op * arith_expr * arith_expr
+  | Comp of comp_op * arith_expr * arith_expr
                             
 type expr = Const  of int
           | Var    of ident
@@ -25,15 +32,15 @@ type expr = Const  of int
           | Tuple  of expr list
           | Not    of expr (* special case for bitwise not *)
           | Log    of log_op * expr * expr
-          | Arith  of arith_op * expr * expr
+          | Arith  of arith_op * expr * expr 
           | Fun    of ident * expr list
           | Fun_i  of ident * int * expr list (* nodes arrays *)
           | Fun_v  of ident * ident * expr list (* nodes arrays + fill *)
-          | Mux    of expr * constr * ident
-          | Demux  of ident * (constr * expr) list
           | Fby    of expr * expr * ident option
           | Fill_i of ident * int * expr (* arrays *)
           | Fill   of ident * int * expr (* arrays *)
+          | With   of arith_expr * expr * expr (* arrays *)
+          | Concat of expr * expr (* arrays *)
           | Nop
 
 and left_asgn =

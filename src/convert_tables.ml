@@ -22,9 +22,9 @@ let rec rewrite_p_right (p: p) =
   | (id,typ,_)::tl -> ( match typ with
                         | Bool  -> [ Var id ]
                         | Int x -> expand_intn_right id x
-                        | Array _ -> raise (Invalid_AST
-                                              "Arrays should have been cleaned by now")
-                      ) @ (rewrite_p_right tl)
+                        | Nat n -> raise (Invalid_AST (format_exn __LOC__ ""))
+                        | Array _ -> raise (Invalid_AST (format_exn __LOC__ "")))
+                      @ (rewrite_p_right tl)
 
 (* Duplicated function from Normalizer.ml *)
 let rec rewrite_p_left (p: p) =
@@ -33,9 +33,9 @@ let rec rewrite_p_left (p: p) =
   | (id,typ,_)::tl -> ( match typ with
                         | Bool  -> [ Ident id ]
                         | Int x -> expand_intn_left id x
-                        | Array _ -> raise (Invalid_AST
-                                              "Arrays should have been cleaned by now")
-                      ) @ (rewrite_p_left tl)
+                        | Nat n -> raise (Invalid_AST (format_exn __LOC__ ""))
+                        | Array _ -> raise (Invalid_AST (format_exn __LOC__ "")))
+                      @ (rewrite_p_left tl)
 
 let get_bits (l:int list) (i:int) : int list =
   let rec aux = function

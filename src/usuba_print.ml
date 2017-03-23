@@ -29,8 +29,6 @@ let rec expr_to_str_types = function
                                ^ "(" ^ (join "," (List.map expr_to_str_types l)) ^ ")"
   | Fun_v(f,v,l) -> "Fun_v: " ^ f ^ "[" ^ v ^ "]"
                                ^ "(" ^ (join "," (List.map expr_to_str_types l)) ^ ")"
-  | Mux _ -> "Mux"
-  | Demux _ -> "Demux"
   | Fby(ei,ef,id) -> "Fby: " ^ (expr_to_str_types ei) ^ " fby " ^ (expr_to_str_types ef)
   | Fill_i(id,i,e) -> "Fill_i: " ^ "fill_i<" ^ id ^ ";" ^ (string_of_int i)
                       ^ ">(" ^ (expr_to_str_types e) ^ ")"
@@ -54,8 +52,6 @@ let rec expr_to_str = function
                                ^ "(" ^ (join "," (List.map expr_to_str l)) ^ ")"
   | Fun_v(f,v,l) -> f ^ "[" ^ v ^ "]"
                                ^ "(" ^ (join "," (List.map expr_to_str l)) ^ ")"
-  | Mux _ -> "Mux"
-  | Demux _ -> "Demux"
   | Fby(ei,ef,id) -> (expr_to_str ei) ^ " fby " ^ (expr_to_str ef)
   | Fill_i(id,i,e) -> "fill_i<" ^ id ^ ";" ^ (string_of_int i)
                       ^ ">(" ^ (expr_to_str e) ^ ")"

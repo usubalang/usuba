@@ -187,13 +187,6 @@ let rec expr_to_str_ml tab e =
                     (join ","
                           (List.map (fun x -> x )
                                     (List.map (expr_to_str_ml tab) l))) ^ ")"
-  | Mux (e,_,_) -> expr_to_str_ml tab e
-  | Demux (id,l) -> "match " ^ (ident_to_str_ml id) ^ " with\n" ^
-                      (join "\n"
-                            (List.map (fun (c,e) ->
-                                       (indent tab) ^ "  | " ^
-                                         (constructor_to_str_ml c) ^ " -> " ^
-                                           (expr_to_str_ml (tab+1) e)) l))
   | Fby _  -> raise (Not_implemented "fby may not be part of a larger expression")
   | _ -> raise (Invalid_AST "Unrecognized expression")
 

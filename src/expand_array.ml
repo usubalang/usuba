@@ -19,7 +19,6 @@ let rec rewrite_expr env_var (e: expr) : expr =
   | Arith(o,x,y) -> Arith(o,rewrite_expr env_var x, rewrite_expr env_var y)
   | Not e -> Not(rewrite_expr env_var e)
   | Fun(f,l) -> Fun(f,List.map (rewrite_expr env_var) l)
-  | Mux(e,c,i) -> Mux(rewrite_expr env_var e,c,i)
   | Fby(ei,ef,i) -> Fby(rewrite_expr env_var ei, rewrite_expr env_var ef, i)
   | _ -> e
 
@@ -48,7 +47,6 @@ let make_node_i (node: def) (i: int) env_var : def * ident =
     | Log(o,x,y) -> rewrite_expr env_var (Log(o,replace_i x,replace_i y))
     | Arith(o,x,y) -> rewrite_expr env_var (Arith(o,replace_i x,replace_i y))
     | Not e -> rewrite_expr env_var (Not (replace_i e))
-    | Mux(e,c,i) -> rewrite_expr env_var (Mux(replace_i e,c,i))
     | Fby(ei,ef,i) -> rewrite_expr env_var (Fby(replace_i ei,replace_i ef,i))
     | _ -> rewrite_expr env_var e in
   match node with
@@ -127,6 +125,7 @@ let rec rewrite_p p =
      (match typ with
       | Bool -> [ (id,Bool,ck) ]
       | Int n -> [ (id, Int n, ck) ]
+      | Nat n -> [ (id, Nat n, ck) ]
       | Array (typ_in, size) -> List.map (fun x -> (x,typ_in,ck)) (gen_list id size)
      ) @ (rewrite_p tl)
 
