@@ -66,6 +66,9 @@
 
 %token TOK_EOF
 
+       
+(***************************** Precedence levels ******************************)
+       
 %left TOK_AT
 
 %nonassoc TOK_EQUAL TOK_NOT_EQUAL TOK_LEQ TOK_GEQ TOK_LT TOK_GT
@@ -75,8 +78,6 @@
   
 %left TOK_DOT
 %left TOK_PIPE
-%nonassoc TOK_FBY
-%left TOK_LBRACKET
 
 %right TOK_BANG
 %left TOK_AND TOK_XOR
@@ -119,13 +120,12 @@ arith_exp:
   | e1=arith_exp op=arith_op e2=arith_exp { Op(op,e1,e2) }
   | e1=arith_exp op=comp_op e2=arith_exp { Comp(op,e1,e2) }
 
-
 exp:
   | TOK_LPAREN e=exp TOK_RPAREN { e }
-  | x=TOK_int { Const x }
+  | x=TOK_int { Const x }  
   | id=TOK_id  { Var(id) }
   | i=TOK_id TOK_LBRACKET n=TOK_int TOK_RBRACKET { Access (i,n) }
-  | e=exp TOK_DOT n=TOK_int { Field(e,n) }
+  | e=exp TOK_DOT n=TOK_int { Field(e,n) }     
   (* note that a tuple has at least 2 elements (enforced by the following rule) *)
   | TOK_LPAREN e1=exp TOK_COMMA t=explist TOK_RPAREN  { Tuple (e1::t) }
   | x=exp o=log_op y=exp %prec TOK_AND { Log(o,x,y) }
@@ -136,6 +136,11 @@ exp:
     TOK_LPAREN args=explist TOK_RPAREN { Fun_i(f, n, args) }
   | f=TOK_id TOK_LBRACKET id=TOK_id TOK_RBRACKET
     TOK_LPAREN args=explist TOK_RPAREN { Fun_v(f, id, args) }
+  | ei=exp TOK_AT ef=exp { Concat(ei, ef) }
+
+(* expressions that are not reccursives *)
+out_exp:
+  | e=exp { e }
   | init=exp TOK_FBY follow=exp { Fby(init,follow,None) }
   | init=exp TOK_LBRACKET f=TOK_id TOK_RBRACKET TOK_FBY follow=exp
     { Fby(init,follow,Some f) }
@@ -145,10 +150,10 @@ exp:
   | TOK_FILL TOK_LT f=TOK_id TOK_SEMICOLON n=TOK_int TOK_GT
     TOK_LPAREN l=explist TOK_RPAREN
     { Fill(f,n,Tuple l) }
-  | ei=exp TOK_AT ef=exp { Concat(ei, ef) }
+  | TOK_WITH cond=arith_exp TOK_THEN base=exp TOK_ELSE induc=exp
+    { With(cond,base,induc) }
                                      
-explist:
-  | l=separated_nonempty_list(TOK_COMMA,exp) { l }
+explist: l=separated_nonempty_list(TOK_COMMA,exp) { l }
 
 pat_single:
   | i=TOK_id                          { Ident i }
@@ -160,11 +165,9 @@ pat:
   | TOK_LPAREN l=separated_nonempty_list(TOK_COMMA,pat_single) TOK_RPAREN   { l }
 
 deq: (* returns a tuple list, is converted to an AST by def *)
-  | p=pat TOK_EQUAL e=exp              { ( p, e ) }
-  | p=pat op=log_op TOK_EQUAL e=exp    { ( p, Log(op,left_to_right p,e)) }
-  | p=pat op=arith_op TOK_EQUAL e=exp  { ( p, Arith(op,left_to_right p,e)) }
-  | p=pat TOK_EQUAL TOK_WITH cond=arith_exp TOK_THEN base=exp TOK_ELSE induc=exp
-    { ( p, With(cond,base,induc)) }
+  | p=pat TOK_EQUAL e=out_exp              { ( p, e ) }
+  | p=pat op=log_op TOK_EQUAL e=out_exp    { ( p, Log(op,left_to_right p,e)) }
+  | p=pat op=arith_op TOK_EQUAL e=out_exp  { ( p, Arith(op,left_to_right p,e)) }
 
 deqs: l=separated_nonempty_list(TOK_SEMICOLON, deq) { l }
 
