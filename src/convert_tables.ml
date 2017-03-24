@@ -22,7 +22,7 @@ let rec rewrite_p_right (p: p) =
   | (id,typ,_)::tl -> ( match typ with
                         | Bool  -> [ Var id ]
                         | Int x -> expand_intn_right id x
-                        | Nat n -> raise (Invalid_AST (format_exn __LOC__ ""))
+                        | Nat -> raise (Invalid_AST (format_exn __LOC__ ""))
                         | Array _ -> raise (Invalid_AST (format_exn __LOC__ "")))
                       @ (rewrite_p_right tl)
 
@@ -33,7 +33,7 @@ let rec rewrite_p_left (p: p) =
   | (id,typ,_)::tl -> ( match typ with
                         | Bool  -> [ Ident id ]
                         | Int x -> expand_intn_left id x
-                        | Nat n -> raise (Invalid_AST (format_exn __LOC__ ""))
+                        | Nat -> raise (Invalid_AST (format_exn __LOC__ ""))
                         | Array _ -> raise (Invalid_AST (format_exn __LOC__ "")))
                       @ (rewrite_p_left tl)
 
@@ -55,7 +55,7 @@ let rewrite_table id p_in p_out l : def =
   let exp_p_out = Array.of_list (rewrite_p_left p_out) in
   let size_in = Array.length exp_p_in in
   let size_out = Array.length exp_p_out in
-  let body : deq ref = ref [] in
+  let body : deq list ref = ref [] in
   for i = 1 to size_out do (* for each bit ou the output *)
 
     (* get the bits of the output the current rank *)
@@ -63,22 +63,23 @@ let rewrite_table id p_in p_out l : def =
 
     (* initialise rank 0 *)
     for j = 1 to List.length l do
-      body := ([Ident (tmp_var i 0 (j-1))],Const bits.(j-1)) :: !body
+      body := Norec ([Ident (tmp_var i 0 (j-1))],Const bits.(j-1)) :: !body
     done;
 
     (* for each depth *)
     for j = 1 to size_in do
       
       for k = 1 to pow 2 (size_in-j) do
-        body := ([Ident (tmp_var i j (k-1))], mux exp_p_in.(size_in-j)
-                                                         (tmp_var i (j-1) ((k-1)*2))
-                                                         (tmp_var i (j-1) ((k-1)*2+1)))
-                  :: !body
+        body := Norec ([Ident (tmp_var i j (k-1))],
+                        mux exp_p_in.(size_in-j)
+                                       (tmp_var i (j-1) ((k-1)*2))
+                                       (tmp_var i (j-1) ((k-1)*2+1)))
+                :: !body
       done
     done;
     
     (* set output *) 
-    body := ([exp_p_out.(i-1)], Var (tmp_var i size_in 0)) :: !body
+    body := Norec ([exp_p_out.(i-1)], Var (tmp_var i size_in 0)) :: !body
       
   done;
   Single(id,p_in,p_out,[],List.rev !body)

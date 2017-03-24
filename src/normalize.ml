@@ -18,7 +18,9 @@ module Simplify_tuples = struct
     match def with
     | Single(name,p_in,p_out,p_var,body) ->
        Single(name, p_in, p_out, p_var,
-              List.map (fun (p,e) -> (p,simpl_tuple e)) body)
+              List.map (function
+                         | Norec(p,e) -> Norec(p,simpl_tuple e)
+                         | Rec _ -> raise (Error (format_exn __LOC__ "REC"))) body)
     | _ -> unreached ()
                      
   let simplify_tuples (p: prog) : prog =
@@ -27,16 +29,18 @@ end
 
 (* Split tuples into atomic operations, if possible *)
 module Split_tuples = struct
-  let real_split_tuple (p: pat) (l: expr list) : deq =
-    List.map2 (fun l r -> [l],r) p l
+  let real_split_tuple (p: pat) (l: expr list) : deq list =
+    List.map2 (fun l r -> Norec([l],r)) p l
                
-  let split_tuples_deq (body: deq) : deq =
-    List.flatten (List.map
-                    (fun (p,e) -> match e with
-                                  | Tuple l -> real_split_tuple p l
-                                  | _ -> [p,e])
-                    body)
-                 
+  let split_tuples_deq (body: deq list) : deq list =
+    List.flatten
+      (List.map
+         (fun x -> match x with
+                   | Norec (p,e) -> (match e with
+                                     | Tuple l -> real_split_tuple p l
+                                     | _ -> [ x ])
+                   | Rec _ -> raise (Error (format_exn __LOC__ "REC"))) body)
+
   let split_tuples_def (def: def) : def =
     match def with
     | Single(name,p_in,p_out,p_var,body) ->
@@ -102,7 +106,7 @@ let rec is_primitive e =
 (* ************************************************************************** *)
                 
 
-let rec remove_call env_var env_fun e : deq * expr =
+let rec remove_call env_var env_fun e : deq list * expr =
   let (deq,e') = norm_expr env_var env_fun e in
 
   if is_primitive e' then
@@ -111,9 +115,9 @@ let rec remove_call env_var env_fun e : deq * expr =
     let tmp = expand_intn (gen_tmp ()) (get_expr_size env_fun e') in
     let left = List.map (fun x -> Ident x) tmp in
 
-    deq @ [left,e'], Tuple (List.map (fun x -> Var x) tmp)
+    deq @ [Norec(left,e')], Tuple (List.map (fun x -> Var x) tmp)
 
-and remove_calls env_var env_fun l : deq * expr list =
+and remove_calls env_var env_fun l : deq list * expr list =
   let pre_deqs = ref [] in
   let l' = List.map
              (fun e ->
@@ -126,14 +130,14 @@ and remove_calls env_var env_fun l : deq * expr list =
               else
                 let tmp = expand_intn (gen_tmp ()) (get_expr_size env_fun e') in
                 let left = List.map (fun x -> Ident x) tmp in
-                pre_deqs := !pre_deqs @ [left,e'];
+                pre_deqs := !pre_deqs @ [Norec(left,e')];
                 
                 List.map (fun x -> Var x) tmp)
              l in
   !pre_deqs, flatten_expr (List.flatten l')
     
 
-and norm_expr env_var env_fun (e: expr) : deq * expr = 
+and norm_expr env_var env_fun (e: expr) : deq list * expr = 
   let pre_deqs = ref [] in
   let normalized_e =
     match e with
@@ -181,14 +185,15 @@ let norm_pat env_var (pat: pat) : pat =
                                  (format_exn __LOC__
                                              "Illegal array access"))) pat)
     
-let norm_deq env_var env_fun (body: deq) : deq =
+let norm_deq env_var env_fun (body: deq list) : deq list =
   List.flatten
     (List.map
-       (fun (p,e) ->
-        let p'= norm_pat env_var p in
-        let (expr_l, e') = norm_expr env_var env_fun e in
-        expr_l @ [p',e'])
-       body)
+       (function
+         | Norec (p,e) ->
+            let p'= norm_pat env_var p in
+            let (expr_l, e') = norm_expr env_var env_fun e in
+            expr_l @ [Norec(p',e')]
+         | Rec _ -> raise (Error (format_exn __LOC__ "REC"))) body)
   
 
 let norm_p (p: p) : p =
@@ -198,7 +203,7 @@ let norm_p (p: p) : p =
         match typ with
         | Bool    -> [ id,Bool,ck ]
         | Int n   -> expand_intn_typed id n ck
-        | Nat n   -> raise (Invalid_AST
+        | Nat     -> raise (Invalid_AST
                               (format_exn __LOC__
                                           "Illegal nat"))
         | Array _ -> raise (Invalid_AST
@@ -219,7 +224,7 @@ let norm_def env_fun (def: def) : def =
                                         "Illegal non-Single def"))
 
 let print title body =
-  if false then
+  if true then
     begin
       print_endline title;
       if false then print_endline (Usuba_print.prog_to_str body)
@@ -231,16 +236,16 @@ let norm_prog (prog: prog)  =
   let env_fun = Hashtbl.create 10 in
   print "INPUT:" prog;
   
-  let tables_converted = Convert_tables.convert_tables prog in
+  let array_expanded = Expand_array.expand_array prog in
+  print "ARRAYS EXPANDED:"  array_expanded;
+  
+  let tables_converted = Convert_tables.convert_tables array_expanded in
   print "TABLES CONVERTED:" tables_converted;
   
   let perm_expanded = Expand_permut.expand_permut tables_converted in
   print "PERM EXPANDED:" perm_expanded;
   
-  let array_expanded = Expand_array.expand_array perm_expanded in
-  print "ARRAYS EXPANDED:"  array_expanded;
-  
-  let renamed_prog = rename_prog array_expanded in
+  let renamed_prog = rename_prog perm_expanded in
   print "RENAMED:" renamed_prog;
   
   let pre_normalized = List.map (norm_def env_fun) renamed_prog in

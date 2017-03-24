@@ -17,14 +17,11 @@ let _ =
      "vars", TOK_VAR;
      "let", TOK_LET;
      "tel", TOK_TEL;
-     "fby", TOK_FBY;
-     "fill_i", TOK_FILL_I;
-     "fill", TOK_FILL_I;
      "perm", TOK_PERM;
      "table", TOK_TABLE;
-     "with", TOK_WITH;
-     "then", TOK_THEN;
-     "else", TOK_ELSE;
+     "fby", TOK_FBY;
+     "forall", TOK_FORALL;
+     "in", TOK_IN;
    ]
 
 let next_line lexbuf =
@@ -46,11 +43,11 @@ rule token = parse
                            
 | "uint_" (['0' - '9']+ as n)    { TOK_type (Int(int_of_string n))  }
 | "u" (['0' - '9']+ as n)        { TOK_type (Int(int_of_string n))  }
-| "bool"                         { TOK_type (Bool)                  }
-| "nat" (['0' - '9']+ as n)      { TOK_type (Nat(int_of_string n))  }
+| "bool"                         { TOK_type Bool                    }
+| "nat"                          { TOK_type Nat                     }
 
 (* identifiers / keywords *)
-| ['a'-'z' 'A'-'Z' '_' ] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']* as id
+| ['a'-'z' 'A'-'Z' '_' ] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as id
 { try Hashtbl.find kwd_table id with Not_found -> TOK_id id }
 
 (* symbols *)
@@ -61,25 +58,24 @@ rule token = parse
 | "{"    { TOK_LCURLY    }
 | "}"    { TOK_RCURLY    }
 | "="    { TOK_EQUAL     }
-| "<>"   { TOK_NOT_EQUAL }
+| "<<<"  { TOK_LROTATE   }
+| "<<"   { TOK_LSHIFT    }
+| ">>>"  { TOK_RROTATE   }
+| ">>"   { TOK_RSHIFT    }
 | ","    { TOK_COMMA     }
 | "::"   { TOK_TWO_COLON }
 | ":"    { TOK_COLON     }
 | ";"    { TOK_SEMICOLON }
 | "|"    { TOK_PIPE      }
-| "<="   { TOK_LEQ       }
-| "<"    { TOK_LT        }
-| ">="   { TOK_GEQ       }
-| ">"    { TOK_GT        }
 | "."    { TOK_DOT       }
 | "&"    { TOK_AND       }
-| "!"    { TOK_BANG      }
+| "~"    { TOK_TILDE     }
+| "!"    { TOK_TILDE     } (* for now, both ~ and ! have the same semantic *)
 | "^"    { TOK_XOR       }
 | "+"    { TOK_PLUS      }
 | "*"    { TOK_STAR      }
 | "-"    { TOK_DASH      }
 | "/"    { TOK_SLASH     }
-| "@"    { TOK_AT        }
          
 (* integers *)
 | ['0'-'9']+ as i { TOK_int (int_of_string i) }

@@ -2,7 +2,13 @@
 open Usuba_AST
 
 exception Error of string
+exception Syntax_error
 exception Not_implemented of string
+exception Empty_list
+exception Undeclared of string
+exception Invalid_param_size
+exception Invalid_operator_call
+            
 
 let unreached () = raise (Error "This point can't be reached")
 
@@ -49,12 +55,16 @@ let id_generator_var =
   let current = ref 0 in
   fun () -> incr current; !current
 
-                           
 let env_fetch (env: ('b, 'a) Hashtbl.t) (name: 'b) : 'a option =
   try
     let v = Hashtbl.find env name in Some v
   with Not_found -> None
 
+let env_contains env key : bool =
+  match env_fetch env key with
+  | Some _ -> true
+  | None -> false
+    
 let env_add (env: ('a,'b) Hashtbl.t) (key: 'a) (value: 'b) : unit =
   Hashtbl.add env key value
               
@@ -66,7 +76,7 @@ let rec env_add_var (vars: p) (env_var: (ident, int) Hashtbl.t) : unit =
                                 (match typ with
                                  | Bool  -> 1
                                  | Int n -> n
-                                 | Nat n -> raise (Invalid_AST (format_exn __LOC__ ""))
+                                 | Nat -> raise (Invalid_AST (format_exn __LOC__ ""))
                                  | Array _ -> raise (Invalid_AST (format_exn __LOC__ "")));
                         env_add_var tl env_var )
 
@@ -78,7 +88,7 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
     | (_,typ,_)::tl -> (match typ with
                          | Bool -> 1
                          | Int n -> n
-                         | Nat n -> raise (Invalid_AST (format_exn __LOC__ ""))
+                         | Nat -> raise (Invalid_AST (format_exn __LOC__ ""))
                          | Array _ -> raise (Invalid_AST (format_exn __LOC__ "")))
                         :: (get_param_in_size tl)
   in
@@ -87,7 +97,7 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
     | (_,typ,_)::tl -> (match typ with
                         | Bool -> 1
                         | Int n -> n
-                        | Nat n -> raise (Invalid_AST (format_exn __LOC__ ""))
+                        | Nat -> raise (Invalid_AST (format_exn __LOC__ ""))
                         | Array _ -> raise (Invalid_AST (format_exn __LOC__ "")))
                        + (get_param_out_size tl)
   in
@@ -132,3 +142,17 @@ let contains s1 s2 =
   in
   try ignore (Str.search_forward re s1 0); true
   with Not_found -> false
+
+
+let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
+  match e with
+  | Const_e n -> n
+  | Var_e id  -> Hashtbl.find env id
+  | Op_e(op,x,y) -> let x' = eval_arith env x in
+                  let y' = eval_arith env y in
+                  match op with
+                  | Add -> x' + y'
+                  | Mul -> x' * y'
+                  | Sub -> x' - y'
+                  | Div -> x' / y'
+                  | Mod -> x' mod y'

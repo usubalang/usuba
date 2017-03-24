@@ -1,5 +1,5 @@
 open Usuba_AST
-exception Syntax_error
+open Utils
        
 (* Since the transformation of the code will produce new variable names,
    we must rename the old variables to make there won't be any conflicts 
@@ -9,50 +9,46 @@ exception Syntax_error
 let rec rename_expr (e:expr) =
   match e with
   | Const c -> Const c
-  | Var v   -> Var (v ^ "_")
+  | Var v   -> Var (v ^ "'")
   | Field(e,n) -> Field((match e with
-                         | Var id -> Var (id ^ "_")
+                         | Var id -> Var (id ^ "'")
                          | _ -> raise Syntax_error), n)
   | Tuple l  -> Tuple(List.map rename_expr l)
   | Log(op,x,y) -> Log(op,rename_expr x,rename_expr y)
   | Arith(op,x,y) -> Arith(op,rename_expr x,rename_expr y)
+  | Shift(op,x,y) -> Shift(op,rename_expr x,y)
   | Not e -> Not (rename_expr e)
   | Fun(f,l) -> if f = "print" then Fun(f,List.map rename_expr l)
-                else Fun(f^"_",List.map rename_expr l)
+                else Fun(f^"'",List.map rename_expr l)
   | Fby(ei,ef,f)   -> Fby(rename_expr ei,rename_expr ef,match f with
                                                         | None -> None
-                                                        | Some id -> Some (id^"_"))
+                                                        | Some id -> Some (id^"'"))
   | Nop -> Nop
-  | Fun_i _ -> raise (Invalid_AST (__LOC__ ^ "A fun_i"))
   | Fun_v _ -> raise (Invalid_AST (__LOC__ ^ "A fun_v"))
   | Access _ -> raise (Invalid_AST(__LOC__ ^ "An Access"))
-  | Fill_i _ -> raise (Invalid_AST(__LOC__ ^ "A fill_i"))
-  | Fill _ -> raise (Invalid_AST(__LOC__ ^ "A fill"))
 
-let rec rename_pat_single = function
-  | Ident id -> Ident (id ^ "_")
-  | Dotted(p,n) -> Dotted(rename_pat_single p,n)
-  | _ -> raise Syntax_error
-               
-let rec rename_pat = function
-  | [] -> []
-  | hd::tl -> ( rename_pat_single hd ) :: (rename_pat tl)
+
+                      
+let rec rename_pat pat =
+  let rec rename_pat_single = function
+    | Ident id -> Ident (id ^ "'")
+    | Dotted(p,n) -> Dotted(rename_pat_single p,n)
+    | _ -> raise Syntax_error in
+  List.map rename_pat_single pat
+           
+let rec rename_deq deqs =
+    List.map (function
+               | Norec(pat,expr)  -> Norec(rename_pat pat,rename_expr expr)
+               | Rec _ -> raise (Error (format_exn __LOC__ "Unexpected REC"))) deqs
                                                              
-let rec rename_deq = function
-  | [] -> []
-  | (pat,expr) :: tl -> (rename_pat pat,rename_expr expr)::(rename_deq tl)
-                                                             
-let rec rename_p = function
-  | [] -> []
-  | (id,typ,ck)::tl -> (id^"_",typ,ck)::(rename_p tl)
+let rec rename_p p =
+  List.map (fun (id,typ,ck) -> (id^"'",typ,ck)) p
                                           
 let rename_def = function
   | Single (name, p_in, p_out, p_var, body) ->
-     Single(name^"_", rename_p p_in, rename_p p_out, rename_p p_var, rename_deq body)
+     Single(name^"'", rename_p p_in, rename_p p_out, rename_p p_var, rename_deq body)
   | Multiple _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
                                         "Array should have been cleaned by now"))
-  | Temporary _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
-                                         "Temporary should be gone by now"))
   | Perm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
                                     "Perm should be gone by now"))
   | MultiplePerm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
@@ -61,11 +57,7 @@ let rename_def = function
                                      "Table should be gone by now"))
   | MultipleTable _ -> raise (Invalid_AST (__LOC__ ^
                                             "MultipleTable should have been cleaned by now"))
-                     
-let rec rename_defs = function
-  | [] -> []
-  | hd::tl -> (rename_def hd) :: (rename_defs tl)
                                    
 let rename_prog (p: prog) : prog =
-  rename_defs p
+  List.map rename_def p
 

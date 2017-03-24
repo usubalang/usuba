@@ -4,7 +4,7 @@ type ident = string
 (* type bin_op = PADD | PMUL | PAND ... *)
 (* type ter_op = PADD3 | PMUL3 | ... *)
 type log_op = And | Or | Xor
-type arith_op = Add | Mul | Sub | Div
+type arith_op = Add | Mul | Sub | Div | Mod
 
 type typ = Bool | Int64 | Int128
 

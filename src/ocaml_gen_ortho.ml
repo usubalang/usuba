@@ -33,9 +33,9 @@ module Gen_entry = struct
     let rec aux = function
       | [] -> []
       | (id,typ,_)::tl -> ( match typ with
-                            | Bool -> [ id ]
+                            | Bool  -> [ id ]
                             | Int n -> gen_list id n
-                            | Nat _ -> raise (Invalid_AST
+                            | Nat   -> raise (Invalid_AST
                                                 (format_exn __LOC__ "Illegal Nat"))
                             | Array _ -> raise
                                            (Invalid_AST (format_exn __LOC__
@@ -50,9 +50,9 @@ module Gen_entry = struct
       match p with
       | [] -> []
       | (id,typ,_)::tl -> let size = match typ with
-                            | Bool -> 1
+                            | Bool  -> 1
                             | Int n -> n
-                            | Nat _ -> raise (Invalid_AST
+                            | Nat   -> raise (Invalid_AST
                                                 (format_exn __LOC__ "Illegal Nat"))
                             | Array _ -> raise
                                            (Invalid_AST
@@ -78,7 +78,7 @@ module Gen_entry = struct
                               match typ with
                               | Bool  -> (id,1)
                               | Int n -> (id,n)
-                              | Nat _ -> raise (Invalid_AST
+                              | Nat   -> raise (Invalid_AST
                                                   (format_exn __LOC__ "Illegal Nat"))
                               | Array _ -> raise
                                              (Invalid_AST (format_exn __LOC__
@@ -111,8 +111,6 @@ module Gen_entry = struct
         ^ (indent_small 3) ^ "with Stream.Failure -> None)\n")
     | Multiple _ -> raise (Invalid_AST (format_exn __LOC__
                                                    "Arrays should have been cleaned by now"))
-    | Temporary _ -> raise (Invalid_AST (format_exn __LOC__
-                                                    "Temporary should be gone by now"))
     | Perm _ -> raise (Invalid_AST (format_exn __LOC__
                                                "Perm should be gone by now"))
     | MultiplePerm _ -> raise (Invalid_AST (format_exn __LOC__
@@ -151,13 +149,13 @@ let generate_ref_fun =
 let size_of_typ = function
   | Int _ -> 64
   | Bool  -> 1
-  | Nat _ -> raise (Invalid_AST (format_exn __LOC__ "Illegal Nat"))
+  | Nat   -> raise (Invalid_AST (format_exn __LOC__ "Illegal Nat"))
   | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
 
 let str_size_of_typ = function
   | Int _ -> "64"
   | Bool  -> "1"
-  | Nat _ -> raise (Invalid_AST (format_exn __LOC__ "Illegal Nat"))
+  | Nat   -> raise (Invalid_AST (format_exn __LOC__ "Illegal Nat"))
   | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
                          
 let ident_to_str_ml id = id
@@ -193,9 +191,10 @@ let rec expr_to_str_ml tab e =
   | Arith (op,a,b) -> "(" ^ (expr_to_str_ml tab a) ^  ")" ^
                       ( match op with
                         | Add -> " + "
-                        | Mul  -> " * "
+                        | Mul -> " * "
                         | Sub -> " - "
-                        | Div -> " / " )
+                        | Div -> " / "
+                        | Mod -> " mod ")
                       ^ "(" ^ (expr_to_str_ml tab b) ^ ")"
   | Not e -> "lnot (" ^ (expr_to_str_ml tab e) ^ ")"
   | Fun (f, l) -> (ident_to_str_ml f) ^ " (" ^
@@ -277,20 +276,22 @@ let pat_to_str_ml tab pat =
   | l -> "(" ^ (join "," (List.map left_asgn_to_str_ml l)) ^ ")"
 
 let deq_to_str_ml tab l =
-  join "\n" (List.map (fun (p,e) ->
-                       (match e with
-                        | Fby(ei,ef,f) -> fby_to_str_ml tab p ei ef f
-                        | _ -> (indent tab) ^ "let "
-                               ^ (pat_to_str_ml tab p) ^ " = "
-                               ^ (expr_to_str_ml tab e) ^ " in ")) l)
+  join "\n" (List.map (function
+                        | Norec(p,e) ->
+                           (match e with
+                            | Fby(ei,ef,f) -> fby_to_str_ml tab p ei ef f
+                            | _ -> (indent tab) ^ "let "
+                                   ^ (pat_to_str_ml tab p) ^ " = "
+                                   ^ (expr_to_str_ml tab e) ^ " in ")
+                        | Rec _ -> raise (Invalid_AST (format_exn __LOC__ "REC"))) l)
 let p_to_str_ml tab p =
   join "," (List.map (fun (id,typ,_) ->
                       match typ with
-                      | Bool -> (ident_to_str_ml id)
+                      | Bool  -> (ident_to_str_ml id)
                       | Int n -> "(" ^
                                    (join "," (List.map (fun id -> ident_to_str_ml id )
                                                        (expand_intn_list id n))) ^ ")"
-                      | Nat n   -> raise (Invalid_AST (format_exn __LOC__
+                      | Nat   -> raise (Invalid_AST (format_exn __LOC__
                                                                   "Illegal Nat"))
                       | Array _ -> raise
                                      (Invalid_AST
@@ -316,8 +317,6 @@ let def_to_str_ml tab = function
                     ^ (p_to_str_ml tab p_out) ^ ")\n"))
   | Multiple _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
                                         "Arrays should have been cleaned by now"))
-  | Temporary _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
-                                         "Temporary should be gone by now"))
   | Perm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
                                     "Perm should be gone by now"))
   | MultiplePerm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^

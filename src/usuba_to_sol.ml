@@ -19,6 +19,7 @@ let convert_arith_op op =
   | Mul  -> Mul
   | Sub -> Sub
   | Div -> Div
+  | Mod -> Mod
                     
 let pat_to_idlist (pat: Usuba_AST.pat) : ident list =
   List.map (function Ident id -> id
@@ -36,26 +37,28 @@ let rec convert_expr (expr: Usuba_AST.expr) : c =
          raise (Error (format_exn __LOC__
                                   "Usuba AST isn't normalized."))
            
-let convert_body (body: Usuba_AST.deq) : s list * j  * m =
+let convert_body (body: Usuba_AST.deq list) : s list * j  * m =
   let funs = ref [] in
   let body =
-    List.map (fun (left,right) ->
-              let left = pat_to_idlist left in
-              match right with
-              | Usuba_AST.Const n -> Asgn(left,Sol_AST.Const n)
-              | Var v    -> Asgn(left,Var v)
-              | Tuple l  -> Asgn(left,Tuple(List.map convert_expr l))
-              | Log(op,x,y) -> Asgn(left,Log(convert_log_op op,
-                                             convert_expr x,
-                                             convert_expr y))
-              | Arith(op,x,y) -> Asgn(left,Arith(convert_arith_op op,
-                                                 convert_expr x,
-                                                 convert_expr y))
-              | Not e    -> Asgn(left,Not (convert_expr e))
-              | Fun(f,l) -> let id = gen_instance_id() in
-                            funs := (id,f) :: !funs;
-                            Step(left,id,List.map convert_expr l)
-              | _ -> unreached ()) body in
+    List.map (function
+               | Norec (left,right) ->
+                  let left = pat_to_idlist left in
+                  ( match right with
+                    | Usuba_AST.Const n -> Asgn(left,Sol_AST.Const n)
+                    | Var v    -> Asgn(left,Var v)
+                    | Tuple l  -> Asgn(left,Tuple(List.map convert_expr l))
+                    | Log(op,x,y) -> Asgn(left,Log(convert_log_op op,
+                                                   convert_expr x,
+                                                   convert_expr y))
+                    | Arith(op,x,y) -> Asgn(left,Arith(convert_arith_op op,
+                                                       convert_expr x,
+                                                       convert_expr y))
+                    | Not e    -> Asgn(left,Not (convert_expr e))
+                    | Fun(f,l) -> let id = gen_instance_id() in
+                                  funs := (id,f) :: !funs;
+                                  Step(left,id,List.map convert_expr l)
+                    | _ -> unreached ())
+               | Rec _ -> raise (Error (format_exn __LOC__ "REC"))) body in
   (body, List.rev !funs, [])
            
 let convert_node f p_in p_out vars body : machine =

@@ -2,12 +2,6 @@
 open Usuba_AST
 open Utils
 
-exception Not_implemented of string
-exception Empty_list
-exception Undeclared of string
-exception Invalid_param_size
-exception Invalid_operator_call
-            
 
 module Gen_entry = struct
   
@@ -34,9 +28,9 @@ module Gen_entry = struct
     let rec aux = function
       | [] -> []
       | (id,typ,_)::tl -> ( match typ with
-                            | Bool -> [ id ]
+                            | Bool  -> [ id ]
                             | Int n -> gen_list id n 
-                            | Nat n   -> raise (Invalid_AST (format_exn __LOC__ 
+                            | Nat   -> raise (Invalid_AST (format_exn __LOC__ 
                                                                   "Illegal Nat"))
                             | Array _ -> raise
                                            (Invalid_AST (format_exn __LOC__ 
@@ -55,9 +49,9 @@ module Gen_entry = struct
     let left = gen_list "ret" (List.length l) in
     let right = List.map (fun (_,typ,_) ->
                           let size = match typ with
-                              Bool -> 1
+                              Bool  -> 1
                             | Int n -> n
-                            | Nat n   -> raise (Invalid_AST (format_exn __LOC__
+                            | Nat   -> raise (Invalid_AST (format_exn __LOC__
                                                                         "Illegal Nat"))
                             | Array _ -> raise (Invalid_AST (format_exn __LOC__
                                                                         "Arrays should have been cleaned by now")) in
@@ -75,7 +69,7 @@ module Gen_entry = struct
                               match typ with
                               | Bool  -> (id,1)
                               | Int n -> (id,n)
-                              | Nat n   -> raise (Invalid_AST
+                              | Nat   -> raise (Invalid_AST
                                                     (format_exn __LOC__
                                                                 "Nat in entry point"))
                               | Array _ -> raise (Invalid_AST
@@ -95,8 +89,6 @@ module Gen_entry = struct
         ^ (indent 1) ^ "with Stream.Failure -> None)\n")
     | Multiple _ -> raise (Invalid_AST (format_exn __LOC__
                                                    "Arrays should have been cleaned by now"))
-    | Temporary _ -> raise (Invalid_AST (format_exn __LOC__
-                                                    "Temporary should be gone by now"))
     | Perm _ -> raise (Invalid_AST (format_exn __LOC__
                                                "Perm should be gone by now"))
     | MultiplePerm _ -> raise (Invalid_AST (format_exn __LOC__
@@ -134,13 +126,13 @@ let generate_ref_fun =
 let size_of_typ = function
   | Int _ -> 64
   | Bool  -> 1
-  | Nat n -> raise (Invalid_AST "Nat shouldn't be there")
+  | Nat   -> raise (Invalid_AST "Nat shouldn't be there")
   | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
 
 let str_size_of_typ = function
   | Int _ -> "64"
   | Bool  -> "1"
-  | Nat n -> raise (Invalid_AST "Nat shouldn't be there")
+  | Nat   -> raise (Invalid_AST "Nat shouldn't be there")
   | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
                      
 let ident_to_str_ml id = id
@@ -178,9 +170,10 @@ let rec expr_to_str_ml tab e =
   | Arith (op,a,b) -> "(" ^ (expr_to_str_ml tab a) ^  ")" ^
                         ( match op with
                           | Add -> " + "
-                          | Mul  -> " * "
+                          | Mul -> " * "
                           | Sub -> " - "
-                          | Div  -> " / " )
+                          | Div -> " / "
+                          | Mod -> " mod ")
                         ^ "(" ^ (expr_to_str_ml tab b) ^ ")"
   | Not e -> "not (" ^ (expr_to_str_ml tab e) ^ ")"
   | Fun (f, l) -> (ident_to_str_ml f) ^ " (" ^
@@ -222,20 +215,22 @@ let pat_to_str_ml tab pat =
   | l -> "(" ^ (join "," (List.map left_asgn_to_str_ml l)) ^ ")"
 
 let deq_to_str_ml tab l =
-  join "\n" (List.map (fun (p,e) ->
-                       (match e with
-                        | Fby(ei,ef,_) -> fby_to_str_ml tab p ei ef
-                        | _ -> (indent tab) ^ "let "
-                               ^ (pat_to_str_ml tab p) ^ " = "
-                               ^ (expr_to_str_ml tab e) ^ " in ")) l)
+  join "\n" (List.map (function
+                        | Norec(p,e) ->
+                           (match e with
+                            | Fby(ei,ef,_) -> fby_to_str_ml tab p ei ef
+                            | _ -> (indent tab) ^ "let "
+                                   ^ (pat_to_str_ml tab p) ^ " = "
+                                   ^ (expr_to_str_ml tab e) ^ " in ")
+                        | Rec _ -> raise (Invalid_AST (format_exn __LOC__ "REC"))) l)
 let p_to_str_ml tab p =
   join "," (List.map (fun (id,typ,_) ->
                       match typ with
-                      | Bool -> (ident_to_str_ml id)
+                      | Bool  -> (ident_to_str_ml id)
                       | Int n -> "(" ^
                                    (join "," (List.map (fun id -> ident_to_str_ml id )
                                                        (expand_intn_list id n))) ^ ")"
-                      | Nat n -> raise (Invalid_AST "Nat shouldn't be there")
+                      | Nat   -> raise (Invalid_AST "Nat shouldn't be there")
                       | Array _ -> raise
                                      (Invalid_AST
                                         "Arrays should have been cleaned by now")) p)
@@ -255,8 +250,6 @@ let def_to_str_ml tab = function
                  ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
                  ^ (p_to_str_ml tab p_out) ^ ")\n"))
   | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
-  | Temporary _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
-                                         "Temporary should be gone by now"))
   | Perm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
                                     "Perm should be gone by now"))
   | MultiplePerm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
