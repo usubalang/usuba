@@ -20,7 +20,7 @@ let convert_unortho (input: int array) : int64 array =
  out
 
 
-let sbox'1' (a'1,a'2,a'3,a'4,a'5,a'6) = 
+let sbox'0' (a'1,a'2,a'3,a'4,a'5,a'6) = 
     let tmp_1_0_0' = -1 in 
     let tmp_1_0_1' = 0 in 
     let tmp_1_0_2' = 0 in 
@@ -1293,7 +1293,7 @@ let sbox'1' (a'1,a'2,a'3,a'4,a'5,a'6) =
 
 
 
-let sbox'2' (a'1,a'2,a'3,a'4,a'5,a'6) = 
+let sbox'1' (a'1,a'2,a'3,a'4,a'5,a'6) = 
     let tmp_1_0_0' = -1 in 
     let tmp_1_0_1' = 0 in 
     let tmp_1_0_2' = 0 in 
@@ -2566,7 +2566,7 @@ let sbox'2' (a'1,a'2,a'3,a'4,a'5,a'6) =
 
 
 
-let sbox'3' (a'1,a'2,a'3,a'4,a'5,a'6) = 
+let sbox'2' (a'1,a'2,a'3,a'4,a'5,a'6) = 
     let tmp_1_0_0' = -1 in 
     let tmp_1_0_1' = -1 in 
     let tmp_1_0_2' = 0 in 
@@ -3839,7 +3839,7 @@ let sbox'3' (a'1,a'2,a'3,a'4,a'5,a'6) =
 
 
 
-let sbox'4' (a'1,a'2,a'3,a'4,a'5,a'6) = 
+let sbox'3' (a'1,a'2,a'3,a'4,a'5,a'6) = 
     let tmp_1_0_0' = 0 in 
     let tmp_1_0_1' = -1 in 
     let tmp_1_0_2' = -1 in 
@@ -5112,7 +5112,7 @@ let sbox'4' (a'1,a'2,a'3,a'4,a'5,a'6) =
 
 
 
-let sbox'5' (a'1,a'2,a'3,a'4,a'5,a'6) = 
+let sbox'4' (a'1,a'2,a'3,a'4,a'5,a'6) = 
     let tmp_1_0_0' = 0 in 
     let tmp_1_0_1' = -1 in 
     let tmp_1_0_2' = -1 in 
@@ -6385,7 +6385,7 @@ let sbox'5' (a'1,a'2,a'3,a'4,a'5,a'6) =
 
 
 
-let sbox'6' (a'1,a'2,a'3,a'4,a'5,a'6) = 
+let sbox'5' (a'1,a'2,a'3,a'4,a'5,a'6) = 
     let tmp_1_0_0' = -1 in 
     let tmp_1_0_1' = -1 in 
     let tmp_1_0_2' = 0 in 
@@ -7658,7 +7658,7 @@ let sbox'6' (a'1,a'2,a'3,a'4,a'5,a'6) =
 
 
 
-let sbox'7' (a'1,a'2,a'3,a'4,a'5,a'6) = 
+let sbox'6' (a'1,a'2,a'3,a'4,a'5,a'6) = 
     let tmp_1_0_0' = 0 in 
     let tmp_1_0_1' = -1 in 
     let tmp_1_0_2' = -1 in 
@@ -8931,7 +8931,7 @@ let sbox'7' (a'1,a'2,a'3,a'4,a'5,a'6) =
 
 
 
-let sbox'8' (a'1,a'2,a'3,a'4,a'5,a'6) = 
+let sbox'7' (a'1,a'2,a'3,a'4,a'5,a'6) = 
     let tmp_1_0_0' = -1 in 
     let tmp_1_0_1' = 0 in 
     let tmp_1_0_2' = 0 in 
@@ -11330,14 +11330,14 @@ let des_single' (left_in'1,left_in'2,left_in'3,left_in'4,left_in'5,left_in'6,lef
     let sbox_in7'4 = (_tmp12115_46) lxor (key'46) in 
     let sbox_in7'5 = (_tmp12115_47) lxor (key'47) in 
     let sbox_in7'6 = (_tmp12115_48) lxor (key'48) in 
-    let (sbox_out0'1,sbox_out0'2,sbox_out0'3,sbox_out0'4) = sbox'1' (sbox_in0'1,sbox_in0'2,sbox_in0'3,sbox_in0'4,sbox_in0'5,sbox_in0'6) in 
-    let (sbox_out1'1,sbox_out1'2,sbox_out1'3,sbox_out1'4) = sbox'2' (sbox_in1'1,sbox_in1'2,sbox_in1'3,sbox_in1'4,sbox_in1'5,sbox_in1'6) in 
-    let (sbox_out2'1,sbox_out2'2,sbox_out2'3,sbox_out2'4) = sbox'3' (sbox_in2'1,sbox_in2'2,sbox_in2'3,sbox_in2'4,sbox_in2'5,sbox_in2'6) in 
-    let (sbox_out3'1,sbox_out3'2,sbox_out3'3,sbox_out3'4) = sbox'4' (sbox_in3'1,sbox_in3'2,sbox_in3'3,sbox_in3'4,sbox_in3'5,sbox_in3'6) in 
-    let (sbox_out4'1,sbox_out4'2,sbox_out4'3,sbox_out4'4) = sbox'5' (sbox_in4'1,sbox_in4'2,sbox_in4'3,sbox_in4'4,sbox_in4'5,sbox_in4'6) in 
-    let (sbox_out5'1,sbox_out5'2,sbox_out5'3,sbox_out5'4) = sbox'6' (sbox_in5'1,sbox_in5'2,sbox_in5'3,sbox_in5'4,sbox_in5'5,sbox_in5'6) in 
-    let (sbox_out6'1,sbox_out6'2,sbox_out6'3,sbox_out6'4) = sbox'7' (sbox_in6'1,sbox_in6'2,sbox_in6'3,sbox_in6'4,sbox_in6'5,sbox_in6'6) in 
-    let (sbox_out7'1,sbox_out7'2,sbox_out7'3,sbox_out7'4) = sbox'8' (sbox_in7'1,sbox_in7'2,sbox_in7'3,sbox_in7'4,sbox_in7'5,sbox_in7'6) in 
+    let (sbox_out0'1,sbox_out0'2,sbox_out0'3,sbox_out0'4) = sbox'0' (sbox_in0'1,sbox_in0'2,sbox_in0'3,sbox_in0'4,sbox_in0'5,sbox_in0'6) in 
+    let (sbox_out1'1,sbox_out1'2,sbox_out1'3,sbox_out1'4) = sbox'1' (sbox_in1'1,sbox_in1'2,sbox_in1'3,sbox_in1'4,sbox_in1'5,sbox_in1'6) in 
+    let (sbox_out2'1,sbox_out2'2,sbox_out2'3,sbox_out2'4) = sbox'2' (sbox_in2'1,sbox_in2'2,sbox_in2'3,sbox_in2'4,sbox_in2'5,sbox_in2'6) in 
+    let (sbox_out3'1,sbox_out3'2,sbox_out3'3,sbox_out3'4) = sbox'3' (sbox_in3'1,sbox_in3'2,sbox_in3'3,sbox_in3'4,sbox_in3'5,sbox_in3'6) in 
+    let (sbox_out4'1,sbox_out4'2,sbox_out4'3,sbox_out4'4) = sbox'4' (sbox_in4'1,sbox_in4'2,sbox_in4'3,sbox_in4'4,sbox_in4'5,sbox_in4'6) in 
+    let (sbox_out5'1,sbox_out5'2,sbox_out5'3,sbox_out5'4) = sbox'5' (sbox_in5'1,sbox_in5'2,sbox_in5'3,sbox_in5'4,sbox_in5'5,sbox_in5'6) in 
+    let (sbox_out6'1,sbox_out6'2,sbox_out6'3,sbox_out6'4) = sbox'6' (sbox_in6'1,sbox_in6'2,sbox_in6'3,sbox_in6'4,sbox_in6'5,sbox_in6'6) in 
+    let (sbox_out7'1,sbox_out7'2,sbox_out7'3,sbox_out7'4) = sbox'7' (sbox_in7'1,sbox_in7'2,sbox_in7'3,sbox_in7'4,sbox_in7'5,sbox_in7'6) in 
     let (c'1,c'2,c'3,c'4,c'5,c'6,c'7,c'8,c'9,c'10,c'11,c'12,c'13,c'14,c'15,c'16,c'17,c'18,c'19,c'20,c'21,c'22,c'23,c'24,c'25,c'26,c'27,c'28,c'29,c'30,c'31,c'32) = permut' (sbox_out0'1,sbox_out0'2,sbox_out0'3,sbox_out0'4,sbox_out1'1,sbox_out1'2,sbox_out1'3,sbox_out1'4,sbox_out2'1,sbox_out2'2,sbox_out2'3,sbox_out2'4,sbox_out3'1,sbox_out3'2,sbox_out3'3,sbox_out3'4,sbox_out4'1,sbox_out4'2,sbox_out4'3,sbox_out4'4,sbox_out5'1,sbox_out5'2,sbox_out5'3,sbox_out5'4,sbox_out6'1,sbox_out6'2,sbox_out6'3,sbox_out6'4,sbox_out7'1,sbox_out7'2,sbox_out7'3,sbox_out7'4) in 
     let _tmp12116_1 = (left_in'1) lxor (c'1) in 
     let _tmp12116_2 = (left_in'2) lxor (c'2) in 

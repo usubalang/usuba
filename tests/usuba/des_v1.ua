@@ -162,7 +162,7 @@ let
     sbox_in = expand(right_in) ^ key;
 
     # Computing the sbox
-    forall i in [0,7], sbox_out[i] = sbox[i+1](sbox_in[i]);
+    forall i in [0,7], sbox_out[i] = sbox[i](sbox_in[i]);
     # The linear permutation
     c = permut( sbox_out );
 
