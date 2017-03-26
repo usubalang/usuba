@@ -67,7 +67,7 @@ let rec rewrite_def (def: def) : def list =
   | MultipleTable(id,p_in,p_out,l) ->
      let cpt = ref 0 in
      (List.map (fun x -> incr cpt;
-                         rewrite_table (id ^ (string_of_int !cpt)) p_in p_out x) l)
+                         rewrite_table (id ^ "'" ^ (string_of_int !cpt)) p_in p_out x) l)
   | _ -> [ def ]
             
                        

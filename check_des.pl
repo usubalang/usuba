@@ -36,7 +36,7 @@ say "Compiling...";
 error if system 'make';
 chdir "..";
 say "Regenerating the des OCaml code...";
-error if system './src/main.native tests/usuba/des_v1.prog' ;
+error if system './src/main.native tests/usuba/des_v1.ua' ;
 
 # switching to temporary directory
 say "Preparing the files for the test...";

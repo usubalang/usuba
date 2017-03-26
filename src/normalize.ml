@@ -104,7 +104,7 @@ let rec is_primitive e =
   | _ -> false
 
 (* ************************************************************************** *)
-
+           
 let rec remove_call env_var env_fun e : deq list * expr =
   let (deq,e') = norm_expr env_var env_fun e in
 
