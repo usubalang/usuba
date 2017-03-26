@@ -162,11 +162,13 @@ tel
 
 node des (plaintext : u64, key : u64) returns ( ciphered : u64 )
 vars
-    des : u64[18]
+    des : u64[17],
+    left:u32,right:u32
 let
     des[0] = init_p(plaintext);
-    forall i in [1,17], des[i] = des_single(des[i-1],roundkey[i-1](key));
+    forall i in [1,16], des[i] = des_single(des[i-1],roundkey[i-1](key));
 
     # Regrouping left and right and computing final permuation
-    ciphered = final_p(des[17]) # wont work because left and right are inverted
+    (left,right) = des[16];
+    ciphered = final_p(right,left) # wont work because left and right are inverted
 tel

@@ -19,11 +19,15 @@ type typ =
   | Int of int
   | Nat (* for recurrence variables. Not part of usuba0 normalized *)
   | Array of typ * arith_expr (* arrays *)
-                            
+
+type var =
+  | Var of ident
+  | Field of var * arith_expr
+  | Index of ident * arith_expr
+  | Range of ident * arith_expr * arith_expr
+                     
 type expr = Const  of int
-          | Var    of ident
-          | Access of ident * arith_expr (* arrays *)
-          | Field  of expr * int
+          | ExpVar of var
           | Tuple  of expr list
           | Not    of expr (* special case for bitwise not *)
           | Shift  of shift_op * expr * arith_expr
@@ -32,18 +36,11 @@ type expr = Const  of int
           | Fun    of ident * expr list
           | Fun_v  of ident * arith_expr * expr list (* nodes arrays *)
           | Fby    of expr * expr * ident option
-          | Nop
-
-and left_asgn =
-  | Ident of ident
-  | Dotted of left_asgn * int
-  | Index of ident * arith_expr (* arrays *)
-                               
-and pat = left_asgn list                              
+          | Nop                           
                             
 type deq =
-  | Norec of pat * expr
-  | Rec of ident * arith_expr * arith_expr * pat * expr
+  | Norec of (var list) * expr
+  | Rec of ident * arith_expr * arith_expr * (var list) * expr
 
 type p = (ident * typ * clock) list
                                 

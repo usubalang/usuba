@@ -4,15 +4,19 @@ open Utils
 (* Since the transformation of the code will produce new variable names,
    we must rename the old variables to make there won't be any conflicts 
    with those new names (or with any ocaml builtin name).
-   Basically, it means adding an "_" at the end of every identifier name. *)
+   Basically, it means adding an "'" at the end of every identifier name. *)
+
+let rec rename_var (v:var) =
+  match v with
+  | Var v -> Var (v ^ "'")
+  | Field(v,e) -> Field(rename_var v,e)
+  | Index(v,e) -> raise (Invalid_AST(__LOC__ ^ "INDEX"))
+  | Range(v,ei,ef) -> raise (Invalid_AST(__LOC__ ^ "RANGE"))
        
 let rec rename_expr (e:expr) =
   match e with
   | Const c -> Const c
-  | Var v   -> Var (v ^ "'")
-  | Field(e,n) -> Field((match e with
-                         | Var id -> Var (id ^ "'")
-                         | _ -> raise Syntax_error), n)
+  | ExpVar v -> ExpVar (rename_var v)
   | Tuple l  -> Tuple(List.map rename_expr l)
   | Log(op,x,y) -> Log(op,rename_expr x,rename_expr y)
   | Arith(op,x,y) -> Arith(op,rename_expr x,rename_expr y)
@@ -24,16 +28,16 @@ let rec rename_expr (e:expr) =
                                                         | None -> None
                                                         | Some id -> Some (id^"'"))
   | Nop -> Nop
-  | Fun_v _ -> raise (Invalid_AST (__LOC__ ^ "A fun_v"))
-  | Access _ -> raise (Invalid_AST(__LOC__ ^ "An Access"))
+  | Fun_v _ -> raise (Invalid_AST (__LOC__ ^ "Fun_v"))
 
 
                       
 let rec rename_pat pat =
   let rec rename_pat_single = function
-    | Ident id -> Ident (id ^ "'")
-    | Dotted(p,n) -> Dotted(rename_pat_single p,n)
-    | _ -> raise Syntax_error in
+    | Var id -> Var (id ^ "'")
+    | Field(p,n) -> Field(rename_pat_single p,n)
+    | Index _ -> raise (Invalid_AST (format_exn __LOC__ "Index"))
+    | Range _ -> raise (Invalid_AST (format_exn __LOC__ "Range")) in
   List.map rename_pat_single pat
            
 let rec rename_deq deqs =

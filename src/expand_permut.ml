@@ -9,7 +9,8 @@ let rec rewrite_p p =
       | Bool -> [ (id,Bool,ck) ]
       | Int n -> [ (id, Int n, ck) ]
       | Nat -> [ (id, Nat, ck) ]
-      | Array (typ_in, Const_e size) -> List.map (fun x -> (x,typ_in,ck)) (gen_list id size)
+      | Array (typ_in, Const_e size) ->
+         List.map (fun x -> (x,typ_in,ck)) (gen_list_0 id size)
       | _ -> raise (Error (format_exn __LOC__ "bad index"))
      ) @ (rewrite_p tl)
                                                    
@@ -19,8 +20,8 @@ let rewrite_perm (id,p_in,p_out,body) : def =
   let p_out' = rewrite_p p_out in
   let (id_out,_,_) = List.nth p_out 0 in
   let cpt = ref 1 in
-  let body' = List.map (fun x -> let tmp = (Norec([Dotted(Ident id_out,!cpt)],
-                                                  Field(Var id_in, x))) in
+  let body' = List.map (fun x -> let tmp = (Norec([Field(Var id_out,Const_e !cpt)],
+                                                  ExpVar(Field(Var id_in, Const_e x)))) in
                                  incr cpt;
                                  tmp) body in
   Single(id,p_in',p_out',[],body')
@@ -31,7 +32,7 @@ let expand_array (ident, p_in, p_out, nodes) =
     | [] -> []
     | (vars,body)::tl -> (Single(ident^"'"^(string_of_int i),p_in,p_out,vars,body))
                          :: (aux (i+1) tl)
-  in aux 1 nodes
+  in aux 0 nodes
 
 let expand_array_perm (ident, p_in, p_out, perms) =
   let rec aux i perms =
@@ -39,7 +40,7 @@ let expand_array_perm (ident, p_in, p_out, perms) =
     | [] -> []
     | perm::tl -> (ident^"'"^(string_of_int i),p_in,p_out,perm)
                   :: (aux (i+1) tl)
-  in aux 1 perms
+  in aux 0 perms
        
 let rec rewrite_defs (l: def list) : def list =
   match l with

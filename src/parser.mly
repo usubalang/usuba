@@ -1,17 +1,14 @@
 
 %{
   open Usuba_AST
+  exception Syntax_error
 
   (* convert a left_asgn list into an expression *)
-  let rec left_to_right (l: left_asgn list) : expr =
-    let rec single_l2r = function
-      | Ident id    -> Var id
-      | Dotted(l,i) -> Field(single_l2r l,i)
-      | Index(id,i) -> Access(id,i) in
-    let rec aux = function
-      | [] -> []
-      | hd::tl -> (single_l2r hd)::(aux tl)
-    in Tuple(aux l) 
+  let rec left_to_right (l: var list) : expr =
+    match l with
+     | [] -> raise Syntax_error
+     | x::[] -> ExpVar x
+     | _ -> Tuple (List.map (fun x -> ExpVar x) l)
 %}
 
 /*******************\
@@ -45,6 +42,7 @@
 %token TOK_LSHIFT
 %token TOK_RROTATE
 %token TOK_RSHIFT
+%token TOK_RANGE
 
 %token TOK_AND
 %token TOK_TILDE
@@ -107,12 +105,17 @@ arith_exp:
   | x = TOK_id  { Var_e x }
   | e1=arith_exp op=arith_op e2=arith_exp { Op_e(op,e1,e2) }
 
+var:
+  | id=TOK_id { Var id  }
+  | v=var TOK_DOT n=arith_exp { Field(v,n) }
+  | i=TOK_id TOK_LBRACKET n=arith_exp TOK_RBRACKET { Index (i,n) }
+  | i=TOK_id TOK_LBRACKET ei=arith_exp TOK_RANGE ef=arith_exp TOK_RBRACKET
+    { Range(i,ei,ef) }
+
 exp:
   | TOK_LPAREN e=exp TOK_RPAREN { e }
-  | x=TOK_int { Const x }  
-  | id=TOK_id  { Var(id) }
-  | i=TOK_id TOK_LBRACKET n=arith_exp TOK_RBRACKET { Access (i,n) }
-  | e=exp TOK_DOT n=TOK_int { Field(e,n) }     
+  | x=TOK_int { Const x }
+  | x=var { ExpVar x } 
   (* note that a tuple has at least 2 elements (enforced by the following rule) *)
   | TOK_LPAREN e1=exp TOK_COMMA t=explist TOK_RPAREN  { Tuple (e1::t) }
   | x=exp o=log_op y=exp   { Log(o,x,y) }
@@ -131,15 +134,10 @@ out_exp:
     { Fby(init,follow,Some f) }
                                      
 explist: l=separated_nonempty_list(TOK_COMMA,exp) { l }
-
-pat_single:
-  | i=TOK_id                          { Ident i }
-  | i=TOK_id TOK_LBRACKET n=arith_exp TOK_RBRACKET { Index (i,n) }
-  | p=pat_single TOK_DOT n=TOK_int    { Dotted(p,n) }
                                   
 pat:
-  | p=pat_single                      { [ p ] }
-  | TOK_LPAREN l=separated_nonempty_list(TOK_COMMA,pat_single) TOK_RPAREN   { l }
+  | p=var                      { [ p ] }
+  | TOK_LPAREN l=separated_nonempty_list(TOK_COMMA,var) TOK_RPAREN   { l }
 
 norec_deq: (* returns a tuple list, is converted to an AST by def *)
   | p=pat TOK_EQUAL e=out_exp              { ( p, e ) }

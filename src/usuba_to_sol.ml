@@ -21,14 +21,14 @@ let convert_arith_op op =
   | Div -> Div
   | Mod -> Mod
                     
-let pat_to_idlist (pat: Usuba_AST.pat) : ident list =
-  List.map (function Ident id -> id
+let pat_to_idlist (pat: Usuba_AST.var list) : ident list =
+  List.map (function Usuba_AST.Var id -> id
                    | _ -> unreached ()) pat
 
 let rec convert_expr (expr: Usuba_AST.expr) : c =
   match expr with
   | Usuba_AST.Const n -> Sol_AST.Const n
-  | Var v -> Var v
+  | ExpVar(Var v) -> Var v
   | Tuple l -> Tuple (List.map convert_expr l)
   | Log(o,x,y) -> Log(convert_log_op o,convert_expr x,convert_expr y)
   | Not e -> Not (convert_expr e)
@@ -45,7 +45,7 @@ let convert_body (body: Usuba_AST.deq list) : s list * j  * m =
                   let left = pat_to_idlist left in
                   ( match right with
                     | Usuba_AST.Const n -> Asgn(left,Sol_AST.Const n)
-                    | Var v    -> Asgn(left,Var v)
+                    | ExpVar(Var v)     -> Asgn(left,Var v)
                     | Tuple l  -> Asgn(left,Tuple(List.map convert_expr l))
                     | Log(op,x,y) -> Asgn(left,Log(convert_log_op op,
                                                    convert_expr x,

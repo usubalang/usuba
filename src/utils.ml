@@ -117,17 +117,17 @@ let expand_intn_typed (id: ident) (n: int) (ck: clock) =
   in aux 1
 
 (* converts an uint_n to n bools (in the format of pat) *)
-let expand_intn_pat (id: ident) (n: int) : left_asgn list =
+let expand_intn_pat (id: ident) (n: int) : var list =
   let rec aux i =
     if i > n then []
-    else (Ident (id ^ (string_of_int i))) :: (aux (i+1))
+    else (Var (id ^ (string_of_int i))) :: (aux (i+1))
   in aux 1
 
 (* converts an uint_n to n bools (in the format of expr) *)
 let rec expand_intn_expr (id: ident) (n: int) : expr list =
   let rec aux i =
     if i > n then []
-    else (Var (id ^ (string_of_int i))) :: (aux (i+1))
+    else ExpVar (Var (id ^ (string_of_int i))) :: (aux (i+1))
   in aux 1
 
 let rec expand_intn_list (id: ident) (n: int) : ident list =

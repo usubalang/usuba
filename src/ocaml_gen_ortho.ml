@@ -101,7 +101,7 @@ module Gen_entry = struct
         ^ (indent_small 13) ^ "incr cpt;\n" ^ (indent_small 13) ^ "Some ret\n"
         ^ (indent 1) ^ "else\n" ^ (indent_small 3) ^ "try\n"
         ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho))
-        ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ "_ ("
+        ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ "' ("
         ^ (join "," (List.map fst ortho)) ^ ") in\n"
         ^ right
         ^ (indent 2) ^ "cpt := 0;\n"
@@ -166,9 +166,9 @@ let const_to_str_ml = function
   | x -> raise (Error (format_exn __LOC__
                                   ((string_of_int x) ^ " isn't a boolean")))
 
-let left_asgn_to_str_ml = function
-  | Ident x -> ident_to_str_ml x
-  | Dotted(Ident x,i) -> (ident_to_str_ml x)  ^ (string_of_int i)
+let var_to_str_ml = function
+  | Var x -> ident_to_str_ml x
+  | Field(Var x,Const_e i) -> (ident_to_str_ml x)  ^ (string_of_int i)
   | _ -> raise (Invalid_AST "non-conform AST")
                                   
 let constructor_to_str_ml = function
@@ -179,8 +179,8 @@ let constructor_to_str_ml = function
 let rec expr_to_str_ml tab e =
   match e with
   | Const c -> const_to_str_ml c
-  | Var v   -> ident_to_str_ml v
-  | Field(Var x,i) -> (ident_to_str_ml x) ^ (string_of_int i)
+  | ExpVar(Var v) -> ident_to_str_ml v
+  | ExpVar(Field(Var x,Const_e i)) -> (ident_to_str_ml x) ^ (string_of_int i)
   | Tuple t -> "(" ^ (join "," (List.map (expr_to_str_ml tab) t)) ^ ")"
   | Log (op,a,b) -> "(" ^ (expr_to_str_ml tab a) ^  ")" ^
                       ( match op with
@@ -252,7 +252,7 @@ let expand_init_fby size f =
 let fby_to_str_ml tab p ei ef f =
   let len = List.length p in
   let ref_fun = generate_ref_fun len in
-  let p' = List.map (fun x -> (left_asgn_to_str_ml x) ^ "'") p in
+  let p' = List.map (fun x -> (var_to_str_ml x) ^ "'") p in
   let init = (match ei with
               | Const c -> const_to_tuple c (List.length p)
               | _ -> expr_to_str_ml tab ei) in
@@ -260,20 +260,20 @@ let fby_to_str_ml tab p ei ef f =
   let prologue = "let (" ^ (join "," p') ^ ") = " ^ ref_fun ^ " (" ^ expand ^ "(" 
                  ^ init ^ ")) in\n" in
   prologue_fun := (!prologue_fun) @ [prologue];
-  let p'' = List.map (fun x -> (left_asgn_to_str_ml x) ^ "''") p in
+  let p'' = List.map (fun x -> (var_to_str_ml x) ^ "''") p in
   (indent tab) ^
-    "let (" ^ (join "," (List.map left_asgn_to_str_ml p)) ^ ") = ("
-    ^ (join "," (List.map (fun x -> let v = left_asgn_to_str_ml x in
+    "let (" ^ (join "," (List.map var_to_str_ml p)) ^ ") = ("
+    ^ (join "," (List.map (fun x -> let v = var_to_str_ml x in
                                               "!" ^ v ^ "'") p)) ^ ") in\n"
     ^ "let (" ^ (join "," p'') ^ ") = (" ^ (expr_to_str_ml tab ef) ^ ") in\n"
     ^ (join "\n" (List.map (fun x ->
-                            let v = left_asgn_to_str_ml x in
+                            let v = var_to_str_ml x in
                                       (indent tab) ^ (v ^ "' := " ^ v ^ "'';")) p))
         
 let pat_to_str_ml tab pat =
   match pat with
-  | e::[] -> left_asgn_to_str_ml e
-  | l -> "(" ^ (join "," (List.map left_asgn_to_str_ml l)) ^ ")"
+  | e::[] -> var_to_str_ml e
+  | l -> "(" ^ (join "," (List.map var_to_str_ml l)) ^ ")"
 
 let deq_to_str_ml tab l =
   join "\n" (List.map (function

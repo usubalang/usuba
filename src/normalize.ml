@@ -29,7 +29,7 @@ end
 
 (* Split tuples into atomic operations, if possible *)
 module Split_tuples = struct
-  let real_split_tuple (p: pat) (l: expr list) : deq list =
+  let real_split_tuple (p: var list) (l: expr list) : deq list =
     List.map2 (fun l r -> Norec([l],r)) p l
                
   let split_tuples_deq (body: deq list) : deq list =
@@ -62,13 +62,13 @@ let rec expand_intn (id: ident) (n: int) : ident list =
 let expand_intn_typed (id: ident) (n: int) (ck: clock) =
   List.map (fun x -> (x,Bool,ck)) (expand_intn id n)
          
-let expand_intn_pat (id: ident) (n: int) : left_asgn list =
-  List.map (fun x -> Ident x) (expand_intn id n)
+let expand_intn_pat (id: ident) (n: int) : var list =
+  List.map (fun x -> Var x) (expand_intn id n)
          
 let rec expand_intn_expr (id: ident) (n: int option) : expr =
   match n with
-  | Some n -> Tuple(List.map (fun x -> Var x) (expand_intn id n))
-  | None -> Var id
+  | Some n -> Tuple(List.map (fun x -> ExpVar(Var x)) (expand_intn id n))
+  | None -> ExpVar(Var id)
 
 
 let gen_tmp =
@@ -79,7 +79,7 @@ let gen_tmp =
 (* Note that when this function is called, Var have already been normalized *)
 let get_expr_size env_fun l =
   match l with
-  | Const _ | Var _ | Log _ | Not _ -> 1
+  | Const _ | ExpVar(Var _) | Log _ | Not _ | Shift _ -> 1
   | Tuple l -> List.length l
   | Fun(f,_) -> (match env_fetch env_fun f with
                  | Some (_,v) -> v
@@ -99,12 +99,11 @@ let rec flatten_expr (l: expr list) : expr list =
 (* A primitive expression doesn't need to be rewritten in Tuples or fun calls *)
 let rec is_primitive e =
   match e with
-  | Const _ | Var _  -> true
+  | Const _ | ExpVar(Var _)  -> true
   | Tuple l -> List.fold_left (&&) true (List.map is_primitive l)
   | _ -> false
 
 (* ************************************************************************** *)
-                
 
 let rec remove_call env_var env_fun e : deq list * expr =
   let (deq,e') = norm_expr env_var env_fun e in
@@ -113,9 +112,9 @@ let rec remove_call env_var env_fun e : deq list * expr =
     deq, e'
   else 
     let tmp = expand_intn (gen_tmp ()) (get_expr_size env_fun e') in
-    let left = List.map (fun x -> Ident x) tmp in
+    let left = List.map (fun x -> Var x) tmp in
 
-    deq @ [Norec(left,e')], Tuple (List.map (fun x -> Var x) tmp)
+    deq @ [Norec(left,e')], Tuple (List.map (fun x -> ExpVar(Var x)) tmp)
 
 and remove_calls env_var env_fun l : deq list * expr list =
   let pre_deqs = ref [] in
@@ -129,10 +128,10 @@ and remove_calls env_var env_fun l : deq list * expr list =
                 [ e' ]
               else
                 let tmp = expand_intn (gen_tmp ()) (get_expr_size env_fun e') in
-                let left = List.map (fun x -> Ident x) tmp in
+                let left = List.map (fun x -> Var x) tmp in
                 pre_deqs := !pre_deqs @ [Norec(left,e')];
                 
-                List.map (fun x -> Var x) tmp)
+                List.map (fun x -> ExpVar(Var x)) tmp)
              l in
   !pre_deqs, flatten_expr (List.flatten l')
     
@@ -142,10 +141,10 @@ and norm_expr env_var env_fun (e: expr) : deq list * expr =
   let normalized_e =
     match e with
     | Const c -> Const c
-    | Var id  -> ( match env_fetch env_var id with
-                   | Some n when n > 1 -> expand_intn_expr id (env_fetch env_var id)
-                   | _ -> Var id )
-    | Field(Var id, n) -> Var (id ^ (string_of_int n))
+    | ExpVar(Var id)  -> ( match env_fetch env_var id with
+                           | Some n when n > 1 -> expand_intn_expr id (env_fetch env_var id)
+                           | _ -> e )
+    | ExpVar(Field(Var id, Const_e n)) -> ExpVar(Var (id ^ (string_of_int n)))
     | Tuple (l) ->
        let (deqs,l') = remove_calls env_var env_fun l in
        pre_deqs := deqs;
@@ -171,16 +170,16 @@ and norm_expr env_var env_fun (e: expr) : deq list * expr =
                                           "Invalid expr")) in
   !pre_deqs, normalized_e
 
-let norm_pat env_var (pat: pat) : pat =
+let norm_pat env_var (pat: var list) : var list =
   List.flatten
     (List.map
        (fun x -> match x with
-                 | Ident id -> (match env_fetch env_var id with
+                 | Var id -> (match env_fetch env_var id with
                                 | Some size ->
                                    if size > 1 then expand_intn_pat id size
-                                   else [ Ident id ]
-                                | None -> [ Ident id ]) (* undeclared bool *)
-                 | Dotted(Ident id,i) -> [Ident (id ^ (string_of_int i)) ]
+                                   else [ Var id ]
+                                | None -> [ Var id ]) (* undeclared bool *)
+                 | Field(Var id,Const_e i) -> [Var (id ^ (string_of_int i)) ]
                  | _ -> raise (Invalid_AST
                                  (format_exn __LOC__
                                              "Illegal array access"))) pat)
@@ -224,7 +223,7 @@ let norm_def env_fun (def: def) : def =
                                         "Illegal non-Single def"))
 
 let print title body =
-  if true then
+  if false then
     begin
       print_endline title;
       if false then print_endline (Usuba_print.prog_to_str body)

@@ -67,6 +67,7 @@ rule token = parse
 | ":"    { TOK_COLON     }
 | ";"    { TOK_SEMICOLON }
 | "|"    { TOK_PIPE      }
+| ".."   { TOK_RANGE     }
 | "."    { TOK_DOT       }
 | "&"    { TOK_AND       }
 | "~"    { TOK_TILDE     }

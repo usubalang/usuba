@@ -2,34 +2,47 @@
 open Usuba_AST
 open Utils
 
-let log_op_to_string = function
+let log_op_to_str = function
   | And -> "&"
   | Or  -> "|"
   | Xor -> "^"
              
-let arith_op_to_string = function
+let arith_op_to_str = function
   | Add -> "+"
   | Mul  -> "*"
   | Sub -> "-"
   | Div -> "/"
   | Mod -> "%"
 
+let shift_op_to_str = function
+  | Lshift -> "<<"
+  | Rshift -> ">>"
+  | Lrotate -> "<<<"
+  | Rrotate -> ">>>"
+
 let rec arith_to_str = function
   | Const_e i -> string_of_int i
   | Var_e v   -> v
-  | Op_e(op,x,y) -> "(" ^ (arith_to_str x) ^ " " ^ (arith_op_to_string op) ^
-                    " " ^ (arith_to_str y) ^ ")"
+  | Op_e(op,x,y) -> "(" ^ (arith_to_str x) ^ " " ^ (arith_op_to_str op) ^
+                      " " ^ (arith_to_str y) ^ ")"
+
+let rec var_to_str = function
+  | Var v -> v
+  | Field(v,e) -> (var_to_str v) ^ "." ^ (arith_to_str e)
+  | Index(v,e) -> v ^ "[" ^ (arith_to_str e) ^ "]"
+  | Range(v,ei,ef) -> v ^ "[" ^ (arith_to_str ei) ^ " .. "
+                      ^ (arith_to_str ef) ^ "]"
          
 let rec expr_to_str_types = function
   | Const c -> "Const: " ^ (string_of_int c)
-  | Var v   -> "Var: " ^ v
-  | Access(id,e) -> "Access: " ^ id ^ " " ^ (arith_to_str e)
-  | Field(e,i) -> "Field: (" ^ (expr_to_str_types e) ^ ", " ^ (string_of_int i) ^ ")"
+  | ExpVar v -> var_to_str v
   | Tuple t -> "Tuple: (" ^ (join "," (List.map expr_to_str_types t)) ^ ")"
-  | Log(o,x,y) -> "Log: " ^ "(" ^ (expr_to_str_types x) ^ (log_op_to_string o)
+  | Log(o,x,y) -> "Log: " ^ "(" ^ (expr_to_str_types x) ^ (log_op_to_str o)
                   ^ (expr_to_str_types y) ^ ")"
-  | Arith(o,x,y) -> "Arith: " ^ "(" ^ (expr_to_str_types x) ^ (arith_op_to_string o)
+  | Arith(o,x,y) -> "Arith: " ^ "(" ^ (expr_to_str_types x) ^ (arith_op_to_str o)
                     ^ (expr_to_str_types y) ^ ")"
+  | Shift(o,x,y) -> "Shift: " ^ "(" ^ (expr_to_str_types x) ^ (shift_op_to_str o)
+                    ^ (arith_to_str y) ^ ")"
   | Not e -> "Not: ~" ^ (expr_to_str_types e)
   | Fun(f,l) -> "Fun: " ^ f ^ "(" ^ (join "," (List.map expr_to_str_types l)) ^ ")"
   | Fun_v(f,e,l) -> "Fun_v: " ^ f ^ "[" ^ (arith_to_str e) ^ "]"
@@ -39,14 +52,14 @@ let rec expr_to_str_types = function
 
 let rec expr_to_str = function
   | Const c -> (string_of_int c)
-  | Var v   -> v
-  | Access(id,e) -> id ^ "[" ^ (arith_to_str e) ^ "]"
-  | Field(e,i) -> (expr_to_str e) ^ "." ^ (string_of_int i)
+  | ExpVar v   -> var_to_str v
   | Tuple t -> "(" ^ (join "," (List.map expr_to_str t)) ^ ")"
-  | Log(o,x,y) -> "(" ^ (expr_to_str x) ^ (log_op_to_string o)
+  | Log(o,x,y) -> "(" ^ (expr_to_str x) ^ (log_op_to_str o)
                   ^ (expr_to_str y) ^ ")"
-  | Arith(o,x,y) -> "(" ^ (expr_to_str x) ^ (arith_op_to_string o)
+  | Arith(o,x,y) -> "(" ^ (expr_to_str x) ^ (arith_op_to_str o)
                   ^ (expr_to_str y) ^ ")"
+  | Shift(o,x,y) -> "Shift: " ^ "(" ^ (expr_to_str_types x) ^ " "
+                    ^ (shift_op_to_str o) ^ " " ^ (arith_to_str y) ^ ")"
   | Not e -> "!(" ^ (expr_to_str e) ^ ")"
   | Fun(f,l) -> f ^ "(" ^ (join "," (List.map expr_to_str l)) ^ ")"
   | Fun_v(f,e,l) -> f ^ "[" ^ (arith_to_str e) ^ "]"
@@ -54,12 +67,8 @@ let rec expr_to_str = function
   | Fby(ei,ef,id) -> (expr_to_str ei) ^ " fby " ^ (expr_to_str ef)
   | Nop -> "Nop"
 
-let rec pat_to_str pat =
-  let rec left_asgn_to_str = function
-    | Ident id -> id
-    | Dotted (l,i) -> (left_asgn_to_str l) ^ "." ^ (string_of_int i)
-    | Index(id,e) -> id ^ "[" ^ (arith_to_str e) ^ "]" in
-  "(" ^ (join "," (List.map left_asgn_to_str pat)) ^ ")"
+let pat_to_str pat =
+  "(" ^ (join "," (List.map var_to_str pat)) ^ ")"
 
 let rec typ_to_str typ =
   match typ with
