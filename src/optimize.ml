@@ -5,25 +5,32 @@ let fix = ref false
        
 module Constant_folding = struct
 
-  let fold_deq ((p,e):pat*expr) : pat*expr =
-    p,(match e with
-       | Log(And,Const 1,x) -> fix := false; x
-       | Log(And,x,Const 1) -> fix := false; x
-       | Log(And,Const 0,_) -> fix := false; Const 0
-       | Log(And,_,Const 0) -> fix := false; Const 0
-       | Log(Or,Const 1,_) -> fix := false; Const 1
-       | Log(Or,_,Const 1) -> fix := false; Const 1
-       | Log(Or,Const 0,x) -> fix := false; x
-       | Log(Or,x,Const 0) -> fix := false; x
-       | Log(Xor,Const 0,Const 0) -> fix := false; Const 0
-       | Log(Xor,Const 0,Const 1) -> fix := false; Const 1
-       | Log(Xor,Const 1,Const 0) -> fix := false; Const 1
-       | Log(Xor,Const 1,Const 1) -> fix := false; Const 0
-       (* | Log(Xor,Const 1,x) -> fix := false; Not(x) *)
-       (* | Log(Xor,x,Const 1) -> fix := false; Not(x) *)
-       | Log(Xor,Const 0,x) -> fix := false; x
-       | Log(Xor,x,Const 0) -> fix := false; x
-       | _ -> e)
+  let fold_norec (p:var list) (e:expr) : deq =
+    Norec(
+        p,(match e with
+           | Log(And,Const 1,x) -> fix := false; x
+           | Log(And,x,Const 1) -> fix := false; x
+           | Log(And,Const 0,_) -> fix := false; Const 0
+           | Log(And,_,Const 0) -> fix := false; Const 0
+           | Log(Or,Const 1,_) -> fix := false; Const 1
+           | Log(Or,_,Const 1) -> fix := false; Const 1
+           | Log(Or,Const 0,x) -> fix := false; x
+           | Log(Or,x,Const 0) -> fix := false; x
+           | Log(Xor,Const 0,Const 0) -> fix := false; Const 0
+           | Log(Xor,Const 0,Const 1) -> fix := false; Const 1
+           | Log(Xor,Const 1,Const 0) -> fix := false; Const 1
+           | Log(Xor,Const 1,Const 1) -> fix := false; Const 0
+           (* | Log(Xor,Const 1,x) -> fix := false; Not(x) *)
+           (* | Log(Xor,x,Const 1) -> fix := false; Not(x) *)
+           | Log(Xor,Const 0,x) -> fix := false; x
+           | Log(Xor,x,Const 0) -> fix := false; x
+           | _ -> e))
+
+  let fold_deq (deq:deq) : deq =
+    match deq with
+    | Norec(p,e) -> fold_norec p e
+    | Rec _ -> raise (Invalid_AST (format_exn __LOC__
+                                            "Illegal REC"))
                               
   let fold_def (def:def) : def =
     match def with
@@ -41,14 +48,13 @@ module CSE = struct
   
   let is_dummy_assign (e:expr) : bool =
     match e with
-    | Var _ | Const _ -> true
+    | ExpVar(Var _) | Const _ -> true
     | _ -> false
 
-  let pat_to_expr (pat:pat) : expr =
+  let pat_to_expr (pat:var list) : expr =
     match pat with
-    | (Ident v)::[] -> Var v
-    | _ -> Tuple (List.map (function Ident id -> Var id
-                                   | _ -> unreached () ) pat)
+    | x::[] -> ExpVar x
+    | _ -> Tuple (List.map (function x -> ExpVar x) pat)
 
   let rec cse_expr env (e: expr) : expr =
     match env_fetch env e with
@@ -60,7 +66,7 @@ module CSE = struct
               | Fun(f,l) -> Fun(f,List.map (cse_expr env) l)
               | _ -> e
 
-  let cse_single_deq env ((p,e):pat*expr): (pat*expr) list =
+  let cse_single_deq env ((p,e):(var list)*expr): ((var list)*expr) list =
     match env_fetch env e with
     | Some x -> env_add env (pat_to_expr p) x;
                 fix := false;
@@ -78,34 +84,28 @@ module CSE = struct
                   | None -> env_add env e' (pat_to_expr p);
                             [p,e'])
 
-  let dont_opti (p:pat) (env:(left_asgn, int) Hashtbl.t) : bool =
+  let dont_opti (p:var list) (env:(var, int) Hashtbl.t) : bool =
     List.length (List.filter (fun x -> match env_fetch env x with
                                        | Some _ -> true
                                        | None -> false) p) > 0
-
-  (* let reset_p (p:pat) env : unit = *)
-  (*   let p_expr = pat_to_expr p in *)
-  (*   Hashtbl.remove env p_expr; *)
-  (*   let _ = match p_expr with *)
-  (*     | Tuple l -> List.map (Hashtbl.remove env) l *)
-  (*     | _ -> [] in *)
-  (*   () *)
-                                                               
-  let p_to_pat (p:p) : pat =
-    List.map (fun (x,_,_) -> Ident x) p
+                                                  
+  let p_to_pat (p:p) : var list =
+    List.map (fun (x,_,_) -> Var x) p
              
-  let cse_deq (deq: deq) no_opti : deq =
+  let cse_deq (deq: deq list) no_opti : deq list =
     let env = Hashtbl.create 40 in
     let no_opt_env = Hashtbl.create 20 in
-    let _ = List.map (fun x -> env_add no_opt_env x 1) (p_to_pat no_opti) in
-    List.flatten (List.map
-                    (fun (p,e) -> if dont_opti p no_opt_env then
-                                    [(p,cse_expr env e)]
-                                  else
-                                    ((* reset_p p env; *)
-                                    let r = cse_single_deq env (p,e) in
-                                    (* reset_p p env; *)
-                                    r)) deq)
+    let () = List.iter (fun x -> env_add no_opt_env x 1) (p_to_pat no_opti) in
+    List.flatten
+      (List.map
+         (function
+           | Norec (p,e) ->
+              if dont_opti p no_opt_env then
+                [Norec(p,cse_expr env e)]
+              else
+                ( let r = cse_single_deq env (p,e) in
+                  List.map (fun (p,e) -> Norec(p,e)) r)
+           | Rec _ -> raise (Invalid_AST (format_exn __LOC__ "Invalid Rec"))) deq)
                  
 
   let cse_def (def: def) : def =

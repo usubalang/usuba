@@ -57,7 +57,7 @@ module Gen_entry = struct
                                                                         "Arrays should have been cleaned by now")) in
                           ( List.fold_left (fun x y -> "(Int64.logor " ^ x ^ " " ^ y ^ ")")
                                            "Int64.zero" (aux size 1) )) p_out in
-    let ret = join "," (List.map (fun (id,_,_) -> id^"'") p_out) in
+    let ret = join "," (List.map (fun (id,_,_) -> id) p_out) in
     (join "," left,
      "let (" ^ ret ^ ") = " ^ (join "," right) ^ "\n"
      ^ (indent 2) ^ "in Some (" ^ ret ^ ")")    
@@ -192,7 +192,7 @@ let const_to_tuple c size =
 let fby_to_str_ml tab p ei ef =
   let len = List.length p in
   let ref_fun = generate_ref_fun len in
-  let p' = List.map (fun x -> (var_to_str_ml x) ^ "'") p in
+  let p' = List.map (fun x -> var_to_str_ml x) p in
   let init = (match ei with
               | Const c -> const_to_tuple c (List.length p)
               | _ -> expr_to_str_ml tab ei) in
@@ -203,7 +203,7 @@ let fby_to_str_ml tab p ei ef =
   (indent tab) ^
     "let (" ^ (join "," (List.map var_to_str_ml p)) ^ ") = ("
     ^ (join "," (List.map (fun x -> let v = var_to_str_ml x in
-                                    "!" ^ v ^ "'") p)) ^ ") in\n"
+                                    "!" ^ v) p)) ^ ") in\n"
     ^ "let (" ^ (join "," p'') ^ ") = (" ^ (expr_to_str_ml tab ef) ^ ") in\n"
     ^ (join "\n" (List.map (fun x ->
                             let v = var_to_str_ml x in

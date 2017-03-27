@@ -43,6 +43,8 @@
 %token TOK_RROTATE
 %token TOK_RSHIFT
 %token TOK_RANGE
+%token TOK_LT
+%token TOK_GT
 
 %token TOK_AND
 %token TOK_TILDE
@@ -130,7 +132,7 @@ exp:
 out_exp:
   | e=exp { e }
   | init=exp TOK_FBY follow=exp { Fby(init,follow,None) }
-  | init=exp TOK_LBRACKET f=TOK_id TOK_RBRACKET TOK_FBY follow=exp
+  | init=exp TOK_LT f=TOK_id TOK_GT TOK_FBY follow=exp
     { Fby(init,follow,Some f) }
                                      
 explist: l=separated_nonempty_list(TOK_COMMA,exp) { l }

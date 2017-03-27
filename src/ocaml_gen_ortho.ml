@@ -252,7 +252,7 @@ let expand_init_fby size f =
 let fby_to_str_ml tab p ei ef f =
   let len = List.length p in
   let ref_fun = generate_ref_fun len in
-  let p' = List.map (fun x -> (var_to_str_ml x) ^ "'") p in
+  let p' = List.map (fun x -> var_to_str_ml x) p in
   let init = (match ei with
               | Const c -> const_to_tuple c (List.length p)
               | _ -> expr_to_str_ml tab ei) in
@@ -264,7 +264,7 @@ let fby_to_str_ml tab p ei ef f =
   (indent tab) ^
     "let (" ^ (join "," (List.map var_to_str_ml p)) ^ ") = ("
     ^ (join "," (List.map (fun x -> let v = var_to_str_ml x in
-                                              "!" ^ v ^ "'") p)) ^ ") in\n"
+                                              "!" ^ v) p)) ^ ") in\n"
     ^ "let (" ^ (join "," p'') ^ ") = (" ^ (expr_to_str_ml tab ef) ^ ") in\n"
     ^ (join "\n" (List.map (fun x ->
                             let v = var_to_str_ml x in

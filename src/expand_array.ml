@@ -1,3 +1,17 @@
+(***************************************************************************** )
+                              expand_array.ml                                 
+
+   This module has several main functionalities:
+    - Convert arrays of nodes into multiple nodes. 
+    - Convert forall into a list of regular instructions.
+    - Convert access to arrays (variables) into access to variables
+      (for instance, a[0] will become a'0)
+    
+    After this module has ran, there souldn't be any "Index" variable left, 
+    nor any "Multiple" node.
+
+( *****************************************************************************)
+
 open Usuba_AST
 open Utils
        
@@ -39,7 +53,7 @@ let rec rewrite_expr loc_env env_var (i:int) (e:expr) : expr =
   | Shift(op,e,n) -> Shift(op,rec_call e, Const_e(eval_arith loc_env n))
   | Fun(f,l) -> Fun(f,List.map rec_call l)
   | Fun_v(f,e,l) -> let idx = eval_arith loc_env e in
-                    let f' = f ^ "'" ^ (string_of_int idx) in
+                    let f' = f ^ (string_of_int idx) in
                     rec_call (Fun(f',l))
   | Fby _ -> raise (Not_implemented (format_exn __LOC__ "FBY"))
   | Nop -> Nop
@@ -85,13 +99,13 @@ let rec rewrite_p p =
 
 let make_env p_in p_out vars =
   let env = Hashtbl.create 10 in
-  let f = List.map (fun (id,typ,ck) ->
+  let f = List.iter (fun (id,typ,ck) ->
                match typ with
                | Array(in_typ,Const_e size) -> env_add env id size
                | _ -> ()) in
-  let _ = f p_in in
-  let _ = f p_out in
-  let _ = f vars in
+  let () = f p_in in
+  let () = f p_out in
+  let () = f vars in
   env
   
       
@@ -111,7 +125,7 @@ let expand_array (prog: prog) : prog =
       List.map (fun x -> match x with
                          | Multiple(id,p_in,p_out,nodes) ->
                             List.mapi (fun i (vars,body) ->
-                                       Single(id ^ "'" ^ (string_of_int i),
+                                       Single(id ^ (string_of_int i),
                                               p_in,p_out,vars,body)) nodes
                          | _ -> [ x ] ) prog in
   List.map (fun def -> match def with

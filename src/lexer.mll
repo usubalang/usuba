@@ -62,6 +62,8 @@ rule token = parse
 | "<<"   { TOK_LSHIFT    }
 | ">>>"  { TOK_RROTATE   }
 | ">>"   { TOK_RSHIFT    }
+| "<"    { TOK_LT        }
+| ">"    { TOK_GT        }
 | ","    { TOK_COMMA     }
 | "::"   { TOK_TWO_COLON }
 | ":"    { TOK_COLON     }

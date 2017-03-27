@@ -1,3 +1,18 @@
+(***************************************************************************** )
+                              convert_tables.ml                                 
+
+   This module converts lookup tables into circuits. In Usuba, this means 
+   converting "table" into "node". 
+   This is done using Binary Decision Diagrams (BDD). This is hardly optimized
+   for now, and a lot of useless redondancy is present. In a near future, we
+   should improve this.
+    
+    After this module has ran, there souldn't be any "Table" nor "MultipleTable"
+    left.
+
+( *****************************************************************************)
+
+
 open Usuba_AST
 open Utils
 
@@ -67,7 +82,7 @@ let rec rewrite_def (def: def) : def list =
   | MultipleTable(id,p_in,p_out,l) ->
      let cpt = ref (-1) in
      (List.map (fun x -> incr cpt;
-                         rewrite_table (id ^ "'" ^ (string_of_int !cpt)) p_in p_out x) l)
+                         rewrite_table (id ^ (string_of_int !cpt)) p_in p_out x) l)
   | _ -> [ def ]
             
                        
