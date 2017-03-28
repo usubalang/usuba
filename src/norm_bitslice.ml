@@ -77,9 +77,10 @@ let gen_tmp =
             "_tmp" ^ (string_of_int !cpt) ^ "_"
 
 (* Note that when this function is called, Var have already been normalized *)
-let get_expr_size env_fun l =
+let rec get_expr_size env_fun l =
   match l with
-  | Const _ | ExpVar(Var _) | Log _ | Not _ | Shift _ -> 1
+  | Const _ | ExpVar(Var _) | Log _ | Not _ -> 1
+  | Shift(_,e,_) -> get_expr_size env_fun e
   | Tuple l -> List.length l
   | Fun(f,_) -> (match env_fetch env_fun f with
                  | Some (_,v) -> v
@@ -162,6 +163,10 @@ and norm_expr env_fun (e: expr) : deq list * expr =
        ( match e' with
          | Tuple l -> Tuple(List.map (fun x -> Not x) l)
          | _ -> Not e' )
+    | Shift(op,e,n) ->
+       let (deqs,e') = remove_call env_fun e in
+       pre_deqs := deqs;
+       Shift(op,e',n)
     | _ -> raise (Invalid_AST (format_exn __LOC__
                                           "Invalid expr")) in
   !pre_deqs, normalized_e
@@ -211,7 +216,11 @@ let norm_prog (prog: prog)  =
   let tuples_simpl = Simplify_tuples.simplify_tuples tuples_splitted in
   print "TUPLES SIMPLIFIED:" tuples_simpl;
 
+  (* Apply shifts *)
+  let shifts_done = Bitslice_shift.expand_shifts tuples_simpl in
+  print "SHIFTS EXPANDED:" tuples_simpl;
+
   (* Optimize, cf optimize.ml *)
-  let optimized = tuples_simpl in (* Optimize.opt_prog tuples_simpl in *)
+  let optimized = shifts_done in (* Optimize.opt_prog shifts_done in *)
   print "OPTIMIZED:" optimized;
   optimized
