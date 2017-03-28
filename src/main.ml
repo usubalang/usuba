@@ -51,6 +51,7 @@ let print_ortho_ml (file_in: string) (prog: Usuba_AST.prog) =
             
 
 let main () =
+  Printexc.record_backtrace true;
   let file_in = Sys.argv.(1) in
   let prog = parse_file file_in in
 
@@ -64,6 +65,6 @@ let main () =
   
   print_naive_ml file_in prog;
   print_ortho_ml file_in prog
-  
+                 
 
 let () = main ()

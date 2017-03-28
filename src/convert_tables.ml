@@ -29,8 +29,8 @@ let rec rewrite_p (p: p) =
         match typ with
         | Bool  -> [ Var id ]
         | Int x -> expand_intn id x
-        | Nat -> raise (Invalid_AST (format_exn __LOC__ ""))
-        | Array _ -> raise (Invalid_AST (format_exn __LOC__ ""))) p
+        | Nat -> raise (Invalid_AST "Nat")
+        | Array _ -> raise (Invalid_AST "Array")) p
 
 let get_bits (l:int list) (i:int) : int list =
   List.rev @@ List.map (fun x -> x lsr i land 1) l

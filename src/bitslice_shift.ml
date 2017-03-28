@@ -32,15 +32,15 @@ let do_shift op l n =
                       
 let rec shift op e n =
   match e with
-  | Const e -> raise (Not_implemented (format_exn __LOC__ "Shift Const"))
-  | ExpVar(Var id) -> raise (Not_implemented (format_exn __LOC__ "Shift Var"))
+  | Const e -> raise (Not_implemented "Shift Const")
+  | ExpVar(Var id) -> raise (Not_implemented "Shift Var")
   | Tuple l -> Tuple(do_shift op l n)
   | Not(e) -> Not(shift op e n)
   | Shift(op',e',Const_e n') -> let t = shift op' e' n' in
                         ( match t with
                           | Tuple l -> Tuple(do_shift op l n)
                           | _ -> unreached () )
-  | _ -> raise (Error (format_exn __LOC__ "I can't shift this"))
+  | _ -> raise (Error "I can't shift this")
 
 let rec shift_expr (e:expr) : expr =
   match e with

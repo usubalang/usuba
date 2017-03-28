@@ -29,15 +29,13 @@ module Constant_folding = struct
   let fold_deq (deq:deq) : deq =
     match deq with
     | Norec(p,e) -> fold_norec p e
-    | Rec _ -> raise (Invalid_AST (format_exn __LOC__
-                                            "Illegal REC"))
+    | Rec _ -> raise (Invalid_AST "Illegal REC")
                               
   let fold_def (def:def) : def =
     match def with
     | Single(name,p_in,p_out,p_var,body) ->
        Single(name, p_in, p_out, p_var, List.map fold_deq body)
-    | _ -> raise (Invalid_AST (format_exn __LOC__
-                                          "Illegal non-Single def"))
+    | _ -> def
                  
   let fold_prog (prog:prog) : prog =
     List.map fold_def prog
@@ -105,15 +103,14 @@ module CSE = struct
               else
                 ( let r = cse_single_deq env (p,e) in
                   List.map (fun (p,e) -> Norec(p,e)) r)
-           | Rec _ -> raise (Invalid_AST (format_exn __LOC__ "Invalid Rec"))) deq)
+           | Rec _ -> raise (Invalid_AST "Invalid Rec")) deq)
                  
 
   let cse_def (def: def) : def =
     match def with
     | Single(name,p_in,p_out,p_var,body) ->
        Single(name, p_in, p_out, p_var, cse_deq body p_out)
-    | _ -> raise (Invalid_AST (format_exn __LOC__
-                                          "Illegal non-Single def"))
+    | _ -> def
 
   let cse_prog (prog:prog) : prog =
     List.map cse_def prog

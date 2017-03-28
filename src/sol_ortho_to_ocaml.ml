@@ -22,8 +22,7 @@ let s_to_str_ml (s: s) : string =
   | Skip -> ""
   | Step(ll,o,lr) -> "let (" ^ (join "," ll) ^ ") = " ^ o ^ " "
                      ^ (join " " (List.map c_to_str lr)) ^ " in"
-  | _ -> raise (Not_implemented (format_exn __LOC__
-                                            "Can't convert state_asgn or reset to ocaml"))
+  | _ -> raise (Not_implemented "Can't convert state_asgn or reset to ocaml")
        
 let machine_to_str_ml ((id,memory,instances,reset,p_in,p_out,vars,body):machine)
     : string =

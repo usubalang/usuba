@@ -55,7 +55,7 @@ let rec rewrite_expr loc_env env_var (i:int) (e:expr) : expr =
   | Fun_v(f,e,l) -> let idx = eval_arith loc_env e in
                     let f' = f ^ (string_of_int idx) in
                     rec_call (Fun(f',l))
-  | Fby _ -> raise (Not_implemented (format_exn __LOC__ "FBY"))
+  | Fby _ -> raise (Not_implemented "FBY")
   | Nop -> Nop
              
 
@@ -95,7 +95,7 @@ let rec rewrite_p p =
         | Nat -> [ (id, Nat, ck) ]
         | Array (typ_in, Const_e size) ->
            List.map (fun x -> (x,typ_in,ck)) (gen_list_0 id size)
-        | _ -> raise (Error (format_exn __LOC__ "Invalid array size"))) p
+        | _ -> raise (Error "Invalid array size")) p
 
 let make_env p_in p_out vars =
   let env = Hashtbl.create 10 in

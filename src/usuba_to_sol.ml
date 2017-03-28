@@ -34,8 +34,7 @@ let rec convert_expr (expr: Usuba_AST.expr) : c =
   | Not e -> Not (convert_expr e)
   | Arith(o,x,y) -> Arith(convert_arith_op o,convert_expr x,convert_expr y)
   | _ -> print_endline (Usuba_print.expr_to_str expr);
-         raise (Error (format_exn __LOC__
-                                  "Usuba AST isn't normalized."))
+         raise (Error "Usuba AST isn't normalized.")
            
 let convert_body (body: Usuba_AST.deq list) : s list * j  * m =
   let funs = ref [] in
@@ -58,7 +57,7 @@ let convert_body (body: Usuba_AST.deq list) : s list * j  * m =
                                   funs := (id,f) :: !funs;
                                   Step(left,id,List.map convert_expr l)
                     | _ -> unreached ())
-               | Rec _ -> raise (Error (format_exn __LOC__ "REC"))) body in
+               | Rec _ -> raise (Error "REC")) body in
   (body, List.rev !funs, [])
            
 let convert_node f p_in p_out vars body : machine =

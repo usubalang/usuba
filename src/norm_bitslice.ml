@@ -20,7 +20,7 @@ module Simplify_tuples = struct
        Single(name, p_in, p_out, p_var,
               List.map (function
                          | Norec(p,e) -> Norec(p,simpl_tuple e)
-                         | Rec _ -> raise (Error (format_exn __LOC__ "REC"))) body)
+                         | Rec _ -> raise (Error "REC")) body)
     | _ -> unreached ()
                      
   let simplify_tuples (p: prog) : prog =
@@ -39,7 +39,7 @@ module Split_tuples = struct
                    | Norec (p,e) -> (match e with
                                      | Tuple l -> real_split_tuple p l
                                      | _ -> [ x ])
-                   | Rec _ -> raise (Error (format_exn __LOC__ "REC"))) body)
+                   | Rec _ -> raise (Error "REC")) body)
 
   let split_tuples_def (def: def) : def =
     match def with
@@ -85,9 +85,8 @@ let rec get_expr_size env_fun l =
   | Fun(f,_) -> (match env_fetch env_fun f with
                  | Some (_,v) -> v
                  | None -> if contains f "print" then 1
-                           else raise (Error (format_exn __LOC__
-                                                         "Undeclared " ^ f)))
-  | _ -> raise (Error (format_exn __LOC__ "Not implemented yet"))
+                           else raise (Error ("Undeclared " ^ f)))
+  | _ -> raise (Error "Not implemented yet")
 
 (* flatten_expr removes nested tuples *)
 let rec flatten_expr (l: expr list) : expr list =
@@ -167,8 +166,7 @@ and norm_expr env_fun (e: expr) : deq list * expr =
        let (deqs,e') = remove_call env_fun e in
        pre_deqs := deqs;
        Shift(op,e',n)
-    | _ -> raise (Invalid_AST (format_exn __LOC__
-                                          "Invalid expr")) in
+    | _ -> raise (Invalid_AST "Invalid expr") in
   !pre_deqs, normalized_e
     
 let norm_deq env_fun (body: deq list) : deq list =
@@ -178,15 +176,14 @@ let norm_deq env_fun (body: deq list) : deq list =
          | Norec (p,e) ->
             let (expr_l, e') = norm_expr env_fun e in
             expr_l @ [Norec(p,e')]
-         | Rec _ -> raise (Error (format_exn __LOC__ "REC"))) body)
+         | Rec _ -> raise (Error "REC")) body)
 
 let norm_def env_fun (def: def) : def =
   match def with
   | Single(name,p_in,p_out,p_var,body) ->
       env_add_fun name p_in p_out env_fun;
       Single(name,p_in,p_out,p_var,norm_deq env_fun body)
-  | _ -> raise (Invalid_AST (format_exn __LOC__
-                                        "Illegal non-Single def"))
+  | _ -> raise (Invalid_AST "Illegal non-Single def")
 
 let print title body =
   if false then

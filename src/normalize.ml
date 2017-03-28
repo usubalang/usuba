@@ -16,17 +16,13 @@ module Bitsliceable = struct
   let deq_ok (deq:deq) : bool =
     match deq with
     | Norec(_,e) -> expr_ok e
-    | _ -> raise (Invalid_AST
-                    (format_exn __LOC__
-                                "Should only have Norec"))
+    | _ -> raise (Invalid_AST "Should only have Norec")
   
   let def_ok (def:def) : bool =
     match def with
     | Single(_,_,_,_,body) ->
        List.fold_left (&&) true @@ List.map deq_ok body
-    | _ -> raise (Invalid_AST
-                    (format_exn __LOC__
-                                "Should only have Single"))
+    | _ -> raise (Invalid_AST "Should only have Single")
   
   let bitsliceable (prog:prog) : bool =
     List.fold_left (&&) true @@ List.map def_ok prog

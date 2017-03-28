@@ -40,8 +40,7 @@ let rec norm_expr env (e: expr) : expr =
                        | _, _ -> Log(op,x1',x2'))
   | Not e -> Not(norm_expr env e)
   | Shift(op,e,n) -> Shift(op,norm_expr env e,n)
-  | _ -> raise (Invalid_AST (format_exn __LOC__
-                                        "Invalid expr"))
+  | _ -> raise (Invalid_AST "Invalid expr")
 
 let norm_pat env (pat: var list) : var list =
   List.flatten
@@ -53,15 +52,13 @@ let norm_pat env (pat: var list) : var list =
                                    else [ Var id ]
                                 | None -> [ Var id ]) (* undeclared bool *)
                  | Field(Var id,Const_e i) -> [Var (id ^ (string_of_int i)) ]
-                 | _ -> raise (Invalid_AST
-                                 (format_exn __LOC__
-                                             "Illegal array access"))) pat)
+                 | _ -> raise (Invalid_AST "Illegal array access")) pat)
     
 let norm_deq env (body: deq list) : deq list =
    List.map
      (function
        | Norec (p,e) -> Norec(norm_pat env p,norm_expr env e)
-       | Rec _ -> raise (Error (format_exn __LOC__ "REC"))) body
+       | Rec _ -> raise (Error "REC")) body
 
 
 let norm_p (p: p) : p =
@@ -71,12 +68,8 @@ let norm_p (p: p) : p =
         match typ with
         | Bool    -> [ id,Bool,ck ]
         | Int n   -> expand_intn_typed id n ck
-        | Nat     -> raise (Invalid_AST
-                              (format_exn __LOC__
-                                          "Illegal nat"))
-        | Array _ -> raise (Invalid_AST
-                              (format_exn __LOC__
-                                          "Illegal Array"))) p)
+        | Nat     -> raise (Invalid_AST "Illegal nat")
+        | Array _ -> raise (Invalid_AST "Illegal Array")) p)
 
 let norm_def (def: def) : def =
   match def with
@@ -87,8 +80,7 @@ let norm_def (def: def) : def =
       env_add_var p_var env;
       Single(name, norm_p p_in, norm_p p_out, norm_p p_var,
              norm_deq env body)
-  | _ -> raise (Invalid_AST (format_exn __LOC__
-                                        "Illegal non-Single def"))
+  | _ -> raise (Invalid_AST "Illegal non-Single def")
 
 
 (* Note: the print actually if the boolean if the function "print" above 

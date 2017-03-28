@@ -25,7 +25,7 @@ let rec rewrite_p p =
        | Nat -> [ (id, Nat, ck) ]
        | Array (typ_in, Const_e size) ->
           List.map (fun x -> (x,typ_in,ck)) (gen_list_0 id size)
-       | _ -> raise (Error (format_exn __LOC__ "bad index"))) p
+       | _ -> raise (Error "bad index")) p
       
 let rewrite_perm (id,p_in,p_out,body) : def =
   let p_in' = rewrite_p p_in in

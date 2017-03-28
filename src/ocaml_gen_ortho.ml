@@ -35,11 +35,8 @@ module Gen_entry = struct
       | (id,typ,_)::tl -> ( match typ with
                             | Bool  -> [ id ]
                             | Int n -> gen_list id n
-                            | Nat   -> raise (Invalid_AST
-                                                (format_exn __LOC__ "Illegal Nat"))
-                            | Array _ -> raise
-                                           (Invalid_AST (format_exn __LOC__
-                                                                    "Arrays should have been cleaned by now") ))
+                            | Nat   -> raise (Invalid_AST "Illegal Nat")
+                            | Array _ -> raise (Invalid_AST "Arrays not cleaned"))
                           @ (aux tl)
     in aux p_out
            
@@ -52,11 +49,8 @@ module Gen_entry = struct
       | (id,typ,_)::tl -> let size = match typ with
                             | Bool  -> 1
                             | Int n -> n
-                            | Nat   -> raise (Invalid_AST
-                                                (format_exn __LOC__ "Illegal Nat"))
-                            | Array _ -> raise
-                                           (Invalid_AST
-                                              "Arrays should have been cleaned by now") in
+                            | Nat   -> raise (Invalid_AST "Illegal Nat")
+                            | Array _ -> raise (Invalid_AST "Arraysnot cleaned by now") in
                           let tmp = ref ((indent 2) ^ "let " ^ id ^ " = Array.make "
                                          ^ (string_of_int size) ^ " 0 in\n")  in
                           for c = 1 to size do
@@ -78,11 +72,8 @@ module Gen_entry = struct
                               match typ with
                               | Bool  -> (id,1)
                               | Int n -> (id,n)
-                              | Nat   -> raise (Invalid_AST
-                                                  (format_exn __LOC__ "Illegal Nat"))
-                              | Array _ -> raise
-                                             (Invalid_AST (format_exn __LOC__
-                                                                      "Arrays should have been cleaned by now")))
+                              | Nat   -> raise (Invalid_AST "Illegal Nat")
+                              | Array _ -> raise (Invalid_AST "Arrays not cleaned"))
                              p_in in
        let ortho = List.map gen_ortho params in
        let in_streams = List.map (fun (id,_) -> id ^ "stream") params in
@@ -109,16 +100,11 @@ module Gen_entry = struct
         ^ (indent 2) ^ "incr cpt;" ^ "\n"
         ^ (indent 2) ^ "return\n"
         ^ (indent_small 3) ^ "with Stream.Failure -> None)\n")
-    | Multiple _ -> raise (Invalid_AST (format_exn __LOC__
-                                                   "Arrays should have been cleaned by now"))
-    | Perm _ -> raise (Invalid_AST (format_exn __LOC__
-                                               "Perm should be gone by now"))
-    | MultiplePerm _ -> raise (Invalid_AST (format_exn __LOC__
-                                                       "MultiplePerm should have been cleaned by now"))
-    | Table _ -> raise (Invalid_AST (format_exn __LOC__
-                                                "Tables should be gone by now"))
-    | MultipleTable _ -> raise (Invalid_AST (format_exn __LOC__
-                                                        "MultipleTable should be gone by now"))
+    | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
+    | Perm _ -> raise (Invalid_AST "Perm should be gone by now")
+    | MultiplePerm _ -> raise (Invalid_AST "MultiplePerm should have been cleaned by now")
+    | Table _ -> raise (Invalid_AST "Tables should be gone by now")
+    | MultipleTable _ -> raise (Invalid_AST "MultipleTable should be gone by now")
 end;;
                      
 (* ************************************************** *)
@@ -149,13 +135,13 @@ let generate_ref_fun =
 let size_of_typ = function
   | Int _ -> 64
   | Bool  -> 1
-  | Nat   -> raise (Invalid_AST (format_exn __LOC__ "Illegal Nat"))
+  | Nat   -> raise (Invalid_AST "Illegal Nat")
   | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
 
 let str_size_of_typ = function
   | Int _ -> "64"
   | Bool  -> "1"
-  | Nat   -> raise (Invalid_AST (format_exn __LOC__ "Illegal Nat"))
+  | Nat   -> raise (Invalid_AST "Illegal Nat")
   | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
                          
 let ident_to_str_ml id = id
@@ -163,8 +149,7 @@ let ident_to_str_ml id = id
 let const_to_str_ml = function
   | 0 -> "0"
   | 1 -> "-1"
-  | x -> raise (Error (format_exn __LOC__
-                                  ((string_of_int x) ^ " isn't a boolean")))
+  | x -> raise (Error ((string_of_int x) ^ " isn't a boolean"))
 
 let var_to_str_ml = function
   | Var x -> ident_to_str_ml x
@@ -283,7 +268,7 @@ let deq_to_str_ml tab l =
                             | _ -> (indent tab) ^ "let "
                                    ^ (pat_to_str_ml tab p) ^ " = "
                                    ^ (expr_to_str_ml tab e) ^ " in ")
-                        | Rec _ -> raise (Invalid_AST (format_exn __LOC__ "REC"))) l)
+                        | Rec _ -> raise (Invalid_AST "REC")) l)
 let p_to_str_ml tab p =
   join "," (List.map (fun (id,typ,_) ->
                       match typ with
@@ -291,11 +276,8 @@ let p_to_str_ml tab p =
                       | Int n -> "(" ^
                                    (join "," (List.map (fun id -> ident_to_str_ml id )
                                                        (expand_intn_list id n))) ^ ")"
-                      | Nat   -> raise (Invalid_AST (format_exn __LOC__
-                                                                  "Illegal Nat"))
-                      | Array _ -> raise
-                                     (Invalid_AST
-                                        "Arrays should have been cleaned by now")) p)
+                      | Nat   -> raise (Invalid_AST "Illegal Nat")
+                      | Array _ -> raise (Invalid_AST "Arrays not cleaned")) p)
        
 (* print a node *)
 let def_to_str_ml tab = function
@@ -315,16 +297,11 @@ let def_to_str_ml tab = function
                     ^ (indent (tab+1)) ^ "fun (" ^ (p_to_str_ml tab p_in) ^ ") -> \n"
                     ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
                     ^ (p_to_str_ml tab p_out) ^ ")\n"))
-  | Multiple _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
-                                        "Arrays should have been cleaned by now"))
-  | Perm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
-                                    "Perm should be gone by now"))
-  | MultiplePerm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
-                                            "MultiplePerm should have been cleaned by now"))
-  | Table _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
-                                     "Tables should be gone by now"))
-  | MultipleTable _ -> raise (Invalid_AST (format_exn __LOC__
-                                                      "MultipleTable should be gone by now"))
+  | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
+  | Perm _ -> raise (Invalid_AST "Perm should be gone by now")
+  | MultiplePerm _ -> raise (Invalid_AST "MultiplePerm should have been cleaned by now")
+  | Table _ -> raise (Invalid_AST "Tables should be gone by now")
+  | MultipleTable _ -> raise (Invalid_AST "MultipleTable should be gone by now")
 
                     
 let prog_to_str_ml (p:prog) : string =

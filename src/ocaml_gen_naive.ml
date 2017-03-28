@@ -30,11 +30,9 @@ module Gen_entry = struct
       | (id,typ,_)::tl -> ( match typ with
                             | Bool  -> [ id ]
                             | Int n -> gen_list id n 
-                            | Nat   -> raise (Invalid_AST (format_exn __LOC__ 
-                                                                  "Illegal Nat"))
+                            | Nat   -> raise (Invalid_AST "Illegal Nat")
                             | Array _ -> raise
-                                           (Invalid_AST (format_exn __LOC__ 
-                                                                    "Arrays should have been cleaned by now")))
+                                           (Invalid_AST "Arrays not cleaned"))
                           @ (aux tl)
     in aux p_out
            
@@ -51,10 +49,8 @@ module Gen_entry = struct
                           let size = match typ with
                               Bool  -> 1
                             | Int n -> n
-                            | Nat   -> raise (Invalid_AST (format_exn __LOC__
-                                                                        "Illegal Nat"))
-                            | Array _ -> raise (Invalid_AST (format_exn __LOC__
-                                                                        "Arrays should have been cleaned by now")) in
+                            | Nat   -> raise (Invalid_AST "Illegal Nat")
+                            | Array _ -> raise (Invalid_AST "Arrays not cleaned") in
                           ( List.fold_left (fun x y -> "(Int64.logor " ^ x ^ " " ^ y ^ ")")
                                            "Int64.zero" (aux size 1) )) p_out in
     let ret = join "," (List.map (fun (id,_,_) -> id) p_out) in
@@ -69,12 +65,8 @@ module Gen_entry = struct
                               match typ with
                               | Bool  -> (id,1)
                               | Int n -> (id,n)
-                              | Nat   -> raise (Invalid_AST
-                                                    (format_exn __LOC__
-                                                                "Nat in entry point"))
-                              | Array _ -> raise (Invalid_AST
-                                                    (format_exn __LOC__
-                                                                "Arrays should have been cleaned by now")))
+                              | Nat   -> raise (Invalid_AST "Nat in entry point")
+                              | Array _ -> raise (Invalid_AST "Arrays not cleaned"))
                              p_in in
        let ortho = List.map gen_ortho params in
        let in_streams = List.map (fun (id,_) -> id ^ "stream") params in
@@ -87,16 +79,11 @@ module Gen_entry = struct
         ^ (join "," (List.map fst ortho)) ^ ") in\n"
         ^ (indent 2) ^ right ^ "\n"
         ^ (indent 1) ^ "with Stream.Failure -> None)\n")
-    | Multiple _ -> raise (Invalid_AST (format_exn __LOC__
-                                                   "Arrays should have been cleaned by now"))
-    | Perm _ -> raise (Invalid_AST (format_exn __LOC__
-                                               "Perm should be gone by now"))
-    | MultiplePerm _ -> raise (Invalid_AST (format_exn __LOC__
-                                                       "MultiplePerm should have been cleaned by now"))
-    | Table _ -> raise (Invalid_AST (format_exn __LOC__
-                                                "Tables should be gone by now"))
-    | MultipleTable _ -> raise (Invalid_AST (format_exn __LOC__
-                                                       "MultipleTable should have been cleaned by now"))
+    | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
+    | Perm _ -> raise (Invalid_AST "Perm should be gone by now")
+    | MultiplePerm _ -> raise (Invalid_AST "MultiplePerm should have been cleaned by now")
+    | Table _ -> raise (Invalid_AST "Tables should be gone by now")
+    | MultipleTable _ -> raise (Invalid_AST "MultipleTable should have been cleaned by now")
 
 end ;;
   
@@ -140,8 +127,7 @@ let ident_to_str_ml id = id
 let const_to_str_ml = function
   | 0 -> "false"
   | 1 -> "true"
-  | x -> raise (Error (format_exn __LOC__
-                                  ((string_of_int x) ^ " isn't a boolean")))
+  | x -> raise (Error ((string_of_int x) ^ " isn't a boolean"))
 
 let var_to_str_ml = function
   | Var x -> ident_to_str_ml x
@@ -222,7 +208,7 @@ let deq_to_str_ml tab l =
                             | _ -> (indent tab) ^ "let "
                                    ^ (pat_to_str_ml tab p) ^ " = "
                                    ^ (expr_to_str_ml tab e) ^ " in ")
-                        | Rec _ -> raise (Invalid_AST (format_exn __LOC__ "REC"))) l)
+                        | Rec _ -> raise (Invalid_AST "REC")) l)
 let p_to_str_ml tab p =
   join "," (List.map (fun (id,typ,_) ->
                       match typ with
@@ -231,9 +217,7 @@ let p_to_str_ml tab p =
                                    (join "," (List.map (fun id -> ident_to_str_ml id )
                                                        (expand_intn_list id n))) ^ ")"
                       | Nat   -> raise (Invalid_AST "Nat shouldn't be there")
-                      | Array _ -> raise
-                                     (Invalid_AST
-                                        "Arrays should have been cleaned by now")) p)
+                      | Array _ -> raise (Invalid_AST "Arrays not cleaned")) p)
        
 let def_to_str_ml tab = function
   | Single(id, p_in, p_out, _, body) ->
@@ -250,15 +234,10 @@ let def_to_str_ml tab = function
                  ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
                  ^ (p_to_str_ml tab p_out) ^ ")\n"))
   | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
-  | Perm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
-                                    "Perm should be gone by now"))
-  | MultiplePerm _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
-                                            "MultiplePerm should have been cleaned by now"))
-  | Table _ -> raise (Invalid_AST (__FILE__ ^ (string_of_int __LINE__) ^
-                                     "Tables should be gone by now"))
-  | MultipleTable _ ->
-     raise (Invalid_AST (format_exn __LOC__
-                                    "MultipleTable should have been cleaned by now"))
+  | Perm _ -> raise (Invalid_AST "Perm should be gone by now")
+  | MultiplePerm _ -> raise (Invalid_AST "MultiplePerm should have been cleaned by now")
+  | Table _ -> raise (Invalid_AST "Tables should be gone by now")
+  | MultipleTable _ -> raise (Invalid_AST "MultipleTable should have been cleaned by now")
 
 
                      

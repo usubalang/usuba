@@ -19,8 +19,7 @@ let rec c_to_str_ml (c: c) : string =
                             | _ -> unreached () )
                           ^ "(" ^ (c_to_str_ml b) ^ ")"
   | Log(Not,x::[]) -> "not (" ^ (c_to_str_ml x) ^ ")"
-  | _ -> raise (Not_implemented (format_exn __LOC__
-                                            "state var to ocaml"))
+  | _ -> raise (Not_implemented "state var to ocaml")
                
       
 let s_to_str_ml (s: s) : string =
@@ -31,8 +30,7 @@ let s_to_str_ml (s: s) : string =
                      ^ (join " " (List.map
                                     (fun x -> "(" ^ (c_to_str_ml x) ^ ")")
                                     lr)) ^ " in"
-  | _ -> raise (Not_implemented (format_exn __LOC__
-                                            "state_asgn or reset to ocaml"))
+  | _ -> raise (Not_implemented "state_asgn or reset to ocaml")
        
 let machine_to_str_ml ((id,memory,instances,reset,p_in,p_out,vars,body):machine)
     : string =
