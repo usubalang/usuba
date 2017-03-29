@@ -25,6 +25,12 @@ let rec arith_to_str = function
   | Var_e v   -> v
   | Op_e(op,x,y) -> "(" ^ (arith_to_str x) ^ " " ^ (arith_op_to_str op) ^
                       " " ^ (arith_to_str y) ^ ")"
+                                                 
+let rec arith_to_str_types = function
+  | Const_e i -> "Const_e: " ^ (string_of_int i)
+  | Var_e v   -> "Var_e: " ^ v
+  | Op_e(op,x,y) -> "Op_e(" ^ (arith_to_str_types x) ^ " " ^ (arith_op_to_str op) ^
+                      " " ^ (arith_to_str_types y) ^ ")"
 
 let rec var_to_str = function
   | Var v -> v
@@ -32,10 +38,17 @@ let rec var_to_str = function
   | Index(v,e) -> v ^ "[" ^ (arith_to_str e) ^ "]"
   | Range(v,ei,ef) -> v ^ "[" ^ (arith_to_str ei) ^ " .. "
                       ^ (arith_to_str ef) ^ "]"
+                                              
+let rec var_to_str_types = function
+  | Var v -> "Var: " ^ v
+  | Field(v,e) -> "Field: " ^ (var_to_str_types v) ^ "." ^ (arith_to_str_types e)
+  | Index(v,e) -> "Index: " ^ v ^ "[" ^ (arith_to_str_types e) ^ "]"
+  | Range(v,ei,ef) -> "Range: " ^ v ^ "[" ^ (arith_to_str_types ei) ^ " .. "
+                      ^ (arith_to_str_types ef) ^ "]"
          
 let rec expr_to_str_types = function
   | Const c -> "Const: " ^ (string_of_int c)
-  | ExpVar v -> var_to_str v
+  | ExpVar v -> "ExpVar: " ^ (var_to_str v)
   | Tuple t -> "Tuple: (" ^ (join "," (List.map expr_to_str_types t)) ^ ")"
   | Log(o,x,y) -> "Log: " ^ "(" ^ (expr_to_str_types x) ^ (log_op_to_str o)
                   ^ (expr_to_str_types y) ^ ")"

@@ -3,7 +3,7 @@
 # for instance, he does "out2 = xor(out2,x24)" where I do "out2 = x24"
 
 node sbox_4 (a : uint_6 :: _ )
-     returns out : uint_4 :: _
+     returns ( out : uint_4 :: _ )
 vars
     x : uint_42 :: _   # 42 bool would be semantically more accurate, but it's not a big deal.
 let

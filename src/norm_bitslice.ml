@@ -10,8 +10,14 @@ module Simplify_tuples = struct
   let rec simpl_tuple t =
     match t with
     | Tuple l -> if List.length l = 1 then List.nth l 0
-                 else Tuple(List.map simpl_tuple l)
+                 else (match List.map simpl_tuple l with
+                       | x::[] -> x
+                       | l -> Tuple(l))
+    | Not e -> Not (simpl_tuple e)
+    | Shift(op,e,n) -> Shift(op,simpl_tuple e,n)
+    | Log(op,x,y) -> Log(op,simpl_tuple x,simpl_tuple y)
     | Fun(f,l) -> Fun(f,List.map simpl_tuple l)
+    | Fun_v(f,n,l) -> Fun_v(f,n,List.map simpl_tuple l)
     | _ -> t
                  
   let simpl_tuples_def (def: def) : def =
@@ -217,7 +223,4 @@ let norm_prog (prog: prog)  =
   let shifts_done = Bitslice_shift.expand_shifts tuples_simpl in
   print "SHIFTS EXPANDED:" tuples_simpl;
 
-  (* Optimize, cf optimize.ml *)
-  let optimized = shifts_done in (* Optimize.opt_prog shifts_done in *)
-  print "OPTIMIZED:" optimized;
-  optimized
+  shifts_done

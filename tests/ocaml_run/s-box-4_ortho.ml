@@ -1,3 +1,23 @@
+let convert_ortho (size: int) (input: int64 array) : int array =
+  let out = Array.make size 0 in
+  for i = 0 to Array.length input - 1 do
+    for j = 0 to size-1 do
+      let b = Int64.to_int (Int64.logand (Int64.shift_right input.(i) j) Int64.one) in
+      out.(j) <- out.(j) lor (b lsl i)
+    done
+  done;
+  out
+ 
+
+let convert_unortho (input: int array) : int64 array =
+  let out = Array.make 63 Int64.zero in
+  for i = 0 to Array.length input - 1 do
+    for j = 0 to 62 do
+      let b = Int64.of_int (input.(i) lsr j land 1) in
+      out.(j) <- Int64.logor out.(j) (Int64.shift_left b i)
+    done
+  done;
+ out
 
 
 let sbox_4' (a'1,a'2,a'3,a'4,a'5,a'6) = 
@@ -51,12 +71,31 @@ let sbox_4' (a'1,a'2,a'3,a'4,a'5,a'6) =
 
 
 let main astream = 
-    Stream.from
+  let cpt = ref 64 in
+  let stack_out = ref [| |] in
+  Stream.from
     (fun _ -> 
-    try
-        let a = Stream.next astream in
-        let (a1,a2,a3,a4,a5,a6) = (Int64.logand (Int64.shift_right a 5) Int64.one = Int64.one,Int64.logand (Int64.shift_right a 4) Int64.one = Int64.one,Int64.logand (Int64.shift_right a 3) Int64.one = Int64.one,Int64.logand (Int64.shift_right a 2) Int64.one = Int64.one,Int64.logand (Int64.shift_right a 1) Int64.one = Int64.one,Int64.logand (Int64.shift_right a 0) Int64.one = Int64.one) in
+    if !cpt < 63 then let ret = (!stack_out.(!cpt)) in
+                          incr cpt;
+                          Some ret
+    else
+      try
+        let a = Array.make 63 Int64.zero in
+        for i = 0 to 62 do
+          a.(i) <- Stream.next astream
+        done;
+        let a' = convert_ortho 6 a in
+        let (a1,a2,a3,a4,a5,a6) = (a'.(63),a'.(62),a'.(61),a'.(60),a'.(59),a'.(58)) in
         let (ret1,ret2,ret3,ret4) = sbox_4' (a1,a2,a3,a4,a5,a6) in
-        let (out) = (Int64.logor (Int64.logor (Int64.logor (Int64.logor Int64.zero (if ret1 then (Int64.shift_left Int64.one 3) else Int64.zero)) (if ret2 then (Int64.shift_left Int64.one 2) else Int64.zero)) (if ret3 then (Int64.shift_left Int64.one 1) else Int64.zero)) (if ret4 then (Int64.shift_left Int64.one 0) else Int64.zero))
-        in Some (out)
-    with Stream.Failure -> None)
+        let out = Array.make 4 0 in
+        out.(0) <- ret64;
+        out.(1) <- ret63;
+        out.(2) <- ret62;
+        out.(3) <- ret61;
+        stack_out := convert_unortho out;
+
+        cpt := 0;
+        let return = Some (!stack_out.(!cpt)) in 
+        incr cpt;
+        return
+      with Stream.Failure -> None)
