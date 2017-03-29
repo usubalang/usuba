@@ -226,7 +226,8 @@ let def_to_str_ml tab = function
 
                      
 let prog_to_str_ml (p:prog) : string =
-  let entry_point = Gen_entry.gen_entry_point (Utils.last p) in
+  let entry_point = Gen_entry.gen_entry_point
+                      (Utils.last (Expand_array.expand_array p)) in
   let converted = Normalize.norm_prog p in
   let body = List.map (def_to_str_ml 0) converted in
   (join "\n\n" !prologue_prog)

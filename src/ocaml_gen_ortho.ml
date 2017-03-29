@@ -55,7 +55,7 @@ module Gen_entry = struct
                                          ^ (string_of_int size) ^ " 0 in\n")  in
                           for c = 1 to size do
                             tmp := !tmp ^ (indent 2) ^ id ^ ".(" ^ (string_of_int (c-1))
-                                   ^ ") <- ret" ^ (string_of_int (i+65-c)) ^ ";\n"
+                                   ^ ") <- ret" ^ (string_of_int (i+size+1-c)) ^ ";\n"
                           done;
                           tmp := !tmp ^ (indent 2) ^ "stack_" ^ id
                                  ^ " := convert_unortho " ^ id ^ ";\n";
@@ -309,7 +309,9 @@ let prog_to_str_ml (p:prog) : string =
     done
   done;
  out"];
-  let entry_point = Gen_entry.gen_entry_point (Utils.last p) in
+  let entry_point = Gen_entry.gen_entry_point
+                      (Utils.last
+                         (Expand_array.expand_array p)) in
   let converted = Normalize.norm_prog p in
   let body = List.map (def_to_str_ml 0) converted in
   (join "\n\n" !prologue_prog)

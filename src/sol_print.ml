@@ -4,10 +4,20 @@ open Utils
 
 let op_to_str (op: Sol_AST.op) : string =
   match op with
+  | Not -> "not"
   | And -> "and"
   | Or  -> "or"
   | Xor -> "xor"
-  | Not -> "not"
+  | Add -> "add"
+  | Mul -> "mul"
+  | Sub -> "sub"
+  | Div -> "div"
+  | Mod -> "mod"
+  | Lshift -> "lshift"
+  | Rshift -> "rshift"
+  | Lrotate -> "lrotate"
+  | Rrotate -> "rrotate"
+
 
 let rec c_to_str (c: Sol_AST.c) : string =
   match c with
@@ -15,7 +25,7 @@ let rec c_to_str (c: Sol_AST.c) : string =
   | Const n -> (string_of_int n)
   | Tuple l -> "(" ^ (join "," (List.map c_to_str l)) ^ ")"
   | State_var sv -> "state(" ^ sv ^ ")"
-  | Log(op,l) -> (op_to_str op) ^ "(" ^ (join "," (List.map c_to_str l)) ^ ")"
+  | Op(op,l) -> (op_to_str op) ^ "(" ^ (join "," (List.map c_to_str l)) ^ ")"
 
 let s_to_str (s: Sol_AST.s) : string =
   match s with
@@ -38,6 +48,7 @@ let typ_to_str (typ: Sol_AST.typ) : string =
   | Bool -> "bool"
   | Int64 -> "int64"
   | Int128 -> "int128"
+  | Int256 -> "int256"
                 
 let p_to_str (p: Sol_AST.p) : string =
   join "," (List.map (fun (x,y) -> x ^ ":" ^ (typ_to_str y)) p)

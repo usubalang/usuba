@@ -2,11 +2,13 @@ type ident = string
 
 (* should only have: *)
 (* type bin_op = PADD | PMUL | PAND ... *)
-(* type ter_op = PADD3 | PMUL3 | ... *)
-type log_op = And | Or | Xor
-type arith_op = Add | Mul | Sub | Div | Mod
-
-type typ = Bool | Int64 | Int128
+type op =
+  | Not
+  | And | Or | Xor
+  | Add | Mul | Sub | Div | Mod
+  | Lshift | Rshift | Lrotate | Rrotate
+                                  
+type typ = Bool | Int64 | Int128 | Int256
 
 type m = (ident * typ) list
                        
@@ -17,9 +19,7 @@ type c =
   | Const of int               (*   v               *)
   | Tuple of c list            (*   (c, ... , c)    *)
   | State_var of ident         (*   state(x)        *)
-  | Not of c                   (*   not c           *)
-  | Log of log_op * c * c      (*   c op c          *)
-  | Arith of arith_op * c * c  (*   c op c          *)
+  | Op of op * c list          (*  op(c..c)        *)
 
                     
 type s =

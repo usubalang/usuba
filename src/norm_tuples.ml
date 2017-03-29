@@ -33,7 +33,11 @@ end
 (* Split tuples into atomic operations, if possible *)
 module Split_tuples = struct
   let real_split_tuple (p: var list) (l: expr list) : deq list =
-    List.map2 (fun l r -> Norec([l],r)) p l
+    try
+      List.map2 (fun l r -> Norec([l],r)) p l
+    with _ -> print_endline (Usuba_print.pat_to_str p);
+              print_endline (join "," (List.map Usuba_print.expr_to_str l));
+              raise (Error "Error:")
                
   let split_tuples_deq (body: deq list) : deq list =
     List.flatten

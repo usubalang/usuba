@@ -22,11 +22,7 @@ let rec pow a = function
 let last l =
   List.nth l (List.length l - 1)
 
-let rec join s l =
-  match l with
-  | [] -> ""
-  | e::[] -> e
-  | hd::tl -> hd ^ s ^ (join s tl)
+let rec join s l = String.concat s l
 
 let indent (tab: int) : string =
   String.make (tab * 4) ' '

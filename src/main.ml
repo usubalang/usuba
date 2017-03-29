@@ -53,9 +53,13 @@ let print_ortho_ml (file_in: string) (prog: Usuba_AST.prog) =
 let main () =
   Printexc.record_backtrace true;
 
-  Arg.parse [] (fun s ->
-                let prog = parse_file s in
-                print_naive_ml s prog; print_ortho_ml s prog) "Usage"
+  Arg.parse []
+            (fun s ->
+             let prog = parse_file s in
+             print_naive_ml s prog; print_ortho_ml s prog;
+             (*let normalized = Normalize.norm_prog prog in
+             let sol = Usuba_to_sol.usuba_to_sol normalized in
+             Sol_print.print_prog sol*)) "Usage"
             
   (* let normalized = Normalize.norm_prog prog in *)
   (* Usuba_print.print_prog normalized; *)

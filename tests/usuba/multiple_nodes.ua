@@ -1,13 +1,11 @@
-node nxor ( x : bool :: _, y : bool :: _ ) returns z : bool :: _
-vars tmp : bool :: _
+node nxor ( x : u6, y : u6 ) returns (z : u6)
+vars
 let
-  tmp = xor(x,y);
-  z = not(tmp)
+  z = ~ (x ^ y)
 tel
 
-node nand ( x : bool :: _, y : bool :: _ ) returns z : bool :: _
-vars tmp : bool :: _
+node main ( x : u6[2] ) returns (z : u6[2])
+vars
 let
-    tmp = and(x,y);
-    z = not(tmp)
+  z = (nxor(x[0],x[1]),nxor(x[0],x[1]))
 tel

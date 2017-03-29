@@ -16,7 +16,7 @@ open Usuba_AST
 open Utils
        
 let expand_var_array id size =
-  List.map (fun x -> Var x) (gen_list_0 id size)
+  List.map (fun x -> Var (x^"'")) (gen_list_0 id size)
                     
 let rec rewrite_expr loc_env env_var (i:int) (e:expr) : expr =
   let rec_call = rewrite_expr loc_env env_var i in
@@ -32,7 +32,7 @@ let rec rewrite_expr loc_env env_var (i:int) (e:expr) : expr =
                                                  (expand_var_array v size))
                           | None -> ExpVar(Var v))
   | ExpVar(Index(v,idx)) -> let n = eval_arith loc_env idx in
-                            ExpVar(Var(v ^ (string_of_int n)))
+                            ExpVar(Var(v ^ (string_of_int n) ^ "'"))
   | ExpVar(Range(v,ei,ef)) ->
      ExpVar(Range(v, Const_e(eval_arith loc_env ei),
                   Const_e(eval_arith loc_env ef)))
@@ -66,7 +66,7 @@ let rewrite_pat env env_var (pat:var list) : var list =
                 | None -> [ Var v ])
     | Field(lasgn,i) -> [ Field(List.nth (aux lasgn) 0,i) ]
     | Index(id,e) -> let n = eval_arith env e in
-                     [ Var(id ^ (string_of_int n)) ] 
+                     [ Var(id ^ (string_of_int n) ^ "'") ] 
     | Range(id,ei,ef) -> [ Range(id,Const_e(eval_arith env ei),
                                  Const_e(eval_arith env ef))] in
   List.flatten @@ List.map aux pat
@@ -94,7 +94,7 @@ let rec rewrite_p p =
         | Int n -> [ (id, Int n, ck) ]
         | Nat -> [ (id, Nat, ck) ]
         | Array (typ_in, Const_e size) ->
-           List.map (fun x -> (x,typ_in,ck)) (gen_list_0 id size)
+           List.map (fun x -> (x^"'",typ_in,ck)) (gen_list_0 id size)
         | _ -> raise (Error "Invalid array size")) p
 
 let make_env p_in p_out vars =

@@ -58,7 +58,11 @@ let norm_prog (prog: prog)  =
 
   let normalized =
     if Bitsliceable.bitsliceable perm_expanded then
-      Norm_bitslice.norm_prog perm_expanded
+      (let normed = Norm_bitslice.norm_prog perm_expanded in
+      print "PRE-NORMALIZED:" normed;
+      let inlined = Inline.inline normed in
+      print "INLINED:" inlined;
+      Norm_bitslice.norm_prog inlined)
     else
       perm_expanded in
   print "NORMALIZED:" normalized;

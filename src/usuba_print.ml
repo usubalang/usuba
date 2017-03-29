@@ -1,6 +1,7 @@
 
 open Usuba_AST
 open Utils
+open Printf
 
 let log_op_to_str = function
   | And -> "&"
@@ -23,8 +24,8 @@ let shift_op_to_str = function
 let rec arith_to_str = function
   | Const_e i -> string_of_int i
   | Var_e v   -> v
-  | Op_e(op,x,y) -> "(" ^ (arith_to_str x) ^ " " ^ (arith_op_to_str op) ^
-                      " " ^ (arith_to_str y) ^ ")"
+  | Op_e(op,x,y) -> sprintf "(%s %s %s)" (arith_to_str x) (arith_op_to_str op)
+                            (arith_to_str y)
                                                  
 let rec arith_to_str_types = function
   | Const_e i -> "Const_e: " ^ (string_of_int i)
@@ -34,10 +35,9 @@ let rec arith_to_str_types = function
 
 let rec var_to_str = function
   | Var v -> v
-  | Field(v,e) -> (var_to_str v) ^ "." ^ (arith_to_str e)
-  | Index(v,e) -> v ^ "[" ^ (arith_to_str e) ^ "]"
-  | Range(v,ei,ef) -> v ^ "[" ^ (arith_to_str ei) ^ " .. "
-                      ^ (arith_to_str ef) ^ "]"
+  | Field(v,e) -> sprintf "%s.%s" (var_to_str v) (arith_to_str e)
+  | Index(v,e) -> sprintf "[%s]" (arith_to_str e)
+  | Range(v,ei,ef) -> sprintf "[%s .. %s]" (arith_to_str ei) (arith_to_str ef)
                                               
 let rec var_to_str_types = function
   | Var v -> "Var: " ^ v
@@ -66,18 +66,18 @@ let rec expr_to_str_types = function
 let rec expr_to_str = function
   | Const c -> (string_of_int c)
   | ExpVar v   -> var_to_str v
-  | Tuple t -> "(" ^ (join "," (List.map expr_to_str t)) ^ ")"
-  | Log(o,x,y) -> "(" ^ (expr_to_str x) ^ (log_op_to_str o)
-                  ^ (expr_to_str y) ^ ")"
-  | Arith(o,x,y) -> "(" ^ (expr_to_str x) ^ (arith_op_to_str o)
-                  ^ (expr_to_str y) ^ ")"
-  | Shift(o,x,y) -> "Shift: " ^ "(" ^ (expr_to_str_types x) ^ " "
-                    ^ (shift_op_to_str o) ^ " " ^ (arith_to_str y) ^ ")"
-  | Not e -> "!(" ^ (expr_to_str e) ^ ")"
-  | Fun(f,l) -> f ^ "(" ^ (join "," (List.map expr_to_str l)) ^ ")"
-  | Fun_v(f,e,l) -> f ^ "[" ^ (arith_to_str e) ^ "]"
-                               ^ "(" ^ (join "," (List.map expr_to_str l)) ^ ")"
-  | Fby(ei,ef,id) -> (expr_to_str ei) ^ " fby " ^ (expr_to_str ef)
+  | Tuple t -> sprintf "(%s)" (join "," (List.map expr_to_str t))
+  | Log(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
+                          (log_op_to_str o) (expr_to_str y)
+  | Arith(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
+                            (arith_op_to_str o) (expr_to_str y)
+  | Shift(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str_types x)
+                            (shift_op_to_str o) (arith_to_str y)
+  | Not e -> sprintf "(~ %s)" (expr_to_str e)
+  | Fun(f,l) -> sprintf "%s(%s)" f (join "," (List.map expr_to_str l))
+  | Fun_v(f,e,l) -> sprintf "%s[%s](%s)" f (arith_to_str e)
+                            (join "," (List.map expr_to_str l))
+  | Fby(ei,ef,id) -> sprintf "%s fby %s" (expr_to_str ei) (expr_to_str ef)
   | Nop -> "Nop"
 
 let pat_to_str pat =

@@ -32,6 +32,7 @@ module CSE_CF = struct
            | _ -> Log(op,x',y'))
          | _, _ -> Log(op,x',y') )
     | Fun(f,l) -> Fun(f,List.map fold_expr l)
+    | Tuple l -> Tuple(List.map fold_expr l)
     | _ -> e
              
   let is_dummy_assign (e:expr) : bool =
@@ -45,17 +46,27 @@ module CSE_CF = struct
     | _ -> Tuple (List.map (function x -> ExpVar x) pat)
 
   let rec cse_expr env (e: expr) : expr =
-    let e = fold_expr (
+    let e' = fold_expr (
                 match e with
                 | Log(op,x,y) -> Log(op,cse_expr env x,cse_expr env y)
                 | Arith(op,x,y) -> Arith(op,cse_expr env x,cse_expr env y)
                 | Not e -> Not (cse_expr env e)
                 | Fun(f,l) -> Fun(f,List.map (cse_expr env) l)
+                | Tuple l -> Tuple(List.map (cse_expr env) l)
                 | _ -> e ) in
-    match env_fetch env e with
+    match env_fetch env e' with
     | Some x -> x
-    | None -> e
-                       
+    | None ->
+       let e' = fold_expr (
+                    match e with
+                    | Log(op,x,y) -> Log(op,cse_expr env y,cse_expr env x)
+                    | Arith(Add,x,y) -> Arith(Add,cse_expr env y,cse_expr env x)
+                    | Arith(Mul,x,y) -> Arith(Mul,cse_expr env y,cse_expr env x)
+                    | _ -> e' ) in
+       match env_fetch env e' with
+       | Some x -> x
+       | None -> e'
+              
   let cse_single_deq env ((p,e):(var list)*expr): ((var list)*expr) list =
     let e = cse_expr env e in
     match env_fetch env e with
@@ -79,17 +90,18 @@ module CSE_CF = struct
   let cse_deq (deq: deq list) no_opti : deq list =
     let env = Hashtbl.create 40 in
     let no_opt_env = Hashtbl.create 20 in
-    let () = List.iter (fun x -> env_add no_opt_env x 1) (p_to_pat no_opti) in
+    List.iter (fun x -> env_add no_opt_env x 1) (p_to_pat no_opti);
     List.flatten @@
       List.map
         (function
           | Norec (p,e) ->
              if dont_opti p no_opt_env then
-               [Norec(p,cse_expr env e)]
+                 [Norec(p,cse_expr env e)]
              else
                ( let r = cse_single_deq env (p,e) in
                  List.map (fun (p,e) -> Norec(p,e)) r)
           | Rec _ -> raise (Invalid_AST "Invalid Rec")) deq
+           
                  
 
   let cse_def (def: def) : def =
