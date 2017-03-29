@@ -108,20 +108,6 @@ let generate_ref_fun =
                prologue_prog := (!prologue_prog) @ [fn];
                name)
                 
-                
-                
-let size_of_typ = function
-  | Int _ -> 64
-  | Bool  -> 1
-  | Nat   -> raise (Invalid_AST "Nat shouldn't be there")
-  | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
-
-let str_size_of_typ = function
-  | Int _ -> "64"
-  | Bool  -> "1"
-  | Nat   -> raise (Invalid_AST "Nat shouldn't be there")
-  | Array _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
-                     
 let ident_to_str_ml id = id
                            
 let const_to_str_ml = function
@@ -213,9 +199,7 @@ let p_to_str_ml tab p =
   join "," (List.map (fun (id,typ,_) ->
                       match typ with
                       | Bool  -> (ident_to_str_ml id)
-                      | Int n -> "(" ^
-                                   (join "," (List.map (fun id -> ident_to_str_ml id )
-                                                       (expand_intn_list id n))) ^ ")"
+                      | Int n -> (ident_to_str_ml id)
                       | Nat   -> raise (Invalid_AST "Nat shouldn't be there")
                       | Array _ -> raise (Invalid_AST "Arrays not cleaned")) p)
        

@@ -52,9 +52,11 @@ let print_ortho_ml (file_in: string) (prog: Usuba_AST.prog) =
 
 let main () =
   Printexc.record_backtrace true;
-  let file_in = Sys.argv.(1) in
-  let prog = parse_file file_in in
 
+  Arg.parse [] (fun s ->
+                let prog = parse_file s in
+                print_naive_ml s prog; print_ortho_ml s prog) "Usage"
+            
   (* let normalized = Normalize.norm_prog prog in *)
   (* Usuba_print.print_prog normalized; *)
   (* print_endline "\n#####################################\n"; *)
@@ -62,9 +64,6 @@ let main () =
   (* Sol_print.print_prog sol; *)
   (* print_endline "\n#####################################\n"; *)
   (* print_endline (Sol_naive_to_ocaml.prog_to_str_ml sol); *)
-  
-  print_naive_ml file_in prog;
-  print_ortho_ml file_in prog
                  
 
 let () = main ()
