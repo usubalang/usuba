@@ -154,28 +154,28 @@ perm[] roundkey (key : u64) returns ( roundkey : u48 )
 node des_single (left_in : u32, right_in : u32, key : u48)
         returns ( out : u64 )
 vars
-    sbox_in : u6[8],
-    sbox_out : u4[8],
-    c : u32
+    sbox_in : u6[8], sbox_out : u4[8]
 let
-    # Xoring key and R
+    # Initial expansion and xor with the key
     sbox_in = expand(right_in) ^ key;
 
-    # Computing the sbox
+    # Computing the s-boxes
     forall i in [0,7], sbox_out[i] = sbox[i](sbox_in[i]);
-    # The linear permutation
-    c = permut( sbox_out );
 
-    # And the output
-    out = (right_in,left_in ^ c)
+    # linear permutation and final xor and switch left/right
+    out = (right_in,left_in ^ permut(sbox_out))
 tel
 
-node des (plaintext : u64, key : u64) returns ( ciphered : u64 )
+node des (plaintext : u64, key : u64)
+     returns ( ciphered : u64 )
 vars
     des : u64[17],
     left:u32,right:u32
 let
+    # Initialisation (initial permutation)
     des[0] = init_p(plaintext);
+    
+    # Computing the 16 rounds
     forall i in [1,16], des[i] = des_single(des[i-1],roundkey[i-1](key));
 
     # Regrouping left and right and computing final permuation

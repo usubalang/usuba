@@ -13,6 +13,7 @@ module Simplify_tuples = struct
     | Not e -> Not (simpl_tuple e)
     | Shift(op,e,n) -> Shift(op,simpl_tuple e,n)
     | Log(op,x,y) -> Log(op,simpl_tuple x,simpl_tuple y)
+    | Intr(op,x,y) -> Intr(op,simpl_tuple x,simpl_tuple y)
     | Fun(f,l) -> Fun(f,List.map simpl_tuple l)
     | Fun_v(f,n,l) -> Fun_v(f,n,List.map simpl_tuple l)
     | _ -> t
@@ -33,11 +34,7 @@ end
 (* Split tuples into atomic operations, if possible *)
 module Split_tuples = struct
   let real_split_tuple (p: var list) (l: expr list) : deq list =
-    try
-      List.map2 (fun l r -> Norec([l],r)) p l
-    with _ -> print_endline (Usuba_print.pat_to_str p);
-              print_endline (join "," (List.map Usuba_print.expr_to_str l));
-              raise (Error "Error:")
+    List.map2 (fun l r -> Norec([l],r)) p l
                
   let split_tuples_deq (body: deq list) : deq list =
     List.flatten

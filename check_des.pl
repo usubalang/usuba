@@ -6,7 +6,7 @@
     same results as the standart implmentation.
     It will:
      - compile the project (using the Makefile of "src" directory)
-     - generate the bitsliced DES (from src/tests/des_v1.prog)
+     - generate the bitsliced DES (from src/tests/des.prog)
      - run three DES : one using the standart implementation, one using the
        naive generated code, and one using the orthogonal generated code,
        and check that the three results are the same.
@@ -36,7 +36,7 @@ say "Compiling...";
 error if system 'make';
 chdir "..";
 say "Regenerating the des OCaml code...";
-error if system './src/main.native tests/usuba/des_v1.ua' ;
+error if system './src/main.native tests/usuba/des.ua' ;
 
 # switching to temporary directory
 say "Preparing the files for the test...";
@@ -44,8 +44,8 @@ remove_tree 'tmp' if -d 'tmp';
 mkdir 'tmp';
 chdir 'tmp';
 
-copy '../tests/ocaml_run/des_v1_naive.ml', '.';
-copy '../tests/ocaml_run/des_v1_ortho.ml', '.';
+copy '../tests/ocaml_run/des_naive.ml', '.';
+copy '../tests/ocaml_run/des_ortho.ml', '.';
 copy '../des/des.ml', '.';
 
 open my $FH, '>', 'check_des.ml' or die $!;
@@ -74,8 +74,8 @@ let stream3 = Stream.of_list rand_list
 let key_stream = Stream.from (fun _ -> Some key)
 
 let out_std = Des.des_ecb_encrypt stream1 key
-let out_naive = Des_v1_naive.main stream2 key_stream
-let out_ortho = Des_v1_ortho.main stream3 key_stream
+let out_naive = Des_naive.main stream2 key_stream
+let out_ortho = Des_ortho.main stream3 key_stream
 
 
 let l1 = Stream.npeek 448 out_std

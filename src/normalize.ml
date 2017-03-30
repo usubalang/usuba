@@ -67,6 +67,8 @@ let norm_prog (prog: prog)  =
       perm_expanded in
   print "NORMALIZED:" normalized;
 
+  assert (Assert_lang.Usuba_norm.is_usuba_normalized normalized);
+  
   let optimized = Optimize.opt_prog normalized in
   print "OPTIMIZED:" optimized;
 

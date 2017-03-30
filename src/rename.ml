@@ -43,6 +43,7 @@ let rec rename_expr (e:expr) =
   | Log(op,x,y) -> Log(op,rename_expr x,rename_expr y)
   | Arith(op,x,y) -> Arith(op,rename_expr x,rename_expr y)
   | Shift(op,x,y) -> Shift(op,rename_expr x,rename_arith_expr y)
+  | Intr(op,x,y) -> Intr(op,rename_expr x,rename_expr y)
   | Not e -> Not (rename_expr e)
   | Fun(f,l) -> if f = "print" then Fun(f,List.map rename_expr l)
                 else Fun(f^"'",List.map rename_expr l)

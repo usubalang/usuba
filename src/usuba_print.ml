@@ -20,6 +20,16 @@ let shift_op_to_str = function
   | Rshift -> ">>"
   | Lrotate -> "<<<"
   | Rrotate -> ">>>"
+                 
+let intr_op_to_str = function
+  | Pand  -> "pand"
+  | Por   -> "por"
+  | Pxor  -> "pxor"
+  | Pandn -> "pandn"
+  | VPand  -> "vpand"
+  | VPor   -> "vpor"
+  | VPxor  -> "vpxor"
+  | VPandn -> "vpandn"
 
 let rec arith_to_str = function
   | Const_e i -> string_of_int i
@@ -56,6 +66,8 @@ let rec expr_to_str_types = function
                     ^ (expr_to_str_types y) ^ ")"
   | Shift(o,x,y) -> "Shift: " ^ "(" ^ (expr_to_str_types x) ^ (shift_op_to_str o)
                     ^ (arith_to_str y) ^ ")"
+  | Intr(o,x,y) -> "Log: " ^ "(" ^ (expr_to_str_types x) ^ (intr_op_to_str o)
+                  ^ (expr_to_str_types y) ^ ")"
   | Not e -> "Not: ~" ^ (expr_to_str_types e)
   | Fun(f,l) -> "Fun: " ^ f ^ "(" ^ (join "," (List.map expr_to_str_types l)) ^ ")"
   | Fun_v(f,e,l) -> "Fun_v: " ^ f ^ "[" ^ (arith_to_str e) ^ "]"
@@ -73,6 +85,8 @@ let rec expr_to_str = function
                             (arith_op_to_str o) (expr_to_str y)
   | Shift(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str_types x)
                             (shift_op_to_str o) (arith_to_str y)
+  | Intr(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
+                           (intr_op_to_str o) (expr_to_str y)
   | Not e -> sprintf "(~ %s)" (expr_to_str e)
   | Fun(f,l) -> sprintf "%s(%s)" f (join "," (List.map expr_to_str l))
   | Fun_v(f,e,l) -> sprintf "%s[%s](%s)" f (arith_to_str e)

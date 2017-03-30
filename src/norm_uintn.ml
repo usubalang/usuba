@@ -38,6 +38,12 @@ let rec norm_expr env (e: expr) : expr =
                        | Tuple l1, Tuple l2 ->
                           Tuple(List.map2 (fun x y -> Log(op,x,y)) l1 l2)
                        | _, _ -> Log(op,x1',x2'))
+  | Intr(op,x1,x2) -> let x1' = norm_expr env x1 in
+                      let x2' = norm_expr env x2 in
+                      ( match x1', x2' with
+                        | Tuple l1, Tuple l2 ->
+                           Tuple(List.map2 (fun x y -> Intr(op,x,y)) l1 l2)
+                        | _, _ -> Intr(op,x1',x2'))
   | Not e -> Not(norm_expr env e)
   | Shift(op,e,n) -> Shift(op,norm_expr env e,n)
   | _ -> raise (Invalid_AST "Invalid expr")

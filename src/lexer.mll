@@ -22,7 +22,23 @@ let _ =
      "fby", TOK_FBY;
      "forall", TOK_FORALL;
      "in", TOK_IN;
-   ]
+    ]
+
+(* intrinsics list *)
+let _ = 
+  List.iter (fun (a,b) -> Hashtbl.add kwd_table a b)
+  [
+    (* SSE - 128 bits *)
+    "pand", TOK_PAND;
+    "por", TOK_POR; 
+    "pxor", TOK_PXOR;
+    "pandn", TOK_PANDN;
+    (* AVX - 256 bits *)
+    "vpand", TOK_VPAND;
+    "vpor", TOK_VPOR; 
+    "vpxor", TOK_VPXOR;
+    "vpandn", TOK_VPANDN;
+  ]
 
 let next_line lexbuf =
     let pos = lexbuf.lex_curr_p in

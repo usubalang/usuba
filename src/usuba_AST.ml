@@ -8,7 +8,9 @@ type clock = string
 type log_op = And | Or | Xor
 type arith_op = Add | Mul | Sub | Div | Mod
 type shift_op = Lshift | Rshift | Lrotate | Rrotate
-                                    
+type intr_fun =  Pand | Por | Pxor | Pandn
+                 | VPand | VPor | VPxor | VPandn
+                                            
 type arith_expr =
   | Const_e of int
   | Var_e of ident
@@ -33,6 +35,7 @@ type expr = Const  of int
           | Shift  of shift_op * expr * arith_expr
           | Log    of log_op * expr * expr
           | Arith  of arith_op * expr * expr 
+          | Intr   of intr_fun * expr * expr
           | Fun    of ident * expr list
           | Fun_v  of ident * arith_expr * expr list (* nodes arrays *)
           | Fby    of expr * expr * ident option
