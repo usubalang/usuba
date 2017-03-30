@@ -1,4 +1,4 @@
-node f (x: u6::_, y: u6::_) returns z: u6::_
+node f ( x: u6, y: u6 ) returns ( z: u6 )
 vars
 let
     x ^= y;

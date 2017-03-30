@@ -20,34 +20,34 @@ let convert_unortho (input: int array) : int64 array =
  out
 
 
-let node1_ (x_) = 
-    let x_ = (x_1) in 
-    (x_)
+let main' (a') = 
+    let b' = a' in 
+    (b')
 
 
-let main xstream = 
+let main astream = 
   let cpt = ref 64 in
-  let stack_x = ref [| |] in
+  let stack_b = ref [| |] in
   Stream.from
     (fun _ -> 
-    if !cpt < 63 then let ret = (!stack_x.(!cpt)) in
+    if !cpt < 63 then let ret = (!stack_b.(!cpt)) in
                           incr cpt;
                           Some ret
     else
       try
-        let x = Array.make 63 Int64.zero in
+        let a = Array.make 63 Int64.zero in
         for i = 0 to 62 do
-          x.(i) <- Stream.next xstream
+          a.(i) <- Stream.next astream
         done;
-        let x' = convert_ortho 1 x in
-        let (x1) = (x'.(63)) in
-        let (ret1) = node1_ (x1) in
-        let x = Array.make 1 0 in
-        x.(0) <- ret64;
-        stack_x := convert_unortho x;
+        let a' = convert_ortho 1 a in
+        let (a1) = (a'.(63)) in
+        let (ret1) = main' (a1) in
+        let b = Array.make 1 0 in
+        b.(0) <- ret1;
+        stack_b := convert_unortho b;
 
         cpt := 0;
-        let return = Some (!stack_x.(!cpt)) in 
+        let return = Some (!stack_b.(!cpt)) in 
         incr cpt;
         return
       with Stream.Failure -> None)

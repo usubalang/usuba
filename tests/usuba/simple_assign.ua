@@ -1,4 +1,4 @@
-node f (a: uint_6::_) returns b:uint_4::_,c:uint_2::_
+node f ( a: u6 ) returns ( b:u4, c:u2 )
 vars
 let
     (b,c) = a

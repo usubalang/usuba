@@ -21,7 +21,7 @@ let convert_unortho (input: int array) : int64 array =
 
 
 let f' (x',y') = 
-    let z' = (x') + (y') in 
+    let z' = (y') + (x') in 
     (z')
 
 
@@ -50,14 +50,14 @@ let main xstream ystream =
         let (y1,y2,y3,y4,y5,y6,y7,y8) = (y'.(63),y'.(62),y'.(61),y'.(60),y'.(59),y'.(58),y'.(57),y'.(56)) in
         let (ret1,ret2,ret3,ret4,ret5,ret6,ret7,ret8) = f' (x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8) in
         let z = Array.make 8 0 in
-        z.(0) <- ret64;
-        z.(1) <- ret63;
-        z.(2) <- ret62;
-        z.(3) <- ret61;
-        z.(4) <- ret60;
-        z.(5) <- ret59;
-        z.(6) <- ret58;
-        z.(7) <- ret57;
+        z.(0) <- ret8;
+        z.(1) <- ret7;
+        z.(2) <- ret6;
+        z.(3) <- ret5;
+        z.(4) <- ret4;
+        z.(5) <- ret3;
+        z.(6) <- ret2;
+        z.(7) <- ret1;
         stack_z := convert_unortho z;
 
         cpt := 0;
