@@ -72,7 +72,7 @@ module Usuba_intrinsics = struct
     | _ -> false
                 
                 
-  let is_only_instrinsics (prog:prog) : bool =
+  let is_only_intrinsics (prog:prog) : bool =
     Usuba_norm.is_usuba_normalized prog &&
       List.for_all check_def prog
 end

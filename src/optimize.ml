@@ -13,26 +13,35 @@ module CSE_CF = struct
        ( match x',y' with
          | Const _, _ | _, Const _ -> (
            match Log(op,x',y') with
-           | Log(And,Const 1,x) -> fold_expr x
-           | Log(And,x,Const 1) -> fold_expr x
+           | Log(And,Const 1,x) -> x
+           | Log(And,x,Const 1) -> x
            | Log(And,Const 0,_) -> Const 0
            | Log(And,_,Const 0) -> Const 0
+                                         
            | Log(Or,Const 1,_) -> Const 1
            | Log(Or,_,Const 1) -> Const 1
-           | Log(Or,Const 0,x) -> fold_expr x
-           | Log(Or,x,Const 0) -> fold_expr x
-           | Log(Xor,Const 0,Const 0) -> Const 0
-           | Log(Xor,Const 0,Const 1) -> Const 1
-           | Log(Xor,Const 1,Const 0) -> Const 1
-           | Log(Xor,Const 1,Const 1) -> Const 0
-           (* | Log(Xor,Const 1,x) -> Not(x) *)
-           (* | Log(Xor,x,Const 1) -> Not(x) *)
-           | Log(Xor,Const 0,x) -> fold_expr x
-           | Log(Xor,x,Const 0) -> fold_expr x
+           | Log(Or,Const 0,x) -> x
+           | Log(Or,x,Const 0) -> x
+                                            
+           | Log(Xor,Const 0,x) -> x    
+           | Log(Xor,x,Const 0) -> x
+           | Log(Xor,Const 1,x) -> Not x
+           | Log(Xor,x,Const 1) -> Not x
+                                             
+           | Log(Andn,Const 0,x) -> x
+           | Log(Andn,x,Const 0) -> Const 0
+           | Log(Andn,Const 1,x) -> Const 0
+           | Log(Andn,x,Const 1) -> Not x
+                                        
            | _ -> Log(op,x',y'))
          | _, _ -> Log(op,x',y') )
     | Fun(f,l) -> Fun(f,List.map fold_expr l)
     | Tuple l -> Tuple(List.map fold_expr l)
+    | Not x -> let x' = fold_expr x in
+               ( match x with
+                 | Const 1 -> Const 0
+                 | Const 0 -> Const 1
+                 | _ -> Not x')
     | _ -> e
              
   let is_dummy_assign (e:expr) : bool =
@@ -58,8 +67,11 @@ module CSE_CF = struct
     | Some x -> x
     | None ->
        let e' = fold_expr (
-                    match e with
-                    | Log(op,x,y) -> Log(op,cse_expr env y,cse_expr env x)
+                    match e' with
+                    | Log(op,x,y) ->
+                       (match op with
+                        | And | Or | Xor -> Log(op,cse_expr env y,cse_expr env x)
+                        | Andn -> e')
                     | Arith(Add,x,y) -> Arith(Add,cse_expr env y,cse_expr env x)
                     | Arith(Mul,x,y) -> Arith(Mul,cse_expr env y,cse_expr env x)
                     | _ -> e' ) in
@@ -68,16 +80,17 @@ module CSE_CF = struct
        | None -> e'
               
   let cse_single_deq env ((p,e):(var list)*expr): ((var list)*expr) list =
-    let e = cse_expr env e in
-    match env_fetch env e with
-    | Some x -> env_add env (pat_to_expr p) x;
+    let e' = cse_expr env e in
+    let p' = pat_to_expr p in
+    match env_fetch env e' with
+    | Some x -> env_add env p' x;
                 []
-    | None -> if is_dummy_assign e then
-                ( env_add env (pat_to_expr p) e;
+    | None -> if is_dummy_assign e' then
+                ( env_add env p' e';
                   [] )
               else
-                ( env_add env e (pat_to_expr p);
-                  [p,e] )
+                ( env_add env e' p';
+                  [p,e'] )
 
   let dont_opti (p:var list) (env:(var, int) Hashtbl.t) : bool =
     List.length (List.filter (fun x -> match env_fetch env x with
@@ -100,10 +113,8 @@ module CSE_CF = struct
              else
                ( let r = cse_single_deq env (p,e) in
                  List.map (fun (p,e) -> Norec(p,e)) r)
-          | Rec _ -> raise (Invalid_AST "Invalid Rec")) deq
-           
+          | Rec _ -> raise (Invalid_AST "Invalid Rec")) deq           
                  
-
   let cse_def (def: def) : def =
     match def with
     | Single(name,p_in,p_out,p_var,body) ->

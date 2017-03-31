@@ -35,7 +35,6 @@ let print_naive_ml (file_in: string) (prog: Usuba_AST.prog) =
   let out_name = List.nth path (List.length path - 1) in
   let out = open_out ("tests/ocaml_run/" ^ out_name ^ "_naive.ml") in
   fprintf out "%s" (Ocaml_gen_naive.prog_to_str_ml prog);
-  (* print_endline (Ocaml_gen_naive.prog_to_str_ml prog); *)
   close_out out
 
 let print_ortho_ml (file_in: string) (prog: Usuba_AST.prog) =
@@ -48,6 +47,18 @@ let print_ortho_ml (file_in: string) (prog: Usuba_AST.prog) =
   let out = open_out ("tests/ocaml_run/" ^ out_name ^ "_ortho.ml") in
   fprintf out "%s" (Ocaml_gen_ortho.prog_to_str_ml prog);
   close_out out
+
+let print_c (file_in: string) (prog: Usuba_AST.prog) =
+  (* Generating C code *)
+  let full_name = match (String.split_on_char '.' file_in) with
+    | []   -> file_in
+    | x::_ ->  x in
+  let path = String.split_on_char '/' full_name in
+  let out_name = List.nth path (List.length path - 1) in
+  let out = open_out ("tests/C/" ^ out_name ^ ".c") in
+  let normalized = Normalize.norm_prog prog in
+  fprintf out "%s" (Usuba_to_c.prog_to_c normalized);
+  close_out out
             
 
 let main () =
@@ -57,6 +68,7 @@ let main () =
             (fun s ->
              let prog = parse_file s in
              print_naive_ml s prog; print_ortho_ml s prog;
+            (*print_c s prog; *)
              (*let normalized = Normalize.norm_prog prog in
              let sol = Usuba_to_sol.usuba_to_sol normalized in
              Sol_print.print_prog sol*)) "Usage"

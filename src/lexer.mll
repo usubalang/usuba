@@ -55,6 +55,7 @@ rule token = parse
 | [' ' '\t']+  { token lexbuf; }
 | ['\n']       { next_line lexbuf; token lexbuf; }
 | '#' [^ '\n' '\r']*     { token lexbuf; }
+| "//" [^ '\n' '\r']*    { token lexbuf; }
 
                            
 | "uint_" (['0' - '9']+ as n)    { TOK_type (Int(int_of_string n))  }

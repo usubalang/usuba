@@ -151,7 +151,7 @@ perm[] roundkey (key : u64) returns ( roundkey : u48 )
 ]
 
 
-node des_single (left_in : u32, right_in : u32, key : u48)
+node des_single ( left_in : u32, right_in : u32, key : u48 )
         returns ( out : u64 )
 vars
     sbox_in : u6[8], sbox_out : u4[8]
@@ -166,11 +166,11 @@ let
     out = (right_in,left_in ^ permut(sbox_out))
 tel
 
-node des (plaintext : u64, key : u64)
+node des ( plaintext : u64, key : u64 )
      returns ( ciphered : u64 )
 vars
     des : u64[17],
-    left:u32,right:u32
+    left : u32, right : u32
 let
     # Initialisation (initial permutation)
     des[0] = init_p(plaintext);

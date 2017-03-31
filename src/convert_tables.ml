@@ -40,8 +40,9 @@ let tmp_var i j k =
 
 (* let mux c a b = Log(Xor,[Var a; Log(And,[c; Var b])]) *)
 (* let mux c a b = Log(Xor,[Var a; Log(And,[c;Log(Xor,[Var a;Var b])])]) *)
-let mux c a b = Log(Or,Log(And,Not c,ExpVar(Var a)),Log(And,c,ExpVar(Var b)))
-                                       
+let mux c a b = Log(Or,Log(Andn,c,ExpVar(Var a)),Log(And,c,ExpVar(Var b)))
+
+                   
 let rewrite_table id p_in p_out l : def =
   let exp_p_in  = Array.of_list @@ rewrite_p p_in in
   let exp_p_out = Array.of_list @@ rewrite_p p_out in

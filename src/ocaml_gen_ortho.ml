@@ -153,11 +153,13 @@ let rec expr_to_str_ml tab e =
   | ExpVar(Var v) -> ident_to_str_ml v
   | ExpVar(Field(Var x,Const_e i)) -> (ident_to_str_ml x) ^ (string_of_int i)
   | Tuple t -> "(" ^ (join "," (List.map (expr_to_str_ml tab) t)) ^ ")"
+  | Log (Andn,_,_) -> expr_to_str_ml tab (unfold_andn e)
   | Log (op,a,b) -> "(" ^ (expr_to_str_ml tab a) ^  ")" ^
                       ( match op with
                         | And -> " land "
                         | Or  -> " lor "
-                        | Xor -> " lxor " )
+                        | Xor -> " lxor "
+                        | _   -> unreached ())
                       ^ "(" ^ (expr_to_str_ml tab b) ^ ")"
   | Arith (op,a,b) -> "(" ^ (expr_to_str_ml tab a) ^  ")" ^
                       ( match op with

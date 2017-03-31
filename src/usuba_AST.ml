@@ -5,7 +5,7 @@ type ident = string
                
 type clock = string
 
-type log_op = And | Or | Xor
+type log_op = And | Or | Xor | Andn
 type arith_op = Add | Mul | Sub | Div | Mod
 type shift_op = Lshift | Rshift | Lrotate | Rrotate
 type intr_fun =  Pand | Por | Pxor | Pandn

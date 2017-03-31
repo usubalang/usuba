@@ -7,6 +7,7 @@ let log_op_to_str = function
   | And -> "&"
   | Or  -> "|"
   | Xor -> "^"
+  | _ -> unreached ()
              
 let arith_op_to_str = function
   | Add -> "+"
@@ -60,6 +61,7 @@ let rec expr_to_str_types = function
   | Const c -> "Const: " ^ (string_of_int c)
   | ExpVar v -> "ExpVar: " ^ (var_to_str v)
   | Tuple t -> "Tuple: (" ^ (join "," (List.map expr_to_str_types t)) ^ ")"
+  | Log(Andn,x,y) -> "Andn: " ^ (expr_to_str_types (unfold_andn (Log(Andn,x,y))))
   | Log(o,x,y) -> "Log: " ^ "(" ^ (expr_to_str_types x) ^ (log_op_to_str o)
                   ^ (expr_to_str_types y) ^ ")"
   | Arith(o,x,y) -> "Arith: " ^ "(" ^ (expr_to_str_types x) ^ (arith_op_to_str o)

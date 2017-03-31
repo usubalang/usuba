@@ -19,6 +19,11 @@ let rec pow a = function
      let b = pow a (n / 2) in
      b * b * (if n mod 2 = 0 then 1 else a)
 
+let unfold_andn e =
+  match e with
+  | Log(Andn,x,y) -> Log(And,Not x,y)
+  | _ -> e
+
 let last l =
   List.nth l (List.length l - 1)
 

@@ -133,6 +133,7 @@ let rec expr_to_str_ml tab e =
   | Tuple t -> "(" ^ (join "," (List.map (expr_to_str_ml tab) t)) ^ ")"
   | Log (Xor,a,b) -> expr_to_str_ml tab (Log(Or,Log(And,a,Not b),
                                              Log(And,Not a,b)))
+  | Log (Andn,_,_) -> expr_to_str_ml tab (unfold_andn e)
   | Log (op,a,b) -> "(" ^ (expr_to_str_ml tab a) ^  ")" ^
                       ( match op with
                         | And -> " && "

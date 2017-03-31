@@ -1,21 +1,23 @@
 open Usuba_AST
 open Utils
 
-
-let op_to_intr (op:arith_op) : intr_fun =
+       
+let op_to_intr (op:log_op) : intr_fun =
   match op with
-  | And -> Pand
-  | Or  -> Por
-  | Xor -> Pxor
+  | And  -> Pand
+  | Or   -> Por
+  | Xor  -> Pxor
+  | Andn -> Pandn
 
 let norm_deq (deq:deq) : deq =
   match deq with
-  | Norec(p,e) -> begin
-                  match e with
-                  | Arith(op,x,y) -> Intr(op_to_intr op,x,y)
-                  | Not x -> Intr(Pandn,x,Const 1)
-                  | _ -> e
-                end
+  | Norec(p,e) -> Norec(p,
+                        begin
+                          match e with
+                          | Log(op,x,y) -> Intr(op_to_intr op,x,y)
+                          | Not x -> Intr(Pandn,x,Const 1)
+                          | _ -> e
+                        end)
   | _ -> raise (Invalid_AST "Rec")
        
 let norm_def (def:def) : def =

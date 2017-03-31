@@ -12,6 +12,7 @@ let convert_log_op op =
   | Usuba_AST.And -> Sol_AST.And
   | Or  -> Or
   | Xor -> Xor
+  | Andn -> raise (Not_implemented "Andn")
              
 let convert_arith_op op =
   match op with

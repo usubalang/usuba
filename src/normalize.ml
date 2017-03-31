@@ -36,7 +36,7 @@ let print title body =
       if true then print_endline (Usuba_print.prog_to_str body)
     end
 
-(* Note: the print actually if the boolean if the function "print" above 
+(* Note: the print actually print if the booleans in the function "print" above 
          are set to true (or at least the first one) *)
 let norm_prog (prog: prog)  =
   print "INPUT:" prog;
@@ -60,7 +60,7 @@ let norm_prog (prog: prog)  =
     if Bitsliceable.bitsliceable perm_expanded then
       (let normed = Norm_bitslice.norm_prog perm_expanded in
       print "PRE-NORMALIZED:" normed;
-      let inlined = Inline.inline normed in
+      let inlined = (*Inline.inline*) normed in
       print "INLINED:" inlined;
       Norm_bitslice.norm_prog inlined)
     else
