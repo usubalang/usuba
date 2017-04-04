@@ -68,7 +68,7 @@ let main () =
             (fun s ->
              let prog = parse_file s in
              print_naive_ml s prog; print_ortho_ml s prog;
-            (*print_c s prog; *)
+             print_c s prog; 
              (*let normalized = Normalize.norm_prog prog in
              let sol = Usuba_to_sol.usuba_to_sol normalized in
              Sol_print.print_prog sol*)) "Usage"

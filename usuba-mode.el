@@ -3,7 +3,7 @@
 
 (defvar usuba-mode-map
   (make-keymap)
-  "Keymap for WPDL major mode")
+  "Keymap for usuba major mode")
 
 (add-to-list 'auto-mode-alist '("\\.ua\\'" . usuba-mode))
 
