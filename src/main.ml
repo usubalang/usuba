@@ -4,8 +4,8 @@ open Lexing
 open Usuba_AST
 open Ocaml_gen_naive
 open Printf
-open Sol_AST
-open Usuba_to_sol
+(* open Sol_AST *)
+(* open Usuba_to_sol *)
        
 let print_position outx lexbuf =
   let pos = lexbuf.lex_curr_p in

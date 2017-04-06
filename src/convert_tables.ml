@@ -48,7 +48,8 @@ let rewrite_table id p_in p_out l : def =
   let exp_p_out = Array.of_list @@ rewrite_p p_out in
   let size_in = Array.length exp_p_in in
   let size_out = Array.length exp_p_out in
-  let body : deq list ref = ref [] in
+  let body = ref [] in
+  let vars = ref [] in
   for i = 1 to size_out do (* for each bit ou the output *)
 
     (* get the bits of the output the current rank *)
@@ -56,26 +57,32 @@ let rewrite_table id p_in p_out l : def =
 
     (* initialise rank 0 *)
     for j = 1 to List.length l do
-      body := Norec ([Var (tmp_var i 0 (j-1))],Const bits.(j-1)) :: !body
+      let var = tmp_var i 0 (j-1) in
+      vars := (var,Bool,"") :: !vars;
+      body := Norec ([Var var],Const bits.(j-1)) :: !body
     done;
 
     (* for each depth *)
     for j = 1 to size_in do
       
       for k = 1 to pow 2 (size_in-j) do
-        body := Norec ([Var (tmp_var i j (k-1))],
-                       mux (ExpVar exp_p_in.(size_in-j))
-                           (tmp_var i (j-1) ((k-1)*2))
-                           (tmp_var i (j-1) ((k-1)*2+1)))
+        let var_l  = tmp_var i j (k-1) in
+        let var_r1 = tmp_var i (j-1) ((k-1)*2) in
+        let var_r2 = tmp_var i (j-1) ((k-1)*2+1) in
+      vars := (var_l,Bool,"") :: (var_r1,Bool,"") :: (var_r2,Bool,"") ::!vars;
+        body := Norec ([Var var_l],
+                       mux (ExpVar exp_p_in.(size_in-j)) var_r1 var_r2)
                 :: !body
       done
     done;
     
-    (* set output *) 
-    body := Norec ([exp_p_out.(i-1)], ExpVar(Var (tmp_var i size_in 0))) :: !body
+    (* set output *)
+    let var = tmp_var i size_in 0 in
+    vars := (var,Bool,"") :: !vars;
+    body := Norec ([exp_p_out.(i-1)], ExpVar(Var var)) :: !body
       
   done;
-  Single(id,p_in,p_out,[],List.rev !body)
+  Single(id,p_in,p_out,!vars,List.rev !body)
        
 let rec rewrite_def (def: def) : def list =
   match def with

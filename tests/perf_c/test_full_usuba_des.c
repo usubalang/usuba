@@ -15,7 +15,7 @@
 #include "emmintrin.h"
 #include "smmintrin.h"
 
-#include "des_custom.c"
+#include "full_usuba_des.c"
 
 void print_int64 (unsigned long c) {
   for (int i = 0; i < 64; i++)

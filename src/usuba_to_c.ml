@@ -10,24 +10,15 @@ let op_to_c (op:intr_fun) : string =
   | Por   -> "_mm_or_si128"
   | Pxor  -> "_mm_xor_si128"
   | Pandn -> "_mm_andnot_si128"
-  | VPand  -> "_mm256_and_si128"
-  | VPor   -> "_mm256_or_si128"
-  | VPxor  -> "_mm256_xor_si128"
-  | VPandn -> "_mm256_andnot_si128"
-
-let collect_decls (p_in:p) (deqs:deq list) : ident list =
-  let vars = Hashtbl.create 10000 in
-  let rec collect_in_expr e = match e with
-    | ExpVar(Var v) -> Hashtbl.remove vars v;env_add vars v 1
-    | Intr(op,x,y) -> collect_in_expr x; collect_in_expr y
-    | _ -> () in
-  List.iter (function
-              | Norec(p,e) -> List.iter (function Var v -> env_add vars v 1
-                                              | _ -> unreached ()) p;
-                             collect_in_expr e
-             | _ -> unreached ()) deqs;
-  List.iter (fun (id,_,_) -> Hashtbl.remove vars id) p_in;
-  Hashtbl.fold (fun k _ acc -> k :: acc) vars []
+  | VPand  -> "_mm256_and_si256"
+  | VPor   -> "_mm256_or_si256"
+  | VPxor  -> "_mm256_xor_si256"
+  | VPandn -> "_mm256_andnot_si256"
+  (* AVX-512 aren't supported on most modern processors *)
+  | VPandd  -> "_mm512_and_si512"
+  | VPord   -> "_mm512_or_si512"
+  | VPxord  -> "_mm512_xor_si512"
+  | VPandnd -> "_mm512_andnot_si512"
   
                 
 let replace_p_out (p_out: p) (deqs:deq list) : deq list =
@@ -55,6 +46,8 @@ let rec expr_to_c (e:expr) : string =
   | Const n -> ( match n with
                  | 0 -> "_mm_setzero_si128()"
                  | 1 -> "_mm_set1_epi32(-1)"
+                 (* | 0 -> "_mm256_setzero_si256()" *)
+                 (* | 1 -> "_mm256_set1_epi32(-1)" *)
                  | _ -> raise (Error ("Only 0 and 1 are allowed. Got "
                                       ^ (string_of_int n))))
   | ExpVar(Var id) -> rename id
@@ -73,16 +66,25 @@ let deqs_to_c (deqs: deq list) : string =
 let def_to_c (def:def) : string =
   match def with
   | Single(id,p_in,p_out,vars,body) ->
-     let decls = collect_decls p_in body in
      Printf.sprintf
        "void %s (%s,%s) {\n%s\n%s\n%s\n%s\n}\n"
        (rename id)
+       
+       (* parameters *)
        ("__m128i input[" ^ (string_of_int (List.length p_in)) ^ "]")
        ("__m128i output[" ^ (string_of_int (List.length p_out)) ^ "]")
+
+       (* retrieving input value *)
        (join "\n" (List.mapi (fun i (id,_,_) ->"  __m128i " ^ (rename id) ^ " = input["
                                                ^ (string_of_int i) ^ "];") p_in))
-       (join "\n" (List.map (fun id -> "  __m128i " ^ (rename id) ^ ";") decls))
+
+       (* declaring variabes *)
+       (join "\n" (List.map (fun (id,_,_) -> "  __m128i " ^ (rename id) ^ ";") (vars@p_out)))
+
+       (* the body *)
        (deqs_to_c body)
+
+       (* setting the output *)
        (join "\n" (List.mapi (fun i (id,_,_) -> "  output[" ^ (string_of_int i) ^ "] = "
                                                 ^ (rename id) ^ ";") p_out))
   | _ -> unreached () 
@@ -93,6 +95,8 @@ let prog_to_c (prog:prog) : string =
   let prog = Choose_instr.choose_instr prog in
   assert (Assert_lang.Usuba_intrinsics.is_only_intrinsics prog);
   "#include <stdlib.h>\n"
+  ^ "#include \"mmintrin.h\"\n"
+  ^ "#include \"immintrin.h\"\n"
   ^ "#include \"tmmintrin.h\"\n"
   ^ "#include \"emmintrin.h\"\n\n\n"
   ^ (join "\n\n" (List.map def_to_c prog))

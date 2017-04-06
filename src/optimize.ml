@@ -125,7 +125,54 @@ module CSE_CF = struct
     List.map cse_def prog
                
 end
+
+module Clean = struct
+
+  let rec clean_var env (var:var) : unit =
+    match var with
+    | Var id -> env_add env id 1
+    | Field(v,_) -> clean_var env v
+    | Index(id,_) -> env_add env id 1
+    | Range(id,_,_) -> env_add env id 1
+
+  let rec clean_expr env (e:expr) : unit =
+    match e with
+    | ExpVar(v) -> clean_var env v
+    | Tuple l -> List.iter (clean_expr env) l
+    | Not e -> clean_expr env e
+    | Shift(_,x,_) -> clean_expr env x
+    | Log(_,x,y) -> clean_expr env x; clean_expr env y
+    | Arith(_,x,y) -> clean_expr env x; clean_expr env y
+    | Intr(_,x,y) -> clean_expr env x; clean_expr env y
+    | Fun(_,l) -> List.iter (clean_expr env) l
+    | Fun_v(_,_,l) -> List.iter (clean_expr env) l
+    | Fby(ei,ef,_) -> clean_expr env ei; clean_expr env ef
+    | _ -> ()
+  
+  let clean_in_deqs (vars:p) (deqs:deq list) : p =
+    let env = Hashtbl.create 100 in
+    List.iter
+      (function
+        | Norec(l,e) -> List.iter (clean_var env) l;
+                        clean_expr env e
+        | Rec(_,_,_,l,e) -> List.iter (clean_var env) l;
+                            clean_expr env e) deqs;
+    List.filter (fun (id,_,_) -> match env_fetch env id with
+                                 | Some _ -> true
+                                 | None -> false) vars
+
+  let clean_def (def:def) : def =
+    match def with
+    | Single(id,p_in,p_out,vars,body) ->
+       let vars = clean_in_deqs vars body in
+       Single(id,p_in,p_out,vars,body)
+    | _ -> def
+  
+  let clean_vars_decl (prog:prog) : prog =
+    List.map clean_def prog
+end
        
 let opt_prog (prog: Usuba_AST.prog) : Usuba_AST.prog =
-  CSE_CF.cse_prog prog
+  let optimized = CSE_CF.cse_prog prog in
+  Clean.clean_vars_decl optimized
   

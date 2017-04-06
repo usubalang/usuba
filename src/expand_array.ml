@@ -14,10 +14,48 @@
 
 open Usuba_AST
 open Utils
+
        
 let expand_var_array id size =
   List.map (fun x -> Var (x^"'")) (gen_list_0 id size)
-                    
+
+
+
+let rec expand_var_range (v:var) : var list =
+  
+  let rec expand_range id i n acc =
+    if i = n then
+      List.rev (Var(id ^ (string_of_int i) ^ "'") :: acc)
+    else
+      expand_range id (i+1) n (Var(id ^ (string_of_int i) ^ "'") :: acc) in
+  
+  match v with
+  | Range(id,Const_e ei,Const_e ef) -> expand_range id ei ef []
+  | Field(v',e) -> ( match expand_var_range v' with
+                     | x::[] -> [ Field(x,e) ]
+                     | l -> List.map (fun x -> Field(x,e)) l )
+  | _ -> [ v ]
+           
+           
+let expand_pat_range (pat:var list) : var list =
+  List.flatten @@ List.map expand_var_range pat
+
+let rec expand_expr_range (e:expr) : expr =
+  Norm_tuples.Simplify_tuples.simpl_tuple
+    (match e with
+     | Const _ -> e
+     | ExpVar v -> Tuple(List.map (fun x -> ExpVar x) (expand_var_range v))
+     | Tuple l -> Tuple (List.map expand_expr_range l)
+     | Not e -> Not (expand_expr_range e)
+     | Shift(op,e,n) -> Shift(op,expand_expr_range e,n)
+     | Log(op,x,y) -> Log(op,expand_expr_range x,expand_expr_range y)
+     | Arith(op,x,y) -> Arith(op,expand_expr_range x,expand_expr_range y)
+     | Intr(op,x,y) -> Intr(op,expand_expr_range x,expand_expr_range y)
+     | Fun(f,l) -> Fun(f,List.map expand_expr_range l)
+     | Fun_v(f,n,l) -> Fun_v(f,n,List.map expand_expr_range l)
+     | Fby(x,y,f) -> Fby(expand_expr_range x,expand_expr_range y,f)
+     | Nop -> Nop)
+          
 let rec rewrite_expr loc_env env_var (i:int) (e:expr) : expr =
   let rec_call = rewrite_expr loc_env env_var i in
   match e with
@@ -129,9 +167,21 @@ let expand_array (prog: prog) : prog =
                                        Single(id ^ (string_of_int i),
                                               p_in,p_out,vars,body)) nodes
                          | _ -> [ x ] ) prog in
-  List.map (fun def -> match def with
-                       | Single(id,p_in,p_out,vars,body) ->
-                          Single(id,rewrite_p p_in,rewrite_p p_out,
-                                 rewrite_p vars,rewrite_deqs p_in p_out vars body)
-                       | _ -> def) prog'
-           
+  let expanded =
+    List.map (fun def ->
+              match def with
+              | Single(id,p_in,p_out,vars,body) ->
+                 Single(id,rewrite_p p_in,rewrite_p p_out,
+                        rewrite_p vars,rewrite_deqs p_in p_out vars body)
+              | _ -> def) prog' in
+  List.map (fun def ->
+            match def with
+            | Single(id,p_in,p_out,vars,body) ->
+               Single(id,p_in,p_out,vars,
+                      List.map (fun x -> match x with
+                                         | Norec(pat,e) ->
+                                            Norec(expand_pat_range pat,
+                                                  expand_expr_range e)
+                                         | _ -> x) body)
+            | _ -> def) expanded 
+    

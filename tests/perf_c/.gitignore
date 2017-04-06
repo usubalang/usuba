@@ -2,3 +2,15 @@ make_input
 test_des
 *.txt
 *.o
+test_full_usuba_des
+test_kwan_usuba_des
+test_kwan_des
+test_no_ortho_full_usuba
+test_no_ortho_kwan_usuba
+test_no_ortho_kwan
+test_256
+test_no_ortho_256
+test_64_simd
+test_no_ortho_64_simd
+test_64
+test_no_ortho_64

@@ -7,10 +7,13 @@ exception Undeclared of string
 (* ************************************************************************** *)
 
 let rec expand_intn (id: ident) (n: int) : ident list =
-  let rec aux i =
-    if i > n then []
-    else (id ^ (string_of_int i)) :: (aux (i+1))
-  in aux 1
+  if n = 1 || n = 0 then
+    [ id ]
+  else
+    let rec aux i =
+      if i > n then []
+      else (id ^ (string_of_int i)) :: (aux (i+1))
+    in aux 1
          
 let expand_intn_typed (id: ident) (n: int) (ck: clock) =
   List.map (fun x -> (x,Bool,ck)) (expand_intn id n)
@@ -23,11 +26,14 @@ let rec expand_intn_expr (id: ident) (n: int option) : expr =
   | Some n -> Tuple(List.map (fun x -> ExpVar(Var x)) (expand_intn id n))
   | None -> ExpVar(Var id)
 
-
+let new_vars = ref []
+                   
 let gen_tmp =
   let cpt = ref 0 in
   fun () -> incr cpt;
-            "_tmp" ^ (string_of_int !cpt) ^ "_"
+            let var = "_tmp" ^ (string_of_int !cpt) ^ "_" in
+            new_vars := (var,Bool,"") :: !new_vars;
+            var
 
 (* Note that when this function is called, Var have already been normalized *)
 let rec get_expr_size env_fun l =
@@ -141,8 +147,10 @@ let norm_deq env_fun (body: deq list) : deq list =
 let norm_def env_fun (def: def) : def =
   match def with
   | Single(name,p_in,p_out,p_var,body) ->
-      env_add_fun name p_in p_out env_fun;
-      Single(name,p_in,p_out,p_var,norm_deq env_fun body)
+     env_add_fun name p_in p_out env_fun;
+     new_vars := [];
+     let body = norm_deq env_fun body in
+      Single(name,p_in,p_out,p_var @ !new_vars,norm_deq env_fun body)
   | _ -> raise (Invalid_AST "Illegal non-Single def")
 
 let print title body =

@@ -31,6 +31,10 @@ let intr_op_to_str = function
   | VPor   -> "vpor"
   | VPxor  -> "vpxor"
   | VPandn -> "vpandn"
+  | VPandd  -> "vpandd"
+  | VPord   -> "vpord"
+  | VPxord  -> "vpxord"
+  | VPandnd -> "vpandnd"
 
 let rec arith_to_str = function
   | Const_e i -> string_of_int i

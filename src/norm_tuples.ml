@@ -4,7 +4,7 @@ open Utils
 (* Removes tuples of 1 element *)
 module Simplify_tuples = struct
 
-  let rec simpl_tuple t =
+  let rec simpl_tuple (t:expr) : expr =
     match t with
     | Tuple l -> if List.length l = 1 then List.nth l 0
                  else (match List.map simpl_tuple l with
@@ -13,6 +13,7 @@ module Simplify_tuples = struct
     | Not e -> Not (simpl_tuple e)
     | Shift(op,e,n) -> Shift(op,simpl_tuple e,n)
     | Log(op,x,y) -> Log(op,simpl_tuple x,simpl_tuple y)
+    | Arith(op,x,y) -> Arith(op,simpl_tuple x,simpl_tuple y)
     | Intr(op,x,y) -> Intr(op,simpl_tuple x,simpl_tuple y)
     | Fun(f,l) -> Fun(f,List.map simpl_tuple l)
     | Fun_v(f,n,l) -> Fun_v(f,n,List.map simpl_tuple l)

@@ -10,6 +10,7 @@ type arith_op = Add | Mul | Sub | Div | Mod
 type shift_op = Lshift | Rshift | Lrotate | Rrotate
 type intr_fun =  Pand | Por | Pxor | Pandn
                  | VPand | VPor | VPxor | VPandn
+                 | VPandd | VPord | VPxord | VPandnd
                                             
 type arith_expr =
   | Const_e of int

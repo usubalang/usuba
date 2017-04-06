@@ -1,14 +1,11 @@
 type ident = string
 
-(* should only have: *)
-(* type bin_op = PADD | PMUL | PAND ... *)
+(* TODO: add arithmetics operators *)
 type op =
-  | Not
-  | And | Or | Xor
-  | Add | Mul | Sub | Div | Mod
-  | Lshift | Rshift | Lrotate | Rrotate
+  | Pand | Por | Pxor | Pandn
+  | VPand | VPor | VPxor | VPandn
                                   
-type typ = Bool | Int64 | Int128 | Int256
+type typ = Bool | Int64 | Int128 | Int256 | Int512
 
 type m = (ident * typ) list
                        
@@ -17,14 +14,13 @@ type p = m
 type c =
   | Var of ident               (*   x               *)
   | Const of int               (*   v               *)
-  | Tuple of c list            (*   (c, ... , c)    *)
   | State_var of ident         (*   state(x)        *)
-  | Op of op * c list          (*  op(c..c)        *)
+  | Op of op * c * c           (*   op(c,c)         *)
 
                     
 type s =
-  | Asgn of ident list * c               (*   x := c                      *)
-  | State_asgn of ident list * c         (*   state(x) := c               *)
+  | Asgn of ident * c                    (*   x := c                      *)
+  | State_asgn of ident * c              (*   state(x) := c               *)
   | Skip                                 (*   skip                        *)
   | Reset of ident                       (*   o.reset()                   *)
   | Step of ident list * ident * c list  (*   (x,..,x) = o.step(c,..,c)   *)
