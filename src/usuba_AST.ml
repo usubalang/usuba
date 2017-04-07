@@ -8,9 +8,31 @@ type clock = string
 type log_op = And | Or | Xor | Andn
 type arith_op = Add | Mul | Sub | Div | Mod
 type shift_op = Lshift | Rshift | Lrotate | Rrotate
-type intr_fun =  Pand | Por | Pxor | Pandn
-                 | VPand | VPor | VPxor | VPandn
-                 | VPandd | VPord | VPxord | VPandnd
+type intr_fun =
+    (* General purpose registers *)
+    And64 | Or64 | Xor64 | Not64
+    | Add64 | Sub64 | Mul64 | Div64 | Mod64
+    (* MMX *)
+    | Pand64 | Por64 | Pxor64 | Pandn64
+    | Paddb64 | Paddw64 | Paddd64
+    | Psubb64 | Psubw64 | Psubd64
+    (* SSE *)
+    | Pand128 | Por128 | Pxor128 | Pandn128
+    | Paddb128 | Paddw128 | Paddd128 | Paddq128
+    | Psubb128 | Psubw128 | Psubd128 | Psubq128
+    (* AVX *) 
+    | VPand256 | VPor256 | VPxor256 | VPandn256
+    | VPaddb256 | VPaddw256 | VPaddd256 | VPaddq256
+    | VPsubb256 | VPsubw256 | VPsubd256 | VPsubq256
+    (* AVX-512 *)
+    | VPandd512 | VPord512 | VPxord512 | VPandnd512 
+
+type slice_type =
+    Std (* 64-bit *)
+    | MMX of int
+    | SSE of int
+    | AVX of int
+    | AVX512
                                             
 type arith_expr =
   | Const_e of int

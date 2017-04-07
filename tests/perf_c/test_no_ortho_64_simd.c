@@ -44,12 +44,11 @@ int main() {
   unsigned char key_std_char[8] = {0x13,0x34,0x57,0x79,0x9B,0xBC,0xDF,0xF1};
   unsigned long key_std = *(unsigned long*) key_std_char;
   __m64 *key_ortho = aligned_alloc(32,64 * sizeof *key_ortho);
-  __m64 dummy = _mm_setzero_si64();
   
   for (int i = 0; i < 64; i++)
     if (key_std >> i & 1)
       // _mm64_cmpeq_epi64(x,x) sets all the bits to 1.
-      key_ortho[i] = _mm_cmpeq_pi32(dummy,dummy);
+      key_ortho[i] = _mm_cmpeq_pi32(_mm_setzero_si64(),_mm_setzero_si64());
     else
       // _mm64_setzero_si64() sets all the bits to 0.
       key_ortho[i] = _mm_setzero_si64();

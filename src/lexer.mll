@@ -28,16 +28,48 @@ let _ =
 let _ = 
   List.iter (fun (a,b) -> Hashtbl.add kwd_table a b)
   [
-    (* SSE - 128 bits *)
-    "pand", TOK_PAND;
-    "por", TOK_POR; 
-    "pxor", TOK_PXOR;
-    "pandn", TOK_PANDN;
-    (* AVX - 256 bits *)
-    "vpand", TOK_VPAND;
-    "vpor", TOK_VPOR; 
-    "vpxor", TOK_VPXOR;
-    "vpandn", TOK_VPANDN;
+    (* MMX *)
+    "pand64", TOK_intrinsic Pand64;
+    "por64", TOK_intrinsic Por64;
+    "pxor64", TOK_intrinsic Pxor64;
+    "pandn64", TOK_intrinsic Pandn64;
+    "paddb64", TOK_intrinsic Paddb64;
+    "paddw64", TOK_intrinsic Paddw64;
+    "paddd64", TOK_intrinsic Paddd64;
+    "psubb64", TOK_intrinsic Psubb64;
+    "psubw64", TOK_intrinsic Psubw64;
+    "psubd64", TOK_intrinsic Psubd64;
+    (* SSE *)
+    "pand128", TOK_intrinsic Pand128;
+    "por128", TOK_intrinsic Por128;
+    "pxor128", TOK_intrinsic Pxor128;
+    "pandn128", TOK_intrinsic Pandn128;
+    "paddb128", TOK_intrinsic Paddb128;
+    "paddw128", TOK_intrinsic Paddw128;
+    "paddd128", TOK_intrinsic Paddd128;
+    "paddq128", TOK_intrinsic Paddq128;
+    "psubb128", TOK_intrinsic Psubb128;
+    "psubw128", TOK_intrinsic Psubw128;
+    "psubd128", TOK_intrinsic Psubd128;
+    "psubq128", TOK_intrinsic Psubq128;
+    (* AVX *)          
+    "vpand256", TOK_intrinsic VPand256;
+    "vpor256", TOK_intrinsic VPor256;
+    "vpxor256", TOK_intrinsic VPxor256;
+    "vpandn256", TOK_intrinsic VPandn256;
+    "vpaddb256", TOK_intrinsic VPaddb256;
+    "vpaddw256", TOK_intrinsic VPaddw256;
+    "vpaddd256", TOK_intrinsic VPaddd256;
+    "vpaddq256", TOK_intrinsic VPaddq256;
+    "vpsubb256", TOK_intrinsic VPsubb256;
+    "vpsubw256", TOK_intrinsic VPsubw256;
+    "vpsubd256", TOK_intrinsic VPsubd256;
+    "vpsubq256", TOK_intrinsic VPsubq256;
+    (* AVX-512 *)       
+    "vpandd512", TOK_intrinsic VPandd512;
+    "vpord512", TOK_intrinsic VPord512;
+    "vpxord512", TOK_intrinsic VPxord512;
+    "vpandnd512", TOK_intrinsic VPandnd512;
   ]
 
 let next_line lexbuf =

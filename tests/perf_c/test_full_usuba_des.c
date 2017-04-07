@@ -55,7 +55,6 @@ void unorthogonalize(__m128i *in, unsigned long *out) {
   for (int i = 0; i < 128; i++) out[i] = 0;
   
   for (int j = 0; j < 64; j++) {
-    // converting the __m128i to 2 long (easier to access the bits).
     unsigned long tmp[2];
     _mm_store_si128 ((__m128i*)tmp, in[j]);
     for (int i = 0; i < 128; i++)

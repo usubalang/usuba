@@ -6,17 +6,6 @@ let gen_instance_id =
   let cpt = ref 0 in
   fun () -> incr cpt;
             "o" ^ (string_of_int !cpt)
-
-let convert_op op =
-  match op with
-  | Usuba_AST.Pand -> Sol_AST.Pand
-  | Por -> Por
-  | Pxor -> Pxor
-  | Pandn -> Pandn
-  | VPand -> VPand
-  | VPor -> VPor
-  | VPxor -> VPxor
-  | VPandn -> VPandn
              
                     
 let pat_to_idlist (pat: Usuba_AST.var list) : ident list =

@@ -59,9 +59,9 @@ module Usuba_intrinsics = struct
 
   let rec check_expr (e:expr) : bool =
     match e with
-    | Const _ | ExpVar _ -> true
+    | Const _ | ExpVar _ | Nop -> true
     | Intr(_,x,y) -> check_expr x && check_expr y
-    | _ -> false
+    | _ -> print_endline("Wrong:" ^ (Usuba_print.expr_to_str e)); false
   
   let check_def (def:def) : bool =
     match def with

@@ -10,20 +10,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include "tmmintrin.h"
 #include "emmintrin.h"
 #include "smmintrin.h"
 #include "immintrin.h"
 
 #include "des_256.c"
-
-void print_int64 (unsigned long c) {
-  for (int i = 0; i < 64; i++)
-    printf("%lu", c >> i & 1);
-  printf("\n");
-}
-
 
 void orthogonalize(unsigned long *in, __m256i *out) {
   for (int j = 0; j < 64; j++) {
@@ -39,7 +31,6 @@ void unorthogonalize(__m256i *in, unsigned long *out) {
   for (int i = 0; i < 256; i++) out[i] = 0;
   
   for (int j = 0; j < 64; j++) {
-    // converting the __m128i to 2 long (easier to access the bits).
     unsigned long tmp[4];
     _mm256_store_si256 ((__m256i*)tmp, in[j]);
     for (int i = 0; i < 256; i++)
@@ -66,10 +57,8 @@ int main() {
   
   for (int i = 0; i < 64; i++)
     if (key_std >> i & 1)
-      // _mm256_cmpeq_epi64(x,x) sets all the bits to 1.
-      key_ortho[i] = _mm256_cmpeq_epi64(dummy,dummy);
+      key_ortho[i] = _mm256_cmpeq_epi64(_mm256_setzero_si256(),_mm256_setzero_si256());
     else
-      // _mm256_setzero_si256() sets all the bits to 0.
       key_ortho[i] = _mm256_setzero_si256();
   
   

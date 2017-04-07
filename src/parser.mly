@@ -55,20 +55,11 @@
 %token TOK_DASH
 %token TOK_SLASH
 
-       
-%token TOK_PAND
-%token TOK_POR 
-%token TOK_PXOR
-%token TOK_PANDN
-%token TOK_VPAND
-%token TOK_VPOR 
-%token TOK_VPXOR
-%token TOK_VPANDN
-
 %token <string> TOK_id
 %token <int> TOK_int               
 %token <Usuba_AST.typ> TOK_type
-
+%token <Usuba_AST.intr_fun> TOK_intrinsic
+                         
 %token TOK_EOF
 
        
@@ -111,16 +102,6 @@ prog:
   | TOK_LROTATE { Lrotate }
   | TOK_RROTATE { Rrotate }
 
-%inline intrinsic:
-  | TOK_PAND  { Pand  }
-  | TOK_POR   { Por   }
-  | TOK_PXOR  { Pxor  }
-  | TOK_PANDN { Pandn }
-  | TOK_VPAND  { VPand  }
-  | TOK_VPOR   { VPor   }
-  | TOK_VPXOR  { VPxor  }
-  | TOK_VPANDN { VPandn }
-
 arith_exp:
   | TOK_LPAREN e=arith_exp TOK_RPAREN { e }
   | n = TOK_int { Const_e n }
@@ -147,7 +128,7 @@ exp:
   | f=TOK_id TOK_LPAREN args=explist TOK_RPAREN { Fun(f, args) }
   | f=TOK_id TOK_LBRACKET n=arith_exp TOK_RBRACKET
     TOK_LPAREN args=explist TOK_RPAREN { Fun_v(f, n, args) }
-  | f=intrinsic TOK_LPAREN x=exp TOK_COMMA y=exp TOK_RPAREN { Intr(f,x,y) }
+  | f=TOK_intrinsic TOK_LPAREN x=exp TOK_COMMA y=exp TOK_RPAREN { Intr(f,x,y) }
 
 (* expressions that are not recursive *)
 out_exp:

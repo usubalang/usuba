@@ -16,19 +16,36 @@
 #include "smmintrin.h"
 #include "immintrin.h"
 
-#include "des_256.c"
+#include "des.c"
 
-void dummy_ortho(unsigned long *in, __m256i *out) {
-    for (int i = 0; i < 64; i++)
-      out[i] = _mm256_set_epi64x (in[i*2], in[i*2+1], in[i*2+2], in[i*2+3]);
-}
-
-void dummy_unortho(__m256i *in, unsigned long *out) {
+void print_int64 (unsigned long c) {
   for (int i = 0; i < 64; i++)
-    _mm256_store_si256 ((__m256i*)&(out[i*4]), in[i]);
+    printf("%lu", c >> i & 1);
+  printf("\n");
 }
 
 
+void orthogonalize(unsigned long *in, __m256i *out) {
+  for (int j = 0; j < 64; j++) {
+    unsigned long tmp[4] = {0,0,0,0};
+    for (int i = 0; i < 256; i++)
+      tmp[i/64] |= (in[i]>>j & 1) << i;
+    out[j] = _mm256_set_epi64x (tmp[0], tmp[1], tmp[2], tmp[3]);
+  }
+}
+
+void unorthogonalize(__m256i *in, unsigned long *out) {
+
+  for (int i = 0; i < 256; i++) out[i] = 0;
+  
+  for (int j = 0; j < 64; j++) {
+    // converting the __m128i to 2 long (easier to access the bits).
+    unsigned long tmp[4];
+    _mm256_store_si256 ((__m256i*)tmp, in[j]);
+    for (int i = 0; i < 256; i++)
+      out[i] |= (tmp[i/64]>>i%64 & 1) << j;
+  }
+}
 
 int main() {
 
@@ -45,11 +62,12 @@ int main() {
   unsigned char key_std_char[8] = {0x13,0x34,0x57,0x79,0x9B,0xBC,0xDF,0xF1};
   unsigned long key_std = *(unsigned long*) key_std_char;
   __m256i *key_ortho = aligned_alloc(32,64 * sizeof *key_ortho);
+  __m256i dummy = _mm256_setzero_si256();
   
   for (int i = 0; i < 64; i++)
     if (key_std >> i & 1)
       // _mm256_cmpeq_epi64(x,x) sets all the bits to 1.
-      key_ortho[i] = _mm256_cmpeq_epi64(_mm256_setzero_si256(),_mm256_setzero_si256());
+      key_ortho[i] = _mm256_cmpeq_epi64(dummy,dummy);
     else
       // _mm256_setzero_si256() sets all the bits to 0.
       key_ortho[i] = _mm256_setzero_si256();
@@ -57,11 +75,11 @@ int main() {
   
   while(fread(plain_std, 8, 256, fh_in)) {
 
-    dummy_ortho(plain_std, plain_ortho);
+    orthogonalize(plain_std, plain_ortho);
     
     des__(plain_ortho, key_ortho, cipher_ortho);
              
-    dummy_unortho(cipher_ortho,cipher_std);
+    unorthogonalize(cipher_ortho,cipher_std);
     
     fwrite(cipher_std, 8, 256, fh_out);
   }

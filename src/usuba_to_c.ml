@@ -1,24 +1,89 @@
 open Usuba_AST
 open Utils
+open Printf
+
+let slice_type = ref (AVX 256)
 
 let rename (name:string) : string =
   Str.global_replace (Str.regexp "'") "__" name
 
 let op_to_c (op:intr_fun) : string =
   match op with
-  | Pand  -> "_mm_and_si128"
-  | Por   -> "_mm_or_si128"
-  | Pxor  -> "_mm_xor_si128"
-  | Pandn -> "_mm_andnot_si128"
-  | VPand  -> "_mm256_and_si256"
-  | VPor   -> "_mm256_or_si256"
-  | VPxor  -> "_mm256_xor_si256"
-  | VPandn -> "_mm256_andnot_si256"
-  (* AVX-512 aren't supported on most modern processors *)
-  | VPandd  -> "_mm512_and_si512"
-  | VPord   -> "_mm512_or_si512"
-  | VPxord  -> "_mm512_xor_si512"
-  | VPandnd -> "_mm512_andnot_si512"
+  | And64 -> "&"
+  | Or64  -> "|"
+  | Xor64 -> "^"
+  | Add64 -> "+"
+  | Sub64 -> "-"
+  | Mul64 -> "*"
+  | Div64 -> "/"
+  | Mod64 -> "%"
+  | Not64 -> "~"
+  (* MMX *)
+  | Pand64  -> "_mm_and_si128"
+  | Por64   -> "_mm_or_si128"
+  | Pxor64  -> "_mm_xor_si128"
+  | Pandn64 -> "_mm_andnot_si128"
+  | Paddb64 -> "_mm_add_epi8"
+  | Paddw64 -> "_mm_add_epi16"
+  | Paddd64 -> "_mm_add_epi32"
+  | Psubb64 -> "_mm_sub_epi8"
+  | Psubw64 -> "_mm_sub_epi16"
+  | Psubd64 -> "_mm_sub_epi32"
+  (* SSE *)
+  | Pand128  -> "_mm_and_si128"
+  | Por128   -> "_mm_or_si128"
+  | Pxor128  -> "_mm_xor_si128"
+  | Pandn128 -> "_mm_andnot_si128"
+  | Paddb128 -> "_mm_add_epi8"
+  | Paddw128 -> "_mm_add_epi16"
+  | Paddd128 -> "_mm_add_epi32"
+  | Paddq128 -> "_mm_add_epi64"
+  | Psubb128 -> "_mm_sub_epi8"
+  | Psubw128 -> "_mm_sub_epi16"
+  | Psubd128 -> "_mm_sub_epi32"
+  | Psubq128 -> "_mm_sub_epi64"
+  (* AVX *)          
+  | VPand256  -> "_mm256_and_si256"
+  | VPor256   -> "_mm256_or_si256"
+  | VPxor256  -> "_mm256_xor_si256"
+  | VPandn256 -> "_mm256_andnot_si256"
+  | VPaddb256 -> "_mm256_add_epi8"
+  | VPaddw256 -> "_mm256_add_epi16"
+  | VPaddd256 -> "_mm256_add_epi32"
+  | VPaddq256 -> "_mm256_add_epi64"
+  | VPsubb256 -> "_mm256_sub_epi8"
+  | VPsubw256 -> "_mm256_sub_epi16"
+  | VPsubd256 -> "_mm256_sub_epi32"
+  | VPsubq256 -> "_mm256_sub_epi64"
+  (* AVX-512 *)       
+  | VPandd512  -> "_mm512_and_si512"
+  | VPord512   -> "_mm512_or_si512"
+  | VPxord512  -> "_mm512_xor_si512"
+  | VPandnd512 -> "_mm512_andnot_si512"
+
+let set_all_zero () =
+  match !slice_type with
+  | Std   -> "0"
+  | MMX _ -> "_mm_setzero_si64()"
+  | SSE _ -> "_mm_setzero_si128()"
+  | AVX _ -> "_mm256_setzero_si256()"
+  | AVX512 -> "_mm512_setzero_si512()"
+
+let set_all_one () =
+  match !slice_type with
+  | Std   -> "-1"
+  | MMX _ -> "_mm_set1_pi32(-1)"
+  | SSE _ -> "_mm_set1_epi32(-1)"
+  | AVX _ -> "_mm256_set1_epi32(-1)"
+  | AVX512 -> "_mm512_set1_epi32(-1)"
+
+let type_to_c (t:slice_type) : string =
+  match t with
+  | Std   -> "unsigned long"
+  | MMX _ -> "__m64"
+  | SSE _ -> "__m128i"
+  | AVX _ -> "__m256i"
+  | AVX512 -> "__m512i"
   
                 
 let replace_p_out (p_out: p) (deqs:deq list) : deq list =
@@ -44,15 +109,16 @@ let replace_p_out (p_out: p) (deqs:deq list) : deq list =
 let rec expr_to_c (e:expr) : string =
   match e with
   | Const n -> ( match n with
-                 | 0 -> "_mm_setzero_si128()"
-                 | 1 -> "_mm_set1_epi32(-1)"
-                 (* | 0 -> "_mm256_setzero_si256()" *)
-                 (* | 1 -> "_mm256_set1_epi32(-1)" *)
+                 | 0 -> set_all_zero ()
+                 | 1 -> set_all_one ()
                  | _ -> raise (Error ("Only 0 and 1 are allowed. Got "
                                       ^ (string_of_int n))))
   | ExpVar(Var id) -> rename id
-  | Intr(op,x,y) -> (op_to_c op) ^ "(" ^ (expr_to_c x) ^ ","
-                    ^ (expr_to_c y) ^ ")"
+  | Intr(op,x,y) -> ( match !slice_type with
+                      | Std -> sprintf "(%s) %s (%s)"
+                                         (expr_to_c x) (op_to_c op) (expr_to_c y)
+                      | _ -> sprintf "%s(%s,%s)"
+                                     (op_to_c op) (expr_to_c x) (expr_to_c y))
   | _ -> unreached ()
                      
 let deqs_to_c (deqs: deq list) : string =
@@ -66,33 +132,38 @@ let deqs_to_c (deqs: deq list) : string =
 let def_to_c (def:def) : string =
   match def with
   | Single(id,p_in,p_out,vars,body) ->
+     let type_c = type_to_c !slice_type in
      Printf.sprintf
        "void %s (%s,%s) {\n%s\n%s\n%s\n%s\n}\n"
        (rename id)
        
        (* parameters *)
-       ("__m128i input[" ^ (string_of_int (List.length p_in)) ^ "]")
-       ("__m128i output[" ^ (string_of_int (List.length p_out)) ^ "]")
+       (type_c ^ " input[" ^ (string_of_int (List.length p_in)) ^ "]")
+       (type_c ^ " output[" ^ (string_of_int (List.length p_out)) ^ "]")
 
        (* retrieving input value *)
-       (join "\n" (List.mapi (fun i (id,_,_) ->"  __m128i " ^ (rename id) ^ " = input["
-                                               ^ (string_of_int i) ^ "];") p_in))
+       (join ""
+             (List.mapi (fun i (id,_,_) -> sprintf "  %s %s = input[%d];\n"
+                                                   type_c (rename id) i) p_in))
 
        (* declaring variabes *)
-       (join "\n" (List.map (fun (id,_,_) -> "  __m128i " ^ (rename id) ^ ";") (vars@p_out)))
+       (join "" (List.map (fun (id,_,_) -> sprintf "  %s %s;\n"
+                                                     type_c (rename id))
+                            (vars@p_out)))
 
        (* the body *)
        (deqs_to_c body)
 
        (* setting the output *)
-       (join "\n" (List.mapi (fun i (id,_,_) -> "  output[" ^ (string_of_int i) ^ "] = "
-                                                ^ (rename id) ^ ";") p_out))
+       (join "" (List.mapi (fun i (id,_,_) -> sprintf "  output[%d] = %s;\n"
+                                                        i (rename id)) p_out))
   | _ -> unreached () 
      
        
 let prog_to_c (prog:prog) : string =
   assert (Assert_lang.Usuba_norm.is_usuba_normalized prog);
-  let prog = Choose_instr.choose_instr prog in
+  let (slice, prog) = Select_instr.select_instr prog in
+  slice_type := slice;
   assert (Assert_lang.Usuba_intrinsics.is_only_intrinsics prog);
   "#include <stdlib.h>\n"
   ^ "#include \"mmintrin.h\"\n"
