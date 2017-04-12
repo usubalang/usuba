@@ -9,21 +9,21 @@ die "Make failed" if system 'make';
 
 say "DES on 130Mo input file, with orthogonalization:";
 cmpthese(5, {
-    'usuba x 128' => sub { system './test_full_usuba_des' },
-    'usuba 64n' => sub { system './test_64' },
-    'usuba 64' => sub { system './test_64_simd' },
-    'usuba 128' => sub { system './test_kwan_usuba_des' },
-    'usuba 256' => sub { system './test_256' },
-    'kwan' => sub { system './test_kwan_des' }
+    'uak-64*'  => sub { system './test_uak_64std' },
+    'uak-64'   => sub { system './test_uak_64'    },
+    'uak-128'  => sub { system './test_uak_128'   },
+    'uak-256'  => sub { system './test_uak_256'   },
+    'ua-256'   => sub { system './test_ua_256'    },
+    'kwan-64*' => sub { system './test_kwan'      }
          });
 
 
 say "\nDES on 130Mo input file, without orthogonalization:";
-cmpthese(10, {
-    'usuba x 128' => sub { system './test_no_ortho_full_usuba' },
-    'usuba 64n' => sub { system './test_no_ortho_64' },
-    'usuba 64' => sub { system './test_no_ortho_64_simd' },
-    'usuba 128' => sub { system './test_no_ortho_kwan_usuba' },
-    'usuba 256' => sub { system './test_no_ortho_256' },
-    'kwan' => sub { system './test_no_ortho_kwan' }
+cmpthese(5, {
+    'uak-64*'  => sub { system './test_uak_64std_no' },
+    'uak-64'   => sub { system './test_uak_64_no'    },
+    'uak-128'  => sub { system './test_uak_128_no'   },
+    'uak-256'  => sub { system './test_uak_256_no'   },
+    'ua-256'   => sub { system './test_ua_256_no'    },
+    'kwan-64*' => sub { system './test_kwan_no'      }
          });

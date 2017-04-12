@@ -6,40 +6,19 @@ use File::Path qw( remove_tree );
 use File::Copy;
 no warnings 'experimental';
 
-sub error {
-    say "************ ERROR **************";
-    exit $?;
-}
+
+my $file = shift @ARGV or die "No file specified.";
+die "Only works on 1 file." if @ARGV;
 
 # switching to src dir
 my $path = getcwd() =~ s{usuba\K.*}{}r 
     or die "Can't run this script from outside usuba repo.";
-chdir "$path/src";
-
-# Compiling the compiler.
-say "Compiling...";
-error if system 'make';
-
-chdir "..";
-
-# Compiling Usuba DES.
-say "Regenerating the des code...";
-error if system './src/main.native tests/usuba/des.ua' ;
-
-# Switching to temporary directory.
-say "Preparing the files for the test...";
-remove_tree 'tmp_c' if -d 'tmp_c';
-mkdir 'tmp_c';
-chdir 'tmp_c';
-
-copy '../tests/C/des.c', '.';
-copy '../des/ref_usuba.c', '.';
-copy '../tests/perf_c/make_input.c', '.';
+chdir "$path/tests/C";
 
 # Retrieving the type of the bitslicing.
 my $TYPE;
 {
-    open my $FPIN, '<', 'des.c' or die $!;
+    open my $FPIN, '<', $file or die $!;
     while (<$FPIN>) {
         if (/\((.*?) input/) {
             $TYPE = $1;
@@ -52,7 +31,7 @@ my $TYPE;
 # Updating des.c so it can be run easily.
 {
     $^I = "";
-    push @ARGV, 'des.c';
+    push @ARGV, $file;
     while(<>) {
         s/input\[128\]/input[64], $TYPE key[64]/;
         s/(key__\d+) = input\[(\d+)\]/"$1 = key[".($2-64)."]"/e;
@@ -64,7 +43,6 @@ my $TYPE;
 
 # Setting the variables to the right values.
 my ($ORTHOGONALIZE, $UNORTHOGONALIZE, $SET_ALL_ONE, $SET_ALL_ZERO, $SIZE_SLICE);
-
 given($TYPE) {
     when("unsigned long") {
         $SIZE_SLICE   = '64';
@@ -150,7 +128,9 @@ given($TYPE) {
     }
 }
 
-open my $FH, '>', 'check_des.c' or die $!;
+my ($file_base) = $file =~ /(.*)\.c/ or die "Not a .c file.";
+my $out_file = $file_base . "_run.c";
+open my $FH, '>', $out_file or die $!;
 print $FH <<"END_PRINT";
 #include <stdlib.h>
 #include <stdio.h>
@@ -159,7 +139,7 @@ print $FH <<"END_PRINT";
 #include "smmintrin.h"
 #include "immintrin.h"
 
-#include "des.c"
+#include "$file"
 
 void orthogonalize(unsigned long *in, $TYPE *out) {
     $ORTHOGONALIZE
@@ -213,7 +193,7 @@ int main() {
     des__(plain_ortho, key_ortho, cipher_ortho);
              
     unorthogonalize(cipher_ortho,cipher_std);
-        
+    
     for (int i = 0; i < $SIZE_SLICE; i++) {
       unsigned long l = cipher_std[i];
       cipher_std[i] = (l >> 56) | (l >> 40 & 0x00FF00) | (l >> 24 & 0x00FF0000)
@@ -231,19 +211,4 @@ END_PRINT
 
 close $FH;
 
-say "Compiling the test executable...";
-error if system 'clang -o make_input make_input.c -O3 -march=native';
-error if system 'clang -o des_ref ref_usuba.c -O3 -march=native';
-error if system 'clang -o des_to_test check_des.c -O3 -march=native';
-say "Running the test...";
-error if system './make_input';
-error if system './des_ref';
-move 'output.txt', 'output_ref.txt';
-error if system './des_to_test';
-
-error if system 'cmp --silent output_ref.txt output.txt';
-
-chdir '..';
-remove_tree 'tmp_c';
-
-say "C DES OK.";
+system "clang -o $file_base $out_file -O3 -march=native";

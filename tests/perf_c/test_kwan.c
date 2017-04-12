@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "kwan_des.c"
+#include "des_kwan.c"
 
 void print_int64 (unsigned long c) {
   for (int i = 0; i < 64; i++)

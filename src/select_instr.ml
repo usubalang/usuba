@@ -219,13 +219,12 @@ let rec norm_expr (e:expr) : expr =
   match e with
   | Log(Andn,x,y) ->
      (match !slice_type with
-      | Std -> Intr(And64,Intr(Not64, norm_expr x, Const 1),
-                      norm_expr y)
+      | Std -> Intr(And64,Not(norm_expr x),norm_expr y)
       | _ -> Intr(logop_to_intr Andn,norm_expr x,norm_expr y))     
   | Log(op,x,y) -> Intr(logop_to_intr op,norm_expr x,norm_expr y)
   | Not x ->
      (match !slice_type with
-      | Std -> Intr(Not64,norm_expr x, Nop)
+      | Std -> Not(norm_expr x)
       | _ -> norm_expr (Log(Andn,x,Const 1)))
   | Shift _ -> raise (Not_implemented "Shifts")
   | Arith(op,x,y) -> Intr(arith_op_to_intr op,

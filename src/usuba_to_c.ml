@@ -19,16 +19,16 @@ let op_to_c (op:intr_fun) : string =
   | Mod64 -> "%"
   | Not64 -> "~"
   (* MMX *)
-  | Pand64  -> "_mm_and_si128"
-  | Por64   -> "_mm_or_si128"
-  | Pxor64  -> "_mm_xor_si128"
-  | Pandn64 -> "_mm_andnot_si128"
-  | Paddb64 -> "_mm_add_epi8"
-  | Paddw64 -> "_mm_add_epi16"
-  | Paddd64 -> "_mm_add_epi32"
-  | Psubb64 -> "_mm_sub_epi8"
-  | Psubw64 -> "_mm_sub_epi16"
-  | Psubd64 -> "_mm_sub_epi32"
+  | Pand64  -> "_mm_and_si64"
+  | Por64   -> "_mm_or_si64"
+  | Pxor64  -> "_mm_xor_si64"
+  | Pandn64 -> "_mm_andnot_si64"
+  | Paddb64 -> "_mm_add_pi8"
+  | Paddw64 -> "_mm_add_pi16"
+  | Paddd64 -> "_mm_add_pi32"
+  | Psubb64 -> "_mm_sub_pi8"
+  | Psubw64 -> "_mm_sub_pi16"
+  | Psubd64 -> "_mm_sub_pi32"
   (* SSE *)
   | Pand128  -> "_mm_and_si128"
   | Por128   -> "_mm_or_si128"
@@ -114,12 +114,13 @@ let rec expr_to_c (e:expr) : string =
                  | _ -> raise (Error ("Only 0 and 1 are allowed. Got "
                                       ^ (string_of_int n))))
   | ExpVar(Var id) -> rename id
+  | Not e -> sprintf "~(%s)" (expr_to_c e)
   | Intr(op,x,y) -> ( match !slice_type with
                       | Std -> sprintf "(%s) %s (%s)"
                                          (expr_to_c x) (op_to_c op) (expr_to_c y)
                       | _ -> sprintf "%s(%s,%s)"
                                      (op_to_c op) (expr_to_c x) (expr_to_c y))
-  | _ -> unreached ()
+  | _ -> raise (Error (Usuba_print.expr_to_str e)) 
                      
 let deqs_to_c (deqs: deq list) : string =
   join "\n"

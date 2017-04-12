@@ -2,15 +2,14 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "kwan_des.c"
+#include "des_kwan.c"
 
-
-void dummy_ortho(unsigned long *in, unsigned long *out) {
+void orthogonalize(unsigned long *in, unsigned long *out) {
   for (int i = 0; i < 64; i++)
     out[i] = in[i];
 }
 
-void dummy_unortho(unsigned long *in, unsigned long *out) {
+void unorthogonalize(unsigned long *in, unsigned long *out) {
   for (int i = 0; i < 64; i++)
     out[i] = in[i];
 }
@@ -39,14 +38,11 @@ int main() {
   
   while(fread(plain_std, 8, 64, fh_in)) {
 
-    dummy_unortho(plain_std, plain_ortho);
-    
-    /* print_int64(plain_std[0]); */
-    /* print_nth_bit(plain_ortho,0); */
+    orthogonalize(plain_std, plain_ortho);
     
     deseval(plain_ortho, cipher_ortho, key_ortho);
              
-    dummy_unortho(cipher_ortho,cipher_std);
+    unorthogonalize(cipher_ortho,cipher_std);
     
     fwrite(cipher_std, 8, 64, fh_out);
   }
