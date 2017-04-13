@@ -22,7 +22,7 @@ module CSE_CF = struct
            | Log(Or,_,Const 1) -> Const 1
            | Log(Or,Const 0,x) -> x
            | Log(Or,x,Const 0) -> x
-                                            
+                                    
            | Log(Xor,Const 0,x) -> x    
            | Log(Xor,x,Const 0) -> x
            | Log(Xor,Const 1,x) -> Not x

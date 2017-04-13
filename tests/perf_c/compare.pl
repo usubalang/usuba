@@ -19,7 +19,7 @@ cmpthese(5, {
 
 
 say "\nDES on 130Mo input file, without orthogonalization:";
-cmpthese(5, {
+cmpthese(10, {
     'uak-64*'  => sub { system './test_uak_64std_no' },
     'uak-64'   => sub { system './test_uak_64_no'    },
     'uak-128'  => sub { system './test_uak_128_no'   },
