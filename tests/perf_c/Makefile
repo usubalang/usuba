@@ -12,37 +12,37 @@ all: default
 
 
 test_uak_256:
-	$(CC) $(CFLAGS) test_uak_256.c -o $@
+	gcc $(CFLAGS) test_uak_256_ortho.c -o $@
 
 test_uak_256_no:
 	$(CC) $(CFLAGS) test_uak_256_no.c -o $@
 
 test_ua_256:
-	$(CC) $(CFLAGS) test_ua_256.c -o $@
+	gcc $(CFLAGS) test_ua_256_ortho.c -o $@
 
 test_ua_256_no:
 	$(CC) $(CFLAGS) test_ua_256_no.c -o $@
 
 test_uak_128:
-	$(CC) $(CFLAGS) test_uak_128.c -o $@
+	gcc $(CFLAGS) test_uak_128_ortho.c -o $@
 
 test_uak_128_no:
 	$(CC) $(CFLAGS) test_uak_128_no.c -o $@
 
 test_uak_64:
-	$(CC) $(CFLAGS) test_uak_64.c -o $@
+	$(CC) $(CFLAGS) test_uak_64_ortho.c -o $@
 
 test_uak_64_no:
 	$(CC) $(CFLAGS) test_uak_64_no.c -o $@
 
 test_uak_64std:
-	$(CC) $(CFLAGS) test_uak_64std.c -o $@
+	$(CC) $(CFLAGS) test_uak_64std_ortho.c -o $@
 
 test_uak_64std_no:
 	$(CC) $(CFLAGS) test_uak_64std_no.c -o $@
 
 test_kwan:
-	$(CC) $(CFLAGS) test_kwan.c -o $@
+	$(CC) $(CFLAGS) test_kwan_ortho.c -o $@
 
 test_kwan_no:
 	$(CC) $(CFLAGS) test_kwan_no.c -o $@
