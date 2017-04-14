@@ -166,6 +166,7 @@ let prog_to_c (prog:prog) : string =
   let (slice, prog) = Select_instr.select_instr prog in
   slice_type := slice;
   assert (Assert_lang.Usuba_intrinsics.is_only_intrinsics prog);
+  (* let _ = Share_var.share_prog prog input *)
   "#include <stdlib.h>\n"
   ^ "#include \"mmintrin.h\"\n"
   ^ "#include \"immintrin.h\"\n"

@@ -12,19 +12,19 @@ all: default
 
 
 test_uak_256:
-	gcc $(CFLAGS) test_uak_256_ortho.c -o $@
+	$(CC) $(CFLAGS) test_uak_256_ortho.c -o $@
 
 test_uak_256_no:
 	$(CC) $(CFLAGS) test_uak_256_no.c -o $@
 
 test_ua_256:
-	gcc $(CFLAGS) test_ua_256_ortho.c -o $@
+	$(CC) $(CFLAGS) test_ua_256_ortho.c -o $@
 
 test_ua_256_no:
 	$(CC) $(CFLAGS) test_ua_256_no.c -o $@
 
 test_uak_128:
-	gcc $(CFLAGS) test_uak_128_ortho.c -o $@
+	$(CC) $(CFLAGS) test_uak_128_ortho.c -o $@
 
 test_uak_128_no:
 	$(CC) $(CFLAGS) test_uak_128_no.c -o $@

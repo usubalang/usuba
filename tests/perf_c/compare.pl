@@ -19,6 +19,7 @@ for my $instance (['uak-64*','test_uak_64std'], ['uak-64','test_uak_64'],
         / 1_000_000;
 }
 
+my $BCK = *STDOUT;
 open *STDOUT, '>', 'speed_std.tikz' or die $!;
 
 my $x_coord = join ",", sort { $speed{$b} <=> $speed{$a} } keys %speed;
@@ -52,7 +53,7 @@ say '      };
   \end{tikzpicture}';
 
 close *STDOUT;
-
+*STDOUT = $BCK;
 
 ################################################################################
 # No orthogonalization
