@@ -39,36 +39,34 @@ void orthogonalize(unsigned long data[]) {
 }
 
 int main() {
-  for (int i = 0; i < 10; i++) {
-    FILE* fh_in = fopen("input.txt","rb");
-    FILE* fh_out = fopen("output.txt","wb");
+  FILE* fh_in = fopen("input.txt","rb");
+  FILE* fh_out = fopen("output.txt","wb");
   
-    unsigned long *plain = malloc(64 * sizeof *plain);
-    unsigned long *cipher = malloc(64 * sizeof *cipher);
+  unsigned long *plain = malloc(64 * sizeof *plain);
+  unsigned long *cipher = malloc(64 * sizeof *cipher);
   
-    /* Hardcoding the key for now. */
-    unsigned char key_std_char[8] = {0x13,0x34,0x57,0x79,0x9B,0xBC,0xDF,0xF1};
-    unsigned long key_std = *(unsigned long*) key_std_char;
-    unsigned long *key_ortho = malloc(64 * sizeof *key_ortho);
-    for (int i = 0; i < 64; i++)
-      if (key_std >> i & 1)
-        key_ortho[i] = -1;
-      else
-        key_ortho[i] = 0;
+  /* Hardcoding the key for now. */
+  unsigned char key_std_char[8] = {0x13,0x34,0x57,0x79,0x9B,0xBC,0xDF,0xF1};
+  unsigned long key_std = *(unsigned long*) key_std_char;
+  unsigned long *key_ortho = malloc(64 * sizeof *key_ortho);
+  for (int i = 0; i < 64; i++)
+    if (key_std >> i & 1)
+      key_ortho[i] = -1;
+    else
+      key_ortho[i] = 0;
   
   
-    while(fread(plain, 8, 64, fh_in)) {
+  while(fread(plain, 8, 64, fh_in)) {
 
-      orthogonalize(plain);
+    orthogonalize(plain);
     
-      deseval(plain, cipher, key_ortho);
+    deseval(plain, cipher, key_ortho);
              
-      orthogonalize(cipher);
+    orthogonalize(cipher);
     
-      fwrite(cipher, 8, 64, fh_out);
-    }
-
-    fclose(fh_in);
-    fclose(fh_out);
+    fwrite(cipher, 8, 64, fh_out);
   }
+
+  fclose(fh_in);
+  fclose(fh_out);
 }
