@@ -1,0 +1,1 @@
+../../perf_c/make_input.c
