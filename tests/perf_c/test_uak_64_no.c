@@ -49,25 +49,17 @@ int main() {
   
   while(fread(plain_std, 8, 64, fh_in)) {
 
-    for (int i = 0; i < 64; i++) {
-      unsigned long l = plain_std[i];
-      plain_std[i] = (l >> 56) | (l >> 40 & 0x00FF00) | (l >> 24 & 0x00FF0000)
-        | (l >> 8 & 0x00FF000000) | (l << 8 & 0x00FF00000000) | (l << 24 & 0x00FF0000000000)
-        | (l << 40 & 0x00FF000000000000) | (l << 56);
-    }
-
+    for (int i = 0; i < 64; i++)
+      plain_std[i] = __builtin_bswap64(plain_std[i]);
+    
     orthogonalize(plain_std, plain_ortho);
     
     des__(plain_ortho, key_ortho, cipher_ortho);
              
     unorthogonalize(cipher_ortho,cipher_std);
     
-    for (int i = 0; i < 64; i++) {
-      unsigned long l = cipher_std[i];
-      cipher_std[i] = (l >> 56) | (l >> 40 & 0x00FF00) | (l >> 24 & 0x00FF0000)
-        | (l >> 8 & 0x00FF000000) | (l << 8 & 0x00FF00000000) | (l << 24 & 0x00FF0000000000)
-        | (l << 40 & 0x00FF000000000000) | (l << 56);
-    }
+    for (int i = 0; i < 64; i++)
+      cipher_std[i] = __builtin_bswap64(cipher_std[i]);
 
     fwrite(cipher_std, 8, 64, fh_out);
   }

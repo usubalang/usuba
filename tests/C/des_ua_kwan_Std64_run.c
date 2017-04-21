@@ -7,31 +7,54 @@
 
 #include "des_ua_kwan_Std64.c"
 
-void orthogonalize(unsigned long *in, unsigned long *out) {
-    for (int j = 0; j < 64; j++) {
-    out[63-j] = 0;
-    for (int i = 0; i < 64; i++)
-      out[63-j] |= (in[i]>>j & 1) << i;
+static unsigned long mask_l[6] = {
+	0xaaaaaaaaaaaaaaaaUL,
+	0xccccccccccccccccUL,
+	0xf0f0f0f0f0f0f0f0UL,
+	0xff00ff00ff00ff00UL,
+	0xffff0000ffff0000UL,
+	0xffffffff00000000UL
+};
+
+static unsigned long mask_r[6] = {
+	0x5555555555555555UL,
+	0x3333333333333333UL,
+	0x0f0f0f0f0f0f0f0fUL,
+	0x00ff00ff00ff00ffUL,
+	0x0000ffff0000ffffUL,
+	0x00000000ffffffffUL
+};
+
+
+void real_ortho(unsigned long data[]) {
+  for (int i = 0; i < 6; i ++) {
+    int n = (1UL << i);
+    for (int j = 0; j < 64; j += (2 * n))
+      for (int k = 0; k < n; k ++) {
+        unsigned long u = data[j + k] & mask_l[i];
+        unsigned long v = data[j + k] & mask_r[i];
+        unsigned long x = data[j + n + k] & mask_l[i];
+        unsigned long y = data[j + n + k] & mask_r[i];
+        data[j + k] = u | (x >> n);
+        data[j + n + k] = (v << n) | y;
+      }
   }
 }
 
-void unorthogonalize(unsigned long *in, unsigned long *out) {
-    for (int i = 0; i < 64; i++) out[i] = 0;
-  
-  for (int j = 0; j < 64; j++)
-    for (int i = 0; i < 64; i++)
-      out[i] |= (in[63-j]>>i & 1) << j;
+void orthogonalize(unsigned long data[]){
+  real_ortho(data);
+}
+
+void unorthogonalize(unsigned long data[]){
+  real_ortho(data);
 }
 
 int main() {
   FILE* fh_in = fopen("input.txt","rb");
   FILE* fh_out = fopen("output.txt","wb");
   
-  unsigned long *plain_std = aligned_alloc(32,64 * sizeof *plain_std);
-  unsigned long *plain_ortho = aligned_alloc(32,64 * sizeof *plain_ortho);
-
-  unsigned long *cipher_ortho = aligned_alloc(32,64 * sizeof *cipher_ortho);
-  unsigned long *cipher_std = aligned_alloc(32,64 * sizeof *cipher_std);
+  unsigned long *plain_std = malloc(64 * sizeof *plain_std);
+  unsigned long *cipher_std = malloc(64 * sizeof *cipher_std);
   
   /* Hardcoding the key for now. */
   unsigned char key_std_char[8] = {0x13,0x34,0x57,0x79,0x9B,0xBC,0xDF,0xF1};
@@ -44,7 +67,7 @@ int main() {
     ((unsigned long) key_std_char[5]) << 16 |
     ((unsigned long) key_std_char[6]) << 8 |
     ((unsigned long) key_std_char[7]) << 0;
-  unsigned long *key_ortho = aligned_alloc(32,64 * sizeof *key_ortho);
+  unsigned long *key_ortho = malloc(64 * sizeof *key_ortho);
   
   for (int i = 0; i < 64; i++)
     if (key_std >> i & 1)
@@ -55,25 +78,17 @@ int main() {
   
   while(fread(plain_std, 8, 64, fh_in)) {
 
-    for (int i = 0; i < 64; i++) {
-      unsigned long l = plain_std[i];
-      plain_std[i] = (l >> 56) | (l >> 40 & 0x00FF00) | (l >> 24 & 0x00FF0000)
-        | (l >> 8 & 0x00FF000000) | (l << 8 & 0x00FF00000000) | (l << 24 & 0x00FF0000000000)
-        | (l << 40 & 0x00FF000000000000) | (l << 56);
-    }
+    for (int i = 0; i < 64; i++)
+      plain_std[i] = __builtin_bswap64(plain_std[i]);
 
-    orthogonalize(plain_std, plain_ortho);
+    orthogonalize(plain_std);
     
-    des__(plain_ortho, key_ortho, cipher_ortho);
+    des__(plain_std, key_ortho, cipher_std);
              
-    unorthogonalize(cipher_ortho,cipher_std);
+    unorthogonalize(cipher_std);
     
-    for (int i = 0; i < 64; i++) {
-      unsigned long l = cipher_std[i];
-      cipher_std[i] = (l >> 56) | (l >> 40 & 0x00FF00) | (l >> 24 & 0x00FF0000)
-        | (l >> 8 & 0x00FF000000) | (l << 8 & 0x00FF00000000) | (l << 24 & 0x00FF0000000000)
-        | (l << 40 & 0x00FF000000000000) | (l << 56);
-    }
+    for (int i = 0; i < 64; i++)
+      cipher_std[i] = __builtin_bswap64(cipher_std[i]);
 
     fwrite(cipher_std, 8, 64, fh_out);
   }

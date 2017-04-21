@@ -19,11 +19,8 @@ int main() {
   FILE* fh_in = fopen("input.txt","rb");
   FILE* fh_out = fopen("output.txt","wb");
   
-  unsigned long *plain_std = malloc(128 * sizeof *plain_std);
-  unsigned long *plain_ortho = malloc(64 * sizeof *plain_ortho);
-
-  unsigned long *cipher_ortho = malloc(64 * sizeof *cipher_ortho);
-  unsigned long *cipher_std = malloc(128 * sizeof *cipher_std);
+  unsigned long *plain_std = malloc(64 * sizeof *plain_std);
+  unsigned long *cipher_std = malloc(64 * sizeof *cipher_std);
   
   /* Hardcoding the key for now. */
   unsigned char key_std_char[8] = {0x13,0x34,0x57,0x79,0x9B,0xBC,0xDF,0xF1};
@@ -37,12 +34,8 @@ int main() {
   
   
   while(fread(plain_std, 8, 64, fh_in)) {
-
-    orthogonalize(plain_std, plain_ortho);
     
-    deseval(plain_ortho, cipher_ortho, key_ortho);
-             
-    unorthogonalize(cipher_ortho,cipher_std);
+    deseval(plain_std, cipher_std, key_ortho);
     
     fwrite(cipher_std, 8, 64, fh_out);
   }

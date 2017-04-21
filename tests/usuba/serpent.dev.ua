@@ -52,14 +52,14 @@ table[] sbox (in:u4::_) returns out:u4::_ [
 ]
 
 
-node lt (in:u128::_) returns out:u128::_
+node lt (input:u128::_) returns out:u128::_
 vars
     x0:u32[4]::_,
     x1:u32[3]::_,
     x2:u32[4]::_,
     x3:u32[3]::_
 let
-    (x0[1],x1[1],x2[1],x3[1]) = in;
+    (x0[1],x1[1],x2[1],x3[1]) = input;
     x0[2] = x0[1] <<< 13;
     x2[2] = x2[1] <<< 3;
     x1[2] = x1[1] ^ x0[2] ^ x2[2];
@@ -96,26 +96,21 @@ perm fp_table (in:u128::_) returns out:u128::_ {
 }
 
 
-perm rotate11(in:u32::_) returns out:u32::_ {
-     12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,
-     28,29,30,31,32, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11
-}
-
 #              u32[8] =~ u256
-node key_gen (in:u32[8]::_) returns out:u128[32]::_
+node key_gen (input:u32[8]::_) returns out:u128[32]::_
 vars
     tmp : u32[132]::_
 let
-    tmp[1] = rotate11(in[1] ^ in[3] ^ in[5] ^ in[7] ^ 2654435769 ^ 0);
-    tmp[2] = rotate11(in[2] ^ in[4] ^ in[6] ^ in[8] ^ 2654435769 ^ 1);
-    tmp[3] = rotate11(in[3] ^ in[5] ^ in[7] ^ tmp[1] ^ 2654435769 ^ 2);
-    tmp[4] = rotate11(in[4] ^ in[6] ^ in[8] ^ tmp[2] ^ 2654435769 ^ 3);
-    tmp[5] = rotate11(in[5] ^ in[7] ^ tmp[1] ^ tmp[3] ^ 2654435769 ^ 4);
-    tmp[6] = rotate11(in[6] ^ in[8] ^ tmp[2] ^ tmp[4] ^ 2654435769 ^ 5);
-    tmp[7] = rotate11(in[7] ^ tmp[1] ^ tmp[3] ^ tmp[5] ^ 2654435769 ^ 6);
-    tmp[8] = rotate11(in[8] ^ tmp[2] ^ tmp[4] ^ tmp[6] ^ 2654435769 ^ 7);
-    tmp[9] = rotate11(tmp[1] ^ tmp[3] ^ tmp[5] ^ tmp[7] ^ 2654435769 ^ 8);
-    tmp[10] = rotate11(tmp[2] ^ tmp[4] ^ tmp[6] ^ tmp[8] ^ 2654435769 ^ 9);
+    tmp[1] = (input[1] ^ input[3] ^ input[5] ^ input[7] ^ 2654435769 ^ 0) <<< 11;
+    tmp[2] = (input[2] ^ input[4] ^ input[6] ^ input[8] ^ 2654435769 ^ 1) <<< 11;
+    tmp[3] = (input[3] ^ input[5] ^ input[7] ^ tmp[1] ^ 2654435769 ^ 2) <<< 11;
+    tmp[4] = (input[4] ^ input[6] ^ input[8] ^ tmp[2] ^ 2654435769 ^ 3) <<< 11;
+    tmp[5] = (input[5] ^ input[7] ^ tmp[1] ^ tmp[3] ^ 2654435769 ^ 4) <<< 11;
+    tmp[6] = (input[6] ^ input[8] ^ tmp[2] ^ tmp[4] ^ 2654435769 ^ 5) <<< 11;
+    tmp[7] = (input[7] ^ tmp[1] ^ tmp[3] ^ tmp[5] ^ 2654435769 ^ 6) <<< 11;
+    tmp[8] = (input[8] ^ tmp[2] ^ tmp[4] ^ tmp[6] ^ 2654435769 ^ 7) <<< 11;
+    tmp[9] = (tmp[1] ^ tmp[3] ^ tmp[5] ^ tmp[7] ^ 2654435769 ^ 8) <<< 11;
+    tmp[10] = (tmp[2] ^ tmp[4] ^ tmp[6] ^ tmp[8] ^ 2654435769 ^ 9) <<< 11;
     # The relation is :
     #   tmp[i] = rotate11(tmp[i-8] ^ tmp[i-6] ^ tmp[i-4] ^ tmp[i-2] ^ 2654435769 ^ (i-1))
     #   for i = 9 to 132

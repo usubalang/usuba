@@ -695,7 +695,6 @@ deseval (
 	unsigned long	*c,
 	const unsigned long	*k
 ) {
-	unsigned long	result = ~0UL;
 	unsigned long	l0 = p[6];
 	unsigned long	l1 = p[14];
 	unsigned long	l2 = p[22];

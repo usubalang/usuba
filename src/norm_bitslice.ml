@@ -163,9 +163,13 @@ let print title body =
 (* Note: the print actually if the boolean if the function "print" above 
          are set to true (or at least the first one) *)
 let norm_prog (prog: prog)  =
+
+  (* Convert const to tuples *)
+  let const_norm = Expand_const.expand_prog prog in
+  print "CONST NORM:" const_norm;
   
   (* Convert uint_n to n bools *)
-  let uintn_norm = Norm_uintn.norm_uintn prog in
+  let uintn_norm = Norm_uintn.norm_uintn const_norm in
   print "UINTN NORM:" uintn_norm;
 
   (* Remove nested function calls by introducing temporary variables *)
@@ -185,4 +189,13 @@ let norm_prog (prog: prog)  =
   let shifts_done = Bitslice_shift.expand_shifts tuples_simpl in
   print "SHIFTS EXPANDED:" tuples_simpl;
 
-  shifts_done
+  (* Applying the shifts may have "free" some tuples that we couldn't split before *)
+  (* Convert tuples assignment to multiple single assignment, if possible *)
+  let tuples_resplit = Norm_tuples.Split_tuples.split_tuples shifts_done in
+  print "TUPLES RE-SPLITTED:" tuples_resplit;
+
+  (* Convert tuples of one element to simple variables *)
+  let tuples_resimpl = Norm_tuples.Simplify_tuples.simplify_tuples tuples_resplit in
+  print "TUPLES RE-SIMPLIFIED:" tuples_resimpl;
+
+  tuples_resimpl

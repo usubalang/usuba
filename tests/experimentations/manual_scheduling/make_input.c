@@ -1,1 +1,1 @@
-../../perf_c/make_input.c
+../../C/make_input.c

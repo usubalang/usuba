@@ -7,25 +7,12 @@
 
 #include "des_ua_kwan_Std64.c"
 
-void orthogonalize(unsigned long *in, unsigned long *out) {
-  for (int i = 0; i < 64; i++)
-    out[i] = in[i];
-}
-
-void unorthogonalize(unsigned long *in, unsigned long *out) {
-  for (int i = 0; i < 64; i++)
-    out[i] = in[i];
-}
-
 int main() {
   FILE* fh_in = fopen("input.txt","rb");
   FILE* fh_out = fopen("output.txt","wb");
   
-  unsigned long *plain_std = aligned_alloc(32,64 * sizeof *plain_std);
-  unsigned long *plain_ortho = aligned_alloc(32,64 * sizeof *plain_ortho);
-
-  unsigned long *cipher_ortho = aligned_alloc(32,64 * sizeof *cipher_ortho);
-  unsigned long *cipher_std = aligned_alloc(32,64 * sizeof *cipher_std);
+  unsigned long *plain_std = malloc(64 * sizeof *plain_std);
+  unsigned long *cipher_std = malloc(64 * sizeof *cipher_std);
   
   /* Hardcoding the key for now. */
   unsigned char key_std_char[8] = {0x13,0x34,0x57,0x79,0x9B,0xBC,0xDF,0xF1};
@@ -49,25 +36,13 @@ int main() {
   
   while(fread(plain_std, 8, 64, fh_in)) {
 
-    for (int i = 0; i < 64; i++) {
-      unsigned long l = plain_std[i];
-      plain_std[i] = (l >> 56) | (l >> 40 & 0x00FF00) | (l >> 24 & 0x00FF0000)
-        | (l >> 8 & 0x00FF000000) | (l << 8 & 0x00FF00000000) | (l << 24 & 0x00FF0000000000)
-        | (l << 40 & 0x00FF000000000000) | (l << 56);
-    }
-
-    orthogonalize(plain_std, plain_ortho);
+    for (int i = 0; i < 64; i++)
+      plain_std[i] = __builtin_bswap64(plain_std[i]);
     
-    des__(plain_ortho, key_ortho, cipher_ortho);
-             
-    unorthogonalize(cipher_ortho,cipher_std);
+    des__(plain_std, key_ortho, cipher_std);
     
-    for (int i = 0; i < 64; i++) {
-      unsigned long l = cipher_std[i];
-      cipher_std[i] = (l >> 56) | (l >> 40 & 0x00FF00) | (l >> 24 & 0x00FF0000)
-        | (l >> 8 & 0x00FF000000) | (l << 8 & 0x00FF00000000) | (l << 24 & 0x00FF0000000000)
-        | (l << 40 & 0x00FF000000000000) | (l << 56);
-    }
+    for (int i = 0; i < 64; i++)
+      cipher_std[i] = __builtin_bswap64(cipher_std[i]);
 
     fwrite(cipher_std, 8, 64, fh_out);
   }

@@ -7,24 +7,62 @@
 
 #include "des_ua_kwan_AVX256.c"
 
-void orthogonalize(unsigned long *in, __m256i *out) {
-    for (int j = 0; j < 64; j++) {
-    unsigned long tmp[4] = {0,0,0,0};
-    for (int i = 0; i < 256; i++)
-      tmp[i/64] |= (in[i]>>j & 1) << i;
-    out[63-j] = _mm256_set_epi64x (tmp[0], tmp[1], tmp[2], tmp[3]);
+static unsigned long mask_l[6] = {
+	0xaaaaaaaaaaaaaaaaUL,
+	0xccccccccccccccccUL,
+	0xf0f0f0f0f0f0f0f0UL,
+	0xff00ff00ff00ff00UL,
+	0xffff0000ffff0000UL,
+	0xffffffff00000000UL
+};
+
+static unsigned long mask_r[6] = {
+	0x5555555555555555UL,
+	0x3333333333333333UL,
+	0x0f0f0f0f0f0f0f0fUL,
+	0x00ff00ff00ff00ffUL,
+	0x0000ffff0000ffffUL,
+	0x00000000ffffffffUL
+};
+
+
+void real_ortho(unsigned long data[]) {
+  for (int i = 0; i < 6; i ++) {
+    int n = (1UL << i);
+    for (int j = 0; j < 64; j += (2 * n))
+      for (int k = 0; k < n; k ++) {
+        unsigned long u = data[j + k] & mask_l[i];
+        unsigned long v = data[j + k] & mask_r[i];
+        unsigned long x = data[j + n + k] & mask_l[i];
+        unsigned long y = data[j + n + k] & mask_r[i];
+        data[j + k] = u | (x >> n);
+        data[j + n + k] = (v << n) | y;
+      }
   }
 }
 
-void unorthogonalize(__m256i *in, unsigned long *out) {
-    for (int i = 0; i < 256; i++) out[i] = 0;
-  
-  for (int j = 0; j < 64; j++) {
+void orthogonalize(unsigned long* data, __m256i* out) {
+  real_ortho(data);
+  real_ortho(&(data[64]));
+  real_ortho(&(data[128]));
+  real_ortho(&(data[192]));
+  for (int i = 0; i < 64; i++)
+    out[i] = _mm256_set_epi64x(data[i], data[64+i], data[128+i], data[192+i]);
+}
+
+void unorthogonalize(__m256i *in, unsigned long* data) {
+  for (int i = 0; i < 64; i++) {
     unsigned long tmp[4];
-    _mm256_store_si256 ((__m256i*)tmp, in[63-j]);
-    for (int i = 0; i < 256; i++)
-      out[i] |= (tmp[i/64]>>i%64 & 1) << j;
+    _mm256_store_si256 ((__m256i*)tmp, in[i]);
+    data[i] = tmp[0];
+    data[64+i] = tmp[1];
+    data[128+i] = tmp[2];
+    data[192+i] = tmp[3];
   }
+  real_ortho(data);
+  real_ortho(&(data[64]));
+  real_ortho(&(data[128]));
+  real_ortho(&(data[192]));
 }
 
 int main() {
@@ -59,12 +97,8 @@ int main() {
   
   while(fread(plain_std, 8, 256, fh_in)) {
 
-    for (int i = 0; i < 256; i++) {
-      unsigned long l = plain_std[i];
-      plain_std[i] = (l >> 56) | (l >> 40 & 0x00FF00) | (l >> 24 & 0x00FF0000)
-        | (l >> 8 & 0x00FF000000) | (l << 8 & 0x00FF00000000) | (l << 24 & 0x00FF0000000000)
-        | (l << 40 & 0x00FF000000000000) | (l << 56);
-    }
+    for (int i = 0; i < 256; i++)
+      plain_std[i] = __builtin_bswap64(plain_std[i]);
 
     orthogonalize(plain_std, plain_ortho);
     
@@ -72,12 +106,8 @@ int main() {
              
     unorthogonalize(cipher_ortho,cipher_std);
     
-    for (int i = 0; i < 256; i++) {
-      unsigned long l = cipher_std[i];
-      cipher_std[i] = (l >> 56) | (l >> 40 & 0x00FF00) | (l >> 24 & 0x00FF0000)
-        | (l >> 8 & 0x00FF000000) | (l << 8 & 0x00FF00000000) | (l << 24 & 0x00FF0000000000)
-        | (l << 40 & 0x00FF000000000000) | (l << 56);
-    }
+    for (int i = 0; i < 256; i++)
+      cipher_std[i] = __builtin_bswap64(cipher_std[i]);
 
     fwrite(cipher_std, 8, 256, fh_out);
   }

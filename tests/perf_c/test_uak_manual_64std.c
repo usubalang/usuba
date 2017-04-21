@@ -5,7 +5,7 @@
 #include "smmintrin.h"
 #include "immintrin.h"
 
-#include "des_ua_kwan_Std64.c"
+#include "des_uak_manual_64std.c"
 
 static unsigned long mask_l[6] = {
 	0xaaaaaaaaaaaaaaaaUL,
@@ -42,6 +42,7 @@ void orthogonalize(unsigned long data[]) {
 }
 
 int main() {
+  
   FILE* fh_in = fopen("input.txt","rb");
   FILE* fh_out = fopen("output.txt","wb");
   
@@ -60,7 +61,7 @@ int main() {
     ((unsigned long) key_std_char[5]) << 16 |
     ((unsigned long) key_std_char[6]) << 8 |
     ((unsigned long) key_std_char[7]) << 0;
-  unsigned long *key_ortho = aligned_alloc(32,64 * sizeof *key_ortho);
+  unsigned long *key_ortho = malloc(64 * sizeof *key_ortho);
   
   for (int i = 0; i < 64; i++)
     if (key_std >> i & 1)
@@ -71,26 +72,18 @@ int main() {
   
   while(fread(plain, 8, 64, fh_in)) {
 
-    for (int i = 0; i < 64; i++) {
-      unsigned long l = plain[i];
-      plain[i] = (l >> 56) | (l >> 40 & 0x00FF00) | (l >> 24 & 0x00FF0000)
-        | (l >> 8 & 0x00FF000000) | (l << 8 & 0x00FF00000000) | (l << 24 & 0x00FF0000000000)
-        | (l << 40 & 0x00FF000000000000) | (l << 56);
-    }
+    for (int i = 0; i < 64; i++)
+      plain[i] = __builtin_bswap64(plain[i]);
 
     orthogonalize(plain);
     
     des__(plain, key_ortho, cipher);
              
     orthogonalize(cipher);
-    
-    for (int i = 0; i < 64; i++) {
-      unsigned long l = cipher[i];
-      cipher[i] = (l >> 56) | (l >> 40 & 0x00FF00) | (l >> 24 & 0x00FF0000)
-        | (l >> 8 & 0x00FF000000) | (l << 8 & 0x00FF00000000) | (l << 24 & 0x00FF0000000000)
-        | (l << 40 & 0x00FF000000000000) | (l << 56);
-    }
-
+      
+    for (int i = 0; i < 64; i++)
+      cipher[i] = __builtin_bswap64(cipher[i]);
+        
     fwrite(cipher, 8, 64, fh_out);
   }
 
