@@ -21,7 +21,7 @@
     (modify-syntax-entry ?_ "w" st)
     (modify-syntax-entry ?# "<" st)
     (modify-syntax-entry ?\n ">" st)
-    (modify-syntax-entry ?\/ "< 12" st)
+    (modify-syntax-entry ?\/ ". 12" st)
     st)
   "Syntax table for usuba-mode")
 

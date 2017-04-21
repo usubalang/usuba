@@ -148,10 +148,10 @@ let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
   | Const_e n -> n
   | Var_e id  -> Hashtbl.find env id
   | Op_e(op,x,y) -> let x' = eval_arith env x in
-                  let y' = eval_arith env y in
-                  match op with
-                  | Add -> x' + y'
-                  | Mul -> x' * y'
-                  | Sub -> x' - y'
-                  | Div -> x' / y'
-                  | Mod -> x' mod y'
+                    let y' = eval_arith env y in
+                    match op with
+                    | Add -> x' + y'
+                    | Mul -> x' * y'
+                    | Sub -> x' - y'
+                    | Div -> x' / y'
+                    | Mod -> if x' > 0 then x' mod y' else y' + (x' mod y')
