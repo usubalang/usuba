@@ -1,7 +1,10 @@
 *.txt
 *.o
-
-64
-128
-256
-64nv
+make_input
+64icc
+64clang
+128icc
+128clang
+256icc
+256clang
+*.s
