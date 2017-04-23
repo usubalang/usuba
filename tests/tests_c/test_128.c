@@ -38,11 +38,11 @@ int main() {
   uint64_t start = _rdtsc();
 
   
-  unsigned long *plain_std = aligned_alloc(32,128 * sizeof *plain_std);
-  __m128i *plain_ortho = aligned_alloc(32,64 * sizeof *plain_ortho);
+  unsigned long *restrict plain_std = aligned_alloc(32,128 * sizeof *plain_std);
+  __m128i *restrict plain_ortho = aligned_alloc(32,64 * sizeof *plain_ortho);
 
-  __m128i *cipher_ortho = aligned_alloc(32,64 * sizeof *cipher_ortho);
-  unsigned long *cipher_std = aligned_alloc(32,128 * sizeof *cipher_std);
+  __m128i *restrict cipher_ortho = aligned_alloc(32,64 * sizeof *cipher_ortho);
+  unsigned long *restrict cipher_std = aligned_alloc(32,128 * sizeof *cipher_std);
   
   /* Hardcoding the key for now. */
   unsigned char key_std_char[8] = {0x13,0x34,0x57,0x79,0x9B,0xBC,0xDF,0xF1};
@@ -55,7 +55,7 @@ int main() {
     ((unsigned long) key_std_char[5]) << 16 |
     ((unsigned long) key_std_char[6]) << 8 |
     ((unsigned long) key_std_char[7]) << 0;
-  __m128i *key_ortho = aligned_alloc(32,64 * sizeof *key_ortho);
+  __m128i *restrict key_ortho = aligned_alloc(32,64 * sizeof *key_ortho);
   
   for (int i = 0; i < 64; i++)
     if (key_std >> i & 1)
