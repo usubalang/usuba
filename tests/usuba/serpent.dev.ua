@@ -1,22 +1,4 @@
-# Note: this implementation is far from complete, and doesn't compute Serpent
-#       for now. It's just meant to see what difficulties the implementation
-#       of Serpent in Usuba could occur.
-#       So far, the lack of << and <<< operators makes things a bit too long
-#       and too verbose. So does the impossibility to use integer operations
-#       in array indices (for instance something like a[i%8] could be helpful).
-#       The key scheduling is also **very** painful.
-#       The fact that variables are immutables (which is in the nature of
-#       data flow languages if I understand correctly) makes things a bit less
-#       friendly as well (see `lt` node).
-#
-#       The compilation of this code to OCaml won't work because it uses a
-#       constant, that should be orthogonalized at compile time, and I didn't 
-#       implement it yet.
-#       Moreover, even if the compilation to OCaml worked, the generated code
-#       wouldn't compile because the key scheduling function isn't finished.
-
-
-table[] sbox (in:u4::_) returns out:u4::_ [
+table[] sbox (input:u4) returns (out:u4) [
     { 3, 8,15, 1,10, 6, 5,11,14,13, 4, 2, 7, 0, 9,12 } ;
 	{15,12, 2, 7, 9, 0, 5,10, 1,11,14, 8, 6,13, 3, 4 } ;
 	{ 8, 6, 7, 9, 3,12,10,15,13, 1,14, 4, 0,11, 5, 2 } ;
@@ -52,7 +34,7 @@ table[] sbox (in:u4::_) returns out:u4::_ [
 ]
 
 
-node lt (input:u128::_) returns out:u128::_
+node lt (input:u128::_) returns (out:u128::_)
 vars
     x0:u32[4]::_,
     x1:u32[3]::_,
@@ -73,7 +55,7 @@ let
     out = (x0[4],x1[3],x2[4],x3[3])
 tel
 
-perm ip_table (in:u128::_) returns out:u128::_  {
+perm ip_table (input:u128) returns (out:u128) {
     1, 33, 65, 97, 2, 34, 66, 98, 3, 35, 67, 99, 4, 36, 68, 100,
     5, 37, 69, 101, 6, 38, 70, 102, 7, 39, 71, 103, 8, 40, 72, 104,
     9, 41, 73, 105, 10, 42, 74, 106, 11, 43, 75, 107, 12, 44, 76, 108,
@@ -84,7 +66,7 @@ perm ip_table (in:u128::_) returns out:u128::_  {
     29, 61, 93, 125, 30, 62, 94, 126, 31, 63, 95, 127, 32, 64, 96, 128
 }
 
-perm fp_table (in:u128::_) returns out:u128::_ {
+perm fp_table (input:u128) returns (out:u128) {
     1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49, 53, 57, 61,
     65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125,
     2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58, 62,
@@ -95,84 +77,90 @@ perm fp_table (in:u128::_) returns out:u128::_ {
     68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124, 128
 }
 
+// Due to how the algorithm works, the output of the sbox need to be fixed
+// in bitslicing mode.
+perm fix_sbox (input:u128) returns (out:u128) {
+    1,5,9,13,17,21,25,29,33,37,41,45,49,53,57,61,65,69,73,77,81,85,89,93,
+    97,101,105,109,113,117,121,125,
+    2,6,10,14,18,22,26,30,34,38,42,46,50,54,58,62,66,70,74,78,82,86,90,94,
+    98,102,106,110,114,118,122,126,
+    3,7,11,15,19,23,27,31,35,39,43,47,51,55,59,63,67,71,75,79,83,87,91,95,
+    99,103,107,111,115,119,123,127,
+    4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,
+    100,104,108,112,116,120,124,128,
+}
 
-#              u32[8] =~ u256
-node key_gen (input:u32[8]) returns out:u128[33]
-vars
-    tmp : u32[140]::_,
-    w : u32[132]
-let
-    tmp[0..7] = input;
-    forall i in [8,139],
-        tmp[i] = (tmp[i-8] ^ tmp[i-6] ^ tmp[i-4] ^ tmp[i-2] ^ 2654435769 ^ (i-1)) <<< 11;
-    w = tmp[8..131];
 
-    forall i in [0,31],
-        out[i] = (sbox[(3-i)%8](w[i*4].1,w[i*4+1].1,w[i*4+2].1,w[i*4+3].1),
-                  sbox[(3-i)%8](w[i*4].2,w[i*4+1].2,w[i*4+2].2,w[i*4+3].2),
-                  sbox[(3-i)%8](w[i*4].3,w[i*4+1].3,w[i*4+2].3,w[i*4+3].3),
-                  sbox[(3-i)%8](w[i*4].4,w[i*4+1].4,w[i*4+2].4,w[i*4+3].4),
-                  sbox[(3-i)%8](w[i*4].5,w[i*4+1].5,w[i*4+2].5,w[i*4+3].5),
-                  sbox[(3-i)%8](w[i*4].6,w[i*4+1].6,w[i*4+2].6,w[i*4+3].6),
-                  sbox[(3-i)%8](w[i*4].7,w[i*4+1].7,w[i*4+2].7,w[i*4+3].7),
-                  sbox[(3-i)%8](w[i*4].8,w[i*4+1].8,w[i*4+2].8,w[i*4+3].8),
-                  sbox[(3-i)%8](w[i*4].9,w[i*4+1].9,w[i*4+2].9,w[i*4+3].9),
-                  sbox[(3-i)%8](w[i*4].10,w[i*4+1].10,w[i*4+2].10,w[i*4+3].10),
-                  sbox[(3-i)%8](w[i*4].11,w[i*4+1].11,w[i*4+2].11,w[i*4+3].11),
-                  sbox[(3-i)%8](w[i*4].12,w[i*4+1].12,w[i*4+2].12,w[i*4+3].12),
-                  sbox[(3-i)%8](w[i*4].13,w[i*4+1].13,w[i*4+2].13,w[i*4+3].13),
-                  sbox[(3-i)%8](w[i*4].14,w[i*4+1].14,w[i*4+2].14,w[i*4+3].14),
-                  sbox[(3-i)%8](w[i*4].15,w[i*4+1].15,w[i*4+2].15,w[i*4+3].15),
-                  sbox[(3-i)%8](w[i*4].16,w[i*4+1].16,w[i*4+2].16,w[i*4+3].16),
-                  sbox[(3-i)%8](w[i*4].17,w[i*4+1].17,w[i*4+2].17,w[i*4+3].17),
-                  sbox[(3-i)%8](w[i*4].18,w[i*4+1].18,w[i*4+2].18,w[i*4+3].18),
-                  sbox[(3-i)%8](w[i*4].19,w[i*4+1].19,w[i*4+2].19,w[i*4+3].19),
-                  sbox[(3-i)%8](w[i*4].20,w[i*4+1].20,w[i*4+2].20,w[i*4+3].20),
-                  sbox[(3-i)%8](w[i*4].21,w[i*4+1].21,w[i*4+2].21,w[i*4+3].21),
-                  sbox[(3-i)%8](w[i*4].22,w[i*4+1].22,w[i*4+2].22,w[i*4+3].22),
-                  sbox[(3-i)%8](w[i*4].23,w[i*4+1].23,w[i*4+2].23,w[i*4+3].23),
-                  sbox[(3-i)%8](w[i*4].24,w[i*4+1].24,w[i*4+2].24,w[i*4+3].24),
-                  sbox[(3-i)%8](w[i*4].25,w[i*4+1].25,w[i*4+2].25,w[i*4+3].25),
-                  sbox[(3-i)%8](w[i*4].26,w[i*4+1].26,w[i*4+2].26,w[i*4+3].26),
-                  sbox[(3-i)%8](w[i*4].27,w[i*4+1].27,w[i*4+2].27,w[i*4+3].27),
-                  sbox[(3-i)%8](w[i*4].28,w[i*4+1].28,w[i*4+2].28,w[i*4+3].28),
-                  sbox[(3-i)%8](w[i*4].29,w[i*4+1].29,w[i*4+2].29,w[i*4+3].29),
-                  sbox[(3-i)%8](w[i*4].30,w[i*4+1].30,w[i*4+2].30,w[i*4+3].30),
-                  sbox[(3-i)%8](w[i*4].31,w[i*4+1].31,w[i*4+2].31,w[i*4+3].31),
-                  sbox[(3-i)%8](w[i*4].32,w[i*4+1].32,w[i*4+2].32,w[i*4+3].32));
+// node key_gen (input:u32[8]) returns (out:u128[33])
+// vars
+//     tmp : u32[140]::_,
+//     w : u32[132]
+// let
+//     tmp[0..7] = input;
+//     forall i in [8,139],
+//         tmp[i] = (tmp[i-8] ^ tmp[i-6] ^ tmp[i-4] ^ tmp[i-2] ^ 2654435769 ^ (i-1)) <<< 11;
+//     w = tmp[8..131];
 
-    out:u4[1024]
-    forall i in [0..1024],
-        out[i] = sbox[(3-i%32)%8](w[i/32].1,w[i/32].1,w[i/32].2,w[i/32].3);
-tel
+//     forall i in [0,31],
+//         out[i] = (sbox[(3-i)%8](w[i*4].1,w[i*4+1].1,w[i*4+2].1,w[i*4+3].1),
+//                   sbox[(3-i)%8](w[i*4].2,w[i*4+1].2,w[i*4+2].2,w[i*4+3].2),
+//                   sbox[(3-i)%8](w[i*4].3,w[i*4+1].3,w[i*4+2].3,w[i*4+3].3),
+//                   sbox[(3-i)%8](w[i*4].4,w[i*4+1].4,w[i*4+2].4,w[i*4+3].4),
+//                   sbox[(3-i)%8](w[i*4].5,w[i*4+1].5,w[i*4+2].5,w[i*4+3].5),
+//                   sbox[(3-i)%8](w[i*4].6,w[i*4+1].6,w[i*4+2].6,w[i*4+3].6),
+//                   sbox[(3-i)%8](w[i*4].7,w[i*4+1].7,w[i*4+2].7,w[i*4+3].7),
+//                   sbox[(3-i)%8](w[i*4].8,w[i*4+1].8,w[i*4+2].8,w[i*4+3].8),
+//                   sbox[(3-i)%8](w[i*4].9,w[i*4+1].9,w[i*4+2].9,w[i*4+3].9),
+//                   sbox[(3-i)%8](w[i*4].10,w[i*4+1].10,w[i*4+2].10,w[i*4+3].10),
+//                   sbox[(3-i)%8](w[i*4].11,w[i*4+1].11,w[i*4+2].11,w[i*4+3].11),
+//                   sbox[(3-i)%8](w[i*4].12,w[i*4+1].12,w[i*4+2].12,w[i*4+3].12),
+//                   sbox[(3-i)%8](w[i*4].13,w[i*4+1].13,w[i*4+2].13,w[i*4+3].13),
+//                   sbox[(3-i)%8](w[i*4].14,w[i*4+1].14,w[i*4+2].14,w[i*4+3].14),
+//                   sbox[(3-i)%8](w[i*4].15,w[i*4+1].15,w[i*4+2].15,w[i*4+3].15),
+//                   sbox[(3-i)%8](w[i*4].16,w[i*4+1].16,w[i*4+2].16,w[i*4+3].16),
+//                   sbox[(3-i)%8](w[i*4].17,w[i*4+1].17,w[i*4+2].17,w[i*4+3].17),
+//                   sbox[(3-i)%8](w[i*4].18,w[i*4+1].18,w[i*4+2].18,w[i*4+3].18),
+//                   sbox[(3-i)%8](w[i*4].19,w[i*4+1].19,w[i*4+2].19,w[i*4+3].19),
+//                   sbox[(3-i)%8](w[i*4].20,w[i*4+1].20,w[i*4+2].20,w[i*4+3].20),
+//                   sbox[(3-i)%8](w[i*4].21,w[i*4+1].21,w[i*4+2].21,w[i*4+3].21),
+//                   sbox[(3-i)%8](w[i*4].22,w[i*4+1].22,w[i*4+2].22,w[i*4+3].22),
+//                   sbox[(3-i)%8](w[i*4].23,w[i*4+1].23,w[i*4+2].23,w[i*4+3].23),
+//                   sbox[(3-i)%8](w[i*4].24,w[i*4+1].24,w[i*4+2].24,w[i*4+3].24),
+//                   sbox[(3-i)%8](w[i*4].25,w[i*4+1].25,w[i*4+2].25,w[i*4+3].25),
+//                   sbox[(3-i)%8](w[i*4].26,w[i*4+1].26,w[i*4+2].26,w[i*4+3].26),
+//                   sbox[(3-i)%8](w[i*4].27,w[i*4+1].27,w[i*4+2].27,w[i*4+3].27),
+//                   sbox[(3-i)%8](w[i*4].28,w[i*4+1].28,w[i*4+2].28,w[i*4+3].28),
+//                   sbox[(3-i)%8](w[i*4].29,w[i*4+1].29,w[i*4+2].29,w[i*4+3].29),
+//                   sbox[(3-i)%8](w[i*4].30,w[i*4+1].30,w[i*4+2].30,w[i*4+3].30),
+//                   sbox[(3-i)%8](w[i*4].31,w[i*4+1].31,w[i*4+2].31,w[i*4+3].31),
+//                   sbox[(3-i)%8](w[i*4].32,w[i*4+1].32,w[i*4+2].32,w[i*4+3].32));
+// tel
 
-node<i> serpent_single (in:u128::_, key:u128::_) returns out:u128::_, key:u128::_
+node serpent_round (input:u128) returns (out:u128)
 vars
     s:u4[32]::_
 let
-    s = in ^ key;
-    out = lt(sbox[i](s[1]), sbox[i](s[2]), sbox[i](s[3]), sbox[i](s[4]),
-             sbox[i](s[5]), sbox[i](s[6]), sbox[i](s[7]), sbox[i](s[8]),
-             sbox[i](s[9]), sbox[i](s[10]), sbox[i](s[11]), sbox[i](s[12]),
-             sbox[i](s[13]), sbox[i](s[14]), sbox[i](s[15]), sbox[i](s[16]),
-             sbox[i](s[17]), sbox[i](s[18]), sbox[i](s[19]), sbox[i](s[20]),
-             sbox[i](s[21]), sbox[i](s[22]), sbox[i](s[23]), sbox[i](s[24]),
-             sbox[i](s[25]), sbox[i](s[26]), sbox[i](s[27]), sbox[i](s[28]),
-             sbox[i](s[29]), sbox[i](s[30]), sbox[i](s[31]), sbox[i](s[32]))
+    out = lt(fix_sbox(sbox[i](s[1]), sbox[i](s[2]), sbox[i](s[3]), sbox[i](s[4]),
+                      sbox[i](s[5]), sbox[i](s[6]), sbox[i](s[7]), sbox[i](s[8]),
+                      sbox[i](s[9]), sbox[i](s[10]), sbox[i](s[11]), sbox[i](s[12]),
+                      sbox[i](s[13]), sbox[i](s[14]), sbox[i](s[15]), sbox[i](s[16]),
+                      sbox[i](s[17]), sbox[i](s[18]), sbox[i](s[19]), sbox[i](s[20]),
+                      sbox[i](s[21]), sbox[i](s[22]), sbox[i](s[23]), sbox[i](s[24]),
+                      sbox[i](s[25]), sbox[i](s[26]), sbox[i](s[27]), sbox[i](s[28]),
+                      sbox[i](s[29]), sbox[i](s[30]), sbox[i](s[31]), sbox[i](s[32]))
 tel
 
 
-# Note, the key should be on 256 bits, and then we should call key_gen.
-# But that's quite painful to implemented, so lets imagine we are supposed to
-# use a fix key.
-node main (plaintext:u128, key:u256) returns ciphertext:u128
+node main (plaintext:u128, keys:u128[33]) returns (ciphertext:u128)
 vars
-    r : u128[32]::_,
-    keys : u128[32]::_,
+    rounds : u128[32]::_,
     s:u4[32]::_
 let
+    rounds[0] = ip_table(plaintext);
+    forall i in [1,32],
+        rounds[i] = serpent_round(rounds[i-1] ^ keys[i]);
 
-    keys = key_gen(key);
+    
 
     (r,key_tmp) = fill_i<serpent_single;32>(ip_table(plaintext),key);
     s = r[32];
