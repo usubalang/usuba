@@ -60,7 +60,7 @@ let rec rewrite_expr loc_env env_var (i:int) (e:expr) : expr =
   let rec_call = rewrite_expr loc_env env_var i in
   match e with
   | Const _ -> e
-  | ExpVar(Field _) -> e
+  | ExpVar(Field(v,e)) -> ExpVar(Field(v,Const_e(eval_arith loc_env e)))
   | ExpVar(Var v) -> ( match env_fetch loc_env v with
                        | Some n -> Const n
                        | None ->
@@ -103,7 +103,8 @@ let rewrite_pat env env_var (pat:var list) : var list =
     | Var v -> (match env_fetch env_var v with
                 | Some size -> expand_var_array v size
                 | None -> [ Var v ])
-    | Field(lasgn,i) -> [ Field(List.nth (aux lasgn) 0,i) ]
+    | Field(lasgn,i) -> let i' = eval_arith env i in
+                        [ Field(List.nth (aux lasgn) 0,Const_e i') ]
     | Index(id,e) -> let n = eval_arith env e in
                      [ Var(id ^ (string_of_int n) ^ "'") ] 
     | Range(id,ei,ef) -> [ Range(id,Const_e(eval_arith env ei),
