@@ -29,12 +29,12 @@ system "./make_input" unless -f 'input.txt';
     my $x_coord = join ",", sort { $speed{$b} <=> $speed{$a} } keys %speed;
 
     say 
-        '  \begin{tikzpicture}[font=\small]
+        '  \resizebox{\linewidth}{8.6cm}{
+    \begin{tikzpicture}[font=\small]
     \begin{axis}[
       ybar,
       bar width=25pt,
-      width = .95\linewidth,
-      ylabel={Speed (Mib/s)},
+      ylabel={Speed (MiB/s)},
       ymin=0,
       ytick=\empty,
       xtick=data,
@@ -42,7 +42,7 @@ system "./make_input" unless -f 'input.txt';
       axis y line=left,
       enlarge x limits=0.1,
       symbolic x coords={',$x_coord, '},
-      xticklabel style={anchor=base,yshift=-\baselineskip},
+      xticklabel style={rotate=45, anchor=east, align=center},
       nodes near coords={\pgfmathprintnumber\pgfplotspointmeta}
     ]
 
@@ -54,7 +54,8 @@ system "./make_input" unless -f 'input.txt';
 
     say '      };
     \end{axis}
-  \end{tikzpicture}';
+  \end{tikzpicture}
+  }';
 }
 
 ################################################################################
@@ -74,12 +75,12 @@ system "./make_input" unless -f 'input.txt';
 
     open local *STDOUT, '>', 'speed_no_ortho.tikz' or die $!;
     say 
-        '  \begin{tikzpicture}[font=\small]
+        '  \resizebox{\linewidth}{8.6cm}{
+  \begin{tikzpicture}[font=\small]
     \begin{axis}[
       ybar,
       bar width=25pt,
-      width = .95\linewidth,
-      ylabel={Speed (Mib/s)},
+      ylabel={Speed (MiB/s)},
       ymin=0,
       ytick=\empty,
       xtick=data,
@@ -87,7 +88,7 @@ system "./make_input" unless -f 'input.txt';
       axis y line=left,
       enlarge x limits=0.1,
       symbolic x coords={',$x_coord, '},
-      xticklabel style={anchor=base,yshift=-\baselineskip},
+      xticklabel style={rotate=45, anchor=east, align=center},
       nodes near coords={\pgfmathprintnumber\pgfplotspointmeta}
     ]
 
@@ -99,7 +100,8 @@ system "./make_input" unless -f 'input.txt';
 
     say '      };
     \end{axis}
-  \end{tikzpicture}';
+  \end{tikzpicture}
+  }';
 }
 
 
@@ -120,11 +122,11 @@ system "./make_input" unless -f 'input.txt';
 
     open local *STDOUT, '>', 'size_code.tikz' or die $!;
     say 
-        '  \begin{tikzpicture}[font=\small]
+        '  \resizebox{\linewidth}{8.6cm}{
+  \begin{tikzpicture}[font=\small]
     \begin{axis}[
       ybar,
       bar width=20pt,
-      width = .95\linewidth,
       ylabel={Size (KB)},
       ymin=0,
       ytick=\empty,
@@ -133,7 +135,7 @@ system "./make_input" unless -f 'input.txt';
       axis y line=left,
       enlarge x limits=0.1,
       symbolic x coords={',$x_coord, '},
-      xticklabel style={anchor=base,yshift=-\baselineskip},
+      xticklabel style={rotate=45, anchor=east, align=center},
       nodes near coords={\pgfmathprintnumber\pgfplotspointmeta}
     ]
 
@@ -145,7 +147,8 @@ system "./make_input" unless -f 'input.txt';
 
     say '      };
     \end{axis}
-  \end{tikzpicture}';
+  \end{tikzpicture}
+  }';
 
     unlink 'tmp';
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use feature 'say';
+system 'make';
 
 $tot = 10;
 for (1 .. $tot) {
@@ -12,6 +12,6 @@ for (1 .. $tot) {
     }
 }
 
-for (sort keys %c) {
+for (sort {$a<=>$b} keys %c) {
     printf "$_ => %.2f\n", 1/($c{$_}/$c{1});
 }
