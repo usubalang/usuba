@@ -1,7 +1,6 @@
 TARGET = cmp cmp.s
-CFLAGS = -Wall -Wextra -O3 -march=native -Wno-parentheses -fno-inline -fno-tree-vectorize
-CFLAGS_clang = -Wall -Wextra -O3 -march=native -Wno-bitwise-op-parentheses -fno-vectorize -fno-inline
-CC = gcc
+CFLAGS = -Wall -Wextra -march=native -Wno-parentheses -fno-tree-vectorize -fstrict-aliasing -inline-max-size=10000 -inline-max-total-size=10000
+CC = icc
 
 default: $(TARGET)
 all: default

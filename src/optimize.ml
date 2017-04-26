@@ -5,11 +5,11 @@ open Usuba_print
 (* Common Subexpression Elimination and Constant Folding*)
 module CSE_CF = struct
 
-  let rec fold_expr (e:expr) : expr =
+  let rec fold_expr not_env (e:expr) : expr =
     match e with
     | Log(op,x,y) ->
-       let x' = fold_expr x in
-       let y' = fold_expr y in
+       let x' = fold_expr not_env x in
+       let y' = fold_expr not_env y in
        ( match x',y' with
          | Const _, _ | _, Const _ -> (
            match Log(op,x',y') with
@@ -17,6 +17,20 @@ module CSE_CF = struct
            | Log(And,x,Const 1) -> x
            | Log(And,Const 0,_) -> Const 0
            | Log(And,_,Const 0) -> Const 0
+
+           | Log(And,x,y) ->
+              ( match x with
+                | ExpVar(Var v) ->
+                   ( match env_fetch not_env v with
+                     | Some x -> print_endline("Here"); Log(Andn,x,y)
+                     | None ->
+                        match y with
+                        | ExpVar(Var v) ->
+                           (match env_fetch not_env v with
+                            | Some y -> print_endline("Here"); Log(Andn,y,x)
+                            | None -> Log(And,x,y))
+                        | _ -> Log(And,x,y))
+                | _ -> Log(And,x,y))
                                          
            | Log(Or,Const 1,_) -> Const 1
            | Log(Or,_,Const 1) -> Const 1
@@ -32,12 +46,13 @@ module CSE_CF = struct
            | Log(Andn,x,Const 0) -> Const 0
            | Log(Andn,Const 1,x) -> Const 0
            | Log(Andn,x,Const 1) -> Not x
+                  
                                         
            | _ -> Log(op,x',y'))
          | _, _ -> Log(op,x',y') )
-    | Fun(f,l) -> Fun(f,List.map fold_expr l)
-    | Tuple l -> Tuple(List.map fold_expr l)
-    | Not x -> let x' = fold_expr x in
+    | Fun(f,l) -> Fun(f,List.map (fold_expr not_env) l)
+    | Tuple l -> Tuple(List.map (fold_expr not_env) l)
+    | Not x -> let x' = fold_expr not_env x in
                ( match x with
                  | Const 1 -> Const 0
                  | Const 0 -> Const 1
@@ -54,33 +69,41 @@ module CSE_CF = struct
     | x::[] -> ExpVar x
     | _ -> Tuple (List.map (function x -> ExpVar x) pat)
 
-  let rec cse_expr env (e: expr) : expr =
-    let e' = fold_expr (
-                match e with
-                | Log(op,x,y) -> Log(op,cse_expr env x,cse_expr env y)
-                | Arith(op,x,y) -> Arith(op,cse_expr env x,cse_expr env y)
-                | Not e -> Not (cse_expr env e)
-                | Fun(f,l) -> Fun(f,List.map (cse_expr env) l)
-                | Tuple l -> Tuple(List.map (cse_expr env) l)
-                | _ -> e ) in
+  let rec cse_expr env not_env (e: expr) : expr =
+    let e' = fold_expr not_env (
+                 match e with
+                 | Log(op,x,y) -> Log(op,cse_expr env not_env x,
+                                      cse_expr env not_env y)
+                 | Arith(op,x,y) -> Arith(op,cse_expr env not_env x,
+                                          cse_expr env not_env y)
+                 | Not e -> Not (cse_expr env not_env e)
+                 | Fun(f,l) -> Fun(f,List.map (cse_expr env not_env) l)
+                 | Tuple l -> Tuple(List.map (cse_expr env not_env) l)
+                 | _ -> e ) in
     match env_fetch env e' with
     | Some x -> x
     | None ->
-       let e' = fold_expr (
+       let e' = fold_expr not_env (
                     match e' with
                     | Log(op,x,y) ->
                        (match op with
-                        | And | Or | Xor -> Log(op,cse_expr env y,cse_expr env x)
+                        | And | Or | Xor -> Log(op,cse_expr env not_env y,
+                                                cse_expr env not_env x)
                         | Andn -> e')
-                    | Arith(Add,x,y) -> Arith(Add,cse_expr env y,cse_expr env x)
-                    | Arith(Mul,x,y) -> Arith(Mul,cse_expr env y,cse_expr env x)
+                    | Arith(Add,x,y) -> Arith(Add,cse_expr env not_env y,
+                                              cse_expr env not_env x)
+                    | Arith(Mul,x,y) -> Arith(Mul,cse_expr env not_env y,
+                                              cse_expr env not_env x)
                     | _ -> e' ) in
        match env_fetch env e' with
        | Some x -> x
        | None -> e'
               
-  let cse_single_deq env ((p,e):(var list)*expr): ((var list)*expr) list =
-    let e' = cse_expr env e in
+  let cse_single_deq env not_env ((p,e):(var list)*expr): ((var list)*expr) list =
+    let e' = cse_expr env not_env e in
+    (match e',p with
+     | Not x,[Var v] -> print_endline ("Adding ^ " ^ v);env_add not_env v x
+     | _ -> ());
     let p' = pat_to_expr p in
     match env_fetch env e' with
     | Some x -> env_add env p' x;
@@ -102,6 +125,7 @@ module CSE_CF = struct
              
   let cse_deq (deq: deq list) no_opti : deq list =
     let env = Hashtbl.create 40 in
+    let not_env = Hashtbl.create 40 in
     let no_opt_env = Hashtbl.create 20 in
     List.iter (fun x -> env_add no_opt_env x 1) (p_to_pat no_opti);
     List.flatten @@
@@ -109,9 +133,9 @@ module CSE_CF = struct
         (function
           | Norec (p,e) ->
              if dont_opti p no_opt_env then
-                 [Norec(p,cse_expr env e)]
+                 [Norec(p,cse_expr env not_env e)]
              else
-               ( let r = cse_single_deq env (p,e) in
+               ( let r = cse_single_deq env not_env (p,e) in
                  List.map (fun (p,e) -> Norec(p,e)) r)
           | Rec _ -> raise (Invalid_AST "Invalid Rec")) deq           
                  
