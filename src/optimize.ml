@@ -22,12 +22,12 @@ module CSE_CF = struct
               ( match x with
                 | ExpVar(Var v) ->
                    ( match env_fetch not_env v with
-                     | Some x -> print_endline("Here"); Log(Andn,x,y)
+                     | Some x -> Log(Andn,x,y)
                      | None ->
                         match y with
                         | ExpVar(Var v) ->
                            (match env_fetch not_env v with
-                            | Some y -> print_endline("Here"); Log(Andn,y,x)
+                            | Some y -> Log(Andn,y,x)
                             | None -> Log(And,x,y))
                         | _ -> Log(And,x,y))
                 | _ -> Log(And,x,y))
@@ -102,7 +102,7 @@ module CSE_CF = struct
   let cse_single_deq env not_env ((p,e):(var list)*expr): ((var list)*expr) list =
     let e' = cse_expr env not_env e in
     (match e',p with
-     | Not x,[Var v] -> print_endline ("Adding ^ " ^ v);env_add not_env v x
+     | Not x,[Var v] -> env_add not_env v x
      | _ -> ());
     let p' = pat_to_expr p in
     match env_fetch env e' with
