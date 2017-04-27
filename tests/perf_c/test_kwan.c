@@ -47,13 +47,6 @@ void unorthogonalize(unsigned long data[]){
 }
 
 int main() {
-
-  FILE* fh_in = fopen("input.txt","rb");
-  FILE* fh_out = fopen("output.txt","wb");
-  
-  unsigned long *plain_std = malloc(64 * sizeof *plain_std);
-  unsigned long *cipher_std = malloc(64 * sizeof *cipher_std);
-  
   /* Hardcoding the key for now. */
   unsigned char key_std_char[8] = {0x13,0x34,0x57,0x79,0x9B,0xBC,0xDF,0xF1};
   unsigned long key_std = *(unsigned long*) key_std_char;
@@ -64,18 +57,41 @@ int main() {
     else
       key_ortho[i] = 0;
   
+
+  FILE* fh_in = fopen("input.txt","rb");
+
+  fseek(fh_in,0,SEEK_END);
+  long size = ftell(fh_in);
+  rewind(fh_in);
   
-  while(fread(plain_std, 8, 64, fh_in)) {
+  unsigned long *plain_std = aligned_alloc(32,size);
 
-    orthogonalize(plain_std);
-    
-    deseval(plain_std, cipher_std, key_ortho);
-             
-    unorthogonalize(cipher_std);
-    
-    fwrite(cipher_std, 8, 64, fh_out);
-  }
-
+  fread(plain_std,size,1,fh_in);
   fclose(fh_in);
+  
+  clock_t timer = clock();
+  for (int u = 0; u < 16; u++) {
+    for (int x = 0; x < size/8; x += 64) {
+  
+      unsigned long* loc_std = plain_std + x;
+    
+      for (int i = 0; i < 64; i++)
+        loc_std[i] = __builtin_bswap64(loc_std[i]);
+
+      orthogonalize(loc_std);
+      
+      deseval(loc_std, loc_std, key_ortho);
+
+      unorthogonalize(loc_std);
+    
+      for (int i = 0; i < 64; i++)
+        loc_std[i] = __builtin_bswap64(loc_std[i]);
+    }
+  }
+  printf("%f\n",((double)clock()-timer)/CLOCKS_PER_SEC);
+  
+  FILE* fh_out = fopen("output.txt","wb");
+  fwrite(plain_std,size,1,fh_out);
   fclose(fh_out);
+
 }

@@ -10,6 +10,8 @@ use Benchmark qw(:all);
 die "Make failed" if system 'make';
 system "./make_input" unless -f 'input.txt';
 
+my $tot_size = -s 'input.txt';
+
 {
     my %speed;
     $speed{std} = 75;
@@ -18,9 +20,9 @@ system "./make_input" unless -f 'input.txt';
                       ['uak-128','test_uak_128'], ['uak-256','test_uak_256'],
                       ['ua-256','test_ua_256']
         ) {
-        my $time = timethis(10,sub{system "./@$instance[1]"});
-        $speed{@$instance[0]} = sprintf "%d", (130023424 * 10) / $time->cpu_a
-            / 1_000_000;
+        my $time = 0;
+        $time += `./@$instance[1]` for 1 .. 10;
+        $speed{@$instance[0]} = sprintf "%d", ($tot_size*16)*10 / $time / 1_000_000;
     }
 
 
@@ -67,9 +69,9 @@ system "./make_input" unless -f 'input.txt';
                       ['uak-128','test_uak_128_no'], ['uak-256','test_uak_256_no'],
                       ['ua-256','test_ua_256_no'], ['kwan-64*','test_kwan_no'],
                       ['uak-man-64*','test_uak_manual_64std_no']) {
-        my $time = timethis(20,sub{system "./@$instance[1]"});
-        $speed{@$instance[0]} = sprintf "%d", (130023424 * 20) / $time->cpu_a
-            / 1_000_000;
+        my $time = 0;
+        $time += `./@$instance[1]` for 1 .. 20;
+        $speed{@$instance[0]} = sprintf "%d", ($tot_size*16)*20 / $time / 1_000_000;
     }
     my $x_coord = join ",", sort { $speed{$b} <=> $speed{$a} } keys %speed;
 
