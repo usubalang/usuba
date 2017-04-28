@@ -1,0 +1,11 @@
+set terminal pdf
+set output 'openmp.pdf'
+set boxwidth 0.6
+set border 3
+set tics nomirror
+set xtics out
+set ytics out
+set xtics rotate by -45
+set yrange [0:6]
+set nokey
+plot 'data.dat' using 2:xtic(1) with boxes lt rgb "black", '' using 0:($2+.2):2 with labels

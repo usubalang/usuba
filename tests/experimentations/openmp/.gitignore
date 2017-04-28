@@ -1,3 +1,5 @@
 run
 make_input
-*.txt
+input.txt
+output.txt
+*.pdf

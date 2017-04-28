@@ -2,7 +2,7 @@
 
 system 'make';
 
-$tot = 10;
+$tot = 100;
 for (1 .. $tot) {
     $_ = `./run`;
     for (split "\n") {
@@ -12,6 +12,9 @@ for (1 .. $tot) {
     }
 }
 
-for (sort {$a<=>$b} keys %c) {
-    printf "$_ => %.2f\n", 1/($c{$_}/$c{1});
+open *FPOUT, '>', 'data.dat' or die $!;
+for (sort {$a<=>$b} grep { $_ <= 4 } keys %c) {
+    print FPOUT (sprintf "$_ %.2f\n", 1/($c{$_}/$c{1}));
 }
+
+system "gnuplot plot.txt"

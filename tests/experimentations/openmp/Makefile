@@ -15,4 +15,3 @@ make_input:
 clean:
 	rm -f $(TARGET)
 	rm -f *~
-	rm *.txt
