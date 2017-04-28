@@ -1,0 +1,12 @@
+set terminal pdf
+set output 'speed_no_ortho.pdf'
+set boxwidth 0.6
+set border 3
+set tics nomirror
+set xtics out
+set ytics out
+set xtics rotate by -45
+set yrange [0:1400]
+set nokey
+set ylabel "MiB/s"
+plot 'data_no.dat' using 2:xtic(1) with boxes lt rgb "black", '' using 0:($2+35):2 with labels

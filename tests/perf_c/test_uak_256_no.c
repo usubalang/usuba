@@ -52,7 +52,7 @@ int main() {
   fclose(fh_in);
 
   clock_t timer = clock();
-  for (int u = 0; u < 32; u++) {
+  for (int u = 0; u < 16; u++) {
     for (int x = 0; x < size/8; x += 256) {
   
       unsigned long* loc_std = plain_std + x;

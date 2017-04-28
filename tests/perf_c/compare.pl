@@ -26,38 +26,15 @@ my $tot_size = -s 'input.txt';
     }
 
 
-    open local *STDOUT, '>', 'speed_std.tikz' or die $!;
+    open local *STDOUT, '>', 'data_std.dat' or die $!;
 
     my $x_coord = join ",", sort { $speed{$b} <=> $speed{$a} } keys %speed;
 
-    say 
-        '  \resizebox{\linewidth}{8.6cm}{
-    \begin{tikzpicture}[font=\small]
-    \begin{axis}[
-      ybar,
-      bar width=25pt,
-      ylabel={Speed (MiB/s)},
-      ymin=0,
-      ytick=\empty,
-      xtick=data,
-      axis x line=bottom,
-      axis y line=left,
-      enlarge x limits=0.1,
-      symbolic x coords={',$x_coord, '},
-      xticklabel style={rotate=45, anchor=east, align=center},
-      nodes near coords={\pgfmathprintnumber\pgfplotspointmeta}
-    ]
-
-      \addplot[fill=white] coordinates {';
-
     for (sort {$speed{$b} <=> $speed{$a}} keys %speed) {
-        say "       ($_,$speed{$_})";
+        my $conv = $_ =~ /man/ ? 'uak-64*\nman' : $_ ;
+        say qq{"$conv" $speed{$_}};
     }
-
-    say '      };
-    \end{axis}
-  \end{tikzpicture}
-  }';
+    system "gnuplot plot_std.txt"
 }
 
 ################################################################################
@@ -75,35 +52,12 @@ my $tot_size = -s 'input.txt';
     }
     my $x_coord = join ",", sort { $speed{$b} <=> $speed{$a} } keys %speed;
 
-    open local *STDOUT, '>', 'speed_no_ortho.tikz' or die $!;
-    say 
-        '  \resizebox{\linewidth}{8.6cm}{
-  \begin{tikzpicture}[font=\small]
-    \begin{axis}[
-      ybar,
-      bar width=25pt,
-      ylabel={Speed (MiB/s)},
-      ymin=0,
-      ytick=\empty,
-      xtick=data,
-      axis x line=bottom,
-      axis y line=left,
-      enlarge x limits=0.1,
-      symbolic x coords={',$x_coord, '},
-      xticklabel style={rotate=45, anchor=east, align=center},
-      nodes near coords={\pgfmathprintnumber\pgfplotspointmeta}
-    ]
-
-      \addplot[fill=white] coordinates {';
-
+    open local *STDOUT, '>', 'data_no.dat' or die $!;
     for (sort {$speed{$b} <=> $speed{$a}} keys %speed) {
-        say "       ($_,$speed{$_})";
+        my $conv = $_ =~ /man/ ? 'uak-64*\nman' : $_;
+        say qq{"$conv" $speed{$_}};
     }
-
-    say '      };
-    \end{axis}
-  \end{tikzpicture}
-  }';
+    system "gnuplot plot_no.txt"
 }
 
 
@@ -116,41 +70,17 @@ my $tot_size = -s 'input.txt';
     for my $instance (['uak-64*','test_uak_64std'], ['uak-64','test_uak_64'],
                       ['uak-128','test_uak_128'], ['uak-256','test_uak_256'],
                       ['ua-256','test_ua_256'], ['kwan-64*','test_kwan'],
-                      ['uak-man-64*','test_uak_manual_64std'],
                       ['kwan-64*-ni', 'tmp']) {
         $speed{@$instance[0]} = sprintf"%d",(-s @$instance[1])/1000;
     }
     my $x_coord = join ",", sort { $speed{$b} <=> $speed{$a} } keys %speed;
 
-    open local *STDOUT, '>', 'size_code.tikz' or die $!;
-    say 
-        '  \resizebox{\linewidth}{8.6cm}{
-  \begin{tikzpicture}[font=\small]
-    \begin{axis}[
-      ybar,
-      bar width=20pt,
-      ylabel={Size (KB)},
-      ymin=0,
-      ytick=\empty,
-      xtick=data,
-      axis x line=bottom,
-      axis y line=left,
-      enlarge x limits=0.1,
-      symbolic x coords={',$x_coord, '},
-      xticklabel style={rotate=45, anchor=east, align=center},
-      nodes near coords={\pgfmathprintnumber\pgfplotspointmeta}
-    ]
-
-      \addplot[fill=white] coordinates {';
+    open local *STDOUT, '>', 'data_size.dat' or die $!;
 
     for (sort {$speed{$b} <=> $speed{$a}} keys %speed) {
-        say "       ($_,$speed{$_})";
+        my $conv = $_ =~ /ni/ ? 'uak-64*\nni' : $_;
+        say qq{"$conv" $speed{$_}};
     }
-
-    say '      };
-    \end{axis}
-  \end{tikzpicture}
-  }';
-
+    system "gnuplot plot_size.txt";
     unlink 'tmp';
 }

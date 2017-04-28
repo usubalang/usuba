@@ -1,6 +1,7 @@
 make_input
 test_des
-*.txt
+input.txt
+output.txt
 *.o
 test_uak_256
 test_uak_256_no
@@ -16,3 +17,5 @@ test_kwan
 test_kwan_no
 
 *.tikz
+*.pdf
+*.dat
