@@ -101,7 +101,7 @@ int main() {
 
   clock_t timer = clock();
   for (int u = 0; u < 16; u++) {
-    for (int x = 0; x < size/8; x += 256) {
+    for (int x = 0; x < size/32; x += 256) {
       unsigned long* loc_std = plain_std + x;
     
       for (int i = 0; i < 256; i++)

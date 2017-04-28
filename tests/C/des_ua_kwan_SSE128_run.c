@@ -97,7 +97,7 @@ int main() {
 
   clock_t timer = clock();
   for (int u = 0; u < 16; u++) {
-    for (int x = 0; x < size/8; x += 128) {
+    for (int x = 0; x < size/16; x += 128) {
   
       unsigned long* loc_std = plain_std + x;
     
