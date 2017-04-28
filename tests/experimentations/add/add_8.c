@@ -198,8 +198,19 @@ int main () {
   y7 = _mm_set_epi32(rand(),rand(),rand(),rand());
   y8 = _mm_set_epi32(rand(),rand(),rand(),rand());
 
+  for (int i = 0; i < size*8; i++) {
+    __m128i tmp;
+    buffer[i] = add(x1,x2,&tmp);
+  }
+  fwrite(buffer,sizeof *buffer,size*8,f);
+  
+  
+  printf("Packed...... ");fflush(stdout);
+  begin = _rdtsc();
   for (int j = 0; j < size; j++)
-    add_bitslice(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,&(buffer[j*8]));
+    add_pack(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,&(buffer[j*8]));
+  end = _rdtsc();
+  printf("%lu\n",end-begin);
   fwrite(buffer,sizeof *buffer,size*8,f);
   
   printf("Bitsliced... ");fflush(stdout);
@@ -210,10 +221,6 @@ int main () {
   printf("%lu\n",end-begin);
   fwrite(buffer,sizeof *buffer,size*8,f);
   
-  for (int j = 0; j < size; j++)
-    add_lookahead(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,&(buffer[j*8]));
-  fwrite(buffer,sizeof *buffer,size*8,f);
-  
   printf("Lookahead... ");fflush(stdout);
   begin = _rdtsc();
   for (int j = 0; j < size; j++)
@@ -222,17 +229,14 @@ int main () {
   printf("%lu\n",end-begin);
   fwrite(buffer,sizeof *buffer,size*8,f);
   
-  for (int j = 0; j < size; j++)
-    add_pack(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,&(buffer[j*8]));
-  fwrite(buffer,sizeof *buffer,size*8,f);
+  /* for (int j = 0; j < size; j++) */
+    /* add_bitslice(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,&(buffer[j*8])); */
+  /* fwrite(buffer,sizeof *buffer,size*8,f); */
   
-  printf("Packed...... ");fflush(stdout);
-  begin = _rdtsc();
-  for (int j = 0; j < size; j++)
-    add_pack(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,&(buffer[j*8]));
-  end = _rdtsc();
-  printf("%lu\n",end-begin);
-  fwrite(buffer,sizeof *buffer,size*8,f);
+  
+  /* for (int j = 0; j < size; j++) */
+  /*   add_pack(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,&(buffer[j*8])); */
+  /* fwrite(buffer,sizeof *buffer,size*8,f); */
   
   return 0;
 }

@@ -1,2 +1,4 @@
-cmp
-*.s
+add_8
+add_16
+add_16_wrong
+add_32
