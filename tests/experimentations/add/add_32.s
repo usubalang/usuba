@@ -2793,38 +2793,38 @@ main:
 ..B1.277:                       # Preds ..B1.581
                                 # Execution count [9.00e-01]
         vmovups   1728(%rsp), %xmm6                             #232.5[spill]
-        vpaddb    1200(%rsp), %xmm6, %xmm5                      #232.5[spill]
+        vpaddd    1200(%rsp), %xmm6, %xmm5                      #232.5[spill]
         vmovups   1824(%rsp), %xmm14                            #232.5[spill]
         vmovups   1712(%rsp), %xmm4                             #232.5[spill]
         vmovdqu   %xmm5, 16(%rsp)                               #232.5[spill]
         vmovups   1360(%rsp), %xmm5                             #232.5[spill]
-        vpaddb    1120(%rsp), %xmm14, %xmm13                    #232.5[spill]
+        vpaddd    1120(%rsp), %xmm14, %xmm13                    #232.5[spill]
         vmovups   1808(%rsp), %xmm12                            #232.5[spill]
         vmovups   1744(%rsp), %xmm7                             #232.5[spill]
-        vpaddb    1232(%rsp), %xmm4, %xmm3                      #232.5[spill]
+        vpaddd    1232(%rsp), %xmm4, %xmm3                      #232.5[spill]
         vmovups   1696(%rsp), %xmm2                             #232.5[spill]
-        vpaddb    848(%rsp), %xmm5, %xmm4                       #232.5[spill]
+        vpaddd    848(%rsp), %xmm5, %xmm4                       #232.5[spill]
         vmovdqu   %xmm13, 240(%rsp)                             #232.5[spill]
-        vpaddb    1136(%rsp), %xmm12, %xmm11                    #232.5[spill]
-        vpaddb    1184(%rsp), %xmm7, %xmm13                     #232.5[spill]
+        vpaddd    1136(%rsp), %xmm12, %xmm11                    #232.5[spill]
+        vpaddd    1184(%rsp), %xmm7, %xmm13                     #232.5[spill]
         vmovups   1664(%rsp), %xmm15                            #232.5[spill]
         vmovups   1328(%rsp), %xmm7                             #232.5[spill]
         vmovdqu   %xmm3, 128(%rsp)                              #232.5[spill]
-        vpaddb    1248(%rsp), %xmm2, %xmm12                     #232.5[spill]
+        vpaddd    1248(%rsp), %xmm2, %xmm12                     #232.5[spill]
         vmovups   1680(%rsp), %xmm1                             #232.5[spill]
         vmovups   1376(%rsp), %xmm3                             #232.5[spill]
         vmovdqu   %xmm4, 112(%rsp)                              #232.5[spill]
         vmovups   1408(%rsp), %xmm2                             #232.5[spill]
         vmovups   1440(%rsp), %xmm4                             #232.5[spill]
         vmovdqu   %xmm11, 256(%rsp)                             #232.5[spill]
-        vpaddb    1280(%rsp), %xmm15, %xmm11                    #232.5[spill]
-        vpaddb    832(%rsp), %xmm7, %xmm6                       #232.5[spill]
-        vpaddb    1264(%rsp), %xmm1, %xmm0                      #232.5[spill]
-        vpaddb    864(%rsp), %xmm3, %xmm7                       #232.5[spill]
+        vpaddd    1280(%rsp), %xmm15, %xmm11                    #232.5[spill]
+        vpaddd    832(%rsp), %xmm7, %xmm6                       #232.5[spill]
+        vpaddd    1264(%rsp), %xmm1, %xmm0                      #232.5[spill]
+        vpaddd    864(%rsp), %xmm3, %xmm7                       #232.5[spill]
         vmovups   1424(%rsp), %xmm15                            #232.5[spill]
-        vpaddb    880(%rsp), %xmm2, %xmm1                       #232.5[spill]
-        vpaddb    928(%rsp), %xmm4, %xmm3                       #232.5[spill]
-        vpaddb    912(%rsp), %xmm15, %xmm5                      #232.5[spill]
+        vpaddd    880(%rsp), %xmm2, %xmm1                       #232.5[spill]
+        vpaddd    928(%rsp), %xmm4, %xmm3                       #232.5[spill]
+        vpaddd    912(%rsp), %xmm15, %xmm5                      #232.5[spill]
         vmovdqu   %xmm0, 192(%rsp)                              #232.5[spill]
         vmovdqu   %xmm1, 208(%rsp)                              #232.5[spill]
         vmovups   1392(%rsp), %xmm0                             #232.5[spill]
@@ -2835,30 +2835,30 @@ main:
         vmovups   1504(%rsp), %xmm3                             #232.5[spill]
         vmovdqu   %xmm6, 64(%rsp)                               #232.5[spill]
         vmovdqu   %xmm5, 48(%rsp)                               #232.5[spill]
-        vpaddb    896(%rsp), %xmm0, %xmm6                       #232.5[spill]
-        vpaddb    944(%rsp), %xmm2, %xmm5                       #232.5[spill]
-        vpaddb    960(%rsp), %xmm1, %xmm0                       #232.5[spill]
-        vpaddb    976(%rsp), %xmm15, %xmm4                      #232.5[spill]
-        vpaddb    992(%rsp), %xmm3, %xmm2                       #232.5[spill]
+        vpaddd    896(%rsp), %xmm0, %xmm6                       #232.5[spill]
+        vpaddd    944(%rsp), %xmm2, %xmm5                       #232.5[spill]
+        vpaddd    960(%rsp), %xmm1, %xmm0                       #232.5[spill]
+        vpaddd    976(%rsp), %xmm15, %xmm4                      #232.5[spill]
+        vpaddd    992(%rsp), %xmm3, %xmm2                       #232.5[spill]
         vmovups   1520(%rsp), %xmm1                             #232.5[spill]
         vmovups   1552(%rsp), %xmm15                            #232.5[spill]
         vmovdqu   %xmm0, 96(%rsp)                               #232.5[spill]
         vmovdqu   %xmm2, 144(%rsp)                              #232.5[spill]
-        vpaddb    1008(%rsp), %xmm1, %xmm0                      #232.5[spill]
-        vpaddb    1024(%rsp), %xmm15, %xmm3                     #232.5[spill]
+        vpaddd    1008(%rsp), %xmm1, %xmm0                      #232.5[spill]
+        vpaddd    1024(%rsp), %xmm15, %xmm3                     #232.5[spill]
         vmovups   1536(%rsp), %xmm2                             #232.5[spill]
         vmovups   1760(%rsp), %xmm9                             #232.5[spill]
         vmovups   1584(%rsp), %xmm15                            #232.5[spill]
-        vpaddb    1040(%rsp), %xmm2, %xmm1                      #232.5[spill]
+        vpaddd    1040(%rsp), %xmm2, %xmm1                      #232.5[spill]
         vmovdqu   %xmm0, 160(%rsp)                              #232.5[spill]
         vmovups   1776(%rsp), %xmm10                            #232.5[spill]
-        vpaddb    1168(%rsp), %xmm9, %xmm8                      #232.5[spill]
+        vpaddd    1168(%rsp), %xmm9, %xmm8                      #232.5[spill]
         vmovups   1568(%rsp), %xmm0                             #232.5[spill]
-        vpaddb    1072(%rsp), %xmm15, %xmm2                     #232.5[spill]
+        vpaddd    1072(%rsp), %xmm15, %xmm2                     #232.5[spill]
         vmovups   1792(%rsp), %xmm15                            #232.5[spill]
         vmovdqu   %xmm3, 32(%rsp)                               #232.5[spill]
-        vpaddb    1152(%rsp), %xmm10, %xmm14                    #232.5[spill]
-        vpaddb    1056(%rsp), %xmm0, %xmm3                      #232.5[spill]
+        vpaddd    1152(%rsp), %xmm10, %xmm14                    #232.5[spill]
+        vpaddd    1056(%rsp), %xmm0, %xmm3                      #232.5[spill]
         vmovdqu   %xmm8, 224(%rsp)                              #232.5[spill]
         vmovdqu   %xmm1, 176(%rsp)                              #232.5[spill]
         vmovups   1648(%rsp), %xmm10                            #232.5[spill]
@@ -2866,12 +2866,12 @@ main:
         vmovups   1344(%rsp), %xmm8                             #232.5[spill]
         vmovups   1600(%rsp), %xmm1                             #232.5[spill]
         vmovups   1616(%rsp), %xmm0                             #232.5[spill]
-        vpaddb    (%rsp), %xmm15, %xmm15                        #232.5[spill]
-        vpaddb    1296(%rsp), %xmm10, %xmm10                    #232.5[spill]
-        vpaddb    1312(%rsp), %xmm9, %xmm9                      #232.5[spill]
-        vpaddb    1216(%rsp), %xmm8, %xmm8                      #232.5[spill]
-        vpaddb    1088(%rsp), %xmm1, %xmm1                      #232.5[spill]
-        vpaddb    1104(%rsp), %xmm0, %xmm0                      #232.5[spill]
+        vpaddd    (%rsp), %xmm15, %xmm15                        #232.5[spill]
+        vpaddd    1296(%rsp), %xmm10, %xmm10                    #232.5[spill]
+        vpaddd    1312(%rsp), %xmm9, %xmm9                      #232.5[spill]
+        vpaddd    1216(%rsp), %xmm8, %xmm8                      #232.5[spill]
+        vpaddd    1088(%rsp), %xmm1, %xmm1                      #232.5[spill]
+        vpaddd    1104(%rsp), %xmm0, %xmm0                      #232.5[spill]
         vmovdqu   %xmm15, 272(%rsp)                             #232.5[spill]
                                 # LOE rax rbx r13 r14 edx xmm0 xmm1 xmm2 xmm3 xmm4 xmm5 xmm6 xmm7 xmm8 xmm9 xmm10 xmm11 xmm12 xmm13 xmm14
 ..B1.278:                       # Preds ..B1.278 ..B1.277
@@ -3580,7 +3580,7 @@ main:
 # mark_begin;
        .align    16,0x90
 	.globl add_pack
-# --- add_pack(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *)
+# --- add_pack(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *__restrict__)
 add_pack:
 # parameter 1: %xmm0
 # parameter 2: %xmm1
@@ -3652,56 +3652,56 @@ add_pack:
 	.cfi_startproc
 ..___tag_value_add_pack.37:
 ..L38:
-                                                         #27.31
-        pushq     %rbp                                          #27.31
+                                                         #27.40
+        pushq     %rbp                                          #27.40
 	.cfi_def_cfa_offset 16
-        movq      %rsp, %rbp                                    #27.31
+        movq      %rsp, %rbp                                    #27.40
 	.cfi_def_cfa 6, 16
 	.cfi_offset 6, -16
-        vpaddb    400(%rbp), %xmm0, %xmm0                       #28.12
-        vmovdqu   16(%rbp), %xmm8                               #27.31
-        vmovdqu   32(%rbp), %xmm9                               #27.31
-        vmovdqu   48(%rbp), %xmm10                              #27.31
-        vmovdqu   64(%rbp), %xmm11                              #27.31
+        vpaddd    400(%rbp), %xmm0, %xmm0                       #28.12
+        vmovdqu   16(%rbp), %xmm8                               #27.40
+        vmovdqu   32(%rbp), %xmm9                               #27.40
+        vmovdqu   48(%rbp), %xmm10                              #27.40
+        vmovdqu   64(%rbp), %xmm11                              #27.40
         vmovdqu   %xmm0, (%rdi)                                 #28.3
-        vmovdqu   80(%rbp), %xmm12                              #27.31
-        vmovdqu   144(%rbp), %xmm0                              #27.31
-        vpaddb    512(%rbp), %xmm7, %xmm7                       #35.12
-        vpaddb    528(%rbp), %xmm8, %xmm8                       #36.12
-        vmovdqu   96(%rbp), %xmm13                              #27.31
-        vmovdqu   112(%rbp), %xmm14                             #27.31
-        vpaddb    544(%rbp), %xmm9, %xmm9                       #37.12
-        vpaddb    560(%rbp), %xmm10, %xmm10                     #38.13
-        vmovdqu   128(%rbp), %xmm15                             #27.31
-        vpaddb    576(%rbp), %xmm11, %xmm11                     #39.13
-        vpaddb    592(%rbp), %xmm12, %xmm12                     #40.13
-        vpaddb    656(%rbp), %xmm0, %xmm0                       #44.13
+        vmovdqu   80(%rbp), %xmm12                              #27.40
+        vmovdqu   144(%rbp), %xmm0                              #27.40
+        vpaddd    512(%rbp), %xmm7, %xmm7                       #35.12
+        vpaddd    528(%rbp), %xmm8, %xmm8                       #36.12
+        vmovdqu   96(%rbp), %xmm13                              #27.40
+        vmovdqu   112(%rbp), %xmm14                             #27.40
+        vpaddd    544(%rbp), %xmm9, %xmm9                       #37.12
+        vpaddd    560(%rbp), %xmm10, %xmm10                     #38.13
+        vmovdqu   128(%rbp), %xmm15                             #27.40
+        vpaddd    576(%rbp), %xmm11, %xmm11                     #39.13
+        vpaddd    592(%rbp), %xmm12, %xmm12                     #40.13
+        vpaddd    656(%rbp), %xmm0, %xmm0                       #44.13
         vmovdqu   %xmm7, 112(%rdi)                              #35.3
-        vmovdqu   256(%rbp), %xmm7                              #27.31
+        vmovdqu   256(%rbp), %xmm7                              #27.40
         vmovdqu   %xmm8, 128(%rdi)                              #36.3
-        vpaddb    608(%rbp), %xmm13, %xmm13                     #41.13
-        vpaddb    624(%rbp), %xmm14, %xmm14                     #42.13
-        vmovdqu   272(%rbp), %xmm8                              #27.31
+        vpaddd    608(%rbp), %xmm13, %xmm13                     #41.13
+        vpaddd    624(%rbp), %xmm14, %xmm14                     #42.13
+        vmovdqu   272(%rbp), %xmm8                              #27.40
         vmovdqu   %xmm9, 144(%rdi)                              #37.3
-        vpaddb    416(%rbp), %xmm1, %xmm1                       #29.12
-        vpaddb    432(%rbp), %xmm2, %xmm2                       #30.12
-        vpaddb    448(%rbp), %xmm3, %xmm3                       #31.12
-        vpaddb    464(%rbp), %xmm4, %xmm4                       #32.12
-        vpaddb    480(%rbp), %xmm5, %xmm5                       #33.12
-        vpaddb    496(%rbp), %xmm6, %xmm6                       #34.12
-        vmovdqu   288(%rbp), %xmm9                              #27.31
+        vpaddd    416(%rbp), %xmm1, %xmm1                       #29.12
+        vpaddd    432(%rbp), %xmm2, %xmm2                       #30.12
+        vpaddd    448(%rbp), %xmm3, %xmm3                       #31.12
+        vpaddd    464(%rbp), %xmm4, %xmm4                       #32.12
+        vpaddd    480(%rbp), %xmm5, %xmm5                       #33.12
+        vpaddd    496(%rbp), %xmm6, %xmm6                       #34.12
+        vmovdqu   288(%rbp), %xmm9                              #27.40
         vmovdqu   %xmm10, 160(%rdi)                             #38.3
-        vpaddb    640(%rbp), %xmm15, %xmm15                     #43.13
-        vmovdqu   304(%rbp), %xmm10                             #27.31
+        vpaddd    640(%rbp), %xmm15, %xmm15                     #43.13
+        vmovdqu   304(%rbp), %xmm10                             #27.40
         vmovdqu   %xmm11, 176(%rdi)                             #39.3
-        vmovdqu   320(%rbp), %xmm11                             #27.31
+        vmovdqu   320(%rbp), %xmm11                             #27.40
         vmovdqu   %xmm12, 192(%rdi)                             #40.3
         vmovdqu   %xmm0, 256(%rdi)                              #44.3
-        vmovdqu   336(%rbp), %xmm12                             #27.31
+        vmovdqu   336(%rbp), %xmm12                             #27.40
         vmovdqu   %xmm13, 208(%rdi)                             #41.3
-        vpaddb    768(%rbp), %xmm7, %xmm0                       #51.13
-        vpaddb    784(%rbp), %xmm8, %xmm7                       #52.13
-        vmovdqu   352(%rbp), %xmm13                             #27.31
+        vpaddd    768(%rbp), %xmm7, %xmm0                       #51.13
+        vpaddd    784(%rbp), %xmm8, %xmm7                       #52.13
+        vmovdqu   352(%rbp), %xmm13                             #27.40
         vmovdqu   %xmm14, 224(%rdi)                             #42.3
         vmovdqu   %xmm1, 16(%rdi)                               #29.3
         vmovdqu   %xmm2, 32(%rdi)                               #30.3
@@ -3709,28 +3709,28 @@ add_pack:
         vmovdqu   %xmm4, 64(%rdi)                               #32.3
         vmovdqu   %xmm5, 80(%rdi)                               #33.3
         vmovdqu   %xmm6, 96(%rdi)                               #34.3
-        vmovdqu   368(%rbp), %xmm14                             #27.31
+        vmovdqu   368(%rbp), %xmm14                             #27.40
         vmovdqu   %xmm15, 240(%rdi)                             #43.3
-        vpaddb    800(%rbp), %xmm9, %xmm8                       #53.13
-        vpaddb    816(%rbp), %xmm10, %xmm9                      #54.13
-        vmovdqu   160(%rbp), %xmm1                              #27.31
-        vmovdqu   176(%rbp), %xmm2                              #27.31
-        vmovdqu   192(%rbp), %xmm3                              #27.31
-        vmovdqu   208(%rbp), %xmm4                              #27.31
-        vmovdqu   224(%rbp), %xmm5                              #27.31
-        vmovdqu   240(%rbp), %xmm6                              #27.31
-        vmovdqu   384(%rbp), %xmm15                             #27.31
-        vpaddb    832(%rbp), %xmm11, %xmm10                     #55.13
-        vpaddb    848(%rbp), %xmm12, %xmm11                     #56.13
-        vpaddb    864(%rbp), %xmm13, %xmm12                     #57.13
-        vpaddb    880(%rbp), %xmm14, %xmm13                     #58.13
-        vpaddb    896(%rbp), %xmm15, %xmm14                     #59.13
-        vpaddb    672(%rbp), %xmm1, %xmm1                       #45.13
-        vpaddb    688(%rbp), %xmm2, %xmm2                       #46.13
-        vpaddb    704(%rbp), %xmm3, %xmm3                       #47.13
-        vpaddb    720(%rbp), %xmm4, %xmm4                       #48.13
-        vpaddb    736(%rbp), %xmm5, %xmm5                       #49.13
-        vpaddb    752(%rbp), %xmm6, %xmm6                       #50.13
+        vpaddd    800(%rbp), %xmm9, %xmm8                       #53.13
+        vpaddd    816(%rbp), %xmm10, %xmm9                      #54.13
+        vmovdqu   160(%rbp), %xmm1                              #27.40
+        vmovdqu   176(%rbp), %xmm2                              #27.40
+        vmovdqu   192(%rbp), %xmm3                              #27.40
+        vmovdqu   208(%rbp), %xmm4                              #27.40
+        vmovdqu   224(%rbp), %xmm5                              #27.40
+        vmovdqu   240(%rbp), %xmm6                              #27.40
+        vmovdqu   384(%rbp), %xmm15                             #27.40
+        vpaddd    832(%rbp), %xmm11, %xmm10                     #55.13
+        vpaddd    848(%rbp), %xmm12, %xmm11                     #56.13
+        vpaddd    864(%rbp), %xmm13, %xmm12                     #57.13
+        vpaddd    880(%rbp), %xmm14, %xmm13                     #58.13
+        vpaddd    896(%rbp), %xmm15, %xmm14                     #59.13
+        vpaddd    672(%rbp), %xmm1, %xmm1                       #45.13
+        vpaddd    688(%rbp), %xmm2, %xmm2                       #46.13
+        vpaddd    704(%rbp), %xmm3, %xmm3                       #47.13
+        vpaddd    720(%rbp), %xmm4, %xmm4                       #48.13
+        vpaddd    736(%rbp), %xmm5, %xmm5                       #49.13
+        vpaddd    752(%rbp), %xmm6, %xmm6                       #50.13
         vmovdqu   %xmm1, 272(%rdi)                              #45.3
         vmovdqu   %xmm2, 288(%rdi)                              #46.3
         vmovdqu   %xmm3, 304(%rdi)                              #47.3
@@ -3764,7 +3764,7 @@ add_pack:
 # mark_begin;
        .align    16,0x90
 	.globl add_pack_arr
-# --- add_pack_arr(__m128i *, __m128i *, __m128i *)
+# --- add_pack_arr(__m128i *, __m128i *, __m128i *__restrict__)
 add_pack_arr:
 # parameter 1: %rdi
 # parameter 2: %rsi
@@ -3774,8 +3774,8 @@ add_pack_arr:
 	.cfi_startproc
 ..___tag_value_add_pack_arr.44:
 ..L45:
-                                                         #62.64
-        movq      %rdx, %rcx                                    #62.64
+                                                         #62.73
+        movq      %rdx, %rcx                                    #62.73
         xorb      %dl, %dl                                      #63.14
         xorl      %eax, %eax                                    #63.14
                                 # LOE rax rcx rbx rbp rsi rdi r12 r13 r14 r15 dl
@@ -3806,7 +3806,7 @@ add_pack_arr:
 # mark_begin;
        .align    16,0x90
 	.globl add
-# --- add(__m128i, __m128i, __m128i *)
+# --- add(__m128i, __m128i, __m128i *__restrict__)
 add:
 # parameter 1: %xmm0
 # parameter 2: %xmm1
@@ -3816,7 +3816,7 @@ add:
 	.cfi_startproc
 ..___tag_value_add.47:
 ..L48:
-                                                         #69.47
+                                                         #69.56
         vpxor     %xmm1, %xmm0, %xmm5                           #70.21
         vmovdqu   (%rdi), %xmm6                                 #71.24
         vpand     %xmm1, %xmm0, %xmm2                           #72.10
@@ -3839,7 +3839,7 @@ add:
 # mark_begin;
        .align    16,0x90
 	.globl add_bitslice
-# --- add_bitslice(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *)
+# --- add_bitslice(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *__restrict__)
 add_bitslice:
 # parameter 1: %xmm0
 # parameter 2: %xmm1
@@ -3911,34 +3911,34 @@ add_bitslice:
 	.cfi_startproc
 ..___tag_value_add_bitslice.50:
 ..L51:
-                                                         #92.34
-        pushq     %rbp                                          #92.34
+                                                         #92.43
+        pushq     %rbp                                          #92.43
 	.cfi_def_cfa_offset 16
-        movq      %rsp, %rbp                                    #92.34
+        movq      %rsp, %rbp                                    #92.43
 	.cfi_def_cfa 6, 16
 	.cfi_offset 6, -16
-        vmovdqu   400(%rbp), %xmm8                              #92.34
+        vmovdqu   400(%rbp), %xmm8                              #92.43
         vpxor     %xmm10, %xmm10, %xmm10                        #93.15
-        vmovdqu   416(%rbp), %xmm12                             #92.34
+        vmovdqu   416(%rbp), %xmm12                             #92.43
         vpxor     %xmm8, %xmm0, %xmm9                           #94.12
         vpand     %xmm8, %xmm0, %xmm0                           #94.12
         vpxor     %xmm10, %xmm9, %xmm9                          #94.12
         vpxor     %xmm10, %xmm0, %xmm8                          #94.12
         vpxor     %xmm12, %xmm1, %xmm10                         #95.12
-        vmovdqu   432(%rbp), %xmm13                             #92.34
+        vmovdqu   432(%rbp), %xmm13                             #92.43
         vpand     %xmm12, %xmm1, %xmm1                          #95.12
         vpand     %xmm10, %xmm8, %xmm12                         #95.12
         vpxor     %xmm8, %xmm10, %xmm0                          #95.12
         vpxor     %xmm12, %xmm1, %xmm1                          #95.12
         vpxor     %xmm13, %xmm2, %xmm8                          #96.12
-        vmovdqu   448(%rbp), %xmm14                             #92.34
+        vmovdqu   448(%rbp), %xmm14                             #92.43
         vpand     %xmm13, %xmm2, %xmm2                          #96.12
         vpand     %xmm8, %xmm1, %xmm13                          #96.12
         vmovdqu   %xmm0, 16(%rdi)                               #95.3
         vpxor     %xmm1, %xmm8, %xmm0                           #96.12
         vpxor     %xmm13, %xmm2, %xmm1                          #96.12
         vpxor     %xmm14, %xmm3, %xmm2                          #97.12
-        vmovdqu   464(%rbp), %xmm15                             #92.34
+        vmovdqu   464(%rbp), %xmm15                             #92.43
         vpand     %xmm14, %xmm3, %xmm3                          #97.12
         vpand     %xmm2, %xmm1, %xmm14                          #97.12
         vmovdqu   %xmm0, 32(%rdi)                               #96.3
@@ -4148,7 +4148,7 @@ add_bitslice:
         vpxor     %xmm0, %xmm1, %xmm2                           #122.13
         vpxor     %xmm8, %xmm7, %xmm0                           #123.13
         vpxor     %xmm14, %xmm13, %xmm1                         #124.13
-        vmovdqu   384(%rbp), %xmm11                             #92.34
+        vmovdqu   384(%rbp), %xmm11                             #92.43
         vpand     %xmm1, %xmm0, %xmm3                           #124.13
         vmovdqu   %xmm2, 448(%rdi)                              #122.3
         vpand     %xmm14, %xmm13, %xmm2                         #124.13
@@ -4179,7 +4179,7 @@ add_bitslice:
 # mark_begin;
        .align    16,0x90
 	.globl add_bitslice_arr
-# --- add_bitslice_arr(__m128i *, __m128i *, __m128i *)
+# --- add_bitslice_arr(__m128i *, __m128i *, __m128i *__restrict__)
 add_bitslice_arr:
 # parameter 1: %rdi
 # parameter 2: %rsi
@@ -4189,8 +4189,8 @@ add_bitslice_arr:
 	.cfi_startproc
 ..___tag_value_add_bitslice_arr.57:
 ..L58:
-                                                         #128.68
-        movq      %rdx, %rcx                                    #128.68
+                                                         #128.77
+        movq      %rdx, %rcx                                    #128.77
         vpxor     %xmm0, %xmm0, %xmm0                           #129.15
         xorb      %dl, %dl                                      #130.14
         xorl      %eax, %eax                                    #130.14

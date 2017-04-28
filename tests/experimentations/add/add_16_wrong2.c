@@ -17,30 +17,28 @@ void add_pack (__m128i x1, __m128i x2, __m128i x3, __m128i x4,
                __m128i y9, __m128i y10, __m128i y11, __m128i y12,
                __m128i y13, __m128i y14, __m128i y15, __m128i y16,
                __m128i* out)  {
-  out[0] = _mm_add_epi16(x1,y1);
-  out[1] = _mm_add_epi16(x2,y2);
-  out[2] = _mm_add_epi16(x3,y3);
-  out[3] = _mm_add_epi16(x4,y4);
-  out[4] = _mm_add_epi16(x5,y5);
-  out[5] = _mm_add_epi16(x6,y6);
-  out[6] = _mm_add_epi16(x7,y7);
-  out[7] = _mm_add_epi16(x8,y8);
-  out[8] = _mm_add_epi16(x9,y9);
-  out[9] = _mm_add_epi16(x10,y10);
-  out[10] = _mm_add_epi16(x11,y11);
-  out[11] = _mm_add_epi16(x12,y12);
-  out[12] = _mm_add_epi16(x13,y13);
-  out[13] = _mm_add_epi16(x14,y14);
-  out[14] = _mm_add_epi16(x15,y15);
-  out[15] = _mm_add_epi16(x16,y16);
+  out[0] = _mm_add_epi8(x1,y1);
+  out[1] = _mm_add_epi8(x2,y2);
+  out[2] = _mm_add_epi8(x3,y3);
+  out[3] = _mm_add_epi8(x4,y4);
+  out[4] = _mm_add_epi8(x5,y5);
+  out[5] = _mm_add_epi8(x6,y6);
+  out[6] = _mm_add_epi8(x7,y7);
+  out[7] = _mm_add_epi8(x8,y8);
+  out[8] = _mm_add_epi8(x9,y9);
+  out[9] = _mm_add_epi8(x10,y10);
+  out[10] = _mm_add_epi8(x11,y11);
+  out[11] = _mm_add_epi8(x12,y12);
+  out[12] = _mm_add_epi8(x13,y13);
+  out[13] = _mm_add_epi8(x14,y14);
+  out[14] = _mm_add_epi8(x15,y15);
+  out[15] = _mm_add_epi8(x16,y16);
 }
 
 
 __m128i add(__m128i a, __m128i b, __m128i* c) {
-  __m128i tmp = _mm_xor_si128(a,b);
-  __m128i res = _mm_xor_si128(tmp,*c);
-  *c = res;//a&b ^ *c&tmp;
-  return res;
+  __m128i res = _mm_xor_si128(a,b);
+  return _mm_xor_si128(res,a);
 }
 
 void add_bitslice (__m128i x1, __m128i x2, __m128i x3, __m128i x4,
@@ -70,6 +68,7 @@ void add_bitslice (__m128i x1, __m128i x2, __m128i x3, __m128i x4,
   out[14] = add(x15,y15,&c);
   out[15] = add(x16,y16,&c); 
 }
+
 
 int main () {
   
@@ -143,6 +142,6 @@ int main () {
   end = _rdtsc();
   printf("%lu\n",end-begin);
   fwrite(buffer,sizeof *buffer,size*16,f);
-  
+
   return 0;
 }

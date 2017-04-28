@@ -12,7 +12,7 @@ void add_pack (__m128i x1, __m128i x2, __m128i x3, __m128i x4,
               __m128i x5, __m128i x6, __m128i x7, __m128i x8,
               __m128i y1, __m128i y2, __m128i y3, __m128i y4,
               __m128i y5, __m128i y6, __m128i y7, __m128i y8,
-              __m128i* out)  {
+              __m128i *restrict out)  {
   out[0] = _mm_add_epi8(x1,y1);
   out[1] = _mm_add_epi8(x2,y2);
   out[2] = _mm_add_epi8(x3,y3);
@@ -24,7 +24,7 @@ void add_pack (__m128i x1, __m128i x2, __m128i x3, __m128i x4,
 }
 
 
-__m128i add(__m128i a, __m128i b, __m128i* c) {
+__m128i add(__m128i a, __m128i b, __m128i *restrict c) {
   __m128i tmp = a ^ b;
   __m128i res = tmp ^ *c;
   *c = a&b ^ *c&tmp;
@@ -35,7 +35,7 @@ void add_bitslice (__m128i x1, __m128i x2, __m128i x3, __m128i x4,
                    __m128i x5, __m128i x6, __m128i x7, __m128i x8,
                    __m128i y1, __m128i y2, __m128i y3, __m128i y4,
                    __m128i y5, __m128i y6, __m128i y7, __m128i y8,
-                   __m128i* out) {
+                   __m128i *restrict out) {
   __m128i c = _mm_setzero_si128();
   out[0] = add(x1,y1,&c);
   out[1] = add(x2,y2,&c);
@@ -51,7 +51,7 @@ void add_lookahead (__m128i a0, __m128i a1, __m128i a2, __m128i a3,
                     __m128i a4, __m128i a5, __m128i a6, __m128i a7,
                     __m128i b0, __m128i b1, __m128i b2, __m128i b3,
                     __m128i b4, __m128i b5, __m128i b6, __m128i b7,
-                    __m128i* out) {
+                    __m128i *restrict out) {
   __m128i p0 = a0 ^ b0;
   __m128i p1 = a1 ^ b1;
   __m128i p2 = a2 ^ b2;
@@ -92,7 +92,7 @@ void add_lookahead_reschedul (__m128i a0, __m128i a1, __m128i a2, __m128i a3,
                     __m128i a4, __m128i a5, __m128i a6, __m128i a7,
                     __m128i b0, __m128i b1, __m128i b2, __m128i b3,
                     __m128i b4, __m128i b5, __m128i b6, __m128i b7,
-                    __m128i* out) {
+                    __m128i *restrict out) {
   __m128i p0 = a0 ^ b0;
   out[0] = p0;
   
@@ -228,15 +228,6 @@ int main () {
   end = _rdtsc();
   printf("%lu\n",end-begin);
   fwrite(buffer,sizeof *buffer,size*8,f);
-  
-  /* for (int j = 0; j < size; j++) */
-    /* add_bitslice(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,&(buffer[j*8])); */
-  /* fwrite(buffer,sizeof *buffer,size*8,f); */
-  
-  
-  /* for (int j = 0; j < size; j++) */
-  /*   add_pack(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,&(buffer[j*8])); */
-  /* fwrite(buffer,sizeof *buffer,size*8,f); */
   
   return 0;
 }

@@ -1,7 +1,7 @@
 # mark_description "Intel(R) C Intel(R) 64 Compiler for applications running on Intel(R) 64, Version 17.0.2.174 Build 20170213";
 # mark_description "-Wall -Wextra -march=native -Wno-parentheses -fno-tree-vectorize -fstrict-aliasing -inline-max-size=10000 -i";
-# mark_description "nline-max-total-size=10000 -O3 -funroll-loops -unroll-agressive -S -o add_16_wrong.s";
-	.file "add_16_wrong.c"
+# mark_description "nline-max-total-size=10000 -O3 -funroll-loops -unroll-agressive -S -o add_16_wrong2.s";
+	.file "add_16_wrong2.c"
 	.text
 ..TXTST0:
 # -- Begin  main
@@ -16,22 +16,22 @@ main:
 	.cfi_startproc
 ..___tag_value_main.1:
 ..L2:
-                                                          #74.13
-        pushq     %rbp                                          #74.13
+                                                          #73.13
+        pushq     %rbp                                          #73.13
 	.cfi_def_cfa_offset 16
-        movq      %rsp, %rbp                                    #74.13
+        movq      %rsp, %rbp                                    #73.13
 	.cfi_def_cfa 6, 16
 	.cfi_offset 6, -16
-        andq      $-128, %rsp                                   #74.13
-        pushq     %r12                                          #74.13
-        pushq     %r13                                          #74.13
-        pushq     %r14                                          #74.13
-        pushq     %r15                                          #74.13
-        pushq     %rbx                                          #74.13
-        subq      $600, %rsp                                    #74.13
-        movl      $10330110, %esi                               #74.13
-        movl      $3, %edi                                      #74.13
-        call      __intel_new_feature_proc_init                 #74.13
+        andq      $-128, %rsp                                   #73.13
+        pushq     %r12                                          #73.13
+        pushq     %r13                                          #73.13
+        pushq     %r14                                          #73.13
+        pushq     %r15                                          #73.13
+        pushq     %rbx                                          #73.13
+        subq      $600, %rsp                                    #73.13
+        movl      $10330110, %esi                               #73.13
+        movl      $3, %edi                                      #73.13
+        call      __intel_new_feature_proc_init                 #73.13
 	.cfi_escape 0x10, 0x03, 0x0e, 0x38, 0x1c, 0x0d, 0x80, 0xff, 0xff, 0xff, 0x1a, 0x0d, 0xd8, 0xff, 0xff, 0xff, 0x22
 	.cfi_escape 0x10, 0x0c, 0x0e, 0x38, 0x1c, 0x0d, 0x80, 0xff, 0xff, 0xff, 0x1a, 0x0d, 0xf8, 0xff, 0xff, 0xff, 0x22
 	.cfi_escape 0x10, 0x0d, 0x0e, 0x38, 0x1c, 0x0d, 0x80, 0xff, 0xff, 0xff, 0x1a, 0x0d, 0xf0, 0xff, 0xff, 0xff, 0x22
@@ -40,76 +40,116 @@ main:
                                 # LOE
 ..B1.156:                       # Preds ..B1.1
                                 # Execution count [1.00e+00]
-        vstmxcsr  (%rsp)                                        #74.13
-        movl      $.L_2__STRING.0, %edi                         #77.13
-        movl      $.L_2__STRING.1, %esi                         #77.13
-        orl       $32832, (%rsp)                                #74.13
-        vldmxcsr  (%rsp)                                        #74.13
+        vstmxcsr  (%rsp)                                        #73.13
+        movl      $.L_2__STRING.0, %edi                         #76.13
+        movl      $.L_2__STRING.1, %esi                         #76.13
+        orl       $32832, (%rsp)                                #73.13
+        vldmxcsr  (%rsp)                                        #73.13
 #       fopen(const char *__restrict__, const char *__restrict__)
-        call      fopen                                         #77.13
+        call      fopen                                         #76.13
                                 # LOE rax
 ..B1.155:                       # Preds ..B1.156
                                 # Execution count [1.00e+00]
-        movq      %rax, %r12                                    #77.13
+        movq      %rax, %r12                                    #76.13
                                 # LOE r12
 ..B1.2:                         # Preds ..B1.155
                                 # Execution count [1.00e+00]
-        xorl      %edi, %edi                                    #83.9
+        xorl      %edi, %edi                                    #82.9
 #       time(time_t *)
-        call      time                                          #83.9
+        call      time                                          #82.9
                                 # LOE rax r12
 ..B1.3:                         # Preds ..B1.2
                                 # Execution count [1.00e+00]
-        movl      %eax, %edi                                    #83.3
+        movl      %eax, %edi                                    #82.3
 #       srand(unsigned int)
-        call      srand                                         #83.3
+        call      srand                                         #82.3
                                 # LOE r12
 ..B1.4:                         # Preds ..B1.3
                                 # Execution count [1.00e+00]
-        movl      $32, %edi                                     #84.30
-        movl      $256000000, %esi                              #84.30
+        movl      $32, %edi                                     #83.30
+        movl      $256000000, %esi                              #83.30
 ..___tag_value_main.11:
 #       aligned_alloc(size_t, size_t)
-        call      aligned_alloc                                 #84.30
+        call      aligned_alloc                                 #83.30
 ..___tag_value_main.12:
                                 # LOE rax r12
 ..B1.158:                       # Preds ..B1.4
                                 # Execution count [1.00e+00]
-        movq      %rax, %rbx                                    #84.30
+        movq      %rax, %rbx                                    #83.30
                                 # LOE rbx r12
 ..B1.5:                         # Preds ..B1.158
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #86.22
+        call      rand                                          #85.22
                                 # LOE rbx r12 eax
 ..B1.159:                       # Preds ..B1.5
                                 # Execution count [1.00e+00]
-        movl      %eax, %r14d                                   #86.22
+        movl      %eax, %r14d                                   #85.22
                                 # LOE rbx r12 r14d
 ..B1.6:                         # Preds ..B1.159
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #86.29
+        call      rand                                          #85.29
                                 # LOE rbx r12 eax r14d
 ..B1.160:                       # Preds ..B1.6
                                 # Execution count [1.00e+00]
-        movl      %eax, %r13d                                   #86.29
+        movl      %eax, %r13d                                   #85.29
                                 # LOE rbx r12 r13d r14d
 ..B1.7:                         # Preds ..B1.160
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #86.36
+        call      rand                                          #85.36
                                 # LOE rbx r12 eax r13d r14d
 ..B1.161:                       # Preds ..B1.7
                                 # Execution count [1.00e+00]
-        movl      %eax, %r15d                                   #86.36
+        movl      %eax, %r15d                                   #85.36
                                 # LOE rbx r12 r13d r14d r15d
 ..B1.8:                         # Preds ..B1.161
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #86.43
+        call      rand                                          #85.43
                                 # LOE rbx r12 eax r13d r14d r15d
 ..B1.9:                         # Preds ..B1.8
+                                # Execution count [1.00e+00]
+        vmovd     %eax, %xmm0                                   #85.8
+        vmovd     %r15d, %xmm1                                  #85.8
+        vmovd     %r13d, %xmm2                                  #85.8
+        vmovd     %r14d, %xmm3                                  #85.8
+        vpunpcklqdq %xmm1, %xmm0, %xmm4                         #85.8
+        vpunpcklqdq %xmm3, %xmm2, %xmm5                         #85.8
+        vshufps   $136, %xmm5, %xmm4, %xmm6                     #85.8
+        vmovups   %xmm6, 512(%rsp)                              #85.8[spill]
+#       rand(void)
+        call      rand                                          #86.22
+                                # LOE rbx r12 eax
+..B1.163:                       # Preds ..B1.9
+                                # Execution count [1.00e+00]
+        movl      %eax, %r14d                                   #86.22
+                                # LOE rbx r12 r14d
+..B1.10:                        # Preds ..B1.163
+                                # Execution count [1.00e+00]
+#       rand(void)
+        call      rand                                          #86.29
+                                # LOE rbx r12 eax r14d
+..B1.164:                       # Preds ..B1.10
+                                # Execution count [1.00e+00]
+        movl      %eax, %r13d                                   #86.29
+                                # LOE rbx r12 r13d r14d
+..B1.11:                        # Preds ..B1.164
+                                # Execution count [1.00e+00]
+#       rand(void)
+        call      rand                                          #86.36
+                                # LOE rbx r12 eax r13d r14d
+..B1.165:                       # Preds ..B1.11
+                                # Execution count [1.00e+00]
+        movl      %eax, %r15d                                   #86.36
+                                # LOE rbx r12 r13d r14d r15d
+..B1.12:                        # Preds ..B1.165
+                                # Execution count [1.00e+00]
+#       rand(void)
+        call      rand                                          #86.43
+                                # LOE rbx r12 eax r13d r14d r15d
+..B1.13:                        # Preds ..B1.12
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #86.8
         vmovd     %r15d, %xmm1                                  #86.8
@@ -118,38 +158,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #86.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #86.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #86.8
-        vmovups   %xmm6, 512(%rsp)                              #86.8[spill]
+        vmovups   %xmm6, 496(%rsp)                              #86.8[spill]
 #       rand(void)
         call      rand                                          #87.22
                                 # LOE rbx r12 eax
-..B1.163:                       # Preds ..B1.9
+..B1.167:                       # Preds ..B1.13
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #87.22
                                 # LOE rbx r12 r14d
-..B1.10:                        # Preds ..B1.163
+..B1.14:                        # Preds ..B1.167
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #87.29
                                 # LOE rbx r12 eax r14d
-..B1.164:                       # Preds ..B1.10
+..B1.168:                       # Preds ..B1.14
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #87.29
                                 # LOE rbx r12 r13d r14d
-..B1.11:                        # Preds ..B1.164
+..B1.15:                        # Preds ..B1.168
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #87.36
                                 # LOE rbx r12 eax r13d r14d
-..B1.165:                       # Preds ..B1.11
+..B1.169:                       # Preds ..B1.15
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #87.36
                                 # LOE rbx r12 r13d r14d r15d
-..B1.12:                        # Preds ..B1.165
+..B1.16:                        # Preds ..B1.169
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #87.43
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.13:                        # Preds ..B1.12
+..B1.17:                        # Preds ..B1.16
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #87.8
         vmovd     %r15d, %xmm1                                  #87.8
@@ -158,38 +198,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #87.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #87.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #87.8
-        vmovups   %xmm6, 496(%rsp)                              #87.8[spill]
+        vmovups   %xmm6, 320(%rsp)                              #87.8[spill]
 #       rand(void)
         call      rand                                          #88.22
                                 # LOE rbx r12 eax
-..B1.167:                       # Preds ..B1.13
+..B1.171:                       # Preds ..B1.17
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #88.22
                                 # LOE rbx r12 r14d
-..B1.14:                        # Preds ..B1.167
+..B1.18:                        # Preds ..B1.171
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #88.29
                                 # LOE rbx r12 eax r14d
-..B1.168:                       # Preds ..B1.14
+..B1.172:                       # Preds ..B1.18
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #88.29
                                 # LOE rbx r12 r13d r14d
-..B1.15:                        # Preds ..B1.168
+..B1.19:                        # Preds ..B1.172
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #88.36
                                 # LOE rbx r12 eax r13d r14d
-..B1.169:                       # Preds ..B1.15
+..B1.173:                       # Preds ..B1.19
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #88.36
                                 # LOE rbx r12 r13d r14d r15d
-..B1.16:                        # Preds ..B1.169
+..B1.20:                        # Preds ..B1.173
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #88.43
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.17:                        # Preds ..B1.16
+..B1.21:                        # Preds ..B1.20
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #88.8
         vmovd     %r15d, %xmm1                                  #88.8
@@ -198,38 +238,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #88.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #88.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #88.8
-        vmovups   %xmm6, 480(%rsp)                              #88.8[spill]
+        vmovups   %xmm6, 416(%rsp)                              #88.8[spill]
 #       rand(void)
         call      rand                                          #89.22
                                 # LOE rbx r12 eax
-..B1.171:                       # Preds ..B1.17
+..B1.175:                       # Preds ..B1.21
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #89.22
                                 # LOE rbx r12 r14d
-..B1.18:                        # Preds ..B1.171
+..B1.22:                        # Preds ..B1.175
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #89.29
                                 # LOE rbx r12 eax r14d
-..B1.172:                       # Preds ..B1.18
+..B1.176:                       # Preds ..B1.22
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #89.29
                                 # LOE rbx r12 r13d r14d
-..B1.19:                        # Preds ..B1.172
+..B1.23:                        # Preds ..B1.176
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #89.36
                                 # LOE rbx r12 eax r13d r14d
-..B1.173:                       # Preds ..B1.19
+..B1.177:                       # Preds ..B1.23
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #89.36
                                 # LOE rbx r12 r13d r14d r15d
-..B1.20:                        # Preds ..B1.173
+..B1.24:                        # Preds ..B1.177
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #89.43
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.21:                        # Preds ..B1.20
+..B1.25:                        # Preds ..B1.24
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #89.8
         vmovd     %r15d, %xmm1                                  #89.8
@@ -238,38 +278,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #89.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #89.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #89.8
-        vmovups   %xmm6, 464(%rsp)                              #89.8[spill]
+        vmovups   %xmm6, 352(%rsp)                              #89.8[spill]
 #       rand(void)
         call      rand                                          #90.22
                                 # LOE rbx r12 eax
-..B1.175:                       # Preds ..B1.21
+..B1.179:                       # Preds ..B1.25
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #90.22
                                 # LOE rbx r12 r14d
-..B1.22:                        # Preds ..B1.175
+..B1.26:                        # Preds ..B1.179
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #90.29
                                 # LOE rbx r12 eax r14d
-..B1.176:                       # Preds ..B1.22
+..B1.180:                       # Preds ..B1.26
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #90.29
                                 # LOE rbx r12 r13d r14d
-..B1.23:                        # Preds ..B1.176
+..B1.27:                        # Preds ..B1.180
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #90.36
                                 # LOE rbx r12 eax r13d r14d
-..B1.177:                       # Preds ..B1.23
+..B1.181:                       # Preds ..B1.27
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #90.36
                                 # LOE rbx r12 r13d r14d r15d
-..B1.24:                        # Preds ..B1.177
+..B1.28:                        # Preds ..B1.181
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #90.43
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.25:                        # Preds ..B1.24
+..B1.29:                        # Preds ..B1.28
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #90.8
         vmovd     %r15d, %xmm1                                  #90.8
@@ -278,38 +318,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #90.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #90.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #90.8
-        vmovups   %xmm6, 448(%rsp)                              #90.8[spill]
+        vmovups   %xmm6, 480(%rsp)                              #90.8[spill]
 #       rand(void)
         call      rand                                          #91.22
                                 # LOE rbx r12 eax
-..B1.179:                       # Preds ..B1.25
+..B1.183:                       # Preds ..B1.29
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #91.22
                                 # LOE rbx r12 r14d
-..B1.26:                        # Preds ..B1.179
+..B1.30:                        # Preds ..B1.183
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #91.29
                                 # LOE rbx r12 eax r14d
-..B1.180:                       # Preds ..B1.26
+..B1.184:                       # Preds ..B1.30
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #91.29
                                 # LOE rbx r12 r13d r14d
-..B1.27:                        # Preds ..B1.180
+..B1.31:                        # Preds ..B1.184
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #91.36
                                 # LOE rbx r12 eax r13d r14d
-..B1.181:                       # Preds ..B1.27
+..B1.185:                       # Preds ..B1.31
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #91.36
                                 # LOE rbx r12 r13d r14d r15d
-..B1.28:                        # Preds ..B1.181
+..B1.32:                        # Preds ..B1.185
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #91.43
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.29:                        # Preds ..B1.28
+..B1.33:                        # Preds ..B1.32
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #91.8
         vmovd     %r15d, %xmm1                                  #91.8
@@ -318,38 +358,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #91.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #91.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #91.8
-        vmovups   %xmm6, 432(%rsp)                              #91.8[spill]
+        vmovups   %xmm6, 464(%rsp)                              #91.8[spill]
 #       rand(void)
         call      rand                                          #92.22
                                 # LOE rbx r12 eax
-..B1.183:                       # Preds ..B1.29
+..B1.187:                       # Preds ..B1.33
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #92.22
                                 # LOE rbx r12 r14d
-..B1.30:                        # Preds ..B1.183
+..B1.34:                        # Preds ..B1.187
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #92.29
                                 # LOE rbx r12 eax r14d
-..B1.184:                       # Preds ..B1.30
+..B1.188:                       # Preds ..B1.34
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #92.29
                                 # LOE rbx r12 r13d r14d
-..B1.31:                        # Preds ..B1.184
+..B1.35:                        # Preds ..B1.188
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #92.36
                                 # LOE rbx r12 eax r13d r14d
-..B1.185:                       # Preds ..B1.31
+..B1.189:                       # Preds ..B1.35
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #92.36
                                 # LOE rbx r12 r13d r14d r15d
-..B1.32:                        # Preds ..B1.185
+..B1.36:                        # Preds ..B1.189
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #92.43
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.33:                        # Preds ..B1.32
+..B1.37:                        # Preds ..B1.36
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #92.8
         vmovd     %r15d, %xmm1                                  #92.8
@@ -358,38 +398,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #92.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #92.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #92.8
-        vmovups   %xmm6, 416(%rsp)                              #92.8[spill]
+        vmovups   %xmm6, 384(%rsp)                              #92.8[spill]
 #       rand(void)
         call      rand                                          #93.22
                                 # LOE rbx r12 eax
-..B1.187:                       # Preds ..B1.33
+..B1.191:                       # Preds ..B1.37
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #93.22
                                 # LOE rbx r12 r14d
-..B1.34:                        # Preds ..B1.187
+..B1.38:                        # Preds ..B1.191
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #93.29
                                 # LOE rbx r12 eax r14d
-..B1.188:                       # Preds ..B1.34
+..B1.192:                       # Preds ..B1.38
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #93.29
                                 # LOE rbx r12 r13d r14d
-..B1.35:                        # Preds ..B1.188
+..B1.39:                        # Preds ..B1.192
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #93.36
                                 # LOE rbx r12 eax r13d r14d
-..B1.189:                       # Preds ..B1.35
+..B1.193:                       # Preds ..B1.39
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #93.36
                                 # LOE rbx r12 r13d r14d r15d
-..B1.36:                        # Preds ..B1.189
+..B1.40:                        # Preds ..B1.193
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #93.43
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.37:                        # Preds ..B1.36
+..B1.41:                        # Preds ..B1.40
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #93.8
         vmovd     %r15d, %xmm1                                  #93.8
@@ -398,78 +438,78 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #93.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #93.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #93.8
-        vmovups   %xmm6, 400(%rsp)                              #93.8[spill]
+        vmovups   %xmm6, 432(%rsp)                              #93.8[spill]
 #       rand(void)
-        call      rand                                          #94.22
-                                # LOE rbx r12 eax
-..B1.191:                       # Preds ..B1.37
-                                # Execution count [1.00e+00]
-        movl      %eax, %r14d                                   #94.22
-                                # LOE rbx r12 r14d
-..B1.38:                        # Preds ..B1.191
-                                # Execution count [1.00e+00]
-#       rand(void)
-        call      rand                                          #94.29
-                                # LOE rbx r12 eax r14d
-..B1.192:                       # Preds ..B1.38
-                                # Execution count [1.00e+00]
-        movl      %eax, %r13d                                   #94.29
-                                # LOE rbx r12 r13d r14d
-..B1.39:                        # Preds ..B1.192
-                                # Execution count [1.00e+00]
-#       rand(void)
-        call      rand                                          #94.36
-                                # LOE rbx r12 eax r13d r14d
-..B1.193:                       # Preds ..B1.39
-                                # Execution count [1.00e+00]
-        movl      %eax, %r15d                                   #94.36
-                                # LOE rbx r12 r13d r14d r15d
-..B1.40:                        # Preds ..B1.193
-                                # Execution count [1.00e+00]
-#       rand(void)
-        call      rand                                          #94.43
-                                # LOE rbx r12 eax r13d r14d r15d
-..B1.41:                        # Preds ..B1.40
-                                # Execution count [1.00e+00]
-        vmovd     %eax, %xmm0                                   #94.8
-        vmovd     %r15d, %xmm1                                  #94.8
-        vmovd     %r13d, %xmm2                                  #94.8
-        vmovd     %r14d, %xmm3                                  #94.8
-        vpunpcklqdq %xmm1, %xmm0, %xmm4                         #94.8
-        vpunpcklqdq %xmm3, %xmm2, %xmm5                         #94.8
-        vshufps   $136, %xmm5, %xmm4, %xmm6                     #94.8
-        vmovups   %xmm6, 384(%rsp)                              #94.8[spill]
-#       rand(void)
-        call      rand                                          #95.23
+        call      rand                                          #94.23
                                 # LOE rbx r12 eax
 ..B1.195:                       # Preds ..B1.41
                                 # Execution count [1.00e+00]
-        movl      %eax, %r14d                                   #95.23
+        movl      %eax, %r14d                                   #94.23
                                 # LOE rbx r12 r14d
 ..B1.42:                        # Preds ..B1.195
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #95.30
+        call      rand                                          #94.30
                                 # LOE rbx r12 eax r14d
 ..B1.196:                       # Preds ..B1.42
                                 # Execution count [1.00e+00]
-        movl      %eax, %r13d                                   #95.30
+        movl      %eax, %r13d                                   #94.30
                                 # LOE rbx r12 r13d r14d
 ..B1.43:                        # Preds ..B1.196
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #95.37
+        call      rand                                          #94.37
                                 # LOE rbx r12 eax r13d r14d
 ..B1.197:                       # Preds ..B1.43
                                 # Execution count [1.00e+00]
-        movl      %eax, %r15d                                   #95.37
+        movl      %eax, %r15d                                   #94.37
                                 # LOE rbx r12 r13d r14d r15d
 ..B1.44:                        # Preds ..B1.197
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #95.44
+        call      rand                                          #94.44
                                 # LOE rbx r12 eax r13d r14d r15d
 ..B1.45:                        # Preds ..B1.44
+                                # Execution count [1.00e+00]
+        vmovd     %eax, %xmm0                                   #94.9
+        vmovd     %r15d, %xmm1                                  #94.9
+        vmovd     %r13d, %xmm2                                  #94.9
+        vmovd     %r14d, %xmm3                                  #94.9
+        vpunpcklqdq %xmm1, %xmm0, %xmm4                         #94.9
+        vpunpcklqdq %xmm3, %xmm2, %xmm5                         #94.9
+        vshufps   $136, %xmm5, %xmm4, %xmm6                     #94.9
+        vmovups   %xmm6, 368(%rsp)                              #94.9[spill]
+#       rand(void)
+        call      rand                                          #95.23
+                                # LOE rbx r12 eax
+..B1.199:                       # Preds ..B1.45
+                                # Execution count [1.00e+00]
+        movl      %eax, %r14d                                   #95.23
+                                # LOE rbx r12 r14d
+..B1.46:                        # Preds ..B1.199
+                                # Execution count [1.00e+00]
+#       rand(void)
+        call      rand                                          #95.30
+                                # LOE rbx r12 eax r14d
+..B1.200:                       # Preds ..B1.46
+                                # Execution count [1.00e+00]
+        movl      %eax, %r13d                                   #95.30
+                                # LOE rbx r12 r13d r14d
+..B1.47:                        # Preds ..B1.200
+                                # Execution count [1.00e+00]
+#       rand(void)
+        call      rand                                          #95.37
+                                # LOE rbx r12 eax r13d r14d
+..B1.201:                       # Preds ..B1.47
+                                # Execution count [1.00e+00]
+        movl      %eax, %r15d                                   #95.37
+                                # LOE rbx r12 r13d r14d r15d
+..B1.48:                        # Preds ..B1.201
+                                # Execution count [1.00e+00]
+#       rand(void)
+        call      rand                                          #95.44
+                                # LOE rbx r12 eax r13d r14d r15d
+..B1.49:                        # Preds ..B1.48
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #95.9
         vmovd     %r15d, %xmm1                                  #95.9
@@ -478,38 +518,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #95.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #95.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #95.9
-        vmovups   %xmm6, 368(%rsp)                              #95.9[spill]
+        vmovups   %xmm6, 336(%rsp)                              #95.9[spill]
 #       rand(void)
         call      rand                                          #96.23
                                 # LOE rbx r12 eax
-..B1.199:                       # Preds ..B1.45
+..B1.203:                       # Preds ..B1.49
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #96.23
                                 # LOE rbx r12 r14d
-..B1.46:                        # Preds ..B1.199
+..B1.50:                        # Preds ..B1.203
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #96.30
                                 # LOE rbx r12 eax r14d
-..B1.200:                       # Preds ..B1.46
+..B1.204:                       # Preds ..B1.50
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #96.30
                                 # LOE rbx r12 r13d r14d
-..B1.47:                        # Preds ..B1.200
+..B1.51:                        # Preds ..B1.204
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #96.37
                                 # LOE rbx r12 eax r13d r14d
-..B1.201:                       # Preds ..B1.47
+..B1.205:                       # Preds ..B1.51
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #96.37
                                 # LOE rbx r12 r13d r14d r15d
-..B1.48:                        # Preds ..B1.201
+..B1.52:                        # Preds ..B1.205
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #96.44
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.49:                        # Preds ..B1.48
+..B1.53:                        # Preds ..B1.52
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #96.9
         vmovd     %r15d, %xmm1                                  #96.9
@@ -518,38 +558,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #96.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #96.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #96.9
-        vmovups   %xmm6, 352(%rsp)                              #96.9[spill]
+        vmovups   %xmm6, 400(%rsp)                              #96.9[spill]
 #       rand(void)
         call      rand                                          #97.23
                                 # LOE rbx r12 eax
-..B1.203:                       # Preds ..B1.49
+..B1.207:                       # Preds ..B1.53
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #97.23
                                 # LOE rbx r12 r14d
-..B1.50:                        # Preds ..B1.203
+..B1.54:                        # Preds ..B1.207
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #97.30
                                 # LOE rbx r12 eax r14d
-..B1.204:                       # Preds ..B1.50
+..B1.208:                       # Preds ..B1.54
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #97.30
                                 # LOE rbx r12 r13d r14d
-..B1.51:                        # Preds ..B1.204
+..B1.55:                        # Preds ..B1.208
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #97.37
                                 # LOE rbx r12 eax r13d r14d
-..B1.205:                       # Preds ..B1.51
+..B1.209:                       # Preds ..B1.55
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #97.37
                                 # LOE rbx r12 r13d r14d r15d
-..B1.52:                        # Preds ..B1.205
+..B1.56:                        # Preds ..B1.209
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #97.44
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.53:                        # Preds ..B1.52
+..B1.57:                        # Preds ..B1.56
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #97.9
         vmovd     %r15d, %xmm1                                  #97.9
@@ -558,38 +598,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #97.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #97.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #97.9
-        vmovups   %xmm6, 336(%rsp)                              #97.9[spill]
+        vmovups   %xmm6, 448(%rsp)                              #97.9[spill]
 #       rand(void)
         call      rand                                          #98.23
                                 # LOE rbx r12 eax
-..B1.207:                       # Preds ..B1.53
+..B1.211:                       # Preds ..B1.57
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #98.23
                                 # LOE rbx r12 r14d
-..B1.54:                        # Preds ..B1.207
+..B1.58:                        # Preds ..B1.211
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #98.30
                                 # LOE rbx r12 eax r14d
-..B1.208:                       # Preds ..B1.54
+..B1.212:                       # Preds ..B1.58
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #98.30
                                 # LOE rbx r12 r13d r14d
-..B1.55:                        # Preds ..B1.208
+..B1.59:                        # Preds ..B1.212
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #98.37
                                 # LOE rbx r12 eax r13d r14d
-..B1.209:                       # Preds ..B1.55
+..B1.213:                       # Preds ..B1.59
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #98.37
                                 # LOE rbx r12 r13d r14d r15d
-..B1.56:                        # Preds ..B1.209
+..B1.60:                        # Preds ..B1.213
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #98.44
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.57:                        # Preds ..B1.56
+..B1.61:                        # Preds ..B1.60
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #98.9
         vmovd     %r15d, %xmm1                                  #98.9
@@ -598,38 +638,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #98.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #98.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #98.9
-        vmovups   %xmm6, 320(%rsp)                              #98.9[spill]
+        vmovups   %xmm6, 64(%rsp)                               #98.9[spill]
 #       rand(void)
         call      rand                                          #99.23
                                 # LOE rbx r12 eax
-..B1.211:                       # Preds ..B1.57
+..B1.215:                       # Preds ..B1.61
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #99.23
                                 # LOE rbx r12 r14d
-..B1.58:                        # Preds ..B1.211
+..B1.62:                        # Preds ..B1.215
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #99.30
                                 # LOE rbx r12 eax r14d
-..B1.212:                       # Preds ..B1.58
+..B1.216:                       # Preds ..B1.62
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #99.30
                                 # LOE rbx r12 r13d r14d
-..B1.59:                        # Preds ..B1.212
+..B1.63:                        # Preds ..B1.216
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #99.37
                                 # LOE rbx r12 eax r13d r14d
-..B1.213:                       # Preds ..B1.59
+..B1.217:                       # Preds ..B1.63
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #99.37
                                 # LOE rbx r12 r13d r14d r15d
-..B1.60:                        # Preds ..B1.213
+..B1.64:                        # Preds ..B1.217
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #99.44
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.61:                        # Preds ..B1.60
+..B1.65:                        # Preds ..B1.64
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #99.9
         vmovd     %r15d, %xmm1                                  #99.9
@@ -642,34 +682,34 @@ main:
 #       rand(void)
         call      rand                                          #100.23
                                 # LOE rbx r12 eax
-..B1.215:                       # Preds ..B1.61
+..B1.219:                       # Preds ..B1.65
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #100.23
                                 # LOE rbx r12 r14d
-..B1.62:                        # Preds ..B1.215
+..B1.66:                        # Preds ..B1.219
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #100.30
                                 # LOE rbx r12 eax r14d
-..B1.216:                       # Preds ..B1.62
+..B1.220:                       # Preds ..B1.66
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #100.30
                                 # LOE rbx r12 r13d r14d
-..B1.63:                        # Preds ..B1.216
+..B1.67:                        # Preds ..B1.220
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #100.37
                                 # LOE rbx r12 eax r13d r14d
-..B1.217:                       # Preds ..B1.63
+..B1.221:                       # Preds ..B1.67
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #100.37
                                 # LOE rbx r12 r13d r14d r15d
-..B1.64:                        # Preds ..B1.217
+..B1.68:                        # Preds ..B1.221
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #100.44
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.65:                        # Preds ..B1.64
+..B1.69:                        # Preds ..B1.68
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #100.9
         vmovd     %r15d, %xmm1                                  #100.9
@@ -678,78 +718,78 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #100.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #100.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #100.9
-        vmovups   %xmm6, 112(%rsp)                              #100.9[spill]
+        vmovups   %xmm6, 160(%rsp)                              #100.9[spill]
 #       rand(void)
-        call      rand                                          #101.23
-                                # LOE rbx r12 eax
-..B1.219:                       # Preds ..B1.65
-                                # Execution count [1.00e+00]
-        movl      %eax, %r14d                                   #101.23
-                                # LOE rbx r12 r14d
-..B1.66:                        # Preds ..B1.219
-                                # Execution count [1.00e+00]
-#       rand(void)
-        call      rand                                          #101.30
-                                # LOE rbx r12 eax r14d
-..B1.220:                       # Preds ..B1.66
-                                # Execution count [1.00e+00]
-        movl      %eax, %r13d                                   #101.30
-                                # LOE rbx r12 r13d r14d
-..B1.67:                        # Preds ..B1.220
-                                # Execution count [1.00e+00]
-#       rand(void)
-        call      rand                                          #101.37
-                                # LOE rbx r12 eax r13d r14d
-..B1.221:                       # Preds ..B1.67
-                                # Execution count [1.00e+00]
-        movl      %eax, %r15d                                   #101.37
-                                # LOE rbx r12 r13d r14d r15d
-..B1.68:                        # Preds ..B1.221
-                                # Execution count [1.00e+00]
-#       rand(void)
-        call      rand                                          #101.44
-                                # LOE rbx r12 eax r13d r14d r15d
-..B1.69:                        # Preds ..B1.68
-                                # Execution count [1.00e+00]
-        vmovd     %eax, %xmm0                                   #101.9
-        vmovd     %r15d, %xmm1                                  #101.9
-        vmovd     %r13d, %xmm2                                  #101.9
-        vmovd     %r14d, %xmm3                                  #101.9
-        vpunpcklqdq %xmm1, %xmm0, %xmm4                         #101.9
-        vpunpcklqdq %xmm3, %xmm2, %xmm5                         #101.9
-        vshufps   $136, %xmm5, %xmm4, %xmm6                     #101.9
-        vmovups   %xmm6, 176(%rsp)                              #101.9[spill]
-#       rand(void)
-        call      rand                                          #103.22
+        call      rand                                          #102.22
                                 # LOE rbx r12 eax
 ..B1.223:                       # Preds ..B1.69
                                 # Execution count [1.00e+00]
-        movl      %eax, %r14d                                   #103.22
+        movl      %eax, %r14d                                   #102.22
                                 # LOE rbx r12 r14d
 ..B1.70:                        # Preds ..B1.223
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #103.29
+        call      rand                                          #102.29
                                 # LOE rbx r12 eax r14d
 ..B1.224:                       # Preds ..B1.70
                                 # Execution count [1.00e+00]
-        movl      %eax, %r13d                                   #103.29
+        movl      %eax, %r13d                                   #102.29
                                 # LOE rbx r12 r13d r14d
 ..B1.71:                        # Preds ..B1.224
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #103.36
+        call      rand                                          #102.36
                                 # LOE rbx r12 eax r13d r14d
 ..B1.225:                       # Preds ..B1.71
                                 # Execution count [1.00e+00]
-        movl      %eax, %r15d                                   #103.36
+        movl      %eax, %r15d                                   #102.36
                                 # LOE rbx r12 r13d r14d r15d
 ..B1.72:                        # Preds ..B1.225
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #103.43
+        call      rand                                          #102.43
                                 # LOE rbx r12 eax r13d r14d r15d
 ..B1.73:                        # Preds ..B1.72
+                                # Execution count [1.00e+00]
+        vmovd     %eax, %xmm0                                   #102.8
+        vmovd     %r15d, %xmm1                                  #102.8
+        vmovd     %r13d, %xmm2                                  #102.8
+        vmovd     %r14d, %xmm3                                  #102.8
+        vpunpcklqdq %xmm1, %xmm0, %xmm4                         #102.8
+        vpunpcklqdq %xmm3, %xmm2, %xmm5                         #102.8
+        vshufps   $136, %xmm5, %xmm4, %xmm6                     #102.8
+        vmovups   %xmm6, 32(%rsp)                               #102.8[spill]
+#       rand(void)
+        call      rand                                          #103.22
+                                # LOE rbx r12 eax
+..B1.227:                       # Preds ..B1.73
+                                # Execution count [1.00e+00]
+        movl      %eax, %r14d                                   #103.22
+                                # LOE rbx r12 r14d
+..B1.74:                        # Preds ..B1.227
+                                # Execution count [1.00e+00]
+#       rand(void)
+        call      rand                                          #103.29
+                                # LOE rbx r12 eax r14d
+..B1.228:                       # Preds ..B1.74
+                                # Execution count [1.00e+00]
+        movl      %eax, %r13d                                   #103.29
+                                # LOE rbx r12 r13d r14d
+..B1.75:                        # Preds ..B1.228
+                                # Execution count [1.00e+00]
+#       rand(void)
+        call      rand                                          #103.36
+                                # LOE rbx r12 eax r13d r14d
+..B1.229:                       # Preds ..B1.75
+                                # Execution count [1.00e+00]
+        movl      %eax, %r15d                                   #103.36
+                                # LOE rbx r12 r13d r14d r15d
+..B1.76:                        # Preds ..B1.229
+                                # Execution count [1.00e+00]
+#       rand(void)
+        call      rand                                          #103.43
+                                # LOE rbx r12 eax r13d r14d r15d
+..B1.77:                        # Preds ..B1.76
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #103.8
         vmovd     %r15d, %xmm1                                  #103.8
@@ -758,38 +798,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #103.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #103.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #103.8
-        vmovups   %xmm6, 32(%rsp)                               #103.8[spill]
+        vmovups   %xmm6, 48(%rsp)                               #103.8[spill]
 #       rand(void)
         call      rand                                          #104.22
                                 # LOE rbx r12 eax
-..B1.227:                       # Preds ..B1.73
+..B1.231:                       # Preds ..B1.77
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #104.22
                                 # LOE rbx r12 r14d
-..B1.74:                        # Preds ..B1.227
+..B1.78:                        # Preds ..B1.231
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #104.29
                                 # LOE rbx r12 eax r14d
-..B1.228:                       # Preds ..B1.74
+..B1.232:                       # Preds ..B1.78
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #104.29
                                 # LOE rbx r12 r13d r14d
-..B1.75:                        # Preds ..B1.228
+..B1.79:                        # Preds ..B1.232
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #104.36
                                 # LOE rbx r12 eax r13d r14d
-..B1.229:                       # Preds ..B1.75
+..B1.233:                       # Preds ..B1.79
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #104.36
                                 # LOE rbx r12 r13d r14d r15d
-..B1.76:                        # Preds ..B1.229
+..B1.80:                        # Preds ..B1.233
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #104.43
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.77:                        # Preds ..B1.76
+..B1.81:                        # Preds ..B1.80
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #104.8
         vmovd     %r15d, %xmm1                                  #104.8
@@ -798,38 +838,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #104.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #104.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #104.8
-        vmovups   %xmm6, 48(%rsp)                               #104.8[spill]
+        vmovups   %xmm6, 96(%rsp)                               #104.8[spill]
 #       rand(void)
         call      rand                                          #105.22
                                 # LOE rbx r12 eax
-..B1.231:                       # Preds ..B1.77
+..B1.235:                       # Preds ..B1.81
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #105.22
                                 # LOE rbx r12 r14d
-..B1.78:                        # Preds ..B1.231
+..B1.82:                        # Preds ..B1.235
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #105.29
                                 # LOE rbx r12 eax r14d
-..B1.232:                       # Preds ..B1.78
+..B1.236:                       # Preds ..B1.82
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #105.29
                                 # LOE rbx r12 r13d r14d
-..B1.79:                        # Preds ..B1.232
+..B1.83:                        # Preds ..B1.236
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #105.36
                                 # LOE rbx r12 eax r13d r14d
-..B1.233:                       # Preds ..B1.79
+..B1.237:                       # Preds ..B1.83
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #105.36
                                 # LOE rbx r12 r13d r14d r15d
-..B1.80:                        # Preds ..B1.233
+..B1.84:                        # Preds ..B1.237
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #105.43
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.81:                        # Preds ..B1.80
+..B1.85:                        # Preds ..B1.84
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #105.8
         vmovd     %r15d, %xmm1                                  #105.8
@@ -838,38 +878,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #105.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #105.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #105.8
-        vmovups   %xmm6, 64(%rsp)                               #105.8[spill]
+        vmovups   %xmm6, 112(%rsp)                              #105.8[spill]
 #       rand(void)
         call      rand                                          #106.22
                                 # LOE rbx r12 eax
-..B1.235:                       # Preds ..B1.81
+..B1.239:                       # Preds ..B1.85
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #106.22
                                 # LOE rbx r12 r14d
-..B1.82:                        # Preds ..B1.235
+..B1.86:                        # Preds ..B1.239
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #106.29
                                 # LOE rbx r12 eax r14d
-..B1.236:                       # Preds ..B1.82
+..B1.240:                       # Preds ..B1.86
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #106.29
                                 # LOE rbx r12 r13d r14d
-..B1.83:                        # Preds ..B1.236
+..B1.87:                        # Preds ..B1.240
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #106.36
                                 # LOE rbx r12 eax r13d r14d
-..B1.237:                       # Preds ..B1.83
+..B1.241:                       # Preds ..B1.87
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #106.36
                                 # LOE rbx r12 r13d r14d r15d
-..B1.84:                        # Preds ..B1.237
+..B1.88:                        # Preds ..B1.241
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #106.43
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.85:                        # Preds ..B1.84
+..B1.89:                        # Preds ..B1.88
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #106.8
         vmovd     %r15d, %xmm1                                  #106.8
@@ -878,38 +918,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #106.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #106.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #106.8
-        vmovups   %xmm6, 96(%rsp)                               #106.8[spill]
+        vmovups   %xmm6, 128(%rsp)                              #106.8[spill]
 #       rand(void)
         call      rand                                          #107.22
                                 # LOE rbx r12 eax
-..B1.239:                       # Preds ..B1.85
+..B1.243:                       # Preds ..B1.89
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #107.22
                                 # LOE rbx r12 r14d
-..B1.86:                        # Preds ..B1.239
+..B1.90:                        # Preds ..B1.243
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #107.29
                                 # LOE rbx r12 eax r14d
-..B1.240:                       # Preds ..B1.86
+..B1.244:                       # Preds ..B1.90
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #107.29
                                 # LOE rbx r12 r13d r14d
-..B1.87:                        # Preds ..B1.240
+..B1.91:                        # Preds ..B1.244
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #107.36
                                 # LOE rbx r12 eax r13d r14d
-..B1.241:                       # Preds ..B1.87
+..B1.245:                       # Preds ..B1.91
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #107.36
                                 # LOE rbx r12 r13d r14d r15d
-..B1.88:                        # Preds ..B1.241
+..B1.92:                        # Preds ..B1.245
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #107.43
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.89:                        # Preds ..B1.88
+..B1.93:                        # Preds ..B1.92
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #107.8
         vmovd     %r15d, %xmm1                                  #107.8
@@ -918,38 +958,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #107.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #107.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #107.8
-        vmovups   %xmm6, 128(%rsp)                              #107.8[spill]
+        vmovups   %xmm6, 144(%rsp)                              #107.8[spill]
 #       rand(void)
         call      rand                                          #108.22
                                 # LOE rbx r12 eax
-..B1.243:                       # Preds ..B1.89
+..B1.247:                       # Preds ..B1.93
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #108.22
                                 # LOE rbx r12 r14d
-..B1.90:                        # Preds ..B1.243
+..B1.94:                        # Preds ..B1.247
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #108.29
                                 # LOE rbx r12 eax r14d
-..B1.244:                       # Preds ..B1.90
+..B1.248:                       # Preds ..B1.94
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #108.29
                                 # LOE rbx r12 r13d r14d
-..B1.91:                        # Preds ..B1.244
+..B1.95:                        # Preds ..B1.248
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #108.36
                                 # LOE rbx r12 eax r13d r14d
-..B1.245:                       # Preds ..B1.91
+..B1.249:                       # Preds ..B1.95
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #108.36
                                 # LOE rbx r12 r13d r14d r15d
-..B1.92:                        # Preds ..B1.245
+..B1.96:                        # Preds ..B1.249
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #108.43
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.93:                        # Preds ..B1.92
+..B1.97:                        # Preds ..B1.96
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #108.8
         vmovd     %r15d, %xmm1                                  #108.8
@@ -958,38 +998,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #108.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #108.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #108.8
-        vmovups   %xmm6, 144(%rsp)                              #108.8[spill]
+        vmovups   %xmm6, 176(%rsp)                              #108.8[spill]
 #       rand(void)
         call      rand                                          #109.22
                                 # LOE rbx r12 eax
-..B1.247:                       # Preds ..B1.93
+..B1.251:                       # Preds ..B1.97
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #109.22
                                 # LOE rbx r12 r14d
-..B1.94:                        # Preds ..B1.247
+..B1.98:                        # Preds ..B1.251
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #109.29
                                 # LOE rbx r12 eax r14d
-..B1.248:                       # Preds ..B1.94
+..B1.252:                       # Preds ..B1.98
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #109.29
                                 # LOE rbx r12 r13d r14d
-..B1.95:                        # Preds ..B1.248
+..B1.99:                        # Preds ..B1.252
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #109.36
                                 # LOE rbx r12 eax r13d r14d
-..B1.249:                       # Preds ..B1.95
+..B1.253:                       # Preds ..B1.99
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #109.36
                                 # LOE rbx r12 r13d r14d r15d
-..B1.96:                        # Preds ..B1.249
+..B1.100:                       # Preds ..B1.253
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #109.43
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.97:                        # Preds ..B1.96
+..B1.101:                       # Preds ..B1.100
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #109.8
         vmovd     %r15d, %xmm1                                  #109.8
@@ -998,38 +1038,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #109.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #109.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #109.8
-        vmovups   %xmm6, 160(%rsp)                              #109.8[spill]
+        vmovups   %xmm6, 192(%rsp)                              #109.8[spill]
 #       rand(void)
         call      rand                                          #110.22
                                 # LOE rbx r12 eax
-..B1.251:                       # Preds ..B1.97
+..B1.255:                       # Preds ..B1.101
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #110.22
                                 # LOE rbx r12 r14d
-..B1.98:                        # Preds ..B1.251
+..B1.102:                       # Preds ..B1.255
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #110.29
                                 # LOE rbx r12 eax r14d
-..B1.252:                       # Preds ..B1.98
+..B1.256:                       # Preds ..B1.102
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #110.29
                                 # LOE rbx r12 r13d r14d
-..B1.99:                        # Preds ..B1.252
+..B1.103:                       # Preds ..B1.256
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #110.36
                                 # LOE rbx r12 eax r13d r14d
-..B1.253:                       # Preds ..B1.99
+..B1.257:                       # Preds ..B1.103
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #110.36
                                 # LOE rbx r12 r13d r14d r15d
-..B1.100:                       # Preds ..B1.253
+..B1.104:                       # Preds ..B1.257
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #110.43
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.101:                       # Preds ..B1.100
+..B1.105:                       # Preds ..B1.104
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #110.8
         vmovd     %r15d, %xmm1                                  #110.8
@@ -1038,78 +1078,78 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #110.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #110.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #110.8
-        vmovups   %xmm6, 192(%rsp)                              #110.8[spill]
+        vmovups   %xmm6, 208(%rsp)                              #110.8[spill]
 #       rand(void)
-        call      rand                                          #111.22
-                                # LOE rbx r12 eax
-..B1.255:                       # Preds ..B1.101
-                                # Execution count [1.00e+00]
-        movl      %eax, %r14d                                   #111.22
-                                # LOE rbx r12 r14d
-..B1.102:                       # Preds ..B1.255
-                                # Execution count [1.00e+00]
-#       rand(void)
-        call      rand                                          #111.29
-                                # LOE rbx r12 eax r14d
-..B1.256:                       # Preds ..B1.102
-                                # Execution count [1.00e+00]
-        movl      %eax, %r13d                                   #111.29
-                                # LOE rbx r12 r13d r14d
-..B1.103:                       # Preds ..B1.256
-                                # Execution count [1.00e+00]
-#       rand(void)
-        call      rand                                          #111.36
-                                # LOE rbx r12 eax r13d r14d
-..B1.257:                       # Preds ..B1.103
-                                # Execution count [1.00e+00]
-        movl      %eax, %r15d                                   #111.36
-                                # LOE rbx r12 r13d r14d r15d
-..B1.104:                       # Preds ..B1.257
-                                # Execution count [1.00e+00]
-#       rand(void)
-        call      rand                                          #111.43
-                                # LOE rbx r12 eax r13d r14d r15d
-..B1.105:                       # Preds ..B1.104
-                                # Execution count [1.00e+00]
-        vmovd     %eax, %xmm0                                   #111.8
-        vmovd     %r15d, %xmm1                                  #111.8
-        vmovd     %r13d, %xmm2                                  #111.8
-        vmovd     %r14d, %xmm3                                  #111.8
-        vpunpcklqdq %xmm1, %xmm0, %xmm4                         #111.8
-        vpunpcklqdq %xmm3, %xmm2, %xmm5                         #111.8
-        vshufps   $136, %xmm5, %xmm4, %xmm6                     #111.8
-        vmovups   %xmm6, 208(%rsp)                              #111.8[spill]
-#       rand(void)
-        call      rand                                          #112.23
+        call      rand                                          #111.23
                                 # LOE rbx r12 eax
 ..B1.259:                       # Preds ..B1.105
                                 # Execution count [1.00e+00]
-        movl      %eax, %r14d                                   #112.23
+        movl      %eax, %r14d                                   #111.23
                                 # LOE rbx r12 r14d
 ..B1.106:                       # Preds ..B1.259
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #112.30
+        call      rand                                          #111.30
                                 # LOE rbx r12 eax r14d
 ..B1.260:                       # Preds ..B1.106
                                 # Execution count [1.00e+00]
-        movl      %eax, %r13d                                   #112.30
+        movl      %eax, %r13d                                   #111.30
                                 # LOE rbx r12 r13d r14d
 ..B1.107:                       # Preds ..B1.260
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #112.37
+        call      rand                                          #111.37
                                 # LOE rbx r12 eax r13d r14d
 ..B1.261:                       # Preds ..B1.107
                                 # Execution count [1.00e+00]
-        movl      %eax, %r15d                                   #112.37
+        movl      %eax, %r15d                                   #111.37
                                 # LOE rbx r12 r13d r14d r15d
 ..B1.108:                       # Preds ..B1.261
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #112.44
+        call      rand                                          #111.44
                                 # LOE rbx r12 eax r13d r14d r15d
 ..B1.109:                       # Preds ..B1.108
+                                # Execution count [1.00e+00]
+        vmovd     %eax, %xmm0                                   #111.9
+        vmovd     %r15d, %xmm1                                  #111.9
+        vmovd     %r13d, %xmm2                                  #111.9
+        vmovd     %r14d, %xmm3                                  #111.9
+        vpunpcklqdq %xmm1, %xmm0, %xmm4                         #111.9
+        vpunpcklqdq %xmm3, %xmm2, %xmm5                         #111.9
+        vshufps   $136, %xmm5, %xmm4, %xmm6                     #111.9
+        vmovups   %xmm6, 224(%rsp)                              #111.9[spill]
+#       rand(void)
+        call      rand                                          #112.23
+                                # LOE rbx r12 eax
+..B1.263:                       # Preds ..B1.109
+                                # Execution count [1.00e+00]
+        movl      %eax, %r14d                                   #112.23
+                                # LOE rbx r12 r14d
+..B1.110:                       # Preds ..B1.263
+                                # Execution count [1.00e+00]
+#       rand(void)
+        call      rand                                          #112.30
+                                # LOE rbx r12 eax r14d
+..B1.264:                       # Preds ..B1.110
+                                # Execution count [1.00e+00]
+        movl      %eax, %r13d                                   #112.30
+                                # LOE rbx r12 r13d r14d
+..B1.111:                       # Preds ..B1.264
+                                # Execution count [1.00e+00]
+#       rand(void)
+        call      rand                                          #112.37
+                                # LOE rbx r12 eax r13d r14d
+..B1.265:                       # Preds ..B1.111
+                                # Execution count [1.00e+00]
+        movl      %eax, %r15d                                   #112.37
+                                # LOE rbx r12 r13d r14d r15d
+..B1.112:                       # Preds ..B1.265
+                                # Execution count [1.00e+00]
+#       rand(void)
+        call      rand                                          #112.44
+                                # LOE rbx r12 eax r13d r14d r15d
+..B1.113:                       # Preds ..B1.112
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #112.9
         vmovd     %r15d, %xmm1                                  #112.9
@@ -1118,38 +1158,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #112.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #112.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #112.9
-        vmovups   %xmm6, 224(%rsp)                              #112.9[spill]
+        vmovups   %xmm6, 240(%rsp)                              #112.9[spill]
 #       rand(void)
         call      rand                                          #113.23
                                 # LOE rbx r12 eax
-..B1.263:                       # Preds ..B1.109
+..B1.267:                       # Preds ..B1.113
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #113.23
                                 # LOE rbx r12 r14d
-..B1.110:                       # Preds ..B1.263
+..B1.114:                       # Preds ..B1.267
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #113.30
                                 # LOE rbx r12 eax r14d
-..B1.264:                       # Preds ..B1.110
+..B1.268:                       # Preds ..B1.114
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #113.30
                                 # LOE rbx r12 r13d r14d
-..B1.111:                       # Preds ..B1.264
+..B1.115:                       # Preds ..B1.268
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #113.37
                                 # LOE rbx r12 eax r13d r14d
-..B1.265:                       # Preds ..B1.111
+..B1.269:                       # Preds ..B1.115
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #113.37
                                 # LOE rbx r12 r13d r14d r15d
-..B1.112:                       # Preds ..B1.265
+..B1.116:                       # Preds ..B1.269
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #113.44
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.113:                       # Preds ..B1.112
+..B1.117:                       # Preds ..B1.116
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #113.9
         vmovd     %r15d, %xmm1                                  #113.9
@@ -1158,38 +1198,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #113.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #113.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #113.9
-        vmovups   %xmm6, 240(%rsp)                              #113.9[spill]
+        vmovups   %xmm6, 256(%rsp)                              #113.9[spill]
 #       rand(void)
         call      rand                                          #114.23
                                 # LOE rbx r12 eax
-..B1.267:                       # Preds ..B1.113
+..B1.271:                       # Preds ..B1.117
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #114.23
                                 # LOE rbx r12 r14d
-..B1.114:                       # Preds ..B1.267
+..B1.118:                       # Preds ..B1.271
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #114.30
                                 # LOE rbx r12 eax r14d
-..B1.268:                       # Preds ..B1.114
+..B1.272:                       # Preds ..B1.118
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #114.30
                                 # LOE rbx r12 r13d r14d
-..B1.115:                       # Preds ..B1.268
+..B1.119:                       # Preds ..B1.272
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #114.37
                                 # LOE rbx r12 eax r13d r14d
-..B1.269:                       # Preds ..B1.115
+..B1.273:                       # Preds ..B1.119
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #114.37
                                 # LOE rbx r12 r13d r14d r15d
-..B1.116:                       # Preds ..B1.269
+..B1.120:                       # Preds ..B1.273
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #114.44
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.117:                       # Preds ..B1.116
+..B1.121:                       # Preds ..B1.120
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #114.9
         vmovd     %r15d, %xmm1                                  #114.9
@@ -1198,38 +1238,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #114.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #114.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #114.9
-        vmovups   %xmm6, 256(%rsp)                              #114.9[spill]
+        vmovups   %xmm6, 272(%rsp)                              #114.9[spill]
 #       rand(void)
         call      rand                                          #115.23
                                 # LOE rbx r12 eax
-..B1.271:                       # Preds ..B1.117
+..B1.275:                       # Preds ..B1.121
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #115.23
                                 # LOE rbx r12 r14d
-..B1.118:                       # Preds ..B1.271
+..B1.122:                       # Preds ..B1.275
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #115.30
                                 # LOE rbx r12 eax r14d
-..B1.272:                       # Preds ..B1.118
+..B1.276:                       # Preds ..B1.122
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #115.30
                                 # LOE rbx r12 r13d r14d
-..B1.119:                       # Preds ..B1.272
+..B1.123:                       # Preds ..B1.276
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #115.37
                                 # LOE rbx r12 eax r13d r14d
-..B1.273:                       # Preds ..B1.119
+..B1.277:                       # Preds ..B1.123
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #115.37
                                 # LOE rbx r12 r13d r14d r15d
-..B1.120:                       # Preds ..B1.273
+..B1.124:                       # Preds ..B1.277
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #115.44
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.121:                       # Preds ..B1.120
+..B1.125:                       # Preds ..B1.124
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #115.9
         vmovd     %r15d, %xmm1                                  #115.9
@@ -1238,38 +1278,38 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #115.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #115.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #115.9
-        vmovups   %xmm6, 272(%rsp)                              #115.9[spill]
+        vmovups   %xmm6, 288(%rsp)                              #115.9[spill]
 #       rand(void)
         call      rand                                          #116.23
                                 # LOE rbx r12 eax
-..B1.275:                       # Preds ..B1.121
+..B1.279:                       # Preds ..B1.125
                                 # Execution count [1.00e+00]
         movl      %eax, %r14d                                   #116.23
                                 # LOE rbx r12 r14d
-..B1.122:                       # Preds ..B1.275
+..B1.126:                       # Preds ..B1.279
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #116.30
                                 # LOE rbx r12 eax r14d
-..B1.276:                       # Preds ..B1.122
+..B1.280:                       # Preds ..B1.126
                                 # Execution count [1.00e+00]
         movl      %eax, %r13d                                   #116.30
                                 # LOE rbx r12 r13d r14d
-..B1.123:                       # Preds ..B1.276
+..B1.127:                       # Preds ..B1.280
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #116.37
                                 # LOE rbx r12 eax r13d r14d
-..B1.277:                       # Preds ..B1.123
+..B1.281:                       # Preds ..B1.127
                                 # Execution count [1.00e+00]
         movl      %eax, %r15d                                   #116.37
                                 # LOE rbx r12 r13d r14d r15d
-..B1.124:                       # Preds ..B1.277
+..B1.128:                       # Preds ..B1.281
                                 # Execution count [1.00e+00]
 #       rand(void)
         call      rand                                          #116.44
                                 # LOE rbx r12 eax r13d r14d r15d
-..B1.125:                       # Preds ..B1.124
+..B1.129:                       # Preds ..B1.128
                                 # Execution count [1.00e+00]
         vmovd     %eax, %xmm0                                   #116.9
         vmovd     %r15d, %xmm1                                  #116.9
@@ -1278,376 +1318,336 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #116.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #116.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #116.9
-        vmovups   %xmm6, 288(%rsp)                              #116.9[spill]
+        vmovups   %xmm6, 304(%rsp)                              #116.9[spill]
 #       rand(void)
         call      rand                                          #117.23
                                 # LOE rbx r12 eax
-..B1.279:                       # Preds ..B1.125
-                                # Execution count [1.00e+00]
-        movl      %eax, %r14d                                   #117.23
-                                # LOE rbx r12 r14d
-..B1.126:                       # Preds ..B1.279
-                                # Execution count [1.00e+00]
-#       rand(void)
-        call      rand                                          #117.30
-                                # LOE rbx r12 eax r14d
-..B1.280:                       # Preds ..B1.126
-                                # Execution count [1.00e+00]
-        movl      %eax, %r13d                                   #117.30
-                                # LOE rbx r12 r13d r14d
-..B1.127:                       # Preds ..B1.280
-                                # Execution count [1.00e+00]
-#       rand(void)
-        call      rand                                          #117.37
-                                # LOE rbx r12 eax r13d r14d
-..B1.281:                       # Preds ..B1.127
-                                # Execution count [1.00e+00]
-        movl      %eax, %r15d                                   #117.37
-                                # LOE rbx r12 r13d r14d r15d
-..B1.128:                       # Preds ..B1.281
-                                # Execution count [1.00e+00]
-#       rand(void)
-        call      rand                                          #117.44
-                                # LOE rbx r12 eax r13d r14d r15d
-..B1.129:                       # Preds ..B1.128
-                                # Execution count [1.00e+00]
-        vmovd     %eax, %xmm0                                   #117.9
-        vmovd     %r15d, %xmm1                                  #117.9
-        vmovd     %r13d, %xmm2                                  #117.9
-        vmovd     %r14d, %xmm3                                  #117.9
-        vpunpcklqdq %xmm1, %xmm0, %xmm4                         #117.9
-        vpunpcklqdq %xmm3, %xmm2, %xmm5                         #117.9
-        vshufps   $136, %xmm5, %xmm4, %xmm6                     #117.9
-        vmovups   %xmm6, 304(%rsp)                              #117.9[spill]
-#       rand(void)
-        call      rand                                          #118.23
-                                # LOE rbx r12 eax
 ..B1.283:                       # Preds ..B1.129
                                 # Execution count [1.00e+00]
-        movl      %eax, %r15d                                   #118.23
+        movl      %eax, %r15d                                   #117.23
                                 # LOE rbx r12 r15d
 ..B1.130:                       # Preds ..B1.283
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #118.30
+        call      rand                                          #117.30
                                 # LOE rbx r12 eax r15d
 ..B1.284:                       # Preds ..B1.130
                                 # Execution count [1.00e+00]
-        movl      %eax, %r14d                                   #118.30
+        movl      %eax, %r14d                                   #117.30
                                 # LOE rbx r12 r14d r15d
 ..B1.131:                       # Preds ..B1.284
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #118.37
+        call      rand                                          #117.37
                                 # LOE rbx r12 eax r14d r15d
 ..B1.285:                       # Preds ..B1.131
                                 # Execution count [1.00e+00]
-        movl      %eax, %r13d                                   #118.37
+        movl      %eax, %r13d                                   #117.37
                                 # LOE rbx r12 r13d r14d r15d
 ..B1.132:                       # Preds ..B1.285
                                 # Execution count [1.00e+00]
 #       rand(void)
-        call      rand                                          #118.44
+        call      rand                                          #117.44
                                 # LOE rbx r12 eax r13d r14d r15d
 ..B1.286:                       # Preds ..B1.132
                                 # Execution count [1.00e+00]
-        movl      %eax, %edx                                    #118.44
+        movl      %eax, %edx                                    #117.44
                                 # LOE rbx r12 edx r13d r14d r15d
 ..B1.133:                       # Preds ..B1.286
                                 # Execution count [9.00e-01]
-        vmovd     %edx, %xmm0                                   #118.9
-        vmovd     %r13d, %xmm1                                  #118.9
-        vmovd     %r14d, %xmm2                                  #118.9
-        vmovd     %r15d, %xmm3                                  #118.9
-        vmovups   512(%rsp), %xmm7                              #122.17[spill]
-        xorl      %eax, %eax                                    #120.3
-        vpunpcklqdq %xmm1, %xmm0, %xmm4                         #118.9
-        vpunpcklqdq %xmm3, %xmm2, %xmm5                         #118.9
-        vpxor     496(%rsp), %xmm7, %xmm8                       #122.17[spill]
-        vshufps   $136, %xmm5, %xmm4, %xmm6                     #118.9
-        vpxor     %xmm9, %xmm8, %xmm0                           #122.17
-        vmovups   %xmm6, (%rsp)                                 #118.9[spill]
+        vmovd     %edx, %xmm0                                   #117.9
+        vmovd     %r13d, %xmm1                                  #117.9
+        vmovd     %r14d, %xmm2                                  #117.9
+        vmovd     %r15d, %xmm3                                  #117.9
+        vmovups   512(%rsp), %xmm8                              #121.17[spill]
+        xorl      %eax, %eax                                    #119.3
+        vpunpcklqdq %xmm1, %xmm0, %xmm4                         #117.9
+        vpunpcklqdq %xmm3, %xmm2, %xmm5                         #117.9
+        vxorps    496(%rsp), %xmm8, %xmm7                       #121.17[spill]
+        vshufps   $136, %xmm5, %xmm4, %xmm6                     #117.9
+        vxorps    %xmm8, %xmm7, %xmm0                           #121.17
+        vmovups   %xmm6, (%rsp)                                 #117.9[spill]
                                 # LOE rbx r12 eax xmm0
 ..B1.134:                       # Preds ..B1.134 ..B1.133
                                 # Execution count [2.50e+00]
-        lea       (%rax,%rax), %edx                             #122.5
-        incl      %eax                                          #120.3
-        shlq      $4, %rdx                                      #122.5
-        vmovdqu   %xmm0, (%rbx,%rdx)                            #122.5
-        vmovdqu   %xmm0, 16(%rbx,%rdx)                          #122.5
-        cmpl      $8000000, %eax                                #120.3
-        jb        ..B1.134      # Prob 63%                      #120.3
+        lea       (%rax,%rax), %edx                             #121.5
+        incl      %eax                                          #119.3
+        shlq      $4, %rdx                                      #121.5
+        vmovups   %xmm0, (%rbx,%rdx)                            #121.5
+        vmovups   %xmm0, 16(%rbx,%rdx)                          #121.5
+        cmpl      $8000000, %eax                                #119.3
+        jb        ..B1.134      # Prob 63%                      #119.3
                                 # LOE rbx r12 eax xmm0
 ..B1.135:                       # Preds ..B1.134
                                 # Execution count [1.00e+00]
-        movq      %rbx, %rdi                                    #124.3
-        movl      $16, %esi                                     #124.3
-        movl      $16000000, %edx                               #124.3
-        movq      %r12, %rcx                                    #124.3
+        movq      %rbx, %rdi                                    #123.3
+        movl      $16, %esi                                     #123.3
+        movl      $16000000, %edx                               #123.3
+        movq      %r12, %rcx                                    #123.3
 #       fwrite(const void *__restrict__, size_t, size_t, FILE *__restrict__)
-        call      fwrite                                        #124.3
+        call      fwrite                                        #123.3
                                 # LOE rbx r12
 ..B1.136:                       # Preds ..B1.135
                                 # Execution count [1.00e+00]
-        movl      $.L_2__STRING.2, %edi                         #127.3
-        xorl      %eax, %eax                                    #127.3
+        movl      $.L_2__STRING.2, %edi                         #126.3
+        xorl      %eax, %eax                                    #126.3
 ..___tag_value_main.13:
 #       printf(const char *__restrict__, ...)
-        call      printf                                        #127.3
+        call      printf                                        #126.3
 ..___tag_value_main.14:
                                 # LOE rbx r12
 ..B1.137:                       # Preds ..B1.136
                                 # Execution count [1.00e+00]
-        movq      stdout(%rip), %rdi                            #127.27
+        movq      stdout(%rip), %rdi                            #126.27
 #       fflush(FILE *)
-        call      fflush                                        #127.27
+        call      fflush                                        #126.27
                                 # LOE rbx r12
 ..B1.138:                       # Preds ..B1.137
                                 # Execution count [1.00e+00]
-        rdtscp                                                   #128.11
-        shlq      $32, %rdx                                     #128.11
-        orq       %rdx, %rax                                    #128.11
+        rdtscp                                                   #127.11
+        shlq      $32, %rdx                                     #127.11
+        orq       %rdx, %rax                                    #127.11
                                 # LOE rax rbx r12
 ..B1.287:                       # Preds ..B1.138
                                 # Execution count [1.00e+00]
-        movq      %rax, %r8                                     #128.11
-        xorl      %edx, %edx                                    #129.3
-        xorl      %eax, %eax                                    #129.3
+        movq      %rax, %r8                                     #127.11
+        xorl      %edx, %edx                                    #128.3
+        xorl      %eax, %eax                                    #128.3
                                 # LOE rbx r8 r12
 ..B1.139:                       # Preds ..B1.287
                                 # Execution count [9.00e-01]
-        vmovups   512(%rsp), %xmm14                             #130.5[spill]
-        vmovups   496(%rsp), %xmm13                             #130.5[spill]
-        vmovups   480(%rsp), %xmm12                             #130.5[spill]
-        vmovups   464(%rsp), %xmm11                             #130.5[spill]
-        vmovups   448(%rsp), %xmm10                             #130.5[spill]
-        vmovups   432(%rsp), %xmm9                              #130.5[spill]
-        vmovups   416(%rsp), %xmm8                              #130.5[spill]
-        vmovups   400(%rsp), %xmm7                              #130.5[spill]
-        vmovups   384(%rsp), %xmm6                              #130.5[spill]
-        vmovups   368(%rsp), %xmm5                              #130.5[spill]
-        vmovups   352(%rsp), %xmm4                              #130.5[spill]
-        vmovups   336(%rsp), %xmm3                              #130.5[spill]
-        vmovups   320(%rsp), %xmm2                              #130.5[spill]
-        vmovups   288(%rsp), %xmm1                              #130.5[spill]
-        vmovups   304(%rsp), %xmm0                              #130.5[spill]
-        vmovups   (%rsp), %xmm15                                #130.5[spill]
-        vpaddw    32(%rsp), %xmm14, %xmm14                      #130.5[spill]
-        vpaddw    48(%rsp), %xmm13, %xmm13                      #130.5[spill]
-        vpaddw    64(%rsp), %xmm12, %xmm12                      #130.5[spill]
-        vpaddw    96(%rsp), %xmm11, %xmm11                      #130.5[spill]
-        vpaddw    128(%rsp), %xmm10, %xmm10                     #130.5[spill]
-        vpaddw    144(%rsp), %xmm9, %xmm9                       #130.5[spill]
-        vpaddw    160(%rsp), %xmm8, %xmm8                       #130.5[spill]
-        vpaddw    192(%rsp), %xmm7, %xmm7                       #130.5[spill]
-        vpaddw    208(%rsp), %xmm6, %xmm6                       #130.5[spill]
-        vpaddw    224(%rsp), %xmm5, %xmm5                       #130.5[spill]
-        vpaddw    240(%rsp), %xmm4, %xmm4                       #130.5[spill]
-        vpaddw    256(%rsp), %xmm3, %xmm3                       #130.5[spill]
-        vpaddw    272(%rsp), %xmm2, %xmm2                       #130.5[spill]
-        vpaddw    80(%rsp), %xmm1, %xmm1                        #130.5[spill]
-        vpaddw    112(%rsp), %xmm0, %xmm0                       #130.5[spill]
-        vpaddw    176(%rsp), %xmm15, %xmm15                     #130.5[spill]
+        vmovups   512(%rsp), %xmm14                             #129.5[spill]
+        vmovups   496(%rsp), %xmm13                             #129.5[spill]
+        vmovups   320(%rsp), %xmm12                             #129.5[spill]
+        vmovups   416(%rsp), %xmm11                             #129.5[spill]
+        vmovups   352(%rsp), %xmm10                             #129.5[spill]
+        vmovups   480(%rsp), %xmm9                              #129.5[spill]
+        vmovups   464(%rsp), %xmm8                              #129.5[spill]
+        vmovups   384(%rsp), %xmm7                              #129.5[spill]
+        vmovups   432(%rsp), %xmm6                              #129.5[spill]
+        vmovups   368(%rsp), %xmm5                              #129.5[spill]
+        vmovups   336(%rsp), %xmm4                              #129.5[spill]
+        vmovups   400(%rsp), %xmm3                              #129.5[spill]
+        vmovups   448(%rsp), %xmm2                              #129.5[spill]
+        vmovups   288(%rsp), %xmm1                              #129.5[spill]
+        vmovups   304(%rsp), %xmm0                              #129.5[spill]
+        vmovups   (%rsp), %xmm15                                #129.5[spill]
+        vpaddb    32(%rsp), %xmm14, %xmm14                      #129.5[spill]
+        vpaddb    48(%rsp), %xmm13, %xmm13                      #129.5[spill]
+        vpaddb    96(%rsp), %xmm12, %xmm12                      #129.5[spill]
+        vpaddb    112(%rsp), %xmm11, %xmm11                     #129.5[spill]
+        vpaddb    128(%rsp), %xmm10, %xmm10                     #129.5[spill]
+        vpaddb    144(%rsp), %xmm9, %xmm9                       #129.5[spill]
+        vpaddb    176(%rsp), %xmm8, %xmm8                       #129.5[spill]
+        vpaddb    192(%rsp), %xmm7, %xmm7                       #129.5[spill]
+        vpaddb    208(%rsp), %xmm6, %xmm6                       #129.5[spill]
+        vpaddb    224(%rsp), %xmm5, %xmm5                       #129.5[spill]
+        vpaddb    240(%rsp), %xmm4, %xmm4                       #129.5[spill]
+        vpaddb    256(%rsp), %xmm3, %xmm3                       #129.5[spill]
+        vpaddb    272(%rsp), %xmm2, %xmm2                       #129.5[spill]
+        vpaddb    64(%rsp), %xmm1, %xmm1                        #129.5[spill]
+        vpaddb    80(%rsp), %xmm0, %xmm0                        #129.5[spill]
+        vpaddb    160(%rsp), %xmm15, %xmm15                     #129.5[spill]
                                 # LOE rax rbx r8 r12 edx xmm0 xmm1 xmm2 xmm3 xmm4 xmm5 xmm6 xmm7 xmm8 xmm9 xmm10 xmm11 xmm12 xmm13 xmm14 xmm15
 ..B1.140:                       # Preds ..B1.140 ..B1.139
                                 # Execution count [5.00e+00]
-        incl      %edx                                          #129.3
-        lea       (%rax,%rbx), %rsi                             #130.5
-        vmovdqu   %xmm9, 80(%rsi)                               #130.5
-        vmovdqu   %xmm8, 96(%rsi)                               #130.5
-        vmovdqu   %xmm7, 112(%rsi)                              #130.5
-        vmovdqu   %xmm6, 128(%rsi)                              #130.5
-        vmovdqu   %xmm5, 144(%rsi)                              #130.5
-        vmovdqu   %xmm4, 160(%rsi)                              #130.5
-        vmovdqu   %xmm3, 176(%rsi)                              #130.5
-        vmovdqu   %xmm2, 192(%rsi)                              #130.5
-        vmovdqu   %xmm1, 208(%rsi)                              #130.5
-        vmovdqu   %xmm0, 224(%rsi)                              #130.5
-        vmovdqu   %xmm15, 240(%rsi)                             #130.5
-        addq      $256, %rax                                    #129.3
-        vmovdqu   %xmm14, (%rsi)                                #130.5
-        vmovdqu   %xmm13, 16(%rsi)                              #130.5
-        vmovdqu   %xmm12, 32(%rsi)                              #130.5
-        vmovdqu   %xmm11, 48(%rsi)                              #130.5
-        vmovdqu   %xmm10, 64(%rsi)                              #130.5
-        cmpl      $1000000, %edx                                #129.3
-        jb        ..B1.139      # Prob 82%                      #129.3
+        incl      %edx                                          #128.3
+        lea       (%rax,%rbx), %rsi                             #129.5
+        vmovdqu   %xmm9, 80(%rsi)                               #129.5
+        vmovdqu   %xmm8, 96(%rsi)                               #129.5
+        vmovdqu   %xmm7, 112(%rsi)                              #129.5
+        vmovdqu   %xmm6, 128(%rsi)                              #129.5
+        vmovdqu   %xmm5, 144(%rsi)                              #129.5
+        vmovdqu   %xmm4, 160(%rsi)                              #129.5
+        vmovdqu   %xmm3, 176(%rsi)                              #129.5
+        vmovdqu   %xmm2, 192(%rsi)                              #129.5
+        vmovdqu   %xmm1, 208(%rsi)                              #129.5
+        vmovdqu   %xmm0, 224(%rsi)                              #129.5
+        vmovdqu   %xmm15, 240(%rsi)                             #129.5
+        addq      $256, %rax                                    #128.3
+        vmovdqu   %xmm14, (%rsi)                                #129.5
+        vmovdqu   %xmm13, 16(%rsi)                              #129.5
+        vmovdqu   %xmm12, 32(%rsi)                              #129.5
+        vmovdqu   %xmm11, 48(%rsi)                              #129.5
+        vmovdqu   %xmm10, 64(%rsi)                              #129.5
+        cmpl      $1000000, %edx                                #128.3
+        jb        ..B1.139      # Prob 82%                      #128.3
                                 # LOE rax rbx r8 r12 edx xmm0 xmm1 xmm2 xmm3 xmm4 xmm5 xmm6 xmm7 xmm8 xmm9 xmm10 xmm11 xmm12 xmm13 xmm14 xmm15
 ..B1.141:                       # Preds ..B1.140
                                 # Execution count [1.00e+00]
-        rdtscp                                                   #133.9
-        shlq      $32, %rdx                                     #133.9
-        orq       %rdx, %rax                                    #133.9
+        rdtscp                                                   #132.9
+        shlq      $32, %rdx                                     #132.9
+        orq       %rdx, %rax                                    #132.9
                                 # LOE rax rbx r8 r12
 ..B1.142:                       # Preds ..B1.141
                                 # Execution count [1.00e+00]
-        subq      %r8, %rax                                     #134.3
-        movl      $.L_2__STRING.3, %edi                         #134.3
-        movq      %rax, %rsi                                    #134.3
-        xorl      %eax, %eax                                    #134.3
+        subq      %r8, %rax                                     #133.3
+        movl      $.L_2__STRING.3, %edi                         #133.3
+        movq      %rax, %rsi                                    #133.3
+        xorl      %eax, %eax                                    #133.3
 ..___tag_value_main.15:
 #       printf(const char *__restrict__, ...)
-        call      printf                                        #134.3
+        call      printf                                        #133.3
 ..___tag_value_main.16:
                                 # LOE rbx r12
 ..B1.143:                       # Preds ..B1.142
                                 # Execution count [1.00e+00]
-        movq      %rbx, %rdi                                    #135.3
-        movl      $16, %esi                                     #135.3
-        movl      $16000000, %edx                               #135.3
-        movq      %r12, %rcx                                    #135.3
+        movq      %rbx, %rdi                                    #134.3
+        movl      $16, %esi                                     #134.3
+        movl      $16000000, %edx                               #134.3
+        movq      %r12, %rcx                                    #134.3
 #       fwrite(const void *__restrict__, size_t, size_t, FILE *__restrict__)
-        call      fwrite                                        #135.3
+        call      fwrite                                        #134.3
                                 # LOE rbx r12
 ..B1.144:                       # Preds ..B1.143
                                 # Execution count [1.00e+00]
-        movl      $.L_2__STRING.4, %edi                         #137.3
-        xorl      %eax, %eax                                    #137.3
+        movl      $.L_2__STRING.4, %edi                         #136.3
+        xorl      %eax, %eax                                    #136.3
 ..___tag_value_main.17:
 #       printf(const char *__restrict__, ...)
-        call      printf                                        #137.3
+        call      printf                                        #136.3
 ..___tag_value_main.18:
                                 # LOE rbx r12
 ..B1.145:                       # Preds ..B1.144
                                 # Execution count [1.00e+00]
-        movq      stdout(%rip), %rdi                            #137.27
+        movq      stdout(%rip), %rdi                            #136.27
 #       fflush(FILE *)
-        call      fflush                                        #137.27
+        call      fflush                                        #136.27
                                 # LOE rbx r12
 ..B1.146:                       # Preds ..B1.145
                                 # Execution count [1.00e+00]
-        rdtscp                                                   #138.11
-        shlq      $32, %rdx                                     #138.11
-        orq       %rdx, %rax                                    #138.11
+        rdtscp                                                   #137.11
+        shlq      $32, %rdx                                     #137.11
+        orq       %rdx, %rax                                    #137.11
                                 # LOE rax rbx r12
 ..B1.289:                       # Preds ..B1.146
                                 # Execution count [1.00e+00]
-        movq      %rax, %r8                                     #138.11
-        xorl      %edx, %edx                                    #139.3
-        xorl      %eax, %eax                                    #139.3
+        movq      %rax, %r8                                     #137.11
+        xorl      %edx, %edx                                    #138.3
+        xorl      %eax, %eax                                    #138.3
                                 # LOE rbx r8 r12
 ..B1.147:                       # Preds ..B1.289
                                 # Execution count [9.00e-01]
-        vmovups   512(%rsp), %xmm15                             #140.5[spill]
-        vpxor     32(%rsp), %xmm15, %xmm7                       #140.5[spill]
-        vmovups   (%rsp), %xmm15                                #140.5[spill]
-        vpxor     176(%rsp), %xmm15, %xmm15                     #140.5[spill]
-        vmovdqu   %xmm15, 16(%rsp)                              #140.5[spill]
-        vmovups   496(%rsp), %xmm8                              #140.5[spill]
-        vpxor     %xmm15, %xmm15, %xmm15                        #140.5
-        vpxor     48(%rsp), %xmm8, %xmm8                        #140.5[spill]
-        vpxor     %xmm15, %xmm7, %xmm7                          #140.5
-        vmovups   480(%rsp), %xmm9                              #140.5[spill]
-        vpxor     %xmm7, %xmm8, %xmm8                           #140.5
-        vpxor     64(%rsp), %xmm9, %xmm9                        #140.5[spill]
-        vmovups   464(%rsp), %xmm10                             #140.5[spill]
-        vpxor     %xmm8, %xmm9, %xmm9                           #140.5
-        vpxor     96(%rsp), %xmm10, %xmm10                      #140.5[spill]
-        vmovups   448(%rsp), %xmm11                             #140.5[spill]
-        vpxor     %xmm9, %xmm10, %xmm10                         #140.5
-        vpxor     128(%rsp), %xmm11, %xmm11                     #140.5[spill]
-        vmovups   432(%rsp), %xmm12                             #140.5[spill]
-        vpxor     %xmm10, %xmm11, %xmm11                        #140.5
-        vpxor     144(%rsp), %xmm12, %xmm12                     #140.5[spill]
-        vmovups   416(%rsp), %xmm14                             #140.5[spill]
-        vpxor     %xmm11, %xmm12, %xmm12                        #140.5
-        vpxor     160(%rsp), %xmm14, %xmm14                     #140.5[spill]
-        vmovups   400(%rsp), %xmm13                             #140.5[spill]
-        vpxor     %xmm12, %xmm14, %xmm14                        #140.5
-        vpxor     192(%rsp), %xmm13, %xmm13                     #140.5[spill]
-        vmovups   384(%rsp), %xmm0                              #140.5[spill]
-        vpxor     %xmm14, %xmm13, %xmm13                        #140.5
-        vpxor     208(%rsp), %xmm0, %xmm0                       #140.5[spill]
-        vmovups   368(%rsp), %xmm1                              #140.5[spill]
-        vpxor     %xmm13, %xmm0, %xmm15                         #140.5
-        vpxor     224(%rsp), %xmm1, %xmm1                       #140.5[spill]
-        vmovups   352(%rsp), %xmm2                              #140.5[spill]
-        vpxor     %xmm15, %xmm1, %xmm0                          #140.5
-        vpxor     240(%rsp), %xmm2, %xmm2                       #140.5[spill]
-        vmovups   336(%rsp), %xmm3                              #140.5[spill]
-        vpxor     %xmm0, %xmm2, %xmm2                           #140.5
-        vpxor     256(%rsp), %xmm3, %xmm3                       #140.5[spill]
-        vmovups   320(%rsp), %xmm4                              #140.5[spill]
-        vpxor     %xmm2, %xmm3, %xmm1                           #140.5
-        vpxor     272(%rsp), %xmm4, %xmm4                       #140.5[spill]
-        vmovups   288(%rsp), %xmm5                              #140.5[spill]
-        vpxor     %xmm1, %xmm4, %xmm4                           #140.5
-        vpxor     80(%rsp), %xmm5, %xmm5                        #140.5[spill]
-        vmovups   304(%rsp), %xmm6                              #140.5[spill]
-        vpxor     %xmm4, %xmm5, %xmm3                           #140.5
-        vpxor     112(%rsp), %xmm6, %xmm6                       #140.5[spill]
-        vpxor     %xmm3, %xmm6, %xmm6                           #140.5
-        vpxor     16(%rsp), %xmm6, %xmm5                        #140.5[spill]
+        vmovups   512(%rsp), %xmm12                             #139.5[spill]
+        vmovups   496(%rsp), %xmm10                             #139.5[spill]
+        vmovups   320(%rsp), %xmm8                              #139.5[spill]
+        vmovups   416(%rsp), %xmm6                              #139.5[spill]
+        vmovups   352(%rsp), %xmm4                              #139.5[spill]
+        vmovups   480(%rsp), %xmm2                              #139.5[spill]
+        vmovups   464(%rsp), %xmm0                              #139.5[spill]
+        vmovups   384(%rsp), %xmm15                             #139.5[spill]
+        vxorps    32(%rsp), %xmm12, %xmm13                      #139.5[spill]
+        vxorps    48(%rsp), %xmm10, %xmm11                      #139.5[spill]
+        vxorps    %xmm12, %xmm13, %xmm13                        #139.5
+        vxorps    96(%rsp), %xmm8, %xmm9                        #139.5[spill]
+        vxorps    %xmm10, %xmm11, %xmm12                        #139.5
+        vxorps    112(%rsp), %xmm6, %xmm7                       #139.5[spill]
+        vxorps    %xmm8, %xmm9, %xmm11                          #139.5
+        vxorps    128(%rsp), %xmm4, %xmm5                       #139.5[spill]
+        vxorps    %xmm6, %xmm7, %xmm10                          #139.5
+        vxorps    144(%rsp), %xmm2, %xmm3                       #139.5[spill]
+        vxorps    %xmm4, %xmm5, %xmm9                           #139.5
+        vxorps    176(%rsp), %xmm0, %xmm1                       #139.5[spill]
+        vxorps    %xmm2, %xmm3, %xmm8                           #139.5
+        vxorps    192(%rsp), %xmm15, %xmm14                     #139.5[spill]
+        vxorps    %xmm0, %xmm1, %xmm7                           #139.5
+        vmovups   432(%rsp), %xmm4                              #139.5[spill]
+        vxorps    %xmm15, %xmm14, %xmm6                         #139.5
+        vmovups   368(%rsp), %xmm2                              #139.5[spill]
+        vmovups   336(%rsp), %xmm0                              #139.5[spill]
+        vmovups   400(%rsp), %xmm15                             #139.5[spill]
+        vxorps    208(%rsp), %xmm4, %xmm5                       #139.5[spill]
+        vxorps    224(%rsp), %xmm2, %xmm3                       #139.5[spill]
+        vxorps    240(%rsp), %xmm0, %xmm1                       #139.5[spill]
+        vxorps    256(%rsp), %xmm15, %xmm14                     #139.5[spill]
+        vmovups   %xmm6, 16(%rsp)                               #139.5[spill]
+        vxorps    %xmm4, %xmm5, %xmm6                           #139.5
+        vxorps    %xmm2, %xmm3, %xmm5                           #139.5
+        vxorps    %xmm0, %xmm1, %xmm4                           #139.5
+        vmovups   448(%rsp), %xmm1                              #139.5[spill]
+        vxorps    %xmm15, %xmm14, %xmm3                         #139.5
+        vmovups   64(%rsp), %xmm14                              #139.5[spill]
+        vxorps    272(%rsp), %xmm1, %xmm2                       #139.5[spill]
+        vxorps    288(%rsp), %xmm14, %xmm0                      #139.5[spill]
+        vxorps    %xmm1, %xmm2, %xmm2                           #139.5
+        vxorps    %xmm14, %xmm0, %xmm1                          #139.5
+        vmovups   80(%rsp), %xmm0                               #139.5[spill]
+        vxorps    304(%rsp), %xmm0, %xmm15                      #139.5[spill]
+        vxorps    %xmm0, %xmm15, %xmm0                          #139.5
+        vmovups   160(%rsp), %xmm15                             #139.5[spill]
+        vxorps    (%rsp), %xmm15, %xmm14                        #139.5[spill]
+        vxorps    %xmm15, %xmm14, %xmm14                        #139.5
+        vmovups   16(%rsp), %xmm15                              #138.3[spill]
                                 # LOE rax rbx r8 r12 edx xmm0 xmm1 xmm2 xmm3 xmm4 xmm5 xmm6 xmm7 xmm8 xmm9 xmm10 xmm11 xmm12 xmm13 xmm14 xmm15
 ..B1.148:                       # Preds ..B1.148 ..B1.147
                                 # Execution count [5.00e+00]
-        incl      %edx                                          #139.3
-        lea       (%rax,%rbx), %rsi                             #140.5
-        vmovdqu   %xmm12, 80(%rsi)                              #140.5
-        vmovdqu   %xmm14, 96(%rsi)                              #140.5
-        vmovdqu   %xmm13, 112(%rsi)                             #140.5
-        vmovdqu   %xmm15, 128(%rsi)                             #140.5
-        vmovdqu   %xmm0, 144(%rsi)                              #140.5
-        vmovdqu   %xmm2, 160(%rsi)                              #140.5
-        vmovdqu   %xmm1, 176(%rsi)                              #140.5
-        vmovdqu   %xmm4, 192(%rsi)                              #140.5
-        vmovdqu   %xmm3, 208(%rsi)                              #140.5
-        vmovdqu   %xmm6, 224(%rsi)                              #140.5
-        vmovdqu   %xmm5, 240(%rsi)                              #140.5
-        addq      $256, %rax                                    #139.3
-        vmovdqu   %xmm7, (%rsi)                                 #140.5
-        vmovdqu   %xmm8, 16(%rsi)                               #140.5
-        vmovdqu   %xmm9, 32(%rsi)                               #140.5
-        vmovdqu   %xmm10, 48(%rsi)                              #140.5
-        vmovdqu   %xmm11, 64(%rsi)                              #140.5
-        cmpl      $1000000, %edx                                #139.3
-        jb        ..B1.147      # Prob 82%                      #139.3
+        incl      %edx                                          #138.3
+        lea       (%rax,%rbx), %rsi                             #139.5
+        vmovups   %xmm8, 80(%rsi)                               #139.5
+        vmovups   %xmm7, 96(%rsi)                               #139.5
+        vmovups   %xmm15, 112(%rsi)                             #139.5
+        vmovups   %xmm6, 128(%rsi)                              #139.5
+        vmovups   %xmm5, 144(%rsi)                              #139.5
+        vmovups   %xmm4, 160(%rsi)                              #139.5
+        vmovups   %xmm3, 176(%rsi)                              #139.5
+        vmovups   %xmm2, 192(%rsi)                              #139.5
+        vmovups   %xmm1, 208(%rsi)                              #139.5
+        vmovups   %xmm0, 224(%rsi)                              #139.5
+        vmovups   %xmm14, 240(%rsi)                             #139.5
+        addq      $256, %rax                                    #138.3
+        vmovups   %xmm13, (%rsi)                                #139.5
+        vmovups   %xmm12, 16(%rsi)                              #139.5
+        vmovups   %xmm11, 32(%rsi)                              #139.5
+        vmovups   %xmm10, 48(%rsi)                              #139.5
+        vmovups   %xmm9, 64(%rsi)                               #139.5
+        cmpl      $1000000, %edx                                #138.3
+        jb        ..B1.147      # Prob 82%                      #138.3
                                 # LOE rax rbx r8 r12 edx xmm0 xmm1 xmm2 xmm3 xmm4 xmm5 xmm6 xmm7 xmm8 xmm9 xmm10 xmm11 xmm12 xmm13 xmm14 xmm15
 ..B1.149:                       # Preds ..B1.148
                                 # Execution count [1.00e+00]
-        rdtscp                                                   #143.9
-        shlq      $32, %rdx                                     #143.9
-        orq       %rdx, %rax                                    #143.9
+        rdtscp                                                   #142.9
+        shlq      $32, %rdx                                     #142.9
+        orq       %rdx, %rax                                    #142.9
                                 # LOE rax rbx r8 r12
 ..B1.150:                       # Preds ..B1.149
                                 # Execution count [1.00e+00]
-        subq      %r8, %rax                                     #144.3
-        movl      $.L_2__STRING.3, %edi                         #144.3
-        movq      %rax, %rsi                                    #144.3
-        xorl      %eax, %eax                                    #144.3
+        subq      %r8, %rax                                     #143.3
+        movl      $.L_2__STRING.3, %edi                         #143.3
+        movq      %rax, %rsi                                    #143.3
+        xorl      %eax, %eax                                    #143.3
 ..___tag_value_main.19:
 #       printf(const char *__restrict__, ...)
-        call      printf                                        #144.3
+        call      printf                                        #143.3
 ..___tag_value_main.20:
                                 # LOE rbx r12
 ..B1.151:                       # Preds ..B1.150
                                 # Execution count [1.00e+00]
-        movq      %rbx, %rdi                                    #145.3
-        movl      $16, %esi                                     #145.3
-        movl      $16000000, %edx                               #145.3
-        movq      %r12, %rcx                                    #145.3
+        movq      %rbx, %rdi                                    #144.3
+        movl      $16, %esi                                     #144.3
+        movl      $16000000, %edx                               #144.3
+        movq      %r12, %rcx                                    #144.3
 #       fwrite(const void *__restrict__, size_t, size_t, FILE *__restrict__)
-        call      fwrite                                        #145.3
+        call      fwrite                                        #144.3
                                 # LOE
 ..B1.152:                       # Preds ..B1.151
                                 # Execution count [1.00e+00]
-        xorl      %eax, %eax                                    #147.10
-        addq      $600, %rsp                                    #147.10
+        xorl      %eax, %eax                                    #146.10
+        addq      $600, %rsp                                    #146.10
 	.cfi_restore 3
-        popq      %rbx                                          #147.10
+        popq      %rbx                                          #146.10
 	.cfi_restore 15
-        popq      %r15                                          #147.10
+        popq      %r15                                          #146.10
 	.cfi_restore 14
-        popq      %r14                                          #147.10
+        popq      %r14                                          #146.10
 	.cfi_restore 13
-        popq      %r13                                          #147.10
+        popq      %r13                                          #146.10
 	.cfi_restore 12
-        popq      %r12                                          #147.10
-        movq      %rbp, %rsp                                    #147.10
-        popq      %rbp                                          #147.10
+        popq      %r12                                          #146.10
+        movq      %rbp, %rsp                                    #146.10
+        popq      %rbp                                          #146.10
 	.cfi_def_cfa 7, 8
 	.cfi_restore 6
-        ret                                                     #147.10
+        ret                                                     #146.10
         .align    16,0x90
                                 # LOE
 	.cfi_endproc
@@ -1770,9 +1770,8 @@ add:
 ..L33:
                                                          #39.47
         vpxor     %xmm1, %xmm0, %xmm2                           #40.17
-        vpxor     (%rdi), %xmm2, %xmm0                          #41.17
-        vmovdqu   %xmm0, (%rdi)                                 #42.4
-        ret                                                     #43.10
+        vpxor     %xmm0, %xmm2, %xmm0                           #41.10
+        ret                                                     #41.10
         .align    16,0x90
                                 # LOE
 	.cfi_endproc
@@ -1827,67 +1826,64 @@ add_bitslice:
 	.cfi_startproc
 ..___tag_value_add_bitslice.35:
 ..L36:
-                                                         #54.34
-        vmovdqa   %xmm0, %xmm8                                  #54.34
-        vmovdqu   120(%rsp), %xmm0                              #54.34
-        vpxor     376(%rsp), %xmm0, %xmm0                       #71.13
-        vmovdqu   %xmm0, -24(%rsp)                              #71.13[spill]
-        vpxor     136(%rsp), %xmm8, %xmm8                       #56.12
-        vpxor     %xmm0, %xmm0, %xmm0                           #56.12
-        vpxor     152(%rsp), %xmm1, %xmm1                       #57.12
-        vpxor     %xmm0, %xmm8, %xmm8                           #56.12
-        vpxor     168(%rsp), %xmm2, %xmm2                       #58.12
-        vpxor     %xmm8, %xmm1, %xmm1                           #57.12
-        vpxor     184(%rsp), %xmm3, %xmm3                       #59.12
-        vpxor     %xmm1, %xmm2, %xmm2                           #58.12
-        vpxor     200(%rsp), %xmm4, %xmm4                       #60.12
-        vpxor     %xmm2, %xmm3, %xmm3                           #59.12
-        vpxor     216(%rsp), %xmm5, %xmm5                       #61.12
-        vpxor     %xmm3, %xmm4, %xmm4                           #60.12
-        vpxor     232(%rsp), %xmm6, %xmm6                       #62.12
-        vpxor     %xmm4, %xmm5, %xmm5                           #61.12
-        vpxor     248(%rsp), %xmm7, %xmm7                       #63.12
-        vpxor     %xmm5, %xmm6, %xmm6                           #62.12
-        vmovdqu   8(%rsp), %xmm9                                #54.34
-        vpxor     %xmm6, %xmm7, %xmm7                           #63.12
-        vmovdqu   24(%rsp), %xmm10                              #54.34
-        vpxor     264(%rsp), %xmm9, %xmm9                       #64.12
-        vpxor     280(%rsp), %xmm10, %xmm10                     #65.12
-        vpxor     %xmm7, %xmm9, %xmm9                           #64.12
-        vmovdqu   40(%rsp), %xmm11                              #54.34
-        vpxor     %xmm9, %xmm10, %xmm10                         #65.12
-        vmovdqu   56(%rsp), %xmm12                              #54.34
-        vpxor     296(%rsp), %xmm11, %xmm11                     #66.13
-        vpxor     312(%rsp), %xmm12, %xmm12                     #67.13
-        vpxor     %xmm10, %xmm11, %xmm11                        #66.13
-        vmovdqu   72(%rsp), %xmm13                              #54.34
-        vpxor     %xmm11, %xmm12, %xmm12                        #67.13
-        vmovdqu   88(%rsp), %xmm14                              #54.34
-        vpxor     328(%rsp), %xmm13, %xmm13                     #68.13
-        vpxor     344(%rsp), %xmm14, %xmm14                     #69.13
-        vpxor     %xmm12, %xmm13, %xmm13                        #68.13
-        vmovdqu   104(%rsp), %xmm15                             #54.34
-        vpxor     %xmm13, %xmm14, %xmm14                        #69.13
-        vpxor     360(%rsp), %xmm15, %xmm15                     #70.13
-        vpxor     %xmm14, %xmm15, %xmm15                        #70.13
-        vpxor     -24(%rsp), %xmm15, %xmm0                      #71.13[spill]
-        vmovdqu   %xmm8, (%rdi)                                 #56.3
-        vmovdqu   %xmm1, 16(%rdi)                               #57.3
-        vmovdqu   %xmm2, 32(%rdi)                               #58.3
-        vmovdqu   %xmm3, 48(%rdi)                               #59.3
-        vmovdqu   %xmm4, 64(%rdi)                               #60.3
-        vmovdqu   %xmm5, 80(%rdi)                               #61.3
-        vmovdqu   %xmm6, 96(%rdi)                               #62.3
-        vmovdqu   %xmm7, 112(%rdi)                              #63.3
-        vmovdqu   %xmm9, 128(%rdi)                              #64.3
-        vmovdqu   %xmm10, 144(%rdi)                             #65.3
-        vmovdqu   %xmm11, 160(%rdi)                             #66.3
-        vmovdqu   %xmm12, 176(%rdi)                             #67.3
-        vmovdqu   %xmm13, 192(%rdi)                             #68.3
-        vmovdqu   %xmm14, 208(%rdi)                             #69.3
-        vmovdqu   %xmm15, 224(%rdi)                             #70.3
-        vmovdqu   %xmm0, 240(%rdi)                              #71.3
-        ret                                                     #72.1
+                                                         #52.34
+        vpxor     136(%rsp), %xmm0, %xmm15                      #54.12
+        vpxor     %xmm0, %xmm15, %xmm15                         #54.12
+        vpxor     152(%rsp), %xmm1, %xmm0                       #55.12
+        vpxor     %xmm1, %xmm0, %xmm1                           #55.12
+        vpxor     168(%rsp), %xmm2, %xmm0                       #56.12
+        vpxor     %xmm2, %xmm0, %xmm2                           #56.12
+        vpxor     184(%rsp), %xmm3, %xmm0                       #57.12
+        vpxor     %xmm3, %xmm0, %xmm3                           #57.12
+        vpxor     200(%rsp), %xmm4, %xmm0                       #58.12
+        vpxor     %xmm4, %xmm0, %xmm4                           #58.12
+        vpxor     216(%rsp), %xmm5, %xmm0                       #59.12
+        vpxor     %xmm5, %xmm0, %xmm5                           #59.12
+        vpxor     232(%rsp), %xmm6, %xmm0                       #60.12
+        vmovdqu   8(%rsp), %xmm8                                #52.34
+        vpxor     %xmm6, %xmm0, %xmm6                           #60.12
+        vpxor     248(%rsp), %xmm7, %xmm0                       #61.12
+        vmovdqu   24(%rsp), %xmm9                               #52.34
+        vpxor     %xmm7, %xmm0, %xmm7                           #61.12
+        vpxor     264(%rsp), %xmm8, %xmm0                       #62.12
+        vmovdqu   40(%rsp), %xmm10                              #52.34
+        vpxor     %xmm8, %xmm0, %xmm8                           #62.12
+        vpxor     280(%rsp), %xmm9, %xmm0                       #63.12
+        vmovdqu   56(%rsp), %xmm11                              #52.34
+        vpxor     %xmm9, %xmm0, %xmm9                           #63.12
+        vpxor     296(%rsp), %xmm10, %xmm0                      #64.13
+        vmovdqu   72(%rsp), %xmm12                              #52.34
+        vpxor     %xmm10, %xmm0, %xmm10                         #64.13
+        vpxor     312(%rsp), %xmm11, %xmm0                      #65.13
+        vmovdqu   88(%rsp), %xmm13                              #52.34
+        vpxor     %xmm11, %xmm0, %xmm11                         #65.13
+        vpxor     328(%rsp), %xmm12, %xmm0                      #66.13
+        vmovdqu   104(%rsp), %xmm14                             #52.34
+        vpxor     %xmm12, %xmm0, %xmm12                         #66.13
+        vpxor     344(%rsp), %xmm13, %xmm0                      #67.13
+        vmovdqu   %xmm1, 16(%rdi)                               #55.3
+        vpxor     %xmm13, %xmm0, %xmm13                         #67.13
+        vpxor     360(%rsp), %xmm14, %xmm0                      #68.13
+        vmovdqu   120(%rsp), %xmm1                              #69.13
+        vpxor     %xmm14, %xmm0, %xmm14                         #68.13
+        vpxor     376(%rsp), %xmm1, %xmm0                       #69.13
+        vmovdqu   %xmm2, 32(%rdi)                               #56.3
+        vpxor     %xmm1, %xmm0, %xmm2                           #69.13
+        vmovdqu   %xmm15, (%rdi)                                #54.3
+        vmovdqu   %xmm3, 48(%rdi)                               #57.3
+        vmovdqu   %xmm4, 64(%rdi)                               #58.3
+        vmovdqu   %xmm5, 80(%rdi)                               #59.3
+        vmovdqu   %xmm6, 96(%rdi)                               #60.3
+        vmovdqu   %xmm7, 112(%rdi)                              #61.3
+        vmovdqu   %xmm8, 128(%rdi)                              #62.3
+        vmovdqu   %xmm9, 144(%rdi)                              #63.3
+        vmovdqu   %xmm10, 160(%rdi)                             #64.3
+        vmovdqu   %xmm11, 176(%rdi)                             #65.3
+        vmovdqu   %xmm12, 192(%rdi)                             #66.3
+        vmovdqu   %xmm13, 208(%rdi)                             #67.3
+        vmovdqu   %xmm14, 224(%rdi)                             #68.3
+        vmovdqu   %xmm2, 240(%rdi)                              #69.3
+        ret                                                     #70.1
         .align    16,0x90
                                 # LOE
 	.cfi_endproc

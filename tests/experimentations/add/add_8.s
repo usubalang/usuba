@@ -1,7 +1,7 @@
 # mark_description "Intel(R) C Intel(R) 64 Compiler for applications running on Intel(R) 64, Version 17.0.2.174 Build 20170213";
 # mark_description "-Wall -Wextra -march=native -Wno-parentheses -fno-tree-vectorize -fstrict-aliasing -inline-max-size=10000 -i";
-# mark_description "nline-max-total-size=10000 -O3 -S -o cmp.s";
-	.file "cmp_add_AVX.c"
+# mark_description "nline-max-total-size=10000 -O3 -funroll-loops -unroll-agressive -S -o add_8.s";
+	.file "add_8.c"
 	.text
 ..TXTST0:
 # -- Begin  main
@@ -1137,23 +1137,23 @@ main:
                                 # LOE
 ..B1.96:                        # Preds ..B1.95
                                 # Execution count [1.00e+00]
-        xorl      %eax, %eax                                    #241.10
-        addq      $600, %rsp                                    #241.10
+        xorl      %eax, %eax                                    #232.10
+        addq      $600, %rsp                                    #232.10
 	.cfi_restore 3
-        popq      %rbx                                          #241.10
+        popq      %rbx                                          #232.10
 	.cfi_restore 15
-        popq      %r15                                          #241.10
+        popq      %r15                                          #232.10
 	.cfi_restore 14
-        popq      %r14                                          #241.10
+        popq      %r14                                          #232.10
 	.cfi_restore 13
-        popq      %r13                                          #241.10
+        popq      %r13                                          #232.10
 	.cfi_restore 12
-        popq      %r12                                          #241.10
-        movq      %rbp, %rsp                                    #241.10
-        popq      %rbp                                          #241.10
+        popq      %r12                                          #232.10
+        movq      %rbp, %rsp                                    #232.10
+        popq      %rbp                                          #232.10
 	.cfi_def_cfa 7, 8
 	.cfi_restore 6
-        ret                                                     #241.10
+        ret                                                     #232.10
         .align    16,0x90
                                 # LOE
 	.cfi_endproc
@@ -1168,7 +1168,7 @@ main:
 # mark_begin;
        .align    16,0x90
 	.globl add_pack
-# --- add_pack(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *)
+# --- add_pack(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *__restrict__)
 add_pack:
 # parameter 1: %xmm0
 # parameter 2: %xmm1
@@ -1192,7 +1192,7 @@ add_pack:
 	.cfi_startproc
 ..___tag_value_add_pack.33:
 ..L34:
-                                                         #15.30
+                                                         #15.39
         vpaddb    8(%rsp), %xmm0, %xmm8                         #16.12
         vpaddb    24(%rsp), %xmm1, %xmm9                        #17.12
         vpaddb    40(%rsp), %xmm2, %xmm10                       #18.12
@@ -1224,7 +1224,7 @@ add_pack:
 # mark_begin;
        .align    16,0x90
 	.globl add
-# --- add(__m128i, __m128i, __m128i *)
+# --- add(__m128i, __m128i, __m128i *__restrict__)
 add:
 # parameter 1: %xmm0
 # parameter 2: %xmm1
@@ -1234,7 +1234,7 @@ add:
 	.cfi_startproc
 ..___tag_value_add.36:
 ..L37:
-                                                         #27.47
+                                                         #27.56
         vpxor     %xmm1, %xmm0, %xmm5                           #28.21
         vmovdqu   (%rdi), %xmm6                                 #29.24
         vpand     %xmm1, %xmm0, %xmm2                           #30.10
@@ -1257,7 +1257,7 @@ add:
 # mark_begin;
        .align    16,0x90
 	.globl add_bitslice
-# --- add_bitslice(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *)
+# --- add_bitslice(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *__restrict__)
 add_bitslice:
 # parameter 1: %xmm0
 # parameter 2: %xmm1
@@ -1281,36 +1281,36 @@ add_bitslice:
 	.cfi_startproc
 ..___tag_value_add_bitslice.39:
 ..L40:
-                                                         #38.34
-        vmovdqu   8(%rsp), %xmm8                                #38.34
+                                                         #38.43
+        vmovdqu   8(%rsp), %xmm8                                #38.43
         vpxor     %xmm9, %xmm9, %xmm9                           #39.15
-        vmovdqu   24(%rsp), %xmm11                              #38.34
+        vmovdqu   24(%rsp), %xmm11                              #38.43
         vpxor     120(%rsp), %xmm7, %xmm10                      #47.12
         vpxor     %xmm8, %xmm0, %xmm7                           #40.12
         vpand     %xmm8, %xmm0, %xmm8                           #40.12
         vpxor     %xmm9, %xmm7, %xmm7                           #40.12
         vpxor     %xmm9, %xmm8, %xmm0                           #40.12
         vpxor     %xmm11, %xmm1, %xmm8                          #41.12
-        vmovdqu   40(%rsp), %xmm12                              #38.34
+        vmovdqu   40(%rsp), %xmm12                              #38.43
         vpand     %xmm11, %xmm1, %xmm1                          #41.12
         vpand     %xmm8, %xmm0, %xmm11                          #41.12
         vpxor     %xmm0, %xmm8, %xmm9                           #41.12
         vpxor     %xmm11, %xmm1, %xmm0                          #41.12
         vpxor     %xmm12, %xmm2, %xmm1                          #42.12
-        vmovdqu   56(%rsp), %xmm13                              #38.34
+        vmovdqu   56(%rsp), %xmm13                              #38.43
         vpand     %xmm12, %xmm2, %xmm2                          #42.12
         vpand     %xmm1, %xmm0, %xmm12                          #42.12
         vmovdqu   %xmm7, (%rdi)                                 #40.3
         vpxor     %xmm0, %xmm1, %xmm7                           #42.12
         vpxor     %xmm12, %xmm2, %xmm0                          #42.12
         vpxor     %xmm13, %xmm3, %xmm1                          #43.12
-        vmovdqu   72(%rsp), %xmm14                              #38.34
+        vmovdqu   72(%rsp), %xmm14                              #38.43
         vpand     %xmm13, %xmm3, %xmm3                          #43.12
         vpand     %xmm1, %xmm0, %xmm13                          #43.12
         vpxor     %xmm0, %xmm1, %xmm2                           #43.12
         vpxor     %xmm13, %xmm3, %xmm0                          #43.12
         vpxor     %xmm14, %xmm4, %xmm1                          #44.12
-        vmovdqu   88(%rsp), %xmm15                              #38.34
+        vmovdqu   88(%rsp), %xmm15                              #38.43
         vpand     %xmm14, %xmm4, %xmm4                          #44.12
         vpand     %xmm1, %xmm0, %xmm14                          #44.12
         vpxor     %xmm0, %xmm1, %xmm3                           #44.12
@@ -1349,7 +1349,7 @@ add_bitslice:
 # mark_begin;
        .align    16,0x90
 	.globl add_lookahead
-# --- add_lookahead(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *)
+# --- add_lookahead(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *__restrict__)
 add_lookahead:
 # parameter 1: %xmm0
 # parameter 2: %xmm1
@@ -1373,25 +1373,25 @@ add_lookahead:
 	.cfi_startproc
 ..___tag_value_add_lookahead.42:
 ..L43:
-                                                         #54.35
-        vmovdqa   %xmm1, %xmm13                                 #54.35
-        vmovdqu   8(%rsp), %xmm14                               #54.35
-        vmovdqa   %xmm0, %xmm15                                 #54.35
-        vmovdqu   24(%rsp), %xmm12                              #54.35
+                                                         #54.44
+        vmovdqa   %xmm1, %xmm13                                 #54.44
+        vmovdqu   8(%rsp), %xmm14                               #54.44
+        vmovdqa   %xmm0, %xmm15                                 #54.44
+        vmovdqu   24(%rsp), %xmm12                              #54.44
         vpxor     %xmm14, %xmm15, %xmm0                         #55.21
         vpand     %xmm14, %xmm15, %xmm15                        #64.21
         vpxor     %xmm12, %xmm13, %xmm14                        #56.21
-        vmovdqu   40(%rsp), %xmm1                               #54.35
+        vmovdqu   40(%rsp), %xmm1                               #54.44
         vpand     %xmm12, %xmm13, %xmm13                        #65.21
         vmovdqu   %xmm0, (%rdi)                                 #80.3
         vpxor     %xmm15, %xmm14, %xmm0                         #81.17
-        vmovdqu   56(%rsp), %xmm8                               #54.35
+        vmovdqu   56(%rsp), %xmm8                               #54.44
         vpxor     %xmm1, %xmm2, %xmm12                          #57.21
-        vmovdqu   72(%rsp), %xmm11                              #54.35
+        vmovdqu   72(%rsp), %xmm11                              #54.44
         vpand     %xmm1, %xmm2, %xmm2                           #66.21
-        vmovdqu   88(%rsp), %xmm9                               #54.35
+        vmovdqu   88(%rsp), %xmm9                               #54.44
         vpxor     %xmm8, %xmm3, %xmm1                           #58.21
-        vmovdqu   104(%rsp), %xmm10                             #54.35
+        vmovdqu   104(%rsp), %xmm10                             #54.44
         vpand     %xmm8, %xmm3, %xmm3                           #67.21
         vmovdqu   %xmm0, 16(%rdi)                               #81.3
         vpand     %xmm15, %xmm14, %xmm0                         #73.24
@@ -1487,7 +1487,7 @@ add_lookahead:
 # mark_begin;
        .align    16,0x90
 	.globl add_lookahead_reschedul
-# --- add_lookahead_reschedul(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *)
+# --- add_lookahead_reschedul(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *__restrict__)
 add_lookahead_reschedul:
 # parameter 1: %xmm0
 # parameter 2: %xmm1
@@ -1511,20 +1511,20 @@ add_lookahead_reschedul:
 	.cfi_startproc
 ..___tag_value_add_lookahead_reschedul.45:
 ..L46:
-                                                         #95.35
-        vmovdqa   %xmm1, %xmm13                                 #95.35
-        vmovdqu   8(%rsp), %xmm12                               #95.35
-        vmovdqu   24(%rsp), %xmm14                              #95.35
+                                                         #95.44
+        vmovdqa   %xmm1, %xmm13                                 #95.44
+        vmovdqu   8(%rsp), %xmm12                               #95.44
+        vmovdqu   24(%rsp), %xmm14                              #95.44
         vpxor     %xmm12, %xmm0, %xmm15                         #96.21
         vmovdqu   %xmm15, (%rdi)                                #97.3
         vpand     %xmm12, %xmm0, %xmm0                          #100.21
         vpxor     %xmm14, %xmm13, %xmm15                        #101.21
         vpand     %xmm14, %xmm13, %xmm14                        #105.21
-        vmovdqu   40(%rsp), %xmm9                               #95.35
+        vmovdqu   40(%rsp), %xmm9                               #95.44
         vpand     %xmm0, %xmm15, %xmm12                         #106.24
         vpxor     %xmm0, %xmm15, %xmm10                         #103.17
         vpxor     %xmm9, %xmm2, %xmm13                          #107.21
-        vmovdqu   56(%rsp), %xmm11                              #95.35
+        vmovdqu   56(%rsp), %xmm11                              #95.44
         vmovdqu   %xmm10, 16(%rdi)                              #103.3
         vpand     %xmm9, %xmm2, %xmm10                          #110.21
         vpor      %xmm12, %xmm14, %xmm9                         #106.24
@@ -1537,7 +1537,7 @@ add_lookahead_reschedul:
         vpor      %xmm12, %xmm10, %xmm12                        #111.24
         vpand     %xmm0, %xmm3, %xmm2                           #111.35
         vpor      %xmm2, %xmm12, %xmm3                          #111.35
-        vmovdqu   72(%rsp), %xmm1                               #95.35
+        vmovdqu   72(%rsp), %xmm1                               #95.44
         vpxor     %xmm3, %xmm9, %xmm12                          #113.17
         vpxor     120(%rsp), %xmm7, %xmm7                       #131.21
         vpand     %xmm13, %xmm9, %xmm3                          #116.32
@@ -1553,7 +1553,7 @@ add_lookahead_reschedul:
         vpand     %xmm0, %xmm2, %xmm3                           #116.49
         vpor      %xmm3, %xmm1, %xmm7                           #116.49
         vpand     %xmm9, %xmm12, %xmm1                          #121.32
-        vmovdqu   88(%rsp), %xmm8                               #95.35
+        vmovdqu   88(%rsp), %xmm8                               #95.44
         vpand     %xmm11, %xmm12, %xmm3                         #121.24
         vpxor     %xmm7, %xmm12, %xmm2                          #118.17
         vpxor     %xmm8, %xmm5, %xmm7                           #122.21

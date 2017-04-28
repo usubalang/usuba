@@ -1,6 +1,6 @@
 # mark_description "Intel(R) C Intel(R) 64 Compiler for applications running on Intel(R) 64, Version 17.0.2.174 Build 20170213";
 # mark_description "-Wall -Wextra -march=native -Wno-parentheses -fno-tree-vectorize -fstrict-aliasing -inline-max-size=10000 -i";
-# mark_description "nline-max-total-size=10000 -O3 -S -o add_16.s";
+# mark_description "nline-max-total-size=10000 -O3 -funroll-loops -unroll-agressive -S -o add_16.s";
 	.file "add_16.c"
 	.text
 ..TXTST0:
@@ -278,7 +278,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #166.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #166.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #166.8
-        vmovups   %xmm6, 1008(%rsp)                             #166.8[spill]
+        vmovups   %xmm6, 992(%rsp)                              #166.8[spill]
 #       rand(void)
         call      rand                                          #167.22
                                 # LOE rbx r12 eax
@@ -318,7 +318,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #167.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #167.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #167.8
-        vmovups   %xmm6, 992(%rsp)                              #167.8[spill]
+        vmovups   %xmm6, 976(%rsp)                              #167.8[spill]
 #       rand(void)
         call      rand                                          #168.22
                                 # LOE rbx r12 eax
@@ -358,7 +358,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #168.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #168.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #168.8
-        vmovups   %xmm6, 976(%rsp)                              #168.8[spill]
+        vmovups   %xmm6, 960(%rsp)                              #168.8[spill]
 #       rand(void)
         call      rand                                          #169.22
                                 # LOE rbx r12 eax
@@ -398,7 +398,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #169.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #169.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #169.8
-        vmovups   %xmm6, 912(%rsp)                              #169.8[spill]
+        vmovups   %xmm6, 624(%rsp)                              #169.8[spill]
 #       rand(void)
         call      rand                                          #170.22
                                 # LOE rbx r12 eax
@@ -438,7 +438,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #170.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #170.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #170.8
-        vmovups   %xmm6, 928(%rsp)                              #170.8[spill]
+        vmovups   %xmm6, 912(%rsp)                              #170.8[spill]
 #       rand(void)
         call      rand                                          #171.23
                                 # LOE rbx r12 eax
@@ -478,7 +478,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #171.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #171.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #171.9
-        vmovups   %xmm6, 944(%rsp)                              #171.9[spill]
+        vmovups   %xmm6, 928(%rsp)                              #171.9[spill]
 #       rand(void)
         call      rand                                          #172.23
                                 # LOE rbx r12 eax
@@ -518,7 +518,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #172.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #172.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #172.9
-        vmovups   %xmm6, 960(%rsp)                              #172.9[spill]
+        vmovups   %xmm6, 944(%rsp)                              #172.9[spill]
 #       rand(void)
         call      rand                                          #173.23
                                 # LOE rbx r12 eax
@@ -558,7 +558,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #173.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #173.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #173.9
-        vmovups   %xmm6, 672(%rsp)                              #173.9[spill]
+        vmovups   %xmm6, 688(%rsp)                              #173.9[spill]
 #       rand(void)
         call      rand                                          #174.23
                                 # LOE rbx r12 eax
@@ -598,7 +598,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #174.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #174.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #174.9
-        vmovups   %xmm6, 656(%rsp)                              #174.9[spill]
+        vmovups   %xmm6, 672(%rsp)                              #174.9[spill]
 #       rand(void)
         call      rand                                          #175.23
                                 # LOE rbx r12 eax
@@ -638,7 +638,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #175.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #175.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #175.9
-        vmovups   %xmm6, 624(%rsp)                              #175.9[spill]
+        vmovups   %xmm6, 640(%rsp)                              #175.9[spill]
 #       rand(void)
         call      rand                                          #176.23
                                 # LOE rbx r12 eax
@@ -678,7 +678,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #176.9
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #176.9
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #176.9
-        vmovups   %xmm6, 640(%rsp)                              #176.9[spill]
+        vmovups   %xmm6, 656(%rsp)                              #176.9[spill]
 #       rand(void)
         call      rand                                          #177.23
                                 # LOE rbx r12 eax
@@ -798,7 +798,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #180.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #180.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #180.8
-        vmovups   %xmm6, 688(%rsp)                              #180.8[spill]
+        vmovups   %xmm6, 1008(%rsp)                             #180.8[spill]
 #       rand(void)
         call      rand                                          #181.22
                                 # LOE rbx r12 eax
@@ -838,7 +838,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #181.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #181.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #181.8
-        vmovups   %xmm6, 704(%rsp)                              #181.8[spill]
+        vmovups   %xmm6, 736(%rsp)                              #181.8[spill]
 #       rand(void)
         call      rand                                          #182.22
                                 # LOE rbx r12 eax
@@ -918,7 +918,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #183.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #183.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #183.8
-        vmovups   %xmm6, 736(%rsp)                              #183.8[spill]
+        vmovups   %xmm6, 752(%rsp)                              #183.8[spill]
 #       rand(void)
         call      rand                                          #184.22
                                 # LOE rbx r12 eax
@@ -958,7 +958,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #184.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #184.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #184.8
-        vmovups   %xmm6, 752(%rsp)                              #184.8[spill]
+        vmovups   %xmm6, 768(%rsp)                              #184.8[spill]
 #       rand(void)
         call      rand                                          #185.22
                                 # LOE rbx r12 eax
@@ -998,7 +998,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #185.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #185.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #185.8
-        vmovups   %xmm6, 768(%rsp)                              #185.8[spill]
+        vmovups   %xmm6, 784(%rsp)                              #185.8[spill]
 #       rand(void)
         call      rand                                          #186.22
                                 # LOE rbx r12 eax
@@ -1038,7 +1038,7 @@ main:
         vpunpcklqdq %xmm1, %xmm0, %xmm4                         #186.8
         vpunpcklqdq %xmm3, %xmm2, %xmm5                         #186.8
         vshufps   $136, %xmm5, %xmm4, %xmm6                     #186.8
-        vmovups   %xmm6, 784(%rsp)                              #186.8[spill]
+        vmovups   %xmm6, 704(%rsp)                              #186.8[spill]
 #       rand(void)
         call      rand                                          #187.22
                                 # LOE rbx r12 eax
@@ -1416,63 +1416,61 @@ main:
                                 # LOE rbx r8 r12
 ..B1.139:                       # Preds ..B1.295
                                 # Execution count [9.00e-01]
-        vmovups   1104(%rsp), %xmm14                            #206.5[spill]
-        vmovups   1088(%rsp), %xmm13                            #206.5[spill]
-        vmovups   1056(%rsp), %xmm12                            #206.5[spill]
-        vmovups   1024(%rsp), %xmm11                            #206.5[spill]
-        vmovups   1008(%rsp), %xmm10                            #206.5[spill]
-        vmovups   992(%rsp), %xmm9                              #206.5[spill]
-        vmovups   976(%rsp), %xmm8                              #206.5[spill]
-        vmovups   912(%rsp), %xmm7                              #206.5[spill]
-        vmovups   928(%rsp), %xmm6                              #206.5[spill]
-        vmovups   944(%rsp), %xmm5                              #206.5[spill]
-        vmovups   960(%rsp), %xmm4                              #206.5[spill]
-        vmovups   848(%rsp), %xmm3                              #206.5[spill]
-        vmovups   864(%rsp), %xmm2                              #206.5[spill]
-        vmovups   880(%rsp), %xmm1                              #206.5[spill]
-        vmovups   896(%rsp), %xmm0                              #206.5[spill]
-        vmovups   1072(%rsp), %xmm15                            #206.5[spill]
-        vpaddb    1040(%rsp), %xmm14, %xmm14                    #206.5[spill]
-        vpaddb    688(%rsp), %xmm13, %xmm13                     #206.5[spill]
-        vpaddb    704(%rsp), %xmm12, %xmm12                     #206.5[spill]
-        vpaddb    720(%rsp), %xmm11, %xmm11                     #206.5[spill]
-        vpaddb    736(%rsp), %xmm10, %xmm10                     #206.5[spill]
-        vpaddb    752(%rsp), %xmm9, %xmm9                       #206.5[spill]
-        vpaddb    768(%rsp), %xmm8, %xmm8                       #206.5[spill]
-        vpaddb    784(%rsp), %xmm7, %xmm7                       #206.5[spill]
-        vpaddb    800(%rsp), %xmm6, %xmm6                       #206.5[spill]
-        vpaddb    816(%rsp), %xmm5, %xmm5                       #206.5[spill]
-        vpaddb    832(%rsp), %xmm4, %xmm4                       #206.5[spill]
-        vpaddb    672(%rsp), %xmm3, %xmm3                       #206.5[spill]
-        vpaddb    656(%rsp), %xmm2, %xmm2                       #206.5[spill]
-        vpaddb    624(%rsp), %xmm1, %xmm1                       #206.5[spill]
-        vpaddb    640(%rsp), %xmm0, %xmm0                       #206.5[spill]
-        vpaddb    592(%rsp), %xmm15, %xmm15                     #206.5[spill]
-                                # LOE rax rbx r8 r12 edx xmm0 xmm1 xmm2 xmm3 xmm4 xmm5 xmm6 xmm7 xmm8 xmm9 xmm10 xmm11 xmm12 xmm13 xmm14 xmm15
+        vmovups   1104(%rsp), %xmm12                            #206.5[spill]
+        vmovups   1088(%rsp), %xmm11                            #206.5[spill]
+        vmovups   1056(%rsp), %xmm10                            #206.5[spill]
+        vmovups   1024(%rsp), %xmm9                             #206.5[spill]
+        vmovups   992(%rsp), %xmm8                              #206.5[spill]
+        vmovups   976(%rsp), %xmm7                              #206.5[spill]
+        vmovups   960(%rsp), %xmm6                              #206.5[spill]
+        vmovups   1072(%rsp), %xmm5                             #206.5[spill]
+        vmovups   912(%rsp), %xmm4                              #206.5[spill]
+        vmovups   928(%rsp), %xmm3                              #206.5[spill]
+        vmovups   944(%rsp), %xmm2                              #206.5[spill]
+        vmovups   848(%rsp), %xmm1                              #206.5[spill]
+        vmovups   864(%rsp), %xmm0                              #206.5[spill]
+        vmovups   880(%rsp), %xmm14                             #206.5[spill]
+        vmovups   896(%rsp), %xmm13                             #206.5[spill]
+        vpaddw    1040(%rsp), %xmm12, %xmm12                    #206.5[spill]
+        vpaddw    1008(%rsp), %xmm11, %xmm11                    #206.5[spill]
+        vpaddw    736(%rsp), %xmm10, %xmm10                     #206.5[spill]
+        vpaddw    720(%rsp), %xmm9, %xmm9                       #206.5[spill]
+        vpaddw    752(%rsp), %xmm8, %xmm8                       #206.5[spill]
+        vpaddw    768(%rsp), %xmm7, %xmm7                       #206.5[spill]
+        vpaddw    784(%rsp), %xmm6, %xmm6                       #206.5[spill]
+        vpaddw    592(%rsp), %xmm5, %xmm5                       #206.5[spill]
+        vpaddw    800(%rsp), %xmm4, %xmm4                       #206.5[spill]
+        vpaddw    816(%rsp), %xmm3, %xmm3                       #206.5[spill]
+        vpaddw    832(%rsp), %xmm2, %xmm2                       #206.5[spill]
+        vpaddw    688(%rsp), %xmm1, %xmm1                       #206.5[spill]
+        vpaddw    672(%rsp), %xmm0, %xmm0                       #206.5[spill]
+        vpaddw    640(%rsp), %xmm14, %xmm14                     #206.5[spill]
+        vpaddw    656(%rsp), %xmm13, %xmm13                     #206.5[spill]
+                                # LOE rax rbx r8 r12 edx xmm0 xmm1 xmm2 xmm3 xmm4 xmm5 xmm6 xmm7 xmm8 xmm9 xmm10 xmm11 xmm12 xmm13 xmm14
 ..B1.140:                       # Preds ..B1.140 ..B1.139
                                 # Execution count [5.00e+00]
         incl      %edx                                          #205.3
         lea       (%rax,%rbx), %rsi                             #206.5
-        vmovdqu   %xmm9, 80(%rsi)                               #206.5
-        vmovdqu   %xmm8, 96(%rsi)                               #206.5
-        vmovdqu   %xmm7, 112(%rsi)                              #206.5
-        vmovdqu   %xmm6, 128(%rsi)                              #206.5
-        vmovdqu   %xmm5, 144(%rsi)                              #206.5
-        vmovdqu   %xmm4, 160(%rsi)                              #206.5
-        vmovdqu   %xmm3, 176(%rsi)                              #206.5
-        vmovdqu   %xmm2, 192(%rsi)                              #206.5
-        vmovdqu   %xmm1, 208(%rsi)                              #206.5
-        vmovdqu   %xmm0, 224(%rsi)                              #206.5
-        vmovdqu   %xmm15, 240(%rsi)                             #206.5
+        vmovdqu   %xmm7, 80(%rsi)                               #206.5
+        vmovdqu   %xmm6, 96(%rsi)                               #206.5
+        vmovdqu   %xmm5, 112(%rsi)                              #206.5
+        vmovdqu   %xmm4, 128(%rsi)                              #206.5
+        vmovdqu   %xmm3, 144(%rsi)                              #206.5
+        vmovdqu   %xmm2, 160(%rsi)                              #206.5
+        vmovdqu   %xmm1, 176(%rsi)                              #206.5
+        vmovdqu   %xmm0, 192(%rsi)                              #206.5
+        vmovdqu   %xmm14, 208(%rsi)                             #206.5
+        vmovdqu   %xmm13, 224(%rsi)                             #206.5
+        vmovdqu   %xmm5, 240(%rsi)                              #206.5
         addq      $256, %rax                                    #205.3
-        vmovdqu   %xmm14, (%rsi)                                #206.5
-        vmovdqu   %xmm13, 16(%rsi)                              #206.5
-        vmovdqu   %xmm12, 32(%rsi)                              #206.5
-        vmovdqu   %xmm11, 48(%rsi)                              #206.5
-        vmovdqu   %xmm10, 64(%rsi)                              #206.5
+        vmovdqu   %xmm12, (%rsi)                                #206.5
+        vmovdqu   %xmm11, 16(%rsi)                              #206.5
+        vmovdqu   %xmm10, 32(%rsi)                              #206.5
+        vmovdqu   %xmm9, 48(%rsi)                               #206.5
+        vmovdqu   %xmm8, 64(%rsi)                               #206.5
         cmpl      $1000000, %edx                                #205.3
         jb        ..B1.139      # Prob 82%                      #205.3
-                                # LOE rax rbx r8 r12 edx xmm0 xmm1 xmm2 xmm3 xmm4 xmm5 xmm6 xmm7 xmm8 xmm9 xmm10 xmm11 xmm12 xmm13 xmm14 xmm15
+                                # LOE rax rbx r8 r12 edx xmm0 xmm1 xmm2 xmm3 xmm4 xmm5 xmm6 xmm7 xmm8 xmm9 xmm10 xmm11 xmm12 xmm13 xmm14
 ..B1.141:                       # Preds ..B1.140
                                 # Execution count [1.00e+00]
         rdtscp                                                   #209.9
@@ -1530,158 +1528,158 @@ main:
                                 # Execution count [9.00e-01]
         vmovups   1072(%rsp), %xmm9                             #216.5[spill]
         vpxor     592(%rsp), %xmm9, %xmm8                       #216.5[spill]
-        vmovdqu   %xmm8, 16(%rsp)                               #216.5[spill]
         vmovups   1040(%rsp), %xmm6                             #216.5[spill]
         vmovups   1104(%rsp), %xmm7                             #216.5[spill]
-        vmovups   688(%rsp), %xmm4                              #216.5[spill]
+        vmovups   720(%rsp), %xmm3                              #216.5[spill]
         vpxor     %xmm6, %xmm7, %xmm15                          #216.5
-        vmovups   1088(%rsp), %xmm5                             #216.5[spill]
+        vmovups   1024(%rsp), %xmm4                             #216.5[spill]
         vpand     %xmm6, %xmm7, %xmm13                          #216.5
-        vmovups   704(%rsp), %xmm2                              #216.5[spill]
-        vpxor     %xmm4, %xmm5, %xmm14                          #216.5
-        vmovups   1056(%rsp), %xmm3                             #216.5[spill]
-        vpand     %xmm4, %xmm5, %xmm11                          #216.5
-        vmovups   720(%rsp), %xmm0                              #216.5[spill]
-        vpxor     %xmm2, %xmm3, %xmm12                          #216.5
-        vmovups   1024(%rsp), %xmm1                             #216.5[spill]
-        vpand     %xmm2, %xmm3, %xmm2                           #216.5
-        vmovups   736(%rsp), %xmm8                              #216.5[spill]
-        vpxor     %xmm0, %xmm1, %xmm10                          #216.5
-        vmovups   1008(%rsp), %xmm9                             #216.5[spill]
-        vpand     %xmm0, %xmm1, %xmm4                           #216.5
-        vmovups   752(%rsp), %xmm1                              #216.5[spill]
-        vpxor     %xmm8, %xmm9, %xmm3                           #216.5
-        vmovups   992(%rsp), %xmm7                              #216.5[spill]
-        vpand     %xmm8, %xmm9, %xmm6                           #216.5
-        vmovups   768(%rsp), %xmm9                              #216.5[spill]
-        vpxor     %xmm1, %xmm7, %xmm5                           #216.5
-        vmovups   976(%rsp), %xmm0                              #216.5[spill]
-        vpand     %xmm1, %xmm7, %xmm8                           #216.5
-        vpand     %xmm9, %xmm0, %xmm1                           #216.5
-        vpxor     %xmm9, %xmm0, %xmm7                           #216.5
-        vmovdqu   %xmm1, 272(%rsp)                              #216.5[spill]
-        vmovups   784(%rsp), %xmm1                              #216.5[spill]
+        vmovups   1008(%rsp), %xmm2                             #216.5[spill]
+        vpxor     %xmm3, %xmm4, %xmm10                          #216.5
+        vmovups   1088(%rsp), %xmm5                             #216.5[spill]
+        vpand     %xmm3, %xmm4, %xmm7                           #216.5
+        vmovups   736(%rsp), %xmm0                              #216.5[spill]
+        vpxor     %xmm2, %xmm5, %xmm14                          #216.5
+        vmovups   1056(%rsp), %xmm1                             #216.5[spill]
+        vpand     %xmm2, %xmm5, %xmm11                          #216.5
+        vmovdqu   %xmm8, 16(%rsp)                               #216.5[spill]
+        vpxor     %xmm0, %xmm1, %xmm12                          #216.5
+        vmovups   752(%rsp), %xmm8                              #216.5[spill]
+        vpand     %xmm0, %xmm1, %xmm5                           #216.5
+        vmovups   992(%rsp), %xmm9                              #216.5[spill]
+        vmovups   784(%rsp), %xmm3                              #216.5[spill]
+        vpxor     %xmm8, %xmm9, %xmm6                           #216.5
+        vmovups   960(%rsp), %xmm4                              #216.5[spill]
+        vpand     %xmm8, %xmm9, %xmm8                           #216.5
+        vmovups   768(%rsp), %xmm1                              #216.5[spill]
+        vpand     %xmm3, %xmm4, %xmm9                           #216.5
+        vmovups   976(%rsp), %xmm2                              #216.5[spill]
+        vmovdqu   %xmm9, 272(%rsp)                              #216.5[spill]
+        vpxor     %xmm1, %xmm2, %xmm0                           #216.5
+        vmovups   704(%rsp), %xmm9                              #216.5[spill]
+        vpand     %xmm1, %xmm2, %xmm1                           #216.5
+        vpxor     %xmm3, %xmm4, %xmm2                           #216.5
+        vmovups   624(%rsp), %xmm3                              #216.5[spill]
+        vpxor     %xmm9, %xmm3, %xmm4                           #216.5
+        vmovdqu   %xmm4, 336(%rsp)                              #216.5[spill]
+        vpand     %xmm9, %xmm3, %xmm4                           #216.5
+        vmovdqu   %xmm4, 256(%rsp)                              #216.5[spill]
+        vmovups   800(%rsp), %xmm4                              #216.5[spill]
         vmovups   912(%rsp), %xmm9                              #216.5[spill]
-        vpxor     %xmm1, %xmm9, %xmm0                           #216.5
-        vmovdqu   %xmm0, 336(%rsp)                              #216.5[spill]
-        vpand     %xmm1, %xmm9, %xmm0                           #216.5
-        vmovdqu   %xmm0, 256(%rsp)                              #216.5[spill]
-        vmovups   800(%rsp), %xmm0                              #216.5[spill]
-        vmovups   928(%rsp), %xmm1                              #216.5[spill]
-        vpxor     %xmm0, %xmm1, %xmm9                           #216.5
-        vmovdqu   %xmm9, 240(%rsp)                              #216.5[spill]
-        vpand     %xmm0, %xmm1, %xmm9                           #216.5
-        vmovdqu   %xmm9, 224(%rsp)                              #216.5[spill]
-        vmovups   816(%rsp), %xmm9                              #216.5[spill]
-        vmovups   944(%rsp), %xmm0                              #216.5[spill]
-        vpxor     %xmm9, %xmm0, %xmm1                           #216.5
-        vmovdqu   %xmm1, 208(%rsp)                              #216.5[spill]
-        vpand     %xmm9, %xmm0, %xmm1                           #216.5
-        vmovdqu   %xmm1, 192(%rsp)                              #216.5[spill]
-        vmovups   832(%rsp), %xmm1                              #216.5[spill]
-        vmovups   960(%rsp), %xmm9                              #216.5[spill]
-        vpxor     %xmm1, %xmm9, %xmm0                           #216.5
-        vmovdqu   %xmm0, 176(%rsp)                              #216.5[spill]
-        vpand     %xmm1, %xmm9, %xmm0                           #216.5
-        vmovdqu   %xmm0, 160(%rsp)                              #216.5[spill]
-        vmovups   672(%rsp), %xmm1                              #216.5[spill]
-        vmovups   848(%rsp), %xmm0                              #216.5[spill]
-        vpxor     %xmm0, %xmm1, %xmm9                           #216.5
-        vmovdqu   %xmm9, 144(%rsp)                              #216.5[spill]
-        vpand     %xmm0, %xmm1, %xmm9                           #216.5
-        vmovdqu   %xmm9, 128(%rsp)                              #216.5[spill]
-        vmovups   656(%rsp), %xmm0                              #216.5[spill]
-        vmovups   864(%rsp), %xmm9                              #216.5[spill]
-        vpxor     %xmm9, %xmm0, %xmm1                           #216.5
-        vmovdqu   %xmm1, 112(%rsp)                              #216.5[spill]
-        vpand     %xmm9, %xmm0, %xmm1                           #216.5
-        vmovdqu   %xmm1, 96(%rsp)                               #216.5[spill]
-        vmovups   624(%rsp), %xmm9                              #216.5[spill]
-        vmovups   880(%rsp), %xmm1                              #216.5[spill]
-        vpxor     %xmm1, %xmm9, %xmm0                           #216.5
-        vmovdqu   %xmm0, 80(%rsp)                               #216.5[spill]
-        vpand     %xmm1, %xmm9, %xmm0                           #216.5
-        vmovups   640(%rsp), %xmm9                              #216.5[spill]
-        vmovups   896(%rsp), %xmm1                              #216.5[spill]
-        vmovdqu   %xmm0, 48(%rsp)                               #216.5[spill]
-        vpxor     %xmm1, %xmm9, %xmm0                           #216.5
-        vpand     %xmm1, %xmm9, %xmm1                           #216.5
-        vpxor     %xmm9, %xmm9, %xmm9                           #216.5
+        vpxor     %xmm4, %xmm9, %xmm3                           #216.5
+        vmovdqu   %xmm3, 240(%rsp)                              #216.5[spill]
+        vpand     %xmm4, %xmm9, %xmm3                           #216.5
+        vmovdqu   %xmm3, 224(%rsp)                              #216.5[spill]
+        vmovups   816(%rsp), %xmm3                              #216.5[spill]
+        vmovups   928(%rsp), %xmm4                              #216.5[spill]
+        vpxor     %xmm3, %xmm4, %xmm9                           #216.5
+        vmovdqu   %xmm9, 208(%rsp)                              #216.5[spill]
+        vpand     %xmm3, %xmm4, %xmm9                           #216.5
+        vmovdqu   %xmm9, 192(%rsp)                              #216.5[spill]
+        vmovups   832(%rsp), %xmm9                              #216.5[spill]
+        vmovups   944(%rsp), %xmm3                              #216.5[spill]
+        vpxor     %xmm9, %xmm3, %xmm4                           #216.5
+        vmovdqu   %xmm4, 176(%rsp)                              #216.5[spill]
+        vpand     %xmm9, %xmm3, %xmm4                           #216.5
+        vmovdqu   %xmm4, 160(%rsp)                              #216.5[spill]
+        vmovups   688(%rsp), %xmm9                              #216.5[spill]
+        vmovups   848(%rsp), %xmm4                              #216.5[spill]
+        vpxor     %xmm4, %xmm9, %xmm3                           #216.5
+        vmovdqu   %xmm3, 144(%rsp)                              #216.5[spill]
+        vpand     %xmm4, %xmm9, %xmm3                           #216.5
+        vmovdqu   %xmm3, 128(%rsp)                              #216.5[spill]
+        vmovups   672(%rsp), %xmm4                              #216.5[spill]
+        vmovups   864(%rsp), %xmm3                              #216.5[spill]
+        vpxor     %xmm3, %xmm4, %xmm9                           #216.5
+        vmovdqu   %xmm9, 112(%rsp)                              #216.5[spill]
+        vpand     %xmm3, %xmm4, %xmm9                           #216.5
+        vmovdqu   %xmm9, 96(%rsp)                               #216.5[spill]
+        vmovups   640(%rsp), %xmm3                              #216.5[spill]
+        vmovups   880(%rsp), %xmm9                              #216.5[spill]
+        vpxor     %xmm9, %xmm3, %xmm4                           #216.5
+        vmovdqu   %xmm4, 80(%rsp)                               #216.5[spill]
+        vpand     %xmm9, %xmm3, %xmm4                           #216.5
+        vmovdqu   %xmm4, 48(%rsp)                               #216.5[spill]
+        vmovups   656(%rsp), %xmm9                              #216.5[spill]
+        vmovups   896(%rsp), %xmm4                              #216.5[spill]
+        vpxor     %xmm4, %xmm9, %xmm3                           #216.5
+        vpand     %xmm4, %xmm9, %xmm4                           #216.5
         vmovdqu   %xmm15, (%rsp)                                #216.5[spill]
+        vpxor     %xmm9, %xmm9, %xmm9                           #216.5
         vpxor     %xmm9, %xmm15, %xmm15                         #216.5
         vpxor     %xmm9, %xmm13, %xmm9                          #216.5
         vmovdqu   %xmm13, 416(%rsp)                             #216.5[spill]
         vpxor     %xmm9, %xmm14, %xmm13                         #216.5
-        vmovdqu   %xmm14, 448(%rsp)                             #216.5[spill]
+        vmovdqu   %xmm14, 432(%rsp)                             #216.5[spill]
         vpand     %xmm14, %xmm9, %xmm14                         #216.5
         vpxor     %xmm14, %xmm11, %xmm9                         #216.5
         vmovdqu   %xmm11, 400(%rsp)                             #216.5[spill]
         vpxor     %xmm9, %xmm12, %xmm11                         #216.5
         vmovdqu   %xmm12, 480(%rsp)                             #216.5[spill]
         vpand     %xmm12, %xmm9, %xmm12                         #216.5
-        vmovdqu   %xmm2, 352(%rsp)                              #216.5[spill]
-        vpxor     %xmm12, %xmm2, %xmm2                          #216.5
+        vmovdqu   %xmm5, 352(%rsp)                              #216.5[spill]
+        vpxor     %xmm12, %xmm5, %xmm5                          #216.5
         vmovdqu   %xmm10, 384(%rsp)                             #216.5[spill]
-        vpxor     %xmm2, %xmm10, %xmm9                          #216.5
-        vpand     %xmm10, %xmm2, %xmm10                         #216.5
-        vmovdqu   %xmm4, 320(%rsp)                              #216.5[spill]
-        vpxor     %xmm10, %xmm4, %xmm4                          #216.5
-        vmovdqu   %xmm3, 464(%rsp)                              #216.5[spill]
+        vpxor     %xmm5, %xmm10, %xmm9                          #216.5
+        vpand     %xmm10, %xmm5, %xmm10                         #216.5
+        vmovdqu   %xmm7, 320(%rsp)                              #216.5[spill]
+        vpxor     %xmm10, %xmm7, %xmm7                          #216.5
+        vmovdqu   %xmm6, 464(%rsp)                              #216.5[spill]
         vmovdqu   %xmm9, 528(%rsp)                              #216.5[spill]
-        vpxor     %xmm4, %xmm3, %xmm9                           #216.5
-        vpand     %xmm3, %xmm4, %xmm3                           #216.5
-        vpxor     %xmm3, %xmm6, %xmm2                           #216.5
-        vmovdqu   %xmm6, 304(%rsp)                              #216.5[spill]
-        vpxor     %xmm2, %xmm5, %xmm6                           #216.5
-        vmovdqu   %xmm5, 432(%rsp)                              #216.5[spill]
-        vpand     %xmm5, %xmm2, %xmm5                           #216.5
-        vpxor     %xmm5, %xmm8, %xmm10                          #216.5
-        vmovdqu   %xmm8, 288(%rsp)                              #216.5[spill]
-        vpxor     %xmm10, %xmm7, %xmm8                          #216.5
-        vmovdqu   %xmm7, 368(%rsp)                              #216.5[spill]
-        vpand     %xmm7, %xmm10, %xmm7                          #216.5
+        vpxor     %xmm7, %xmm6, %xmm9                           #216.5
+        vpand     %xmm6, %xmm7, %xmm6                           #216.5
+        vmovdqu   %xmm8, 304(%rsp)                              #216.5[spill]
+        vpxor     %xmm6, %xmm8, %xmm8                           #216.5
+        vpand     %xmm0, %xmm8, %xmm5                           #216.5
+        vmovdqu   %xmm0, 448(%rsp)                              #216.5[spill]
+        vmovdqu   %xmm9, 544(%rsp)                              #216.5[spill]
+        vpxor     %xmm8, %xmm0, %xmm9                           #216.5
+        vpxor     %xmm5, %xmm1, %xmm0                           #216.5
+        vmovdqu   %xmm1, 288(%rsp)                              #216.5[spill]
+        vpxor     %xmm0, %xmm2, %xmm1                           #216.5
+        vmovdqu   %xmm2, 368(%rsp)                              #216.5[spill]
+        vpand     %xmm2, %xmm0, %xmm2                           #216.5
         vmovdqu   %xmm11, 512(%rsp)                             #216.5[spill]
-        vpxor     272(%rsp), %xmm7, %xmm11                      #216.5[spill]
+        vpxor     272(%rsp), %xmm2, %xmm11                      #216.5[spill]
         vmovdqu   336(%rsp), %xmm12                             #216.5[spill]
         vmovdqu   %xmm13, 560(%rsp)                             #216.5[spill]
         vpand     %xmm12, %xmm11, %xmm13                        #216.5
         vmovdqu   %xmm15, 496(%rsp)                             #216.5[spill]
+        vpxor     %xmm11, %xmm12, %xmm10                        #216.5
         vpxor     256(%rsp), %xmm13, %xmm14                     #216.5[spill]
         vmovdqu   240(%rsp), %xmm15                             #216.5[spill]
         vpand     %xmm15, %xmm14, %xmm7                         #216.5
-        vmovdqu   %xmm6, 576(%rsp)                              #216.5[spill]
+        vpxor     %xmm14, %xmm15, %xmm8                         #216.5
         vpxor     224(%rsp), %xmm7, %xmm6                       #216.5[spill]
         vmovdqu   208(%rsp), %xmm5                              #216.5[spill]
-        vpand     %xmm5, %xmm6, %xmm4                           #216.5
+        vpand     %xmm5, %xmm6, %xmm2                           #216.5
         vpxor     %xmm6, %xmm5, %xmm7                           #216.5
-        vpxor     192(%rsp), %xmm4, %xmm3                       #216.5[spill]
-        vmovdqu   176(%rsp), %xmm2                              #216.5[spill]
-        vpand     %xmm2, %xmm3, %xmm10                          #216.5
-        vpxor     %xmm3, %xmm2, %xmm6                           #216.5
-        vmovdqu   %xmm9, 544(%rsp)                              #216.5[spill]
-        vpxor     %xmm11, %xmm12, %xmm9                         #216.5
+        vmovdqu   %xmm1, 576(%rsp)                              #216.5[spill]
+        vpxor     192(%rsp), %xmm2, %xmm1                       #216.5[spill]
+        vmovdqu   176(%rsp), %xmm0                              #216.5[spill]
+        vmovdqu   %xmm10, 608(%rsp)                             #216.5[spill]
+        vpand     %xmm0, %xmm1, %xmm10                          #216.5
         vpxor     160(%rsp), %xmm10, %xmm11                     #216.5[spill]
+        vpxor     %xmm1, %xmm0, %xmm6                           #216.5
         vmovdqu   144(%rsp), %xmm12                             #216.5[spill]
         vpand     %xmm12, %xmm11, %xmm13                        #216.5
         vpxor     %xmm11, %xmm12, %xmm5                         #216.5
-        vmovdqu   %xmm8, 608(%rsp)                              #216.5[spill]
-        vpxor     %xmm14, %xmm15, %xmm8                         #216.5
         vpxor     128(%rsp), %xmm13, %xmm14                     #216.5[spill]
         vmovdqu   112(%rsp), %xmm15                             #216.5[spill]
-        vpand     %xmm15, %xmm14, %xmm3                         #216.5
-        vpxor     %xmm14, %xmm15, %xmm4                         #216.5
-        vpxor     96(%rsp), %xmm3, %xmm2                        #216.5[spill]
+        vpand     %xmm15, %xmm14, %xmm1                         #216.5
+        vpxor     %xmm14, %xmm15, %xmm2                         #216.5
+        vpxor     96(%rsp), %xmm1, %xmm0                        #216.5[spill]
         vmovdqu   80(%rsp), %xmm10                              #216.5[spill]
-        vpand     %xmm10, %xmm2, %xmm11                         #216.5
-        vpxor     %xmm2, %xmm10, %xmm3                          #216.5
+        vpand     %xmm10, %xmm0, %xmm11                         #216.5
+        vpxor     %xmm0, %xmm10, %xmm1                          #216.5
         vpxor     48(%rsp), %xmm11, %xmm12                      #216.5[spill]
-        vmovdqu   %xmm0, 64(%rsp)                               #216.5[spill]
-        vpxor     %xmm12, %xmm0, %xmm2                          #216.5
-        vpand     %xmm0, %xmm12, %xmm0                          #216.5
-        vmovdqu   %xmm1, 32(%rsp)                               #216.5[spill]
-        vpxor     %xmm0, %xmm1, %xmm1                           #216.5
-        vpxor     16(%rsp), %xmm1, %xmm0                        #216.5[spill]
-        vmovdqu   608(%rsp), %xmm1                              #216.5[spill]
+        vmovdqu   %xmm3, 64(%rsp)                               #216.5[spill]
+        vpxor     %xmm12, %xmm3, %xmm0                          #216.5
+        vpand     %xmm3, %xmm12, %xmm3                          #216.5
+        vmovdqu   %xmm4, 32(%rsp)                               #216.5[spill]
+        vpxor     %xmm3, %xmm4, %xmm4                           #216.5
+        vpxor     16(%rsp), %xmm4, %xmm3                        #216.5[spill]
+        vmovdqu   608(%rsp), %xmm4                              #216.5[spill]
         vmovdqu   576(%rsp), %xmm10                             #216.5[spill]
         vmovdqu   544(%rsp), %xmm11                             #216.5[spill]
         vmovdqu   528(%rsp), %xmm12                             #216.5[spill]
@@ -1693,17 +1691,17 @@ main:
                                 # Execution count [5.00e+00]
         incl      %edx                                          #215.3
         lea       (%rax,%rbx), %rsi                             #216.5
-        vmovdqu   %xmm10, 80(%rsi)                              #216.5
-        vmovdqu   %xmm1, 96(%rsi)                               #216.5
-        vmovdqu   %xmm9, 112(%rsi)                              #216.5
+        vmovdqu   %xmm9, 80(%rsi)                               #216.5
+        vmovdqu   %xmm10, 96(%rsi)                              #216.5
+        vmovdqu   %xmm4, 112(%rsi)                              #216.5
         vmovdqu   %xmm8, 128(%rsi)                              #216.5
         vmovdqu   %xmm7, 144(%rsi)                              #216.5
         vmovdqu   %xmm6, 160(%rsi)                              #216.5
         vmovdqu   %xmm5, 176(%rsi)                              #216.5
-        vmovdqu   %xmm4, 192(%rsi)                              #216.5
-        vmovdqu   %xmm3, 208(%rsi)                              #216.5
-        vmovdqu   %xmm2, 224(%rsi)                              #216.5
-        vmovdqu   %xmm0, 240(%rsi)                              #216.5
+        vmovdqu   %xmm2, 192(%rsi)                              #216.5
+        vmovdqu   %xmm1, 208(%rsi)                              #216.5
+        vmovdqu   %xmm0, 224(%rsi)                              #216.5
+        vmovdqu   %xmm3, 240(%rsi)                              #216.5
         addq      $256, %rax                                    #215.3
         vmovdqu   %xmm15, (%rsi)                                #216.5
         vmovdqu   %xmm14, 16(%rsi)                              #216.5
@@ -1778,7 +1776,7 @@ main:
         vpand     %xmm2, %xmm10, %xmm9                          #226.5
         vpand     %xmm3, %xmm10, %xmm11                         #226.5
         vmovdqu   %xmm9, 576(%rsp)                              #226.5[spill]
-        vmovdqu   432(%rsp), %xmm9                              #226.5[spill]
+        vmovdqu   448(%rsp), %xmm9                              #226.5[spill]
         vpand     %xmm13, %xmm9, %xmm0                          #226.5
         vpand     %xmm7, %xmm0, %xmm8                           #226.5
         vpand     %xmm3, %xmm8, %xmm10                          #226.5
@@ -2014,7 +2012,7 @@ main:
         vmovdqu   %xmm5, 1776(%rsp)                             #226.5[spill]
         vpand     %xmm0, %xmm1, %xmm4                           #226.5
         vmovdqu   416(%rsp), %xmm1                              #226.5[spill]
-        vmovdqu   448(%rsp), %xmm5                              #226.5[spill]
+        vmovdqu   432(%rsp), %xmm5                              #226.5[spill]
         vmovdqu   %xmm3, 1744(%rsp)                             #226.5[spill]
         vpxor     %xmm1, %xmm5, %xmm3                           #226.5
         vmovdqu   %xmm4, 1760(%rsp)                             #226.5[spill]
@@ -2306,7 +2304,7 @@ main:
 # mark_begin;
        .align    16,0x90
 	.globl add_pack
-# --- add_pack(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *)
+# --- add_pack(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *__restrict__)
 add_pack:
 # parameter 1: %xmm0
 # parameter 2: %xmm1
@@ -2346,47 +2344,46 @@ add_pack:
 	.cfi_startproc
 ..___tag_value_add_pack.33:
 ..L34:
-                                                         #19.31
-        vpaddb    136(%rsp), %xmm0, %xmm0                       #20.12
-        vmovdqu   72(%rsp), %xmm12                              #19.31
-        vmovdqu   8(%rsp), %xmm8                                #19.31
-        vmovdqu   24(%rsp), %xmm9                               #19.31
-        vmovdqu   40(%rsp), %xmm10                              #19.31
-        vmovdqu   56(%rsp), %xmm11                              #19.31
-        vmovdqu   88(%rsp), %xmm13                              #19.31
-        vmovdqu   104(%rsp), %xmm14                             #19.31
-        vmovdqu   120(%rsp), %xmm15                             #19.31
-        vmovdqu   %xmm0, (%rdi)                                 #20.3
-        vpaddb    152(%rsp), %xmm1, %xmm1                       #21.12
-        vpaddb    168(%rsp), %xmm2, %xmm2                       #22.12
-        vpaddb    184(%rsp), %xmm3, %xmm3                       #23.12
-        vpaddb    200(%rsp), %xmm4, %xmm4                       #24.12
-        vpaddb    216(%rsp), %xmm5, %xmm5                       #25.12
-        vpaddb    232(%rsp), %xmm6, %xmm6                       #26.12
-        vpaddb    248(%rsp), %xmm7, %xmm0                       #27.12
-        vpaddb    264(%rsp), %xmm8, %xmm8                       #28.12
-        vpaddb    280(%rsp), %xmm9, %xmm9                       #29.12
-        vpaddb    296(%rsp), %xmm10, %xmm10                     #30.13
-        vpaddb    312(%rsp), %xmm11, %xmm11                     #31.13
-        vpaddb    328(%rsp), %xmm12, %xmm12                     #32.13
-        vpaddb    344(%rsp), %xmm13, %xmm13                     #33.13
-        vpaddb    360(%rsp), %xmm14, %xmm14                     #34.13
-        vpaddb    376(%rsp), %xmm15, %xmm15                     #35.13
-        vmovdqu   %xmm1, 16(%rdi)                               #21.3
-        vmovdqu   %xmm2, 32(%rdi)                               #22.3
-        vmovdqu   %xmm3, 48(%rdi)                               #23.3
-        vmovdqu   %xmm4, 64(%rdi)                               #24.3
-        vmovdqu   %xmm5, 80(%rdi)                               #25.3
-        vmovdqu   %xmm6, 96(%rdi)                               #26.3
-        vmovdqu   %xmm0, 112(%rdi)                              #27.3
-        vmovdqu   %xmm8, 128(%rdi)                              #28.3
-        vmovdqu   %xmm9, 144(%rdi)                              #29.3
-        vmovdqu   %xmm10, 160(%rdi)                             #30.3
-        vmovdqu   %xmm11, 176(%rdi)                             #31.3
-        vmovdqu   %xmm12, 192(%rdi)                             #32.3
-        vmovdqu   %xmm13, 208(%rdi)                             #33.3
-        vmovdqu   %xmm14, 224(%rdi)                             #34.3
-        vmovdqu   %xmm15, 240(%rdi)                             #35.3
+                                                         #19.40
+        vpaddw    136(%rsp), %xmm0, %xmm15                      #20.12
+        vpaddw    152(%rsp), %xmm1, %xmm0                       #21.12
+        vmovdqu   88(%rsp), %xmm12                              #19.40
+        vmovdqu   24(%rsp), %xmm8                               #19.40
+        vmovdqu   8(%rsp), %xmm14                               #19.40
+        vmovdqu   40(%rsp), %xmm9                               #19.40
+        vmovdqu   56(%rsp), %xmm10                              #19.40
+        vmovdqu   72(%rsp), %xmm11                              #19.40
+        vmovdqu   104(%rsp), %xmm13                             #19.40
+        vmovdqu   120(%rsp), %xmm7                              #19.40
+        vpaddw    168(%rsp), %xmm2, %xmm1                       #22.12
+        vpaddw    184(%rsp), %xmm3, %xmm2                       #23.12
+        vpaddw    200(%rsp), %xmm4, %xmm3                       #24.12
+        vpaddw    216(%rsp), %xmm5, %xmm4                       #25.12
+        vpaddw    232(%rsp), %xmm6, %xmm5                       #26.12
+        vpaddw    264(%rsp), %xmm14, %xmm14                     #28.12
+        vpaddw    280(%rsp), %xmm8, %xmm8                       #29.12
+        vpaddw    296(%rsp), %xmm9, %xmm9                       #30.13
+        vpaddw    312(%rsp), %xmm10, %xmm10                     #31.13
+        vpaddw    376(%rsp), %xmm7, %xmm6                       #27.12
+        vpaddw    328(%rsp), %xmm11, %xmm11                     #32.13
+        vpaddw    344(%rsp), %xmm12, %xmm12                     #33.13
+        vpaddw    360(%rsp), %xmm13, %xmm13                     #34.13
+        vmovdqu   %xmm15, (%rdi)                                #20.3
+        vmovdqu   %xmm0, 16(%rdi)                               #21.3
+        vmovdqu   %xmm1, 32(%rdi)                               #22.3
+        vmovdqu   %xmm2, 48(%rdi)                               #23.3
+        vmovdqu   %xmm3, 64(%rdi)                               #24.3
+        vmovdqu   %xmm4, 80(%rdi)                               #25.3
+        vmovdqu   %xmm5, 96(%rdi)                               #26.3
+        vmovdqu   %xmm6, 112(%rdi)                              #27.3
+        vmovdqu   %xmm14, 128(%rdi)                             #28.3
+        vmovdqu   %xmm8, 144(%rdi)                              #29.3
+        vmovdqu   %xmm9, 160(%rdi)                              #30.3
+        vmovdqu   %xmm10, 176(%rdi)                             #31.3
+        vmovdqu   %xmm11, 192(%rdi)                             #32.3
+        vmovdqu   %xmm12, 208(%rdi)                             #33.3
+        vmovdqu   %xmm13, 224(%rdi)                             #34.3
+        vmovdqu   %xmm6, 240(%rdi)                              #35.3
         ret                                                     #36.1
         .align    16,0x90
                                 # LOE
@@ -2402,7 +2399,7 @@ add_pack:
 # mark_begin;
        .align    16,0x90
 	.globl add
-# --- add(__m128i, __m128i, __m128i *)
+# --- add(__m128i, __m128i, __m128i *__restrict__)
 add:
 # parameter 1: %xmm0
 # parameter 2: %xmm1
@@ -2412,13 +2409,13 @@ add:
 	.cfi_startproc
 ..___tag_value_add.36:
 ..L37:
-                                                         #39.47
-        vpxor     %xmm1, %xmm0, %xmm5                           #40.21
-        vmovdqu   (%rdi), %xmm6                                 #41.24
-        vpand     %xmm1, %xmm0, %xmm2                           #42.10
-        vpand     %xmm5, %xmm6, %xmm3                           #42.17
-        vpxor     %xmm6, %xmm5, %xmm0                           #41.24
-        vpxor     %xmm3, %xmm2, %xmm4                           #42.17
+                                                         #39.56
+        vpxor     %xmm1, %xmm0, %xmm5                           #40.17
+        vmovdqu   (%rdi), %xmm6                                 #41.36
+        vpand     %xmm1, %xmm0, %xmm2                           #42.21
+        vpand     %xmm5, %xmm6, %xmm3                           #42.40
+        vpxor     %xmm6, %xmm5, %xmm0                           #41.17
+        vpxor     %xmm3, %xmm2, %xmm4                           #42.7
         vmovdqu   %xmm4, (%rdi)                                 #42.4
         ret                                                     #43.10
         .align    16,0x90
@@ -2435,7 +2432,7 @@ add:
 # mark_begin;
        .align    16,0x90
 	.globl add_bitslice
-# --- add_bitslice(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *)
+# --- add_bitslice(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *__restrict__)
 add_bitslice:
 # parameter 1: %xmm0
 # parameter 2: %xmm1
@@ -2475,34 +2472,34 @@ add_bitslice:
 	.cfi_startproc
 ..___tag_value_add_bitslice.39:
 ..L40:
-                                                         #54.34
-        pushq     %rbp                                          #54.34
+                                                         #54.43
+        pushq     %rbp                                          #54.43
 	.cfi_def_cfa_offset 16
-        movq      %rsp, %rbp                                    #54.34
+        movq      %rsp, %rbp                                    #54.43
 	.cfi_def_cfa 6, 16
 	.cfi_offset 6, -16
-        vmovdqu   144(%rbp), %xmm8                              #54.34
+        vmovdqu   144(%rbp), %xmm8                              #54.43
         vpxor     %xmm10, %xmm10, %xmm10                        #55.15
-        vmovdqu   160(%rbp), %xmm12                             #54.34
+        vmovdqu   160(%rbp), %xmm12                             #54.43
         vpxor     %xmm8, %xmm0, %xmm9                           #56.12
         vpand     %xmm8, %xmm0, %xmm0                           #56.12
         vpxor     %xmm10, %xmm9, %xmm9                          #56.12
         vpxor     %xmm10, %xmm0, %xmm8                          #56.12
         vpxor     %xmm12, %xmm1, %xmm10                         #57.12
-        vmovdqu   176(%rbp), %xmm13                             #54.34
+        vmovdqu   176(%rbp), %xmm13                             #54.43
         vpand     %xmm12, %xmm1, %xmm1                          #57.12
         vpand     %xmm10, %xmm8, %xmm12                         #57.12
         vpxor     %xmm8, %xmm10, %xmm0                          #57.12
         vpxor     %xmm12, %xmm1, %xmm1                          #57.12
         vpxor     %xmm13, %xmm2, %xmm8                          #58.12
-        vmovdqu   192(%rbp), %xmm14                             #54.34
+        vmovdqu   192(%rbp), %xmm14                             #54.43
         vpand     %xmm13, %xmm2, %xmm2                          #58.12
         vpand     %xmm8, %xmm1, %xmm13                          #58.12
         vmovdqu   %xmm0, 16(%rdi)                               #57.3
         vpxor     %xmm1, %xmm8, %xmm0                           #58.12
         vpxor     %xmm13, %xmm2, %xmm1                          #58.12
         vpxor     %xmm14, %xmm3, %xmm2                          #59.12
-        vmovdqu   208(%rbp), %xmm15                             #54.34
+        vmovdqu   208(%rbp), %xmm15                             #54.43
         vpand     %xmm14, %xmm3, %xmm3                          #59.12
         vpand     %xmm2, %xmm1, %xmm14                          #59.12
         vmovdqu   %xmm0, 32(%rdi)                               #58.3
@@ -2584,7 +2581,7 @@ add_bitslice:
         vpxor     %xmm6, %xmm7, %xmm10                          #68.13
         vpxor     %xmm15, %xmm12, %xmm6                         #69.13
         vpxor     %xmm5, %xmm4, %xmm7                           #70.13
-        vmovdqu   128(%rbp), %xmm11                             #54.34
+        vmovdqu   128(%rbp), %xmm11                             #54.43
         vpand     %xmm5, %xmm4, %xmm8                           #70.13
         vpand     %xmm7, %xmm6, %xmm9                           #70.13
         vpxor     %xmm0, %xmm1, %xmm2                           #69.13
@@ -2615,7 +2612,7 @@ add_bitslice:
 # mark_begin;
        .align    16,0x90
 	.globl add_lookahead
-# --- add_lookahead(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *)
+# --- add_lookahead(__m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i, __m128i *__restrict__)
 add_lookahead:
 # parameter 1: %xmm0
 # parameter 2: %xmm1
@@ -2655,26 +2652,26 @@ add_lookahead:
 	.cfi_startproc
 ..___tag_value_add_lookahead.46:
 ..L47:
-                                                         #82.35
-        pushq     %rbp                                          #82.35
+                                                         #82.44
+        pushq     %rbp                                          #82.44
 	.cfi_def_cfa_offset 16
-        movq      %rsp, %rbp                                    #82.35
+        movq      %rsp, %rbp                                    #82.44
 	.cfi_def_cfa 6, 16
 	.cfi_offset 6, -16
-        subq      $496, %rsp                                    #82.35
-        vmovdqa   %xmm0, %xmm12                                 #82.35
-        vmovdqu   128(%rbp), %xmm14                             #82.35
-        vmovdqa   %xmm3, %xmm11                                 #82.35
+        subq      $496, %rsp                                    #82.44
+        vmovdqa   %xmm0, %xmm12                                 #82.44
+        vmovdqu   128(%rbp), %xmm14                             #82.44
+        vmovdqa   %xmm3, %xmm11                                 #82.44
         vpxor     384(%rbp), %xmm14, %xmm13                     #98.23
-        vmovdqu   144(%rbp), %xmm14                             #82.35
-        vmovdqu   160(%rbp), %xmm8                              #82.35
+        vmovdqu   144(%rbp), %xmm14                             #82.44
+        vmovdqu   160(%rbp), %xmm8                              #82.44
         vpxor     %xmm14, %xmm12, %xmm10                        #83.21
-        vmovdqu   176(%rbp), %xmm15                             #82.35
+        vmovdqu   176(%rbp), %xmm15                             #82.44
         vpand     %xmm14, %xmm12, %xmm14                        #100.21
-        vmovdqu   192(%rbp), %xmm9                              #82.35
+        vmovdqu   192(%rbp), %xmm9                              #82.44
         vpand     %xmm8, %xmm1, %xmm12                          #101.21
-        vmovdqu   208(%rbp), %xmm3                              #82.35
-        vmovdqu   224(%rbp), %xmm0                              #82.35
+        vmovdqu   208(%rbp), %xmm3                              #82.44
+        vmovdqu   224(%rbp), %xmm0                              #82.44
         vmovdqu   %xmm13, -496(%rbp)                            #98.23[spill]
         vpxor     %xmm8, %xmm1, %xmm13                          #84.21
         vmovdqu   %xmm10, (%rdi)                                #132.3

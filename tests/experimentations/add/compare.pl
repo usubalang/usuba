@@ -18,6 +18,27 @@ for $size (8,16,32) {
                 $h{$`."wrong"} += $';
             }
         }
+        if (-f "add_${size}_wrong2") {
+            for (split "\n", `./add_${size}_wrong2`) {
+                /bitslice/i || next;
+                / /;
+                $h{$`."wrong2"} += $';
+            }
+        }
+        if (-f "add_${size}_wrong3") {
+            for (split "\n", `./add_${size}_wrong3`) {
+                /bitslice/i || next;
+                / /;
+                $h{$`."wrong3"} += $';
+            }
+        }
+        if (-f "add_${size}_wrong4") {
+            for (split "\n", `./add_${size}_wrong4`) {
+                /bitslice/i || next;
+                / /;
+                $h{$`."wrong4"} += $';
+            }
+        }
     }
 
     print "\n$size bits:";
