@@ -132,7 +132,7 @@ int main() {
   
   single_des(buff_in,buff_out,key_ortho,size/sizeof(unsigned long));
   
-  for (int i = 1; i <= 8; i++) {
+  for (int i = 1; i <= 6; i++) {
     uint64_t start = _rdtsc();
     #pragma omp parallel num_threads(i)
     {

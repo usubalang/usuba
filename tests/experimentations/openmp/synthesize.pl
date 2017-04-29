@@ -13,7 +13,7 @@ for (1 .. $tot) {
 }
 
 open *FPOUT, '>', 'data.dat' or die $!;
-for (sort {$a<=>$b} grep { $_ <= 4 } keys %c) {
+for (sort {$a<=>$b} keys %c) {
     print FPOUT (sprintf "$_ %.2f\n", 1/($c{$_}/$c{1}));
 }
 
