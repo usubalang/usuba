@@ -1,6 +1,8 @@
 
 %{
   open Usuba_AST
+  open Lexing
+  open Printf
   exception Syntax_error
 
   (* convert a left_asgn list into an expression *)

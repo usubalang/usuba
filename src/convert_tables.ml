@@ -83,16 +83,28 @@ let rewrite_table id p_in p_out l : def =
       
   done;
   Single(id,p_in,p_out,!vars,List.rev !body)
-       
+
+let rewrite_single_table (id:ident) (p_in:p) (p_out:p) (l:int list) : def =
+  try
+    let (found,_) = List.find (fun (a,b) -> b = l) Sbox_index.sboxes in
+    let file_name = "data/sboxes/" ^ found ^ ".ua" in
+    let new_node = List.nth (Parse_file.parse_file file_name) 0 in
+    match new_node with
+    | Single(_,p_in,p_out,vars,body) ->
+       Single(id,p_in,p_out,vars,body)
+    | _ -> raise (Error "Internal error: invalid sbox file")
+  with Not_found -> rewrite_table id p_in p_out l
+
+
 let rec rewrite_def (def: def) : def list =
   match def with
-  | Table(id,p_in,p_out,l) -> [ (rewrite_table id p_in p_out l) ]
+  | Table(id,p_in,p_out,l) -> [ rewrite_table id p_in p_out l ]
   | MultipleTable(id,p_in,p_out,l) ->
      let cpt = ref (-1) in
      (List.map (fun x -> incr cpt;
-                         rewrite_table (id ^ (string_of_int !cpt)) p_in p_out x) l)
+                         rewrite_single_table (id ^ (string_of_int !cpt)) p_in p_out x) l)
   | _ -> [ def ]
-            
+           
                        
 let convert_tables (p: prog) : prog =
   List.flatten (List.map rewrite_def p)

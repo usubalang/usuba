@@ -2,7 +2,14 @@ open Usuba_AST
 open Utils
 open Printf
 
+let struct_defs = ref []
+       
 let slice_type = ref (AVX 256)
+
+let gen_tmp_arr =
+  let cpt = ref 0 in
+  fun () -> incr cpt;
+            "__tmp_arr_" ^ (string_of_int !cpt)
 
 let rename (name:string) : string =
   Str.global_replace (Str.regexp "'") "__" name
@@ -104,8 +111,7 @@ let replace_p_out (p_out: p) (deqs:deq list) : deq list =
                                      | _ -> unreached()) p,
                     replace_in_expr e)
              | _ -> unreached ()) deqs
-
-                     
+                    
 let rec expr_to_c (e:expr) : string =
   match e with
   | Const n -> ( match n with
@@ -121,15 +127,54 @@ let rec expr_to_c (e:expr) : string =
                       | _ -> sprintf "%s(%s,%s)"
                                      (op_to_c op) (expr_to_c x) (expr_to_c y))
   | _ -> raise (Error (Usuba_print.expr_to_str e)) 
-                     
+           
+let fun_call_to_c (p:var list) (f:ident) (args: expr list) : string =
+  let type_c = type_to_c !slice_type in
+  sprintf "  %s(%s,%s);"
+          (* (join "" (List.map (function *)
+          (*                      | Var id -> sprintf "  %s %s;\n" *)
+          (*                                          type_c (rename id) *)
+          (*                      | _ -> unreached ()) p)) *)
+          (rename f) (join "," (List.map (expr_to_c) args))
+          (join "," (List.map (function
+                                | Var id -> "&" ^ (rename id)
+                                | _ -> unreached ()) p))
+          
 let deqs_to_c (deqs: deq list) : string =
   join "\n"
        (List.map
           (function
+            | Norec(p,Fun(f,l)) -> fun_call_to_c p f l
             | Norec([Var p],e) ->
-               "  " ^ (rename p) ^ " = " ^ (expr_to_c e) ^ ";"
+               sprintf "  %s = %s;" (rename p) (expr_to_c e)
             | _ -> unreached ()) deqs)
-                     
+
+                   
+let inner_def_to_c (def:def) : string =
+  match def with
+  | Single(id,p_in,p_out,vars,body) ->
+     let type_c = type_to_c !slice_type in
+     Printf.sprintf
+       "void %s (%s,%s) {\n%s\n%s\n%s\n}\n"
+       (rename id)
+       
+       (* parameters *)
+       (join "," (List.map (fun (id,_,_) -> type_c ^ " " ^ (rename id)) p_in))
+       (join "," (List.map (fun (id,_,_) -> type_c ^ "* __out_" ^ (rename id)) p_out))
+       
+       (* declaring variabes *)
+       (join "" (List.map (fun (id,_,_) -> sprintf "  %s %s;\n"
+                                                     type_c (rename id))
+                            (vars@p_out)))
+
+       (* the body *)
+       (deqs_to_c body)
+
+       (* setting the output *)
+       (join "" (List.map (fun (id,_,_) -> sprintf "  *__out_%s = %s;\n"
+                                                   (rename id) (rename id)) p_out))
+  | _ -> unreached () 
+                         
 let def_to_c (def:def) : string =
   match def with
   | Single(id,p_in,p_out,vars,body) ->
@@ -159,18 +204,28 @@ let def_to_c (def:def) : string =
        (join "" (List.mapi (fun i (id,_,_) -> sprintf "  output[%d] = %s;\n"
                                                         i (rename id)) p_out))
   | _ -> unreached () 
-     
-       
+
+let rec map_no_end f l =
+  match l with
+  | [] -> []
+  | [x] -> []
+  | hd::tl -> (f hd) :: (map_no_end f tl)
+                   
 let prog_to_c (prog:prog) : string =
   assert (Assert_lang.Usuba_norm.is_usuba_normalized prog);
   let (slice, prog) = Select_instr.select_instr prog in
   slice_type := slice;
   assert (Assert_lang.Usuba_intrinsics.is_only_intrinsics prog);
+  let len = List.length prog in
+  let entry = def_to_c (List.nth prog (len-1)) in
+  let prog_c = map_no_end inner_def_to_c prog in
   (* let _ = Share_var.share_prog prog input *)
   "#include <stdlib.h>\n"
   ^ "#include \"mmintrin.h\"\n"
   ^ "#include \"immintrin.h\"\n"
   ^ "#include \"tmmintrin.h\"\n"
   ^ "#include \"emmintrin.h\"\n\n\n"
-  ^ (join "\n\n" (List.map def_to_c prog))
+  ^ (join "\n\n" !struct_defs) ^ "\n\n\n"
+  ^ (join "\n\n" prog_c)
+  ^ "\n\n" ^ entry
   ^ "\n\nint main() { return 0; }" (* just so it can be compiled directly *)

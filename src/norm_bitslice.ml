@@ -32,7 +32,7 @@ let gen_tmp =
   let cpt = ref 0 in
   fun () -> incr cpt;
             let var = "_tmp" ^ (string_of_int !cpt) ^ "_" in
-            new_vars := (var,Bool,"") :: !new_vars;
+            (* new_vars := (var,Bool,"") :: !new_vars; *)
             var
 
 (* Note that when this function is called, Var have already been normalized *)
@@ -71,6 +71,7 @@ let rec remove_call env_fun e : deq list * expr =
     deq, e'
   else 
     let tmp = expand_intn (gen_tmp ()) (get_expr_size env_fun e') in
+    new_vars := !new_vars @ (List.map (fun id -> (id,Bool,"")) tmp);
     let left = List.map (fun x -> Var x) tmp in
 
     deq @ [Norec(left,e')], Tuple (List.map (fun x -> ExpVar(Var x)) tmp)
@@ -86,8 +87,10 @@ and remove_calls env_fun l : deq list * expr list =
               if is_primitive e' then
                 [ e' ]
               else
-                let tmp = expand_intn (gen_tmp ()) (get_expr_size env_fun e') in
+                let size = get_expr_size env_fun e' in
+                let tmp = expand_intn (gen_tmp ()) size in
                 let left = List.map (fun x -> Var x) tmp in
+                new_vars := !new_vars @ (List.map (fun id -> (id,Bool,"")) tmp);
                 pre_deqs := !pre_deqs @ [Norec(left,e')];
                 
                 List.map (fun x -> ExpVar(Var x)) tmp)

@@ -68,6 +68,7 @@ module Usuba_intrinsics = struct
     match def with
     | Single(_,_,_,_,body) ->
        List.for_all (function
+                      | Norec(p,Fun(_,l)) -> List.for_all check_expr l
                       | Norec(p,e) -> check_expr e
                       | _ -> false) body
     | _ -> false
