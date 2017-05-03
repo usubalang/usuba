@@ -5,11 +5,14 @@ CC = clang
 CFLAGS = -Wall -Wextra -march=native -O3
 V = 0
 
+OBJECTS = $(patsubst %.c, %.o, $(wildcard *.c))
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
 .PHONY: default all clean
 
-default: $(TARGET)
+default: $(TARGET) $(OBJECTS)
 all: default
-
 
 test_uak_256:
 	$(CC) $(CFLAGS) test_uak_256.c -o $@

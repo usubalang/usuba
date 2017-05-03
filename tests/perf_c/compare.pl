@@ -67,6 +67,7 @@ my $tot_size = -s 'input.txt';
 {
     system 'clang -o tmp -O3 -fno-inline test_kwan.c';
     my %speed;
+    $speed{std} = 10;
     for my $instance (['uak-64*','test_uak_64std'], ['uak-64','test_uak_64'],
                       ['uak-128','test_uak_128'], ['uak-256','test_uak_256'],
                       ['ua-256','test_ua_256'], ['kwan-64*','test_kwan'],
