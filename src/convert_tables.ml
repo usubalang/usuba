@@ -43,7 +43,8 @@ let tmp_var i j k =
 let mux c a b = Log(Or,Log(Andn,c,ExpVar(Var a)),Log(And,c,ExpVar(Var b)))
 
                    
-let rewrite_table id p_in p_out l : def =
+let rewrite_table (id:ident) (p_in:p) (p_out:p)
+                  (opt:def_opt list) (l:int list) : def =
   let exp_p_in  = Array.of_list @@ rewrite_p p_in in
   let exp_p_out = Array.of_list @@ rewrite_p p_out in
   let size_in = Array.length exp_p_in in
@@ -82,29 +83,32 @@ let rewrite_table id p_in p_out l : def =
     body := Norec ([exp_p_out.(i-1)], ExpVar(Var var)) :: !body
       
   done;
-  Single(id,p_in,p_out,!vars,List.rev !body)
+  { id = id; p_in = p_in; p_out = p_out; opt = opt;
+    node = Single(!vars,List.rev !body) }
 
-let rewrite_single_table (id:ident) (p_in:p) (p_out:p) (l:int list) : def =
+let rewrite_single_table (id:ident) (p_in:p) (p_out:p)
+                         (opt:def_opt list) (l:int list) : def =
   try
     let (found,_) = List.find (fun (a,b) -> b = l) Sbox_index.sboxes in
     let file_name = "data/sboxes/" ^ found ^ ".ua" in
-    let new_node = List.nth (Parse_file.parse_file file_name) 0 in
-    match new_node with
-    | Single(_,p_in,p_out,vars,body) ->
-       Single(id,p_in,p_out,vars,body)
-    | _ -> raise (Error "Internal error: invalid sbox file")
-  with Not_found -> rewrite_table id p_in p_out l
+    let new_node = List.nth (Parse_file.parse_file file_name).nodes 0 in
+    { new_node with id = id;
+                    opt = opt }
+  with Not_found -> rewrite_table id p_in p_out opt l
 
 
 let rec rewrite_def (def: def) : def list =
-  match def with
-  | Table(id,p_in,p_out,l) -> [ rewrite_table id p_in p_out l ]
-  | MultipleTable(id,p_in,p_out,l) ->
-     let cpt = ref (-1) in
-     (List.map (fun x -> incr cpt;
-                         rewrite_single_table (id ^ (string_of_int !cpt)) p_in p_out x) l)
+  let id    = def.id in
+  let p_in  = def.p_in in
+  let p_out = def.p_out in
+  let opt   = def.opt in
+  match def.node with
+  | Table l -> [ rewrite_single_table id p_in p_out opt l ]
+  | MultipleTable l ->
+     List.mapi (fun i x -> 
+                rewrite_single_table (id ^ (string_of_int i)) p_in p_out opt x) l
   | _ -> [ def ]
            
                        
 let convert_tables (p: prog) : prog =
-  List.flatten (List.map rewrite_def p)
+  { nodes = List.flatten (List.map rewrite_def p.nodes) }

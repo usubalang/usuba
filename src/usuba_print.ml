@@ -166,10 +166,11 @@ let single_node_to_str id p_in p_out vars deq =
   ^ "\ntel"
       
 let def_to_str def =
-  match def with
-  | Single(id,p_in,p_out,vars,deq) ->
+  let (id,p_in,p_out) = (def.id,def.p_in,def.p_out) in
+  match def.node with
+  | Single(vars,deq) ->
      single_node_to_str id p_in p_out vars deq
-  | Multiple(id,p_in,p_out,l) ->
+  | Multiple l ->
      "node " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
      ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[\n"
      ^  (join "\n;\n"
@@ -183,11 +184,11 @@ let def_to_str def =
                                        (List.map deq_to_str d))
                                ^ "\ntel\n") l))
      ^ "\n]\n"
-  | Perm(id,p_in,p_out,l) ->
+  | Perm l ->
      "perm " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
      ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n{\n  "
      ^ (join ", " (List.map string_of_int l)) ^ "\n}\n"
-  | MultiplePerm(id,p_in,p_out,l) ->
+  | MultiplePerm l ->
      "perm[] " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
      ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[ "
      ^ (join "\n;\n"
@@ -196,11 +197,11 @@ let def_to_str def =
                           ^ (join ", " (List.map string_of_int l))
                           ^ "]") l))
      ^ "\n]\n"
-  | Table(id,p_in,p_out,l) ->
+  | Table l ->
      "table " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
      ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n{\n  "
      ^ (join ", " (List.map string_of_int l)) ^ "\n}\n"
-  | MultipleTable(id,p_in,p_out,l) ->
+  | MultipleTable l ->
      "table[] " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
      ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[ "
      ^ (join "\n;\n"

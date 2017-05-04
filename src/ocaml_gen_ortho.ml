@@ -66,45 +66,46 @@ module Gen_entry = struct
     )    
 
       
-  let gen_entry_point = function
-    | Single(name, p_in, p_out, _, _) ->
-       let params = List.map (fun (id,typ,_) ->
-                              match typ with
-                              | Bool  -> (id,1)
-                              | Int n -> (id,n)
-                              | Nat   -> raise (Invalid_AST "Illegal Nat")
-                              | Array _ -> raise (Invalid_AST "Arrays not cleaned"))
-                             p_in in
-       let ortho = List.map gen_ortho params in
-       let in_streams = List.map (fun (id,_) -> id ^ "stream") params in
-       let head = "let main " ^ (join " " in_streams) ^ " = \n"
-                  ^ (indent_small 1) ^ "let cpt = ref 64 in" in
-       let stacks = join ("\n" ^ (indent_small 1))
-                         (List.map (fun (id,_,_) ->
-                                    "let stack_" ^ id ^ " = ref [| |] in") p_out) in
-       let ret = join ","
-                      (List.map (fun (id,_,_) ->
-                                 "!stack_" ^ id ^ ".(!cpt)") p_out) in
-       let (left,right) = gen_unortho p_out in
-       (head ^ "\n" ^ (indent_small 1) ^ stacks ^ "\n"
-        ^ (indent_small 1) ^ "Stream.from\n" ^ (indent 1) ^ "(fun _ -> \n"
-        ^ (indent 1) ^ "if !cpt < 63 then let ret = (" ^ ret ^ ") in\n"
-        ^ (indent_small 13) ^ "incr cpt;\n" ^ (indent_small 13) ^ "Some ret\n"
-        ^ (indent 1) ^ "else\n" ^ (indent_small 3) ^ "try\n"
-        ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho))
-        ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ "' ("
-        ^ (join "," (List.map fst ortho)) ^ ") in\n"
-        ^ right
-        ^ (indent 2) ^ "cpt := 0;\n"
-        ^ (indent 2) ^ "let return = Some (" ^ ret ^ ") in \n"
-        ^ (indent 2) ^ "incr cpt;" ^ "\n"
-        ^ (indent 2) ^ "return\n"
-        ^ (indent_small 3) ^ "with Stream.Failure -> None)\n")
+  let gen_entry_point def =
+    (match def.node with
     | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
     | Perm _ -> raise (Invalid_AST "Perm should be gone by now")
     | MultiplePerm _ -> raise (Invalid_AST "MultiplePerm should have been cleaned by now")
     | Table _ -> raise (Invalid_AST "Tables should be gone by now")
     | MultipleTable _ -> raise (Invalid_AST "MultipleTable should be gone by now")
+    | Single _ -> ());
+    let params = List.map (fun (id,typ,_) ->
+                           match typ with
+                           | Bool  -> (id,1)
+                           | Int n -> (id,n)
+                           | Nat   -> raise (Invalid_AST "Illegal Nat")
+                           | Array _ -> raise (Invalid_AST "Arrays not cleaned"))
+                          def.p_in in
+    let ortho = List.map gen_ortho params in
+    let in_streams = List.map (fun (id,_) -> id ^ "stream") params in
+    let head = "let main " ^ (join " " in_streams) ^ " = \n"
+               ^ (indent_small 1) ^ "let cpt = ref 64 in" in
+    let stacks = join ("\n" ^ (indent_small 1))
+                      (List.map (fun (id,_,_) ->
+                                 "let stack_" ^ id ^ " = ref [| |] in") def.p_out) in
+    let ret = join ","
+                   (List.map (fun (id,_,_) ->
+                              "!stack_" ^ id ^ ".(!cpt)") def.p_out) in
+    let (left,right) = gen_unortho def.p_out in
+    (head ^ "\n" ^ (indent_small 1) ^ stacks ^ "\n"
+     ^ (indent_small 1) ^ "Stream.from\n" ^ (indent 1) ^ "(fun _ -> \n"
+     ^ (indent 1) ^ "if !cpt < 63 then let ret = (" ^ ret ^ ") in\n"
+     ^ (indent_small 13) ^ "incr cpt;\n" ^ (indent_small 13) ^ "Some ret\n"
+     ^ (indent 1) ^ "else\n" ^ (indent_small 3) ^ "try\n"
+     ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho))
+     ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ def.id ^ "' ("
+     ^ (join "," (List.map fst ortho)) ^ ") in\n"
+     ^ right
+     ^ (indent 2) ^ "cpt := 0;\n"
+     ^ (indent 2) ^ "let return = Some (" ^ ret ^ ") in \n"
+     ^ (indent 2) ^ "incr cpt;" ^ "\n"
+     ^ (indent 2) ^ "return\n"
+     ^ (indent_small 3) ^ "with Stream.Failure -> None)\n")
 end;;
                      
 (* ************************************************** *)
@@ -266,28 +267,29 @@ let p_to_str_ml tab p =
                       | Array _ -> raise (Invalid_AST "Arrays not cleaned")) p)
        
 (* print a node *)
-let def_to_str_ml tab = function
-  | Single (id, p_in, p_out, _, body) ->
-     prologue_fun := [];
-     before_fun := [];
-     let body_str = deq_to_str_ml (tab+1) body in
-     ( match !prologue_fun with
-       | [] -> (join "\n\n" !before_fun) ^ "\n"
-               ^ ("let " ^ (ident_to_str_ml id) ^ " ("
-                  ^ (p_to_str_ml tab p_in) ^ ") = \n"
-                  ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
-                  ^ (p_to_str_ml tab p_out) ^ ")\n")
-       | l  -> (join "\n\n" !before_fun) ^ "\n"
-               ^ ("let " ^ (ident_to_str_ml id) ^ " = \n" ^
-                    (join "\n" (List.map (fun x -> (indent (tab+1)) ^ x) l)) ^ "\n"
-                    ^ (indent (tab+1)) ^ "fun (" ^ (p_to_str_ml tab p_in) ^ ") -> \n"
-                    ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
-                    ^ (p_to_str_ml tab p_out) ^ ")\n"))
+let def_to_str_ml tab def =
+  match def.node with
   | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
   | Perm _ -> raise (Invalid_AST "Perm should be gone by now")
   | MultiplePerm _ -> raise (Invalid_AST "MultiplePerm should have been cleaned by now")
   | Table _ -> raise (Invalid_AST "Tables should be gone by now")
   | MultipleTable _ -> raise (Invalid_AST "MultipleTable should be gone by now")
+  | Single (_, body) ->
+     prologue_fun := [];
+     before_fun := [];
+     let body_str = deq_to_str_ml (tab+1) body in
+     ( match !prologue_fun with
+       | [] -> (join "\n\n" !before_fun) ^ "\n"
+               ^ ("let " ^ (ident_to_str_ml def.id) ^ " ("
+                  ^ (p_to_str_ml tab def.p_in) ^ ") = \n"
+                  ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
+                  ^ (p_to_str_ml tab def.p_out) ^ ")\n")
+       | l  -> (join "\n\n" !before_fun) ^ "\n"
+               ^ ("let " ^ (ident_to_str_ml def.id) ^ " = \n" ^
+                    (join "\n" (List.map (fun x -> (indent (tab+1)) ^ x) l)) ^ "\n"
+                    ^ (indent (tab+1)) ^ "fun (" ^ (p_to_str_ml tab def.p_in) ^ ") -> \n"
+                    ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
+                    ^ (p_to_str_ml tab def.p_out) ^ ")\n"))
 
                     
 let prog_to_str_ml (p:prog) : string =
@@ -313,8 +315,8 @@ let prog_to_str_ml (p:prog) : string =
  out"];
   let entry_point = Gen_entry.gen_entry_point
                       (Utils.last
-                         (Expand_array.expand_array p)) in
+                         (Expand_array.expand_array p).nodes) in
   let converted = Normalize.norm_prog p in
-  let body = List.map (def_to_str_ml 0) converted in
+  let body = List.map (def_to_str_ml 0) converted.nodes in
   (join "\n\n" !prologue_prog)
   ^ "\n\n" ^  (join "\n\n" body) ^ "\n\n" ^ entry_point

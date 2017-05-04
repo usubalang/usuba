@@ -42,7 +42,8 @@ module Usuba_norm = struct
   
   let check_def (def:def) : bool =
     match def with
-    | Single(_,p_in,p_out,vars,body) ->
+    | { id = _; p_in = p_in; p_out = p_out; opt = _;
+        node = Single(vars,body) } ->
        check_p p_in && check_p p_out && check_p vars
        && List.for_all (function
                          | Norec(p,e) -> List.for_all check_var p && check_expr e
@@ -52,7 +53,7 @@ module Usuba_norm = struct
   
   let is_usuba_normalized (prog:prog) : bool =
     Usuba0.is_usuba0 prog &&
-      List.for_all check_def prog
+      List.for_all check_def prog.nodes
 end
 
 module Usuba_intrinsics = struct
@@ -65,8 +66,8 @@ module Usuba_intrinsics = struct
     | _ -> print_endline("Wrong:" ^ (Usuba_print.expr_to_str e)); false
   
   let check_def (def:def) : bool =
-    match def with
-    | Single(_,_,_,_,body) ->
+    match def.node with
+    | Single(_,body) ->
        List.for_all (function
                       | Norec(p,Fun(_,l)) -> List.for_all check_expr l
                       | Norec(p,e) -> check_expr e
@@ -76,6 +77,6 @@ module Usuba_intrinsics = struct
                 
   let is_only_intrinsics (prog:prog) : bool =
     Usuba_norm.is_usuba_normalized prog &&
-      List.for_all check_def prog
+      List.for_all check_def prog.nodes
 end
                       

@@ -59,31 +59,32 @@ module Gen_entry = struct
      ^ (indent 2) ^ "in Some (" ^ ret ^ ")")    
 
       
-  let gen_entry_point = function
-    | Single(name, p_in, p_out, _, _) -> 
-       let params = List.map (fun (id,typ,_) ->
-                              match typ with
-                              | Bool  -> (id,1)
-                              | Int n -> (id,n)
-                              | Nat   -> raise (Invalid_AST "Nat in entry point")
-                              | Array _ -> raise (Invalid_AST "Arrays not cleaned"))
-                             p_in in
-       let ortho = List.map gen_ortho params in
-       let in_streams = List.map (fun (id,_) -> id ^ "stream") params in
-       let head = "let main " ^ (join " " in_streams) ^ " = " in
-       let (left,right) = gen_unortho p_out in
-       (head ^ "\n" ^ (indent 1) ^ "Stream.from\n" ^ (indent 1) ^ "(fun _ -> \n"
-        ^ (indent 1) ^ "try\n"
-        ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho)) ^ "\n"
-        ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ name ^ "' ("
-        ^ (join "," (List.map fst ortho)) ^ ") in\n"
-        ^ (indent 2) ^ right ^ "\n"
-        ^ (indent 1) ^ "with Stream.Failure -> None)\n")
-    | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
-    | Perm _ -> raise (Invalid_AST "Perm should be gone by now")
-    | MultiplePerm _ -> raise (Invalid_AST "MultiplePerm should have been cleaned by now")
-    | Table _ -> raise (Invalid_AST "Tables should be gone by now")
-    | MultipleTable _ -> raise (Invalid_AST "MultipleTable should have been cleaned by now")
+  let gen_entry_point (node:def) =
+    (match node.node with
+     | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
+     | Perm _ -> raise (Invalid_AST "Perm should be gone by now")
+     | MultiplePerm _ -> raise (Invalid_AST "MultiplePerm should have been cleaned by now")
+     | Table _ -> raise (Invalid_AST "Tables should be gone by now")
+     | MultipleTable _ -> raise (Invalid_AST "MultipleTable should have been cleaned by now")
+     | Single _ -> ());
+    let params = List.map (fun (id,typ,_) ->
+                           match typ with
+                           | Bool  -> (id,1)
+                           | Int n -> (id,n)
+                           | Nat   -> raise (Invalid_AST "Nat in entry point")
+                           | Array _ -> raise (Invalid_AST "Arrays not cleaned"))
+                          node.p_in in
+    let ortho = List.map gen_ortho params in
+    let in_streams = List.map (fun (id,_) -> id ^ "stream") params in
+    let head = "let main " ^ (join " " in_streams) ^ " = " in
+    let (left,right) = gen_unortho node.p_out in
+    (head ^ "\n" ^ (indent 1) ^ "Stream.from\n" ^ (indent 1) ^ "(fun _ -> \n"
+     ^ (indent 1) ^ "try\n"
+     ^ (indent 2) ^ (join ("\n"^(indent 2)) (List.map snd ortho)) ^ "\n"
+     ^ (indent 2) ^ "let (" ^ left ^ ") = " ^ node.id ^ "' ("
+     ^ (join "," (List.map fst ortho)) ^ ") in\n"
+     ^ (indent 2) ^ right ^ "\n"
+     ^ (indent 1) ^ "with Stream.Failure -> None)\n")
 
 end ;;
   
@@ -204,33 +205,34 @@ let p_to_str_ml tab p =
                       | Nat   -> raise (Invalid_AST "Nat shouldn't be there")
                       | Array _ -> raise (Invalid_AST "Arrays not cleaned")) p)
        
-let def_to_str_ml tab = function
-  | Single(id, p_in, p_out, _, body) ->
-     prologue_fun := [];
-     let body_str = deq_to_str_ml (tab+1) body in
-     (match !prologue_fun with
-      | [] -> ("let " ^ (ident_to_str_ml id) ^ " ("
-               ^ (p_to_str_ml tab p_in) ^ ") = \n"
-               ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
-               ^ (p_to_str_ml tab p_out) ^ ")\n")
-      | l  -> ("let " ^ (ident_to_str_ml id) ^ " = \n" ^
-                 (join "\n" (List.map (fun x -> (indent (tab+1)) ^ x) l)) ^ "\n"
-                 ^ (indent (tab+1)) ^ "fun (" ^ (p_to_str_ml tab p_in) ^ ") -> \n"
-                 ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
-                 ^ (p_to_str_ml tab p_out) ^ ")\n"))
+let def_to_str_ml tab def =
+  match def.node with
   | Multiple _ -> raise (Invalid_AST "Arrays should have been cleaned by now")
   | Perm _ -> raise (Invalid_AST "Perm should be gone by now")
   | MultiplePerm _ -> raise (Invalid_AST "MultiplePerm should have been cleaned by now")
   | Table _ -> raise (Invalid_AST "Tables should be gone by now")
   | MultipleTable _ -> raise (Invalid_AST "MultipleTable should have been cleaned by now")
+  | Single(_,body) ->
+     prologue_fun := [];
+     let body_str = deq_to_str_ml (tab+1) body in
+     (match !prologue_fun with
+      | [] -> ("let " ^ (ident_to_str_ml def.id) ^ " ("
+               ^ (p_to_str_ml tab def.p_in) ^ ") = \n"
+               ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
+               ^ (p_to_str_ml tab def.p_out) ^ ")\n")
+      | l  -> ("let " ^ (ident_to_str_ml def.id) ^ " = \n" ^
+                 (join "\n" (List.map (fun x -> (indent (tab+1)) ^ x) l)) ^ "\n"
+                 ^ (indent (tab+1)) ^ "fun (" ^ (p_to_str_ml tab def.p_in) ^ ") -> \n"
+                 ^ body_str ^ "\n" ^ (indent (tab+1)) ^ "("
+                 ^ (p_to_str_ml tab def.p_out) ^ ")\n"))
 
 
                      
 let prog_to_str_ml (p:prog) : string =
   let entry_point = Gen_entry.gen_entry_point
-                      (Utils.last (Expand_array.expand_array p)) in
+                      (Utils.last (Expand_array.expand_array p).nodes) in
   let converted = Normalize.norm_prog p in
-  let body = List.map (def_to_str_ml 0) converted in
+  let body = List.map (def_to_str_ml 0) converted.nodes in
   (join "\n\n" !prologue_prog)
   ^ "\n\n" ^  (join "\n\n" body) ^ "\n\n" ^ entry_point
 

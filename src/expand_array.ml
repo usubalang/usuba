@@ -162,27 +162,30 @@ let rewrite_deqs p_in p_out vars (deqs:deq list) : deq list =
 let expand_array (prog: prog) : prog =
   let prog' = (* expansion of the arrays of nodes *)
     List.flatten @@
-      List.map (fun x -> match x with
-                         | Multiple(id,p_in,p_out,nodes) ->
+      List.map (fun x -> match x.node with
+                         | Multiple nodes ->
                             List.mapi (fun i (vars,body) ->
-                                       Single(id ^ (string_of_int i),
-                                              p_in,p_out,vars,body)) nodes
-                         | _ -> [ x ] ) prog in
+                                       { x with id = x.id ^ (string_of_int i);
+                                                node = Single(vars,body) }) nodes
+                         | _ -> [ x ] ) prog.nodes in
   let expanded =
     List.map (fun def ->
-              match def with
-              | Single(id,p_in,p_out,vars,body) ->
-                 Single(id,rewrite_p p_in,rewrite_p p_out,
-                        rewrite_p vars,rewrite_deqs p_in p_out vars body)
+              match def.node with
+              | Single(vars,body) ->
+                 { def with p_in = rewrite_p def.p_in;
+                            p_out = rewrite_p def.p_out;
+                            node = Single(rewrite_p vars,
+                                          rewrite_deqs def.p_in def.p_out vars body ) }
               | _ -> def) prog' in
-  List.map (fun def ->
-            match def with
-            | Single(id,p_in,p_out,vars,body) ->
-               Single(id,p_in,p_out,vars,
-                      List.map (fun x -> match x with
-                                         | Norec(pat,e) ->
-                                            Norec(expand_pat_range pat,
-                                                  expand_expr_range e)
-                                         | _ -> x) body)
-            | _ -> def) expanded 
+  { nodes =
+      List.map (fun def ->
+                match def.node with
+                | Single(vars,body) ->
+                   { def with node =  Single(vars,
+                                             List.map (fun x -> match x with
+                                                                | Norec(pat,e) ->
+                                                                   Norec(expand_pat_range pat,
+                                                                         expand_expr_range e)
+                                                                | _ -> x) body) }
+                | _ -> def) expanded }
     

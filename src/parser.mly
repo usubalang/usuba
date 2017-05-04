@@ -85,7 +85,7 @@
 %%
 
 prog:
-  | body=list(def) TOK_EOF { body }
+  | body=list(def) TOK_EOF { { nodes = body } }
 
 %inline log_op:
   | TOK_AND   { And }
@@ -175,27 +175,27 @@ def:
   | TOK_NODE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
     TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
     TOK_VAR vars=p TOK_LET body=deqs TOK_TEL
-  { Single(f,p_in,p_out,vars, body) }
+  { { id=f;p_in=p_in;p_out=p_out;opt=[];node=Single(vars,body) } }
   | TOK_NODE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
     TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
     l = def_list TOK_RBRACKET
-  { Multiple(f,p_in, p_out, l) }
+  { { id=f;p_in=p_in;p_out=p_out;opt=[];node=Multiple l } }
   | TOK_PERM f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
     TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
     TOK_LCURLY l=intlist TOK_RCURLY
-  { Perm(f,p_in, p_out, l) }
+  { { id=f;p_in=p_in;p_out=p_out;opt=[];node=Perm l } }
   | TOK_PERM TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
     TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
     l = permlist TOK_RBRACKET
-  { MultiplePerm(f,p_in, p_out, l) }
+  { { id=f;p_in=p_in;p_out=p_out;opt=[];node=MultiplePerm l } }
   | TOK_TABLE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
     TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
     TOK_LCURLY l=intlist TOK_RCURLY
-  { Table(f,p_in, p_out,l) }
+  { { id=f;p_in=p_in;p_out=p_out;opt=[];node=Table l } }
   | TOK_TABLE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
     TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
     l = permlist TOK_RBRACKET
-  { MultipleTable(f,p_in, p_out, l) }
+  { { id=f;p_in=p_in;p_out=p_out;opt=[];node=MultipleTable l } }
 
   
 intlist: l=separated_nonempty_list(TOK_COMMA, TOK_int) { l }

@@ -140,13 +140,13 @@ module CSE_CF = struct
           | Rec _ -> raise (Invalid_AST "Invalid Rec")) deq           
                  
   let cse_def (def: def) : def =
-    match def with
-    | Single(name,p_in,p_out,p_var,body) ->
-       Single(name, p_in, p_out, p_var, cse_deq body p_out)
+    match def.node with
+    | Single(p_var,body) ->
+       { def with node = Single(p_var, cse_deq body def.p_out) }
     | _ -> def
 
   let cse_prog (prog:prog) : prog =
-    List.map cse_def prog
+    { nodes = List.map cse_def prog.nodes }
                
 end
 
@@ -186,14 +186,14 @@ module Clean = struct
                                  | None -> false) vars
 
   let clean_def (def:def) : def =
-    match def with
-    | Single(id,p_in,p_out,vars,body) ->
+    match def.node with
+    | Single(vars,body) ->
        let vars = clean_in_deqs vars body in
-       Single(id,p_in,p_out,vars,body)
+       { def with node = Single(vars,body) }
     | _ -> def
   
   let clean_vars_decl (prog:prog) : prog =
-    List.map clean_def prog
+    { nodes = List.map clean_def prog.nodes }
 end
        
 let opt_prog (prog: Usuba_AST.prog) : Usuba_AST.prog =

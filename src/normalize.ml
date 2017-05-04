@@ -19,13 +19,13 @@ module Bitsliceable = struct
     | _ -> raise (Invalid_AST "Should only have Norec")
   
   let def_ok (def:def) : bool =
-    match def with
-    | Single(_,_,_,_,body) ->
+    match def.node with
+    | Single(_,body) ->
        List.fold_left (&&) true @@ List.map deq_ok body
     | _ -> raise (Invalid_AST "Should only have Single")
   
   let bitsliceable (prog:prog) : bool =
-    List.fold_left (&&) true @@ List.map def_ok prog
+    List.fold_left (&&) true @@ List.map def_ok prog.nodes
 
 end
        
@@ -33,7 +33,7 @@ let print title body =
   if false then
     begin
       print_endline title;
-      if true then print_endline (Usuba_print.prog_to_str body)
+      if true then print_endline (Usuba_print.prog_to_str body.nodes)
     end
 
 (* Note: the print actually print if the booleans in the function "print" above 

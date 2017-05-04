@@ -78,18 +78,17 @@ let norm_p (p: p) : p =
         | Array _ -> raise (Invalid_AST "Illegal Array")) p)
 
 let norm_def (def: def) : def =
-  match def with
-  | Single(name,p_in,p_out,p_var,body) ->
+  match def.node with
+  | Single(vars,body) ->
       let env = Hashtbl.create 10 in
-      env_add_var p_in env;
-      env_add_var p_out env;
-      env_add_var p_var env;
-      Single(name, norm_p p_in, norm_p p_out, norm_p p_var,
-             norm_deq env body)
+      env_add_var def.p_in env;
+      env_add_var def.p_out env;
+      env_add_var vars env;
+     { def with node  = Single(norm_p vars, norm_deq env body) }
   | _ -> raise (Invalid_AST "Illegal non-Single def")
 
 
 (* Note: the print actually if the boolean if the function "print" above 
          are set to true (or at least the first one) *)
-let norm_uintn (prog: prog)  =
-  List.map norm_def prog
+let norm_uintn (prog: prog) : prog =
+  { nodes = List.map norm_def prog.nodes } 

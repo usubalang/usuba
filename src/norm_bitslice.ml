@@ -148,19 +148,19 @@ let norm_deq env_fun (body: deq list) : deq list =
          | Rec _ -> raise (Error "REC")) body)
 
 let norm_def env_fun (def: def) : def =
-  match def with
-  | Single(name,p_in,p_out,p_var,body) ->
-     env_add_fun name p_in p_out env_fun;
+  match def.node with
+  | Single(p_var,body) ->
+     env_add_fun def.id def.p_in def.p_out env_fun;
      new_vars := [];
      let body = norm_deq env_fun body in
-      Single(name,p_in,p_out,p_var @ !new_vars,norm_deq env_fun body)
+     { def with node = Single(p_var @ !new_vars,body) }
   | _ -> raise (Invalid_AST "Illegal non-Single def")
 
 let print title body =
   if false then
     begin
       print_endline title;
-      if true then print_endline (Usuba_print.prog_to_str body)
+      if true then print_endline (Usuba_print.prog_to_str body.nodes)
     end
 
 (* Note: the print actually if the boolean if the function "print" above 
@@ -177,7 +177,7 @@ let norm_prog (prog: prog)  =
 
   (* Remove nested function calls by introducing temporary variables *)
   let env_fun = Hashtbl.create 10 in
-  let pre_normalized = List.map (norm_def env_fun) uintn_norm in
+  let pre_normalized = { nodes = List.map (norm_def env_fun) uintn_norm.nodes } in
   print "PRE NORMALIZED:" pre_normalized;
 
   (* Convert tuples assignment to multiple single assignment, if possible *)

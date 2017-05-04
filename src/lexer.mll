@@ -22,6 +22,7 @@ let _ =
      "fby", TOK_FBY;
      "forall", TOK_FORALL;
      "in", TOK_IN;
+     "inline",TOK_INLINE;
     ]
 
 (* intrinsics list *)

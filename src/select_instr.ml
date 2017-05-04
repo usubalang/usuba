@@ -88,10 +88,10 @@ module Select_size = struct
               | _ -> ()) p
              
   let select_size_def (def:def) : unit =
-    match def with
-    | Single(_,p_in,p_out,vars,body) ->
-       select_size_vars p_in;
-       select_size_vars p_out;
+    match def.node with
+    | Single(vars,body) ->
+       select_size_vars def.p_in;
+       select_size_vars def.p_out;
        select_size_vars vars;
        List.iter (function
                    | Norec(_,e) -> select_size_expr e
@@ -99,7 +99,7 @@ module Select_size = struct
     | _ -> raise (Invalid_AST "Non-single node in instruction selection")
                  
   let select_size (prog:prog) : slice_type =
-    List.iter select_size_def prog;
+    List.iter select_size_def prog.nodes;
     if !pack_size = -1 then
       !slice_type
     else
@@ -240,11 +240,11 @@ let norm_deq (deq:deq) : deq =
   | _ -> raise (Invalid_AST "Rec")
        
 let norm_def (def:def) : def =
-  match def with
-  | Single(id,p_in,p_out,vars,body) ->
-     Single(id,p_in,p_out,vars,List.map norm_deq body)
+  match def.node with
+  | Single(vars,body) ->
+     { def with node = Single(vars,List.map norm_deq body) }
   | _ -> raise (Invalid_AST "Non-Single node")
        
 let select_instr (prog:prog) : slice_type * prog =
   slice_type := Select_size.select_size prog;
-  !slice_type, List.map norm_def prog
+  !slice_type, { nodes = List.map norm_def prog.nodes }

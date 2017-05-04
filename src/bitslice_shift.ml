@@ -60,12 +60,12 @@ let shift_deq (deq:deq) : deq =
   | Norec(p,e) -> Norec(p,shift_expr e)
   | Rec(id,ei,ef,p,e) -> Rec(id,ei,ef,p,shift_expr e)
                              
-               
+                            
 let shift_def (def:def) : def =
-  match def with
-  | Single(id,p_in,p_out,vars,body) -> Single(id,p_in,p_out,vars,
-                                              List.map shift_deq body)
+  match def.node with
+  | Single(vars,body) ->
+     { def with node  = Single(vars,List.map shift_deq body) }
   | _ -> def
-               
+           
 let expand_shifts (prog:prog) : prog =
-  List.map shift_def prog
+  { nodes = List.map shift_def prog.nodes }

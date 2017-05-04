@@ -69,13 +69,25 @@ type deq =
   | Rec of ident * arith_expr * arith_expr * (var list) * expr
 
 type p = (ident * typ * clock) list
-                                
-type def =
-  | Single of ident * p * p * p * deq list
-  | Multiple  of ident * p * p * (p * deq list) list (*array of nodes*)
-  | Perm of ident * p * p * int list (* permutation *)
-  | MultiplePerm of ident * p * p * (int list) list (* array of perm *)
-  | Table of ident * p * p * int list (* lookup table *)
-  | MultipleTable of ident * p * p * (int list) list (* array of lookup tables *)
-                                
-type prog = def list
+        
+type def_i =
+  | Single    of p * deq list (* regular node *)
+  | Multiple  of (p * deq list) list (*array of nodes*)
+  | Perm         of int list (* permutation *)
+  | MultiplePerm of int list list (* array of perm *)
+  | Table         of int list (* lookup table *)
+  | MultipleTable of int list list (* array of lookup tables *)
+                                                
+type def_opt = Inline
+                 
+type def = {
+  id : ident;
+  p_in : p;
+  p_out : p;
+  opt : def_opt list;
+  node : def_i;
+}
+                                                
+type prog = {
+  nodes : def list;
+}

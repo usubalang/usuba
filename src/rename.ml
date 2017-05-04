@@ -69,22 +69,19 @@ let rec rename_deq deqs =
 let rec rename_p p =
   List.map (fun (id,typ,ck) -> (id^"'",typ,ck)) p
                                           
-let rename_def = function
-  | Single (name, p_in, p_out, p_var, body) ->
-     Single(name^"'", rename_p p_in, rename_p p_out, rename_p p_var, rename_deq body)
-  | Multiple(name,p_in,p_out,nodes) ->
-     Multiple(name^"'", rename_p p_in, rename_p p_out,
-              List.map (fun (vars,body) -> rename_p vars, rename_deq body) nodes)
-  | Perm(name,p_in,p_out,l) ->
-     Perm(name^"'", rename_p p_in, rename_p p_out,l)
-  | MultiplePerm(name,p_in,p_out,l) ->
-     MultiplePerm(name^"'",rename_p p_in, rename_p p_out, l)
-  | Table(name,p_in,p_out,l) ->
-     Table(name^"'", rename_p p_in, rename_p p_out, l)
-  | MultipleTable(name,p_in,p_out,l) ->
-     MultipleTable(name^"'", rename_p p_in, rename_p p_out, l)
+let rename_def (def:def) : def =
+  { id    = def.id ^ "'";
+    p_in  = rename_p def.p_in;
+    p_out = rename_p def.p_out;
+    opt   = def.opt;
+    node = match def.node with
+           | Single (p_var, body) ->
+              Single(rename_p p_var, rename_deq body)
+           | Multiple nodes ->
+              Multiple(List.map (fun (vars,body) -> rename_p vars, rename_deq body) nodes)
+           | _ -> def.node }
      
                                    
 let rename_prog (p: prog) : prog =
-  List.map rename_def p
+  { nodes = List.map rename_def p.nodes }
 

@@ -3,8 +3,8 @@ open Utils
 
        
 let is_call_free (def:def) : bool =
-  match def with
-  | Single(_,_,_,_,body) ->
+  match def.node with
+  | Single(_,body) ->
      List.fold_left (&&) true
                     (List.map (function
                                 | Norec(_, Fun _) | Norec(_, Fun_v _) -> false
@@ -94,28 +94,32 @@ let inline_deqs env (deqs: deq list) : p*deq list =
 let inline (prog:prog) : prog =
   let env  = Hashtbl.create 20 in
   List.iter (function
-              | Single(id,p_in,p_out,vars,body) ->
+              | { id=id;p_in=p_in;p_out=p_out;opt=_;
+                  node=Single(vars,body) } ->
                  env_add env id (id,p_in,p_out,vars,body)
               | _ -> ())
-            (List.filter is_call_free prog);
+            (List.filter is_call_free prog.nodes);
   let todo = Hashtbl.create 20 in
   List.iter (function 
-              | Single(id,p_in,p_out,vars,body) ->
+              | { id=id;p_in=p_in;p_out=p_out;opt=_;
+                  node=Single(vars,body) } ->
                  env_add todo id (id,p_in,p_out,vars,body)
               | _ -> ())
-            (List.filter (fun x -> not @@ is_call_free x) prog);
+            (List.filter (fun x -> not @@ is_call_free x) prog.nodes);
   while Hashtbl.length todo <> 0  do
     let (id,p_in,p_out,vars,body) = get_next_node env todo in
     let (vars',body') = inline_deqs env body in
     env_add env id (id,p_in,p_out,vars@vars',body')
   done;
   let prog = List.map (fun x ->
-                       match x with
-                       | Single(id,_,_,_,_) -> (
-                         match env_fetch env id with
-                         | Some (id,p_in,p_out,vars,body) -> Single(id,p_in,p_out,vars,body)
-                         | None -> raise (Error ("Not found: " ^ id)))
+                       match x.node with
+                       | Single _ -> (
+                         match env_fetch env x.id with
+                         | Some (id,p_in,p_out,vars,body) ->
+                            { x with id=id;p_in=p_in;p_out=p_out;
+                                     node=Single(vars,body) }
+                         | None -> raise (Error ("Not found: " ^ x.id)))
                        | _ -> x)
-                      prog in
-  [List.nth prog (List.length prog - 1) ]
+                      prog.nodes in
+  { nodes = [List.nth prog (List.length prog - 1) ] }
                       

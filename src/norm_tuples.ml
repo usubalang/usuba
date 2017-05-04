@@ -20,16 +20,20 @@ module Simplify_tuples = struct
     | _ -> t
                  
   let simpl_tuples_def (def: def) : def =
-    match def with
-    | Single(name,p_in,p_out,p_var,body) ->
-       Single(name, p_in, p_out, p_var,
-              List.map (function
-                         | Norec(p,e) -> Norec(p,simpl_tuple e)
-                         | Rec _ -> raise (Error "REC")) body)
+    match def.node with
+    | Single(p_var,body) ->
+       { id    = def.id;
+         p_in  = def.p_in;
+         p_out = def.p_out;
+         opt   = def.opt;
+         node  = Single(p_var,
+                        List.map (function
+                                   | Norec(p,e) -> Norec(p,simpl_tuple e)
+                                   | Rec _ -> raise (Error "REC")) body) }
     | _ -> unreached ()
                      
   let simplify_tuples (p: prog) : prog =
-    List.map simpl_tuples_def p
+    { nodes = List.map simpl_tuples_def p.nodes }
 end
 
 (* Split tuples into atomic operations, if possible *)
@@ -47,11 +51,11 @@ module Split_tuples = struct
                    | Rec _ -> raise (Error "REC")) body)
 
   let split_tuples_def (def: def) : def =
-    match def with
-    | Single(name,p_in,p_out,p_var,body) ->
-       Single(name, p_in, p_out, p_var, split_tuples_deq body)
+    match def.node with
+      | Single(p_var,body) ->
+       { def with node  = Single(p_var, split_tuples_deq body) }
     | _ -> unreached ()
                  
   let split_tuples (p: prog) : prog =
-    List.map split_tuples_def p
+    { nodes = List.map split_tuples_def p.nodes }
 end
