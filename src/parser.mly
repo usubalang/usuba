@@ -26,6 +26,7 @@
 %token TOK_TABLE
 %token TOK_FORALL
 %token TOK_IN
+%token TOK_INLINE
        
 %token TOK_LPAREN
 %token TOK_RPAREN
@@ -172,10 +173,12 @@ clock:
    | TOK_TWO_COLON id=TOK_id { id }
 
 def:
-  | TOK_NODE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
+  | TOK_NODE inline=option(TOK_INLINE) f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
     TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
     TOK_VAR vars=p TOK_LET body=deqs TOK_TEL
-  { { id=f;p_in=p_in;p_out=p_out;opt=[];node=Single(vars,body) } }
+    { { id=f;p_in=p_in;p_out=p_out;
+        opt=(match inline with Some l -> [Inline] | None -> []);
+        node=Single(vars,body) } }
   | TOK_NODE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
     TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
     l = def_list TOK_RBRACKET

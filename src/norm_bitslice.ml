@@ -175,9 +175,13 @@ let norm_prog (prog: prog)  =
   let uintn_norm = Norm_uintn.norm_uintn const_norm in
   print "UINTN NORM:" uintn_norm;
 
+  (* Replace permutations by assignments *)
+  let perm_expanded = Expand_permut.expand_permut uintn_norm in
+  print "PERM EXPANDED:" perm_expanded;
+
   (* Remove nested function calls by introducing temporary variables *)
   let env_fun = Hashtbl.create 10 in
-  let pre_normalized = { nodes = List.map (norm_def env_fun) uintn_norm.nodes } in
+  let pre_normalized = { nodes = List.map (norm_def env_fun) perm_expanded.nodes } in
   print "PRE NORMALIZED:" pre_normalized;
 
   (* Convert tuples assignment to multiple single assignment, if possible *)

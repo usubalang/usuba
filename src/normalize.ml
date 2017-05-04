@@ -22,7 +22,7 @@ module Bitsliceable = struct
     match def.node with
     | Single(_,body) ->
        List.fold_left (&&) true @@ List.map deq_ok body
-    | _ -> raise (Invalid_AST "Should only have Single")
+    | _ -> true
   
   let bitsliceable (prog:prog) : bool =
     List.fold_left (&&) true @@ List.map def_ok prog.nodes
@@ -52,21 +52,17 @@ let norm_prog (prog: prog)  =
   let tables_converted = Convert_tables.convert_tables array_expanded in
   print "TABLES CONVERTED:" tables_converted;
 
-  (* expand permutation tables *)
-  let perm_expanded = Expand_permut.expand_permut tables_converted in
-  print "PERM EXPANDED:" perm_expanded;
-
   let normalized =
-    if Bitsliceable.bitsliceable perm_expanded then
-      (let normed = Norm_bitslice.norm_prog perm_expanded in
+    if Bitsliceable.bitsliceable tables_converted then
+      (let normed = Norm_bitslice.norm_prog tables_converted in
       print "PRE-NORMALIZED:" normed;
-      let inlined = Inline.inline normed in
+      let inlined = (*Inline.inline*) normed in
       print "INLINED:" inlined;
       Norm_bitslice.norm_prog inlined)
     else
-      perm_expanded in
+      tables_converted in
   print "NORMALIZED:" normalized;
-
+  
   assert (Assert_lang.Usuba_norm.is_usuba_normalized normalized);
   
   let optimized = Optimize.opt_prog normalized in

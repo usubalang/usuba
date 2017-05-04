@@ -84,8 +84,10 @@ let norm_def (def: def) : def =
       env_add_var def.p_in env;
       env_add_var def.p_out env;
       env_add_var vars env;
-     { def with node  = Single(norm_p vars, norm_deq env body) }
-  | _ -> raise (Invalid_AST "Illegal non-Single def")
+      { def with p_in  = norm_p def.p_in;
+                 p_out = norm_p def.p_out;
+                 node  = Single(norm_p vars, norm_deq env body) }
+  | _ -> def
 
 
 (* Note: the print actually if the boolean if the function "print" above 

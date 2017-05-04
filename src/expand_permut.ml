@@ -15,46 +15,46 @@
 open Usuba_AST
 open Utils
 
-let rec rewrite_p p =
-  List.flatten @@
-    List.map
-      (fun (id,typ,ck) ->
-       match typ with
-       | Bool -> [ (id,Bool,ck) ]
-       | Int n -> [ (id, Int n, ck) ]
-       | Nat -> [ (id, Nat, ck) ]
-       | Array (typ_in, Const_e size) ->
-          List.map (fun x -> (x,typ_in,ck)) (gen_list_0 id size)
-       | _ -> raise (Error "bad index")) p
-      
-let rewrite_perm (id,p_in,p_out,opt,body) : def =
-  let p_in' = rewrite_p p_in in
-  let (id_in,_,_) = List.nth p_in 0 in
-  let p_out' = rewrite_p p_out in
-  let (id_out,_,_) = List.nth p_out 0 in
-  let body' = List.mapi (fun i x -> Norec([Field(Var id_out,Const_e (i+1))],
-                                          ExpVar(Field(Var id_in, Const_e x)))) body in
-  { id=id; p_in=p_in'; p_out=p_out'; opt=opt;
-    node = Single([],body') }
-
-let expand_array_perm (ident, p_in, p_out, opt, perms) =
-  List.mapi (fun i x -> (ident^(string_of_int i),p_in,p_out,opt,x)) perms
+let list_from_perm (perm:int list) (l:expr list) : expr list =
+  let args = Array.of_list l in
+  List.map (fun i -> args.(i-1)) perm
+            
+let rec apply_perm_e env (e:expr) : expr =
+  match e with
+  | Const _ | ExpVar _ -> e
+  | Tuple l -> Tuple (List.map (apply_perm_e env) l)
+  | Not e -> Not (apply_perm_e env e)
+  | Shift(op,e,n) -> Shift(op,apply_perm_e env e,n)
+  | Log(op,x,y) -> Log(op,apply_perm_e env x,apply_perm_e env y)
+  | Arith(op,x,y) -> Arith(op,apply_perm_e env x,apply_perm_e env y)
+  | Intr(op,x,y) -> Intr(op,apply_perm_e env x,apply_perm_e env y)
+  | Fun(f,l) -> let l' = List.map (apply_perm_e env) l in
+                (match env_fetch env f with
+                 | Some perm -> Tuple (list_from_perm perm l')
+                 | None -> Fun(f,l'))
+  | Fun_v(f,n,l) -> raise (Error "Node arrays should be gone")
+  | Fby(ei,ef,f) -> Fby(apply_perm_e env ei,apply_perm_e env ef,f)
+  | Nop -> Nop
+                        
+            
+let apply_perm env (deqs: deq list) : deq list =
+  List.map (fun x -> match x with
+                     | Norec(p,e) -> Norec(p,apply_perm_e env e)
+                     | _ -> x) deqs
             
 let rec rewrite_defs (l: def list) : def list =
-  List.flatten @@
-    List.map
-      (fun x ->
-       let id    = x.id in
-       let p_in  = x.p_in in
-       let p_out = x.p_out in
-       let opt   = x.opt in       
-       match x.node with
-       | Perm l -> [ rewrite_perm (id,p_in,p_out,opt,l) ]
-       | MultiplePerm perms ->
-          (List.map rewrite_perm (expand_array_perm (id,p_in,p_out,opt,perms)))
-       | _ -> [ x ])
-      l
-      
+  let env = Hashtbl.create 10 in
+  List.iter (fun x -> match x.node with
+                      | Perm l -> env_add env x.id l
+                      | MultiplePerm l ->
+                         List.iteri (fun i p -> env_add env (x.id^(string_of_int i)) p) l
+                      | _ -> ()) l;
+  List.map (fun x -> match x.node with
+                     | Single(vars,body) ->
+                        { x with node = Single(vars,apply_perm env body) }
+                     | _ -> x) l
       
 let expand_permut (p: prog) : prog =
-  { nodes = rewrite_defs p.nodes }
+  { nodes = List.filter (fun x -> match x.node with
+                                  | Perm _ | MultiplePerm _ -> false
+                                  | _ -> true) (rewrite_defs p.nodes) }
