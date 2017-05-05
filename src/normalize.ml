@@ -56,7 +56,7 @@ let norm_prog (prog: prog)  =
     if Bitsliceable.bitsliceable tables_converted then
       (let normed = Norm_bitslice.norm_prog tables_converted in
       print "PRE-NORMALIZED:" normed;
-      let inlined = (*Inline.inline*) normed in
+      let inlined = Inline.inline normed in
       print "INLINED:" inlined;
       Norm_bitslice.norm_prog inlined)
     else

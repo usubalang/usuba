@@ -144,30 +144,47 @@ let deqs_to_c (deqs: deq list) : string =
                sprintf "  %s = %s;" (rename p) (expr_to_c e)
             | _ -> unreached ()) deqs)
 
+       
+let update_var env (var:var) : var =
+  match var with
+  | Var id -> ( match env_fetch env id with
+                | Some _ -> Var ("*" ^ id)
+                | None -> var)
+  | _ -> raise (Error "Invalid non-var")
+               
+let rec update_e env (e:expr) : expr =
+  match e with
+  | ExpVar v -> ExpVar (update_var env v)
+  | Not e -> Not (update_e env e)
+  | Intr(op,x,y) -> Intr(op,update_e env x,update_e env y)
+  | _ -> e
+       
+let update_out_vars env (deqs: deq list) : deq list =
+  List.map (function
+             | Norec(p,e) -> Norec(List.map (update_var env) p,update_e env e)
+             | Rec _ -> raise (Error "Invalid Rec")) deqs
                    
 let inner_def_to_c (def:def) : string =
+  let out_vars = Hashtbl.create 10 in
+  List.iter (fun (id,_,_) -> env_add out_vars id true) def.p_out;
   match def.node with
   | Single(vars,body) ->
+     let body = update_out_vars out_vars body in
      let type_c = type_to_c !slice_type in
      Printf.sprintf
-       "void %s (%s,%s) {\n%s\n%s\n%s\n}\n"
+       "void %s (%s,%s) {\n%s\n%s\n}\n"
        (rename def.id)
        
        (* parameters *)
        (join "," (List.map (fun (id,_,_) -> type_c ^ " " ^ (rename id)) def.p_in))
-       (join "," (List.map (fun (id,_,_) -> type_c ^ "* __out_" ^ (rename id)) def.p_out))
+       (join "," (List.map (fun (id,_,_) -> type_c ^ "* " ^ (rename id)) def.p_out))
        
        (* declaring variabes *)
        (join "" (List.map (fun (id,_,_) -> sprintf "  %s %s;\n"
-                                                     type_c (rename id))
-                            (vars@def.p_out)))
+                                                     type_c (rename id)) vars))
 
        (* the body *)
        (deqs_to_c body)
-
-       (* setting the output *)
-       (join "" (List.map (fun (id,_,_) -> sprintf "  *__out_%s = %s;\n"
-                                                   (rename id) (rename id)) def.p_out))
   | _ -> unreached () 
                          
 let def_to_c (def:def) : string =
