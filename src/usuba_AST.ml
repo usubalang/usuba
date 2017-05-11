@@ -62,6 +62,8 @@ type expr = Const  of int
           | Fun    of ident * expr list
           | Fun_v  of ident * arith_expr * expr list (* nodes arrays *)
           | Fby    of expr * expr * ident option
+          | When   of expr * ident * ident
+          | Merge  of ident * (ident * expr) list
           | Nop                           
                             
 type deq =

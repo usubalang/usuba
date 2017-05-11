@@ -22,7 +22,9 @@ let _ =
      "fby", TOK_FBY;
      "forall", TOK_FORALL;
      "in", TOK_IN;
-     "inline",TOK_INLINE;
+     "inline", TOK_INLINE;
+     "merge", TOK_MERGE;
+     "when", TOK_WHEN;
     ]
 
 (* intrinsics list *)
@@ -101,6 +103,7 @@ rule token = parse
 { try Hashtbl.find kwd_table id with Not_found -> TOK_id id }
 
 (* symbols *)
+| "->"   { TOK_ARROW     }
 | "("    { TOK_LPAREN    }
 | ")"    { TOK_RPAREN    }
 | "["    { TOK_LBRACKET  }

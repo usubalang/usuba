@@ -27,6 +27,8 @@
 %token TOK_FORALL
 %token TOK_IN
 %token TOK_INLINE
+%token TOK_WHEN
+%token TOK_MERGE
        
 %token TOK_LPAREN
 %token TOK_RPAREN
@@ -48,6 +50,7 @@
 %token TOK_RANGE
 %token TOK_LT
 %token TOK_GT
+%token TOK_ARROW
 
 %token TOK_AND
 %token TOK_TILDE
@@ -68,6 +71,11 @@
        
 (***************************** Precedence levels ******************************)
 
+%nonassoc TOK_FBY
+%nonassoc TOK_WHEN
+%nonassoc TOK_ARROW
+%nonassoc TOK_LT
+       
 %nonassoc TOK_LSHIFT TOK_RSHIFT TOK_LROTATE TOK_RROTATE
 
 %left TOK_PLUS TOK_DASH
@@ -122,7 +130,7 @@ exp:
   | TOK_LPAREN e=exp TOK_RPAREN { e }
   | x=TOK_int { Const x }
   | x=var { ExpVar x } 
-  (* note that a tuple has at least 2 elements (enforced by the following rule) *)
+    (* note that a tuple has at least 2 elements (enforced by the following rule) *)
   | TOK_LPAREN e1=exp TOK_COMMA t=explist TOK_RPAREN  { Tuple (e1::t) }
   | x=exp o=log_op y=exp   { Log(o,x,y) }
   | x=exp o=arith_op y=exp { Arith(o,x,y) }
@@ -132,24 +140,26 @@ exp:
   | f=TOK_id TOK_LBRACKET n=arith_exp TOK_RBRACKET
     TOK_LPAREN args=explist TOK_RPAREN { Fun_v(f, n, args) }
   | f=TOK_intrinsic TOK_LPAREN x=exp TOK_COMMA y=exp TOK_RPAREN { Intr(f,x,y) }
-
-(* expressions that are not recursive *)
-out_exp:
-  | e=exp { e }
+  | a=exp TOK_WHEN constr=TOK_id TOK_LPAREN x=TOK_id TOK_RPAREN { When(a,constr,x) }
+  | TOK_MERGE ck=TOK_id c=caselist { Merge(ck,c) }
   | init=exp TOK_FBY follow=exp { Fby(init,follow,None) }
   | init=exp TOK_LT f=TOK_id TOK_GT TOK_FBY follow=exp
     { Fby(init,follow,Some f) }
                                      
 explist: l=separated_nonempty_list(TOK_COMMA,exp) { l }
-                                  
+
+caselist:
+  | option(TOK_PIPE)
+    l=separated_nonempty_list(TOK_PIPE,c=TOK_id TOK_ARROW e=exp {c,e}) { l }
+
 pat:
   | p=var                      { [ p ] }
   | TOK_LPAREN l=separated_nonempty_list(TOK_COMMA,var) TOK_RPAREN   { l }
 
 norec_deq: (* returns a tuple list, is converted to an AST by def *)
-  | p=pat TOK_EQUAL e=out_exp              { ( p, e ) }
-  | p=pat op=log_op TOK_EQUAL e=out_exp    { ( p, Log(op,left_to_right p,e)) }
-  | p=pat op=arith_op TOK_EQUAL e=out_exp  { ( p, Arith(op,left_to_right p,e)) }
+  | p=pat TOK_EQUAL e=exp              { ( p, e ) }
+  | p=pat op=log_op TOK_EQUAL e=exp    { ( p, Log(op,left_to_right p,e)) }
+  | p=pat op=arith_op TOK_EQUAL e=exp  { ( p, Arith(op,left_to_right p,e)) }
 
 deq:
   | TOK_FORALL i=TOK_id TOK_IN TOK_LBRACKET startr=arith_exp TOK_COMMA
@@ -160,7 +170,7 @@ deq:
 deqs: l=separated_nonempty_list(TOK_SEMICOLON, deq) { l }
 
 p:
-  | l=separated_list(TOK_COMMA, x=TOK_id TOK_COLON t=typ ck=clock { x, t, ck }) { l }
+  | l=separated_list(TOK_COMMA, x=TOK_id TOK_COLON t=typ ck=pclock { x, t, ck }) { l }
 
 typ:
   | t=TOK_type size=option(delimited(TOK_LBRACKET,arith_exp,TOK_RBRACKET))
@@ -168,9 +178,11 @@ typ:
                             | Some n -> Array(t,n)
                             | None -> t }
                                       
-clock:
+pclock:
    | { "_" }
    | TOK_TWO_COLON id=TOK_id { id }
+
+                             
 
 def:
   | TOK_NODE inline=option(TOK_INLINE) f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
