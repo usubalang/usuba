@@ -42,6 +42,12 @@ __m128i add(__m128i a, __m128i b, __m128i *restrict c) {
   *c =_mm_xor_si128(_mm_and_si128(a,b),_mm_and_si128(*c,tmp));
   return res;
 }
+__m128i add_bis(__m128i a, __m128i b, __m128i *restrict c) {
+  __m128i tmp = _mm_xor_si128(a,b);
+  __m128i res = _mm_xor_si128(tmp,*c);
+  *c =_mm_xor_si128(_mm_and_si128(a,b),_mm_and_si128(*c,tmp));
+  return res;
+}
 
 void add_bitslice (__m128i x1, __m128i x2, __m128i x3, __m128i x4,
                    __m128i x5, __m128i x6, __m128i x7, __m128i x8,
@@ -195,40 +201,48 @@ int main () {
 
   for (int i = 0; i < size*16; i++) {
     __m128i tmp;
-    buffer[i] = add(x1,x2,&tmp);
+    buffer[i] = add_bis(x1,x2,&tmp);
   }
   fwrite(buffer,sizeof *buffer,size*16,f);
   
-  
   printf("Packed...... ");fflush(stdout);
-  begin = _rdtsc();
-  for (int j = 0; j < size; j++)
-    add_pack(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,
-             y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,
-             &(buffer[j*16]));
-  end = _rdtsc();
-  printf("%lu\n",end-begin);
-  fwrite(buffer,sizeof *buffer,size*16,f);
+  end = 0;
+  for (int i = 0; i < 50; i++) {
+    begin = _rdtsc();
+    for (int j = 0; j < size; j++)
+      add_pack(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,
+               y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,
+               &(buffer[j*16]));
+    end += _rdtsc() - begin;
+    fwrite(buffer,sizeof *buffer,size*16,f);
+  }
+  printf("%lu\n",end);
   
   printf("Bitsliced... ");fflush(stdout);
-  begin = _rdtsc();
-  for (int j = 0; j < size; j++)
-    add_bitslice(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,
-                 y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,
-                 &(buffer[j*16]));
-  end = _rdtsc();
-  printf("%lu\n",end-begin);
-  fwrite(buffer,sizeof *buffer,size*16,f);
+  end = 0;
+  for (int i = 0; i < 50; i++) {
+    begin = _rdtsc();
+    for (int j = 0; j < size; j++)
+      add_bitslice(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,
+                   y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,
+                   &(buffer[j*16]));
+    end += _rdtsc() - begin;
+    fwrite(buffer,sizeof *buffer,size*16,f);
+  }
+  printf("%lu\n",end);
   
   printf("Lookahead... ");fflush(stdout);
-  begin = _rdtsc();
-  for (int j = 0; j < size; j++)
-    add_lookahead(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,
-                  y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,
-                  &(buffer[j*16]));
-  end = _rdtsc();
-  printf("%lu\n",end-begin);
-  fwrite(buffer,sizeof *buffer,size*16,f);
+  end = 0;
+  for (int i = 0; i < 50; i++) {
+    begin = _rdtsc();
+    for (int j = 0; j < size; j++)
+      add_lookahead(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,
+                    y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,
+                    &(buffer[j*16]));
+    end += _rdtsc() - begin;
+    fwrite(buffer,sizeof *buffer,size*16,f);
+  }
+  printf("%lu\n",end);
   
   return 0;
 }

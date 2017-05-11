@@ -72,6 +72,13 @@ __m128i add(__m128i a, __m128i b, __m128i *restrict c) {
   *c = a&b ^ *c&tmp;
   return res;
 }
+__m128i add_bis(__m128i a, __m128i b, __m128i *restrict c) {
+  __m128i tmp = a ^ b;
+  __m128i res = tmp ^ *c;
+  *c = a&b ^ *c&tmp;
+  return res;
+}
+
 
 void add_bitslice (__m128i x1, __m128i x2, __m128i x3, __m128i x4,
                    __m128i x5, __m128i x6, __m128i x7, __m128i x8,
@@ -221,50 +228,61 @@ int main () {
 
   for (int i = 0; i < size*32; i++) {
     __m128i tmp;
-    buffer[i] = add(x1,x2,&tmp);
+    buffer[i] = add_bis(x1,x2,&tmp);
   }
   fwrite(buffer,sizeof *buffer,size*32,f);
   
-  
   printf("Packed...... ");fflush(stdout);
-  begin = _rdtsc();
-  for (int j = 0; j < size; j++)
-    add_pack(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,
-             x17,x18,x19,x20,x21,x22,x23,x24,x25,x26,x27,x28,x29,x30,x31,x32,
-             y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,
-             y17,y18,y19,y20,y21,y22,y23,y24,y25,y26,y27,y28,y29,y30,y31,y32,
-             &(buffer[j*32]));
-  end = _rdtsc();
-  printf("%lu\n",end-begin);
-  fwrite(buffer,sizeof *buffer,size*32,f);
+  end = 0;
+  for (int i = 0; i < 25; i++) {
+    begin = _rdtsc();
+    for (int j = 0; j < size; j++)
+      add_pack(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,
+               x17,x18,x19,x20,x21,x22,x23,x24,x25,x26,x27,x28,x29,x30,x31,x32,
+               y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,
+               y17,y18,y19,y20,y21,y22,y23,y24,y25,y26,y27,y28,y29,y30,y31,y32,
+               &(buffer[j*32]));
+    end += _rdtsc() - begin;
+    fwrite(buffer,sizeof *buffer,size*32,f);
+  }
+  printf("%lu\n",end);
   
   printf("Bitsliced... ");fflush(stdout);
-  begin = _rdtsc();
-  for (int j = 0; j < size; j++)
-    add_bitslice(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,
-                 x17,x18,x19,x20,x21,x22,x23,x24,x25,x26,x27,x28,x29,x30,x31,x32,
-                 y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,
-                 y17,y18,y19,y20,y21,y22,y23,y24,y25,y26,y27,y28,y29,y30,y31,y32,
-                 &(buffer[j*32]));
-  end = _rdtsc();
-  printf("%lu\n",end-begin);
-  fwrite(buffer,sizeof *buffer,size*32,f);
+  end = 0;
+  for (int i = 0; i < 25; i++) {
+    begin = _rdtsc();
+    for (int j = 0; j < size; j++)
+      add_bitslice(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,
+                   x17,x18,x19,x20,x21,x22,x23,x24,x25,x26,x27,x28,x29,x30,x31,x32,
+                   y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,
+                   y17,y18,y19,y20,y21,y22,y23,y24,y25,y26,y27,y28,y29,y30,y31,y32,
+                   &(buffer[j*32]));
+    end += _rdtsc() - begin;
+    fwrite(buffer,sizeof *buffer,size*32,f);
+  }
+  printf("%lu\n",end);
+
+  printf("Pack_ar..... ");fflush(stdout);
+    end = 0;
+  for (int i = 0; i < 25; i++) {
+    begin = _rdtsc();
+    for (int j = 0; j < size; j++)
+      add_pack_arr(x,y,&(buffer[j*32]));
+    end += _rdtsc() - begin;
+    fwrite(buffer,sizeof *buffer,size*32,f);
+  }
+  printf("%lu\n",end);
+  
   
   printf("Pack_ar..... ");fflush(stdout);
-  begin = _rdtsc();
-  for (int j = 0; j < size; j++)
-    add_pack_arr(x,y,&(buffer[j*32]));
-  end = _rdtsc();
-  printf("%lu\n",end-begin);
-  fwrite(buffer,sizeof *buffer,size*32,f);
-  
-  printf("Bitsli_ar... ");fflush(stdout);
-  begin = _rdtsc();
-  for (int j = 0; j < size; j++)
-    add_bitslice_arr(x,y,&(buffer[j*32]));
-  end = _rdtsc();
-  printf("%lu\n",end-begin);
-  fwrite(buffer,sizeof *buffer,size*32,f);
-  
+  end = 0;
+  for (int i = 0; i < 25; i++) {
+    begin = _rdtsc();
+    for (int j = 0; j < size; j++)
+      add_bitslice_arr(x,y,&(buffer[j*32]));
+    end += _rdtsc() - begin;
+    fwrite(buffer,sizeof *buffer,size*32,f);
+  }
+  printf("%lu\n",end);
   return 0;
 }

@@ -23,29 +23,55 @@ void add_pack (__m128i x1, __m128i x2, __m128i x3, __m128i x4,
   out[7] = _mm_add_epi8(x8,y8);
 }
 
-
-__m128i add(__m128i a, __m128i b, __m128i *restrict c) {
+__m128i add_bis(__m128i a, __m128i b, __m128i *restrict c) {
   __m128i tmp = a ^ b;
   __m128i res = tmp ^ *c;
   *c = a&b ^ *c&tmp;
   return res;
 }
 
+#define add(a,b,c,res) do {                                    \
+    __m128i tmp = a ^ b;                                       \
+    res = tmp ^ *c;                                            \
+    *c = a&b ^ *c&tmp;                                         \
+  } while (0)
 void add_bitslice (__m128i x1, __m128i x2, __m128i x3, __m128i x4,
                    __m128i x5, __m128i x6, __m128i x7, __m128i x8,
                    __m128i y1, __m128i y2, __m128i y3, __m128i y4,
                    __m128i y5, __m128i y6, __m128i y7, __m128i y8,
                    __m128i *restrict out) {
   __m128i c = _mm_setzero_si128();
-  out[0] = add(x1,y1,&c);
-  out[1] = add(x2,y2,&c);
-  out[2] = add(x3,y3,&c);
-  out[3] = add(x4,y4,&c);
-  out[4] = add(x5,y5,&c);
-  out[5] = add(x6,y6,&c);
-  out[6] = add(x7,y7,&c);
-  out[7] = add(x8,y8,&c); 
+  add(x1,y1,&c,out[0]);
+  add(x2,y2,&c,out[1]);
+  add(x3,y3,&c,out[2]);
+  add(x4,y4,&c,out[3]);
+  add(x5,y5,&c,out[4]);
+  add(x6,y6,&c,out[5]);
+  add(x7,y7,&c,out[6]);
+  add(x8,y8,&c,out[7]); 
 }
+
+/* __m128i add(__m128i a, __m128i b, __m128i *restrict c) { */
+/*   __m128i tmp = a ^ b; */
+/*   __m128i res = tmp ^ *c; */
+/*   *c = a&b ^ *c&tmp; */
+/*   return res; */
+/* } */
+/* void add_bitslice (__m128i x1, __m128i x2, __m128i x3, __m128i x4, */
+/*                    __m128i x5, __m128i x6, __m128i x7, __m128i x8, */
+/*                    __m128i y1, __m128i y2, __m128i y3, __m128i y4, */
+/*                    __m128i y5, __m128i y6, __m128i y7, __m128i y8, */
+/*                    __m128i *restrict out) { */
+/*   __m128i c = _mm_setzero_si128(); */
+/*   out[0] = add(x1,y1,&c); */
+/*   out[1] = add(x2,y2,&c); */
+/*   out[2] = add(x3,y3,&c); */
+/*   out[3] = add(x4,y4,&c); */
+/*   out[4] = add(x5,y5,&c); */
+/*   out[5] = add(x6,y6,&c); */
+/*   out[6] = add(x7,y7,&c); */
+/*   out[7] = add(x8,y8,&c);  */
+/* } */
 
 void add_lookahead (__m128i a0, __m128i a1, __m128i a2, __m128i a3,
                     __m128i a4, __m128i a5, __m128i a6, __m128i a7,
@@ -133,40 +159,6 @@ void add_lookahead_reschedul (__m128i a0, __m128i a1, __m128i a2, __m128i a3,
   out[7] = p7 ^ c6;
 }
 
-void lookahead_sound() {
-
-  __m128i x1, x2, x3, x4, x5, x6, x7, x8;
-  __m128i y1, y2, y3, y4, y5, y6, y7, y8;
-  
-  x1 = _mm_set_epi8(170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170);
-  x2 = _mm_set_epi8(204,204,204,204,204,204,204,204,204,204,204,204,204,204,204,204);
-  x3 = _mm_set_epi8(227,142,56,227,142,56,227,142,56,227,142,56,227,142,56,227);
-  x4 = _mm_set_epi8(240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240);
-  x5 = _mm_set_epi8(248,62,15,131,224,248,62,15,131,224,248,62,15,131,224,248);
-  x6 = _mm_set_epi8(252,15,192,252,15,192,252,15,192,252,15,192,252,15,192,252);
-  x7 = _mm_set_epi8(254,3,248,15,224,63,128,254,3,248,15,224,63,128,254,3);
-  x8 = _mm_set_epi8(255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0);
-
-  y1 = _mm_set_epi8(170,170,170,170,170,170,170,170,170,170,170,170,170,170,170,170);
-  y2 = _mm_set_epi8(204,204,204,204,204,204,204,204,204,204,204,204,204,204,204,204);
-  y3 = _mm_set_epi8(227,142,56,227,142,56,227,142,56,227,142,56,227,142,56,227);
-  y4 = _mm_set_epi8(240,240,240,240,240,240,240,240,240,240,240,240,240,240,240,240);
-  y5 = _mm_set_epi8(248,62,15,131,224,248,62,15,131,224,248,62,15,131,224,248);
-  y6 = _mm_set_epi8(252,15,192,252,15,192,252,15,192,252,15,192,252,15,192,252);
-  y7 = _mm_set_epi8(254,3,248,15,224,63,128,254,3,248,15,224,63,128,254,3);
-  y8 = _mm_set_epi8(255,0,255,0,255,0,255,0,255,0,255,0,255,0,255,0);
-
-  __m128i buf1[8], buf2[8];
-  add_bitslice(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,buf1);
-  add_lookahead(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,buf2);
-  for (int i = 0; i < 8; i++)
-    if (_mm_test_all_zeros(_mm_cmpeq_epi64(buf1[i],buf2[i]),
-                           _mm_cmpeq_epi64(buf1[i],buf1[i]))) {
-      printf("Unsound.");
-      exit(EXIT_FAILURE);
-    }
-}
-
 int main () {
   //lookahead_sound();
   
@@ -176,7 +168,7 @@ int main () {
   __m128i x1, x2, x3, x4, x5, x6, x7, x8;
   __m128i y1, y2, y3, y4, y5, y6, y7, y8;
 
-  int size = 1e6;
+  int size = 1e5;
   srand(time(NULL));
   __m128i *restrict buffer = aligned_alloc(32,size * 8 * sizeof *buffer);
 
@@ -200,34 +192,43 @@ int main () {
 
   for (int i = 0; i < size*8; i++) {
     __m128i tmp;
-    buffer[i] = add(x1,x2,&tmp);
+    buffer[i] = add_bis(x1,x2,&tmp);
   }
   fwrite(buffer,sizeof *buffer,size*8,f);
   
   
   printf("Packed...... ");fflush(stdout);
-  begin = _rdtsc();
-  for (int j = 0; j < size; j++)
-    add_pack(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,&(buffer[j*8]));
-  end = _rdtsc();
-  printf("%lu\n",end-begin);
-  fwrite(buffer,sizeof *buffer,size*8,f);
+  end = 0;
+  for (int i = 0; i < 100; i++) {
+    begin = _rdtsc();
+    for (int j = 0; j < size; j++)
+      add_pack(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,&(buffer[j*8]));
+    end += _rdtsc() - begin;
+    fwrite(buffer,sizeof *buffer,size*8,f);
+  }
+  printf("%lu\n",end);
   
   printf("Bitsliced... ");fflush(stdout);
-  begin = _rdtsc();
-  for (int j = 0; j < size; j++)
-    add_bitslice(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,&(buffer[j*8]));
-  end = _rdtsc();
-  printf("%lu\n",end-begin);
-  fwrite(buffer,sizeof *buffer,size*8,f);
+  end = 0;
+  for (int i = 0; i < 100; i++) {
+    begin = _rdtsc();
+    for (int j = 0; j < size; j++)
+      add_bitslice(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,&(buffer[j*8]));
+    end += _rdtsc() - begin;
+    fwrite(buffer,sizeof *buffer,size*8,f);
+  }
+  printf("%lu\n",end);
   
   printf("Lookahead... ");fflush(stdout);
-  begin = _rdtsc();
-  for (int j = 0; j < size; j++)
-    add_lookahead(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,&(buffer[j*8]));
-  end = _rdtsc();
-  printf("%lu\n",end-begin);
-  fwrite(buffer,sizeof *buffer,size*8,f);
+  end = 0;
+  for (int i = 0; i < 100; i++) {
+    begin = _rdtsc();
+    for (int j = 0; j < size; j++)
+      add_lookahead(x1,x2,x3,x4,x5,x6,x7,x8,y1,y2,y3,y4,y5,y6,y7,y8,&(buffer[j*8]));
+    end += _rdtsc() - begin;
+    fwrite(buffer,sizeof *buffer,size*8,f);
+  }
+  printf("%lu\n",end);
   
   return 0;
 }
