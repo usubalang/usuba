@@ -10,7 +10,7 @@
 
 void orthogonalize(unsigned long *in, __m256i *out) {
   for (int i = 0; i < 64; i++)
-    out[i] = _mm256_set_epi64x (in[i*2], in[i*2+1], in[i*2+2], in[i*2+3]);
+    out[i] = _mm256_set_epi64x (in[i*4], in[i*4+1], in[i*4+2], in[i*4+3]);
 }
 
 void unorthogonalize(__m256i *in, unsigned long *out) {
