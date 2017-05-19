@@ -125,6 +125,9 @@ var:
   | i=TOK_id TOK_LBRACKET n=arith_exp TOK_RBRACKET { Index (i,n) }
   | i=TOK_id TOK_LBRACKET ei=arith_exp TOK_RANGE ef=arith_exp TOK_RBRACKET
     { Range(i,ei,ef) }
+  | i=TOK_id TOK_LBRACKET e1=arith_exp TOK_COMMA
+    l=separated_nonempty_list(TOK_COMMA,arith_exp) TOK_RBRACKET
+    { Slice(i,e1::l) }
 
 exp:
   | TOK_LPAREN e=exp TOK_RPAREN { e }

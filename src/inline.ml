@@ -36,6 +36,7 @@ let rec rename_var pref (var:var) : var =
   | Field(v,e) -> Field(rename_var pref v,e)
   | Index(id,e) -> Index(pref ^ id,e)
   | Range(id,ei,ef) -> Range(pref ^ id,ei,ef)
+  | Slice(id,l) -> Slice(pref ^ id,l)
                             
 let rec rename_expr pref (e:expr) : expr =
   match e with

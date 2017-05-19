@@ -50,7 +50,8 @@ type var =
   | Field of var * arith_expr
   | Index of ident * arith_expr
   | Range of ident * arith_expr * arith_expr
-                     
+  | Slice of ident * arith_expr list
+                                    
 type expr = Const  of int
           | ExpVar of var
           | Tuple  of expr list

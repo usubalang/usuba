@@ -4,6 +4,8 @@
    This module has several main functionalities:
     - Convert arrays of nodes into multiple nodes. 
     - Convert forall into a list of regular instructions.
+    - Convert Ranges into multiple Tuples of Fields.
+    - Convert Slices into multiple Tuples of Fields.
     - Convert access to arrays (variables) into access to variables
       (for instance, a[0] will become a'0)
     
@@ -31,6 +33,10 @@ let rec expand_var_range (v:var) : var list =
   
   match v with
   | Range(id,Const_e ei,Const_e ef) -> expand_range id ei ef []
+  | Slice(id,l) -> List.flatten @@
+                     List.map
+                     expand_var_range
+                     (List.map (fun n -> Field(Var id,n)) l)
   | Field(v',e) -> ( match expand_var_range v' with
                      | x::[] -> [ Field(x,e) ]
                      | l -> List.map (fun x -> Field(x,e)) l )
@@ -74,6 +80,8 @@ let rec rewrite_expr loc_env env_var (i:int) (e:expr) : expr =
   | ExpVar(Range(v,ei,ef)) ->
      ExpVar(Range(v, Const_e(eval_arith loc_env ei),
                   Const_e(eval_arith loc_env ef)))
+  | ExpVar(Slice(v,l)) ->
+     ExpVar(Slice(v,List.map (fun n -> Const_e(eval_arith loc_env n)) l))
   | Tuple l -> Tuple (List.map rec_call l)
   | Not e -> Not (rec_call e)
   | Log(op,x,y) -> Log(op,rec_call x,rec_call y)
@@ -108,7 +116,8 @@ let rewrite_pat env env_var (pat:var list) : var list =
     | Index(id,e) -> let n = eval_arith env e in
                      [ Var(id ^ (string_of_int n) ^ "'") ] 
     | Range(id,ei,ef) -> [ Range(id,Const_e(eval_arith env ei),
-                                 Const_e(eval_arith env ef))] in
+                                 Const_e(eval_arith env ef))]
+    | Slice(id,l) -> [ Slice(id,List.map (fun n -> Const_e(eval_arith env n)) l) ] in
   List.flatten @@ List.map aux pat
            
 let rewrite_rec env_var (iterator:ident) (startr:arith_expr) (endr:arith_expr)

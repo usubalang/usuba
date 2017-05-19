@@ -158,6 +158,7 @@ module Clean = struct
     | Field(v,_) -> clean_var env v
     | Index(id,_) -> env_add env id 1
     | Range(id,_,_) -> env_add env id 1
+    | Slice(id,_) -> env_add env id 1
 
   let rec clean_expr env (e:expr) : unit =
     match e with

@@ -92,6 +92,7 @@ let rec var_to_str = function
   | Field(v,e) -> sprintf "%s.%s" (var_to_str v) (arith_to_str e)
   | Index(v,e) -> sprintf "[%s]" (arith_to_str e)
   | Range(v,ei,ef) -> sprintf "[%s .. %s]" (arith_to_str ei) (arith_to_str ef)
+  | Slice(v,l) -> sprintf "[%s]" (join "," (List.map arith_to_str l))
                                               
 let rec var_to_str_types = function
   | Var v -> "Var: " ^ v
@@ -99,6 +100,8 @@ let rec var_to_str_types = function
   | Index(v,e) -> "Index: " ^ v ^ "[" ^ (arith_to_str_types e) ^ "]"
   | Range(v,ei,ef) -> "Range: " ^ v ^ "[" ^ (arith_to_str_types ei) ^ " .. "
                       ^ (arith_to_str_types ef) ^ "]"
+  | Slice(v,l) -> "Splice: " ^ v ^ "[" ^
+                     (join "," (List.map arith_to_str_types l)) ^ "]"
          
 let rec expr_to_str_types = function
   | Const c -> "Const: " ^ (string_of_int c)
