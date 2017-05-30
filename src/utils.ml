@@ -8,7 +8,7 @@ exception Empty_list
 exception Undeclared of string
 exception Invalid_param_size
 exception Invalid_operator_call
-            
+exception Break            
 
 let unreached () = raise (Error "This point can't be reached")
                          

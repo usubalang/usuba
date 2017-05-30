@@ -120,7 +120,97 @@ module Random_scheduler = struct
   let schedule (prog:prog) : prog =
     { nodes = List.map schedule_def prog.nodes }
 end
+
+module Test_scheduler = struct
+
+  let exists hash k =
+    try Hashtbl.find hash k; true
+    with Not_found -> false
+  
+  let update_hoh hash k1 k2 =
+    match env_fetch hash k1 with
+    | Some h -> Hashtbl.replace h k2 true
+    | None   -> let h = Hashtbl.create 60 in
+                Hashtbl.add h k2 true;
+                Hashtbl.add hash k1 h
+                              
+                              
+  let keys hash = Hashtbl.fold (fun k _ acc -> k :: acc) hash []
+
+  let keys_2nd_layer hash k =
+    try
+      keys (Hashtbl.find hash k)
+    with Not_found -> []
+                            
+  type node = { current: var list * expr; sons: node list; father: node list }
+
+  let build_dep (deqs: deq list) :
+        (var,(var list * expr,bool) Hashtbl.t) Hashtbl.t
+        * (var,(var list * expr)) Hashtbl.t =
+    let using = Hashtbl.create 1000 in
+    let decls = Hashtbl.create 1000 in
+
+    List.iter (function
+                | Norec(l,e) ->
+                   let used = get_used_vars e in
+                   List.iter (fun x -> update_hoh using x (l,e)) used;
+                   List.iter (fun x -> Hashtbl.add decls x (l,e)) l
+                | _ -> unreached ()) deqs;
+
+    using,decls
+              
+  
+  let schedule_deqs (deqs: deq list) (p_in: p) : deq list =
+    let (using,decls) = build_dep deqs in
+    let available     = Hashtbl.create 1000 in
+
+    List.iter (fun (id,_,_) -> Hashtbl.add available (Var id) true) p_in;
+
+    let scheduling = ref [] in
+    let ready      = Queue.create () in
+
+    (* Looking for the initially ready instrs (those who depend only on p_in) *)
+    (try
+        List.iter (function
+                    | Norec(l,e) -> Queue.push (l,e) ready;
+                                    raise Break;
+                    | _ -> unreached ()) deqs;
+      with Break -> ());
+    
+    let rec do_schedule ((l,e):var list*expr) =
+      (* Only if "l" isn't scheduled already *)
+      if List.filter (fun x -> not (exists available x)) l <> [] then (
+        (* Scheduling the pre-requisite dependencies *)
+        List.iter (fun x -> if not (exists available x) then
+                              do_schedule (Hashtbl.find decls x)) (get_used_vars e);
+        (* Scheduling the instruction *)
+        scheduling := (l,e) :: !scheduling;
+        (* Marking it as scheduled *)
+        List.iter (fun x -> Hashtbl.add available x true) l;
+        (* Adding the sons to the Queue of instructions ready to be scheduled *)
+        List.iter (fun x ->
+                   List.iter (fun y ->
+                              Queue.push y ready) (keys_2nd_layer using x)) l) in
+
+    (* While there are still instructions ready; schedule them *)
+    while not (Queue.is_empty ready) do
+      do_schedule (Queue.pop ready)
+    done;
+                   
+    List.rev_map (fun (l,e) -> Norec(l,e)) !scheduling
+    
+  let schedule_def (def:def) : def =
+    { def with node = match def.node with
+                      | Single(vars,body) ->
+                         Single(vars,schedule_deqs body def.p_in)
+                      | _ -> def.node }
+      
+
+  let schedule (prog:prog) : prog =
+    { nodes = List.map schedule_def prog.nodes }
+end
       
 let schedule (prog:prog) : prog =
-  Reg_alloc.alloc_reg prog
+  (* Reg_alloc.alloc_reg prog *)
   (*Random_scheduler.schedule prog *)
+  Test_scheduler.schedule  prog

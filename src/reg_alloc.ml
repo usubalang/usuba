@@ -1,7 +1,6 @@
 open Usuba_AST
 open Utils
 
-exception Break
 
 let update_hoh hash k1 k2 =
   if k1 <> k2 then
@@ -108,7 +107,7 @@ let assign_colors (stack: var list ref) adj_graph (nb_reg:int) =
         with Break -> ()
       end
   done;
-  Printf.printf "Spilled: %d\nNot spilled:%d\n" (List.length !spilled) (Hashtbl.length colors);
+  (* Printf.printf "Spilled: %d\nNot spilled:%d\n" (List.length !spilled) (Hashtbl.length colors); *)
   colors
   
     
