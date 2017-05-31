@@ -1,8 +1,37 @@
 open Usuba_AST
 open Utils
 
+(* Without doing any scheduling, the performances are:
+    - 6.339 moves
+    ~ 0.47 s
+
+*)
+
                
 module Basic_scheduler = struct
+  (* Algorithm:
+      Schedule an instruction just before it's being used. 
+      So basically, 
+        x1 = 1;
+        x2 = 2;
+        y1 = x1 + 1;
+        y2 = x2 + 1;
+      Becomes
+        x1 = 1;
+        y1 = x1 + 1;
+        x2 = 2;
+        y2 = x2 + 1;
+      Doing this for every instruction would create long chains and result in a poor
+      scheduling as several instruction depend on the same variables. As a compromise,
+      when limit the size of the chain to 2: when we arrive on an instruction, if it
+      has unscheduled dependencies, then we schedule them and it; otherwise, we wait
+      to schedule it.   
+    
+
+     Performances:
+      - 6.488 moves
+      ~ 0.45 s
+   *)
 
   let schedule_deqs (deqs:deq list) : deq list =
     let deflist = Hashtbl.create 10 in
@@ -49,6 +78,13 @@ module Basic_scheduler = struct
 end
 
 module Random_scheduler = struct
+  (* Algorithm:
+      Choose an random instruction ready to be scheduled, and schedule it.
+
+     Perf:
+      ~ 7.700 moves
+      ~ 0.50 s
+   *)
 
   let schedule_deqs (deqs: deq list) (p_in: p) : deq list =
     let init hash v =
@@ -58,7 +94,7 @@ module Random_scheduler = struct
                 env_add hash v l;
                 l in
     
-    Random.init 5;
+    Random.self_init ();
     
     let imply : (var, deq list ref) Hashtbl.t = Hashtbl.create 100 in
     let status : (deq, int ref) Hashtbl.t = Hashtbl.create 100 in
@@ -121,7 +157,17 @@ module Random_scheduler = struct
     { nodes = List.map schedule_def prog.nodes }
 end
 
-module Test_scheduler = struct
+                            
+module Depth_first_sched = struct
+  (* Algorithm:
+       Try to schedule an instruction s. If it has missing pre-requisite dependencies,
+       then schedule them first. Afterward, schedule all the instructions that were
+       depending on s.
+
+     Performances:
+       - 7.040 moves
+       ~ 0.47 s
+   *)
 
   let exists hash k =
     try Hashtbl.find hash k; true
@@ -167,17 +213,19 @@ module Test_scheduler = struct
     List.iter (fun (id,_,_) -> Hashtbl.add available (Var id) true) p_in;
 
     let scheduling = ref [] in
-    let ready      = Queue.create () in
+    let ready      = ref [] in
 
     (* Looking for the initially ready instrs (those who depend only on p_in) *)
-    (try
-        List.iter (function
-                    | Norec(l,e) -> Queue.push (l,e) ready;
-                                    raise Break;
-                    | _ -> unreached ()) deqs;
-      with Break -> ());
+    ( List.iter (function
+                  | Norec(l,e) -> if List.filter (fun x -> not (exists available x))
+                                                 (get_used_vars e) = [] then
+                                    ready := (l,e) :: !ready
+                  | _ -> unreached ()) deqs );
     
     let rec do_schedule ((l,e):var list*expr) =
+      (* Printf.printf "Looking to schedule: %s (= %s)\n" *)
+      (*               (Usuba_print.pat_to_str l) *)
+      (*               (Usuba_print.expr_to_str e); *)
       (* Only if "l" isn't scheduled already *)
       if List.filter (fun x -> not (exists available x)) l <> [] then (
         (* Scheduling the pre-requisite dependencies *)
@@ -189,16 +237,21 @@ module Test_scheduler = struct
         List.iter (fun x -> Hashtbl.add available x true) l;
         (* Adding the sons to the Queue of instructions ready to be scheduled *)
         List.iter (fun x ->
-                   List.iter (fun y ->
-                              Queue.push y ready) (keys_2nd_layer using x)) l) in
+                   List.iter (fun y -> ready := y :: !ready)
+                             (keys_2nd_layer using x)) l
+      )
+
+    in
 
     (* While there are still instructions ready; schedule them *)
-    while not (Queue.is_empty ready) do
-      do_schedule (Queue.pop ready)
+    while !ready <> [] do
+      let current = List.hd !ready in
+      ready := List.tl !ready;
+      do_schedule current;
     done;
-                   
-    List.rev_map (fun (l,e) -> Norec(l,e)) !scheduling
     
+    List.rev_map (fun (l,e) -> Norec(l,e)) !scheduling
+                 
   let schedule_def (def:def) : def =
     { def with node = match def.node with
                       | Single(vars,body) ->
@@ -211,6 +264,8 @@ module Test_scheduler = struct
 end
       
 let schedule (prog:prog) : prog =
-  (* Reg_alloc.alloc_reg prog *)
-  (*Random_scheduler.schedule prog *)
-  Test_scheduler.schedule  prog
+  (* Reg_alloc.alloc_reg prog        *)
+  (* Basic_scheduler.schedule prog   *)
+  (* Random_scheduler.schedule prog  *)
+  (* Depth_first_sched.schedule prog *)
+  prog
