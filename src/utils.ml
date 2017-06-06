@@ -8,7 +8,7 @@ exception Empty_list
 exception Undeclared of string
 exception Invalid_param_size
 exception Invalid_operator_call
-            
+exception Break            
 
 let unreached () = raise (Error "This point can't be reached")
                          
@@ -155,3 +155,16 @@ let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
                     | Sub -> x' - y'
                     | Div -> x' / y'
                     | Mod -> if x' > 0 then x' mod y' else y' + (x' mod y')
+
+   
+let rec get_used_vars (e:expr) : var list =
+  match e with
+  | Const _ -> []
+  | ExpVar v -> [ v ]
+  | Tuple l -> List.flatten @@ List.map get_used_vars l
+  | Not e -> get_used_vars e
+  | Shift(_,e,_) -> get_used_vars e
+  | Log(_,x,y) | Arith(_,x,y) | Intr(_,x,y)
+                                -> (get_used_vars x) @ (get_used_vars y)
+  | Fun(_,l) -> List.flatten @@ List.map get_used_vars l
+  | _ -> raise (Error "Not supported expr")
