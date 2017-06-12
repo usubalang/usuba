@@ -1,4 +1,3 @@
-
 open Usuba_AST
 
 exception Error of string
@@ -168,3 +167,13 @@ let rec get_used_vars (e:expr) : var list =
                                 -> (get_used_vars x) @ (get_used_vars y)
   | Fun(_,l) -> List.flatten @@ List.map get_used_vars l
   | _ -> raise (Error "Not supported expr")
+
+
+(* Retrieving the keys of a hash *)
+let keys hash = Hashtbl.fold (fun k _ acc -> k :: acc) hash []
+
+(* Retrieving the keys of a HoH's 2nd layer*)
+let keys_2nd_layer hash k =
+  try
+    keys (Hashtbl.find hash k)
+  with Not_found -> []

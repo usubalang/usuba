@@ -25,6 +25,14 @@
     st)
   "Syntax table for usuba-mode")
 
+(defun usuba-prettify-symbols ()
+  (setq prettify-symbols-alist
+        '(
+          ("forall" . 8704) ; ∀
+          ("in" . 8712)     ; ∈
+          ))
+  (global-prettify-symbols-mode t))
+
 (defun usuba-mode ()
   "Major mode for editing Usuba programs"
   (interactive)
@@ -34,6 +42,7 @@
   (set (make-local-variable 'font-lock-defaults) '(usuba-font-lock-keywords))
   (setq major-mode 'usuba-mode)
   (setq mode-name "usuba")
+  (usuba-prettify-symbols)
   (run-hooks 'usuba-mode-hook))
 
 (provide 'usuba-mode)

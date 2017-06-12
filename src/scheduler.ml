@@ -223,9 +223,6 @@ module Depth_first_sched = struct
                   | _ -> unreached ()) deqs );
     
     let rec do_schedule ((l,e):var list*expr) =
-      (* Printf.printf "Looking to schedule: %s (= %s)\n" *)
-      (*               (Usuba_print.pat_to_str l) *)
-      (*               (Usuba_print.expr_to_str e); *)
       (* Only if "l" isn't scheduled already *)
       if List.filter (fun x -> not (exists available x)) l <> [] then (
         (* Scheduling the pre-requisite dependencies *)

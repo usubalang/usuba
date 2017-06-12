@@ -55,8 +55,10 @@ let norm_prog (prog: prog)  =
   let normalized =
     if Bitsliceable.bitsliceable tables_converted then
       (let normed = Norm_bitslice.norm_prog tables_converted in
-      print "PRE-NORMALIZED:" normed;
-      let inlined = Inline.inline normed in
+       print "PRE-NORMALIZED:" normed;
+       let scheduled = Pre_schedule.schedule normed in
+       print "SCHEDULED:" scheduled;
+      let inlined = Inline.inline scheduled in
       print "INLINED:" inlined;
       Norm_bitslice.norm_prog inlined)
     else
