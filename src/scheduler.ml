@@ -265,4 +265,4 @@ let schedule (prog:prog) : prog =
   (* Basic_scheduler.schedule prog   *)
   (* Random_scheduler.schedule prog  *)
   (* Depth_first_sched.schedule prog *)
-  prog
+  (* prog *)
