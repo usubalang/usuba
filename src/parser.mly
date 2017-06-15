@@ -27,6 +27,7 @@
 %token TOK_FORALL
 %token TOK_IN
 %token TOK_INLINE
+%token TOK_NOINLINE
 %token TOK_WHEN
 %token TOK_MERGE
        
@@ -185,35 +186,35 @@ pclock:
    | { "_" }
    | TOK_TWO_COLON id=TOK_id { id }
 
-                             
+opt_def:
+   | TOK_INLINE   { Inline }
+   | TOK_NOINLINE { No_inline }
 
 def:
-  | TOK_NODE inline=option(TOK_INLINE) f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
+  | opts=list(opt_def) TOK_NODE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
     TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
     TOK_VAR vars=p TOK_LET body=deqs TOK_TEL
-    { { id=f;p_in=p_in;p_out=p_out;
-        opt=(match inline with Some l -> [Inline] | None -> []);
-        node=Single(vars,body) } }
-  | TOK_NODE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
+    { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Single(vars,body) } }
+  | opts=list(opt_def) TOK_NODE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
     TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
     l = def_list TOK_RBRACKET
-  { { id=f;p_in=p_in;p_out=p_out;opt=[];node=Multiple l } }
-  | TOK_PERM f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
+  { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Multiple l } }
+  | opts=list(opt_def) TOK_PERM f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
     TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
     TOK_LCURLY l=intlist TOK_RCURLY
-  { { id=f;p_in=p_in;p_out=p_out;opt=[];node=Perm l } }
-  | TOK_PERM TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
+  { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Perm l } }
+  | opts=list(opt_def) TOK_PERM TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
     TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
     l = permlist TOK_RBRACKET
-  { { id=f;p_in=p_in;p_out=p_out;opt=[];node=MultiplePerm l } }
-  | TOK_TABLE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
+  { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=MultiplePerm l } }
+  | opts=list(opt_def) TOK_TABLE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
     TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
     TOK_LCURLY l=intlist TOK_RCURLY
-  { { id=f;p_in=p_in;p_out=p_out;opt=[];node=Table l } }
-  | TOK_TABLE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
+  { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Table l } }
+  | opts=list(opt_def) TOK_TABLE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
     TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
     l = permlist TOK_RBRACKET
-  { { id=f;p_in=p_in;p_out=p_out;opt=[];node=MultipleTable l } }
+  { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=MultipleTable l } }
 
   
 intlist: l=separated_nonempty_list(TOK_COMMA, TOK_int) { l }

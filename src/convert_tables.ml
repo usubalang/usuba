@@ -111,4 +111,5 @@ let rec rewrite_def (def: def) : def list =
            
                        
 let convert_tables (p: prog) : prog =
-  { nodes = List.flatten (List.map rewrite_def p.nodes) }
+  let res = { nodes = List.flatten (List.map rewrite_def p.nodes) } in
+  res

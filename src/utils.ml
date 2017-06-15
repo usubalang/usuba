@@ -177,3 +177,13 @@ let keys_2nd_layer hash k =
   try
     keys (Hashtbl.find hash k)
   with Not_found -> []
+
+let is_inline (def:def) : bool =
+  List.exists (function
+                | Inline    -> true
+                | No_inline -> false) def.opt
+
+let is_noinline (def:def) : bool =
+  List.exists (function
+                | Inline    -> false
+                | No_inline -> true) def.opt  

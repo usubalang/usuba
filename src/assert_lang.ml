@@ -33,6 +33,8 @@ module Usuba_norm = struct
     | Fun(_,l) -> List.for_all check_expr l
     | Fun_v _ -> false
     | Fby _ -> raise (Not_implemented "Fby")
+    | When(e,_,_) -> check_expr e
+    | Merge(_,l) -> List.for_all (fun (_,y) -> check_expr y) l
     | Nop -> true
   
   let check_p (p:p) : bool =

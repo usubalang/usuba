@@ -121,6 +121,13 @@ let rec expr_to_str_types = function
   | Fun_v(f,e,l) -> "Fun_v: " ^ f ^ "[" ^ (arith_to_str e) ^ "]"
                                ^ "(" ^ (join "," (List.map expr_to_str_types l)) ^ ")"
   | Fby(ei,ef,id) -> "Fby: " ^ (expr_to_str_types ei) ^ " fby " ^ (expr_to_str_types ef)
+  | When(e,id,x)  -> sprintf "When: %s when %s(%s)" (expr_to_str_types e) id x
+  | Merge(ck,c)   -> sprintf "Merge: merge %s %s"
+                             ck (join " "
+                                      (List.map (fun (x,y) ->
+                                                 sprintf "| %s -> %s "
+                                                         x
+                                                         (expr_to_str_types y)) c))
   | Nop -> "Nop"
 
 let rec expr_to_str = function
@@ -140,6 +147,13 @@ let rec expr_to_str = function
   | Fun_v(f,e,l) -> sprintf "%s[%s](%s)" f (arith_to_str e)
                             (join "," (List.map expr_to_str l))
   | Fby(ei,ef,id) -> sprintf "%s fby %s" (expr_to_str ei) (expr_to_str ef)
+  | When(e,id,x)  -> sprintf "%s when %s(%s)" (expr_to_str e) id x
+  | Merge(ck,c)   -> sprintf "merge %s %s"
+                             ck (join " "
+                                      (List.map (fun (x,y) ->
+                                                 sprintf "| %s -> %s "
+                                                         x
+                                                         (expr_to_str y)) c))
   | Nop -> "Nop"
 
 let pat_to_str pat =
@@ -167,52 +181,57 @@ let single_node_to_str id p_in p_out vars deq =
   ^ (join ",\n" (List.map (fun x -> "  " ^ (p_to_str x)) vars)) ^ "\nlet\n"
   ^ (join ";\n" (List.map (fun x -> "  " ^ x) (List.map deq_to_str deq)))
   ^ "\ntel"
+
+let optdef_to_str = function
+  | Inline -> "_inline"
+  | No_inline -> "_no_inline"
       
 let def_to_str def =
   let (id,p_in,p_out) = (def.id,def.p_in,def.p_out) in
-  match def.node with
-  | Single(vars,deq) ->
-     single_node_to_str id p_in p_out vars deq
-  | Multiple l ->
-     "node " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
-     ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[\n"
-     ^  (join "\n;\n"
-              (List.map
-                 (fun (v,d) -> "vars\n"
-                               ^ (join ",\n"
-                                       (List.map
-                                          (fun x -> "  " ^ (p_to_str x)) v))
-                               ^ "\nlet\n" 
-                               ^ (join ";\n"
-                                       (List.map deq_to_str d))
-                               ^ "\ntel\n") l))
-     ^ "\n]\n"
-  | Perm l ->
-     "perm " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
-     ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n{\n  "
-     ^ (join ", " (List.map string_of_int l)) ^ "\n}\n"
-  | MultiplePerm l ->
-     "perm[] " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
-     ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[ "
-     ^ (join "\n;\n"
-             (List.map
-                (fun l -> "["
-                          ^ (join ", " (List.map string_of_int l))
-                          ^ "]") l))
-     ^ "\n]\n"
-  | Table l ->
-     "table " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
-     ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n{\n  "
-     ^ (join ", " (List.map string_of_int l)) ^ "\n}\n"
-  | MultipleTable l ->
-     "table[] " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
-     ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[ "
-     ^ (join "\n;\n"
-             (List.map
-                (fun l -> "{"
-                          ^ (join ", " (List.map string_of_int l))
-                          ^ "}") l))
-     ^ "\n]\n"
+  (join " " (List.map optdef_to_str def.opt)) ^ 
+    (match def.node with
+     | Single(vars,deq) ->
+        single_node_to_str id p_in p_out vars deq
+     | Multiple l ->
+        "node " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
+        ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[\n"
+        ^  (join "\n;\n"
+                 (List.map
+                    (fun (v,d) -> "vars\n"
+                                  ^ (join ",\n"
+                                          (List.map
+                                             (fun x -> "  " ^ (p_to_str x)) v))
+                                  ^ "\nlet\n" 
+                                  ^ (join ";\n"
+                                          (List.map deq_to_str d))
+                                  ^ "\ntel\n") l))
+        ^ "\n]\n"
+     | Perm l ->
+        "perm " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
+        ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n{\n  "
+        ^ (join ", " (List.map string_of_int l)) ^ "\n}\n"
+     | MultiplePerm l ->
+        "perm[] " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
+        ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[ "
+        ^ (join "\n;\n"
+                (List.map
+                   (fun l -> "["
+                             ^ (join ", " (List.map string_of_int l))
+                             ^ "]") l))
+        ^ "\n]\n"
+     | Table l ->
+        "table " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
+        ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n{\n  "
+        ^ (join ", " (List.map string_of_int l)) ^ "\n}\n"
+     | MultipleTable l ->
+        "table[] " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in))
+        ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[ "
+        ^ (join "\n;\n"
+                (List.map
+                   (fun l -> "{"
+                             ^ (join ", " (List.map string_of_int l))
+                             ^ "}") l))
+        ^ "\n]\n")
                                                        
 let prog_to_str prog =
   join "\n\n" (List.map def_to_str prog)

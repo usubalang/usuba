@@ -11,7 +11,7 @@ let is_call_free (def:def) : bool =
                                 | _ -> true) body)
   | _ -> false
 
-let known_calls (env:(ident,ident*p*p*p*deq list) Hashtbl.t) (deqs:deq list) : bool =
+let known_calls (env:(ident,def*p*deq list) Hashtbl.t) (deqs:deq list) : bool =
   List.fold_left (&&) true
                  (List.map (function
                              | Norec(_,Fun(f,_))
@@ -20,11 +20,11 @@ let known_calls (env:(ident,ident*p*p*p*deq list) Hashtbl.t) (deqs:deq list) : b
                                                      | None -> false)
                              | _ -> true) deqs)
                     
-let rec get_next_node (env:(ident,ident*p*p*p*deq list) Hashtbl.t)
-                      (todo:(ident,ident*p*p*p*deq list) Hashtbl.t) :
-  ident*p*p*p*deq list =
+let rec get_next_node (env:(ident,def*p*deq list) Hashtbl.t)
+                      (todo:(ident,def*p*deq list) Hashtbl.t) :
+  def*p*deq list =
   let next = ref "" in
-  Hashtbl.iter (fun x (_,_,_,_,y) -> if known_calls env y then
+  Hashtbl.iter (fun x (_,_,y) -> if known_calls env y then
                                      next := x) todo;
   let ret = Hashtbl.find todo !next in
   Hashtbl.remove todo !next;
@@ -70,23 +70,31 @@ let inline_deqs env (deqs: deq list) : p*deq list =
          | Norec (pat,e) ->
             ( match e with
               | Fun(f,l) ->
-                 let (id,p_in,p_out,vars,body) = Hashtbl.find env f in
-                 let pref = id ^ (string_of_int !cpt) ^ "_" in
-                 incr cpt;
-                 
-                 add_vars :=
-                   !add_vars @
-                     (List.map (fun (id,typ,ck) -> pref^id,typ,ck) p_in) @
-                       (List.map (fun (id,typ,ck) -> pref^id,typ,ck) p_out) @
-                         (List.map (fun (id,typ,ck) -> pref^id,typ,ck) vars);
-                 
-                 let pat_in  = List.map (fun (id,typ,ck) -> Var(pref ^ id)) p_in in
-                 let pat_out = Tuple(List.map (fun (id,typ,ck) ->
-                                               ExpVar(Var (pref ^ id))) p_out) in
-                 
-                 let body = rename_deqs pref body in
-                 
-                 (Norec(pat_in,Tuple(l))) :: body @ [ Norec(pat,pat_out) ]
+                 let (def,vars,body) = Hashtbl.find env f in
+                 let p_in = def.p_in in
+                 let p_out = def.p_out in
+
+                 if not (is_noinline def) then
+                   begin
+                     let pref = def.id ^ (string_of_int !cpt) ^ "_" in
+                     incr cpt;
+                     
+                     add_vars :=
+                       !add_vars @
+                         (List.map (fun (id,typ,ck) -> pref^id,typ,ck) p_in) @
+                           (List.map (fun (id,typ,ck) -> pref^id,typ,ck) p_out) @
+                             (List.map (fun (id,typ,ck) -> pref^id,typ,ck) vars);
+                     
+                     let pat_in  = List.map (fun (id,typ,ck) -> Var(pref ^ id)) p_in in
+                     let pat_out = Tuple(List.map (fun (id,typ,ck) ->
+                                                   ExpVar(Var (pref ^ id))) p_out) in
+                     
+                     let body = rename_deqs pref body in
+                     
+                     (Norec(pat_in,Tuple(l))) :: body @ [ Norec(pat,pat_out) ]
+                   end
+                 else
+                   [ Norec (pat,e) ]
               | _ -> [Norec (pat,e)])
          | Rec _ -> raise (Not_implemented "inline Rec")) deqs in
   !add_vars,body
@@ -94,33 +102,37 @@ let inline_deqs env (deqs: deq list) : p*deq list =
 
 let inline (prog:prog) : prog =
   let env  = Hashtbl.create 20 in
-  List.iter (function
-              | { id=id;p_in=p_in;p_out=p_out;opt=_;
-                  node=Single(vars,body) } ->
-                 env_add env id (id,p_in,p_out,vars,body)
-              | _ -> ())
+  List.iter (fun x -> match x.node with
+                      | Single(vars,body) ->
+                         env_add env x.id (x,vars,body)
+                      | _ -> ())
             (List.filter is_call_free prog.nodes);
   let todo = Hashtbl.create 20 in
-  List.iter (function 
-              | { id=id;p_in=p_in;p_out=p_out;opt=_;
-                  node=Single(vars,body) } ->
-                 env_add todo id (id,p_in,p_out,vars,body)
+  List.iter (fun x -> match x.node with
+              | Single(vars,body) ->
+                 env_add todo x.id (x,vars,body)
               | _ -> ())
             (List.filter (fun x -> not @@ is_call_free x) prog.nodes);
   while Hashtbl.length todo <> 0  do
-    let (id,p_in,p_out,vars,body) = get_next_node env todo in
+    let (node,vars,body) = get_next_node env todo in
     let (vars',body') = inline_deqs env body in
-    env_add env id (id,p_in,p_out,vars@vars',body')
+    let new_vars =  vars @ vars' in
+    env_add env node.id ({ node with node = Single(new_vars,body') } ,new_vars,body')
   done;
   let prog = List.map (fun x ->
                        match x.node with
                        | Single _ -> (
                          match env_fetch env x.id with
-                         | Some (id,p_in,p_out,vars,body) ->
-                            { x with id=id;p_in=p_in;p_out=p_out;
-                                     node=Single(vars,body) }
+                         | Some (node,vars,body) -> node
                          | None -> raise (Error ("Not found: " ^ x.id)))
                        | _ -> x)
                       prog.nodes in
-  { nodes = [List.nth prog (List.length prog - 1) ] }
+  let no_inlined = List.filter (fun x -> List.exists (function
+                                                | No_inline -> true
+                                                | Inline    -> false) x.opt) prog in
+  let main = List.nth prog (List.length prog - 1) in
+  if List.exists (fun x -> x = main) no_inlined then
+    { nodes = no_inlined }
+  else
+    { nodes = no_inlined @ [ main ] }
                       

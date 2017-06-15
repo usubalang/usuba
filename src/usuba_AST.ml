@@ -81,7 +81,7 @@ type def_i =
   | Table         of int list (* lookup table *)
   | MultipleTable of int list list (* array of lookup tables *)
                                                 
-type def_opt = Inline
+type def_opt = Inline | No_inline
                  
 type def = {
   id : ident;

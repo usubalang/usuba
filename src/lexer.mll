@@ -22,7 +22,8 @@ let _ =
      "fby", TOK_FBY;
      "forall", TOK_FORALL;
      "in", TOK_IN;
-     "inline", TOK_INLINE;
+     "_inline", TOK_INLINE;
+     "_no_inline", TOK_NOINLINE;
      "merge", TOK_MERGE;
      "when", TOK_WHEN;
     ]
