@@ -74,10 +74,10 @@ type deq =
 type p = (ident * typ * clock) list
         
 type def_i =
-  | Single    of p * deq list (* regular node *)
-  | Multiple  of (p * deq list) list (*array of nodes*)
-  | Perm         of int list (* permutation *)
-  | MultiplePerm of int list list (* array of perm *)
+  | Single        of p * deq list (* regular node *)
+  | Multiple      of (p * deq list) list (*array of nodes*)
+  | Perm          of int list (* permutation *)
+  | MultiplePerm  of int list list (* array of perm *)
   | Table         of int list (* lookup table *)
   | MultipleTable of int list list (* array of lookup tables *)
                                                 

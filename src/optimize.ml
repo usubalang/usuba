@@ -199,5 +199,6 @@ end
        
 let opt_prog (prog: Usuba_AST.prog) : Usuba_AST.prog =
   let optimized = CSE_CF.cse_prog prog in
-  let cleaned = Clean.clean_vars_decl optimized in
+  let vars_shared = Share_var.share_prog optimized in
+  let cleaned = Clean.clean_vars_decl vars_shared in
   Scheduler.schedule cleaned

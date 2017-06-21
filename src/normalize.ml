@@ -58,9 +58,9 @@ let norm_prog (prog: prog)  =
        print "PRE-NORMALIZED:" normed;
        let scheduled = Pre_schedule.schedule normed in
        print "SCHEDULED:" scheduled;
-      let inlined = Inline.inline scheduled in
-      print "INLINED:" inlined;
-      Norm_bitslice.norm_prog inlined)
+       let inlined = Inline.inline scheduled in
+       print "INLINED:" inlined;
+       Norm_bitslice.norm_prog inlined)
     else
       tables_converted in
   print "NORMALIZED:" normalized;

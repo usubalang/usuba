@@ -33,59 +33,100 @@ let rec replace_expr env (e:expr) : expr =
   | Intr(op,x,y) -> Intr(op,replace_expr env x, replace_expr env y)
   | Fun(f,l) -> Fun(f,List.map (replace_expr env) l)
   | _ -> raise (Invalid_AST "")
+
+
+let get_live (deqs:deq list) =
+  let last_use = Hashtbl.create 1000 in
+  
+  List.iter (fun d -> match d with
+              | Norec(l,e) -> List.iter (fun x ->
+                                         match env_fetch last_use x with
+                                         | Some _ -> ()
+                                         | None   -> env_add last_use x d) (get_used_vars e)
+              | _ -> unreached ()
+            ) (List.rev deqs);
+
+  last_use
                
-let share_deqs (p_in:p) (p_out:p) (deqs:deq list) : p * deq list =
-  let env = Array.make (List.length deqs) [] in
-  let dont_use = Hashtbl.create 100 in
-  List.iter (fun (id,_,_) -> env_add dont_use id 1) p_in;
-  List.iter (fun (id,_,_) -> env_add dont_use id 1) p_out;
-  List.iteri
-    (fun n x -> match x with
-                | Norec([Var v],e) ->
-                   ( match env_fetch dont_use v with
-                     | Some _ -> ()
-                     | None -> update_expr env n e)
-                | _ -> raise (Invalid_AST "")) deqs;
-  let corres = Hashtbl.create 1000 in
-  let vars = ref [] in
-  let body =
-    List.mapi
-      (fun i x ->
-       match x with
-       | Norec([Var v],e) ->
-          let new_v = ref (Var v) in
-          (try
-              for n = 1 to i do
-                match env.(i) with
-                | hd::tl -> new_v := hd;
-                            env.(i) <- tl;
-                            raise Break
-                | [] -> ()
-              done;
-            with Break -> ());
-          let e' = replace_expr corres e in
-          env_add corres (Var v) !new_v;
-          (match !new_v with
-           | Var v -> vars := (v,Bool,"") :: !vars
-           | _ -> unreached ());
-          Norec([!new_v],e')
-       | _ -> raise (Invalid_AST "")) deqs in
-  let vars =
-    List.flatten @@
-      List.map (fun (id,typ,ck) -> match env_fetch dont_use id with
-                                   | Some _ -> []
-                                   | None -> [id,typ,ck]) !vars in
-  vars,body
-      
+  
+let get_str_var = function | Var x -> x
+                  | _ -> "ERROR" 
+                                      
+let share_deqs (p_in:p) (p_out:p) (deqs:deq list) : deq list =
+  let last_use = get_live deqs in
+  let env      = Hashtbl.create 1000 in
+  let keep     = Hashtbl.create 1000 in
+  let age      = Hashtbl.create 1000 in
+  
+  let re = Str.regexp_string "'2_" in
+
+  List.iter (fun (id,_,_) -> env_add keep (Var id) true) p_out;
+  List.iter (fun (id,_,_) -> env_add age  (Var id) (-1)) p_in;
+
+  List.mapi (fun i d ->
+             match d with
+             | Norec(l,e) ->
+                let e' = replace_expr env e in
+                (* Find which variables can be reused *)
+                let to_reuse =
+                  ref (
+                      List.sort (fun a b -> compare (Hashtbl.find age a)
+                                                    (Hashtbl.find age b))
+                                (List.map (fun x -> match env_fetch env x with
+                                                    | Some y -> y
+                                                    | None   -> x)
+                                          (List.flatten @@
+                                             List.map (fun x ->
+                                                       match env_fetch last_use x with
+                                                       | Some p when p = d -> [ x ]
+                                                       | _ -> []
+                                                      ) (get_used_vars e)))) in
+                (* Replace new variables by reusing old ones *)
+                let l' = List.map
+                           (fun x ->
+                            (try let _ = Str.search_forward re (get_str_var x) 0 in
+                                 Printf.printf "%s here\n"
+                                               (Usuba_print.var_to_str x)
+                             with Not_found -> ());
+                            match env_fetch keep x with
+                            | Some _ -> x (* it's an output variable *)
+                            | None -> 
+                               match !to_reuse with
+                               | hd::tl ->
+                                  to_reuse := tl;
+                                  Hashtbl.replace env x hd;
+                                  (try let _ = Str.search_forward re (get_str_var x) 0 in
+                                       Printf.printf "%s becomes %s\n"
+                                                     (Usuba_print.var_to_str x)
+                                                     (Usuba_print.var_to_str hd)
+                                   with Not_found -> ());
+                                  (* Hashtbl.replace last_use hd
+                                                          (Hashtbl.find last_use x); *)
+                                  hd
+                               | [] -> (* print_endline "Nothing to reuse"; *) x) l in
+                List.iter (fun x -> match env_fetch age x with
+                                    | None -> env_add age x i
+                                    | Some _ -> ()) l';
+                Norec(l',e')
+             | _ -> unreached ()) deqs
+            
+           
+           
       
 let share_def (def:def) : def =
-  match def with
-  | Single(id,p_in,p_out,vars,body) ->
-     let (vars,body) = share_deqs p_in p_out body in
-     Single(id,p_in,p_out,List.sort_uniq
-                            (fun (id1,_,_) (id2,_,_)
-                                 -> String.compare id1 id2) vars,body)
-  | _ -> raise (Invalid_AST "")
+  match def.node with
+  | Single(vars,body) ->
+     let body = share_deqs def.p_in def.p_out body in
+     { def with node = Single(vars,body) }
+  | _ -> def
 
+let rec apply_last l f =
+  match l with
+  | x::[] -> [ f x ]
+  | hd::tl -> hd :: (apply_last tl f)
+  | [] -> []
+           
 let share_prog (prog:prog) : prog =
-  List.map share_def prog
+  (* { nodes = List.map share_def prog.nodes } *)
+  (* { nodes = apply_last prog.nodes share_def }*)
+  prog
