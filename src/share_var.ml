@@ -48,17 +48,12 @@ let get_live (deqs:deq list) =
 
   last_use
                
-  
-let get_str_var = function | Var x -> x
-                  | _ -> "ERROR" 
                                       
 let share_deqs (p_in:p) (p_out:p) (deqs:deq list) : deq list =
   let last_use = get_live deqs in
   let env      = Hashtbl.create 1000 in
   let keep     = Hashtbl.create 1000 in
   let age      = Hashtbl.create 1000 in
-  
-  let re = Str.regexp_string "'2_" in
 
   List.iter (fun (id,_,_) -> env_add keep (Var id) true) p_out;
   List.iter (fun (id,_,_) -> env_add age  (Var id) (-1)) p_in;
@@ -84,10 +79,6 @@ let share_deqs (p_in:p) (p_out:p) (deqs:deq list) : deq list =
                 (* Replace new variables by reusing old ones *)
                 let l' = List.map
                            (fun x ->
-                            (try let _ = Str.search_forward re (get_str_var x) 0 in
-                                 Printf.printf "%s here\n"
-                                               (Usuba_print.var_to_str x)
-                             with Not_found -> ());
                             match env_fetch keep x with
                             | Some _ -> x (* it's an output variable *)
                             | None -> 
@@ -95,15 +86,10 @@ let share_deqs (p_in:p) (p_out:p) (deqs:deq list) : deq list =
                                | hd::tl ->
                                   to_reuse := tl;
                                   Hashtbl.replace env x hd;
-                                  (try let _ = Str.search_forward re (get_str_var x) 0 in
-                                       Printf.printf "%s becomes %s\n"
-                                                     (Usuba_print.var_to_str x)
-                                                     (Usuba_print.var_to_str hd)
-                                   with Not_found -> ());
-                                  (* Hashtbl.replace last_use hd
-                                                          (Hashtbl.find last_use x); *)
+                                  Hashtbl.replace last_use hd
+                                                  (Hashtbl.find last_use x); 
                                   hd
-                               | [] -> (* print_endline "Nothing to reuse"; *) x) l in
+                               | [] -> x) l in
                 List.iter (fun x -> match env_fetch age x with
                                     | None -> env_add age x i
                                     | Some _ -> ()) l';
@@ -128,5 +114,5 @@ let rec apply_last l f =
            
 let share_prog (prog:prog) : prog =
   (* { nodes = List.map share_def prog.nodes } *)
-  (* { nodes = apply_last prog.nodes share_def }*)
-  prog
+  { nodes = apply_last prog.nodes share_def }
+    (* prog *)

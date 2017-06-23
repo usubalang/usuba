@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "wip_des_kwan.c"
+#include "des_kwan.c"
 
 static unsigned long mask_l[6] = {
 	0xaaaaaaaaaaaaaaaaUL,
@@ -48,27 +48,12 @@ void unorthogonalize(unsigned long data[]){
 
 int main() {
   /* Hardcoding the key for now. */
-  unsigned char key_std_char[8] = {0x13,0x34,0x57,0x79,0x9B,0xBC,0xDF,0xF1};
-  /* unsigned long key_std = */
-  /*   ((unsigned long) key_std_char[0]) << 0  |  */
-  /*   ((unsigned long) key_std_char[1]) << 8  | */
-  /*   ((unsigned long) key_std_char[2]) << 16 | */
-  /*   ((unsigned long) key_std_char[3]) << 24 | */
-  /*   ((unsigned long) key_std_char[4]) << 32 | */
-  /*   ((unsigned long) key_std_char[5]) << 40 | */
-  /*   ((unsigned long) key_std_char[6]) << 48 | */
-  /*   ((unsigned long) key_std_char[7]) << 56; */
-  //key_std = __builtin_bswap64(key_std);
   unsigned long key_std = 0x133457799BBCDFF1;
   unsigned long *key_ortho = malloc(64* sizeof *key_ortho);
 
   for (int i = 0; i < 8; i++)
     for (int j = 1; j < 8; j++)
       key_ortho[i*7+j-1] = key_std >> (i*8+j) & 1 ? -1 : 0;
-
-  /* for (int i = 0; i < 56; i++) */
-  /*   printf("%d",key_ortho[i]&1?1:0); */
-  /* printf("\n"); */
 
   unsigned long plain_std = 0x0123456789ABCDEF;
   unsigned long *plain_ortho = malloc(64 * sizeof *key_ortho);  
@@ -78,11 +63,12 @@ int main() {
     else
       plain_ortho[i] = 0;
   
-  /* for (int i = 0; i < 64; i++) */
-  /*   printf("%d",plain_ortho[i]&1?1:0); */
-  /* printf("\n"); */
-      
   deseval(plain_ortho, plain_ortho, key_ortho);
+  
+  for (int i = 0; i < 64; i++)
+    printf("%d",plain_ortho[i]&1?1:0);
+  printf("\n");
+  exit(1);
 
   /* for (int i = 0; i < 64; i++) */
   /*   printf("%d",plain_ortho[i]&1?1:0); */

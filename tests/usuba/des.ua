@@ -1,4 +1,4 @@
-table[] sbox (a:u6) returns ( out:u4 ) [
+_no_inline table[] sbox (a:u6) returns ( out:u4 ) [
 {
     14, 0, 4, 15, 13, 7, 1, 4, 2, 14, 15, 2, 11, 13, 8, 1,
     3, 10, 10, 6, 6, 12, 12, 11, 5, 9, 9, 5, 0, 3, 7, 8,

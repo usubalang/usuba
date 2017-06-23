@@ -4,15 +4,6 @@
 
 #include "des_kwan.c"
 
-void orthogonalize(unsigned long *in, unsigned long *out) {
-  for (int i = 0; i < 64; i++)
-    out[i] = in[i];
-}
-
-void unorthogonalize(unsigned long *in, unsigned long *out) {
-  for (int i = 0; i < 64; i++)
-    out[i] = in[i];
-}
 
 int main() {
   

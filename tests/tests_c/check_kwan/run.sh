@@ -1,2 +1,2 @@
-clang -O3 wip_test_kwan.c
-./a.out
+clang -O3 -march=native test_kwan.c -o test_kwan
+./test_kwan

@@ -8657,6 +8657,7 @@ void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[
   des_single__2__tmp205_ = (key__60) ^ (plaintext__41);
   des_single__2__tmp206_ = (key__49) ^ (plaintext__33);
   des_single__2__tmp207_ = (key__17)^(plaintext__25);
+  
   des_single__2_sbox__01_x1__ = ~(des_single__2__tmp205_);
   des_single__2_sbox__01_x2__ = ~(des_single__2__tmp202_);
   des_single__2_sbox__01_x3__ = (des_single__2__tmp204_) ^ (des_single__2__tmp205_);
@@ -17178,7 +17179,6 @@ void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[
   des_single__32__tmp206_ = (key__57) ^ (des_single__30__tmp253_);
   des_single__32__tmp207_ = (key__25) ^ (des_single__30__tmp254_);
   
-  des_single__32__tmp249_ = (key__39) ^ (des_single__30__tmp250_);
   des_single__32_sbox__01_x1__ = ~(des_single__32__tmp205_);
   des_single__32_sbox__01_x2__ = ~(des_single__32__tmp202_);
   des_single__32_sbox__01_x3__ = (des_single__32__tmp204_) ^ (des_single__32__tmp205_);
@@ -17676,6 +17676,7 @@ void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[
   des_single__32__tmp246_ = (key__21) ^ (des_single__30__tmp279_);
   des_single__32__tmp247_ = (key__7) ^ (des_single__30__tmp280_);
   des_single__32__tmp248_ = (key__63) ^ (des_single__30__tmp281_);
+  des_single__32__tmp249_ = (key__39) ^ (des_single__30__tmp250_);
   
   des_single__32_sbox__78_x1__ = ~(des_single__32__tmp244_);
   des_single__32_sbox__78_x2__ = ~(des_single__32__tmp247_);
