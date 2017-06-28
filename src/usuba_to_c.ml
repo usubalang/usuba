@@ -172,12 +172,12 @@ let inner_def_to_c (def:def) : string =
      let body = update_out_vars out_vars body in
      let type_c = type_to_c !slice_type in
      Printf.sprintf
-       "void %s (%s,%s) {\n%s\n%s\n}\n"
+       "static void %s (%s,%s) {\n%s\n%s\n}\n"
        (rename def.id)
        
        (* parameters *)
        (join "," (List.map (fun (id,_,_) -> type_c ^ " " ^ (rename id)) def.p_in))
-       (join "," (List.map (fun (id,_,_) -> type_c ^ "* " ^ (rename id)) def.p_out))
+       (join "," (List.map (fun (id,_,_) -> type_c ^ "* restrict " ^ (rename id)) def.p_out))
        
        (* declaring variabes *)
        (join "" (List.map (fun (id,_,_) -> sprintf "  %s %s;\n"

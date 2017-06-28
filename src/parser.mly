@@ -198,7 +198,8 @@ def:
   | opts=list(opt_def) TOK_NODE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
     TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
     l = def_list TOK_RBRACKET
-  { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Multiple l } }
+    { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Multiple l } }
+                 
   | opts=list(opt_def) TOK_PERM f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
     TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
     TOK_LCURLY l=intlist TOK_RCURLY
@@ -207,6 +208,7 @@ def:
     TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
     l = permlist TOK_RBRACKET
   { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=MultiplePerm l } }
+
   | opts=list(opt_def) TOK_TABLE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
     TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
     TOK_LCURLY l=intlist TOK_RCURLY

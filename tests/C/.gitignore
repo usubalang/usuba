@@ -11,3 +11,5 @@ bench_in_nosched
 bench_in_sched
 bench_noin_nosched
 bench_noin_sched
+
+*_run.c

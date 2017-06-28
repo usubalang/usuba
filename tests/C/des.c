@@ -8,7 +8,7 @@
 
 
 
-void sbox__0 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* out1,unsigned long* out2,unsigned long* out3,unsigned long* out4) {
+static void sbox__0 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* restrict out1,unsigned long* restrict out2,unsigned long* restrict out3,unsigned long* restrict out4) {
   unsigned long x1;
   unsigned long x2;
   unsigned long x3;
@@ -143,7 +143,7 @@ void sbox__0 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a
 }
 
 
-void sbox__1 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* out1,unsigned long* out2,unsigned long* out3,unsigned long* out4) {
+static void sbox__1 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* restrict out1,unsigned long* restrict out2,unsigned long* restrict out3,unsigned long* restrict out4) {
   unsigned long x1;
   unsigned long x2;
   unsigned long x3;
@@ -264,7 +264,7 @@ void sbox__1 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a
 }
 
 
-void sbox__2 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* out1,unsigned long* out2,unsigned long* out3,unsigned long* out4) {
+static void sbox__2 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* restrict out1,unsigned long* restrict out2,unsigned long* restrict out3,unsigned long* restrict out4) {
   unsigned long x1;
   unsigned long x2;
   unsigned long x3;
@@ -387,7 +387,7 @@ void sbox__2 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a
 }
 
 
-void sbox__3 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* out1,unsigned long* out2,unsigned long* out3,unsigned long* out4) {
+static void sbox__3 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* restrict out1,unsigned long* restrict out2,unsigned long* restrict out3,unsigned long* restrict out4) {
   unsigned long x1;
   unsigned long x2;
   unsigned long x3;
@@ -480,7 +480,7 @@ void sbox__3 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a
 }
 
 
-void sbox__4 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* out1,unsigned long* out2,unsigned long* out3,unsigned long* out4) {
+static void sbox__4 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* restrict out1,unsigned long* restrict out2,unsigned long* restrict out3,unsigned long* restrict out4) {
   unsigned long x1;
   unsigned long x2;
   unsigned long x3;
@@ -613,7 +613,7 @@ void sbox__4 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a
 }
 
 
-void sbox__5 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* out1,unsigned long* out2,unsigned long* out3,unsigned long* out4) {
+static void sbox__5 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* restrict out1,unsigned long* restrict out2,unsigned long* restrict out3,unsigned long* restrict out4) {
   unsigned long x1;
   unsigned long x2;
   unsigned long x3;
@@ -736,7 +736,7 @@ void sbox__5 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a
 }
 
 
-void sbox__6 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* out1,unsigned long* out2,unsigned long* out3,unsigned long* out4) {
+static void sbox__6 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* restrict out1,unsigned long* restrict out2,unsigned long* restrict out3,unsigned long* restrict out4) {
   unsigned long x1;
   unsigned long x2;
   unsigned long x3;
@@ -859,7 +859,7 @@ void sbox__6 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a
 }
 
 
-void sbox__7 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* out1,unsigned long* out2,unsigned long* out3,unsigned long* out4) {
+static void sbox__7 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a4,unsigned long a5,unsigned long a6,unsigned long* restrict out1,unsigned long* restrict out2,unsigned long* restrict out3,unsigned long* restrict out4) {
   unsigned long x1;
   unsigned long x2;
   unsigned long x3;
@@ -976,7 +976,7 @@ void sbox__7 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned long a
 }
 
 
-void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[64]) {
+void des__ (unsigned long input[128],unsigned long output[64]) {
   unsigned long plaintext__1 = input[0];
   unsigned long plaintext__2 = input[1];
   unsigned long plaintext__3 = input[2];
@@ -1041,70 +1041,70 @@ void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[
   unsigned long plaintext__62 = input[61];
   unsigned long plaintext__63 = input[62];
   unsigned long plaintext__64 = input[63];
-  unsigned long key__1 = key[0];
-  unsigned long key__2 = key[1];
-  unsigned long key__3 = key[2];
-  unsigned long key__4 = key[3];
-  unsigned long key__5 = key[4];
-  unsigned long key__6 = key[5];
-  unsigned long key__7 = key[6];
-  unsigned long key__8 = key[7];
-  unsigned long key__9 = key[8];
-  unsigned long key__10 = key[9];
-  unsigned long key__11 = key[10];
-  unsigned long key__12 = key[11];
-  unsigned long key__13 = key[12];
-  unsigned long key__14 = key[13];
-  unsigned long key__15 = key[14];
-  unsigned long key__16 = key[15];
-  unsigned long key__17 = key[16];
-  unsigned long key__18 = key[17];
-  unsigned long key__19 = key[18];
-  unsigned long key__20 = key[19];
-  unsigned long key__21 = key[20];
-  unsigned long key__22 = key[21];
-  unsigned long key__23 = key[22];
-  unsigned long key__24 = key[23];
-  unsigned long key__25 = key[24];
-  unsigned long key__26 = key[25];
-  unsigned long key__27 = key[26];
-  unsigned long key__28 = key[27];
-  unsigned long key__29 = key[28];
-  unsigned long key__30 = key[29];
-  unsigned long key__31 = key[30];
-  unsigned long key__32 = key[31];
-  unsigned long key__33 = key[32];
-  unsigned long key__34 = key[33];
-  unsigned long key__35 = key[34];
-  unsigned long key__36 = key[35];
-  unsigned long key__37 = key[36];
-  unsigned long key__38 = key[37];
-  unsigned long key__39 = key[38];
-  unsigned long key__40 = key[39];
-  unsigned long key__41 = key[40];
-  unsigned long key__42 = key[41];
-  unsigned long key__43 = key[42];
-  unsigned long key__44 = key[43];
-  unsigned long key__45 = key[44];
-  unsigned long key__46 = key[45];
-  unsigned long key__47 = key[46];
-  unsigned long key__48 = key[47];
-  unsigned long key__49 = key[48];
-  unsigned long key__50 = key[49];
-  unsigned long key__51 = key[50];
-  unsigned long key__52 = key[51];
-  unsigned long key__53 = key[52];
-  unsigned long key__54 = key[53];
-  unsigned long key__55 = key[54];
-  unsigned long key__56 = key[55];
-  unsigned long key__57 = key[56];
-  unsigned long key__58 = key[57];
-  unsigned long key__59 = key[58];
-  unsigned long key__60 = key[59];
-  unsigned long key__61 = key[60];
-  unsigned long key__62 = key[61];
-  unsigned long key__63 = key[62];
-  unsigned long key__64 = key[63];
+  unsigned long key__1 = input[64];
+  unsigned long key__2 = input[65];
+  unsigned long key__3 = input[66];
+  unsigned long key__4 = input[67];
+  unsigned long key__5 = input[68];
+  unsigned long key__6 = input[69];
+  unsigned long key__7 = input[70];
+  unsigned long key__8 = input[71];
+  unsigned long key__9 = input[72];
+  unsigned long key__10 = input[73];
+  unsigned long key__11 = input[74];
+  unsigned long key__12 = input[75];
+  unsigned long key__13 = input[76];
+  unsigned long key__14 = input[77];
+  unsigned long key__15 = input[78];
+  unsigned long key__16 = input[79];
+  unsigned long key__17 = input[80];
+  unsigned long key__18 = input[81];
+  unsigned long key__19 = input[82];
+  unsigned long key__20 = input[83];
+  unsigned long key__21 = input[84];
+  unsigned long key__22 = input[85];
+  unsigned long key__23 = input[86];
+  unsigned long key__24 = input[87];
+  unsigned long key__25 = input[88];
+  unsigned long key__26 = input[89];
+  unsigned long key__27 = input[90];
+  unsigned long key__28 = input[91];
+  unsigned long key__29 = input[92];
+  unsigned long key__30 = input[93];
+  unsigned long key__31 = input[94];
+  unsigned long key__32 = input[95];
+  unsigned long key__33 = input[96];
+  unsigned long key__34 = input[97];
+  unsigned long key__35 = input[98];
+  unsigned long key__36 = input[99];
+  unsigned long key__37 = input[100];
+  unsigned long key__38 = input[101];
+  unsigned long key__39 = input[102];
+  unsigned long key__40 = input[103];
+  unsigned long key__41 = input[104];
+  unsigned long key__42 = input[105];
+  unsigned long key__43 = input[106];
+  unsigned long key__44 = input[107];
+  unsigned long key__45 = input[108];
+  unsigned long key__46 = input[109];
+  unsigned long key__47 = input[110];
+  unsigned long key__48 = input[111];
+  unsigned long key__49 = input[112];
+  unsigned long key__50 = input[113];
+  unsigned long key__51 = input[114];
+  unsigned long key__52 = input[115];
+  unsigned long key__53 = input[116];
+  unsigned long key__54 = input[117];
+  unsigned long key__55 = input[118];
+  unsigned long key__56 = input[119];
+  unsigned long key__57 = input[120];
+  unsigned long key__58 = input[121];
+  unsigned long key__59 = input[122];
+  unsigned long key__60 = input[123];
+  unsigned long key__61 = input[124];
+  unsigned long key__62 = input[125];
+  unsigned long key__63 = input[126];
+  unsigned long key__64 = input[127];
 
   unsigned long des_single__0_sbox_in__0__1;
   unsigned long des_single__0_sbox_in__0__2;
@@ -3423,3 +3423,4 @@ void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[
 }
 
 
+int main() { return 0; }
