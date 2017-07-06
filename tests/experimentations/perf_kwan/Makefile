@@ -1,6 +1,6 @@
 all:
-	clang -O3 -march=native test_kwan.c -o kwan
-	clang -O3 -march=native des_run.c -o des_run
+	clang -O3 -march=native kwan_bench.c -o kwan
+	clang -O3 -march=native des_bench.c -o des
 	clang -O3 make_input.c -o make_input
 
 clean:

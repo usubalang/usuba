@@ -1130,6 +1130,10 @@ deseval (
     unsigned long k62 = k[62];
     unsigned long k63 = k[63];
 
+
+    /*                           ROUND 1                               */
+
+    
     //                p[57]
     unsigned long t1 = r31 ^ k47;
     //                p[7]
@@ -1264,6 +1268,11 @@ deseval (
     l14 = l14 ^ out31;
     l20 = l20 ^ out32;
 
+
+    /*                           ROUND 2                               */
+
+    
+
     unsigned long t49 = l31 ^ k54;
     unsigned long t50 = l0 ^ k18;
     unsigned long t51 = l1 ^ k33;
@@ -1391,6 +1400,11 @@ deseval (
     r26 = r26 ^ out62;
     r14 = r14 ^ out63;
     r20 = r20 ^ out64;
+
+
+    /*                           ROUND 3                               */
+
+    
 
     unsigned long t97 = r31 ^ k11;
     unsigned long t98 = r0 ^ k32;
@@ -1520,6 +1534,12 @@ deseval (
     l14 = l14 ^ out95;
     l20 = l20 ^ out96;
 
+
+    /*                           ROUND 4                               */
+
+    
+
+ 
     unsigned long t145 = l31 ^ k25;
     unsigned long t146 = l0 ^ k46;
     unsigned long t147 = l1 ^ k4;
@@ -1647,6 +1667,12 @@ deseval (
     r26 = r26 ^ out126;
     r14 = r14 ^ out127;
     r20 = r20 ^ out128;
+
+
+    /*                           ROUND 5                               */
+
+    
+
 
     unsigned long t193 = r31 ^ k39;
     unsigned long t194 = r0 ^ k3;
@@ -2287,6 +2313,11 @@ deseval (
     l26 = l26 ^ out286;
     l14 = l14 ^ out287;
     l20 = l20 ^ out288;
+  
+
+    /*                           ROUND 10                               */
+
+    
 
     unsigned long t433 = l31 ^ k20;
     unsigned long t434 = l0 ^ k41;
@@ -2415,6 +2446,11 @@ deseval (
     r26 = r26 ^ out318;
     r14 = r14 ^ out319;
     r20 = r20 ^ out320;
+  
+
+    /*                           ROUND 11                               */
+
+    
 
     unsigned long t481 = r31 ^ k34;
     unsigned long t482 = r0 ^ k55;
@@ -2543,7 +2579,13 @@ deseval (
     l26 = l26 ^ out350;
     l14 = l14 ^ out351;
     l20 = l20 ^ out352;
+  
 
+    /*                           ROUND 12                               */
+
+    
+
+ 
     unsigned long t529 = l31 ^ k48;
     unsigned long t530 = l0 ^ k12;
     unsigned long t531 = l1 ^ k27;
@@ -2671,6 +2713,11 @@ deseval (
     r26 = r26 ^ out382;
     r14 = r14 ^ out383;
     r20 = r20 ^ out384;
+  
+
+    /*                           ROUND 13                               */
+
+    
 
     unsigned long t577 = r31 ^ k5;
     unsigned long t578 = r0 ^ k26;
@@ -2799,6 +2846,11 @@ deseval (
     l26 = l26 ^ out414;
     l14 = l14 ^ out415;
     l20 = l20 ^ out416;
+  
+
+    /*                          ROUND 14                              */
+
+    
 
     unsigned long t625 = l31 ^ k19;
     unsigned long t626 = l0 ^ k40;
@@ -2927,6 +2979,11 @@ deseval (
     r26 = r26 ^ out446;
     r14 = r14 ^ out447;
     r20 = r20 ^ out448;
+  
+
+    /*                           ROUND 15                               */
+
+    
 
     unsigned long t673 = r31 ^ k33;
     unsigned long t674 = r0 ^ k54;
@@ -3055,7 +3112,12 @@ deseval (
     l26 = l26 ^ out478;
     l14 = l14 ^ out479;
     l20 = l20 ^ out480;
+  
 
+    /*                           ROUND 16                               */
+
+    
+ 
     unsigned long t721 = l31 ^ k40;
     unsigned long t722 = l0 ^ k4;
     unsigned long t723 = l1 ^ k19;
