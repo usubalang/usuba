@@ -29,23 +29,25 @@ let make_var_ready (ready:(var,var list * expr) Hashtbl.t)
 let schedule_pre (ready:(var,var list * expr) Hashtbl.t)
                  (is_sched:(var list*expr,bool) Hashtbl.t)
                  (args:var list) : (var list * expr) list =
-  List.flatten @@
-    List.map (make_var_ready ready is_sched) args
+  List.rev @@
+    List.flatten @@
+      List.map (make_var_ready ready is_sched) args
 
 
 let schedule_post (deps:(var,(var,bool) Hashtbl.t) Hashtbl.t)
                   (defs:(var,var list * expr) Hashtbl.t)
                   (is_sched:(var list*expr,bool) Hashtbl.t)
                   (vars:var list) : (var list * expr) list =
-  List.flatten @@
-    List.map (fun x ->
-              List.flatten @@
-                List.map (fun y -> let def = Hashtbl.find defs y in
-                                   match env_fetch is_sched def with
-                                   | Some _ -> []
-                                   | None   -> Hashtbl.add is_sched def true;
-                                               [ def ])
-                         (keys_2nd_layer deps x)) vars
+  List.rev @@
+    List.flatten @@
+      List.map (fun x ->
+                List.flatten @@
+                  List.map (fun y -> let def = Hashtbl.find defs y in
+                                     match env_fetch is_sched def with
+                                     | Some _ -> []
+                                     | None   -> Hashtbl.add is_sched def true;
+                                                 [ def ])
+                           (keys_2nd_layer deps x)) vars
              
              
 let schedule_asgn (ready:(var,var list * expr) Hashtbl.t)

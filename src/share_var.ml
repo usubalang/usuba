@@ -65,7 +65,12 @@ let share_deqs (p_in:p) (p_out:p) (deqs:deq list) : deq list =
                 (* Find which variables can be reused *)
                 let to_reuse =
                   ref (
-                      List.sort (fun a b -> compare (Hashtbl.find age a)
+                      List.filter (fun x -> let s = Usuba_print.var_to_str_types x in
+                                            (* doesn't change any perf, just to be closer
+                                             to Kwan's code for testing *)
+                                            not ((contains s "key")
+                                                 || (contains s "sbox_in"))) 
+                      (List.sort (fun a b -> compare (Hashtbl.find age a)
                                                     (Hashtbl.find age b))
                                 (List.map (fun x -> match env_fetch env x with
                                                     | Some y -> y
@@ -75,7 +80,7 @@ let share_deqs (p_in:p) (p_out:p) (deqs:deq list) : deq list =
                                                        match env_fetch last_use x with
                                                        | Some p when p = d -> [ x ]
                                                        | _ -> []
-                                                      ) (get_used_vars e)))) in
+                                                      ) (get_used_vars e))))) in
                 (* Replace new variables by reusing old ones *)
                 let l' = List.map
                            (fun x ->

@@ -22,6 +22,12 @@ let unfold_andn e =
   match e with
   | Log(Andn,x,y) -> Log(And,Not x,y)
   | _ -> e
+           
+let contains s1 s2 =
+  let re = Str.regexp_string s2
+  in
+  try ignore (Str.search_forward re s1 0); true
+  with Not_found -> false
 
 let last l =
   List.nth l (List.length l - 1)
@@ -186,4 +192,10 @@ let is_inline (def:def) : bool =
 let is_noinline (def:def) : bool =
   List.exists (function
                 | Inline    -> false
-                | No_inline -> true) def.opt  
+                | No_inline -> true) def.opt
+              
+let contains s1 s2 =
+    let re = Str.regexp_string s2
+    in
+        try ignore (Str.search_forward re s1 0); true
+        with Not_found -> false

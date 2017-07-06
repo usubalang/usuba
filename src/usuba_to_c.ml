@@ -177,7 +177,8 @@ let inner_def_to_c (def:def) : string =
        
        (* parameters *)
        (join "," (List.map (fun (id,_,_) -> type_c ^ " " ^ (rename id)) def.p_in))
-       (join "," (List.map (fun (id,_,_) -> type_c ^ "* restrict " ^ (rename id)) def.p_out))
+       (join "," (List.map (fun (id,_,_) -> type_c ^ "* " ^ (rename id)) def.p_out))
+       (*                                              ^ restrict                 *)
        
        (* declaring variabes *)
        (join "" (List.map (fun (id,_,_) -> sprintf "  %s %s;\n"
