@@ -91,57 +91,46 @@ let type_to_c (t:slice_type) : string =
   | SSE _ -> "__m128i"
   | AVX _ -> "__m256i"
   | AVX512 -> "__m512i"
-  
+
+let var_to_c env (id:ident) : string =
+  match env_fetch env id with
+  | Some s -> s
+  | None -> rename id
                 
-let replace_p_out (p_out: p) (deqs:deq list) : deq list =
-  let env = Hashtbl.create 60 in
-  List.iter (fun (id,_,_) -> env_add env id 1) p_out;
-  let rec replace_in_expr e = match e with
-    | ExpVar(Var v) -> (match env_fetch env v with
-                        | Some x -> ExpVar(Var("*" ^ v))
-                        | None -> e)
-    | Intr(op,x,y) -> Intr(op,replace_in_expr x, replace_in_expr y)
-    | _ -> e in
-  List.map (function
-             | Norec(p,e) ->
-                Norec(
-                    List.map (function Var v -> (match env_fetch env v with
-                                                 | Some x -> Var("*" ^ v)
-                                                 | None -> Var v)
-                                     | _ -> unreached()) p,
-                    replace_in_expr e)
-             | _ -> unreached ()) deqs
-                    
-let rec expr_to_c (e:expr) : string =
+let rec expr_to_c env (e:expr) : string =
   match e with
   | Const n -> ( match n with
                  | 0 -> set_all_zero ()
                  | 1 -> set_all_one ()
                  | _ -> raise (Error ("Only 0 and 1 are allowed. Got "
                                       ^ (string_of_int n))))
-  | ExpVar(Var id) -> rename id
-  | Not e -> sprintf "~(%s)" (expr_to_c e)
+  | ExpVar(Var id) -> var_to_c env id
+  | Not e -> sprintf "~(%s)" (expr_to_c env e)
   | Intr(op,x,y) -> ( match !slice_type with
                       | Std -> sprintf "(%s) %s (%s)"
-                                         (expr_to_c x) (op_to_c op) (expr_to_c y)
+                                       (expr_to_c env x)
+                                       (op_to_c op)
+                                       (expr_to_c env y)
                       | _ -> sprintf "%s(%s,%s)"
-                                     (op_to_c op) (expr_to_c x) (expr_to_c y))
+                                     (op_to_c op)
+                                     (expr_to_c env x)
+                                     (expr_to_c env y))
   | _ -> raise (Error (Usuba_print.expr_to_str e)) 
            
-let fun_call_to_c (p:var list) (f:ident) (args: expr list) : string =
+let fun_call_to_c env (p:var list) (f:ident) (args: expr list) : string =
   sprintf "  %s(%s,%s);"
-          (rename f) (join "," (List.map (expr_to_c) args))
+          (rename f) (join "," (List.map (expr_to_c env) args))
           (join "," (List.map (function
-                                | Var id -> "&" ^ (rename id)
+                                | Var id -> "&" ^ (var_to_c env id)
                                 | _ -> unreached ()) p))
           
-let deqs_to_c (deqs: deq list) : string =
+let deqs_to_c env (deqs: deq list) : string =
   join "\n"
        (List.map
           (function
-            | Norec(p,Fun(f,l)) -> fun_call_to_c p f l
+            | Norec(p,Fun(f,l)) -> fun_call_to_c env p f l
             | Norec([Var p],e) ->
-               sprintf "  %s = %s;" (rename p) (expr_to_c e)
+               sprintf "  %s = %s;" (var_to_c env p) (expr_to_c env e)
             | _ -> unreached ()) deqs)
 
        
@@ -185,37 +174,50 @@ let inner_def_to_c (def:def) : string =
                                                      type_c (rename id)) vars))
 
        (* the body *)
-       (deqs_to_c body)
+       (deqs_to_c (Hashtbl.create 1) body)
   | _ -> unreached () 
-                         
-let def_to_c (def:def) : string =
+
+let mainparams_to_c (params: p) : string list =
+  List.map (fun (id,typ,_) ->
+            match typ with
+            | Bool -> id
+            | Int n -> Printf.sprintf "%s[%d]" id n
+            | _ -> raise (Not_implemented "Arrays as input")) params
+
+let get_inputs (def:def) =
+  let inputs = Hashtbl.create 100 in
+  let aux (id,typ,_) =
+    match typ with
+             | Bool -> Hashtbl.add inputs id (Printf.sprintf "%s[0]" id)
+             | Int n -> List.iter2 (fun x y -> Hashtbl.add inputs x
+                                                           (Printf.sprintf "%s[%d]" id y))
+                                   (gen_list (id ^ "'") n)
+                                   (gen_list_0_int n)
+             | _ -> raise (Not_implemented "Arrays as input") in
+  List.iter aux def.p_in;
+  List.iter aux def.p_out;
+  inputs
+           
+let maindef_to_c (orig:def) (def:def) : string =
   match def.node with
   | Single(vars,body) ->
      let type_c = type_to_c !slice_type in
+     let inputs = get_inputs orig in
      Printf.sprintf
-       "void %s (%s,%s) {\n%s\n%s\n%s\n%s\n}\n"
+       "void %s (%s,%s) {\n%s\n%s\n}\n"
        (rename def.id)
        
        (* parameters *)
-       (type_c ^ " input[" ^ (string_of_int (List.length def.p_in)) ^ "]")
-       (type_c ^ " output[" ^ (string_of_int (List.length def.p_out)) ^ "]")
-
-       (* retrieving input value *)
-       (join ""
-             (List.mapi (fun i (id,_,_) -> sprintf "  %s %s = input[%d];\n"
-                                                   type_c (rename id) i) def.p_in))
-
+       (join "," (List.map (fun x -> type_c ^ " " ^ x) (mainparams_to_c orig.p_in)))
+       (join "," (List.map (fun x -> type_c ^ " " ^ x) (mainparams_to_c orig.p_out)))
+       
        (* declaring variabes *)
        (join "" (List.map (fun (id,_,_) -> sprintf "  %s %s;\n"
-                                                     type_c (rename id))
-                            (vars@def.p_out)))
+                                                     type_c (rename id)) vars))
 
        (* the body *)
-       (deqs_to_c body)
-
-       (* setting the output *)
-       (join "" (List.mapi (fun i (id,_,_) -> sprintf "  output[%d] = %s;\n"
-                                                        i (rename id)) def.p_out))
+       (deqs_to_c inputs body)
+       
   | _ -> unreached () 
 
 let rec map_no_end f l =
@@ -224,13 +226,13 @@ let rec map_no_end f l =
   | [x] -> []
   | hd::tl -> (f hd) :: (map_no_end f tl)
                    
-let prog_to_c (prog:prog) : string =
+let prog_to_c (orig:prog) (prog:prog) : string =
   assert (Assert_lang.Usuba_norm.is_usuba_normalized prog);
   let (slice, prog) = Select_instr.select_instr prog in
   slice_type := slice;
   assert (Assert_lang.Usuba_intrinsics.is_only_intrinsics prog);
-  let len = List.length prog.nodes in
-  let entry = def_to_c (List.nth prog.nodes (len-1)) in
+  let entry = maindef_to_c (List.nth orig.nodes (List.length orig.nodes -1))
+                           (List.nth prog.nodes (List.length prog.nodes -1)) in
   let prog_c = map_no_end inner_def_to_c prog.nodes in
   (* let _ = Share_var.share_prog prog input *)
   "#include <stdlib.h>\n"

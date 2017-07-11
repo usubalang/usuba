@@ -20,7 +20,7 @@ my $TYPE;
 {
     open my $FPIN, '<', $file or die $!;
     while (<$FPIN>) {
-        if (/\((.*?) input/) {
+        if (/\((.*?) plaintext/) {
             $TYPE = $1;
             last;
         }
@@ -33,8 +33,6 @@ my $TYPE;
     $^I = "";
     push @ARGV, $file;
     while(<>) {
-        s/input\[128\]/input[64], $TYPE key[64]/;
-        s/(key__\d+) = input\[(\d+)\]/"$1 = key[".($2-64)."]"/e;
         s/int main.*//;
         print;
     }

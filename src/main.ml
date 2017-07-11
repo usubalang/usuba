@@ -38,7 +38,7 @@ let print_c (file_in: string) (prog: Usuba_AST.prog) =
   let out_name = List.nth path (List.length path - 1) in
   let out = open_out ("tests/C/" ^ out_name ^ ".c") in
   let normalized = Normalize.norm_prog prog in
-  fprintf out "%s" (Usuba_to_c.prog_to_c normalized);
+  fprintf out "%s" (Usuba_to_c.prog_to_c prog normalized);
   close_out out
             
 

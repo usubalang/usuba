@@ -50,6 +50,18 @@ let gen_list_0 (id: string) (n: int) : string list =
     if n <= 0 then acc
     else aux (n-1) ((id ^ (string_of_int (n-1)))::acc) 
   in aux n []
+
+let gen_list_int (n: int) : int list =
+  let rec aux n acc =
+    if n <= 0 then acc
+    else aux (n-1) (n :: acc)
+  in aux n []
+         
+let gen_list_0_int (n: int) : int list =
+  let rec aux n acc =
+    if n <= 0 then acc
+    else aux (n-1) ((n-1) :: acc)
+  in aux n []
          
 let id_generator =
   let current = ref 0 in

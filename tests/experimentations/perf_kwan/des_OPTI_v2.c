@@ -977,6 +977,25 @@ static void sbox__7 (unsigned long a1,unsigned long a2,unsigned long a3,unsigned
 
 
 void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[64]) {
+
+  /* right */
+
+
+
+  
+  
+
+
+
+  /* left */
+
+
+
+
+  
+  
+  
+
   
   unsigned long key__8 = key[7];
   unsigned long key__16 = key[15];
@@ -2267,6 +2286,70 @@ void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[
   unsigned long des_single__15_sbox_out__7__2;
   unsigned long des_single__15_sbox_out__7__3;
   unsigned long des_single__15_sbox_out__7__4;
+  unsigned long ciphered__1;
+  unsigned long ciphered__2;
+  unsigned long ciphered__3;
+  unsigned long ciphered__4;
+  unsigned long ciphered__5;
+  unsigned long ciphered__6;
+  unsigned long ciphered__7;
+  unsigned long ciphered__8;
+  unsigned long ciphered__9;
+  unsigned long ciphered__10;
+  unsigned long ciphered__11;
+  unsigned long ciphered__12;
+  unsigned long ciphered__13;
+  unsigned long ciphered__14;
+  unsigned long ciphered__15;
+  unsigned long ciphered__16;
+  unsigned long ciphered__17;
+  unsigned long ciphered__18;
+  unsigned long ciphered__19;
+  unsigned long ciphered__20;
+  unsigned long ciphered__21;
+  unsigned long ciphered__22;
+  unsigned long ciphered__23;
+  unsigned long ciphered__24;
+  unsigned long ciphered__25;
+  unsigned long ciphered__26;
+  unsigned long ciphered__27;
+  unsigned long ciphered__28;
+  unsigned long ciphered__29;
+  unsigned long ciphered__30;
+  unsigned long ciphered__31;
+  unsigned long ciphered__32;
+  unsigned long ciphered__33;
+  unsigned long ciphered__34;
+  unsigned long ciphered__35;
+  unsigned long ciphered__36;
+  unsigned long ciphered__37;
+  unsigned long ciphered__38;
+  unsigned long ciphered__39;
+  unsigned long ciphered__40;
+  unsigned long ciphered__41;
+  unsigned long ciphered__42;
+  unsigned long ciphered__43;
+  unsigned long ciphered__44;
+  unsigned long ciphered__45;
+  unsigned long ciphered__46;
+  unsigned long ciphered__47;
+  unsigned long ciphered__48;
+  unsigned long ciphered__49;
+  unsigned long ciphered__50;
+  unsigned long ciphered__51;
+  unsigned long ciphered__52;
+  unsigned long ciphered__53;
+  unsigned long ciphered__54;
+  unsigned long ciphered__55;
+  unsigned long ciphered__56;
+  unsigned long ciphered__57;
+  unsigned long ciphered__58;
+  unsigned long ciphered__59;
+  unsigned long ciphered__60;
+  unsigned long ciphered__61;
+  unsigned long ciphered__62;
+  unsigned long ciphered__63;
+  unsigned long ciphered__64;
 
   unsigned long plaintext__7 = input[6];
   unsigned long plaintext__57 = input[56];
@@ -3644,13 +3727,9 @@ void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[
   des_single__14_sbox_in__0__6 = (key__33) ^ (plaintext__25);
   sbox__0(des_single__14_sbox_in__0__1,des_single__14_sbox_in__0__2,des_single__14_sbox_in__0__3,des_single__14_sbox_in__0__4,des_single__14_sbox_in__0__5,des_single__14_sbox_in__0__6,&des_single__14_sbox_out__0__1,&des_single__14_sbox_out__0__2,&des_single__14_sbox_out__0__3,&des_single__14_sbox_out__0__4);
   plaintext__60 = (des_single__14_sbox_out__0__1) ^ (plaintext__60);
-  output[58] = plaintext__60;
   plaintext__62 = (des_single__14_sbox_out__0__2) ^ (plaintext__62);
-  output[60] = plaintext__62;
   plaintext__14 = (des_single__14_sbox_out__0__3) ^ (plaintext__14);
-  output[12] = plaintext__14;
   plaintext__16 = (des_single__14_sbox_out__0__4) ^ (plaintext__16);
-  output[14] = plaintext__16;
   des_single__14_sbox_in__1__1 = (key__49) ^ (plaintext__33);
   des_single__14_sbox_in__1__2 = (key__44) ^ (plaintext__25);
   des_single__14_sbox_in__1__3 = (key__18) ^ (plaintext__17);
@@ -3659,13 +3738,9 @@ void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[
   des_single__14_sbox_in__1__6 = (key__58) ^ (plaintext__59);
   sbox__1(des_single__14_sbox_in__1__1,des_single__14_sbox_in__1__2,des_single__14_sbox_in__1__3,des_single__14_sbox_in__1__4,des_single__14_sbox_in__1__5,des_single__14_sbox_in__1__6,&des_single__14_sbox_out__1__1,&des_single__14_sbox_out__1__2,&des_single__14_sbox_out__1__3,&des_single__14_sbox_out__1__4);
   plaintext__28 = (des_single__14_sbox_out__1__1) ^ (plaintext__28);
-  output[26] = plaintext__28;
   plaintext__40 = (des_single__14_sbox_out__1__2) ^ (plaintext__40);
-  output[38] = plaintext__40;
   plaintext__50 = (des_single__14_sbox_out__1__3) ^ (plaintext__50);
-  output[48] = plaintext__50;
   plaintext__54 = (des_single__14_sbox_out__1__4) ^ (plaintext__54);
-  output[52] = plaintext__54;
   des_single__14_sbox_in__2__1 = (key__19) ^ (plaintext__1);
   des_single__14_sbox_in__2__2 = (key__51) ^ (plaintext__59);
   des_single__14_sbox_in__2__3 = (key__42) ^ (plaintext__51);
@@ -3674,13 +3749,9 @@ void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[
   des_single__14_sbox_in__2__6 = (key__9) ^ (plaintext__27);
   sbox__2(des_single__14_sbox_in__2__1,des_single__14_sbox_in__2__2,des_single__14_sbox_in__2__3,des_single__14_sbox_in__2__4,des_single__14_sbox_in__2__5,des_single__14_sbox_in__2__6,&des_single__14_sbox_out__2__1,&des_single__14_sbox_out__2__2,&des_single__14_sbox_out__2__3,&des_single__14_sbox_out__2__4);
   plaintext__6 = (des_single__14_sbox_out__2__1) ^ (plaintext__6);
-  output[4] = plaintext__6;
   plaintext__4 = (des_single__14_sbox_out__2__2) ^ (plaintext__4);
-  output[2] = plaintext__4;
   plaintext__24 = (des_single__14_sbox_out__2__3) ^ (plaintext__24);
-  output[22] = plaintext__24;
   plaintext__18 = (des_single__14_sbox_out__2__4) ^ (plaintext__18);
-  output[16] = plaintext__18;
   des_single__14_sbox_in__3__1 = (key__10) ^ (plaintext__35);
   des_single__14_sbox_in__3__2 = (key__17) ^ (plaintext__27);
   des_single__14_sbox_in__3__3 = (key__52) ^ (plaintext__19);
@@ -3689,13 +3760,9 @@ void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[
   des_single__14_sbox_in__3__6 = (key__57) ^ (plaintext__61);
   sbox__3(des_single__14_sbox_in__3__1,des_single__14_sbox_in__3__2,des_single__14_sbox_in__3__3,des_single__14_sbox_in__3__4,des_single__14_sbox_in__3__5,des_single__14_sbox_in__3__6,&des_single__14_sbox_out__3__1,&des_single__14_sbox_out__3__2,&des_single__14_sbox_out__3__3,&des_single__14_sbox_out__3__4);
   plaintext__56 = (des_single__14_sbox_out__3__1) ^ (plaintext__56);
-  output[54] = plaintext__56;
   plaintext__38 = (des_single__14_sbox_out__3__2) ^ (plaintext__38);
-  output[36] = plaintext__38;
   plaintext__52 = (des_single__14_sbox_out__3__3) ^ (plaintext__52);
-  output[50] = plaintext__52;
   plaintext__58 = (des_single__14_sbox_out__3__4) ^ (plaintext__58);
-  output[56] = plaintext__58;
   des_single__14_sbox_in__4__1 = (key__38) ^ (plaintext__3);
   des_single__14_sbox_in__4__2 = (key__13) ^ (plaintext__61);
   des_single__14_sbox_in__4__3 = (key__55) ^ (plaintext__53);
@@ -3704,13 +3771,9 @@ void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[
   des_single__14_sbox_in__4__6 = (key__20) ^ (plaintext__29);
   sbox__4(des_single__14_sbox_in__4__1,des_single__14_sbox_in__4__2,des_single__14_sbox_in__4__3,des_single__14_sbox_in__4__4,des_single__14_sbox_in__4__5,des_single__14_sbox_in__4__6,&des_single__14_sbox_out__4__1,&des_single__14_sbox_out__4__2,&des_single__14_sbox_out__4__3,&des_single__14_sbox_out__4__4);
   plaintext__2 = (des_single__14_sbox_out__4__1) ^ (plaintext__2);
-  output[0] = plaintext__2;
   plaintext__20 = (des_single__14_sbox_out__4__2) ^ (plaintext__20);
-  output[18] = plaintext__20;
   plaintext__64 = (des_single__14_sbox_out__4__3) ^ (plaintext__64);
-  output[62] = plaintext__64;
   plaintext__42 = (des_single__14_sbox_out__4__4) ^ (plaintext__42);
-  output[40] = plaintext__42;
   des_single__14_sbox_in__5__1 = (key__63) ^ (plaintext__37);
   des_single__14_sbox_in__5__2 = (key__46) ^ (plaintext__29);
   des_single__14_sbox_in__5__3 = (key__21) ^ (plaintext__21);
@@ -3719,13 +3782,9 @@ void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[
   des_single__14_sbox_in__5__6 = (key__45) ^ (plaintext__63);
   sbox__5(des_single__14_sbox_in__5__1,des_single__14_sbox_in__5__2,des_single__14_sbox_in__5__3,des_single__14_sbox_in__5__4,des_single__14_sbox_in__5__5,des_single__14_sbox_in__5__6,&des_single__14_sbox_out__5__1,&des_single__14_sbox_out__5__2,&des_single__14_sbox_out__5__3,&des_single__14_sbox_out__5__4);
   plaintext__34 = (des_single__14_sbox_out__5__1) ^ (plaintext__34);
-  output[32] = plaintext__34;
   plaintext__32 = (des_single__14_sbox_out__5__2) ^ (plaintext__32);
-  output[30] = plaintext__32;
   plaintext__44 = (des_single__14_sbox_out__5__3) ^ (plaintext__44);
-  output[42] = plaintext__44;
   plaintext__46 = (des_single__14_sbox_out__5__4) ^ (plaintext__46);
-  output[44] = plaintext__46;
   des_single__14_sbox_in__6__1 = (key__14) ^ (plaintext__5);
   des_single__14_sbox_in__6__2 = (key__37) ^ (plaintext__63);
   des_single__14_sbox_in__6__3 = (key__54) ^ (plaintext__55);
@@ -3734,13 +3793,9 @@ void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[
   des_single__14_sbox_in__6__6 = (key__5) ^ (plaintext__31);
   sbox__6(des_single__14_sbox_in__6__1,des_single__14_sbox_in__6__2,des_single__14_sbox_in__6__3,des_single__14_sbox_in__6__4,des_single__14_sbox_in__6__5,des_single__14_sbox_in__6__6,&des_single__14_sbox_out__6__1,&des_single__14_sbox_out__6__2,&des_single__14_sbox_out__6__3,&des_single__14_sbox_out__6__4);
   plaintext__8 = (des_single__14_sbox_out__6__1) ^ (plaintext__8);
-  output[6] = plaintext__8;
   plaintext__36 = (des_single__14_sbox_out__6__2) ^ (plaintext__36);
-  output[34] = plaintext__36;
   plaintext__22 = (des_single__14_sbox_out__6__3) ^ (plaintext__22);
-  output[20] = plaintext__22;
   plaintext__10 = (des_single__14_sbox_out__6__4) ^ (plaintext__10);
-  output[8] = plaintext__10; 
   des_single__14_sbox_in__7__1 = (key__61) ^ (plaintext__39);
   des_single__14_sbox_in__7__2 = (key__30) ^ (plaintext__31);
   des_single__14_sbox_in__7__3 = (key__29) ^ (plaintext__23);
@@ -3749,13 +3804,9 @@ void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[
   des_single__14_sbox_in__7__6 = (key__47) ^ (plaintext__57);
   sbox__7(des_single__14_sbox_in__7__1,des_single__14_sbox_in__7__2,des_single__14_sbox_in__7__3,des_single__14_sbox_in__7__4,des_single__14_sbox_in__7__5,des_single__14_sbox_in__7__6,&des_single__14_sbox_out__7__1,&des_single__14_sbox_out__7__2,&des_single__14_sbox_out__7__3,&des_single__14_sbox_out__7__4);
   plaintext__26 = (des_single__14_sbox_out__7__1) ^ (plaintext__26);
-  output[24] = plaintext__26;
   plaintext__48 = (des_single__14_sbox_out__7__2) ^ (plaintext__48);
-  output[46] = plaintext__48;
   plaintext__12 = (des_single__14_sbox_out__7__3) ^ (plaintext__12);
-  output[10] = plaintext__12;
   plaintext__30 = (des_single__14_sbox_out__7__4) ^ (plaintext__30);
-  output[28] = plaintext__30;
   des_single__15_sbox_in__0__1 = (key__18) ^ (plaintext__8);
   des_single__15_sbox_in__0__2 = (key__59) ^ (plaintext__58);
   des_single__15_sbox_in__0__3 = (key__42) ^ (plaintext__50);
@@ -3844,6 +3895,70 @@ void des__ (unsigned long input[64], unsigned long key[64],unsigned long output[
   output[47] = (des_single__15_sbox_out__7__2) ^ (plaintext__47);
   output[11] = (des_single__15_sbox_out__7__3) ^ (plaintext__11);
   output[29] = (des_single__15_sbox_out__7__4) ^ (plaintext__29);
+  ciphered__1 = plaintext__2;
+  ciphered__3 = plaintext__4;
+  ciphered__5 = plaintext__6;
+  ciphered__7 = plaintext__8;
+  ciphered__9 = plaintext__10;
+  ciphered__11 = plaintext__12;
+  ciphered__13 = plaintext__14;
+  ciphered__15 = plaintext__16;
+  ciphered__17 = plaintext__18;
+  ciphered__19 = plaintext__20;
+  ciphered__21 = plaintext__22;
+  ciphered__23 = plaintext__24;
+  ciphered__25 = plaintext__26;
+  ciphered__27 = plaintext__28;
+  ciphered__29 = plaintext__30;
+  ciphered__31 = plaintext__32;
+  ciphered__33 = plaintext__34;
+  ciphered__35 = plaintext__36;
+  ciphered__37 = plaintext__38;
+  ciphered__39 = plaintext__40;
+  ciphered__41 = plaintext__42;
+  ciphered__43 = plaintext__44;
+  ciphered__45 = plaintext__46;
+  ciphered__47 = plaintext__48;
+  ciphered__49 = plaintext__50;
+  ciphered__51 = plaintext__52;
+  ciphered__53 = plaintext__54;
+  ciphered__55 = plaintext__56;
+  ciphered__57 = plaintext__58;
+  ciphered__59 = plaintext__60;
+  ciphered__61 = plaintext__62;
+  ciphered__63 = plaintext__64;
+  output[0] = ciphered__1;
+  output[2] = ciphered__3;
+  output[4] = ciphered__5;
+  output[6] = ciphered__7;
+  output[8] = ciphered__9;
+  output[10] = ciphered__11;
+  output[12] = ciphered__13;
+  output[14] = ciphered__15;
+  output[16] = ciphered__17;
+  output[18] = ciphered__19;
+  output[20] = ciphered__21;
+  output[22] = ciphered__23;
+  output[24] = ciphered__25;
+  output[26] = ciphered__27;
+  output[28] = ciphered__29;
+  output[30] = ciphered__31;
+  output[32] = ciphered__33;
+  output[34] = ciphered__35;
+  output[36] = ciphered__37;
+  output[38] = ciphered__39;
+  output[40] = ciphered__41;
+  output[42] = ciphered__43;
+  output[44] = ciphered__45;
+  output[46] = ciphered__47;
+  output[48] = ciphered__49;
+  output[50] = ciphered__51;
+  output[52] = ciphered__53;
+  output[54] = ciphered__55;
+  output[56] = ciphered__57;
+  output[58] = ciphered__59;
+  output[60] = ciphered__61;
+  output[62] = ciphered__63;
 
 }
 
