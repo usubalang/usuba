@@ -1,7 +1,23 @@
 open Usuba_AST
 open Utils
 
+let rec has_no_inner_deps (vars:p) (body:deq list) : bool =
+  let env = Hashtbl.create 100 in
+  List.iter (fun (id,_,_) -> env_add env id true) vars;
+  not (List.exists (function
+                     | Norec(_,e) -> List.exists
+                                       (fun x ->
+                                        match env_fetch env (get_var_name x) with
+                                        | Some _ -> true
+                                        | None -> false) (get_used_vars e)
+                     | _ -> false) body)
        
+let should_inline (def:def) : bool =
+  match def.node with
+  | Single(vars,body) ->
+     has_no_inner_deps vars body
+  | _ -> false
+           
 let is_call_free (def:def) : bool =
   match def.node with
   | Single(_,body) ->
@@ -101,6 +117,11 @@ let inline_deqs env (deqs: deq list) : p*deq list =
 
 
 let inline (prog:prog) : prog =
+
+  (* List.iter (fun x -> if should_inline x then *)
+  (*                       print_endline ("Should inline: " ^ x.id) *)
+  (*                     else print_endline ("Souldn't inline: " ^ x.id)) prog.nodes; *)
+  
   let env  = Hashtbl.create 20 in
   List.iter (fun x -> match x.node with
                       | Single(vars,body) ->

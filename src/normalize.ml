@@ -70,4 +70,8 @@ let norm_prog (prog: prog)  =
   let optimized = Optimize.opt_prog normalized in
   print "OPTIMIZED:" optimized;
 
+  
+  Soundness.tables_sound renamed optimized;
+
+  
   optimized

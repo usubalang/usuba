@@ -236,11 +236,12 @@ let prog_to_c (orig:prog) (prog:prog) : string =
   let prog_c = map_no_end inner_def_to_c prog.nodes in
   (* let _ = Share_var.share_prog prog input *)
   "#include <stdlib.h>\n"
+  ^ "#include <stdio.h>\n"
   ^ "#include \"mmintrin.h\"\n"
   ^ "#include \"immintrin.h\"\n"
   ^ "#include \"tmmintrin.h\"\n"
-  ^ "#include \"emmintrin.h\"\n\n\n"
-  ^ (join "\n\n" !struct_defs) ^ "\n\n\n"
+  ^ "#include \"emmintrin.h\"\n\n"
+  ^ (join "\n\n" !struct_defs) ^ "\n\n"
   ^ (join "\n\n" prog_c)
   ^ "\n\n" ^ entry
-  ^ "\n\nint main() { return 0; }" (* just so it can be compiled directly *)
+ (* ^ "\n\nint main() { return 0; }" *) (* just so it can be compiled directly *)

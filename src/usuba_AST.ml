@@ -29,11 +29,11 @@ type intr_fun =
 
 type slice_type =
     Std (* 64-bit *)
-    | MMX of int
-    | SSE of int
-    | AVX of int
-    | AVX512
-                                            
+  | MMX of int
+  | SSE of int
+  | AVX of int
+  | AVX512
+      
 type arith_expr =
   | Const_e of int
   | Var_e of ident
@@ -51,7 +51,7 @@ type var =
   | Index of ident * arith_expr
   | Range of ident * arith_expr * arith_expr
   | Slice of ident * arith_expr list
-                                    
+                                
 type expr = Const  of int
           | ExpVar of var
           | Tuple  of expr list
@@ -66,7 +66,7 @@ type expr = Const  of int
           | When   of expr * ident * ident
           | Merge  of ident * (ident * expr) list
           | Nop                           
-                            
+              
 type deq =
   | Norec of (var list) * expr
   | Rec of ident * arith_expr * arith_expr * (var list) * expr
@@ -84,11 +84,11 @@ type def_i =
 type def_opt = Inline | No_inline
                  
 type def = {
-  id : ident;
-  p_in : p;
+  id    : ident;
+  p_in  : p;
   p_out : p;
-  opt : def_opt list;
-  node : def_i;
+  opt   : def_opt list;
+  node  : def_i;
 }
                                                 
 type prog = {

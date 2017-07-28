@@ -21,13 +21,7 @@ let rec pow a = function
 let unfold_andn e =
   match e with
   | Log(Andn,x,y) -> Log(And,Not x,y)
-  | _ -> e
-           
-let contains s1 s2 =
-  let re = Str.regexp_string s2
-  in
-  try ignore (Str.search_forward re s1 0); true
-  with Not_found -> false
+  | _ -> e          
 
 let last l =
   List.nth l (List.length l - 1)
@@ -152,13 +146,11 @@ let rec expand_intn_list (id: ident) (n: int) : ident list =
     else (id ^ (string_of_int i)) :: (aux (i+1))
   in aux 1
 
-
 let contains s1 s2 =
   let re = Str.regexp_string s2
   in
   try ignore (Str.search_forward re s1 0); true
   with Not_found -> false
-
 
 let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
   match e with
@@ -186,6 +178,13 @@ let rec get_used_vars (e:expr) : var list =
   | Fun(_,l) -> List.flatten @@ List.map get_used_vars l
   | _ -> raise (Error "Not supported expr")
 
+let rec get_var_name (v:var) : ident =
+  match v with
+  | Var id -> id
+  | Field(v,_) -> get_var_name v
+  | Index(id,_) -> id
+  | Range(id,_,_) -> id
+  | Slice(id,_) -> id
 
 (* Retrieving the keys of a hash *)
 let keys hash = Hashtbl.fold (fun k _ acc -> k :: acc) hash []
@@ -205,9 +204,32 @@ let is_noinline (def:def) : bool =
   List.exists (function
                 | Inline    -> false
                 | No_inline -> true) def.opt
-              
-let contains s1 s2 =
-    let re = Str.regexp_string s2
-    in
-        try ignore (Str.search_forward re s1 0); true
-        with Not_found -> false
+
+let print_bool_list (l:bool list) : unit =
+  List.iter (fun x -> print_int (if x then 1 else 0)) l;
+  print_endline ""
+
+(* Note: boollist_to_int (int_to_boollist x n) == x 
+   (if x is less than 2^n) *)
+let boollist_to_int (l: bool list) : int =
+  let rec aux l n =
+    match l with
+    | [] -> n
+    | hd :: tl -> aux tl ((n lsl 1) lor (if hd then 1 else 0)) in
+  aux l 0
+
+let int_to_boollist (n : int) (size: int) : bool list =
+  let rec aux i l =
+    if i = 0 then List.rev l
+    else aux (i-1) (((n lsr (i-1)) land 1 = 1) :: l) in
+  aux size []
+
+let rec p_size (p:p) : int =
+  let typ_size (t:typ) =
+    match t with
+    | Bool -> 1
+    | Int n -> n
+    | _ -> raise (Not_implemented "p_size restricted to Bool & Int") in
+  match p with
+  | [] -> 0
+  | (_,typ,_) :: tl -> (typ_size typ) + (p_size tl)
