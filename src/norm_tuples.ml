@@ -30,7 +30,7 @@ module Simplify_tuples = struct
                         List.map (function
                                    | Norec(p,e) -> Norec(p,simpl_tuple e)
                                    | Rec _ -> raise (Error "REC")) body) }
-    | _ -> unreached ()
+    | _ -> def
                      
   let simplify_tuples (p: prog) : prog =
     { nodes = List.map simpl_tuples_def p.nodes }
@@ -54,7 +54,7 @@ module Split_tuples = struct
     match def.node with
       | Single(p_var,body) ->
        { def with node  = Single(p_var, split_tuples_deq body) }
-    | _ -> unreached ()
+    | _ -> def
                  
   let split_tuples (p: prog) : prog =
     { nodes = List.map split_tuples_def p.nodes }

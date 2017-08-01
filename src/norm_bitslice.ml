@@ -154,7 +154,32 @@ let norm_def env_fun (def: def) : def =
      new_vars := [];
      let body = norm_deq env_fun body in
      { def with node = Single(p_var @ !new_vars,body) }
-  | _ -> raise (Invalid_AST "Illegal non-Single def")
+  | _ ->
+     def
+
+let norm_def_z3 env_fun (def: def) : def =
+  match def.node with
+  | Single(p_var,body) ->
+     env_add_fun def.id def.p_in def.p_out env_fun;
+     new_vars := [];
+     let body = norm_deq env_fun body in
+     { def with node = Single(p_var @ !new_vars,body) }
+  | Perm _ ->
+     env_add_fun def.id def.p_in def.p_out env_fun;
+     def
+  | MultiplePerm l ->
+     List.iteri (fun i _ -> env_add_fun (def.id ^ (string_of_int i))
+                                        def.p_in def.p_out env_fun) l;
+     def
+  | Table _ ->
+     env_add_fun def.id def.p_in def.p_out env_fun;
+     def
+  | MultipleTable l -> 
+     List.iteri (fun i _ -> env_add_fun (def.id ^ (string_of_int i))
+                                        def.p_in def.p_out env_fun) l;
+     def
+  | _ -> unreached ()
+     
 
 let print title body =
   if false then
@@ -162,7 +187,8 @@ let print title body =
       print_endline title;
       if true then print_endline (Usuba_print.prog_to_str body.nodes)
     end
-
+            
+      
 (* Note: the print actually if the boolean if the function "print" above 
          are set to true (or at least the first one) *)
 let norm_prog (prog: prog)  =

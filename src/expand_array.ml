@@ -168,6 +168,15 @@ let rewrite_deqs p_in p_out vars (deqs:deq list) : deq list =
                           [ Norec(rewrite_pat (Hashtbl.create 1) env_var vars,
                                   rewrite_expr (Hashtbl.create 1) env_var 0 e) ]) deqs
 
+let expand_def (def:def) : def =
+  match def.node with
+  | Single(vars,body) ->
+     { def with p_in = rewrite_p def.p_in;
+                p_out = rewrite_p def.p_out;
+                node = Single(rewrite_p vars,
+                              rewrite_deqs def.p_in def.p_out vars body ) }
+  | _ -> def
+       
 let expand_array (prog: prog) : prog =
   let prog' = (* expansion of the arrays of nodes *)
     List.flatten @@

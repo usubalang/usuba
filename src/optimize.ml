@@ -154,11 +154,11 @@ module Clean = struct
 
   let rec clean_var env (var:var) : unit =
     match var with
-    | Var id -> env_add env id 1
+    | Var id -> Hashtbl.replace env id 1
     | Field(v,_) -> clean_var env v
-    | Index(id,_) -> env_add env id 1
-    | Range(id,_,_) -> env_add env id 1
-    | Slice(id,_) -> env_add env id 1
+    | Index(id,_) -> Hashtbl.replace env id 1
+    | Range(id,_,_) -> Hashtbl.replace env id 1
+    | Slice(id,_) -> Hashtbl.replace env id 1
 
   let rec clean_expr env (e:expr) : unit =
     match e with
@@ -182,9 +182,10 @@ module Clean = struct
                         clean_expr env e
         | Rec(_,_,_,l,e) -> List.iter (clean_var env) l;
                             clean_expr env e) deqs;
-    List.filter (fun (id,_,_) -> match env_fetch env id with
-                                 | Some _ -> true
-                                 | None -> false) vars
+    List.sort_uniq (fun a b -> compare a b)
+                   ( List.filter (fun (id,_,_) -> match env_fetch env id with
+                                                  | Some _ -> true
+                                                  | None -> false) vars)
 
   let clean_def (def:def) : def =
     match def.node with
@@ -197,8 +198,8 @@ module Clean = struct
     { nodes = List.map clean_def prog.nodes }
 end
        
-let opt_prog (prog: Usuba_AST.prog) : Usuba_AST.prog =
+let opt_prog (prog: Usuba_AST.prog) (share:bool) : Usuba_AST.prog =
   let optimized = CSE_CF.cse_prog prog in
-  let vars_shared = Share_var.share_prog optimized in
+  let vars_shared = if share then Share_var.share_prog optimized else optimized in
   let cleaned = Clean.clean_vars_decl vars_shared in
   Scheduler.schedule cleaned

@@ -25,6 +25,7 @@ let unfold_andn e =
 
 let last l =
   List.nth l (List.length l - 1)
+let is_empty = function [] -> true | _ -> false
 
 let rec join s l = String.concat s l
 

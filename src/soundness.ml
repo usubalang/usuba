@@ -15,11 +15,12 @@ let compare_tables (orig:def) (norm:def)  =
       raise (Unsound (Printf.sprintf "%s: %d => %d vs %d" orig.id i
                                      (boollist_to_int out_orig)
                                      (boollist_to_int out_norm)))    
-  done;
-  Printf.printf "Table %s sound.\n" orig.id
+  done
+  (* Printf.fprintf stderr "Table %s sound.\n" orig.id *)
     
 
 let tables_sound (orig:prog) (normalized:prog) =
+  Printf.fprintf stderr "Warning: table soundness check enabled.\n";
   let tables = Hashtbl.create 10 in
   List.iter (fun x -> match x.node with
                       | Table _ -> env_add tables x.id x
