@@ -40,7 +40,7 @@ let print_c (file_in: string) (prog: Usuba_AST.prog) =
   let c_prog = Usuba_to_c.prog_to_c prog normalized in
 
   (* Check_soundness.check_soundness prog normalized c_prog; *)
-  print_endline (Gen_z3.gen_z3 prog);
+  print_endline (Gen_z3_bis.gen_z3 prog);
   
   fprintf out "%s" c_prog;
   fprintf out "\n\nint main() { return 0; }";
