@@ -1,6 +1,30 @@
 open Usuba_AST
 open Utils
 
+let max_pressure = 14
+
+let get_body (node:def) : deq list =
+  match node.node with
+  | Single(_,body) -> body
+  | _ -> raise (Error "Not a Single")
+       
+let reg_pressure (deqs: deq list) (p_out:p) : int =
+  let live : (var,bool) Hashtbl.t = Hashtbl.create 100 in (* variables currently alive *)
+  
+  let p_out = List.map (fun (x,_,_) -> Var x) p_out in
+  
+  List.iter (fun x -> Hashtbl.add live x true) p_out;
+  let reg_pressure = ref (Hashtbl.length live) in
+
+  List.iter (function
+              | Norec(l,e) ->
+                 List.iter (fun x -> Hashtbl.replace live x true) (get_used_vars e);
+                 List.iter (fun x -> Hashtbl.remove live x) l;
+                 reg_pressure := max !reg_pressure (Hashtbl.length live)
+              | _ -> unreached()) (List.rev deqs);
+  
+  !reg_pressure
+       
 let rec has_no_inner_deps (vars:p) (body:deq list) : bool =
   let env = Hashtbl.create 100 in
   List.iter (fun (id,_,_) -> env_add env id true) vars;
@@ -12,10 +36,14 @@ let rec has_no_inner_deps (vars:p) (body:deq list) : bool =
                                         | None -> false) (get_used_vars e)
                      | _ -> false) body)
        
-let should_inline (def:def) : bool =
+let should_inline (dest:def) (def:def) : bool =
   match def.node with
   | Single(vars,body) ->
-     has_no_inner_deps vars body
+     if has_no_inner_deps vars body then true
+     else
+       let pressure_dst = reg_pressure (get_body dest) dest.p_out in
+       let pressure_def = reg_pressure (get_body def) def.p_out in
+       pressure_dst + pressure_def <= max_pressure
   | _ -> false
            
 let is_call_free (def:def) : bool =
@@ -75,7 +103,7 @@ let rename_deqs pref (deqs:deq list) : deq list =
                         Rec(id,ei,ef,List.map (rename_var pref) p,
                             rename_expr pref e)) deqs
            
-let inline_deqs env (deqs: deq list) : p*deq list =
+let inline_deqs env (node:def) (deqs: deq list) : p*deq list =
   let cpt = ref 0 in
   let add_vars  = ref [] in
   let body =
@@ -90,7 +118,8 @@ let inline_deqs env (deqs: deq list) : p*deq list =
                  let p_in = def.p_in in
                  let p_out = def.p_out in
 
-                 if not (is_noinline def) then
+                 if not (is_noinline def)
+                   (* && (should_inline node def) *)then
                    begin
                      let pref = def.id ^ (string_of_int !cpt) ^ "_" in
                      incr cpt;
@@ -136,7 +165,7 @@ let inline (prog:prog) : prog =
             (List.filter (fun x -> not @@ is_call_free x) prog.nodes);
   while Hashtbl.length todo <> 0  do
     let (node,vars,body) = get_next_node env todo in
-    let (vars',body') = inline_deqs env body in
+    let (vars',body') = inline_deqs env node body in
     let new_vars =  vars @ vars' in
     env_add env node.id ({ node with node = Single(new_vars,body') } ,new_vars,body')
   done;
