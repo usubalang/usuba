@@ -16,6 +16,8 @@ let p_to_int_list (p:p) : int list =
                                | _ -> raise (Not_implemented "")) p
 
 module Shared = struct
+  let close_paren = ref 0
+  
   let get_vars (def:def) : p =
     match def.node with
     | Single(vars,_) -> vars
@@ -42,62 +44,50 @@ module Shared = struct
   let asgn_to_z3 (p:var list) (e:expr) clean_name rename get_var_id : string =
     match p with
     (* A single variable (=> the expr is "simple" *)
-    | [ Var v ] -> sprintf "(= %s %s)" (clean_name v) (e_to_z3 clean_name rename e)
+    | [ Var v ] -> incr close_paren;
+                   sprintf "(let ((%s %s))" (clean_name v) (e_to_z3 clean_name rename e)
     (* Several variables (=> the expr is a function call *)
     | _ -> match e with
            | Fun(f,l) ->
-              sprintf "(and %s)"
-                      (join " "
-                            (List.mapi
-                               (fun i v ->
-                                sprintf "(= %s (%s-%d %s))" (get_var_id v)
-                                        (rename f) i
-                                        (join " "
-                                              (List.map
-                                                 (e_to_z3 clean_name rename) l))) p))
+              join "\n  "
+                   (List.mapi
+                      (fun i v ->
+                       incr close_paren;
+                       sprintf "(let ((%s (%s-%d %s)))"
+                               (get_var_id v)
+                               (rename f) i
+                               (join " "
+                                     (List.map
+                                        (e_to_z3 clean_name rename) l)))
+                      p)
            | _ -> unreached ()
                             
   let z3_node (def:def) clean_name rename get_var_id : string =
-    let f_id     = rename def.id in
-    let in_list  = List.map (fun (id,_,_) -> clean_name id) def.p_in in
-    let out_list = List.map (fun (id,_,_) -> clean_name id) def.p_out in
-    let bool_in  = join " " (List.map (fun _ -> "Bool") in_list) in
-    let var_list = List.map (fun (id,_,_) -> clean_name id) (get_vars def) in
-    let body     = get_body def in
     
-    (* declaring functions *)
-    (join "\n"
-          (List.mapi (fun i _ ->
-                      sprintf "(declare-fun %s-%d (%s) Bool)"
-                              f_id i bool_in) out_list)) ^
-      "\n" ^ 
-        (* The body *)
-        (sprintf
-"(assert (forall (%s %s)
-            (= (and %s)
-                %s)))"
-(join " " (List.map (fun id -> sprintf "(%s Bool)" id) out_list))
-(join " " (List.map (fun id -> sprintf "(%s Bool)" id) in_list))
-(join "\n                    "
-      (List.mapi (fun i x -> sprintf "(= (%s-%d %s) %s)"
-                                     f_id i (join " " in_list) x) out_list))
-(if is_empty var_list then
-   sprintf "(and %s)" (join "\n                            "
-                            (List.map (function
-                                        | Norec(p,e) -> asgn_to_z3 p e
-                                                                   clean_name
-                                                                   rename
-                                                                   get_var_id
-                                        | _ -> unreached ()) body))
- else
-   sprintf "(exists (%s)
-            (and %s))"
-           (join " " (List.map (fun id -> sprintf "(%s Bool)" id) var_list))
-           (join "\n                         "
-                 (List.map (function
-                             | Norec(p,e) -> asgn_to_z3 p e clean_name rename get_var_id
-                             | _ -> unreached ()) body)))
-        )
+    let f_id     = rename def.id in
+    let in_list  = join " " (List.map (fun (id,_,_) ->
+                                       sprintf "(%s Bool)" (clean_name id)) def.p_in) in
+    let out_list = List.map (fun (id,_,_) -> clean_name id) def.p_out in
+    let body     = get_body def in
+
+    join "\n"
+         (List.mapi
+            (fun i id ->
+             close_paren := 0;
+             let fun_str = 
+               sprintf "(define-fun %s-%d (%s) Bool\n  %s\n  %s)"
+                       f_id i in_list
+                       (join "\n  "
+                             (List.map (function
+                                         | Norec(p,e) -> asgn_to_z3 p e
+                                                                    clean_name
+                                                                    rename
+                                                                    get_var_id
+                                         | _ -> unreached ()) body))
+                       id in
+             fun_str ^ (String.init !close_paren (fun _ -> ')')))
+            out_list)
+
 end
                   
 module Usuba0 = struct
