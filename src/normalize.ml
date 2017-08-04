@@ -29,50 +29,50 @@ module Bitsliceable = struct
 
 end
        
-let print title body =
-  if false then
+let print title body conf =
+  if conf.verbose >= 5 then
     begin
       print_endline title;
-      if true then print_endline (Usuba_print.prog_to_str body.nodes)
+      if conf.verbose >= 100 then print_endline (Usuba_print.prog_to_str body)
     end
 
 (* Note: the print actually print if the booleans in the function "print" above 
          are set to true (or at least the first one) *)
-let norm_prog (prog: prog)  =
-  print "INPUT:" prog;
+let norm_prog (prog: prog) (conf:config) : prog  =
+  print "INPUT:" prog conf;
 
   let renamed = Rename.rename_prog prog in
-  print "RENAMED:" renamed;
+  print "RENAMED:" renamed conf;
 
   (* remove arrays and recursion *)
   let array_expanded = Expand_array.expand_array renamed in
-  print "ARRAYS EXPANDED:"  array_expanded;
+  print "ARRAYS EXPANDED:"  array_expanded conf;
 
   (* convert lookup-tables to circuit (ie. to nodes) *)
   let tables_converted = Convert_tables.convert_tables array_expanded in
-  print "TABLES CONVERTED:" tables_converted;
+  print "TABLES CONVERTED:" tables_converted conf;
 
   let normalized =
     if Bitsliceable.bitsliceable tables_converted then
       (let normed = Norm_bitslice.norm_prog tables_converted in
-       print "PRE-NORMALIZED:" normed;
+       print "PRE-NORMALIZED:" normed conf;
        let scheduled = Pre_schedule.schedule normed in
-       print "SCHEDULED:" scheduled;
-       let inlined = Inline.inline scheduled in
-       print "INLINED:" inlined;
+       print "SCHEDULED:" scheduled conf;
+       let inlined = if conf.inline then Inline.inline scheduled else scheduled in
+       print "INLINED:" inlined conf;
        Norm_bitslice.norm_prog inlined)
     else
       tables_converted in
-  print "NORMALIZED:" normalized;
+  print "NORMALIZED:" normalized conf;
   
   assert (Assert_lang.Usuba_norm.is_usuba_normalized normalized);
 
   Printf.fprintf stderr "Warning: variable sharing is disabled.\n";
   let optimized = Optimize.opt_prog normalized false in
-  print "OPTIMIZED:" optimized;
+  print "OPTIMIZED:" optimized conf;
 
-  
-  Soundness.tables_sound renamed optimized;
+  if conf.check_tables then
+    Soundness.tables_sound renamed optimized;
 
   
   optimized

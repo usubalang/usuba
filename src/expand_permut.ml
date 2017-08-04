@@ -35,6 +35,7 @@ let rec apply_perm_e env (e:expr) : expr =
   | Fun_v(f,n,l) -> raise (Error "Node arrays should be gone")
   | Fby(ei,ef,f) -> Fby(apply_perm_e env ei,apply_perm_e env ef,f)
   | Nop -> Nop
+  | _ -> raise (Not_implemented (Usuba_print.expr_to_str e))
                         
             
 let apply_perm env (deqs: deq list) : deq list =

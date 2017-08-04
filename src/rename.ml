@@ -54,6 +54,7 @@ let rec rename_expr (e:expr) =
                           | None -> None
                           | Some id -> Some (id^"'"))
   | Nop -> Nop
+  | _ -> raise (Not_implemented (Usuba_print.expr_to_str e))
 
 
                       

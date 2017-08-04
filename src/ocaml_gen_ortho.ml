@@ -292,7 +292,7 @@ let def_to_str_ml tab def =
                     ^ (p_to_str_ml tab def.p_out) ^ ")\n"))
 
                     
-let prog_to_str_ml (p:prog) : string =
+let prog_to_str_ml (p:prog) (conf:config) : string =
   prologue_prog := [
 "let convert_ortho (size: int) (input: int64 array) : int array =
   let out = Array.make size 0 in
@@ -316,7 +316,7 @@ let prog_to_str_ml (p:prog) : string =
   let entry_point = Gen_entry.gen_entry_point
                       (Utils.last
                          (Expand_array.expand_array p).nodes) in
-  let converted = Normalize.norm_prog p in
+  let converted = Normalize.norm_prog p conf in
   let body = List.map (def_to_str_ml 0) converted.nodes in
   (join "\n\n" !prologue_prog)
   ^ "\n\n" ^  (join "\n\n" body) ^ "\n\n" ^ entry_point

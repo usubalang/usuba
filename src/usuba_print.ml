@@ -188,7 +188,7 @@ let optdef_to_str = function
       
 let def_to_str def =
   let (id,p_in,p_out) = (def.id,def.p_in,def.p_out) in
-  (join " " (List.map optdef_to_str def.opt)) ^ 
+  (join " " (List.map optdef_to_str def.opt)) ^ " " ^ 
     (match def.node with
      | Single(vars,deq) ->
         single_node_to_str id p_in p_out vars deq
@@ -233,8 +233,8 @@ let def_to_str def =
                              ^ "}") l))
         ^ "\n]\n")
                                                        
-let prog_to_str prog =
-  join "\n\n" (List.map def_to_str prog)
+let prog_to_str (prog:prog) : string=
+  join "\n\n" (List.map def_to_str prog.nodes)
 
-let print_prog prog =
+let print_prog (prog:prog) : unit =
   print_endline (prog_to_str prog)

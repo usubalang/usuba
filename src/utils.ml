@@ -10,6 +10,12 @@ exception Invalid_operator_call
 exception Break            
 
 let unreached () = raise (Error "This point can't be reached")
+
+let default_conf : config =
+  { inline       = true;
+    gen_z3       = false;
+    check_tables = false;
+    verbose      = 0; }
                          
 let rec pow a = function
   | 0 -> 1

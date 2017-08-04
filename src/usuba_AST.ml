@@ -94,3 +94,11 @@ type def = {
 type prog = {
   nodes : def list;
 }
+
+(* The compiler's configuration *)
+type config = {
+  inline       : bool;
+  gen_z3       : bool;
+  check_tables : bool;
+  verbose      : int;
+}

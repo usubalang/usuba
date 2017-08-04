@@ -185,7 +185,7 @@ let print title body =
   if false then
     begin
       print_endline title;
-      if true then print_endline (Usuba_print.prog_to_str body.nodes)
+      if true then print_endline (Usuba_print.prog_to_str body)
     end
             
       

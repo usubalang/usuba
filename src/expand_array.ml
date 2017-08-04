@@ -60,7 +60,8 @@ let rec expand_expr_range (e:expr) : expr =
      | Fun(f,l) -> Fun(f,List.map expand_expr_range l)
      | Fun_v(f,n,l) -> Fun_v(f,n,List.map expand_expr_range l)
      | Fby(x,y,f) -> Fby(expand_expr_range x,expand_expr_range y,f)
-     | Nop -> Nop)
+     | Nop -> Nop
+     | _ -> raise (Not_implemented (Usuba_print.expr_to_str e)))
           
 let rec rewrite_expr loc_env env_var (i:int) (e:expr) : expr =
   let rec_call = rewrite_expr loc_env env_var i in
@@ -104,6 +105,7 @@ let rec rewrite_expr loc_env env_var (i:int) (e:expr) : expr =
                     rec_call (Fun(f',l))
   | Fby _ -> raise (Not_implemented "FBY")
   | Nop -> Nop
+  | _ -> raise (Not_implemented (Usuba_print.expr_to_str e))
              
 
 let rewrite_pat env env_var (pat:var list) : var list =

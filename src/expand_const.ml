@@ -15,6 +15,7 @@ let rec contains_const (e:expr) : bool =
   | Fun_v(_,_,l) -> List.exists (fun x -> x) (List.map contains_const l)
   | Fby(x,y,_) -> contains_const x || contains_const y
   | Nop -> false
+  | _ -> raise (Not_implemented (Usuba_print.expr_to_str e))
                                                      
 let get_var_size env (v:ident) : int =
   match env_fetch env v with
@@ -40,6 +41,7 @@ let rec get_expr_size env (e:expr) : int =
   | Fun_v(_,_,l) -> List.fold_left (+) 0 (List.map (get_expr_size env) l)
   | Fby(x,_,_) -> get_expr_size env x
   | Nop -> raise (Error "Nop size unknown")
+  | _ -> raise (Not_implemented (Usuba_print.expr_to_str e))
   
                              
 let expand_const (size:int) (n:int) : expr =

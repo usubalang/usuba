@@ -16,8 +16,6 @@ let p_to_int_list (p:p) : int list =
                                | _ -> raise (Not_implemented "")) p
 
 module Shared = struct
-  let close_paren = ref 0
-  
   let get_vars (def:def) : p =
     match def.node with
     | Single(vars,_) -> vars
@@ -44,50 +42,62 @@ module Shared = struct
   let asgn_to_z3 (p:var list) (e:expr) clean_name rename get_var_id : string =
     match p with
     (* A single variable (=> the expr is "simple" *)
-    | [ Var v ] -> incr close_paren;
-                   sprintf "(let ((%s %s))" (clean_name v) (e_to_z3 clean_name rename e)
+    | [ Var v ] -> sprintf "(= %s %s)" (clean_name v) (e_to_z3 clean_name rename e)
     (* Several variables (=> the expr is a function call *)
     | _ -> match e with
            | Fun(f,l) ->
-              join "\n  "
-                   (List.mapi
-                      (fun i v ->
-                       incr close_paren;
-                       sprintf "(let ((%s (%s-%d %s)))"
-                               (get_var_id v)
-                               (rename f) i
-                               (join " "
-                                     (List.map
-                                        (e_to_z3 clean_name rename) l)))
-                      p)
+              sprintf "(and %s)"
+                      (join " "
+                            (List.mapi
+                               (fun i v ->
+                                sprintf "(= %s (%s-%d %s))" (get_var_id v)
+                                        (rename f) i
+                                        (join " "
+                                              (List.map
+                                                 (e_to_z3 clean_name rename) l))) p))
            | _ -> unreached ()
                             
   let z3_node (def:def) clean_name rename get_var_id : string =
-    
     let f_id     = rename def.id in
-    let in_list  = join " " (List.map (fun (id,_,_) ->
-                                       sprintf "(%s Bool)" (clean_name id)) def.p_in) in
+    let in_list  = List.map (fun (id,_,_) -> clean_name id) def.p_in in
     let out_list = List.map (fun (id,_,_) -> clean_name id) def.p_out in
+    let bool_in  = join " " (List.map (fun _ -> "Bool") in_list) in
+    let var_list = List.map (fun (id,_,_) -> clean_name id) (get_vars def) in
     let body     = get_body def in
-
-    join "\n"
-         (List.mapi
-            (fun i id ->
-             close_paren := 0;
-             let fun_str = 
-               sprintf "(define-fun %s-%d (%s) Bool\n  %s\n  %s)"
-                       f_id i in_list
-                       (join "\n  "
-                             (List.map (function
-                                         | Norec(p,e) -> asgn_to_z3 p e
-                                                                    clean_name
-                                                                    rename
-                                                                    get_var_id
-                                         | _ -> unreached ()) body))
-                       id in
-             fun_str ^ (String.init !close_paren (fun _ -> ')')))
-            out_list)
-
+    
+    (* declaring functions *)
+    (join "\n"
+          (List.mapi (fun i _ ->
+                      sprintf "(declare-fun %s-%d (%s) Bool)"
+                              f_id i bool_in) out_list)) ^
+      "\n" ^ 
+        (* The body *)
+        (sprintf
+"(assert (forall (%s %s)
+            (= (and %s)
+                %s)))"
+(join " " (List.map (fun id -> sprintf "(%s Bool)" id) out_list))
+(join " " (List.map (fun id -> sprintf "(%s Bool)" id) in_list))
+(join "\n                    "
+      (List.mapi (fun i x -> sprintf "(= (%s-%d %s) %s)"
+                                     f_id i (join " " in_list) x) out_list))
+(if is_empty var_list then
+   sprintf "(and %s)" (join "\n                            "
+                            (List.map (function
+                                        | Norec(p,e) -> asgn_to_z3 p e
+                                                                   clean_name
+                                                                   rename
+                                                                   get_var_id
+                                        | _ -> unreached ()) body))
+ else
+   sprintf "(exists (%s)
+            (and %s))"
+           (join " " (List.map (fun id -> sprintf "(%s Bool)" id) var_list))
+           (join "\n                         "
+                 (List.map (function
+                             | Norec(p,e) -> asgn_to_z3 p e clean_name rename get_var_id
+                             | _ -> unreached ()) body)))
+        )
 end
                   
 module Usuba0 = struct
@@ -126,17 +136,9 @@ module Usuba = struct
     | Var id -> clean_name id
     | _ -> raise (Error "Non-var")
 
-  let all_but_last (l:'a list) : 'a list =
-    let rec aux l acc =
-      match l with
-      | [] -> []
-      | [ _ ] -> List.rev acc
-      | hd::tl -> aux tl (hd::acc) in
-    aux l []
-
   let z3_node (def:def) : string =
     Shared.z3_node def clean_name rename get_var_id    
-                   
+
           
                                              
   let z3_table (def:def) (l:int list) : string =
@@ -151,34 +153,38 @@ module Usuba = struct
     let int_l_out = p_to_int_list def.p_out in
     let size_in = List.length int_l_in in
     let size_out = List.length int_l_out in
-    let args = join " " (List.mapi (fun i _ -> sprintf "(i-%d Bool)" i) int_l_in) in
-    join "\n"
-         (List.mapi
-            (fun i _ ->
-             sprintf
-               "(define-fun %s-%d (%s) Bool\n   %s %B%s)"
-               id i args
-               (join "\n   "
-                     (List.mapi
-                        (fun idx v ->
-                         let idx = List.rev (int_to_idx idx size_in) in
-                         let v   = List.nth (int_to_idx v size_out) (size_out-i-1) in
-                         sprintf "(if (and %s) %B"
-                                 (join " "
-                                       (List.mapi
-                                          (fun i b ->
-                                           sprintf "(= i-%d %B)" i b) idx)) v)
-                        (all_but_last l)))
-               (List.nth (int_to_idx (last l) size_out) (size_out-i-1))
-               (String.init (List.length l-1) (fun _ -> ')'))) int_l_out)
+    (join "\n" (List.mapi (fun i _ -> sprintf
+"(declare-fun %s-%d (%s) Bool)" id i
+(join " " (List.map (fun _ -> "Bool") int_l_in)))
+                          int_l_out)) ^
+      "\n" ^
+        (join "\n"
+              (List.mapi
+                 (fun i x ->
+                  let booleans = join " " (List.map
+                                             (sprintf "%B")
+                                             (List.rev (int_to_idx i size_in))) in
+                  join "\n"
+                       (List.mapi
+                          (fun i x -> sprintf "(assert (= (%s-%d %s) %B))"
+                                              id i booleans x)
+                                              (List.rev (int_to_idx x size_out)))) l))
 
         
   let z3_perm (def:def) (l:int list) : string =
     let id = rename def.id in
     let int_l = p_to_int_list def.p_in in
-    let args = join " " (List.mapi (fun i _ -> sprintf "(i-%d Bool)" i) int_l) in
-    join "\n" (List.mapi (fun i x -> sprintf "(define-fun %s-%d (%s) Bool i-%d)"
-                                             id i args (x-1)) l)
+    let param_l = join " " (List.map (fun _ -> "Bool") int_l) in
+    let args = join " " (List.mapi (fun i _ -> sprintf "i-%d" i) int_l) in
+    (join "\n" (List.mapi (fun i x -> sprintf "(declare-fun %s-%d (%s) Bool)"
+                                              id i param_l) l))
+    ^
+      (sprintf "\n(assert (forall (%s)\n         (and\n"
+               (join " " (List.mapi (fun i _ -> sprintf "(i-%d Bool)" i) int_l)))
+    ^
+      (join "\n" (List.mapi (fun i x -> sprintf "           (= (%s-%d %s) i-%d)"
+                                                id i args (x-1)) l))
+    ^ ")))\n"
                                           
   let rec z3_def env_fun (def:def) : string =
     let converted = 
