@@ -19,8 +19,7 @@ let compare_tables (orig:def) (norm:def)  =
   (* Printf.fprintf stderr "Table %s sound.\n" orig.id *)
     
 
-let tables_sound (orig:prog) (normalized:prog) =
-  Printf.fprintf stderr "Warning: table soundness check enabled.\n";
+let tables_sound (orig:prog) (normalized:prog) : unit =
   let tables = Hashtbl.create 10 in
   List.iter (fun x -> match x.node with
                       | Table _ -> env_add tables x.id x

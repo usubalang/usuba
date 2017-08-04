@@ -101,4 +101,5 @@ type config = {
   gen_z3       : bool;
   check_tables : bool;
   verbose      : int;
+  warnings     : bool;
 }

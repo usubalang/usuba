@@ -4,6 +4,7 @@ open Ocaml_gen_naive
 open Printf
 open Parse_file
 open Interp
+open Utils
 
 let print_naive_ml (file_in: string) (prog: Usuba_AST.prog) (conf:config) =
   (* Generating OCaml code *)
@@ -37,12 +38,9 @@ let print_c (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
   let out = open_out ("tests/C/" ^ out_name ^ ".c") in
   let normalized = Normalize.norm_prog prog conf in
 
-  Usuba_print.print_prog normalized;
+  (* Usuba_print.print_prog normalized; *)
 
-  let c_prog = Usuba_to_c.prog_to_c prog normalized in
-
-  (* Check_soundness.check_soundness prog normalized c_prog; *)
-  if conf.gen_z3 then print_endline (Gen_z3.gen_z3 prog normalized);
+  let c_prog = Usuba_to_c.prog_to_c prog normalized conf in
   
   fprintf out "%s" c_prog;
   fprintf out "\n\nint main() { return 0; }";
@@ -54,12 +52,15 @@ let main () =
   let conf = { inline       = true;
                gen_z3       = true;
                check_tables = true;
-               verbose      = 0; } in
+               verbose      = 0;
+               warnings     = true } in
+
+  print_conf conf;
 
   Arg.parse []
             (fun s ->
              let prog = parse_file s in
-             (* print_naive_ml s prog; print_ortho_ml s prog; *)
+             if conf.gen_z3 then Gen_z3.verify prog s;
              print_c s prog conf ) "Usage"
                  
 

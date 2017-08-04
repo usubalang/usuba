@@ -245,7 +245,9 @@ let norm_def (def:def) : def =
      { def with node = Single(vars,List.map norm_deq body) }
   | _ -> raise (Invalid_AST "Non-Single node")
        
-let select_instr (prog:prog) : slice_type * prog =
-  Printf.fprintf stderr "Warning: slice type locked to Std.\n";
+let select_instr (prog:prog) (conf:config) : slice_type * prog =
+
+  if conf.warnings then
+    Printf.fprintf stderr "Warning: slice type locked to Std.\n";
   slice_type := Std; (*Select_size.select_size prog; *)
   !slice_type, { nodes = List.map norm_def prog.nodes }

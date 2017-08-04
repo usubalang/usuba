@@ -67,7 +67,8 @@ let norm_prog (prog: prog) (conf:config) : prog  =
   
   assert (Assert_lang.Usuba_norm.is_usuba_normalized normalized);
 
-  Printf.fprintf stderr "Warning: variable sharing is disabled.\n";
+  if conf.warnings then
+    Printf.fprintf stderr "Warning: variable sharing is disabled.\n";
   let optimized = Optimize.opt_prog normalized false in
   print "OPTIMIZED:" optimized conf;
 

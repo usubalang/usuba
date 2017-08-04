@@ -15,7 +15,19 @@ let default_conf : config =
   { inline       = true;
     gen_z3       = false;
     check_tables = false;
-    verbose      = 0; }
+    verbose      = 0;
+    warnings     = true;}
+
+let print_conf (conf:config) : unit =
+  Printf.printf
+"config = {
+  inline       = %B;
+  gen_z3       = %B;
+  check_tables = %B;
+  verbose      = %d;
+  warnings     = %B;
+}\n" conf.inline conf.gen_z3 conf.check_tables
+conf.verbose conf.warnings
                          
 let rec pow a = function
   | 0 -> 1

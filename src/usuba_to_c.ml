@@ -226,9 +226,9 @@ let rec map_no_end f l =
   | [x] -> []
   | hd::tl -> (f hd) :: (map_no_end f tl)
                    
-let prog_to_c (orig:prog) (prog:prog) : string =
+let prog_to_c (orig:prog) (prog:prog) (conf:config) : string =
   assert (Assert_lang.Usuba_norm.is_usuba_normalized prog);
-  let (slice, prog) = Select_instr.select_instr prog in
+  let (slice, prog) = Select_instr.select_instr prog conf in
   slice_type := slice;
   assert (Assert_lang.Usuba_intrinsics.is_only_intrinsics prog);
   let entry = maindef_to_c (List.nth orig.nodes (List.length orig.nodes -1))
