@@ -52,15 +52,15 @@ let main () =
   let conf = { inline       = true;
                gen_z3       = true;
                check_tables = true;
-               verbose      = 0;
-               warnings     = true } in
+               verbose      = 1;
+               warnings     = false } in
 
-  print_conf conf;
+  if conf.verbose >= 5 then print_conf conf;
 
   Arg.parse []
             (fun s ->
              let prog = parse_file s in
-             if conf.gen_z3 then Gen_z3.verify prog s;
+             if conf.gen_z3 then Gen_z3.verify prog s conf;
              print_c s prog conf ) "Usage"
                  
 
