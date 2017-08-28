@@ -173,7 +173,7 @@ int main() {
   
       unsigned long* loc_std = plain_std + x;
 
-      for (int i = 0; i < 256; i++)
+      for (int i = 0; i < $SIZE_SLICE; i++)
         loc_std[i] = __builtin_bswap64(loc_std[i]);
 
       $ORTHO_CALL
@@ -182,7 +182,7 @@ int main() {
            
       $UNORTHO_CALL
 
-      for (int i = 0; i < 256; i++)
+      for (int i = 0; i < $SIZE_SLICE; i++)
         loc_std[i] = __builtin_bswap64(loc_std[i]);
     }
   }
