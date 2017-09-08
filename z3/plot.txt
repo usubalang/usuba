@@ -1,0 +1,16 @@
+set terminal pdf
+set output 'verif-des.pdf'
+set boxwidth 0.7
+set border 3
+set tics nomirror
+
+set xtics out
+set ytics out
+
+set yrange [0:*]
+set nokey
+
+set ylabel "Seconds to verify"
+set xlabel "Number of DES rounds"
+
+plot 'data.dat' using 2:xtic(1) with boxes lt rgb "black", '' using 0:($2+0.2):2 with labels
