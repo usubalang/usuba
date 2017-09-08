@@ -50,7 +50,7 @@ let main () =
   Printexc.record_backtrace true;
 
   let conf = { inline       = true;
-               gen_z3       = true;
+               gen_z3       = false;
                check_tables = true;
                verbose      = 1;
                warnings     = false } in

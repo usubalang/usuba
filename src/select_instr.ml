@@ -247,7 +247,10 @@ let norm_def (def:def) : def =
        
 let select_instr (prog:prog) (conf:config) : slice_type * prog =
 
-  if conf.warnings then
+  (*if conf.warnings then
     Printf.fprintf stderr "Warning: slice type locked to Std.\n";
-  slice_type := Std; (*Select_size.select_size prog; *)
+    slice_type := Std;
+   *)
+  slice_type := Select_size.select_size prog;
+  slice_type := Std;
   !slice_type, { nodes = List.map norm_def prog.nodes }

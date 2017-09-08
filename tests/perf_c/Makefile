@@ -1,4 +1,4 @@
-TARGET = test_uak_256 test_uak_256_no test_ua_256 test_ua_256_no test_uak_128 test_uak_128_no test_uak_64 test_uak_64_no test_uak_64std test_uak_64std_no test_kwan test_kwan_no test_uak_manual_64std test_uak_manual_64std_no make_input
+TARGET = test_uak_256 test_uak_256_no test_ua_256 test_ua_256_no test_uak_128 test_uak_128_no test_uak_64std test_uak_64std_no test_kwan test_kwan_no make_input
 LIBS =
 CC = clang
 #CC = /opt/intel/compilers_and_libraries/linux/bin/intel64/icc
@@ -32,12 +32,6 @@ test_uak_128:
 test_uak_128_no:
 	$(CC) $(CFLAGS) test_uak_128_no.c -o $@
 
-test_uak_64:
-	$(CC) $(CFLAGS) test_uak_64.c -o $@
-
-test_uak_64_no:
-	$(CC) $(CFLAGS) test_uak_64_no.c -o $@
-
 test_uak_64std:
 	$(CC) $(CFLAGS) test_uak_64std.c -o $@
 
@@ -49,12 +43,6 @@ test_kwan:
 
 test_kwan_no:
 	$(CC) $(CFLAGS) test_kwan_no.c -o $@
-
-test_uak_manual_64std:
-	$(CC) $(CFLAGS) test_uak_manual_64std.c -o $@
-
-test_uak_manual_64std_no:
-	$(CC) $(CFLAGS) test_uak_manual_64std_no.c -o $@
 
 
 make_input:

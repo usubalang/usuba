@@ -6,4 +6,12 @@ _build
 *.cmx
 *.o
 *.out
-z3
+*des_*_round*
+gcc-no*
+gcc-w*
+clang-no*
+clang-w*
+icc-w*
+icc-no*
+tcc-w*
+tcc-no*
