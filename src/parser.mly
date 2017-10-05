@@ -160,19 +160,22 @@ pat:
   | p=var                      { [ p ] }
   | TOK_LPAREN l=separated_nonempty_list(TOK_COMMA,var) TOK_RPAREN   { l }
 
-norec_deq: (* returns a tuple list, is converted to an AST by def *)
-  | p=pat TOK_EQUAL e=exp              { ( p, e ) }
-  | p=pat op=log_op TOK_EQUAL e=exp    { ( p, Log(op,left_to_right p,e)) }
-  | p=pat op=arith_op TOK_EQUAL e=exp  { ( p, Arith(op,left_to_right p,e)) }
+norec_deq:
+  | p=pat TOK_EQUAL e=exp              { Norec( p, e ) }
+  | p=pat op=log_op TOK_EQUAL e=exp    { Norec( p, Log(op,left_to_right p,e)) }
+  | p=pat op=arith_op TOK_EQUAL e=exp  { Norec( p, Arith(op,left_to_right p,e)) }
 
-deq:
+deq_forall:
   | TOK_FORALL i=TOK_id TOK_IN TOK_LBRACKET startr=arith_exp TOK_COMMA
-    endr=arith_exp TOK_RBRACKET TOK_COMMA d=norec_deq
-    { Rec(i, startr, endr, fst d, snd d) }
-  | d=norec_deq { Norec(fst d, snd d)  }
+    endr=arith_exp TOK_RBRACKET TOK_LCURLY d=deqs TOK_RCURLY
+    { Rec(i, startr, endr, d) }
 
-deqs: l=separated_nonempty_list(TOK_SEMICOLON, deq) { l }
-
+deqs:
+  | d1=deq_forall ds=deqs { d1 :: ds }
+  | d=norec_deq TOK_SEMICOLON ds=deqs { d :: ds }
+  | d=deq_forall { [ d ] }
+  | d=norec_deq  { [ d ] }
+                                      
 p:
   | l=separated_list(TOK_COMMA, x=TOK_id TOK_COLON t=typ ck=pclock { x, t, ck }) { l }
 

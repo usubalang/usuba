@@ -63,11 +63,11 @@ let rec rename_pat pat =
            
 let rec rename_deq deqs =
     List.map (function
-               | Norec(pat,expr)  -> Norec(rename_pat pat,rename_expr expr)
-               | Rec(id,ei,ef,pat,expr) -> Rec(id^"'",rename_arith_expr ei,
-                                               rename_arith_expr ef,rename_pat pat,
-                                               rename_expr expr)) deqs
-                                                             
+               | Norec(pat,expr) -> Norec(rename_pat pat,rename_expr expr)
+               | Rec(id,ei,ef,d) -> Rec(id^"'",rename_arith_expr ei,
+                                        rename_arith_expr ef,
+                                        rename_deq d)) deqs
+             
 let rec rename_p p =
   List.map (fun (id,typ,ck) -> (id^"'",typ,ck)) p
                                           

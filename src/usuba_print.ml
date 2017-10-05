@@ -90,9 +90,9 @@ let rec arith_to_str_types = function
 let rec var_to_str = function
   | Var v -> v
   | Field(v,e) -> sprintf "%s.%s" (var_to_str v) (arith_to_str e)
-  | Index(v,e) -> sprintf "[%s]" (arith_to_str e)
-  | Range(v,ei,ef) -> sprintf "[%s .. %s]" (arith_to_str ei) (arith_to_str ef)
-  | Slice(v,l) -> sprintf "[%s]" (join "," (List.map arith_to_str l))
+  | Index(v,e) -> sprintf "%s[%s]" v (arith_to_str e)
+  | Range(v,ei,ef) -> sprintf "%s[%s .. %s]" v (arith_to_str ei) (arith_to_str ef)
+  | Slice(v,l) -> sprintf "%s[%s]" v (join "," (List.map arith_to_str l))
                                               
 let rec var_to_str_types = function
   | Var v -> "Var: " ^ v
@@ -169,12 +169,12 @@ let rec typ_to_str typ =
 let p_to_str (id,typ,ck) =
   id ^ ":" ^ (typ_to_str typ) ^  "::" ^ ck
 
-let deq_to_str = function
+let rec deq_to_str = function
   | Norec(pat,e) -> (pat_to_str pat) ^ " = " ^ (expr_to_str e)
-  | Rec(id,ei,ef,pat,e) -> "forall " ^ id ^ " in [" ^
-                             (arith_to_str ei) ^ "," ^ (arith_to_str ef)
-                             ^ "], " ^ (pat_to_str pat) ^ " = " ^ (expr_to_str e)
-                                          
+  | Rec(id,ei,ef,d) -> "forall " ^ id ^ " in [" ^
+                         (arith_to_str ei) ^ "," ^ (arith_to_str ef)
+                         ^ "] {\n" ^ (join "\n    " (List.map deq_to_str d)) ^ "\n  }"
+                                                                
 let single_node_to_str id p_in p_out vars deq =
   "node " ^ id ^ "(" ^ (join "," (List.map p_to_str p_in)) ^ ")\n  returns "
   ^ (join "," (List.map p_to_str p_out)) ^ "\nvars\n"

@@ -63,8 +63,8 @@ let rec expand_expr_range (e:expr) : expr =
      | Nop -> Nop
      | _ -> raise (Not_implemented (Usuba_print.expr_to_str e)))
           
-let rec rewrite_expr loc_env env_var (i:int) (e:expr) : expr =
-  let rec_call = rewrite_expr loc_env env_var i in
+let rec rewrite_expr loc_env env_var (e:expr) : expr =
+  let rec_call = rewrite_expr loc_env env_var in
   match e with
   | Const _ -> e
   | ExpVar(Field(v,e)) -> ExpVar(Field(v,Const_e(eval_arith loc_env e)))
@@ -131,7 +131,7 @@ let rewrite_rec env_var (iterator:ident) (startr:arith_expr) (endr:arith_expr)
   for i = i_init to i_end do
     env_add env iterator i;
     let pat_i  = rewrite_pat env env_var pat in
-    let expr_i = rewrite_expr env env_var i e in
+    let expr_i = rewrite_expr env env_var e in
     body := !body @ [ Norec(pat_i, expr_i) ]
   done;
   !body
@@ -159,16 +159,38 @@ let make_env p_in p_out vars =
   let () = f vars in
   env
   
-      
 let rewrite_deqs p_in p_out vars (deqs:deq list) : deq list =
   let env_var = make_env p_in p_out vars in
+  let rec aux env deq =
+    match deq with
+    | Norec(vars,e) ->
+       [ Norec(rewrite_pat env env_var vars,
+               rewrite_expr env env_var e) ]
+    | Rec(i,startr,endr,d) ->
+       let i_init = eval_arith env startr in
+       let i_end  = eval_arith env endr in
+       List.flatten @@
+         List.map (fun v -> Hashtbl.add env i v;
+                            let l = List.flatten @@ List.map (aux env) d in
+                            Hashtbl.remove env i;
+                            l) (gen_list_bound i_init i_end)
+  in
   List.flatten @@
-    List.map (fun x -> match x with
-                       | Rec(i,startr,endr,pat,expr) ->
-                          rewrite_rec env_var i startr endr pat expr
-                       | Norec(vars,e) ->
-                          [ Norec(rewrite_pat (Hashtbl.create 1) env_var vars,
-                                  rewrite_expr (Hashtbl.create 1) env_var 0 e) ]) deqs
+    List.map (fun x -> aux (Hashtbl.create 10) x) deqs
+  
+(* let rewrite_deqs p_in p_out vars (deqs:deq list) : deq list = *)
+(*   let env_var = make_env p_in p_out vars in *)
+(*   List.flatten @@ *)
+(*     List.map (fun x -> match x with *)
+(*                        | Rec(i,startr,endr,d) -> *)
+(*                           List.flatten @@ *)
+(*                             List.map (fun x -> *)
+(*                                       match x with *)
+(*                                       | Norec(lhs,e) -> rewrite_rec env_var i startr endr lhs e *)
+(*                                       | Rec _ -> raise (Not_implemented "nested forall")) d *)
+(*                        | Norec(vars,e) -> *)
+(*                           [ Norec(rewrite_pat (Hashtbl.create 1) env_var vars, *)
+(*                                   rewrite_expr (Hashtbl.create 1) env_var e) ]) deqs *)
 
 let expand_def (def:def) : def =
   match def.node with

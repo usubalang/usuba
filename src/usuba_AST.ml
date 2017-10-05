@@ -69,7 +69,7 @@ type expr = Const  of int
               
 type deq =
   | Norec of (var list) * expr
-  | Rec of ident * arith_expr * arith_expr * (var list) * expr
+  | Rec of ident * arith_expr * arith_expr * deq list
 
 type p = (ident * typ * clock) list
         

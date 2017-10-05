@@ -95,13 +95,12 @@ let rec rename_expr pref (e:expr) : expr =
   | Fun_v(id,n,l) -> Fun_v(id,n,List.map (rename_expr pref) l)
   | _ -> e
     
-let rename_deqs pref (deqs:deq list) : deq list =
+let rec rename_deqs pref (deqs:deq list) : deq list =
   List.map (fun x -> match x with
                      | Norec(p,e) ->
                         Norec(List.map (rename_var pref) p,rename_expr pref e)
-                     | Rec(id,ei,ef,p,e) ->
-                        Rec(id,ei,ef,List.map (rename_var pref) p,
-                            rename_expr pref e)) deqs
+                     | Rec(id,ei,ef,d) ->
+                        Rec(id,ei,ef,rename_deqs pref d)) deqs
            
 let inline_deqs env (node:def) (deqs: deq list) : p*deq list =
   let cpt = ref 0 in

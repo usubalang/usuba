@@ -75,6 +75,11 @@ let gen_list_0_int (n: int) : int list =
     if n <= 0 then acc
     else aux (n-1) ((n-1) :: acc)
   in aux n []
+
+let rec gen_list_bound (n1: int) (n2:int) : int list =
+  if n1 < n2 then n1 :: (gen_list_bound (n1 + 1) n2)
+  else if n2 < n1 then n1 :: (gen_list_bound (n1 - 1) n2)
+  else [n1]
          
 let id_generator =
   let current = ref 0 in

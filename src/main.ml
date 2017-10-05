@@ -60,6 +60,8 @@ let main () =
   Arg.parse []
             (fun s ->
              let prog = parse_file s in
+             if not (Type_checker.is_typed prog) then
+               raise (Error "Unsound program");
              if conf.gen_z3 then Gen_z3.verify prog s conf;
              print_c s prog conf ) "Usage"
                  

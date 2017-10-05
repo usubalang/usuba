@@ -55,10 +55,10 @@ let rec shift_expr (e:expr) : expr =
   | Fun_v(f,ei,l) -> Fun_v(f,ei,List.map shift_expr l)
   | _ -> e
                
-let shift_deq (deq:deq) : deq =
+let rec shift_deq (deq:deq) : deq =
   match deq with
   | Norec(p,e) -> Norec(p,shift_expr e)
-  | Rec(id,ei,ef,p,e) -> Rec(id,ei,ef,p,shift_expr e)
+  | Rec(id,ei,ef,d) -> Rec(id,ei,ef,List.map shift_deq d)
                              
                             
 let shift_def (def:def) : def =
