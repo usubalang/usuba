@@ -103,9 +103,9 @@ let expand_def (def:def) : def =
   match def.node with
   | Single(vars,body) ->
      let env = Hashtbl.create 100 in
-     List.iter (fun (id,typ,_) -> env_add env id typ) def.p_in;
-     List.iter (fun (id,typ,_) -> env_add env id typ) def.p_out;
-     List.iter (fun (id,typ,_) -> env_add env id typ) vars;
+     List.iter (fun ((id,typ),_) -> env_add env id typ) def.p_in;
+     List.iter (fun ((id,typ),_) -> env_add env id typ) def.p_out;
+     List.iter (fun ((id,typ),_) -> env_add env id typ) vars;
      { def with node  = Single(vars,List.map (expand_deqs env) body) }
   | _ -> def                     
        

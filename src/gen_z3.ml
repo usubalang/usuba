@@ -10,7 +10,7 @@ let make_int_list (n:int) : int list =
 
 let p_to_int_list (p:p) : int list =
   List.flatten @@
-    List.map (fun (_,typ,_) -> match typ with
+    List.map (fun ((_,typ),_) -> match typ with
                                | Bool -> [1]
                                | Int n -> make_int_list n
                                | _ -> raise (Not_implemented "")) p
@@ -73,9 +73,9 @@ module Shared = struct
   let z3_node (def:def) rename share_fun : string =
     
     let f_id     = rename def.id in
-    let in_list  = join " " (List.map (fun (id,_,_) ->
+    let in_list  = join " " (List.map (fun ((id,_),_) ->
                                        sprintf "(%s Bool)" (clean_name id)) def.p_in) in
-    let out_list = List.map (fun (id,_,_) -> clean_name id) def.p_out in
+    let out_list = List.map (fun ((id,_),_) -> clean_name id) def.p_out in
     let body     = get_body def in
 
     join "\n"

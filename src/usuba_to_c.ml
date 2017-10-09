@@ -155,7 +155,7 @@ let update_out_vars env (deqs: deq list) : deq list =
                    
 let inner_def_to_c (def:def) : string =
   let out_vars = Hashtbl.create 10 in
-  List.iter (fun (id,_,_) -> env_add out_vars id true) def.p_out;
+  List.iter (fun ((id,_),_) -> env_add out_vars id true) def.p_out;
   match def.node with
   | Single(vars,body) ->
      let body = update_out_vars out_vars body in
@@ -165,12 +165,12 @@ let inner_def_to_c (def:def) : string =
        (rename def.id)
        
        (* parameters *)
-       (join "," (List.map (fun (id,_,_) -> type_c ^ " " ^ (rename id)) def.p_in))
-       (join "," (List.map (fun (id,_,_) -> type_c ^ "* " ^ (rename id)) def.p_out))
+       (join "," (List.map (fun ((id,_),_) -> type_c ^ " " ^ (rename id)) def.p_in))
+       (join "," (List.map (fun ((id,_),_) -> type_c ^ "* " ^ (rename id)) def.p_out))
        (*                                              ^ restrict                 *)
        
        (* declaring variabes *)
-       (join "" (List.map (fun (id,_,_) -> sprintf "  %s %s;\n"
+       (join "" (List.map (fun ((id,_),_) -> sprintf "  %s %s;\n"
                                                      type_c (rename id)) vars))
 
        (* the body *)
@@ -178,7 +178,7 @@ let inner_def_to_c (def:def) : string =
   | _ -> unreached () 
 
 let mainparams_to_c (params: p) : string list =
-  List.map (fun (id,typ,_) ->
+  List.map (fun ((id,typ),_) ->
             match typ with
             | Bool -> id
             | Int n -> Printf.sprintf "%s[%d]" id n
@@ -186,7 +186,7 @@ let mainparams_to_c (params: p) : string list =
 
 let get_inputs (def:def) =
   let inputs = Hashtbl.create 100 in
-  let aux (id,typ,_) =
+  let aux ((id,typ),_) =
     match typ with
              | Bool -> Hashtbl.add inputs id (Printf.sprintf "%s[0]" id)
              | Int n -> List.iter2 (fun x y -> Hashtbl.add inputs x
@@ -212,7 +212,7 @@ let maindef_to_c (orig:def) (def:def) : string =
        (join "," (List.map (fun x -> type_c ^ " " ^ x) (mainparams_to_c orig.p_out)))
        
        (* declaring variabes *)
-       (join "" (List.map (fun (id,_,_) -> sprintf "  %s %s;\n"
+       (join "" (List.map (fun ((id,_),_) -> sprintf "  %s %s;\n"
                                                      type_c (rename id)) vars))
 
        (* the body *)

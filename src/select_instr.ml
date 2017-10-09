@@ -82,7 +82,7 @@ module Select_size = struct
 
             
   let select_size_vars (p:p) : unit =
-    List.iter (fun (_,typ,_) ->
+    List.iter (fun ((_,typ),_) ->
               match typ with
               | Int n when n > 1 -> select_size_int n
               | _ -> ()) p

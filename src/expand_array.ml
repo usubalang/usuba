@@ -139,18 +139,18 @@ let rewrite_rec env_var (iterator:ident) (startr:arith_expr) (endr:arith_expr)
 let rec rewrite_p p =
   List.flatten @@
     List.map
-      (fun (id,typ,ck) ->
+      (fun ((id,typ),ck) ->
         match typ with
-        | Bool -> [ (id,Bool,ck) ]
-        | Int n -> [ (id, Int n, ck) ]
-        | Nat -> [ (id, Nat, ck) ]
+        | Bool -> [ ((id,Bool),ck) ]
+        | Int n -> [ ((id, Int n), ck) ]
+        | Nat -> [ ((id, Nat), ck) ]
         | Array (typ_in, Const_e size) ->
-           List.map (fun x -> (x^"'",typ_in,ck)) (gen_list_0 id size)
+           List.map (fun x -> ((x^"'",typ_in),ck)) (gen_list_0 id size)
         | _ -> raise (Error "Invalid array size")) p
 
 let make_env p_in p_out vars =
   let env = Hashtbl.create 10 in
-  let f = List.iter (fun (id,typ,ck) ->
+  let f = List.iter (fun ((id,typ),ck) ->
                match typ with
                | Array(in_typ,Const_e size) -> env_add env id size
                | _ -> ()) in

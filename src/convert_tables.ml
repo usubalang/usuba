@@ -25,7 +25,7 @@ let expand_intn (id: ident) (n: int) =
          
 let rec rewrite_p (p: p) =
   List.flatten @@
-    List.map (fun (id,typ,_) ->
+    List.map (fun ((id,typ),_) ->
         match typ with
         | Bool  -> [ Var id ]
         | Int x -> expand_intn id x
@@ -59,7 +59,7 @@ let rewrite_table (id:ident) (p_in:p) (p_out:p)
     (* initialise rank 0 *)
     for j = 1 to List.length l do
       let var = tmp_var i 0 (j-1) in
-      vars := (var,Bool,"") :: !vars;
+      vars := ((var,Bool),"") :: !vars;
       body := Norec ([Var var],Const bits.(j-1)) :: !body
     done;
 
@@ -70,7 +70,7 @@ let rewrite_table (id:ident) (p_in:p) (p_out:p)
         let var_l  = tmp_var i j (k-1) in
         let var_r1 = tmp_var i (j-1) ((k-1)*2) in
         let var_r2 = tmp_var i (j-1) ((k-1)*2+1) in
-      vars := (var_l,Bool,"") :: (var_r1,Bool,"") :: (var_r2,Bool,"") ::!vars;
+      vars := ((var_l,Bool),"") :: ((var_r1,Bool),"") :: ((var_r2,Bool),"") ::!vars;
         body := Norec ([Var var_l],
                        mux (ExpVar exp_p_in.(size_in-j)) var_r1 var_r2)
                 :: !body
@@ -79,7 +79,7 @@ let rewrite_table (id:ident) (p_in:p) (p_out:p)
     
     (* set output *)
     let var = tmp_var i size_in 0 in
-    vars := (var,Bool,"") :: !vars;
+    vars := ((var,Bool),"") :: !vars;
     body := Norec ([exp_p_out.(i-1)], ExpVar(Var var)) :: !body
       
   done;

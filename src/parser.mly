@@ -177,7 +177,7 @@ deqs:
   | d=norec_deq  { [ d ] }
                                       
 p:
-  | l=separated_list(TOK_COMMA, x=TOK_id TOK_COLON t=typ ck=pclock { x, t, ck }) { l }
+  | l=separated_list(TOK_COMMA, x=TOK_id TOK_COLON t=typ ck=pclock { ((x, t), ck) }) { l }
 
 typ:
   | t=TOK_type size=option(delimited(TOK_LBRACKET,arith_exp,TOK_RBRACKET))

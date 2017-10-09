@@ -32,7 +32,7 @@ module Gen_entry = struct
   let combine_out p_out =
     let rec aux = function
       | [] -> []
-      | (id,typ,_)::tl -> ( match typ with
+      | ((id,typ),_)::tl -> ( match typ with
                             | Bool  -> [ id ]
                             | Int n -> gen_list id n
                             | Nat   -> raise (Invalid_AST "Illegal Nat")
@@ -46,7 +46,7 @@ module Gen_entry = struct
     let rec aux p i =
       match p with
       | [] -> []
-      | (id,typ,_)::tl -> let size = match typ with
+      | ((id,typ),_)::tl -> let size = match typ with
                             | Bool  -> 1
                             | Int n -> n
                             | Nat   -> raise (Invalid_AST "Illegal Nat")
@@ -74,7 +74,7 @@ module Gen_entry = struct
     | Table _ -> raise (Invalid_AST "Tables should be gone by now")
     | MultipleTable _ -> raise (Invalid_AST "MultipleTable should be gone by now")
     | Single _ -> ());
-    let params = List.map (fun (id,typ,_) ->
+    let params = List.map (fun ((id,typ),_) ->
                            match typ with
                            | Bool  -> (id,1)
                            | Int n -> (id,n)
@@ -86,10 +86,10 @@ module Gen_entry = struct
     let head = "let main " ^ (join " " in_streams) ^ " = \n"
                ^ (indent_small 1) ^ "let cpt = ref 64 in" in
     let stacks = join ("\n" ^ (indent_small 1))
-                      (List.map (fun (id,_,_) ->
+                      (List.map (fun ((id,_),_) ->
                                  "let stack_" ^ id ^ " = ref [| |] in") def.p_out) in
     let ret = join ","
-                   (List.map (fun (id,_,_) ->
+                   (List.map (fun ((id,_),_) ->
                               "!stack_" ^ id ^ ".(!cpt)") def.p_out) in
     let (left,right) = gen_unortho def.p_out in
     (head ^ "\n" ^ (indent_small 1) ^ stacks ^ "\n"
@@ -259,7 +259,7 @@ let deq_to_str_ml tab l =
                                    ^ (expr_to_str_ml tab e) ^ " in ")
                         | Rec _ -> raise (Invalid_AST "REC")) l)
 let p_to_str_ml tab p =
-  join "," (List.map (fun (id,typ,_) ->
+  join "," (List.map (fun ((id,typ),_) ->
                       match typ with
                       | Bool  -> (ident_to_str_ml id)
                       | Int n -> (ident_to_str_ml id)

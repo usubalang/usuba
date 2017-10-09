@@ -1,5 +1,6 @@
 open Usuba_AST
 
+exception Invalid_AST of string
 exception Error of string
 exception Syntax_error
 exception Not_implemented of string
@@ -106,7 +107,7 @@ let env_add (env: ('a,'b) Hashtbl.t) (key: 'a) (value: 'b) : unit =
 let rec env_add_var (vars: p) (env_var: (ident, int) Hashtbl.t) : unit =
   match vars with
   | [] -> ()
-  | (id,typ,_)::tl -> ( env_add env_var id
+  | ((id,typ),_)::tl -> ( env_add env_var id
                                 (match typ with
                                  | Bool  -> 1
                                  | Int n -> n
@@ -119,7 +120,7 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
                 (env_fun: (ident, int list * int) Hashtbl.t) : unit =
   let rec get_param_in_size = function
     | [] -> []
-    | (_,typ,_)::tl -> (match typ with
+    | ((_,typ),_)::tl -> (match typ with
                          | Bool -> 1
                          | Int n -> n
                          | Nat -> raise (Invalid_AST "Nat")
@@ -128,7 +129,7 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
   in
   let rec get_param_out_size = function
     | [] -> 0
-    | (_,typ,_)::tl -> (match typ with
+    | ((_,typ),_)::tl -> (match typ with
                         | Bool -> 1
                         | Int n -> n
                         | Nat -> raise (Invalid_AST "Nat")
@@ -141,13 +142,13 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
 let rec get_typ (id: ident) (vars: p) =
   match vars with
   | [] -> print_endline("Type not found for " ^ id);Bool
-  | (id',typ,_) :: tl -> if id = id' then typ else get_typ id tl
+  | ((id',typ),_) :: tl -> if id = id' then typ else get_typ id tl
 
 (* converts an uint_n to n bools (with types and clock) *)
 let expand_intn_typed (id: ident) (n: int) (ck: clock) =
   let rec aux i =
     if i > n then []
-    else (id ^ (string_of_int i), Bool, ck) :: (aux (i+1))
+    else ((id ^ (string_of_int i), Bool), ck) :: (aux (i+1))
   in aux 1
 
 (* converts an uint_n to n bools (in the format of pat) *)
@@ -256,4 +257,4 @@ let rec p_size (p:p) : int =
     | _ -> raise (Not_implemented "p_size restricted to Bool & Int") in
   match p with
   | [] -> 0
-  | (_,typ,_) :: tl -> (typ_size typ) + (p_size tl)
+  | ((_,typ),_) :: tl -> (typ_size typ) + (p_size tl)

@@ -34,14 +34,14 @@ let rec p_size (p:p) : int =
     | _ -> raise (Error "Unexpected Nat") in
   match p with
   | [] -> 0
-  | (_,typ,_) :: tl -> (typ_size typ) + (p_size tl)
+  | ((_,typ),_) :: tl -> (typ_size typ) + (p_size tl)
 
                                           
 let make_loc_env (p_in:p) (p_out:p) (vars:p) =
   let env = Hashtbl.create 100 in
-  List.iter (fun (id,typ,_) -> Hashtbl.add env id (typ,type_size typ)) p_in;
-  List.iter (fun (id,typ,_) -> Hashtbl.add env id (typ,type_size typ)) p_out;
-  List.iter (fun (id,typ,_) -> Hashtbl.add env id (typ,type_size typ)) vars;
+  List.iter (fun ((id,typ),_) -> Hashtbl.add env id (typ,type_size typ)) p_in;
+  List.iter (fun ((id,typ),_) -> Hashtbl.add env id (typ,type_size typ)) p_out;
+  List.iter (fun ((id,typ),_) -> Hashtbl.add env id (typ,type_size typ)) vars;
   env
     
 let make_glob_env (prog:prog) =

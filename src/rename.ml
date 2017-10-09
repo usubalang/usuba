@@ -69,7 +69,7 @@ let rec rename_deq deqs =
                                         rename_deq d)) deqs
              
 let rec rename_p p =
-  List.map (fun (id,typ,ck) -> (id^"'",typ,ck)) p
+  List.map (fun ((id,typ),ck) -> ((id^"'",typ),ck)) p
                                           
 let rename_def (def:def) : def =
   { id    = def.id ^ "'";

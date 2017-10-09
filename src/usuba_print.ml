@@ -166,7 +166,7 @@ let rec typ_to_str typ =
   | Nat -> "nat"
   | Array(typ,e) -> (typ_to_str typ) ^ "[" ^ (arith_to_str e) ^ "]"
             
-let p_to_str (id,typ,ck) =
+let p_to_str ((id,typ),ck) =
   id ^ ":" ^ (typ_to_str typ) ^  "::" ^ ck
 
 let rec deq_to_str = function

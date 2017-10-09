@@ -55,8 +55,8 @@ let share_deqs (p_in:p) (p_out:p) (deqs:deq list) : deq list =
   let keep     = Hashtbl.create 1000 in
   let age      = Hashtbl.create 1000 in
 
-  List.iter (fun (id,_,_) -> env_add keep (Var id) true) p_out;
-  List.iter (fun (id,_,_) -> env_add age  (Var id) (-1)) p_in;
+  List.iter (fun ((id,_),_) -> env_add keep (Var id) true) p_out;
+  List.iter (fun ((id,_),_) -> env_add age  (Var id) (-1)) p_in;
 
   List.mapi (fun i d ->
              match d with

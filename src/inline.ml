@@ -11,7 +11,7 @@ let get_body (node:def) : deq list =
 let reg_pressure (deqs: deq list) (p_out:p) : int =
   let live : (var,bool) Hashtbl.t = Hashtbl.create 100 in (* variables currently alive *)
   
-  let p_out = List.map (fun (x,_,_) -> Var x) p_out in
+  let p_out = List.map (fun ((x,_),_) -> Var x) p_out in
   
   List.iter (fun x -> Hashtbl.add live x true) p_out;
   let reg_pressure = ref (Hashtbl.length live) in
@@ -27,7 +27,7 @@ let reg_pressure (deqs: deq list) (p_out:p) : int =
        
 let rec has_no_inner_deps (vars:p) (body:deq list) : bool =
   let env = Hashtbl.create 100 in
-  List.iter (fun (id,_,_) -> env_add env id true) vars;
+  List.iter (fun ((id,_),_) -> env_add env id true) vars;
   not (List.exists (function
                      | Norec(_,e) -> List.exists
                                        (fun x ->
@@ -125,12 +125,12 @@ let inline_deqs env (node:def) (deqs: deq list) : p*deq list =
                      
                      add_vars :=
                        !add_vars @
-                         (List.map (fun (id,typ,ck) -> pref^id,typ,ck) p_in) @
-                           (List.map (fun (id,typ,ck) -> pref^id,typ,ck) p_out) @
-                             (List.map (fun (id,typ,ck) -> pref^id,typ,ck) vars);
+                         (List.map (fun ((id,typ),ck) -> (pref^id,typ),ck) p_in) @
+                           (List.map (fun ((id,typ),ck) -> (pref^id,typ),ck) p_out) @
+                             (List.map (fun ((id,typ),ck) -> (pref^id,typ),ck) vars);
                      
-                     let pat_in  = List.map (fun (id,typ,ck) -> Var(pref ^ id)) p_in in
-                     let pat_out = Tuple(List.map (fun (id,typ,ck) ->
+                     let pat_in  = List.map (fun ((id,typ),ck) -> Var(pref ^ id)) p_in in
+                     let pat_out = Tuple(List.map (fun ((id,typ),ck) ->
                                                    ExpVar(Var (pref ^ id))) p_out) in
                      
                      let body = rename_deqs pref body in

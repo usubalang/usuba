@@ -39,7 +39,7 @@ module Usuba_norm = struct
   
   let check_p (p:p) : bool =
     List.for_all (function
-                   | (_,Array _,_) -> false
+                   | ((_,Array _),_) -> false
                    | _ -> true) p
   
   let check_def (def:def) : bool =

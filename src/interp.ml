@@ -39,7 +39,7 @@ module Usuba0 = struct
     (* creating a lexical environement *)
     let env_var = Hashtbl.create 100 in
     (* adding the inputs in the environment *)
-    List.iter2 (fun (x,_,_) y -> env_update env_var x y) f.p_in l;
+    List.iter2 (fun ((x,_),_) y -> env_update env_var x y) f.p_in l;
     (* evaluating the instructions of the node *)
     begin
       match f.node with
@@ -50,7 +50,7 @@ module Usuba0 = struct
       | _ -> raise (Error ("Invalid node: " ^ (Usuba_print.def_to_str f)))
     end;
     (* returning the values of the output variables *)
-    List.map (fun (id,_,_) -> env_fetch env_var id) f.p_out
+    List.map (fun ((id,_),_) -> env_fetch env_var id) f.p_out
              
              
   let interp_prog (prog:prog) (input: bool list) : bool list =

@@ -27,7 +27,7 @@ module Gen_entry = struct
   let combine_out p_out =
     let rec aux = function
       | [] -> []
-      | (id,typ,_)::tl -> ( match typ with
+      | ((id,typ),_)::tl -> ( match typ with
                             | Bool  -> [ id ]
                             | Int n -> gen_list id n 
                             | Nat   -> raise (Invalid_AST "Illegal Nat")
@@ -45,7 +45,7 @@ module Gen_entry = struct
              ("(if " ^ id_curr ^ " then " ^ mul ^ " else Int64.zero)")::(aux size (i+1)))
     in
     let left = gen_list "ret" (List.length l) in
-    let right = List.map (fun (_,typ,_) ->
+    let right = List.map (fun ((_,typ),_) ->
                           let size = match typ with
                               Bool  -> 1
                             | Int n -> n
@@ -53,7 +53,7 @@ module Gen_entry = struct
                             | Array _ -> raise (Invalid_AST "Arrays not cleaned") in
                           ( List.fold_left (fun x y -> "(Int64.logor " ^ x ^ " " ^ y ^ ")")
                                            "Int64.zero" (aux size 1) )) p_out in
-    let ret = join "," (List.map (fun (id,_,_) -> id) p_out) in
+    let ret = join "," (List.map (fun ((id,_),_) -> id) p_out) in
     (join "," left,
      "let (" ^ ret ^ ") = " ^ (join "," right) ^ "\n"
      ^ (indent 2) ^ "in Some (" ^ ret ^ ")")    
@@ -67,7 +67,7 @@ module Gen_entry = struct
      | Table _ -> raise (Invalid_AST "Tables should be gone by now")
      | MultipleTable _ -> raise (Invalid_AST "MultipleTable should have been cleaned by now")
      | Single _ -> ());
-    let params = List.map (fun (id,typ,_) ->
+    let params = List.map (fun ((id,typ),_) ->
                            match typ with
                            | Bool  -> (id,1)
                            | Int n -> (id,n)
@@ -198,7 +198,7 @@ let deq_to_str_ml tab l =
                                    ^ (expr_to_str_ml tab e) ^ " in ")
                         | Rec _ -> raise (Invalid_AST "REC")) l)
 let p_to_str_ml tab p =
-  join "," (List.map (fun (id,typ,_) ->
+  join "," (List.map (fun ((id,typ),_) ->
                       match typ with
                       | Bool  -> (ident_to_str_ml id)
                       | Int n -> (ident_to_str_ml id)

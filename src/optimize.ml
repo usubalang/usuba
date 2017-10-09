@@ -121,7 +121,7 @@ module CSE_CF = struct
                                        | None -> false) p) > 0
                                                   
   let p_to_pat (p:p) : var list =
-    List.map (fun (x,_,_) -> Var x) p
+    List.map (fun ((x,_),_) -> Var x) p
              
   let cse_deq (deq: deq list) no_opti : deq list =
     let env = Hashtbl.create 40 in
@@ -182,7 +182,7 @@ module Clean = struct
       | Rec(_,_,_,d) -> List.iter aux d in
     List.iter aux deqs;
     List.sort_uniq (fun a b -> compare a b)
-                   ( List.filter (fun (id,_,_) -> match env_fetch env id with
+                   ( List.filter (fun ((id,_),_) -> match env_fetch env id with
                                                   | Some _ -> true
                                                   | None -> false) vars)
 
