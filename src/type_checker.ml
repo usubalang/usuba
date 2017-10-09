@@ -132,7 +132,6 @@ let rec type_expr glob_env loc_env idx_env (e:expr) : int * bool =
                 ( match env_fetch glob_env f with
                   | None -> raise (Unsound (f ^ " undeclared"))
                   | Some(s_in,s_out,arr) ->
-                     Printf.printf "%s: %d -> %d  /// got: %d\n" f s_in s_out size;
                      if arr then raise (Unsound ("Simple access to array of fun: " ^
                                                    (expr_to_str e)));
                      if b then s_out,false
@@ -151,7 +150,7 @@ let rec type_expr glob_env loc_env idx_env (e:expr) : int * bool =
                          if not arr then raise (Unsound ("Not an array of fun: " ^
                                                            (expr_to_str e)));
                          if b then s_out,false
-                         else if s_in = s_out then s_out,false
+                         else if s_in = size then s_out,false
                          else raise (Unsound ("Wrong number of arguments " ^
                                                 (expr_to_str e))))
   | Fby _ -> raise (Not_implemented "Type checking of Fby")
