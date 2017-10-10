@@ -49,6 +49,10 @@ Inductive typ :=
   | Nat (* for recurrence variables. Not part of usuba0 normalized *)
   | Array (t: typ)(ae: arith_expr). (* arrays *)
 
+Inductive constr :=
+  | True
+  | False.
+
 Inductive var :=
   | Var (i: ident)
   | Field (v: var)(ae: arith_expr)
@@ -69,8 +73,8 @@ Inductive expr :=
   | Fun (x: ident)(es: list expr)
   | Fun_v (x: ident)(ae: arith_expr)(es: list expr) (* nodes arrays *)
   | Fby (e1 e2: expr)(mx: option ident)
-  | When (e: expr)(x y: ident)
-  | Merge (x: ident)(xs: list (ident * expr))
+  | When (e: expr)(x: constr) (y: ident)
+  | Merge (x: ident)(xs: list (constr * expr))
   | Nop.
 
 Inductive deq :=

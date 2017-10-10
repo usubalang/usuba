@@ -8,5 +8,11 @@ all: default
 ortho:
 	$(CC) $(CFLAGS) ortho.c -o $@
 
+test32:
+	$(CC) $(CFLAGS) test32.c -o $@
+
+simd:
+	$(CC) $(CFLAGS) simd.c -o $@
+
 clean:
 	-rm -f $(TARGET)

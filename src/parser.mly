@@ -66,7 +66,8 @@
 %token <int> TOK_int               
 %token <Usuba_AST.typ> TOK_type
 %token <Usuba_AST.intr_fun> TOK_intrinsic
-                         
+%token <Usuba_AST.constr> TOK_constr
+                              
 %token TOK_EOF
 
        
@@ -144,7 +145,7 @@ exp:
   | f=TOK_id TOK_LBRACKET n=arith_exp TOK_RBRACKET
     TOK_LPAREN args=explist TOK_RPAREN { Fun_v(f, n, args) }
   | f=TOK_intrinsic TOK_LPAREN x=exp TOK_COMMA y=exp TOK_RPAREN { Intr(f,x,y) }
-  | a=exp TOK_WHEN constr=TOK_id TOK_LPAREN x=TOK_id TOK_RPAREN { When(a,constr,x) }
+  | a=exp TOK_WHEN constr=TOK_constr TOK_LPAREN x=TOK_id TOK_RPAREN { When(a,constr,x) }
   | TOK_MERGE ck=TOK_id c=caselist { Merge(ck,c) }
   | init=exp TOK_FBY follow=exp { Fby(init,follow,None) }
   | init=exp TOK_LT f=TOK_id TOK_GT TOK_FBY follow=exp
@@ -154,7 +155,7 @@ explist: l=separated_nonempty_list(TOK_COMMA,exp) { l }
 
 caselist:
   | option(TOK_PIPE)
-    l=separated_nonempty_list(TOK_PIPE,c=TOK_id TOK_ARROW e=exp {c,e}) { l }
+    l=separated_nonempty_list(TOK_PIPE,c=TOK_constr TOK_ARROW e=exp {c,e}) { l }
 
 pat:
   | p=var                      { [ p ] }

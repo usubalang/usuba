@@ -102,7 +102,11 @@ let rec var_to_str_types = function
                       ^ (arith_to_str_types ef) ^ "]"
   | Slice(v,l) -> "Splice: " ^ v ^ "[" ^
                      (join "," (List.map arith_to_str_types l)) ^ "]"
-         
+
+let constr_to_str = function
+  | True  -> "True"
+  | False -> "False"
+                                                                    
 let rec expr_to_str_types = function
   | Const c -> "Const: " ^ (string_of_int c)
   | ExpVar v -> "ExpVar: " ^ (var_to_str v)
@@ -121,12 +125,12 @@ let rec expr_to_str_types = function
   | Fun_v(f,e,l) -> "Fun_v: " ^ f ^ "[" ^ (arith_to_str e) ^ "]"
                                ^ "(" ^ (join "," (List.map expr_to_str_types l)) ^ ")"
   | Fby(ei,ef,id) -> "Fby: " ^ (expr_to_str_types ei) ^ " fby " ^ (expr_to_str_types ef)
-  | When(e,id,x)  -> sprintf "When: %s when %s(%s)" (expr_to_str_types e) id x
+  | When(e,c,x)  -> sprintf "When: %s when %s(%s)" (expr_to_str_types e) (constr_to_str c) x
   | Merge(ck,c)   -> sprintf "Merge: merge %s %s"
                              ck (join " "
-                                      (List.map (fun (x,y) ->
+                                      (List.map (fun (c,y) ->
                                                  sprintf "| %s -> %s "
-                                                         x
+                                                         (constr_to_str c)
                                                          (expr_to_str_types y)) c))
   | Nop -> "Nop"
 
@@ -147,12 +151,12 @@ let rec expr_to_str = function
   | Fun_v(f,e,l) -> sprintf "%s[%s](%s)" f (arith_to_str e)
                             (join "," (List.map expr_to_str l))
   | Fby(ei,ef,id) -> sprintf "%s fby %s" (expr_to_str ei) (expr_to_str ef)
-  | When(e,id,x)  -> sprintf "%s when %s(%s)" (expr_to_str e) id x
+  | When(e,c,x)  -> sprintf "%s when %s(%s)" (expr_to_str e) (constr_to_str c) x
   | Merge(ck,c)   -> sprintf "merge %s %s"
                              ck (join " "
-                                      (List.map (fun (x,y) ->
+                                      (List.map (fun (c,y) ->
                                                  sprintf "| %s -> %s "
-                                                         x
+                                                         (constr_to_str c)
                                                          (expr_to_str y)) c))
   | Nop -> "Nop"
 

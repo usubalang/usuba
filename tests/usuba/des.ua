@@ -160,7 +160,7 @@ let
     sbox_in = expand(right_in) ^ key;
 
     # Computing the s-boxes
-    forall i in [0,7], sbox_out[i] = sbox[i](sbox_in[i]);
+    forall i in [0,7] { sbox_out[i] = sbox[i](sbox_in[i]) }
 
     # linear permutation and final xor and switch left/right
     out = (right_in,left_in ^ permut(sbox_out))
@@ -176,7 +176,7 @@ let
     des[0] = init_p(plaintext);
     
     # Computing the 16 rounds
-    forall i in [1,16], des[i] = des_single(des[i-1],roundkey[i-1](key));
+    forall i in [1,16] { des[i] = des_single(des[i-1],roundkey[i-1](key)) }
 
     # Regrouping left and right and computing final permuation
     (left,right) = des[16];

@@ -100,6 +100,8 @@ rule token = parse
 | "nat"                          { TOK_type Nat                     }
 
 (* identifiers / keywords *)
+| "True"   { TOK_constr True  }
+| "False"  { TOK_constr False }
 | ['a'-'z' 'A'-'Z' '_' ] ['a'-'z' 'A'-'Z' '0'-'9' '_']* as id
 { try Hashtbl.find kwd_table id with Not_found -> TOK_id id }
 
