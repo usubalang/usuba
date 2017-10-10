@@ -8,7 +8,10 @@ OCAMLBUILD      := ocamlbuild -use-ocamlfind -pkg str -pkg unix -use-menhir -men
 
 MAIN            := main
 
+COQCFILES = usuba_AST.v
+
 all:
+	coqc $(COQCFILES)
 	$(OCAMLBUILD) $(MAIN).native
 
 clean:
