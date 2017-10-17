@@ -1,4 +1,4 @@
-type ident = string
+type ident = int
 
 type clock = string
 

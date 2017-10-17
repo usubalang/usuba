@@ -1,12 +1,14 @@
 Require Import String.
+Require Import Coq.ZArith.ZArith.
+
 Require Import Coq.extraction.ExtrOcamlBasic.
-Require Import Coq.extraction.ExtrOcamlIntConv.
+Require Import Coq.extraction.ExtrOcamlZInt.
 Require Import Coq.extraction.ExtrOcamlString.
 
 (* XXX: this won't work for actual extraction*)
 Extract Inductive string => "string"  [ """" "^" ].
 
-Definition ident := string.
+Definition ident := positive.
 Definition clock := string.
 
 Inductive log_op := And | Or | Xor | Andn.
@@ -33,19 +35,19 @@ Inductive intr_fun :=
 
 Inductive slice_type :=
   | Std (* 64-bit *)
-  | MMX (i: int)
-  | SSE (i: int)
-  | AVX (i: int)
+  | MMX (i: N)
+  | SSE (i: N)
+  | AVX (i: N)
   | AVX512.
 
 Inductive arith_expr :=
-  | Const_e (i: int)
+  | Const_e (i: Z)
   | Var_e (x: ident)
   | Op_e (op: arith_op)(e1 e2: arith_expr).
 
 Inductive typ :=
   | Bool
-  | Int (i: int)
+  | Int (i: N)
   | Nat (* for recurrence variables. Not part of usuba0 normalized *)
   | Array (t: typ)(ae: arith_expr). (* arrays *)
 
@@ -62,7 +64,7 @@ Inductive var :=
 
 (* XXX: factorize operations in a single case *)
 Inductive expr :=
-  | Const (i: int)
+  | Const (i: N)
   | ExpVar (v: var)
   | Tuple (es: list expr)
   | Not (e: expr) (* special case for bitwise not *)
@@ -87,10 +89,10 @@ Definition p := list (ident * typ * clock).
 Inductive def_i :=
   | Single        (n: p)(ds: list deq) (* regular node *)
   | Multiple      (an: list (p * list deq)) (*array of nodes*)
-  | Perm          (pi: list int) (* permutation *)
-  | MultiplePerm  (pis: list (list int)) (* array of perm *)
-  | Table         (t: list int) (* lookup table *)
-  | MultipleTable (ts: list (list int)). (* array of lookup tables *)
+  | Perm          (pi: list N) (* permutation *)
+  | MultiplePerm  (pis: list (list N)) (* array of perm *)
+  | Table         (t: list N) (* lookup table *)
+  | MultipleTable (ts: list (list N)). (* array of lookup tables *)
 
 Inductive def_opt := Inline | No_inline.
 
@@ -111,7 +113,7 @@ Record config := {
   inline       : bool;
   gen_z3       : bool;
   check_tables : bool;
-  verbose      : int;
+  verbose      : Z;
   warnings     : bool;
 }.
 
