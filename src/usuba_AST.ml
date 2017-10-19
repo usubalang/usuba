@@ -70,13 +70,6 @@ type intr_fun =
 | VPxord512
 | VPandnd512
 
-type slice_type =
-| Std
-| MMX of int
-| SSE of int
-| AVX of int
-| AVX512
-
 type arith_expr =
 | Const_e of int
 | Var_e of ident
@@ -137,5 +130,17 @@ type def = { id : ident; p_in : p; p_out : p; opt : def_opt list; node : def_i }
 
 type prog = { nodes : def list }
 
-type config = { inline : bool; gen_z3 : bool; check_tables : bool;
-                verbose : int; warnings : bool }
+type arch =
+| Std
+| MMX
+| SSE
+| AVX
+| AVX512
+| Neon
+| AltiVec
+
+type config = { block_size : int; key_size : int; warnings : bool;
+                verbose : int; verif : bool; type_check : bool;
+                check_tbl : bool; inlining : bool; cse_cp : bool;
+                scheduling : bool; array_opti : bool; share_var : bool;
+                archi : arch; bench : bool; ortho : bool; openmp : int }

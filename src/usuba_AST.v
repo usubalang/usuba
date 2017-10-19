@@ -31,13 +31,6 @@ Inductive intr_fun :=
     (* AVX-512 *)
     | VPandd512 | VPord512 | VPxord512 | VPandnd512.
 
-Inductive slice_type :=
-  | Std (* 64-bit *)
-  | MMX (i: int)
-  | SSE (i: int)
-  | AVX (i: int)
-  | AVX512.
-
 Inductive arith_expr :=
   | Const_e (i: int)
   | Var_e (x: ident)
@@ -106,17 +99,38 @@ Record prog := {
   nodes : list def;
 }.
 
+
+Inductive arch :=
+  | Std
+  | MMX
+  | SSE
+  | AVX
+  | AVX512
+  | Neon
+  | AltiVec.
+
 (* The compiler's configuration *)
 Record config := {
-  inline       : bool;
-  gen_z3       : bool;
-  check_tables : bool;
-  verbose      : int;
-  warnings     : bool;
+  block_size : int;
+  key_size   : int;
+  warnings   : bool;
+  verbose    : int;
+  verif      : bool;
+  type_check : bool;
+  check_tbl  : bool;
+  inlining   : bool;
+  cse_cp     : bool;
+  scheduling : bool;
+  array_opti : bool;
+  share_var  : bool;
+  archi      : arch;
+  bench      : bool;
+  ortho      : bool;
+  openmp     : int;
 }.
 
 Set Extraction KeepSingleton.
 Extraction "usuba_AST.ml" 
            config prog def def_opt def_i p deq
-           expr var typ arith_expr slice_type
-           intr_fun shift_op arith_op log_op clock ident.
+           expr var typ arith_expr intr_fun shift_op
+           arith_op log_op clock ident arch.

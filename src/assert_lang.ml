@@ -26,15 +26,15 @@ module Usuba_norm = struct
     | ExpVar v -> check_var v
     | Tuple l  -> List.for_all check_expr l
     | Not e -> check_expr e
-    | Shift(_,e,_) -> check_expr e
+    | Shift(_,_,_) -> false
     | Log(_,x,y) -> check_expr x && check_expr y
     | Arith(_,x,y) -> check_expr x && check_expr y
     | Intr(_,x,y) -> check_expr x && check_expr y
     | Fun(_,l) -> List.for_all check_expr l
     | Fun_v _ -> false
     | Fby _ -> raise (Not_implemented "Fby")
-    | When(e,_,_) -> check_expr e
-    | Merge(_,l) -> List.for_all (fun (_,y) -> check_expr y) l
+    | When(_,_,_) -> false
+    | Merge(_,_) -> false
     | Nop -> true
   
   let check_p (p:p) : bool =
