@@ -12,10 +12,13 @@ let type_check = ref true
 let check_tbl  = ref false
                      
 let inlining   = ref true
+let inline_all = ref false
 let cse_cp     = ref true
 let scheduling = ref true
 let array_opti = ref true
 let share_var  = ref true
+let precal_tbl = ref true
+                     
 let arch       = ref Std
 let bench      = ref false
 let ortho      = ref true
@@ -67,10 +70,12 @@ let main () =
       "-check-tbl", Arg.Set check_tbl, "Activate verification of tables";
       "-no-type-check", Arg.Clear type_check, "Deactivate type checking";
       "-no-inlining", Arg.Clear inlining, "Deactivate inlining opti";
+      "-inline-all", Arg.Clear inline_all, "Force inlining of every node";
       "-no-CSE-CP", Arg.Clear cse_cp, "Deactive CSE and CP opti";
       "-no-sched", Arg.Clear scheduling, "Deactivate scheduling opti";
       "-no-arr", Arg.Clear array_opti, "Deactivate array opti";
       "-no-share", Arg.Clear share_var, "Deactivate variable sharing";
+      "-no-precalc-tbl", Arg.Clear precal_tbl, "Don't use pre-computed tables";
       "-arch", Arg.String (fun s -> arch := str_to_arch s), "Set architecture";
       "-bench", Arg.Set bench, "Generate benchmark runtime";
       "-ortho", Arg.Set ortho, "Perform data orthogonalization";
@@ -89,10 +94,12 @@ let main () =
                  type_check = !type_check;
                  check_tbl  = !check_tbl;
                  inlining   = !inlining;
+                 inline_all = !inline_all;
                  cse_cp     = !cse_cp;
                  scheduling = !scheduling;
                  array_opti = !array_opti;
                  share_var  = !share_var;
+                 precal_tbl = !precal_tbl;
                  archi      = !arch;
                  bench      = !bench;
                  ortho      = !ortho;

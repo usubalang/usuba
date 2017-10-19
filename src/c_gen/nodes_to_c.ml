@@ -24,8 +24,8 @@ let op_to_c = function
 let rec expr_to_c env (e:expr) : string =
   match e with
   | Const n -> ( match n with
-                 | 0 -> "SET_ALL_ONE"
-                 | 1 -> "SET_ALL_ZERO"
+                 | 0 -> "SET_ALL_ONE()"
+                 | 1 -> "SET_ALL_ZERO()"
                  | _ -> raise (Error ("Only 0 and 1 are allowed. Got "
                                       ^ (string_of_int n))))
   | ExpVar(Var id) -> var_to_c env id

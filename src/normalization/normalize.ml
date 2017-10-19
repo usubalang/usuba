@@ -23,7 +23,7 @@ let norm_prog (prog: prog) (conf:config) : prog  =
   print "ARRAYS EXPANDED:"  array_expanded conf;
 
   (* convert lookup-tables to circuit (ie. to nodes) *)
-  let tables_converted = Convert_tables.convert_tables array_expanded in
+  let tables_converted = Convert_tables.convert_tables array_expanded conf in
   print "TABLES CONVERTED:" tables_converted conf;
 
   let normalized =
@@ -33,7 +33,7 @@ let norm_prog (prog: prog) (conf:config) : prog  =
                        Pre_schedule.schedule normed else normed in
      print "SCHEDULED:" scheduled conf;
      let inlined = if conf.inlining then
-                     Inline.inline scheduled else scheduled in
+                     Inline.inline scheduled conf else scheduled in
      print "INLINED:" inlined conf;
      Norm_bitslice.norm_prog inlined) in
   print "NORMALIZED:" normalized conf;

@@ -119,10 +119,12 @@ Record config := {
   type_check : bool;
   check_tbl  : bool;
   inlining   : bool;
+  inline_all : bool;
   cse_cp     : bool;
   scheduling : bool;
   array_opti : bool;
   share_var  : bool;
+  precal_tbl : bool;
   archi      : arch;
   bench      : bool;
   ortho      : bool;

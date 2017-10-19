@@ -102,7 +102,7 @@ let rec rename_deqs pref (deqs:deq list) : deq list =
                      | Rec(id,ei,ef,d) ->
                         Rec(id,ei,ef,rename_deqs pref d)) deqs
            
-let inline_deqs env (node:def) (deqs: deq list) : p*deq list =
+let inline_deqs env (node:def) (deqs: deq list) (conf:config): p*deq list =
   let cpt = ref 0 in
   let add_vars  = ref [] in
   let body =
@@ -117,7 +117,7 @@ let inline_deqs env (node:def) (deqs: deq list) : p*deq list =
                  let p_in = def.p_in in
                  let p_out = def.p_out in
 
-                 if not (is_noinline def)
+                 if (not (is_noinline def)) ||  conf.inline_all
                    (* && (should_inline node def) *)then
                    begin
                      let pref = def.id ^ (string_of_int !cpt) ^ "_" in
@@ -144,7 +144,7 @@ let inline_deqs env (node:def) (deqs: deq list) : p*deq list =
   !add_vars,body
 
 
-let inline (prog:prog) : prog =
+let inline (prog:prog) (conf:config) : prog =
 
   (* List.iter (fun x -> if should_inline x then *)
   (*                       print_endline ("Should inline: " ^ x.id) *)
@@ -164,7 +164,7 @@ let inline (prog:prog) : prog =
             (List.filter (fun x -> not @@ is_call_free x) prog.nodes);
   while Hashtbl.length todo <> 0  do
     let (node,vars,body) = get_next_node env todo in
-    let (vars',body') = inline_deqs env node body in
+    let (vars',body') = inline_deqs env node body conf in
     let new_vars =  vars @ vars' in
     env_add env node.id ({ node with node = Single(new_vars,body') } ,new_vars,body')
   done;

@@ -87,29 +87,34 @@ let rewrite_table (id:ident) (p_in:p) (p_out:p)
     node = Single(!vars,List.rev !body) }
 
 let rewrite_single_table (id:ident) (p_in:p) (p_out:p)
-                         (opt:def_opt list) (l:int list) : def =
-  try
-    let (found,_) = List.find (fun (a,b) -> b = l) Sbox_index.sboxes in
-    let file_name = "data/sboxes/" ^ found ^ ".ua" in
-    let new_node = List.nth (Parse_file.parse_file file_name).nodes 0 in
-    { new_node with id = id;
-                    opt = opt }
-  with Not_found -> rewrite_table id p_in p_out opt l
+                         (opt:def_opt list) (l:int list)
+                         (conf:config) : def =
+  if conf.precal_tbl then
+    try
+      let (found,_) = List.find (fun (a,b) -> b = l) Sbox_index.sboxes in
+      let file_name = "data/sboxes/" ^ found ^ ".ua" in
+      let new_node = List.nth (Parse_file.parse_file file_name).nodes 0 in
+      { new_node with id = id;
+                      opt = opt }
+    with Not_found -> rewrite_table id p_in p_out opt l
+  else rewrite_table id p_in p_out opt l
 
-
-let rec rewrite_def (def: def) : def list =
+let rec rewrite_def (def: def) (conf:config) : def list =
   let id    = def.id in
   let p_in  = def.p_in in
   let p_out = def.p_out in
   let opt   = def.opt in
   match def.node with
-  | Table l -> [ rewrite_single_table id p_in p_out opt l ]
+  | Table l -> [ rewrite_single_table id p_in p_out opt l conf ]
   | MultipleTable l ->
      List.mapi (fun i x -> 
-                rewrite_single_table (id ^ (string_of_int i)) p_in p_out opt x) l
+                rewrite_single_table (id ^ (string_of_int i)) p_in p_out opt x conf) l
   | _ -> [ def ]
            
                        
-let convert_tables (p: prog) : prog =
-  let res = { nodes = List.flatten (List.map rewrite_def p.nodes) } in
+let convert_tables (p: prog) (conf:config): prog =
+  let res = { nodes = List.flatten
+                        (List.map
+                           (fun x -> rewrite_def x conf)
+                           p.nodes) } in
   res
