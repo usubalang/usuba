@@ -34,7 +34,7 @@
 
 
 /* Orthogonalization stuffs */
-static unsigned long mask_l[6] = {
+static unsigned long long mask_l[6] = {
 	0xaaaaaaaaaaaaaaaaUL,
 	0xccccccccccccccccUL,
 	0xf0f0f0f0f0f0f0f0UL,
@@ -43,7 +43,7 @@ static unsigned long mask_l[6] = {
 	0xffffffff00000000UL
 };
 
-static unsigned long mask_r[6] = {
+static unsigned long long mask_r[6] = {
 	0x5555555555555555UL,
 	0x3333333333333333UL,
 	0x0f0f0f0f0f0f0f0fUL,
@@ -70,17 +70,17 @@ void real_ortho(unsigned long data[]) {
 
 #ifdef ORTHO
 
-void orthogonalize(unsigned long* data, __m128i* out) {
+void orthogonalize(unsigned long* data, uint64x2_t* out) {
   real_ortho(data);
   real_ortho(&(data[64]));
   for (int i = 0; i < 64; i++)
-    out[i] = _mm_set_epi64x(data[i], data[64+i]);
+    out[i] = vld1q_u64((unsigned long long*)&in[i]);
 }
 
-void unorthogonalize(__m128i *in, unsigned long* data) {
+void unorthogonalize(uint64x2_t *in, unsigned long* data) {
   for (int i = 0; i < 64; i++) {
     unsigned long tmp[2];
-    _mm_store_si128 ((__m128i*)tmp, in[i]);
+    vst1q_u64((unsigned long long*)tmp,in[i]);
     data[i] = tmp[0];
     data[64+i] = tmp[1];
   }
@@ -92,13 +92,13 @@ void unorthogonalize(__m128i *in, unsigned long* data) {
 
 void orthogonalize(unsigned long *in, uint64x2_t *out) {
   for (int i = 0; i < 64; i++)
-    vst1q_u64((unsigned long long*)&in[i],out[i]);
+    out[i] = vld1q_u64((unsigned long long*)&in[i]);
 }
 
 void unorthogonalize(uint64x2_t *in, unsigned long *out) {
   for (int i = 0; i < 64; i++)
-    vld1q_u64
-    _mm_store_si128 ((__m128i*)&(out[i*2]), in[i]);
+    vst1q_u64((unsigned long long*)&out[i],in[i]);
 }
 
 #endif
+
