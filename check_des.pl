@@ -30,7 +30,7 @@ mkdir 'tmp_c';
 
 # Compiling Usuba DES.
 say "Regenerating the des code...";
-error if system './usubac -o tmp_c/des.c -arch avx tests/usuba/des.ua' ;
+error if system './usubac -o tmp_c/des.c -arch avx sample/usuba/des.ua' ;
 
 chdir 'tmp_c';
 copy '../des/ref_usuba.c', '.';

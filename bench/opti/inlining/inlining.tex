@@ -1,0 +1,19 @@
+
+\begin{table}[ht!]
+  \begin{tabular}{|l K{1cm}|K{2cm}|K{2cm}|K{1.5cm}|}
+    \hline
+    & \textbf{Inlining} &\textbf{Speed} & \textbf{Delta to best} & \textbf{Code size (byte)}\\
+    \hline\hline
+    (1) & \usuba \& \clang & 2.11 & 0 \% & 91544\\
+    \hline
+    (2) & \usuba & 2.11 & 0 \% & 91488\\
+    \hline
+    (3) & partial \usuba & 1.89 & -11 \% & 54632\\
+    \hline
+    (4) & \clang & 1.10 & -91 \% & 91576\\
+    \hline
+    (5) & without & 1.00 & -110 \% & 87432\\
+    \end{tabular}
+  \caption{Normalized performances of inlining}
+  \label{tbl:perf-inlining}
+\end{table}

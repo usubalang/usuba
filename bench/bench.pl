@@ -14,3 +14,7 @@ system 'clang -O3 -march=native -o make_input make_input.c';
 system './make_input';
 unlink 'make_input';
 
+for (glob "opti/*/run.pl") {
+    system "./$_";
+}
+

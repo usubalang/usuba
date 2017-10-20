@@ -1,0 +1,16 @@
+
+\begin{table}[ht!]
+  \begin{tabular}{|l K{1cm}|K{2cm}|K{2cm}|K{1.5cm}|}
+    \hline
+    & \textbf{CC} & \textbf{w/o CSE-CP} &\textbf{w CSE-CP} & \textbf{speedup} \\
+    \hline\hline
+    (1) & \clang & 1.11 & 1.14 & +3\%\\
+    \hline
+    (2) & \icc & 1.10 & 1.11 & +1\%\\
+    \hline
+    (3) & \gcc & 1.00 & 1.03 & +3\%\\
+    \hline
+  \end{tabular}
+  \caption{Normalized performances of CSE and copy propagation}
+  \label{tbl:perf-cse}
+\end{table}

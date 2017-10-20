@@ -70,7 +70,7 @@ let main () =
       "-check-tbl", Arg.Set check_tbl, "Activate verification of tables";
       "-no-type-check", Arg.Clear type_check, "Deactivate type checking";
       "-no-inlining", Arg.Clear inlining, "Deactivate inlining opti";
-      "-inline-all", Arg.Clear inline_all, "Force inlining of every node";
+      "-inline-all", Arg.Set inline_all, "Force inlining of every node";
       "-no-CSE-CP", Arg.Clear cse_cp, "Deactive CSE and CP opti";
       "-no-sched", Arg.Clear scheduling, "Deactivate scheduling opti";
       "-no-arr", Arg.Clear array_opti, "Deactivate array opti";
