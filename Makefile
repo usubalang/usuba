@@ -5,5 +5,5 @@ check: all
 	perl check_des.pl
 
 clean:
-	rm usubac
+	rm -f usubac
 	make clean -C src
