@@ -255,7 +255,6 @@ module Get_funcalls = struct
     | Shift(_,e,_) -> funcalls_expr e
     | Log(_,x,y) -> (funcalls_expr x) @ (funcalls_expr y)
     | Arith(_,x,y) -> (funcalls_expr x) @ (funcalls_expr y)
-    | Intr(_,x,y) -> (funcalls_expr x) @ (funcalls_expr y)
     | Fun(f,l) -> f :: (List.flatten @@ List.map funcalls_expr l)
     | _ -> raise (Not_implemented ("Funcalls_expr: " ^ (Usuba_print.expr_to_str e)))
                          

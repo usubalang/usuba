@@ -42,7 +42,7 @@ let gen_output_filename (file_in: string) : string =
     | x::_ ->  x in
   let path = String.split_on_char '/' full_name in
   let out_name = List.nth path (List.length path - 1) in
-  "tests/C/" ^ out_name ^ ".c"
+  "samples/C/" ^ out_name ^ ".c"
                
 let print_c (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
   (* Generating C code *)

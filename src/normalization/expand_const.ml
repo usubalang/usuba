@@ -10,7 +10,6 @@ let rec contains_const (e:expr) : bool =
   | Shift(_,e,_) -> contains_const e
   | Log(_,x,y)   -> contains_const x || contains_const y
   | Arith(_,x,y) -> contains_const x || contains_const y
-  | Intr(_,x,y)  -> contains_const x || contains_const y
   | Fun(_,l)     -> List.exists (fun x -> x) (List.map contains_const l)
   | Fun_v(_,_,l) -> List.exists (fun x -> x) (List.map contains_const l)
   | Fby(x,y,_) -> contains_const x || contains_const y
@@ -36,7 +35,6 @@ let rec get_expr_size env (e:expr) : int =
   | Shift(_,e,_) -> get_expr_size env e
   | Log(_,x,y)   -> (try get_expr_size env x with Error _ -> get_expr_size env y)
   | Arith(_,x,y) -> (try get_expr_size env x with Error _ -> get_expr_size env y)
-  | Intr(_,x,y)  -> (try get_expr_size env x with Error _ -> get_expr_size env y)
   | Fun(_,l)     -> List.fold_left (+) 0 (List.map (get_expr_size env) l)
   | Fun_v(_,_,l) -> List.fold_left (+) 0 (List.map (get_expr_size env) l)
   | Fby(x,_,_) -> get_expr_size env x
@@ -79,7 +77,6 @@ and expand_expr env (size:int) (e:expr) : expr =
   | Shift(op,x,y) -> Shift(op,rec_call x,y)
   | Log(op,x,y)   -> Log(op,rec_call x,rec_call y)
   | Arith(op,x,y) -> Arith(op,rec_call x,rec_call y)
-  | Intr(op,x,y)  -> Intr(op,rec_call x,rec_call y)
   | Fun(f,l) -> Fun(f,expand_list env size l)
   | Fun_v(f,ei,l) -> Fun_v(f,ei,expand_list env size l)
   | Tuple l -> Tuple (expand_list env size l)

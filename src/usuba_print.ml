@@ -21,59 +21,6 @@ let shift_op_to_str = function
   | Rshift -> ">>"
   | Lrotate -> "<<<"
   | Rrotate -> ">>>"
-                 
-let intr_op_to_str = function
-    And64 -> "&"
-  | Or64  -> "|"
-  | Xor64 -> "^"
-  | Add64 -> "+"
-  | Sub64 -> "-"
-  | Mul64 -> "*"
-  | Div64 -> "/"
-  | Mod64 -> "%"
-  | Not64 -> "~"
-  (* MMX *)
-  | Pand64 -> "pand64"
-  | Por64 -> "por64"
-  | Pxor64 -> "pxor64"
-  | Pandn64 -> "pandn64"
-  | Paddb64 -> "paddb64"
-  | Paddw64 -> "paddw64"
-  | Paddd64 -> "paddd64"
-  | Psubb64 -> "psubb64"
-  | Psubw64 -> "psubw64"
-  | Psubd64 -> "psubd64"
-  (* SSE *)
-  | Pand128 -> "pand128"
-  | Por128 -> "por128"
-  | Pxor128 -> "pxor128"
-  | Pandn128 -> "pandn128"
-  | Paddb128 -> "paddb128"
-  | Paddw128 -> "paddw128"
-  | Paddd128 -> "paddd128"
-  | Paddq128 -> "paddq128"
-  | Psubb128 -> "psubb128"
-  | Psubw128 -> "psubw128"
-  | Psubd128 -> "psubd128"
-  | Psubq128 -> "psubq128"
-  (* AVX *)          
-  | VPand256 -> "vpand256"
-  | VPor256 -> "vpor256"
-  | VPxor256 -> "vpxor256"
-  | VPandn256 -> "vpandn256"
-  | VPaddb256 -> "vpaddb256"
-  | VPaddw256 -> "vpaddw256"
-  | VPaddd256 -> "vpaddd256"
-  | VPaddq256 -> "vpaddq256"
-  | VPsubb256 -> "vpsubb256"
-  | VPsubw256 -> "vpsubw256"
-  | VPsubd256 -> "vpsubd256"
-  | VPsubq256 -> "vpsubq256"
-  (* AVX-512 *)       
-  | VPandd512 -> "vpandd512"
-  | VPord512 -> "vpord512"
-  | VPxord512 -> "vpxord512"
-  | VPandnd512 -> "vpandnd512"
 
 let rec arith_to_str = function
   | Const_e i -> string_of_int i
@@ -118,8 +65,6 @@ let rec expr_to_str_types = function
                     ^ (expr_to_str_types y) ^ ")"
   | Shift(o,x,y) -> "Shift: " ^ "(" ^ (expr_to_str_types x) ^ (shift_op_to_str o)
                     ^ (arith_to_str y) ^ ")"
-  | Intr(o,x,y) -> "Log: " ^ "(" ^ (expr_to_str_types x) ^ (intr_op_to_str o)
-                  ^ (expr_to_str_types y) ^ ")"
   | Not e -> "Not: ~" ^ (expr_to_str_types e)
   | Fun(f,l) -> "Fun: " ^ f ^ "(" ^ (join "," (List.map expr_to_str_types l)) ^ ")"
   | Fun_v(f,e,l) -> "Fun_v: " ^ f ^ "[" ^ (arith_to_str e) ^ "]"
@@ -144,8 +89,6 @@ let rec expr_to_str = function
                             (arith_op_to_str o) (expr_to_str y)
   | Shift(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str_types x)
                             (shift_op_to_str o) (arith_to_str y)
-  | Intr(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
-                           (intr_op_to_str o) (expr_to_str y)
   | Not e -> sprintf "(~ %s)" (expr_to_str e)
   | Fun(f,l) -> sprintf "%s(%s)" f (join "," (List.map expr_to_str l))
   | Fun_v(f,e,l) -> sprintf "%s[%s](%s)" f (arith_to_str e)
@@ -169,9 +112,16 @@ let rec typ_to_str typ =
   | Int n -> "uint_"^(string_of_int n)
   | Nat -> "nat"
   | Array(typ,e) -> (typ_to_str typ) ^ "[" ^ (arith_to_str e) ^ "]"
-            
+
+let rec clock_to_str ck =
+  match ck with
+  | Defclock -> "_"
+  | Base -> "base"
+  | On(ck,x) -> (clock_to_str ck) ^ " on " ^ x
+  | Onot(ck,x) -> (clock_to_str ck) ^ " onot " ^ x
+                                                                  
 let p_to_str ((id,typ),ck) =
-  id ^ ":" ^ (typ_to_str typ) ^  "::" ^ ck
+  id ^ ":" ^ (typ_to_str typ) ^  "::" ^ (clock_to_str ck)
 
 let rec deq_to_str = function
   | Norec(pat,e) -> (pat_to_str pat) ^ " = " ^ (expr_to_str e)

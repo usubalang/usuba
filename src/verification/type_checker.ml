@@ -117,7 +117,7 @@ let rec type_expr glob_env loc_env idx_env (e:expr) : int * bool =
   | Shift(_,e',ae) -> if type_arith idx_env ae then
                        rec_call e'
                       else raise (Unsound ("Invalid arith expr in " ^ (expr_to_str e)))
-  | Log(_,x,y) | Arith(_,x,y) | Intr(_,x,y) ->
+  | Log(_,x,y) | Arith(_,x,y) ->
         let (s1,b1) = rec_call x in
         let (s2,b2) = rec_call y in
         if b1 then s2,b2

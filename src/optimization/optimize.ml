@@ -168,7 +168,6 @@ module Clean = struct
     | Shift(_,x,_) -> clean_expr env x
     | Log(_,x,y) -> clean_expr env x; clean_expr env y
     | Arith(_,x,y) -> clean_expr env x; clean_expr env y
-    | Intr(_,x,y) -> clean_expr env x; clean_expr env y
     | Fun(_,l) -> List.iter (clean_expr env) l
     | Fun_v(_,_,l) -> List.iter (clean_expr env) l
     | Fby(ei,ef,_) -> clean_expr env ei; clean_expr env ef

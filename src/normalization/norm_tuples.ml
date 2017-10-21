@@ -14,7 +14,6 @@ module Simplify_tuples = struct
     | Shift(op,e,n) -> Shift(op,simpl_tuple e,n)
     | Log(op,x,y) -> Log(op,simpl_tuple x,simpl_tuple y)
     | Arith(op,x,y) -> Arith(op,simpl_tuple x,simpl_tuple y)
-    | Intr(op,x,y) -> Intr(op,simpl_tuple x,simpl_tuple y)
     | Fun(f,l) -> Fun(f,List.map simpl_tuple l)
     | Fun_v(f,n,l) -> Fun_v(f,n,List.map simpl_tuple l)
     | _ -> t

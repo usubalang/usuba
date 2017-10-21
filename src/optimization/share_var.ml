@@ -15,7 +15,6 @@ let rec update_expr env (n:int) (e:expr) : unit =
   | Shift(_,x,_) -> update_expr env n x
   | Log(_,x,y) -> update_expr env n x; update_expr env n y
   | Arith(_,x,y) -> update_expr env n x; update_expr env n y
-  | Intr(_,x,y) -> update_expr env n x; update_expr env n y
   | Fun(_,l) -> List.iter (update_expr env n) l
   | _ -> raise (Invalid_AST "")
 
@@ -30,7 +29,6 @@ let rec replace_expr env (e:expr) : expr =
   | Shift(op,x,y) -> Shift(op,replace_expr env x,y)
   | Log(op,x,y) -> Log(op,replace_expr env x, replace_expr env y)
   | Arith(op,x,y) -> Arith(op,replace_expr env x, replace_expr env y)
-  | Intr(op,x,y) -> Intr(op,replace_expr env x, replace_expr env y)
   | Fun(f,l) -> Fun(f,List.map (replace_expr env) l)
   | _ -> raise (Invalid_AST "")
 
@@ -71,7 +69,7 @@ let share_deqs (p_in:p) (p_out:p) (deqs:deq list) : deq list =
                                             not ((contains s "key")
                                                  || (contains s "sbox_in"))) *) 
                       (List.sort (fun a b -> compare (Hashtbl.find age a)
-                                                    (Hashtbl.find age b))
+                                                     (Hashtbl.find age b))
                                 (List.map (fun x -> match env_fetch env x with
                                                     | Some y -> y
                                                     | None   -> x)

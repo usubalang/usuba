@@ -1,6 +1,11 @@
+
 type ident = string
 
-type clock = string
+type clock =
+| Defclock
+| Base
+| On of clock * ident
+| Onot of clock * ident
 
 type log_op =
 | And
@@ -20,55 +25,6 @@ type shift_op =
 | Rshift
 | Lrotate
 | Rrotate
-
-type intr_fun =
-| And64
-| Or64
-| Xor64
-| Not64
-| Add64
-| Sub64
-| Mul64
-| Div64
-| Mod64
-| Pand64
-| Por64
-| Pxor64
-| Pandn64
-| Paddb64
-| Paddw64
-| Paddd64
-| Psubb64
-| Psubw64
-| Psubd64
-| Pand128
-| Por128
-| Pxor128
-| Pandn128
-| Paddb128
-| Paddw128
-| Paddd128
-| Paddq128
-| Psubb128
-| Psubw128
-| Psubd128
-| Psubq128
-| VPand256
-| VPor256
-| VPxor256
-| VPandn256
-| VPaddb256
-| VPaddw256
-| VPaddd256
-| VPaddq256
-| VPsubb256
-| VPsubw256
-| VPsubd256
-| VPsubq256
-| VPandd512
-| VPord512
-| VPxord512
-| VPandnd512
 
 type arith_expr =
 | Const_e of int
@@ -100,7 +56,6 @@ type expr =
 | Shift of shift_op * expr * arith_expr
 | Log of log_op * expr * expr
 | Arith of arith_op * expr * expr
-| Intr of intr_fun * expr * expr
 | Fun of ident * expr list
 | Fun_v of ident * arith_expr * expr list
 | Fby of expr * expr * ident option

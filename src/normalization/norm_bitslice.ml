@@ -71,7 +71,7 @@ let rec remove_call env_fun e : deq list * expr =
     deq, e'
   else 
     let tmp = expand_intn (gen_tmp ()) (get_expr_size env_fun e') in
-    new_vars := !new_vars @ (List.map (fun id -> ((id,Bool),"")) tmp);
+    new_vars := !new_vars @ (List.map (fun id -> ((id,Bool),Defclock)) tmp);
     let left = List.map (fun x -> Var x) tmp in
 
     deq @ [Norec(left,e')], Tuple (List.map (fun x -> ExpVar(Var x)) tmp)
@@ -90,7 +90,7 @@ and remove_calls env_fun l : deq list * expr list =
                 let size = get_expr_size env_fun e' in
                 let tmp = expand_intn (gen_tmp ()) size in
                 let left = List.map (fun x -> Var x) tmp in
-                new_vars := !new_vars @ (List.map (fun id -> ((id,Bool),"")) tmp);
+                new_vars := !new_vars @ (List.map (fun id -> ((id,Bool),Defclock)) tmp);
                 pre_deqs := !pre_deqs @ [Norec(left,e')];
                 
                 List.map (fun x -> ExpVar(Var x)) tmp)
@@ -118,13 +118,6 @@ and norm_expr env_fun (e: expr) : deq list * expr =
        ( match x1', x2' with
          | Tuple l1,Tuple l2 -> Tuple(List.map2 (fun x y -> Log(op,x,y)) l1 l2)
          | _ -> Log(op,x1',x2'))
-    | Intr(op,x1,x2) ->
-       let (deqs1, x1') = remove_call env_fun x1 in
-       let (deqs2, x2') = remove_call env_fun x2 in
-       pre_deqs := deqs1 @ deqs2;
-       ( match x1', x2' with
-         | Tuple l1,Tuple l2 -> Tuple(List.map2 (fun x y -> Intr(op,x,y)) l1 l2)
-         | _ -> Intr(op,x1',x2'))
     | Not e ->
        let (deqs,e') = remove_call env_fun e in
        pre_deqs := deqs;

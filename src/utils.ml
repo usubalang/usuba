@@ -218,8 +218,7 @@ let rec get_used_vars (e:expr) : var list =
   | Tuple l -> List.flatten @@ List.map get_used_vars l
   | Not e -> get_used_vars e
   | Shift(_,e,_) -> get_used_vars e
-  | Log(_,x,y) | Arith(_,x,y) | Intr(_,x,y)
-                                -> (get_used_vars x) @ (get_used_vars y)
+  | Log(_,x,y) | Arith(_,x,y) -> (get_used_vars x) @ (get_used_vars y)
   | Fun(_,l) -> List.flatten @@ List.map get_used_vars l
   | _ -> raise (Error "Not supported expr")
 

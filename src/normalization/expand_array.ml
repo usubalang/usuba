@@ -56,7 +56,6 @@ let rec expand_expr_range (e:expr) : expr =
      | Shift(op,e,n) -> Shift(op,expand_expr_range e,n)
      | Log(op,x,y) -> Log(op,expand_expr_range x,expand_expr_range y)
      | Arith(op,x,y) -> Arith(op,expand_expr_range x,expand_expr_range y)
-     | Intr(op,x,y) -> Intr(op,expand_expr_range x,expand_expr_range y)
      | Fun(f,l) -> Fun(f,List.map expand_expr_range l)
      | Fun_v(f,n,l) -> Fun_v(f,n,List.map expand_expr_range l)
      | Fby(x,y,f) -> Fby(expand_expr_range x,expand_expr_range y,f)
@@ -98,7 +97,6 @@ let rec rewrite_expr loc_env env_var (e:expr) : expr =
                            | Mod -> Const (a mod b))
                        | _ -> Arith(op,rec_call x,rec_call y) )
   | Shift(op,e,n) -> Shift(op,rec_call e, Const_e(eval_arith loc_env n))
-  | Intr(f,x,y) -> Intr(f,rec_call x, rec_call y)
   | Fun(f,l) -> Fun(f,List.map rec_call l)
   | Fun_v(f,e,l) -> let idx = eval_arith loc_env e in
                     let f' = f ^ (string_of_int idx) in

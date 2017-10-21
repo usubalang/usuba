@@ -22,15 +22,21 @@ let norm_prog (prog: prog) (conf:config) : prog  =
   let array_expanded = Expand_array.expand_array renamed in
   print "ARRAYS EXPANDED:"  array_expanded conf;
 
+  (* remove when/merge *)
+  let no_ctrl = Remove_ctrl.remove_ctrl array_expanded in
+  print "WHEN/MERGE EXPANDED:"  no_ctrl conf;
+  
   (* convert lookup-tables to circuit (ie. to nodes) *)
-  let tables_converted = Convert_tables.convert_tables array_expanded conf in
+  let tables_converted = Convert_tables.convert_tables no_ctrl conf in
   print "TABLES CONVERTED:" tables_converted conf;
 
   let normalized =
     (let normed = Norm_bitslice.norm_prog tables_converted in
      print "PRE-NORMALIZED:" normed conf;
+     let init_sched = Init_scheduler.schedule_prog normed in
+     print "INIT SCHEDULED:" init_sched conf;
      let scheduled = if conf.scheduling then
-                       Pre_schedule.schedule normed else normed in
+                       Pre_schedule.schedule init_sched else init_sched in
      print "SCHEDULED:" scheduled conf;
      let inlined = if conf.inlining then
                      Inline.inline scheduled conf else scheduled in

@@ -27,7 +27,6 @@ let rec apply_perm_e env (e:expr) : expr =
   | Shift(op,e,n) -> Shift(op,apply_perm_e env e,n)
   | Log(op,x,y) -> Log(op,apply_perm_e env x,apply_perm_e env y)
   | Arith(op,x,y) -> Arith(op,apply_perm_e env x,apply_perm_e env y)
-  | Intr(op,x,y) -> Intr(op,apply_perm_e env x,apply_perm_e env y)
   | Fun(f,l) -> let l' = List.map (apply_perm_e env) l in
                 (match env_fetch env f with
                  | Some perm -> Tuple (list_from_perm perm l')

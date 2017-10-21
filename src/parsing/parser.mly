@@ -29,7 +29,11 @@
 %token TOK_INLINE
 %token TOK_NOINLINE
 %token TOK_WHEN
+%token TOK_WHENOT
 %token TOK_MERGE
+%token TOK_ON
+%token TOK_ONOT
+%token TOK_BASE
        
 %token TOK_LPAREN
 %token TOK_RPAREN
@@ -65,7 +69,6 @@
 %token <string> TOK_id
 %token <int> TOK_int               
 %token <Usuba_AST.typ> TOK_type
-%token <Usuba_AST.intr_fun> TOK_intrinsic
 %token <Usuba_AST.constr> TOK_constr
                               
 %token TOK_EOF
@@ -75,6 +78,7 @@
 
 %nonassoc TOK_FBY
 %nonassoc TOK_WHEN
+%nonassoc TOK_WHENOT
 %nonassoc TOK_ARROW
 %nonassoc TOK_LT
        
@@ -144,8 +148,12 @@ exp:
   | f=TOK_id TOK_LPAREN args=explist TOK_RPAREN { Fun(f, args) }
   | f=TOK_id TOK_LBRACKET n=arith_exp TOK_RBRACKET
     TOK_LPAREN args=explist TOK_RPAREN { Fun_v(f, n, args) }
-  | f=TOK_intrinsic TOK_LPAREN x=exp TOK_COMMA y=exp TOK_RPAREN { Intr(f,x,y) }
   | a=exp TOK_WHEN constr=TOK_constr TOK_LPAREN x=TOK_id TOK_RPAREN { When(a,constr,x) }
+  | a=exp TOK_WHENOT constr=TOK_constr TOK_LPAREN x=TOK_id TOK_RPAREN
+    (* Transforming Whenot into When. Would be cleaner to do it later, todo.. *)
+    { match constr with
+      | True -> When(a,False,x)
+      | False -> When(a,True, x) }
   | TOK_MERGE ck=TOK_id c=caselist { Merge(ck,c) }
   | init=exp TOK_FBY follow=exp { Fby(init,follow,None) }
   | init=exp TOK_LT f=TOK_id TOK_GT TOK_FBY follow=exp
@@ -187,8 +195,14 @@ typ:
                             | None -> t }
                                       
 pclock:
-   | { "_" }
-   | TOK_TWO_COLON id=TOK_id { id }
+   | { Base }
+   | TOK_TWO_COLON ck=clock { ck }
+
+clock:
+   | TOK_BASE { Base }
+   | ck=clock TOK_ON x=TOK_id { On(ck,x) }
+   | ck=clock TOK_ONOT x=TOK_id { Onot(ck,x) }
+
 
 opt_def:
    | TOK_INLINE   { Inline }

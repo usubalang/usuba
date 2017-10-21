@@ -49,7 +49,6 @@ let rec shift_expr (e:expr) : expr =
   | Not e' -> Not (shift_expr e')
   | Shift(op,e,Const_e n) -> shift op e n
   | Log(op,x,y) -> Log(op,shift_expr x,shift_expr y)
-  | Intr(op,x,y) -> Intr(op,shift_expr x,shift_expr y)
   | Arith(op,x,y) -> Arith(op,shift_expr x,shift_expr y)
   | Fun(f,l) -> Fun(f,List.map shift_expr l)
   | Fun_v(f,ei,l) -> Fun_v(f,ei,List.map shift_expr l)

@@ -29,7 +29,6 @@ module Usuba_norm = struct
     | Shift(_,_,_) -> false
     | Log(_,x,y) -> check_expr x && check_expr y
     | Arith(_,x,y) -> check_expr x && check_expr y
-    | Intr(_,x,y) -> check_expr x && check_expr y
     | Fun(_,l) -> List.for_all check_expr l
     | Fun_v _ -> false
     | Fby _ -> raise (Not_implemented "Fby")
@@ -55,30 +54,6 @@ module Usuba_norm = struct
   
   let is_usuba_normalized (prog:prog) : bool =
     Usuba0.is_usuba0 prog &&
-      List.for_all check_def prog.nodes
-end
-
-module Usuba_intrinsics = struct
-
-  let rec check_expr (e:expr) : bool =
-    match e with
-    | Const _ | ExpVar _ | Nop -> true
-    | Not e -> check_expr e
-    | Intr(_,x,y) -> check_expr x && check_expr y
-    | _ -> print_endline("Wrong:" ^ (Usuba_print.expr_to_str e)); false
-  
-  let check_def (def:def) : bool =
-    match def.node with
-    | Single(_,body) ->
-       List.for_all (function
-                      | Norec(p,Fun(_,l)) -> List.for_all check_expr l
-                      | Norec(p,e) -> check_expr e
-                      | _ -> false) body
-    | _ -> false
-                
-                
-  let is_only_intrinsics (prog:prog) : bool =
-    Usuba_norm.is_usuba_normalized prog &&
       List.for_all check_def prog.nodes
 end
                       
