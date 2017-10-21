@@ -48,7 +48,9 @@ let rec clock_expr env (e:expr) : clock * bool =
   | When(e,cstr,id) -> let (ck1,ok1) = clock_expr env e in
                        let ck2 = get_clock env (Var id) in
                        let (ck,ok) = and_ck ck1 ck2 in
-                       On(ck,id), ok && ok1
+                       (match cstr with
+                        | True  -> On(ck,id), ok && ok1
+                        | False -> Onot(ck,id), ok && ok1)
   | Merge(x,l) -> let ck = get_clock env (Var x) in
                   let l' = List.map (fun (cstr,e) ->
                                      let (ck1,ok1) = clock_expr env e in

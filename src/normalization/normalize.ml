@@ -52,5 +52,7 @@ let norm_prog (prog: prog) (conf:config) : prog  =
   if conf.check_tbl then
     Soundness.tables_sound renamed optimized;
 
+  let clock_fixed = Fix_clocks.fix_prog optimized in
+  print "CLOCKS FIXED:" clock_fixed conf;
   
-  optimized
+  clock_fixed
