@@ -49,18 +49,18 @@ let expand_pat_range (pat:var list) : var list =
 let rec expand_expr_range (e:expr) : expr =
   Norm_tuples.Simplify_tuples.simpl_tuple
     (match e with
-     | Const _ -> e
+     | Const _  -> e
      | ExpVar v -> Tuple(List.map (fun x -> ExpVar x) (expand_var_range v))
-     | Tuple l -> Tuple (List.map expand_expr_range l)
-     | Not e -> Not (expand_expr_range e)
+     | Tuple l  -> Tuple (List.map expand_expr_range l)
+     | Not e    -> Not (expand_expr_range e)
      | Shift(op,e,n) -> Shift(op,expand_expr_range e,n)
-     | Log(op,x,y) -> Log(op,expand_expr_range x,expand_expr_range y)
+     | Log(op,x,y)   -> Log(op,expand_expr_range x,expand_expr_range y)
      | Arith(op,x,y) -> Arith(op,expand_expr_range x,expand_expr_range y)
-     | Fun(f,l) -> Fun(f,List.map expand_expr_range l)
-     | Fun_v(f,n,l) -> Fun_v(f,n,List.map expand_expr_range l)
-     | Fby(x,y,f) -> Fby(expand_expr_range x,expand_expr_range y,f)
-     | Nop -> Nop
-     | _ -> raise (Not_implemented (Usuba_print.expr_to_str e)))
+     | Fun(f,l)      -> Fun(f,List.map expand_expr_range l)
+     | Fun_v(f,n,l)  -> Fun_v(f,n,List.map expand_expr_range l)
+     | Fby(x,y,f)    -> Fby(expand_expr_range x,expand_expr_range y,f)
+     | When(e,x,c)   -> When(expand_expr_range e,x,c)
+     | Merge(x,l)    -> Merge(x,List.map (fun (c,e) -> c,expand_expr_range e) l))
           
 let rec rewrite_expr loc_env env_var (e:expr) : expr =
   let rec_call = rewrite_expr loc_env env_var in
@@ -101,9 +101,9 @@ let rec rewrite_expr loc_env env_var (e:expr) : expr =
   | Fun_v(f,e,l) -> let idx = eval_arith loc_env e in
                     let f' = f ^ (string_of_int idx) in
                     rec_call (Fun(f',l))
+  | When(e,c,x) -> When(rec_call e,c,x)
+  | Merge(x,l)  -> Merge(x,List.map (fun (c,e) -> c,rec_call e) l)
   | Fby _ -> raise (Not_implemented "FBY")
-  | Nop -> Nop
-  | _ -> raise (Not_implemented (Usuba_print.expr_to_str e))
              
 
 let rewrite_pat env env_var (pat:var list) : var list =

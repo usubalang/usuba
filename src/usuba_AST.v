@@ -52,8 +52,7 @@ Inductive expr :=
   | Fun_v (x: ident)(ae: arith_expr)(es: list expr) (* nodes arrays *)
   | Fby (e1 e2: expr)(mx: option ident)
   | When (e: expr)(x: constr) (y: ident)
-  | Merge (x: ident)(xs: list (constr * expr))
-  | Nop.
+  | Merge (x: ident)(xs: list (constr * expr)).
 
 Inductive deq :=
   | Norec (vs: list var)(e: expr)
@@ -96,24 +95,25 @@ Inductive arch :=
 
 (* The compiler's configuration *)
 Record config := {
-  block_size : int;
-  key_size   : int;
-  warnings   : bool;
-  verbose    : int;
-  verif      : bool;
-  type_check : bool;
-  check_tbl  : bool;
-  inlining   : bool;
-  inline_all : bool;
-  cse_cp     : bool;
-  scheduling : bool;
-  array_opti : bool;
-  share_var  : bool;
-  precal_tbl : bool;
-  archi      : arch;
-  bench      : bool;
-  ortho      : bool;
-  openmp     : int;
+  block_size  : int;
+  key_size    : int;
+  warnings    : bool;
+  verbose     : int;
+  verif       : bool;
+  type_check  : bool;
+  clock_check : bool;
+  check_tbl   : bool;
+  inlining    : bool;
+  inline_all  : bool;
+  cse_cp      : bool;
+  scheduling  : bool;
+  array_opti  : bool;
+  share_var   : bool;
+  precal_tbl  : bool;
+  archi       : arch;
+  bench       : bool;
+  ortho       : bool;
+  openmp      : int;
 }.
 
 Set Extraction KeepSingleton.

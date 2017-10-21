@@ -12,9 +12,9 @@ let rec contains_const (e:expr) : bool =
   | Arith(_,x,y) -> contains_const x || contains_const y
   | Fun(_,l)     -> List.exists (fun x -> x) (List.map contains_const l)
   | Fun_v(_,_,l) -> List.exists (fun x -> x) (List.map contains_const l)
-  | Fby(x,y,_) -> contains_const x || contains_const y
-  | Nop -> false
-  | _ -> raise (Not_implemented (Usuba_print.expr_to_str e))
+  | Fby(x,y,_)   -> contains_const x || contains_const y
+  | When(e,_,_)  -> contains_const e
+  | Merge(_,l)   -> List.exists (fun x -> x) (List.map (fun (_,e) -> contains_const e) l)
                                                      
 let get_var_size env (v:ident) : int =
   match env_fetch env v with
@@ -37,9 +37,13 @@ let rec get_expr_size env (e:expr) : int =
   | Arith(_,x,y) -> (try get_expr_size env x with Error _ -> get_expr_size env y)
   | Fun(_,l)     -> List.fold_left (+) 0 (List.map (get_expr_size env) l)
   | Fun_v(_,_,l) -> List.fold_left (+) 0 (List.map (get_expr_size env) l)
-  | Fby(x,_,_) -> get_expr_size env x
-  | Nop -> raise (Error "Nop size unknown")
-  | _ -> raise (Not_implemented (Usuba_print.expr_to_str e))
+  | Fby(x,_,_)   -> get_expr_size env x
+  | When(e,_,_)  -> get_expr_size env e
+  | Merge(_,l)   -> let rec aux = function
+                      | []    -> raise (Error "Can't guess size")
+                      | (_,e)::xs -> try get_expr_size env e
+                                     with Error _ -> aux xs in
+                    aux l
   
                              
 let expand_const (size:int) (n:int) : expr =
@@ -77,10 +81,12 @@ and expand_expr env (size:int) (e:expr) : expr =
   | Shift(op,x,y) -> Shift(op,rec_call x,y)
   | Log(op,x,y)   -> Log(op,rec_call x,rec_call y)
   | Arith(op,x,y) -> Arith(op,rec_call x,rec_call y)
-  | Fun(f,l) -> Fun(f,expand_list env size l)
+  | Fun(f,l)      -> Fun(f,expand_list env size l)
   | Fun_v(f,ei,l) -> Fun_v(f,ei,expand_list env size l)
-  | Tuple l -> Tuple (expand_list env size l)
-  | _ -> raise (Not_implemented "")
+  | Tuple l       -> Tuple (expand_list env size l)
+  | When(e,c,x)   -> When(rec_call e,c,x)
+  | Merge(x,l)    -> Merge(x,List.map (fun (c,e) -> c,rec_call e) l)
+  | Fby _ -> raise (Not_implemented "Fby")
                          
 let expand_deqs env (deq:deq) : deq =
   match deq with

@@ -34,7 +34,6 @@ module Usuba_norm = struct
     | Fby _ -> raise (Not_implemented "Fby")
     | When(_,_,_) -> false
     | Merge(_,_) -> false
-    | Nop -> true
   
   let check_p (p:p) : bool =
     List.for_all (function

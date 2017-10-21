@@ -3,13 +3,14 @@ open Usuba_AST
 open Printf
 open Utils
 
-let block_size = ref 64
-let key_size   = ref 64
-let warnings   = ref false
-let verbose    = ref 1
-let verif      = ref false
-let type_check = ref true
-let check_tbl  = ref false
+let block_size  = ref 64
+let key_size    = ref 64
+let warnings    = ref false
+let verbose     = ref 1
+let verif       = ref false
+let type_check  = ref true
+let clock_check = ref true
+let check_tbl   = ref false
                      
 let inlining   = ref true
 let inline_all = ref false
@@ -69,6 +70,10 @@ let main () =
       "-verif", Arg.Set verif, "Activate verification";
       "-check-tbl", Arg.Set check_tbl, "Activate verification of tables";
       "-no-type-check", Arg.Clear type_check, "Deactivate type checking";
+      "-no-clock-check", Arg.Clear type_check, "Deactivate clock checking";
+      "-no-checks", Arg.Unit (fun () -> type_check := false;
+                                        clock_check := false),
+                    "Deactivate both type and clock checking";
       "-no-inlining", Arg.Clear inlining, "Deactivate inlining opti";
       "-inline-all", Arg.Set inline_all, "Force inlining of every node";
       "-no-CSE-CP", Arg.Clear cse_cp, "Deactive CSE and CP opti";
@@ -86,29 +91,33 @@ let main () =
   let usage_msg = "Usage: usuba [switches] [files]" in
   let compile s =
     let prog = Parse_file.parse_file s in
-    let conf = { block_size = !block_size;
-                 key_size   = !key_size;
-                 warnings   = !warnings;
-                 verbose    = !verbose;
-                 verif      = !verif;
-                 type_check = !type_check;
-                 check_tbl  = !check_tbl;
-                 inlining   = !inlining;
-                 inline_all = !inline_all;
-                 cse_cp     = !cse_cp;
-                 scheduling = !scheduling;
-                 array_opti = !array_opti;
-                 share_var  = !share_var;
-                 precal_tbl = !precal_tbl;
-                 archi      = !arch;
-                 bench      = !bench;
-                 ortho      = !ortho;
-                 openmp     = !openmp;
+    let conf = { block_size  = !block_size;
+                 key_size    = !key_size;
+                 warnings    = !warnings;
+                 verbose     = !verbose;
+                 verif       = !verif;
+                 type_check  = !type_check;
+                 clock_check = !clock_check;
+                 check_tbl   = !check_tbl;
+                 inlining    = !inlining;
+                 inline_all  = !inline_all;
+                 cse_cp      = !cse_cp;
+                 scheduling  = !scheduling;
+                 array_opti  = !array_opti;
+                 share_var   = !share_var;
+                 precal_tbl  = !precal_tbl;
+                 archi       = !arch;
+                 bench       = !bench;
+                 ortho       = !ortho;
+                 openmp      = !openmp;
                } in
 
     if !type_check then
      if not (Type_checker.is_typed prog) then
-       raise (Error "Unsound program");
+       raise (Error "Unsound program: bad types");
+    if !clock_check then
+      if not (Clock_checker.is_clocked prog) then
+        raise (Error "Unsound program: bad clocks");
     if !verif then Gen_z3.verify prog s conf;
     print_c s prog conf in
       

@@ -52,8 +52,8 @@ let rec rename_expr (e:expr) =
                           match f with
                           | None -> None
                           | Some id -> Some (id^"'"))
-  | Nop -> Nop
-  | _ -> raise (Not_implemented (Usuba_print.expr_to_str e))
+  | When(e,c,x) -> When(rename_expr e,c,x^"'")
+  | Merge(x,l)  -> Merge(x^"'",List.map (fun (c,e) -> c,rename_expr e) l)
 
 
                       

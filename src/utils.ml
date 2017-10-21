@@ -13,24 +13,25 @@ exception Break
 let unreached () = raise (Error "This point can't be reached")
 
 let default_conf : config =
-  { block_size = 64;
-    key_size   = 64;
-    warnings   = true;
-    verbose    = 1;
-    verif      = false;
-    type_check = true;
-    check_tbl  = false;
-    inlining   = true;
-    inline_all = false;
-    cse_cp     = true;
-    scheduling = true;
-    array_opti = true;
-    share_var  = true;
-    precal_tbl = true;
-    archi      = Std;
-    bench      = false;
-    ortho      = true;
-    openmp     = 1;
+  { block_size  = 64;
+    key_size    = 64;
+    warnings    = true;
+    verbose     = 1;
+    verif       = false;
+    type_check  = true;
+    clock_check = true;
+    check_tbl   = false;
+    inlining    = true;
+    inline_all  = false;
+    cse_cp      = true;
+    scheduling  = true;
+    array_opti  = true;
+    share_var   = true;
+    precal_tbl  = true;
+    archi       = Std;
+    bench       = false;
+    ortho       = true;
+    openmp      = 1;
   }
 
 let print_conf (conf:config) : unit =

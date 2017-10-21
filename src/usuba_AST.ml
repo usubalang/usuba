@@ -61,7 +61,6 @@ type expr =
 | Fby of expr * expr * ident option
 | When of expr * constr * ident
 | Merge of ident * (constr * expr) list
-| Nop
 
 type deq =
 | Norec of var list * expr
@@ -96,7 +95,7 @@ type arch =
 
 type config = { block_size : int; key_size : int; warnings : bool;
                 verbose : int; verif : bool; type_check : bool;
-                check_tbl : bool; inlining : bool; inline_all : bool;
-                cse_cp : bool; scheduling : bool; array_opti : bool;
-                share_var : bool; precal_tbl : bool; archi : arch;
-                bench : bool; ortho : bool; openmp : int }
+                clock_check : bool; check_tbl : bool; inlining : bool;
+                inline_all : bool; cse_cp : bool; scheduling : bool;
+                array_opti : bool; share_var : bool; precal_tbl : bool;
+                archi : arch; bench : bool; ortho : bool; openmp : int }

@@ -170,7 +170,6 @@ let rec type_expr glob_env loc_env idx_env (e:expr) : int * bool =
                                      ) hd tl
                    | _ -> unreached ())
       | None   -> raise (Unsound ("Undeclared var " ^ id)))
-  | Nop -> raise (Unsound "Unexpected Nop")
                   
                   
                                

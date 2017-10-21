@@ -26,9 +26,7 @@ let schedule_deqs (def:def) (deqs:deq list) : deq list =
                 Hashtbl.add sched instr true;
                 List.iter (fun x -> Hashtbl.add ready x true) lhs;
                 List.iter (fun x ->
-                           try
-                             let w = Hashtbl.find to_sched x in
-                             ignore(sched_it (Hashtbl.find to_sched x))
+                           try ignore(sched_it (Hashtbl.find to_sched x))
                            with Not_found -> ()) lhs )
             else
               List.iter (fun x -> Hashtbl.add to_sched x instr) (get_used_vars e)

@@ -249,15 +249,16 @@ module Get_funcalls = struct
 
   let rec funcalls_expr (e:expr) : string list =
     match e with
-    | Const _ | ExpVar _ | Nop -> []
+    | Const _ | ExpVar _ -> []
     | Tuple l -> List.flatten @@ List.map funcalls_expr l
     | Not e -> funcalls_expr e
     | Shift(_,e,_) -> funcalls_expr e
     | Log(_,x,y) -> (funcalls_expr x) @ (funcalls_expr y)
     | Arith(_,x,y) -> (funcalls_expr x) @ (funcalls_expr y)
     | Fun(f,l) -> f :: (List.flatten @@ List.map funcalls_expr l)
-    | _ -> raise (Not_implemented ("Funcalls_expr: " ^ (Usuba_print.expr_to_str e)))
-                         
+    | When(e,_,_) -> funcalls_expr e
+    | Merge(_,l) -> List.flatten @@ List.map (fun (_,e) -> funcalls_expr e) l
+    | Fby _ | Fun_v _ -> assert false
   
   let get_funcalls (def:def) : string list =
     match def.node with

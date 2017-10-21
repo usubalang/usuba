@@ -77,7 +77,6 @@ let rec expr_to_str_types = function
                                                  sprintf "| %s -> %s "
                                                          (constr_to_str c)
                                                          (expr_to_str_types y)) c))
-  | Nop -> "Nop"
 
 let rec expr_to_str = function
   | Const c -> (string_of_int c)
@@ -101,7 +100,6 @@ let rec expr_to_str = function
                                                  sprintf "| %s -> %s "
                                                          (constr_to_str c)
                                                          (expr_to_str y)) c))
-  | Nop -> "Nop"
 
 let pat_to_str pat =
   "(" ^ (join "," (List.map var_to_str pat)) ^ ")"

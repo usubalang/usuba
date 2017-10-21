@@ -31,10 +31,10 @@ let rec apply_perm_e env (e:expr) : expr =
                 (match env_fetch env f with
                  | Some perm -> Tuple (list_from_perm perm l')
                  | None -> Fun(f,l'))
-  | Fun_v(f,n,l) -> raise (Error "Node arrays should be gone")
   | Fby(ei,ef,f) -> Fby(apply_perm_e env ei,apply_perm_e env ef,f)
-  | Nop -> Nop
-  | _ -> raise (Not_implemented (Usuba_print.expr_to_str e))
+  | When(e,c,x)  -> When(apply_perm_e env e, c, x)
+  | Merge(x,l)   -> Merge(x,List.map (fun (c,e) -> c,apply_perm_e env e) l)
+  | Fun_v(_,_,_) -> assert false
                         
             
 let apply_perm env (deqs: deq list) : deq list =
