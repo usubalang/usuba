@@ -18,3 +18,6 @@ for (glob "opti/*/run.pl") {
     system "./$_";
 }
 
+for (glob "eval/*/run.pl") {
+    system "./$_";
+}

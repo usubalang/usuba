@@ -42,12 +42,13 @@ int main() {
   // Hardcoding a key for now...
   unsigned long key_std = 0x133457799BBCDFF1;
   DATATYPE *key_ortho = ALLOC(KEY_SIZE);
+  DATATYPE *key_cst   = ALLOC(KEY_SIZE);
 
   for (int i = 0; i < 64; i++)
     if (key_std >> i & 1)
-      key_ortho[63-i] = SET_ALL_ONE();
+      key_ortho[63-i] = key_cst[63-i] = SET_ALL_ONE();
     else
-      key_ortho[63-i] = SET_ALL_ZERO();
+      key_ortho[63-i] = key_cst[63-i] = SET_ALL_ZERO();
 
 
   // Reading the input file
@@ -76,6 +77,7 @@ int main() {
 
       ORTHOGONALIZE(loc_std, plain_ortho);
     
+      memcpy(key_ortho,key_cst,KEY_SIZE*sizeof *key_cst);
       %s(plain_ortho, key_ortho, cipher_ortho);
     
       UNORTHOGONALIZE(cipher_ortho,loc_std);
