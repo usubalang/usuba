@@ -9,8 +9,15 @@
 #include <stdlib.h>
 
 
+#ifndef LOG2_BITS_PER_REG
+#define LOG2_BITS_PER_REG 6
+#endif
+#ifndef BITS_PER_REG
+#define BITS_PER_REG 64
+#endif
+
 /* Defining macros */
-#define REG_SIZE 64
+#define REG_SIZE BITS_PER_REG
 
 #define AND(a,b)  ((a) & (b))
 #define OR(a,b)   ((a) | (b))
@@ -50,9 +57,9 @@ static unsigned long mask_r[6] = {
 
 
 void real_ortho(unsigned long data[]) {
-  for (int i = 0; i < 6; i ++) {
+  for (int i = 0; i < LOG2_BITS_PER_REG; i ++) {
     int n = (1UL << i);
-    for (int j = 0; j < 64; j += (2 * n))
+    for (int j = 0; j < BITS_PER_REG; j += (2 * n))
       for (int k = 0; k < n; k ++) {
         unsigned long u = data[j + k] & mask_l[i];
         unsigned long v = data[j + k] & mask_r[i];

@@ -29,6 +29,7 @@ let default_conf : config =
     share_var   = true;
     precal_tbl  = true;
     archi       = Std;
+    bit_per_reg = 64;
     bench       = false;
     ortho       = true;
     openmp      = 1;

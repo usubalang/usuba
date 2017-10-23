@@ -12,19 +12,20 @@ let type_check  = ref true
 let clock_check = ref true
 let check_tbl   = ref false
                      
-let inlining   = ref true
-let inline_all = ref false
-let cse_cp     = ref true
-let scheduling = ref true
-let array_opti = ref true
-let share_var  = ref true
-let precal_tbl = ref true
+let inlining    = ref true
+let inline_all  = ref false
+let cse_cp      = ref true
+let scheduling  = ref true
+let array_opti  = ref true
+let share_var   = ref true
+let precal_tbl  = ref true
                      
-let arch       = ref Std
-let bench      = ref false
-let ortho      = ref true
-let openmp     = ref 1
-let output     = ref ""
+let arch        = ref Std
+let bit_per_reg = ref 64
+let bench       = ref false
+let ortho       = ref true
+let openmp      = ref 1
+let output      = ref ""
 
 
 let str_to_arch = function
@@ -36,6 +37,15 @@ let str_to_arch = function
   | "neon"    -> Neon
   | "altivec" -> AltiVec
   | x -> raise (Error ("Invalid archi: " ^ x))
+
+let bits_in_arch = function
+  | Std      -> 64
+  | MMX      -> 64
+  | SSE      -> 128
+  | AVX      -> 256
+  | AVX512   -> 512
+  | Neon     -> 128
+  | AltiVec  -> raise (Error "No idea how much bits in AltiVec")
 
 let gen_output_filename (file_in: string) : string =
   let full_name = match (String.split_on_char '.' file_in) with
@@ -82,6 +92,7 @@ let main () =
       "-no-share", Arg.Clear share_var, "Deactivate variable sharing";
       "-no-precalc-tbl", Arg.Clear precal_tbl, "Don't use pre-computed tables";
       "-arch", Arg.String (fun s -> arch := str_to_arch s), "Set architecture";
+      "-bits-per-reg", Arg.Set_int bit_per_reg, "Set number of bits to use in the registers (with -arch std only, needs to be a multiple of 2)";
       "-bench", Arg.Set bench, "Generate benchmark runtime";
       "-ortho", Arg.Set ortho, "Perform data orthogonalization";
       "-no-ortho", Arg.Clear ortho, "Don't perform data orthogonalization";
@@ -91,6 +102,8 @@ let main () =
   let usage_msg = "Usage: usuba [switches] [files]" in
   let compile s =
     let prog = Parse_file.parse_file s in
+    let bits_per_reg = if !bit_per_reg <> 64 then !bit_per_reg
+                       else bits_in_arch !arch in
     let conf = { block_size  = !block_size;
                  key_size    = !key_size;
                  warnings    = !warnings;
@@ -107,10 +120,14 @@ let main () =
                  share_var   = !share_var;
                  precal_tbl  = !precal_tbl;
                  archi       = !arch;
+                 bit_per_reg = bits_per_reg; (* local var! *)
                  bench       = !bench;
                  ortho       = !ortho;
                  openmp      = !openmp;
                } in
+
+    if conf.archi = Std && conf.bit_per_reg mod 2 <> 0 then
+      raise (Error ("Invalid -fix-size " ^ (string_of_int conf.bit_per_reg)));
 
     if !type_check then
      if not (Type_checker.is_typed prog) then

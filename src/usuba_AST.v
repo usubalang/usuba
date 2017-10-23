@@ -111,6 +111,7 @@ Record config := {
   share_var   : bool;
   precal_tbl  : bool;
   archi       : arch;
+  bit_per_reg : int;
   bench       : bool;
   ortho       : bool;
   openmp      : int;

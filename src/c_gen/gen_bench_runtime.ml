@@ -18,9 +18,13 @@ Printf.sprintf
 #include <string.h>
 #include <time.h>
 
+/* Do NOT change the order of those define/include */
+
 /* defining \"BENCH\" or \"STD\" */
 /* (will impact the .h functions loaded by the .h) */
 #define BENCH
+#define BITS_PER_REG %d
+#define LOG2_BITS_PER_REG %d
 /* defining \"ORTHO\" or not */
 #define %s
 /* including the architecture specific .h */
@@ -94,6 +98,8 @@ int main() {
 
   return 0;
 }"
+  conf.bit_per_reg
+  (int_of_float (log(float_of_int conf.bit_per_reg) /. log(2.0)))
   (if conf.ortho then "ORTHO" else "NO_ORTHO")
   (c_header conf.archi)
   (join "\n\n" prog_c)
