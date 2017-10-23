@@ -9,6 +9,10 @@ use FindBin;
 
 chdir $FindBin::Bin;
 
+chdir '..';
+system 'make clean && make';
+chdir $FindBin::Bin;
+
 unlink 'input.txt';
 system 'clang -O3 -march=native -o make_input make_input.c';
 system './make_input';
