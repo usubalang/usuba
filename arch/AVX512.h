@@ -33,6 +33,9 @@
 #define ALLOC(size) aligned_alloc(32,size * sizeof(__m512i))
 
 
+#ifndef NO_RUNTIME
+
+
 /* Orthogonalization stuffs */
 static unsigned long mask_l[6] = {
 	0xaaaaaaaaaaaaaaaaUL,
@@ -120,5 +123,6 @@ void unorthogonalize(__m512i *in, unsigned long *out) {
     _mm512_store_si512 ((__m512i*)&(out[i*8]), in[i]);
 }
 
+#endif /* ORTHO */
 
-#endif
+#endif /* NO_RUNTIME */

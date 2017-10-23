@@ -33,6 +33,9 @@
 #define ALLOC(size) malloc(size * sizeof(uint64x2_t))
 
 
+#ifndef NO_RUNTIME
+
+
 /* Orthogonalization stuffs */
 static unsigned long long mask_l[6] = {
 	0xaaaaaaaaaaaaaaaaUL,
@@ -100,5 +103,6 @@ void unorthogonalize(uint64x2_t *in, unsigned long *out) {
     vst1q_u64((unsigned long long*)&out[i],in[i]);
 }
 
-#endif
+#endif /* ORTHO */
 
+#endif /* NO_RUNTIME */

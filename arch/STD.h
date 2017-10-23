@@ -36,6 +36,10 @@
 #define ALLOC(size) malloc(size * sizeof(unsigned long))
 
 
+
+#ifndef NO_RUNTIME
+
+
 /* Orthogonalization stuffs */
 static unsigned long mask_l[6] = {
 	0xaaaaaaaaaaaaaaaaUL,
@@ -98,5 +102,6 @@ void unorthogonalize(unsigned long *in, unsigned long* data) {
 }
 
 
+#endif /* ORTHO */
 
-#endif
+#endif /* NO_RUNTIME */

@@ -19,7 +19,8 @@ let scheduling  = ref true
 let array_opti  = ref true
 let share_var   = ref true
 let precal_tbl  = ref true
-                     
+
+let runtime     = ref true
 let arch        = ref Std
 let bit_per_reg = ref 64
 let bench       = ref false
@@ -93,6 +94,7 @@ let main () =
       "-no-precalc-tbl", Arg.Clear precal_tbl, "Don't use pre-computed tables";
       "-arch", Arg.String (fun s -> arch := str_to_arch s), "Set architecture";
       "-bits-per-reg", Arg.Set_int bit_per_reg, "Set number of bits to use in the registers (with -arch std only, needs to be a multiple of 2)";
+      "-no-runtime", Arg.Clear runtime, "Do not generate a runtime";
       "-bench", Arg.Set bench, "Generate benchmark runtime";
       "-ortho", Arg.Set ortho, "Perform data orthogonalization";
       "-no-ortho", Arg.Clear ortho, "Don't perform data orthogonalization";
@@ -121,6 +123,7 @@ let main () =
                  precal_tbl  = !precal_tbl;
                  archi       = !arch;
                  bit_per_reg = bits_per_reg; (* local var! *)
+                 runtime     = !runtime;
                  bench       = !bench;
                  ortho       = !ortho;
                  openmp      = !openmp;

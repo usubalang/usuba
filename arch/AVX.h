@@ -33,6 +33,9 @@
 #define ALLOC(size) aligned_alloc(32,size * sizeof(__m256i))
 
 
+#ifndef NO_RUNTIME
+
+
 /* Orthogonalization stuffs */
 static unsigned long mask_l[6] = {
 	0xaaaaaaaaaaaaaaaaUL,
@@ -106,5 +109,6 @@ void unorthogonalize(__m256i *in, unsigned long *out) {
     _mm256_store_si256 ((__m256i*)&(out[i*4]), in[i]);
 }
 
+#endif /* ORTHO */
 
-#endif
+#endif /* NO_RUNTIME */

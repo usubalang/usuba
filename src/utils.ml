@@ -28,6 +28,7 @@ let default_conf : config =
     array_opti  = true;
     share_var   = true;
     precal_tbl  = true;
+    runtime     = true;
     archi       = Std;
     bit_per_reg = 64;
     bench       = false;
