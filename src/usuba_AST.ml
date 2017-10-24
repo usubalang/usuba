@@ -43,10 +43,8 @@ type constr =
 
 type var =
 | Var of ident
-| Field of var * arith_expr
-| Index of ident * arith_expr
-| Range of ident * arith_expr * arith_expr
-| Slice of ident * arith_expr list
+| Slice of var * arith_expr list
+| Range of var * arith_expr * arith_expr
 
 type expr =
 | Const of int
@@ -55,12 +53,12 @@ type expr =
 | Not of expr
 | Shift of shift_op * expr * arith_expr
 | Log of log_op * expr * expr
-| Arith of arith_op * expr * expr
 | Fun of ident * expr list
 | Fun_v of ident * arith_expr * expr list
-| Fby of expr * expr * ident option
 | When of expr * constr * ident
 | Merge of ident * (constr * expr) list
+| Arith of arith_op * expr * expr
+| Fby of expr * expr * ident option
 
 type deq =
 | Norec of var list * expr
@@ -93,11 +91,9 @@ type arch =
 | Neon
 | AltiVec
 
-type config = { block_size : int; key_size : int; warnings : bool;
-                verbose : int; verif : bool; type_check : bool;
-                clock_check : bool; check_tbl : bool; inlining : bool;
-                inline_all : bool; cse_cp : bool; scheduling : bool;
-                array_opti : bool; share_var : bool; precal_tbl : bool;
-                archi : arch; bit_per_reg : int; bench : bool;
-                rand_input : bool; runtime : bool; ortho : bool; openmp : 
-                int }
+type config = { block_size : int; key_size : int; warnings : bool; verbose : int;
+                verif : bool; type_check : bool; clock_check : bool; check_tbl : bool;
+                inlining : bool; inline_all : bool; cse_cp : bool; scheduling : bool;
+                array_opti : bool; share_var : bool; precal_tbl : bool; archi : arch;
+                bit_per_reg : int; bench : bool; rand_input : bool; runtime : bool;
+                ortho : bool; openmp : int }
