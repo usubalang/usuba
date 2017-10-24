@@ -1,6 +1,11 @@
-type ident = int
 
-type clock = string
+type ident = { uid : int; name : string }
+
+type clock =
+| Defclock
+| Base
+| On of clock * ident
+| Onot of clock * ident
 
 type log_op =
 | And
@@ -21,62 +26,6 @@ type shift_op =
 | Lrotate
 | Rrotate
 
-type intr_fun =
-| And64
-| Or64
-| Xor64
-| Not64
-| Add64
-| Sub64
-| Mul64
-| Div64
-| Mod64
-| Pand64
-| Por64
-| Pxor64
-| Pandn64
-| Paddb64
-| Paddw64
-| Paddd64
-| Psubb64
-| Psubw64
-| Psubd64
-| Pand128
-| Por128
-| Pxor128
-| Pandn128
-| Paddb128
-| Paddw128
-| Paddd128
-| Paddq128
-| Psubb128
-| Psubw128
-| Psubd128
-| Psubq128
-| VPand256
-| VPor256
-| VPxor256
-| VPandn256
-| VPaddb256
-| VPaddw256
-| VPaddd256
-| VPaddq256
-| VPsubb256
-| VPsubw256
-| VPsubd256
-| VPsubq256
-| VPandd512
-| VPord512
-| VPxord512
-| VPandnd512
-
-type slice_type =
-| Std
-| MMX of int
-| SSE of int
-| AVX of int
-| AVX512
-
 type arith_expr =
 | Const_e of int
 | Var_e of ident
@@ -94,10 +43,8 @@ type constr =
 
 type var =
 | Var of ident
-| Field of var * arith_expr
-| Index of ident * arith_expr
-| Range of ident * arith_expr * arith_expr
-| Slice of ident * arith_expr list
+| Slice of var * arith_expr list
+| Range of var * arith_expr * arith_expr
 
 type expr =
 | Const of int
@@ -107,13 +54,11 @@ type expr =
 | Shift of shift_op * expr * arith_expr
 | Log of log_op * expr * expr
 | Arith of arith_op * expr * expr
-| Intr of intr_fun * expr * expr
 | Fun of ident * expr list
 | Fun_v of ident * arith_expr * expr list
 | Fby of expr * expr * ident option
 | When of expr * constr * ident
 | Merge of ident * (constr * expr) list
-| Nop
 
 type deq =
 | Norec of var list * expr
@@ -137,5 +82,19 @@ type def = { id : ident; p_in : p; p_out : p; opt : def_opt list; node : def_i }
 
 type prog = { nodes : def list }
 
-type config = { inline : bool; gen_z3 : bool; check_tables : bool;
-                verbose : int; warnings : bool }
+type arch =
+| Std
+| MMX
+| SSE
+| AVX
+| AVX512
+| Neon
+| AltiVec
+
+type config = { block_size : int; key_size : int; warnings : bool;
+                verbose : int; verif : bool; type_check : bool;
+                clock_check : bool; check_tbl : bool; inlining : bool;
+                inline_all : bool; cse_cp : bool; scheduling : bool;
+                array_opti : bool; share_var : bool; precal_tbl : bool;
+                archi : arch; bit_per_reg : int; bench : bool;
+                runtime : bool; ortho : bool; openmp : int }

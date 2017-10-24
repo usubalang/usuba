@@ -1,5 +1,8 @@
 Require Import String.
 Require Import Coq.ZArith.ZArith.
+Require Import List.
+Import ListNotations.
+
 
 Require Import Coq.extraction.ExtrOcamlBasic.
 Require Import Coq.extraction.ExtrOcamlZInt.
@@ -38,10 +41,13 @@ Inductive constr :=
 
 Inductive var :=
   | Var (i: ident)
-  | Field (v: var)(ae: arith_expr)
-  | Index (x: ident)(ae: arith_expr)
-  | Range (x: ident)(ae1 ae2: arith_expr)
-  | Slice (x: ident)(aes: list arith_expr).
+(* XXX: update the rest of the code so that it takes a [var] and not an [ident]  *)
+  | Slice (v: var)(aes: list arith_expr)
+  | Range (v: var)(ae1 ae2: arith_expr).
+
+(* XXX: these constructors should desugar to [Slice] *)
+Definition Field (v: var)(ae: arith_expr) := Slice v [ae].
+Definition Index (x: ident)(ae: arith_expr) := Slice (Var x) [ae].
 
 (* XXX: factorize operations in a single case *)
 Inductive expr :=
@@ -51,12 +57,17 @@ Inductive expr :=
   | Not (e: expr) (* special case for bitwise not *)
   | Shift (op: shift_op)(e: expr)(ae: arith_expr)
   | Log  (op: log_op)(e1 e2: expr)
-  | Arith (op: arith_op)(e1 e2: expr)
   | Fun (x: ident)(es: list expr)
+  (* XXX: not yet supported by the semantics *)
   | Fun_v (x: ident)(ae: arith_expr)(es: list expr) (* nodes arrays *)
-  | Fby (e1 e2: expr)(mx: option ident)
+  (* XXX: not yet supported by the semantics *)
   | When (e: expr)(x: constr) (y: ident)
-  | Merge (x: ident)(xs: list (constr * expr)).
+  (* XXX: not yet supported by the semantics *)
+  | Merge (x: ident)(xs: list (constr * expr))
+  (* XXX: how could we bitslice an arithmetic operation (efficiently)? *)
+  | Arith (op: arith_op)(e1 e2: expr)
+  (* XXX: we do not actually support fby *)
+  | Fby (e1 e2: expr)(mx: option ident).
 
 Inductive deq :=
   | Norec (vs: list var)(e: expr)
