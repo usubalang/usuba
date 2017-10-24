@@ -96,4 +96,4 @@ int main() {
   entry
   conf.block_size
   conf.key_size
-  (rename List.(nth prog.nodes (length prog.nodes -1)).id)
+  (rename List.(nth prog.nodes (length prog.nodes -1)).id.name)

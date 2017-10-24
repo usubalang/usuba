@@ -3,7 +3,7 @@ open Utils
        
                       
 let update_hoh hash k1 k2 =
-  match env_fetch hash k1 with
+  match Hashtbl.find_opt hash k1 with
   | Some h -> Hashtbl.replace h k2 true
   | None   -> let h = Hashtbl.create 60 in
               Hashtbl.add h k2 true;
@@ -14,9 +14,9 @@ let make_var_ready (ready:(var,var list * expr) Hashtbl.t)
                    (is_sched:(var list*expr,bool) Hashtbl.t)
                    (var:var) : (var list * expr) list =
   let rec aux (var:var) : (var list * expr) list =
-    match env_fetch ready var with
+    match Hashtbl.find_opt ready var with
     | None      -> []
-    | Some(l,e) -> match env_fetch is_sched (l,e) with
+    | Some(l,e) -> match Hashtbl.find_opt is_sched (l,e) with
                    | Some _ -> []
                    | None   -> let prevs = List.flatten @@
                                              List.map aux (get_used_vars e) in
@@ -43,7 +43,7 @@ let schedule_post (deps:(var,(var,bool) Hashtbl.t) Hashtbl.t)
       List.map (fun x ->
                 List.flatten @@
                   List.map (fun y -> let def = Hashtbl.find defs y in
-                                     match env_fetch is_sched def with
+                                     match Hashtbl.find_opt is_sched def with
                                      | Some _ -> []
                                      | None   -> Hashtbl.add is_sched def true;
                                                  [ def ])
@@ -64,7 +64,7 @@ let schedule_asgn (ready:(var,var list * expr) Hashtbl.t)
                    Hashtbl.add is_sched (l,e) true;
                    schedule := (l,e) :: !schedule;
                    schedule := (schedule_post deps defs is_sched l) @ !schedule
-  | _ -> List.iter (fun x -> match env_fetch is_sched (l,e) with
+  | _ -> List.iter (fun x -> match Hashtbl.find_opt is_sched (l,e) with
                              | Some _ -> ()
                              | None   -> Hashtbl.add ready x (l,e)) l
 
@@ -103,10 +103,10 @@ let schedule_deqs (deqs:deq list) : deq list =
               | _ -> raise (Error "Invalid Rec")) deqs;
 
   List.iter (function
-              | Norec(l,e) -> ( match env_fetch is_sched (l,e) with
+              | Norec(l,e) -> ( match Hashtbl.find_opt is_sched (l,e) with
                                 | Some _ -> ()
                                 | None   -> schedule := (l,e) :: !schedule;
-                                            env_add is_sched (l,e) true)
+                                            Hashtbl.add is_sched (l,e) true)
               | _ -> raise (Error "Invalid Rec")) deqs;
 
   List.rev_map (fun (x,y) -> Norec(x,y)) !schedule

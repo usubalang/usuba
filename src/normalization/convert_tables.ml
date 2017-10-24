@@ -36,7 +36,7 @@ let get_bits (l:int list) (i:int) : int list =
   List.rev @@ List.map (fun x -> x lsr i land 1) l
 
 let tmp_var i j k =
-  "tmp_" ^ (string_of_int i) ^ "_" ^ (string_of_int j) ^ "_" ^ (string_of_int k)
+  fresh_ident ("tmp_" ^ (string_of_int i) ^ "_" ^ (string_of_int j) ^ "_" ^ (string_of_int k))
 
 (* let mux c a b = Log(Xor,[Var a; Log(And,[c; Var b])]) *)
 (* let mux c a b = Log(Xor,[Var a; Log(And,[c;Log(Xor,[Var a;Var b])])]) *)
@@ -110,7 +110,7 @@ let rec rewrite_def (def: def) (conf:config) : def list =
   | Table l -> [ rewrite_single_table id p_in p_out opt l conf ]
   | MultipleTable l ->
      List.mapi (fun i x -> 
-                rewrite_single_table (id ^ (string_of_int i)) p_in p_out opt x conf) l
+                rewrite_single_table (fresh_suffix id (string_of_int i)) p_in p_out opt x conf) l
   | _ -> [ def ]
            
                        

@@ -45,17 +45,17 @@ module Basic_scheduler = struct
                | [Var v] ->
                   let used = get_used_vars e in
                   let pre = List.flatten @@
-                              List.map (fun x -> match env_fetch deflist x with
+                              List.map (fun x -> match Hashtbl.find_opt deflist x with
                                                  | Some e -> Hashtbl.remove deflist x;
                                                              [ [x],e ]
                                                  | None -> []) used in
                   (match pre with
-                   | [] -> env_add deflist (Var v) e; []
+                   | [] -> Hashtbl.add deflist (Var v) e; []
                    | _ -> pre @ [ (p,e) ])
                | _ -> 
                   let used = get_used_vars e in
                   let pre = List.flatten @@
-                              List.map (fun x -> match env_fetch deflist x with
+                              List.map (fun x -> match Hashtbl.find_opt deflist x with
                                                  | Some e -> Hashtbl.remove deflist x;
                                                              [ [x],e ]
                                                  | None -> []) used in
@@ -88,10 +88,10 @@ module Random_scheduler = struct
 
   let schedule_deqs (deqs: deq list) (p_in: p) : deq list =
     let init hash v =
-      match env_fetch hash v with
+      match Hashtbl.find_opt hash v with
       | Some l -> l
       | None -> let l = ref [] in
-                env_add hash v l;
+                Hashtbl.add hash v l;
                 l in
     
     Random.self_init ();
@@ -109,18 +109,18 @@ module Random_scheduler = struct
                                 let l = init imply x in
                                 l := eq :: !l
                               ) prec;
-                    env_add status eq (ref (List.length prec))
+                    Hashtbl.add status eq (ref (List.length prec))
                  | _ -> unreached ()) deqs;
 
     (* Setting successors of p_in to ready *)
     List.iter
       (fun ((id,_),_) ->
        let v = Var id in
-       match env_fetch imply v with
+       match Hashtbl.find_opt imply v with
        | Some l ->
           List.iter
             (fun eq ->
-             match env_fetch status eq with
+             match Hashtbl.find_opt status eq with
              | Some n -> decr n
              | None -> ()) !l
        | None -> ()) p_in;
@@ -134,9 +134,9 @@ module Random_scheduler = struct
       match selected with
       | Norec(p,_) -> List.iter
                         (fun p ->
-                         (match env_fetch imply p with
+                         (match Hashtbl.find_opt imply p with
                           | Some l ->
-                             List.iter (fun x -> match env_fetch status x with
+                             List.iter (fun x -> match Hashtbl.find_opt status x with
                                                  | Some n -> decr n
                                                  | None -> ()) !l
                           | None -> ())) p
@@ -174,7 +174,7 @@ module Depth_first_sched = struct
     with Not_found -> false
   
   let update_hoh hash k1 k2 =
-    match env_fetch hash k1 with
+    match Hashtbl.find_opt hash k1 with
     | Some h -> Hashtbl.replace h k2 true
     | None   -> let h = Hashtbl.create 60 in
                 Hashtbl.add h k2 true;

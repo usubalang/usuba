@@ -15,8 +15,8 @@ let p_to_int_list (p:p) : int list =
                                | Int n -> make_int_list n
                                | _ -> raise (Not_implemented "")) p
 
-let clean_name (name:string) : string =
-  Str.global_replace (Str.regexp "'") "__" name
+let clean_name (id:ident) : string =
+  Str.global_replace (Str.regexp "'") "__" id.name
 
 let get_var_id (v:var) : string =
     match v with
@@ -35,7 +35,7 @@ module Shared = struct
     | Single(_,body) -> body
     | _ -> raise (Error "Non-single node")
                  
-  let rec e_to_z3 rename (e:expr) : string =
+  let rec e_to_z3 (rename: ident -> string) (e:expr) : string =
     let e_to_z3 = e_to_z3 rename in
     match e with
     | Const b -> sprintf "%b" (b = 1)
@@ -107,14 +107,14 @@ module Usuba0 = struct
     | _ -> unreached ()
         
   let gen_z3 (prog:prog) (prefix:string) share_fun : string =
-    let rename (id:ident) : ident = prefix ^ "-" ^ (clean_name id) in
+    let rename (id:ident) : string = prefix ^ "-" ^ (clean_name id) in
     join "\n" (List.map (z3_def rename share_fun) prog.nodes)
          
 end 
                   
 module Usuba = struct
 
-  let rename (id:ident) : ident = "std-" ^ (clean_name id)
+  let rename (id:ident) : string = "std-" ^ (clean_name id)
 
   let all_but_last (l:'a list) : 'a list =
     let rec aux l acc =
@@ -177,19 +177,19 @@ module Usuba = struct
       | Multiple l ->
          join "\n" (List.mapi
                     (fun i (v,b) ->
-                     z3_def { def with id = def.id ^ (string_of_int i);
+                     z3_def { def with id = fresh_suffix def.id (string_of_int i);
                                                node = Single(v,b) }) l)
       | Perm l -> z3_perm def l true
       | MultiplePerm l ->
          join "\n" (List.mapi
                     (fun i l' ->
-                     z3_def { def with id = def.id ^ (string_of_int i);
+                     z3_def { def with id = fresh_suffix def.id (string_of_int i);
                                                node = Perm l'}) l)
       | Table l -> z3_table def l
       | MultipleTable l ->
          join "\n" (List.mapi
                     (fun i l' ->
-                     z3_def { def with id = def.id ^ (string_of_int i);
+                     z3_def { def with id = fresh_suffix def.id (string_of_int i);
                                                node = Table l'}) l)
     in
     converted
@@ -202,13 +202,13 @@ module Usuba = struct
              match def.node with
              | Single _ | Perm _ | Table _ -> [ def ]
              | Multiple l -> List.mapi (fun i (v,b) ->
-                                        { def with id = def.id ^ (string_of_int i);
+                                        { def with id = fresh_suffix def.id (string_of_int i);
                                                    node = Single(v,b) }) l
              | MultiplePerm l -> List.mapi (fun i l' ->
-                                            { def with id = def.id ^ (string_of_int i);
+                                            { def with id = fresh_suffix def.id (string_of_int i);
                                                        node = Perm l' }) l
              | MultipleTable l -> List.mapi (fun i l' ->
-                                             { def with id = def.id ^ (string_of_int i);
+                                             { def with id = fresh_suffix def.id (string_of_int i);
                                                         node = Table l' }) l
             ) prog.nodes }
 
@@ -255,7 +255,7 @@ module Get_funcalls = struct
     | Shift(_,e,_) -> funcalls_expr e
     | Log(_,x,y) -> (funcalls_expr x) @ (funcalls_expr y)
     | Arith(_,x,y) -> (funcalls_expr x) @ (funcalls_expr y)
-    | Fun(f,l) -> f :: (List.flatten @@ List.map funcalls_expr l)
+    | Fun(f,l) -> f.name :: (List.flatten @@ List.map funcalls_expr l)
     | When(e,_,_) -> funcalls_expr e
     | Merge(_,l) -> List.flatten @@ List.map (fun (_,e) -> funcalls_expr e) l
     | Fby _ | Fun_v _ -> assert false
@@ -272,7 +272,7 @@ end
 
                
 let check_eq_def (orig:def) (normed:def) all_nodes (dir:string) =
-  let rename id = (Str.global_replace (Str.regexp "'") "__" id) ^ ".z3" in
+  let rename id = (Str.global_replace (Str.regexp "'") "__" id.name) ^ ".z3" in
   let ua  = Usuba.z3_def orig in
   let ua0 = Usuba0.z3_def (fun id -> "ua0-" ^ (clean_name id)) true normed in
 
@@ -323,12 +323,12 @@ ua0 ua
                                      std_id i arg_list
                                      ua0_id i arg_list) p_out)) in
 
-  let filename = Filename.concat dir ("no_inl_" ^ (rename std_id)) in
+  let filename = Filename.concat dir ("no_inl_" ^ (rename (fresh_ident std_id))) in
   let fh = open_out filename in
   output_string fh cmp_z3;
   close_out fh;
   if (Sys.command ("z3 " ^ filename ^ " > /dev/null")) <> 0 then
-    (fprintf stderr "Z3: compilation of node '%s' is unsound." orig.id;
+    (fprintf stderr "Z3: compilation of node '%s' is unsound." orig.id.name;
      exit 1)
                  
 let z3_1_by_1_no_inline (prog:prog) (filename:string) : unit =
@@ -348,7 +348,7 @@ let z3_1_by_1_no_inline (prog:prog) (filename:string) : unit =
   let all_nodes = Hashtbl.create 100 in
   List.iter
     (fun def ->
-     Hashtbl.add all_nodes def.id
+     Hashtbl.add all_nodes def.id.name
                  (match def.node with
                   | Perm l -> Usuba.z3_perm def l false
                   | _ ->   let in_list = join " " (List.map
@@ -365,7 +365,7 @@ let z3_1_by_1_no_inline (prog:prog) (filename:string) : unit =
              let in_list = join " " (List.map
                                        (fun _ -> "Bool")
                                        (p_to_int_list def.p_in)) in
-             Hashtbl.replace all_nodes def.id
+             Hashtbl.replace all_nodes def.id.name
                              (join "\n"
                                    (List.mapi
                                       (fun i _ ->
@@ -374,7 +374,7 @@ let z3_1_by_1_no_inline (prog:prog) (filename:string) : unit =
                                       (p_to_int_list def.p_out)))) normed.nodes;
 
   let normed_nodes = Hashtbl.create 100 in
-  List.iter (fun def -> Hashtbl.add normed_nodes def.id def) normed.nodes;
+  List.iter (fun def -> env_add normed_nodes def.id def) normed.nodes;
   
   List.iter (fun def -> match env_fetch normed_nodes def.id with
                         | Some norm_def -> check_eq_def def norm_def all_nodes dir

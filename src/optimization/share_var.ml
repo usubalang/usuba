@@ -21,7 +21,7 @@ let rec update_expr env (n:int) (e:expr) : unit =
 let rec replace_expr env (e:expr) : expr =
   match e with
   | Const _ -> e
-  | ExpVar v -> (match env_fetch env v with
+  | ExpVar v -> (match Hashtbl.find_opt env v with
                  | Some x -> ExpVar x
                  | None -> e)
   | Tuple l -> Tuple(List.map (replace_expr env) l)
@@ -38,9 +38,9 @@ let get_live (deqs:deq list) =
   
   List.iter (fun d -> match d with
               | Norec(l,e) -> List.iter (fun x ->
-                                         match env_fetch last_use x with
+                                         match Hashtbl.find_opt last_use x with
                                          | Some _ -> ()
-                                         | None   -> env_add last_use x d) (get_used_vars e)
+                                         | None   -> Hashtbl.add last_use x d) (get_used_vars e)
               | _ -> unreached ()
             ) (List.rev deqs);
 
@@ -53,8 +53,8 @@ let share_deqs (p_in:p) (p_out:p) (deqs:deq list) : deq list =
   let keep     = Hashtbl.create 1000 in
   let age      = Hashtbl.create 1000 in
 
-  List.iter (fun ((id,_),_) -> env_add keep (Var id) true) p_out;
-  List.iter (fun ((id,_),_) -> env_add age  (Var id) (-1)) p_in;
+  List.iter (fun ((id,_),_) -> Hashtbl.add keep (Var id) true) p_out;
+  List.iter (fun ((id,_),_) -> Hashtbl.add age  (Var id) (-1)) p_in;
 
   List.mapi (fun i d ->
              match d with
@@ -70,19 +70,19 @@ let share_deqs (p_in:p) (p_out:p) (deqs:deq list) : deq list =
                                                  || (contains s "sbox_in"))) *) 
                       (List.sort (fun a b -> compare (Hashtbl.find age a)
                                                      (Hashtbl.find age b))
-                                (List.map (fun x -> match env_fetch env x with
+                                (List.map (fun x -> match Hashtbl.find_opt env x with
                                                     | Some y -> y
                                                     | None   -> x)
                                           (List.flatten @@
                                              List.map (fun x ->
-                                                       match env_fetch last_use x with
+                                                       match Hashtbl.find_opt last_use x with
                                                        | Some p when p = d -> [ x ]
                                                        | _ -> []
                                                       ) (get_used_vars e))))) in
                 (* Replace new variables by reusing old ones *)
                 let l' = List.map
                            (fun x ->
-                            match env_fetch keep x with
+                            match Hashtbl.find_opt keep x with
                             | Some _ -> x (* it's an output variable *)
                             | None -> 
                                match !to_reuse with
@@ -93,8 +93,8 @@ let share_deqs (p_in:p) (p_out:p) (deqs:deq list) : deq list =
                                                   (Hashtbl.find last_use x); 
                                   hd
                                | [] -> x) l in
-                List.iter (fun x -> match env_fetch age x with
-                                    | None -> env_add age x i
+                List.iter (fun x -> match Hashtbl.find_opt age x with
+                                    | None -> Hashtbl.add age x i
                                     | Some _ -> ()) l';
                 Norec(l',e')
              | _ -> unreached ()) deqs

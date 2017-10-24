@@ -5,10 +5,12 @@ Require Import Coq.extraction.ExtrOcamlBasic.
 Require Import Coq.extraction.ExtrOcamlZInt.
 Require Import Coq.extraction.ExtrOcamlString.
 
+
 (* XXX: this won't work for actual extraction*)
 Extract Inductive string => "string"  [ """" "^" ].
 
-Definition ident := string.
+Record ident := { uid: positive;
+                  name: string }.
 Inductive clock :=
 | Defclock (* Temporary, for clocks we don't know *)
 | Base
@@ -97,10 +99,10 @@ Inductive arch :=
 
 (* The compiler's configuration *)
 Record config := {
-  block_size  : Z;
-  key_size    : Z;
+  block_size  : N;
+  key_size    : N;
   warnings    : bool;
-  verbose     : Z;
+  verbose     : N;
   verif       : bool;
   type_check  : bool;
   clock_check : bool;
@@ -113,11 +115,11 @@ Record config := {
   share_var   : bool;
   precal_tbl  : bool;
   archi       : arch;
-  bit_per_reg : Z;
+  bit_per_reg : N;
   bench       : bool;
   runtime     : bool;
   ortho       : bool;
-  openmp      : Z;
+  openmp      : N;
 }.
 
 Set Extraction KeepSingleton.

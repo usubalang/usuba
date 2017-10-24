@@ -66,7 +66,7 @@
 %token TOK_DASH
 %token TOK_SLASH
 
-%token <string> TOK_id
+%token <Usuba_AST.ident> TOK_id
 %token <int> TOK_int               
 %token <Usuba_AST.typ> TOK_type
 %token <Usuba_AST.constr> TOK_constr
@@ -148,11 +148,11 @@ exp:
   | f=TOK_id TOK_LPAREN args=explist TOK_RPAREN { Fun(f, args) }
   | f=TOK_id TOK_LBRACKET n=arith_exp TOK_RBRACKET
     TOK_LPAREN args=explist TOK_RPAREN { Fun_v(f, n, args) }
-  | a=exp TOK_WHEN constr=TOK_constr TOK_LPAREN x=TOK_id TOK_RPAREN { When(a,constr,x) }
+  | a=exp TOK_WHEN constr=TOK_constr TOK_LPAREN x=TOK_id TOK_RPAREN { When(a,constr, x) }
   | a=exp TOK_WHENOT constr=TOK_constr TOK_LPAREN x=TOK_id TOK_RPAREN
     (* Transforming Whenot into When. Would be cleaner to do it later, todo.. *)
     { match constr with
-      | True -> When(a,False,x)
+      | True -> When(a,False, x)
       | False -> When(a,True, x) }
   | TOK_MERGE ck=TOK_id c=caselist { Merge(ck,c) }
   | init=exp TOK_FBY follow=exp { Fby(init,follow,None) }
