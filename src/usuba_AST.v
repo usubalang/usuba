@@ -1,12 +1,16 @@
 Require Import String.
+Require Import Coq.ZArith.ZArith.
+
 Require Import Coq.extraction.ExtrOcamlBasic.
-Require Import Coq.extraction.ExtrOcamlIntConv.
+Require Import Coq.extraction.ExtrOcamlZInt.
 Require Import Coq.extraction.ExtrOcamlString.
+
 
 (* XXX: this won't work for actual extraction*)
 Extract Inductive string => "string"  [ """" "^" ].
 
-Definition ident := string.
+Record ident := { uid: positive;
+                  name: string }.
 Inductive clock :=
 | Defclock (* Temporary, for clocks we don't know *)
 | Base
@@ -18,13 +22,13 @@ Inductive arith_op := Add | Mul | Sub | Div | Mod.
 Inductive shift_op := Lshift | Rshift | Lrotate | Rrotate.
 
 Inductive arith_expr :=
-  | Const_e (i: int)
+  | Const_e (i: Z)
   | Var_e (x: ident)
   | Op_e (op: arith_op)(e1 e2: arith_expr).
 
 Inductive typ :=
   | Bool
-  | Int (i: int)
+  | Int (i: N)
   | Nat (* for recurrence variables. Not part of usuba0 normalized *)
   | Array (t: typ)(ae: arith_expr). (* arrays *)
 
@@ -41,7 +45,7 @@ Inductive var :=
 
 (* XXX: factorize operations in a single case *)
 Inductive expr :=
-  | Const (i: int)
+  | Const (i: N)
   | ExpVar (v: var)
   | Tuple (es: list expr)
   | Not (e: expr) (* special case for bitwise not *)
@@ -64,10 +68,10 @@ Definition p := list (ident * typ * clock).
 Inductive def_i :=
   | Single        (n: p)(ds: list deq) (* regular node *)
   | Multiple      (an: list (p * list deq)) (*array of nodes*)
-  | Perm          (pi: list int) (* permutation *)
-  | MultiplePerm  (pis: list (list int)) (* array of perm *)
-  | Table         (t: list int) (* lookup table *)
-  | MultipleTable (ts: list (list int)). (* array of lookup tables *)
+  | Perm          (pi: list N) (* permutation *)
+  | MultiplePerm  (pis: list (list N)) (* array of perm *)
+  | Table         (t: list N) (* lookup table *)
+  | MultipleTable (ts: list (list N)). (* array of lookup tables *)
 
 Inductive def_opt := Inline | No_inline.
 
@@ -95,10 +99,10 @@ Inductive arch :=
 
 (* The compiler's configuration *)
 Record config := {
-  block_size  : int;
-  key_size    : int;
+  block_size  : N;
+  key_size    : N;
   warnings    : bool;
-  verbose     : int;
+  verbose     : N;
   verif       : bool;
   type_check  : bool;
   clock_check : bool;
@@ -111,11 +115,11 @@ Record config := {
   share_var   : bool;
   precal_tbl  : bool;
   archi       : arch;
-  bit_per_reg : int;
+  bit_per_reg : N;
   bench       : bool;
   runtime     : bool;
   ortho       : bool;
-  openmp      : int;
+  openmp      : N;
 }.
 
 Set Extraction KeepSingleton.

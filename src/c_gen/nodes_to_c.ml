@@ -13,7 +13,7 @@ let rename (name:string) : string =
 let var_to_c env (id:ident) : string =
   match env_fetch env id with
   | Some s -> s
-  | None -> rename id
+  | None -> rename id.name
 
 let op_to_c = function
   | And  -> "AND"
@@ -38,7 +38,7 @@ let rec expr_to_c env (e:expr) : string =
                
 let fun_call_to_c env (p:var list) (f:ident) (args: expr list) : string =
   sprintf "  %s(%s,%s);"
-          (rename f) (join "," (List.map (expr_to_c env) args))
+          (rename f.name) (join "," (List.map (expr_to_c env) args))
           (join "," (List.map (function
                                 | Var id -> "&" ^ (var_to_c env id)
                                 | _ -> unreached ()) p))
@@ -56,13 +56,14 @@ let deqs_to_c env (deqs: deq list) : string =
 let params_to_arr (params: p) : string list =
   List.map (fun ((id,typ),_) ->
             match typ with
-            | Bool -> id
-            | Int n -> Printf.sprintf "%s[%d]" id n
+            | Bool -> id.name
+            | Int n -> Printf.sprintf "%s[%d]" id.name n
             | _ -> raise (Not_implemented "Arrays as input")) params
            
 let inputs_to_arr (def:def) =
   let inputs = Hashtbl.create 100 in
   let aux ((id,typ),_) =
+    let id = id.name in
     match typ with
              | Bool -> Hashtbl.add inputs id (Printf.sprintf "%s[0]" (rename id))
              | Int n -> List.iter2
@@ -78,7 +79,9 @@ let inputs_to_arr (def:def) =
     
 let outputs_to_ptr (def:def) =
   let outputs = Hashtbl.create 100 in
-  List.iter (fun ((id,_),_) -> Hashtbl.add outputs id ("*"^(rename id))) def.p_out;
+  List.iter (fun ((id,_),_) -> 
+      let id = id.name in
+      Hashtbl.add outputs id ("*"^(rename id))) def.p_out;
   outputs    
 
 let c_header (arch:arch) : string =
@@ -104,20 +107,20 @@ let def_to_c (orig:def) (def:def) (array:bool) : string =
 
 }"
   (* Node name *)
-  (rename def.id)
+  (rename def.id.name)
 
   (* Parameters *)
   (join "," (if array then
                List.map (fun x -> "DATATYPE " ^ x) (params_to_arr orig.p_in)
              else
-               List.map (fun ((id,_),_) -> "DATATYPE " ^ (rename id)) def.p_in))
+               List.map (fun ((id,_),_) -> "DATATYPE " ^ (rename id.name)) def.p_in))
   (join "," (if array then
                List.map (fun x -> "DATATYPE " ^  x) (params_to_arr orig.p_out)
              else
-               List.map (fun ((id,_),_) -> "DATATYPE* " ^ (rename id)) def.p_out))
+               List.map (fun ((id,_),_) -> "DATATYPE* " ^ (rename id.name)) def.p_out))
 
   (* declaring variabes *)
-  (join "" (List.map (fun ((id,_),_) -> sprintf "  DATATYPE %s;\n" (rename id)) vars))
+  (join "" (List.map (fun ((id,_),_) -> sprintf "  DATATYPE %s;\n" (rename id.name)) vars))
 
   (* body *)
   (deqs_to_c (if array then inputs_to_arr orig else outputs_to_ptr def) body)

@@ -55,7 +55,7 @@ let is_call_free (def:def) : bool =
                                 | _ -> true) body)
   | _ -> false
 
-let known_calls (env:(ident,def*p*deq list) Hashtbl.t) (deqs:deq list) : bool =
+let known_calls (env:(def*p*deq list) env) (deqs:deq list) : bool =
   List.fold_left (&&) true
                  (List.map (function
                              | Norec(_,Fun(f,_))
@@ -64,8 +64,8 @@ let known_calls (env:(ident,def*p*deq list) Hashtbl.t) (deqs:deq list) : bool =
                                                      | None -> false)
                              | _ -> true) deqs)
                     
-let rec get_next_node (env:(ident,def*p*deq list) Hashtbl.t)
-                      (todo:(ident,def*p*deq list) Hashtbl.t) :
+let rec get_next_node (env:(def*p*deq list) env)
+                      (todo:(def*p*deq list) env) :
   def*p*deq list =
   let next = ref "" in
   Hashtbl.iter (fun x (_,_,y) -> if known_calls env y then
@@ -76,11 +76,11 @@ let rec get_next_node (env:(ident,def*p*deq list) Hashtbl.t)
 
 let rec rename_var pref (var:var) : var =
   match var with
-  | Var id -> Var (pref ^ id)
+  | Var id -> Var (fresh_prefix pref id)
   | Field(v,e) -> Field(rename_var pref v,e)
-  | Index(id,e) -> Index(pref ^ id,e)
-  | Range(id,ei,ef) -> Range(pref ^ id,ei,ef)
-  | Slice(id,l) -> Slice(pref ^ id,l)
+  | Index(id,e) -> Index(fresh_prefix pref id,e)
+  | Range(id,ei,ef) -> Range(fresh_prefix pref id,ei,ef)
+  | Slice(id,l) -> Slice(fresh_prefix pref id,l)
                             
 let rec rename_expr pref (e:expr) : expr =
   match e with
@@ -113,25 +113,25 @@ let inline_deqs env (node:def) (deqs: deq list) (conf:config): p*deq list =
          | Norec (pat,e) ->
             ( match e with
               | Fun(f,l) ->
-                 let (def,vars,body) = Hashtbl.find env f in
+                 let (def,vars,body) = Hashtbl.find env f.name in
                  let p_in = def.p_in in
                  let p_out = def.p_out in
 
                  if (not (is_noinline def)) ||  conf.inline_all
                    (* && (should_inline node def) *)then
                    begin
-                     let pref = def.id ^ (string_of_int !cpt) ^ "_" in
+                     let pref = def.id.name ^ ((string_of_int !cpt) ^ "_") in
                      incr cpt;
                      
                      add_vars :=
                        !add_vars @
-                         (List.map (fun ((id,typ),ck) -> (pref^id,typ),ck) p_in) @
-                           (List.map (fun ((id,typ),ck) -> (pref^id,typ),ck) p_out) @
-                             (List.map (fun ((id,typ),ck) -> (pref^id,typ),ck) vars);
+                         (List.map (fun ((id,typ),ck) -> (fresh_prefix pref id,typ),ck) p_in) @
+                           (List.map (fun ((id,typ),ck) -> (fresh_prefix pref id,typ),ck) p_out) @
+                             (List.map (fun ((id,typ),ck) -> (fresh_prefix pref id,typ),ck) vars);
                      
-                     let pat_in  = List.map (fun ((id,typ),ck) -> Var(pref ^ id)) p_in in
+                     let pat_in  = List.map (fun ((id,typ),ck) -> Var(fresh_prefix pref id)) p_in in
                      let pat_out = Tuple(List.map (fun ((id,typ),ck) ->
-                                                   ExpVar(Var (pref ^ id))) p_out) in
+                                                   ExpVar(Var (fresh_prefix pref id))) p_out) in
                      
                      let body = rename_deqs pref body in
                      
@@ -173,7 +173,7 @@ let inline (prog:prog) (conf:config) : prog =
                        | Single _ -> (
                          match env_fetch env x.id with
                          | Some (node,vars,body) -> node
-                         | None -> raise (Error ("Not found: " ^ x.id)))
+                         | None -> raise (Error ("Not found: " ^ x.id.name)))
                        | _ -> x)
                       prog.nodes in
   let no_inlined = List.filter (fun x -> List.exists (function

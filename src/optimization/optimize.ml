@@ -80,7 +80,7 @@ module CSE_CF = struct
                  | Fun(f,l) -> Fun(f,List.map (cse_expr env not_env) l)
                  | Tuple l -> Tuple(List.map (cse_expr env not_env) l)
                  | _ -> e ) in
-    match env_fetch env e' with
+    match Hashtbl.find_opt env e' with
     | Some x -> x
     | None ->
        let e' = fold_expr not_env (
@@ -95,7 +95,7 @@ module CSE_CF = struct
                     | Arith(Mul,x,y) -> Arith(Mul,cse_expr env not_env y,
                                               cse_expr env not_env x)
                     | _ -> e' ) in
-       match env_fetch env e' with
+       match Hashtbl.find_opt env e' with
        | Some x -> x
        | None -> e'
               
@@ -105,18 +105,18 @@ module CSE_CF = struct
      | Not x,[Var v] -> env_add not_env v x
      | _ -> ());
     let p' = pat_to_expr p in
-    match env_fetch env e' with
-    | Some x -> env_add env p' x;
+    match Hashtbl.find_opt env e' with
+    | Some x -> Hashtbl.add env p' x;
                 []
     | None -> if is_dummy_assign e' then
-                ( env_add env p' e';
+                ( Hashtbl.add env p' e';
                   [] )
               else
-                ( env_add env e' p';
+                ( Hashtbl.add env e' p';
                   [p,e'] )
 
   let dont_opti (p:var list) (env:(var, int) Hashtbl.t) : bool =
-    List.length (List.filter (fun x -> match env_fetch env x with
+    List.length (List.filter (fun x -> match Hashtbl.find_opt env x with
                                        | Some _ -> true
                                        | None -> false) p) > 0
                                                   
@@ -127,7 +127,7 @@ module CSE_CF = struct
     let env = Hashtbl.create 40 in
     let not_env = Hashtbl.create 40 in
     let no_opt_env = Hashtbl.create 20 in
-    List.iter (fun x -> env_add no_opt_env x 1) (p_to_pat no_opti);
+    List.iter (fun x -> Hashtbl.add no_opt_env x 1) (p_to_pat no_opti);
     List.flatten @@
       List.map
         (function
@@ -181,7 +181,7 @@ module Clean = struct
       | Rec(_,_,_,d) -> List.iter aux d in
     List.iter aux deqs;
     List.sort_uniq (fun a b -> compare a b)
-                   ( List.filter (fun ((id,_),_) -> match env_fetch env id with
+                   ( List.filter (fun ((id,_),_) -> match Hashtbl.find_opt env id with
                                                   | Some _ -> true
                                                   | None -> false) vars)
 

@@ -2,7 +2,7 @@ open Usuba_AST
 open Utils
 open Rename
 
-exception Undeclared of string
+exception Undeclared of ident
 
 (* ************************************************************************** *)
 
@@ -12,7 +12,7 @@ let rec expand_intn (id: ident) (n: int) : ident list =
   else
     let rec aux i =
       if i > n then []
-      else (id ^ (string_of_int i)) :: (aux (i+1))
+      else (fresh_suffix id (string_of_int i)) :: (aux (i+1))
     in aux 1
          
 let expand_intn_typed (id: ident) (n: int) (ck: clock) =
@@ -33,7 +33,7 @@ let gen_tmp =
   fun () -> incr cpt;
             let var = "_tmp" ^ (string_of_int !cpt) ^ "_" in
             (* new_vars := (var,Bool,"") :: !new_vars; *)
-            var
+            fresh_ident var
 
 (* Note that when this function is called, Var have already been normalized *)
 let rec get_expr_size env_fun l =
@@ -43,8 +43,8 @@ let rec get_expr_size env_fun l =
   | Tuple l -> List.length l
   | Fun(f,_) -> (match env_fetch env_fun f with
                  | Some (_,v) -> v
-                 | None -> if contains f "print" then 1
-                           else raise (Error ("Undeclared " ^ f)))
+                 | None -> if contains f.name "print" then 1
+                           else raise (Error ("Undeclared " ^ f.name)))
   | _ -> raise (Error "Not implemented yet")
 
 (* flatten_expr removes nested tuples *)
@@ -161,14 +161,14 @@ let norm_def_z3 env_fun (def: def) : def =
      env_add_fun def.id def.p_in def.p_out env_fun;
      def
   | MultiplePerm l ->
-     List.iteri (fun i _ -> env_add_fun (def.id ^ (string_of_int i))
+     List.iteri (fun i _ -> env_add_fun (fresh_suffix def.id (string_of_int i))
                                         def.p_in def.p_out env_fun) l;
      def
   | Table _ ->
      env_add_fun def.id def.p_in def.p_out env_fun;
      def
   | MultipleTable l -> 
-     List.iteri (fun i _ -> env_add_fun (def.id ^ (string_of_int i))
+     List.iteri (fun i _ -> env_add_fun (fresh_suffix def.id (string_of_int i))
                                         def.p_in def.p_out env_fun) l;
      def
   | _ -> unreached ()

@@ -47,7 +47,7 @@ let rec rewrite_defs (l: def list) : def list =
   List.iter (fun x -> match x.node with
                       | Perm l -> env_add env x.id l
                       | MultiplePerm l ->
-                         List.iteri (fun i p -> env_add env (x.id^(string_of_int i)) p) l
+                         List.iteri (fun i p -> env_add env (fresh_suffix x.id (string_of_int i)) p) l
                       | _ -> ()) l;
   List.map (fun x -> match x.node with
                      | Single(vars,body) ->

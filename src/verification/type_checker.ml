@@ -37,18 +37,18 @@ let rec p_size (p:p) : int =
   | ((_,typ),_) :: tl -> (typ_size typ) + (p_size tl)
 
                                           
-let make_loc_env (p_in:p) (p_out:p) (vars:p) =
+let make_loc_env (p_in:p) (p_out:p) (vars:p): (typ * int) env =
   let env = Hashtbl.create 100 in
-  List.iter (fun ((id,typ),_) -> Hashtbl.add env id (typ,type_size typ)) p_in;
-  List.iter (fun ((id,typ),_) -> Hashtbl.add env id (typ,type_size typ)) p_out;
-  List.iter (fun ((id,typ),_) -> Hashtbl.add env id (typ,type_size typ)) vars;
+  List.iter (fun ((id,typ),_) -> Hashtbl.add env id.name (typ,type_size typ)) p_in;
+  List.iter (fun ((id,typ),_) -> Hashtbl.add env id.name (typ,type_size typ)) p_out;
+  List.iter (fun ((id,typ),_) -> Hashtbl.add env id.name (typ,type_size typ)) vars;
   env
     
 let make_glob_env (prog:prog) =
   let env = Hashtbl.create 100 in
   List.iter (fun def ->
              Hashtbl.add env
-                         def.id
+                         def.id.name
                          (p_size def.p_in,p_size def.p_out,
                           match def.node with
                           | Single _ | Perm _ | Table _ -> false
@@ -57,7 +57,7 @@ let make_glob_env (prog:prog) =
   env
 
             
-let rec type_arith idx_env (e:arith_expr) : bool =
+let rec type_arith (idx_env: int env) (e:arith_expr) : bool =
   match e with
   | Const_e n -> true
   | Var_e id  -> ( match env_fetch idx_env id with
@@ -66,22 +66,22 @@ let rec type_arith idx_env (e:arith_expr) : bool =
   | Op_e(op,x,y) -> type_arith idx_env x && type_arith idx_env y
   
 
-let size_var loc_env idx_env (v:var) : int =
+let size_var loc_env (idx_env: int env) (v:var) : int =
   match v with
   | Var v' -> ( match env_fetch loc_env v' with
                 | Some(_,size) -> size
-                | None -> raise (Unsound (v' ^ " undeclared")))
+                | None -> raise (Unsound (v'.name ^ " undeclared")))
   | Field(v',i) -> ( match v' with
                      | Var v' -> ( match env_fetch loc_env v' with
                                    | Some _ -> 1
-                                   | None   -> raise (Unsound (v' ^ " undeclared")))
+                                   | None   -> raise (Unsound (v'.name ^ " undeclared")))
                      | Index(v',_) -> ( match env_fetch loc_env v' with
                                         | Some(typ,_) ->
                                            (match typ with
                                             | Array(Int _,_) -> 1
                                             | _ -> raise
-                                                     (Unsound(v' ^ " not an int or not an array")))
-                                        | None -> raise (Unsound (v' ^ " undeclared")))
+                                                     (Unsound(v'.name ^ " not an int or not an array")))
+                                        | None -> raise (Unsound (v'.name ^ " undeclared")))
                      | _ -> raise (Unsound ("Invalid field: " ^ (var_to_str v))))
   | Index(v',e) -> if type_arith idx_env e then
                      match env_fetch loc_env v' with
@@ -130,7 +130,7 @@ let rec type_expr glob_env loc_env idx_env (e:expr) : int * bool =
                                   sum + curr, stat || statcurr) (0,false)
                                  (List.map rec_call l) in
                 ( match env_fetch glob_env f with
-                  | None -> raise (Unsound (f ^ " undeclared"))
+                  | None -> raise (Unsound (f.name ^ " undeclared"))
                   | Some(s_in,s_out,arr) ->
                      if arr then raise (Unsound ("Simple access to array of fun: " ^
                                                    (expr_to_str e)));
@@ -145,7 +145,7 @@ let rec type_expr glob_env loc_env idx_env (e:expr) : int * bool =
                                       sum + curr, stat || statcurr) (0,false)
                                      (List.map rec_call l) in
                     ( match env_fetch glob_env f with
-                      | None -> raise (Unsound (f ^ " undeclared"))
+                      | None -> raise (Unsound (f.name ^ " undeclared"))
                       | Some(s_in,s_out,arr) ->
                          if not arr then raise (Unsound ("Not an array of fun: " ^
                                                            (expr_to_str e)));
@@ -156,7 +156,7 @@ let rec type_expr glob_env loc_env idx_env (e:expr) : int * bool =
   | Fby _ -> raise (Not_implemented "Type checking of Fby")
   | When(e,_,id) -> (match env_fetch loc_env id with
                      | Some _ -> rec_call e
-                     | None   -> raise (Unsound ("Undeclared var " ^ id)))
+                     | None   -> raise (Unsound ("Undeclared var " ^ id.name)))
   | Merge(id,l) ->
      (match env_fetch loc_env id with
       | Some _ -> (match List.map (fun (_,x) -> rec_call x) l with
@@ -169,7 +169,7 @@ let rec type_expr glob_env loc_env idx_env (e:expr) : int * bool =
                                                            ^ (expr_to_str e)))
                                      ) hd tl
                    | _ -> unreached ())
-      | None   -> raise (Unsound ("Undeclared var " ^ id)))
+      | None   -> raise (Unsound ("Undeclared var " ^ id.name)))
                   
                   
                                
@@ -185,15 +185,15 @@ let rec type_deq glob_env loc_env idx_env (deq:deq) : bool =
                     else type_lhs loc_env idx_env lhs = size
   | Rec(i,ei,ef,l) -> if type_arith idx_env ei then
                         if type_arith idx_env ef then
-                          (Hashtbl.add idx_env i 1;
+                          (Hashtbl.add idx_env i.name 1;
                            let res = List.for_all (type_deq glob_env loc_env idx_env) l in
-                           Hashtbl.remove idx_env i;
+                           Hashtbl.remove idx_env i.name;
                            res)
                         else raise (Unsound ("Bad arith: " ^ (arith_to_str ef)))
                        else raise (Unsound ("Bad arith: " ^ (arith_to_str ei)))
     
 
-let type_def glob_env (def:def) : bool =
+let type_def (glob_env: (int * int * bool) env)(def:def) : bool =
   match def.node with
   | Single(vars,body) -> let loc_env = make_loc_env def.p_in def.p_out vars in
                          List.for_all (type_deq glob_env loc_env (Hashtbl.create 10)) body

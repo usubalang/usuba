@@ -2,10 +2,10 @@ open Usuba_AST
 open Utils
 
 let env_fetch env id =
-  try Hashtbl.find env id
-  with Not_found -> raise (Undeclared ("Variable " ^ id))
+  try Hashtbl.find env id.name
+  with Not_found -> raise (Undeclared id)
 let env_update env id v =
-  Hashtbl.replace env id v
+  Hashtbl.replace env id.name v
 
 module Usuba0 = struct 
   let rec interp_expr env_fun env_var (e:expr) : bool list =

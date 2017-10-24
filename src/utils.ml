@@ -5,7 +5,7 @@ exception Error of string
 exception Syntax_error
 exception Not_implemented of string
 exception Empty_list
-exception Undeclared of string
+exception Undeclared of ident
 exception Invalid_param_size
 exception Invalid_operator_call
 exception Break            
@@ -76,16 +76,29 @@ let indent (tab: int) : string =
 let indent_small (tab: int) : string =
   String.make (tab * 2) ' '
 
+let fresh_ident (name: string): ident =
+  (* XXX: glue code, not actually maintaining a freshness of uid *)
+  { uid = -1 ; name = name }
+
+let fresh_suffix (id: ident)(suff: string): ident =
+  fresh_ident (id.name ^ suff)
+
+let fresh_prefix (pref: string)(id: ident): ident =
+  fresh_ident (pref ^ id.name)
+
+let fresh_concat (x: ident)(y: ident): ident =
+  fresh_ident (x.name ^ y.name)
+
 let gen_list (id: string) (n: int) : string list =
   let rec aux n acc =
     if n <= 0 then acc
     else aux (n-1) ((id ^ (string_of_int n))::acc) 
   in aux n []
 
-let gen_list_0 (id: string) (n: int) : string list =
+let gen_list_0 (id: ident) (n: int) : ident list =
   let rec aux n acc =
     if n <= 0 then acc
-    else aux (n-1) ((id ^ (string_of_int (n-1)))::acc) 
+    else aux (n-1) (fresh_suffix id (string_of_int (n-1))::acc)
   in aux n []
 
 let gen_list_int (n: int) : int list =
@@ -113,9 +126,9 @@ let id_generator_var =
   let current = ref 0 in
   fun () -> incr current; !current
 
-let env_fetch (env: ('b, 'a) Hashtbl.t) (name: 'b) : 'a option =
+let env_fetch (env: ('b, 'a) Hashtbl.t) (id: ident) : 'a option =
   try
-    let v = Hashtbl.find env name in Some v
+    let v = Hashtbl.find env id.name in Some v
   with Not_found -> None
 
 let env_contains env key : bool =
@@ -123,11 +136,14 @@ let env_contains env key : bool =
   | Some _ -> true
   | None -> false
     
-let env_add (env: ('a,'b) Hashtbl.t) (key: 'a) (value: 'b) : unit =
-  Hashtbl.add env key value
+(* XXX: keys should be ident, using [uid] as a perfect hash *)
+type 'a env = (string, 'a) Hashtbl.t
+
+let env_add (env: 'a env) (id: ident) (value: 'a) : unit =
+  Hashtbl.add env id.name value
               
 (* Adds the variables vars to env_var *)
-let rec env_add_var (vars: p) (env_var: (ident, int) Hashtbl.t) : unit =
+let rec env_add_var (vars: p) (env_var: int env) : unit =
   match vars with
   | [] -> ()
   | ((id,typ),_)::tl -> ( env_add env_var id
@@ -140,7 +156,7 @@ let rec env_add_var (vars: p) (env_var: (ident, int) Hashtbl.t) : unit =
 
 (* Add a function (name,p_in,p_out) to env_fun *)
 let env_add_fun (name: ident) (p_in: p) (p_out: p)
-                (env_fun: (ident, int list * int) Hashtbl.t) : unit =
+                (env_fun: (int list * int) env) : unit =
   let rec get_param_in_size = function
     | [] -> []
     | ((_,typ),_)::tl -> (match typ with
@@ -164,34 +180,35 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
 
 let rec get_typ (id: ident) (vars: p) =
   match vars with
-  | [] -> print_endline("Type not found for " ^ id);Bool
+  | [] -> print_endline("Type not found for " ^ id.name);Bool
   | ((id',typ),_) :: tl -> if id = id' then typ else get_typ id tl
+
 
 (* converts an uint_n to n bools (with types and clock) *)
 let expand_intn_typed (id: ident) (n: int) (ck: clock) =
   let rec aux i =
     if i > n then []
-    else ((id ^ (string_of_int i), Bool), ck) :: (aux (i+1))
+    else ((fresh_suffix id (string_of_int i), Bool), ck) :: (aux (i+1))
   in aux 1
 
 (* converts an uint_n to n bools (in the format of pat) *)
 let expand_intn_pat (id: ident) (n: int) : var list =
   let rec aux i =
     if i > n then []
-    else (Var (id ^ (string_of_int i))) :: (aux (i+1))
+    else (Var (fresh_suffix id (string_of_int i))) :: (aux (i+1))
   in aux 1
 
 (* converts an uint_n to n bools (in the format of expr) *)
 let rec expand_intn_expr (id: ident) (n: int) : expr list =
   let rec aux i =
     if i > n then []
-    else ExpVar (Var (id ^ (string_of_int i))) :: (aux (i+1))
+    else ExpVar (Var (fresh_suffix id (string_of_int i))) :: (aux (i+1))
   in aux 1
 
 let rec expand_intn_list (id: ident) (n: int) : ident list =
   let rec aux i =
     if i > n then []
-    else (id ^ (string_of_int i)) :: (aux (i+1))
+    else (fresh_suffix id (string_of_int i)) :: (aux (i+1))
   in aux 1
 
 let contains s1 s2 =
@@ -200,10 +217,10 @@ let contains s1 s2 =
   try ignore (Str.search_forward re s1 0); true
   with Not_found -> false
 
-let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
+let rec eval_arith (env: int env) (e:Usuba_AST.arith_expr) : int =
   match e with
   | Const_e n -> n
-  | Var_e id  -> Hashtbl.find env id
+  | Var_e id  -> Hashtbl.find env id.name
   | Op_e(op,x,y) -> let x' = eval_arith env x in
                     let y' = eval_arith env y in
                     match op with
