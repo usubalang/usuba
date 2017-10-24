@@ -24,6 +24,7 @@ let runtime     = ref true
 let arch        = ref Std
 let bit_per_reg = ref 64
 let bench       = ref false
+let rand_input  = ref false
 let ortho       = ref true
 let openmp      = ref 1
 let output      = ref ""
@@ -96,6 +97,7 @@ let main () =
       "-bits-per-reg", Arg.Set_int bit_per_reg, "Set number of bits to use in the registers (with -arch std only, needs to be a multiple of 2)";
       "-no-runtime", Arg.Clear runtime, "Do not generate a runtime";
       "-bench", Arg.Set bench, "Generate benchmark runtime";
+      "-rand-input", Arg.Set rand_input, "Bench on random inputs rather than on a file (implies -bench)";
       "-ortho", Arg.Set ortho, "Perform data orthogonalization";
       "-no-ortho", Arg.Clear ortho, "Don't perform data orthogonalization";
       "-openmp", Arg.Set_int openmp, "Set the number of core to use";
@@ -124,7 +126,8 @@ let main () =
                  archi       = !arch;
                  bit_per_reg = bits_per_reg; (* local var! *)
                  runtime     = !runtime;
-                 bench       = !bench;
+                 bench       = !bench || !rand_input;
+                 rand_input  = !rand_input;
                  ortho       = !ortho;
                  openmp      = !openmp;
                } in

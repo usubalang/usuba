@@ -117,6 +117,7 @@ Record config := {
   archi       : arch;
   bit_per_reg : N;
   bench       : bool;
+  rand_input  : bool;
   runtime     : bool;
   ortho       : bool;
   openmp      : N;

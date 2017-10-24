@@ -31,8 +31,7 @@ Printf.sprintf
 
 /* main function */
 %s
-
-}"
+"
   (c_header conf.archi)
   (join "\n\n" prog_c)
   entry

@@ -22,13 +22,22 @@ Printf.sprintf
 
 /* defining \"BENCH\" or \"STD\" */
 /* (will impact the .h functions loaded by the .h) */
-#define STD
+#define BENCH
 #define BITS_PER_REG %d
 #define LOG2_BITS_PER_REG %d
 /* defining \"ORTHO\" or not */
 #define %s
 /* including the architecture specific .h */
 #include \"%s\"
+
+
+#ifndef INIT_RAND
+#define INIT_RAND 5
+#endif
+unsigned long rand_ulong() {
+  static unsigned long state = INIT_RAND;
+  return state = state * 6364136223846793005 + 1442695040888963407;
+}
 
 /* auxiliary functions */
 %s
@@ -40,6 +49,8 @@ Printf.sprintf
 
 #define BLOCK_SIZE %d
 #define KEY_SIZE   %d
+
+#define INPUT_SIZE 3E8
 
 int main() {
 
@@ -53,22 +64,17 @@ int main() {
       key_ortho[63-i] = key_cst[63-i] = SET_ALL_ONE();
     else
       key_ortho[63-i] = key_cst[63-i] = SET_ALL_ZERO();
-
-
-  // Reading the input file
-  FILE* fh_in = fopen(\"input.txt\",\"rb\");
-  FILE* fh_out = fopen(\"output.txt\",\"wb\");
   
   // Allocating various stuffs
   DATATYPE *plain_ortho  = ALLOC(BLOCK_SIZE);
   DATATYPE *cipher_ortho = ALLOC(BLOCK_SIZE);
   unsigned long *plain_std = ALLOC(REG_SIZE);
+  for (int i = 0; i < REG_SIZE; i++) plain_std[i] = rand_ulong();
 
+  clock_t timer = clock();
+  for (int u = 0; u < INPUT_SIZE / (REG_SIZE * BLOCK_SIZE); u++) {
 
-  while(fread(plain_std, 8, REG_SIZE, fh_in)) {
-
-    for (int i = 0; i < REG_SIZE; i++)
-      plain_std[i] = __builtin_bswap64(plain_std[i]);
+    for (int i = 0; i < REG_SIZE; i++) plain_std[i] ^= rand_ulong();
 
     ORTHOGONALIZE(plain_std, plain_ortho);
     
@@ -77,19 +83,14 @@ int main() {
     
     UNORTHOGONALIZE(cipher_ortho,plain_std);
     
-    for (int i = 0; i < REG_SIZE; i++)
-      plain_std[i] = __builtin_bswap64(plain_std[i]);
-
-    fwrite(plain_std, 8, REG_SIZE, fh_out);
   }
-
-  fclose(fh_in);
-  fclose(fh_out);
+  printf(\"%%f\\n\",INPUT_SIZE / (((double)clock()-timer)/CLOCKS_PER_SEC) / 1000000 / 8);
+  
 
   return 0;
 }"
-  conf.bit_per_reg
-  (int_of_float (log(float_of_int conf.bit_per_reg) /. log(2.0)))
+  (if conf.archi = Std then conf.bit_per_reg else 64)
+  (int_of_float (log(float_of_int (if conf.archi = Std then conf.bit_per_reg else 64)) /. log(2.0)))
   (if conf.ortho then "ORTHO" else "NO_ORTHO")
   (c_header conf.archi)
   (join "\n\n" prog_c)

@@ -32,6 +32,7 @@ let default_conf : config =
     archi       = Std;
     bit_per_reg = 64;
     bench       = false;
+    rand_input  = false;
     ortho       = true;
     openmp      = 1;
   }
