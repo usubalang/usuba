@@ -1,0 +1,6 @@
+make_input
+input.txt
+tmp
+*.pdf
+*.tex
+*.dat

@@ -13,23 +13,46 @@ exception Break
 let unreached () = raise (Error "This point can't be reached")
 
 let default_conf : config =
-  { inline       = true;
-    gen_z3       = false;
-    check_tables = false;
-    verbose      = 0;
-    warnings     = true;}
+  { block_size  = 64;
+    key_size    = 64;
+    warnings    = true;
+    verbose     = 1;
+    verif       = false;
+    type_check  = true;
+    clock_check = true;
+    check_tbl   = false;
+    inlining    = true;
+    inline_all  = false;
+    cse_cp      = true;
+    scheduling  = true;
+    array_opti  = true;
+    share_var   = true;
+    precal_tbl  = true;
+    runtime     = true;
+    archi       = Std;
+    bit_per_reg = 64;
+    bench       = false;
+    ortho       = true;
+    openmp      = 1;
+  }
 
 let print_conf (conf:config) : unit =
   Printf.printf
 "config = {
-  inline       = %B;
+  inlining     = %B;
   gen_z3       = %B;
   check_tables = %B;
   verbose      = %d;
   warnings     = %B;
-}\n" conf.inline conf.gen_z3 conf.check_tables
+}\n" conf.inlining conf.verif conf.check_tbl
 conf.verbose conf.warnings
-                         
+
+               
+let rec map_no_end f = function
+  | [] -> []
+  | [x] -> []
+  | hd::tl -> (f hd) :: (map_no_end f tl)
+
 let rec pow a = function
   | 0 -> 1
   | 1 -> a
@@ -198,8 +221,7 @@ let rec get_used_vars (e:expr) : var list =
   | Tuple l -> List.flatten @@ List.map get_used_vars l
   | Not e -> get_used_vars e
   | Shift(_,e,_) -> get_used_vars e
-  | Log(_,x,y) | Arith(_,x,y) | Intr(_,x,y)
-                                -> (get_used_vars x) @ (get_used_vars y)
+  | Log(_,x,y) | Arith(_,x,y) -> (get_used_vars x) @ (get_used_vars y)
   | Fun(_,l) -> List.flatten @@ List.map get_used_vars l
   | _ -> raise (Error "Not supported expr")
 

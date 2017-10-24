@@ -1,0 +1,15 @@
+
+*.txt
+
+des
+des_ua_kwan_AVX256
+des_ua_kwan_MMX64
+des_ua_kwan_SSE128
+des_ua_kwan_STD64
+des_ua_AVX256
+bench_in_nosched
+bench_in_sched
+bench_noin_nosched
+bench_noin_sched
+
+*_run.c

@@ -1,1 +1,0 @@
-../C/des_ua_kwan_Std64.c

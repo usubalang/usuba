@@ -1,4 +1,0 @@
-Run "./compare.pl" to compare the various algorithms.
-The results will be in "data_no.dat", "data_size.dat" and "data_std.dat",
-and the coresponding graphs will be generated: "speed_no_ortho.pdf",
-"size_code.pdf" and "speed_std.pdf".

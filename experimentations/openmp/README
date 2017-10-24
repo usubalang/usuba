@@ -1,0 +1,2 @@
+Run "perl synthesize.pl" to generate the results (the data will be in "data.dat",
+and the graph "openmp.pdf" will be generated).

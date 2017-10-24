@@ -44,7 +44,6 @@ let rec rename_expr (e:expr) =
   | Log(op,x,y) -> Log(op,rename_expr x,rename_expr y)
   | Arith(op,x,y) -> Arith(op,rename_expr x,rename_expr y)
   | Shift(op,x,y) -> Shift(op,rename_expr x,rename_arith_expr y)
-  | Intr(op,x,y) -> Intr(op,rename_expr x,rename_expr y)
   | Not e -> Not (rename_expr e)
   | Fun(f,l) -> if f = "print" then Fun(f,List.map rename_expr l)
                 else Fun(f^"'",List.map rename_expr l)
@@ -53,8 +52,8 @@ let rec rename_expr (e:expr) =
                           match f with
                           | None -> None
                           | Some id -> Some (id^"'"))
-  | Nop -> Nop
-  | _ -> raise (Not_implemented (Usuba_print.expr_to_str e))
+  | When(e,c,x) -> When(rename_expr e,c,x^"'")
+  | Merge(x,l)  -> Merge(x^"'",List.map (fun (c,e) -> c,rename_expr e) l)
 
 
                       

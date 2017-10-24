@@ -8,37 +8,16 @@ Require Import Coq.extraction.ExtrOcamlString.
 (* XXX: this won't work for actual extraction*)
 Extract Inductive string => "string"  [ """" "^" ].
 
-Definition ident := positive.
-Definition clock := string.
+Definition ident := string.
+Inductive clock :=
+| Defclock (* Temporary, for clocks we don't know *)
+| Base
+| On (ck:clock) (x:ident)
+| Onot (ck:clock) (x:ident).
 
 Inductive log_op := And | Or | Xor | Andn.
 Inductive arith_op := Add | Mul | Sub | Div | Mod.
 Inductive shift_op := Lshift | Rshift | Lrotate | Rrotate.
-Inductive intr_fun :=
-    (* General purpose registers *)
-    | And64 | Or64 | Xor64 | Not64
-    | Add64 | Sub64 | Mul64 | Div64 | Mod64
-    (* MMX *)
-    | Pand64 | Por64 | Pxor64 | Pandn64
-    | Paddb64 | Paddw64 | Paddd64
-    | Psubb64 | Psubw64 | Psubd64
-    (* SSE *)
-    | Pand128 | Por128 | Pxor128 | Pandn128
-    | Paddb128 | Paddw128 | Paddd128 | Paddq128
-    | Psubb128 | Psubw128 | Psubd128 | Psubq128
-    (* AVX *) 
-    | VPand256 | VPor256 | VPxor256 | VPandn256
-    | VPaddb256 | VPaddw256 | VPaddd256 | VPaddq256
-    | VPsubb256 | VPsubw256 | VPsubd256 | VPsubq256
-    (* AVX-512 *)
-    | VPandd512 | VPord512 | VPxord512 | VPandnd512.
-
-Inductive slice_type :=
-  | Std (* 64-bit *)
-  | MMX (i: N)
-  | SSE (i: N)
-  | AVX (i: N)
-  | AVX512.
 
 Inductive arith_expr :=
   | Const_e (i: Z)
@@ -71,13 +50,11 @@ Inductive expr :=
   | Shift (op: shift_op)(e: expr)(ae: arith_expr)
   | Log  (op: log_op)(e1 e2: expr)
   | Arith (op: arith_op)(e1 e2: expr)
-  | Intr (i: intr_fun)(e1 e2: expr)
   | Fun (x: ident)(es: list expr)
   | Fun_v (x: ident)(ae: arith_expr)(es: list expr) (* nodes arrays *)
   | Fby (e1 e2: expr)(mx: option ident)
   | When (e: expr)(x: constr) (y: ident)
-  | Merge (x: ident)(xs: list (constr * expr))
-  | Nop.
+  | Merge (x: ident)(xs: list (constr * expr)).
 
 Inductive deq :=
   | Norec (vs: list var)(e: expr)
@@ -108,17 +85,43 @@ Record prog := {
   nodes : list def;
 }.
 
+
+Inductive arch :=
+  | Std
+  | MMX
+  | SSE
+  | AVX
+  | AVX512
+  | Neon
+  | AltiVec.
+
 (* The compiler's configuration *)
 Record config := {
-  inline       : bool;
-  gen_z3       : bool;
-  check_tables : bool;
-  verbose      : Z;
-  warnings     : bool;
+  block_size  : Z;
+  key_size    : Z;
+  warnings    : bool;
+  verbose     : Z;
+  verif       : bool;
+  type_check  : bool;
+  clock_check : bool;
+  check_tbl   : bool;
+  inlining    : bool;
+  inline_all  : bool;
+  cse_cp      : bool;
+  scheduling  : bool;
+  array_opti  : bool;
+  share_var   : bool;
+  precal_tbl  : bool;
+  archi       : arch;
+  bit_per_reg : Z;
+  bench       : bool;
+  runtime     : bool;
+  ortho       : bool;
+  openmp      : Z;
 }.
 
 Set Extraction KeepSingleton.
 Extraction "usuba_AST.ml" 
            config prog def def_opt def_i p deq
-           expr var typ arith_expr slice_type
-           intr_fun shift_op arith_op log_op clock ident.
+           expr var typ arith_expr shift_op
+           arith_op log_op clock ident arch.
