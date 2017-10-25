@@ -17,6 +17,7 @@ Printf.sprintf
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdint.h>
 
 /* Do NOT change the order of those define/include */
 
@@ -44,7 +45,7 @@ Printf.sprintf
 int main() {
 
   // Hardcoding a key for now...
-  unsigned long key_std = 0x133457799BBCDFF1;
+  uint64_t key_std = 0x133457799BBCDFF1;
   DATATYPE *key_ortho = ALLOC(KEY_SIZE);
   DATATYPE *key_cst   = ALLOC(KEY_SIZE);
 
@@ -62,7 +63,7 @@ int main() {
   // Allocating various stuffs
   DATATYPE *plain_ortho  = ALLOC(BLOCK_SIZE);
   DATATYPE *cipher_ortho = ALLOC(BLOCK_SIZE);
-  unsigned long *plain_std = ALLOC(REG_SIZE);
+  uint64_t *plain_std = ALLOC(REG_SIZE);
 
 
   while(fread(plain_std, 8, REG_SIZE, fh_in)) {

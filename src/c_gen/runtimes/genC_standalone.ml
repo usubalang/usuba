@@ -17,6 +17,7 @@ Printf.sprintf
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdint.h>
 
 /* Do NOT change the order of those define/include */
 

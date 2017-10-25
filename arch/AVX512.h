@@ -8,6 +8,7 @@
 /* Including headers */
 #include <stdlib.h>
 #include <x86intrin.h>
+#include <stdint.h>
 
 /* Defining 0 and 1 */
 #define ZERO _mm512_setzero_si512()
@@ -37,7 +38,7 @@
 
 
 /* Orthogonalization stuffs */
-static unsigned long mask_l[6] = {
+static uint64_t mask_l[6] = {
 	0xaaaaaaaaaaaaaaaaUL,
 	0xccccccccccccccccUL,
 	0xf0f0f0f0f0f0f0f0UL,
@@ -46,7 +47,7 @@ static unsigned long mask_l[6] = {
 	0xffffffff00000000UL
 };
 
-static unsigned long mask_r[6] = {
+static uint64_t mask_r[6] = {
 	0x5555555555555555UL,
 	0x3333333333333333UL,
 	0x0f0f0f0f0f0f0f0fUL,
@@ -56,15 +57,15 @@ static unsigned long mask_r[6] = {
 };
 
 
-void real_ortho(unsigned long data[]) {
+void real_ortho(uint64_t data[]) {
   for (int i = 0; i < 6; i ++) {
     int n = (1UL << i);
     for (int j = 0; j < 64; j += (2 * n))
       for (int k = 0; k < n; k ++) {
-        unsigned long u = data[j + k] & mask_l[i];
-        unsigned long v = data[j + k] & mask_r[i];
-        unsigned long x = data[j + n + k] & mask_l[i];
-        unsigned long y = data[j + n + k] & mask_r[i];
+        uint64_t u = data[j + k] & mask_l[i];
+        uint64_t v = data[j + k] & mask_r[i];
+        uint64_t x = data[j + n + k] & mask_l[i];
+        uint64_t y = data[j + n + k] & mask_r[i];
         data[j + k] = u | (x >> n);
         data[j + n + k] = (v << n) | y;
       }
@@ -73,7 +74,7 @@ void real_ortho(unsigned long data[]) {
 
 #ifdef ORTHO
 
-void orthogonalize(unsigned long* data, __m512i* out) {
+void orthogonalize(uint64_t* data, __m512i* out) {
   real_ortho(data);
   real_ortho(&(data[64]));
   real_ortho(&(data[128]));
@@ -87,9 +88,9 @@ void orthogonalize(unsigned long* data, __m512i* out) {
                               data[256+i], data[320+i], data[384+i], data[448+i]);
 }
 
-void unorthogonalize(__m512i *in, unsigned long* data) {
+void unorthogonalize(__m512i *in, uint64_t* data) {
   for (int i = 0; i < 64; i++) {
-    unsigned long tmp[8];
+    uint64_t tmp[8];
     _mm512_store_si512 ((__m512i*)tmp, in[i]);
     data[i] = tmp[0];
     data[64+i] = tmp[1];
@@ -112,13 +113,13 @@ void unorthogonalize(__m512i *in, unsigned long* data) {
 
 #else
 
-void orthogonalize(unsigned long *in, __m512i *out) {
+void orthogonalize(uint64_t *in, __m512i *out) {
   for (int i = 0; i < 64; i++)
     out[i] = _mm512_set_epi64(in[i*4], in[i*4+1], in[i*4+2], in[i*4+3],
                               in[i*4+4], in[i*4+5], in[i*4+6], in[i*4+7]);
 }
 
-void unorthogonalize(__m512i *in, unsigned long *out) {
+void unorthogonalize(__m512i *in, uint64_t *out) {
   for (int i = 0; i < 64; i++)
     _mm512_store_si512 ((__m512i*)&(out[i*8]), in[i]);
 }

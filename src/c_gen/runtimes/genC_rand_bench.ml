@@ -17,6 +17,7 @@ Printf.sprintf
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdint.h>
 
 /* Do NOT change the order of those define/include */
 
@@ -34,8 +35,8 @@ Printf.sprintf
 #ifndef INIT_RAND
 #define INIT_RAND 5
 #endif
-unsigned long rand_ulong() {
-  static unsigned long state = INIT_RAND;
+uint64_t rand_ulong() {
+  static uint64_t state = INIT_RAND;
   return state = state * 6364136223846793005 + 1442695040888963407;
 }
 
@@ -55,7 +56,7 @@ unsigned long rand_ulong() {
 int main() {
 
   // Hardcoding a key for now...
-  unsigned long key_std = 0x133457799BBCDFF1;
+  uint64_t key_std = 0x133457799BBCDFF1;
   DATATYPE *key_ortho = ALLOC(KEY_SIZE);
   DATATYPE *key_cst   = ALLOC(KEY_SIZE);
 
@@ -68,7 +69,7 @@ int main() {
   // Allocating various stuffs
   DATATYPE *plain_ortho  = ALLOC(BLOCK_SIZE);
   DATATYPE *cipher_ortho = ALLOC(BLOCK_SIZE);
-  unsigned long *plain_std = ALLOC(REG_SIZE);
+  uint64_t *plain_std = ALLOC(REG_SIZE);
   for (int i = 0; i < REG_SIZE; i++) plain_std[i] = rand_ulong();
 
   clock_t timer = clock();
@@ -84,7 +85,7 @@ int main() {
     UNORTHOGONALIZE(cipher_ortho,plain_std);
     
   }
-  printf(\"%%f\\n\",INPUT_SIZE / (((double)clock()-timer)/CLOCKS_PER_SEC) / 1000000 / 8);
+  printf(\"%%f\\n\",INPUT_SIZE / (((double)clock()-timer)/CLOCKS_PER_SEC) / 1e6 / 8);
   
 
   return 0;

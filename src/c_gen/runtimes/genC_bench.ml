@@ -17,6 +17,7 @@ Printf.sprintf
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <stdint.h>
 
 /* Do NOT change the order of those define/include */
 
@@ -44,7 +45,7 @@ Printf.sprintf
 int main() {
 
   // Hardcoding a key for now...
-  unsigned long key_std = 0x133457799BBCDFF1;
+  uint64_t key_std = 0x133457799BBCDFF1;
   DATATYPE *key_ortho = ALLOC(KEY_SIZE);
   DATATYPE *key_cst   = ALLOC(KEY_SIZE);
 
@@ -64,7 +65,7 @@ int main() {
   // Allocating various stuffs
   DATATYPE *plain_ortho  = ALLOC(BLOCK_SIZE);
   DATATYPE *cipher_ortho = ALLOC(BLOCK_SIZE);
-  unsigned long *plain_std = ALLOC(size);
+  uint64_t *plain_std = ALLOC(size);
 
   // Storing the input file
   fread(plain_std,size,1,fh_in);
@@ -74,7 +75,7 @@ int main() {
   for (int u = 0; u < 16; u++) {
     for (int x = 0; x < size/8; x += REG_SIZE) {
   
-      unsigned long* loc_std = plain_std + x;
+      uint64_t* loc_std = plain_std + x;
     
       for (int i = 0; i < REG_SIZE; i++)
         loc_std[i] = __builtin_bswap64(loc_std[i]);
@@ -90,7 +91,7 @@ int main() {
         loc_std[i] = __builtin_bswap64(loc_std[i]);
     }
   }
-  printf(\"%%f\\n\",((double)clock()-timer)/CLOCKS_PER_SEC);
+  printf(\"%%f\\n\",size*16/(((double)clock()-timer)/CLOCKS_PER_SEC)/1e6);
   
   FILE* fh_out = fopen(\"output.txt\",\"wb\");
   fwrite(plain_std,size,1,fh_out);

@@ -19,6 +19,7 @@ Printf.sprintf
 #include <time.h>
 #include <omp.h>
 #include <inttypes.h>
+#include <stdint.h>
 
 /* Do NOT change the order of those define/include */
 
@@ -60,8 +61,8 @@ void timespec_diff(struct timespec *start, struct timespec *stop,
     return;
 }
 
-void single_%s (unsigned long *buff_in, unsigned long* buff_out,
-                 DATATYPE *key_ortho, unsigned long size) {
+void single_%s (uint64_t *buff_in, uint64_t* buff_out,
+                 DATATYPE *key_ortho, uint64_t size) {
   DATATYPE *plain_ortho  = ALLOC(BLOCK_SIZE);
   DATATYPE *cipher_ortho = ALLOC(BLOCK_SIZE);
 
@@ -69,8 +70,8 @@ void single_%s (unsigned long *buff_in, unsigned long* buff_out,
   
   for (int a = 0; a < 50; a++)
   for (int i = 0; i < size; i += REG_SIZE) {
-    unsigned long* plain_std  = &(buff_in[size*id+i]);
-    unsigned long* cipher_std = &(buff_out[size*id+i]);
+    uint64_t* plain_std  = &(buff_in[size*id+i]);
+    uint64_t* cipher_std = &(buff_out[size*id+i]);
     
     for (int i = 0; i < REG_SIZE; i++)
       plain_std[i] = __builtin_bswap64(plain_std[i]);
@@ -89,7 +90,7 @@ void single_%s (unsigned long *buff_in, unsigned long* buff_out,
 int main() {
 
   // Hardcoding a key for now...
-  unsigned long key_std = 0x133457799BBCDFF1;
+  uint64_t key_std = 0x133457799BBCDFF1;
   DATATYPE *key_ortho = ALLOC(KEY_SIZE);
   DATATYPE *key_cst   = ALLOC(KEY_SIZE);
 
@@ -106,8 +107,8 @@ int main() {
   long size = ftell(fh_in);
   rewind(fh_in);
   
-  unsigned long* buff_in  = ALLOC(size);
-  unsigned long* buff_out = ALLOC(size);
+  uint64_t* buff_in  = ALLOC(size);
+  uint64_t* buff_out = ALLOC(size);
 
   // Storing the input file
   fread(buff_in,size,1,fh_in);
@@ -119,7 +120,7 @@ int main() {
     clock_gettime(CLOCK_MONOTONIC,&ini);
     #pragma omp parallel num_threads(i)
     {
-      single_%s(buff_in,buff_out,key_ortho,size/i/sizeof(unsigned long));
+      single_%s(buff_in,buff_out,key_ortho,size/i/sizeof(uint64_t));
     }
     #pragma omp barrier
     struct timespec end;
