@@ -5,7 +5,7 @@ use v5.18;
 use Cwd;
 use File::Path qw( remove_tree make_path );
 use File::Copy;
-use List::Util qw( max );
+use List::Util qw( min );
 use Math::Round;
 use FindBin;
 
@@ -56,23 +56,23 @@ talk "Running the benchmarks";
 my %times;
 for (1 .. $nb_run) {
     for my $cc (@cc) {
-        $times{w}{$cc} += `./$cc-w`;
-        $times{n}{$cc} += `./$cc-no`;
+        $times{w}{$cc} += (split ' ', `./$cc-w`)[0];
+        $times{n}{$cc} += (split ' ', `./$cc-no`)[0];
     }
 }
 
-# Looking for the maximum value
-my $max = 0;
+# Looking for the minimum value
+my $min = 1e15;
 for my $exp (keys %times) {
     for my $cc (keys %{$times{$exp}}) {
         $times{$exp}{$cc} /= $nb_run;
-        $max = max($max,$times{$exp}{$cc});
+        $min = min($min,$times{$exp}{$cc});
     }
 }
 # Normalizing the results
 for my $exp (keys %times) {
     for my $cc (keys %{$times{$exp}}) {
-        $times{$exp}{$cc} = 1 / ($times{$exp}{$cc}/$max);
+        $times{$exp}{$cc} = $times{$exp}{$cc}/$min;
     }
 }
 

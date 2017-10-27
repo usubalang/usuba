@@ -5,8 +5,6 @@ use v5.18;
 use Cwd;
 use File::Path qw( remove_tree make_path );
 use File::Copy;
-use List::Util qw( max );
-use Math::Round;
 use FindBin;
 
 my $nb_run = 30;
@@ -57,23 +55,21 @@ talk "Running the benchmarks";
 my %times;
 for (1 .. $nb_run) {
     while (my ($arch,$name) = each %arch) {
-        $times{$name} += `./$arch`;
+        my ($tot,$ortho) = split ' ', `./$arch`;
+        $times{tot}{$name} += $tot / $nb_run;
+        $times{ortho}{$name} += $ortho / $nb_run;
     }
 }
 
 
-# Fixing the throughput values
-my $tot_size = -s 'input.txt';
-for my $name (values %arch) {
-    $times{$name} = sprintf "%d", ($tot_size*16) * $nb_run / $times{$name} / 1_000_000;
-}
-$times{Standard} = 75;
+$times{tot}{Standard} = 75;
+$times{ortho}{Standard} = 0;
 
 # Printing the results
 chdir "..";
 open my $FH, '>', $outfile or die $!;
-for my $arch (sort {$times{$a} <=> $times{$b}} keys %times) {
-    say $FH qq{"$arch" $times{$arch}};
+for my $arch (sort {$times{tot}{$a} <=> $times{tot}{$b}} keys %{$times{tot}}) {
+    printf $FH qq{"$arch" %d %d\n},$times{tot}{$arch}, $times{ortho}{$arch};
 }
 close $FH;
 

@@ -5,8 +5,6 @@ use v5.18;
 use Cwd;
 use File::Path qw( remove_tree make_path );
 use File::Copy;
-use List::Util qw( max );
-use Math::Round;
 use FindBin;
 
 my $nb_run = 30;
@@ -61,22 +59,18 @@ talk "Running the benchmarks";
 my %times;
 for (1 .. $nb_run) {
     for my $backend (keys %arch) {
-        $times{$backend} += `./$backend`
+        my ($tot,$ortho) = split ' ', `./$backend`;
+        $times{tot}{$backend} += $tot / $nb_run;
+        $times{ortho}{$backend} += $ortho / $nb_run;
     }
 }
 
 
-# Fixing the throughput values
-my $tot_size = -s 'input.txt';
-for my $backend (keys %times) {
-    $times{$backend} = sprintf "%d", ($tot_size*16) * $nb_run / $times{$backend} / 1_000_000;
-}
-
 # Printing the results
 chdir "..";
 open my $FH, '>', $outfile or die $!;
-for my $backend (sort {$times{$a} <=> $times{$b}} keys %times) {
-    say $FH qq{"$backend" $times{$backend}};
+for my $backend (sort {$times{tot}{$a} <=> $times{tot}{$b}} keys %{$times{tot}}) {
+    printf $FH qq{"$backend" %d %d\n},$times{tot}{$backend}-$times{ortho}{$backend},$times{ortho}{$backend};
 }
 close $FH;
 
@@ -86,4 +80,4 @@ remove_tree "tmp";
 
 
 # Generating pdf
-system 'gnuplot plot2.txt'
+system 'Rscript plot.r'

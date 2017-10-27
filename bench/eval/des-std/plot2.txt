@@ -27,4 +27,10 @@ set linetype 6 lc rgb '#008000'
 
 #plot 'data_std.dat' using 2:xtic(1) with boxes lt rgb "black", '' using 0:($2+15):2 with labels
 
-plot 'data2.dat' using 0:2:($0+1):xtic(1) with boxes linecolor variable title '' , '' using 0:($2+15):2 with labels title ''  #,-1 lc rgb '#DC143C' lw 3 title 'Standard (non-bitsliced)' ,-1 lc rgb '#008000' lw 3 title "Usuba"
+#plot 'data2.dat' using 0:2:($0+1):xtic(1) with boxes linecolor variable title '' , '' using 0:($2+15):2 with labels title ''  #,-1 lc rgb '#DC143C' lw 3 title 'Standard (non-bitsliced)' ,-1 lc rgb '#008000' lw 3 title "Usuba"
+
+set style data histograms
+set style histogram rowstacked
+set boxwidth 1 relative
+set style fill solid 1.0 border -1
+plot 'data2.dat' using 3 t "Var 1", '' using 2:xticlabels(1) t "Var 2"

@@ -5,7 +5,7 @@ use v5.18;
 use Cwd;
 use File::Path qw( remove_tree make_path );
 use File::Copy;
-use List::Util qw( max );
+use List::Util qw( min );
 use Math::Round;
 use FindBin;
 
@@ -59,19 +59,18 @@ talk "Running the benchmarks";
 my %times;
 for (1 .. $nb_run) {
     for my $file (keys %files) {
-        $times{$file}  += `./$file`;
+        $times{$file}  += (split' ',`./$file`)[0] / $nb_run;
     }
 }
 
-# Looking for the maximum value
-my $max = 0;
+# Looking for the minimum value
+my $min = 1e15;
 for my $file (keys %times) {
-    $times{$file} /= $nb_run;
-    $max = max($max,$times{$file});
+    $min = min($min,$times{$file});
 }
 # Normalizing the results
 for my $file (keys %times) {
-    $times{$file} = sprintf "%.2f", 1 / ($times{$file}/$max);
+    $times{$file} = sprintf "%.2f", $times{$file}/$min;
 }
 my $best = $times{'usuba-clang'};
 

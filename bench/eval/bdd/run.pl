@@ -5,8 +5,6 @@ use v5.18;
 use Cwd;
 use File::Path qw( remove_tree make_path );
 use File::Copy;
-use List::Util qw( max );
-use Math::Round;
 use FindBin;
 
 my $nb_run = 30;
@@ -53,14 +51,13 @@ talk "Running the benchmarks";
 my %times;
 for (1 .. $nb_run) {
     for my $file (@files) {
-        $times{$file} += `./$file`;
+        $times{$file} += (split ' ',`./$file`)[0] / $nb_run;
     }
 }
 
 # Fixing the throughput values
-my $tot_size = -s 'input.txt';
 for my $name (keys %times) {
-    $times{$name} = sprintf "%d", ($tot_size*16) * $nb_run / $times{$name} / 1_000_000;
+    $times{$name} = sprintf "%d", $times{$name};
 }
 
 # Printing the results

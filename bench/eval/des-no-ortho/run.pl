@@ -5,8 +5,6 @@ use v5.18;
 use Cwd;
 use File::Path qw( remove_tree make_path );
 use File::Copy;
-use List::Util qw( max );
-use Math::Round;
 use FindBin;
 
 my $nb_run = 30;
@@ -59,7 +57,7 @@ talk "Running the benchmarks";
 my %times;
 for (1 .. $nb_run) {
     while (my ($arch,$name) = each %arch) {
-        $times{$name} += `./$arch`;
+        $times{$name} += (split ' ', `./$arch`)[0] / $nb_run;
     }
 }
 
@@ -67,7 +65,7 @@ for (1 .. $nb_run) {
 # Fixing the throughput values
 my $tot_size = -s 'input.txt';
 for my $name (values %arch) {
-    $times{$name} = sprintf "%d", ($tot_size*16) * $nb_run / $times{$name} / 1_000_000;
+    $times{$name} = sprintf "%d", $times{$name};
 }
 
 # Printing the results

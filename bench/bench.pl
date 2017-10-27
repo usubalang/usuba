@@ -18,10 +18,12 @@ system 'clang -O3 -march=native -o make_input make_input.c';
 system './make_input';
 unlink 'make_input';
 
-for (glob "opti/*/run.pl") {
-    system "./$_";
-}
+system "./opti/array/run.pl";
+system "./opti/CSE-CP/run.pl";
+system "./opti/inlining/run.pl";
+system "./opti/scheduling/run.pl";
 
-for (glob "eval/*/run.pl") {
-    system "./$_";
-}
+system "./eval/bdd/run.pl";
+system "./eval/des-no-ortho/run.pl";
+system "./eval/des-std/run.pl";
+system "./eval/des-std/run2.pl";
