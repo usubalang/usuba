@@ -73,21 +73,28 @@ int main() {
   for (int i = 0; i < REG_SIZE; i++) plain_std[i] = rand_ulong();
 
   clock_t timer = clock();
+  clock_t ortho_ck = 0;
   for (int u = 0; u < INPUT_SIZE / (REG_SIZE * BLOCK_SIZE); u++) {
 
     for (int i = 0; i < REG_SIZE; i++) plain_std[i] ^= rand_ulong();
 
+    ortho_ck -= clock();
     ORTHOGONALIZE(plain_std, plain_ortho);
+    ortho_ck += clock();
     
     memcpy(key_ortho,key_cst,KEY_SIZE*sizeof *key_cst);
     %s(plain_ortho, key_ortho, cipher_ortho);
-    
-    UNORTHOGONALIZE(cipher_ortho,plain_std);
-    
-  }
-  printf(\"%%f\\n\",INPUT_SIZE / (((double)clock()-timer)/CLOCKS_PER_SEC) / 1e6 / 8);
-  
 
+    ortho_ck -= clock();
+    UNORTHOGONALIZE(cipher_ortho,plain_std);
+    ortho_ck += clock(); 
+
+  }
+  timer = clock() - timer;
+  double speed = INPUT_SIZE / (((double)clock()-timer)/CLOCKS_PER_SEC) / 1e6 / 8;
+  double ortho_time = speed * ortho_ck / timer;
+  printf(\"%%.2f %%.2f\\n\",speed,ortho_time);
+  
   return 0;
 }"
   (if conf.archi = Std then conf.bit_per_reg else 64)

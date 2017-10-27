@@ -42,6 +42,10 @@ Printf.sprintf
 #define BLOCK_SIZE %d
 #define KEY_SIZE   %d
 
+#ifndef NB_LOOP
+#define NB_LOOP 16
+#endif
+
 int main() {
 
   // Hardcoding a key for now...
@@ -68,11 +72,15 @@ int main() {
   uint64_t *plain_std = ALLOC(size);
 
   // Storing the input file
-  fread(plain_std,size,1,fh_in);
+  if (fread(plain_std,size,1,fh_in) != 1) {
+     fprintf(stderr, \"Read error.\");
+     exit(EXIT_FAILURE);
+  }
   fclose(fh_in);
 
   clock_t timer = clock();
-  for (int u = 0; u < 16; u++) {
+  clock_t ortho_ck = 0;
+  for (int u = 0; u < NB_LOOP; u++) {
     for (int x = 0; x < size/8; x += REG_SIZE) {
   
       uint64_t* loc_std = plain_std + x;
@@ -80,18 +88,25 @@ int main() {
       for (int i = 0; i < REG_SIZE; i++)
         loc_std[i] = __builtin_bswap64(loc_std[i]);
 
+      ortho_ck -= clock();
       ORTHOGONALIZE(loc_std, plain_ortho);
+      ortho_ck += clock();
     
       memcpy(key_ortho,key_cst,KEY_SIZE*sizeof *key_cst);
       %s(plain_ortho, key_ortho, cipher_ortho);
     
+      ortho_ck -= clock();
       UNORTHOGONALIZE(cipher_ortho,loc_std);
-    
+      ortho_ck += clock();
+
       for (int i = 0; i < REG_SIZE; i++)
         loc_std[i] = __builtin_bswap64(loc_std[i]);
     }
   }
-  printf(\"%%f\\n\",size*16/(((double)clock()-timer)/CLOCKS_PER_SEC)/1e6);
+  timer = clock() - timer;
+  double speed = size*NB_LOOP/((double)timer/CLOCKS_PER_SEC)/1e6;
+  double ortho_time = speed * ortho_ck / timer;
+  printf(\"%%.2f %%.2f\\n\",speed,ortho_time);
   
   FILE* fh_out = fopen(\"output.txt\",\"wb\");
   fwrite(plain_std,size,1,fh_out);

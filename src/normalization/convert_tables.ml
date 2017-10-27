@@ -30,7 +30,7 @@ let rec rewrite_p (p: p) : var list =
         | Bool  -> [ Var id ]
         | Int x -> expand_intn id x
         | Nat -> raise (Invalid_AST "Nat")
-        | Array _ -> raise (Invalid_AST "Array")) p
+        | Array _ -> raise (Invalid_AST "Array (convert_tables)")) p
 
 let get_bits (l:int list) (i:int) : int list =
   List.rev @@ List.map (fun x -> x lsr i land 1) l

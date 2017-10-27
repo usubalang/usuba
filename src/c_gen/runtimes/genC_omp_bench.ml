@@ -42,6 +42,10 @@ Printf.sprintf
 
 /* runtime */
 
+#ifndef NB_LOOPS
+#define NB_LOOPS 2800 /* 2800 is calibrated for a 80 cores machine */
+#endif
+
 #define BLOCK_SIZE %d
 #define KEY_SIZE   %d
 
@@ -68,7 +72,7 @@ void single_%s (uint64_t *buff_in, uint64_t* buff_out,
 
   int id = omp_get_thread_num();
   
-  for (int a = 0; a < 50; a++)
+  for (int a = 0; a < NB_LOOPS; a++)
   for (int i = 0; i < size; i += REG_SIZE) {
     uint64_t* plain_std  = &(buff_in[size*id+i]);
     uint64_t* cipher_std = &(buff_out[size*id+i]);
@@ -111,10 +115,13 @@ int main() {
   uint64_t* buff_out = ALLOC(size);
 
   // Storing the input file
-  fread(buff_in,size,1,fh_in);
+  if (fread(buff_in,size,1,fh_in) != 1) {
+     fprintf(stderr, \"Read error.\");
+     exit(EXIT_FAILURE);
+  }
   fclose(fh_in);
 
-  for (int i = 1; i <= %d; i++) {
+  for (int i = 1; i <= %d; i += (1 < 10 ? 1 : 5)) {
     clock_t timer = clock();
     struct timespec ini;
     clock_gettime(CLOCK_MONOTONIC,&ini);
@@ -128,7 +135,7 @@ int main() {
     struct timespec res;
     timespec_diff(&ini,&end,&res);
 
-    printf(\"%%2d : %%d.%%ld\\n\",i,res.tv_sec,res.tv_nsec);
+    printf(\"%%2d : %%ld.%%ld\\n\",i,res.tv_sec,res.tv_nsec);
   }  
 
   FILE* fh_out = fopen(\"output.txt\",\"wb\");

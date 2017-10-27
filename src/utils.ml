@@ -118,6 +118,13 @@ let rec gen_list_bound (n1: int) (n2:int) : int list =
   if n1 < n2 then n1 :: (gen_list_bound (n1 + 1) n2)
   else if n2 < n1 then n1 :: (gen_list_bound (n1 - 1) n2)
   else [n1]
+
+let rec typ_size (typ:typ) : int =
+  match typ with
+  | Bool -> 1
+  | Int n -> n
+  | Array(t,Const_e n) -> n*(typ_size t)
+  | _ -> raise (Error "Invalid Array with non-const size")
          
 let id_generator =
   let current = ref 0 in
@@ -152,7 +159,7 @@ let rec env_add_var (vars: p) (env_var: int env) : unit =
                                  | Bool  -> 1
                                  | Int n -> n
                                  | Nat -> raise (Invalid_AST "Nat")
-                                 | Array _ -> raise (Invalid_AST "Array"));
+                                 | Array _ -> raise (Invalid_AST "Array (1)"));
                         env_add_var tl env_var )
 
 (* Add a function (name,p_in,p_out) to env_fun *)
@@ -164,7 +171,7 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
                          | Bool -> 1
                          | Int n -> n
                          | Nat -> raise (Invalid_AST "Nat")
-                         | Array _ -> raise (Invalid_AST "Array"))
+                         | Array _ -> raise (Invalid_AST "Array (2)"))
                         :: (get_param_in_size tl)
   in
   let rec get_param_out_size = function
@@ -173,7 +180,7 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
                         | Bool -> 1
                         | Int n -> n
                         | Nat -> raise (Invalid_AST "Nat")
-                        | Array _ -> raise (Invalid_AST "Array"))
+                        | Array _ -> raise (Invalid_AST "Array (3)"))
                        + (get_param_out_size tl)
   in
   env_add env_fun name (get_param_in_size p_in,get_param_out_size p_out)

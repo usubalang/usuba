@@ -7,7 +7,7 @@ let log_op_to_str = function
   | And -> "&"
   | Or  -> "|"
   | Xor -> "^"
-  | _ -> unreached ()
+  | Andn -> "&~"
              
 let arith_op_to_str = function
   | Add -> "+"
@@ -103,6 +103,8 @@ let rec expr_to_str = function
 
 let pat_to_str pat =
   "(" ^ (join "," (List.map var_to_str pat)) ^ ")"
+let pat_to_str_types pat =
+  "(" ^ (join "," (List.map var_to_str_types pat)) ^ ")"
 
 let rec typ_to_str typ =
   match typ with
@@ -126,6 +128,12 @@ let rec deq_to_str = function
   | Rec(id,ei,ef,d) -> "forall " ^ id.name ^ " in [" ^
                          (arith_to_str ei) ^ "," ^ (arith_to_str ef)
                          ^ "] {\n" ^ (join "\n    " (List.map deq_to_str d)) ^ "\n  }"
+                                                                                 
+let rec deq_to_str_types = function
+  | Norec(pat,e) -> (pat_to_str_types pat) ^ " = " ^ (expr_to_str_types e)
+  | Rec(id,ei,ef,d) -> "forall " ^ id.name ^ " in [" ^
+                         (arith_to_str_types ei) ^ "," ^ (arith_to_str_types ef)
+                         ^ "] {\n" ^ (join "\n    " (List.map deq_to_str_types d)) ^ "\n  }"
                                                                 
 let single_node_to_str id p_in p_out vars deq =
   "node " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in)) ^ ")\n  returns "

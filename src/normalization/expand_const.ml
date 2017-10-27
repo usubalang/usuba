@@ -113,4 +113,5 @@ let expand_def (def:def) : def =
   | _ -> def                     
        
 let expand_prog (prog:prog) : prog =
-  { nodes = List.map expand_def prog.nodes }
+  (* { nodes = List.map expand_def prog.nodes } *)
+  prog

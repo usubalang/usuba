@@ -92,7 +92,10 @@ int main() {
   uint64_t* buff_out = ALLOC(size);
 
   // Storing the input file
-  fread(buff_in,size,1,fh_in);
+  if (fread(buff_in,size,1,fh_in) != 1) {
+     fprintf(stderr, \"Read error.\");
+     exit(EXIT_FAILURE);
+  }
   fclose(fh_in);
 
   clock_t timer = clock();

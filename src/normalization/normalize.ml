@@ -55,4 +55,4 @@ let norm_prog (prog: prog) (conf:config) : prog  =
   let clock_fixed = Fix_clocks.fix_prog optimized in
   print "CLOCKS FIXED:" clock_fixed conf;
   
-  clock_fixed
+  Norm_bitslice.norm_prog clock_fixed

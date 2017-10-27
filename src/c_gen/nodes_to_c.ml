@@ -46,19 +46,21 @@ let fun_call_to_c env (p:var list) (f:ident) (args: expr list) : string =
 let deqs_to_c env (deqs: deq list) : string =
   join "\n"
        (List.map
-          (function
+          (fun deq -> match deq with
             | Norec(p,Fun(f,l)) -> fun_call_to_c env p f l
             | Norec([Var p],e) ->
                sprintf "  %s = %s;" (var_to_c env p) (expr_to_c env e)
-            | _ -> unreached ()) deqs)
+            | _ ->
+               print_endline (Usuba_print.deq_to_str_types deq);
+               assert false) deqs)
 
-                     
 let params_to_arr (params: p) : string list =
   List.map (fun ((id,typ),_) ->
             match typ with
             | Bool -> id.name
             | Int n -> Printf.sprintf "%s[%d]" id.name n
-            | _ -> raise (Not_implemented "Arrays as input")) params
+            | Array(t,Const_e n) -> Printf.sprintf "%s[%d]" id.name (n*typ_size t)
+            | _ -> raise (Not_implemented "Invalid input")) params
            
 let inputs_to_arr (def:def) =
   let inputs = Hashtbl.create 100 in
@@ -72,7 +74,18 @@ let inputs_to_arr (def:def) =
                                        (Printf.sprintf "%s[%d]" (rename id) y))
                           (gen_list (id ^ "'") n)
                           (gen_list_0_int n)
-             | _ -> raise (Not_implemented "Arrays as input") in
+             | Array(t,Const_e n) -> let size = typ_size t in
+                             List.iter2
+                               (fun x y ->
+                                Hashtbl.add inputs x
+                                            (Printf.sprintf "%s[%d]" (rename id) y))
+                               (List.flatten
+                                  (List.map (fun x -> gen_list (x ^ "'") n)
+                                                     (gen_list (id ^ "'") size)))
+                               (gen_list_0_int (size * n))
+             | _ -> Printf.printf "%s => %s:%s\n" def.id.name id
+                                  (Usuba_print.typ_to_str typ);
+                                  raise (Not_implemented "Arrays as input") in
   List.iter aux def.p_in;
   List.iter aux def.p_out;
   inputs

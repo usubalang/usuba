@@ -34,7 +34,7 @@ let schedule_deqs (def:def) (deqs:deq list) : deq list =
   in
   List.iter sched_it deqs;
   if List.length !body <> List.length deqs then
-    raise (Error "Couldn't find a valid scheduling.")
+    raise (Error (Printf.sprintf "Couldn't find a valid scheduling. (%s)" def.id.name))
   else
     List.rev !body
               

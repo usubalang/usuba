@@ -28,7 +28,8 @@ let rec norm_expr env (e: expr) : expr =
   | ExpVar(Var id)  -> ( match env_fetch env id with
                          | Some n when n > 1 ->
                             Tuple(flatten_expr @@ expand_intn_expr id n)
-                         | _ -> e )
+                         | _ ->
+                            e )
   | ExpVar(Field(Var id, Const_e n)) -> ExpVar(Var (fresh_suffix id (string_of_int n)))
   | Tuple (l) -> Tuple(flatten_expr @@ List.map (norm_expr env) l)
   | Fun(f,l) -> Fun(f,flatten_expr @@ List.map (norm_expr env) l)
@@ -84,7 +85,5 @@ let norm_def (def: def) : def =
   | _ -> def
 
 
-(* Note: the print actually if the boolean if the function "print" above 
-         are set to true (or at least the first one) *)
 let norm_uintn (prog: prog) : prog =
   { nodes = List.map norm_def prog.nodes } 
