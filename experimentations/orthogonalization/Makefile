@@ -1,4 +1,4 @@
-TARGET = ortho
+TARGET = ortho simd
 CFLAGS = -Wall -Wextra -fno-vectorize -fstrict-aliasing -march=native -O3
 CC = clang
 
@@ -7,9 +7,6 @@ all: default
 
 ortho:
 	$(CC) $(CFLAGS) ortho.c -o $@
-
-test32:
-	$(CC) $(CFLAGS) test32.c -o $@
 
 simd:
 	$(CC) $(CFLAGS) simd.c -o $@
