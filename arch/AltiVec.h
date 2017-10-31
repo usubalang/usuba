@@ -1,6 +1,6 @@
 /* ******************************************** *\
- * 
- * 
+ * Compile:
+ *    powerpc-linux-gnu-gcc -mvsx -maltivec -mabi=altivec  
  *
 \* ******************************************** */
 
@@ -10,20 +10,21 @@
 #include <altivec.h>
 #include <stdint.h>
 
-/* Defining 0 and 1 */
-#define ZERO 
-#define ONES 
-
 /* Defining macros */
-#define REG_SIZE 128
+#define DATATYPE vector unsigned long int
 
-#define AND(a,b)  
-#define OR(a,b)   
-#define XOR(a,b)  
-#define ANDN(a,b) 
-#define NOT(a)    
+#define REG_SIZE sizeof(DATATYPE)
 
-#define DATATYPE vector unsigned long
+/* Defining 0 and 1 */
+#define ZERO (DATATYPE){ 0  }
+#define ONES (DATATYPE){ -1 }
+
+#define AND(a,b)  vec_and(a,b)
+#define OR(a,b)   vec_or(a,b)
+#define XOR(a,b)  vec_xor(a,b)
+#define ANDN(a,b) vec_nand(a,b)
+#define NOT(a)    vec_and(a,ONES)
+
 
 #define SET_ALL_ONE()  ONES
 #define SET_ALL_ZERO() ZERO
@@ -31,7 +32,7 @@
 #define ORTHOGONALIZE(in,out)   orthogonalize(in,out)
 #define UNORTHOGONALIZE(in,out) unorthogonalize(in,out)
 
-#define ALLOC(size) 
+#define ALLOC(size) aligned_alloc(32,size * sizeof(DATATYPE))
 
 
 #ifndef NO_RUNTIME
@@ -74,19 +75,17 @@ void real_ortho(uint64_t data[]) {
 
 #ifdef ORTHO
 
-void orthogonalize(uint64_t* data, __m128i* out) {
+void orthogonalize(uint64_t* data, DATATYPEi* out) {
   real_ortho(data);
   real_ortho(&(data[64]));
   for (int i = 0; i < 64; i++)
-    out[i] = _mm_set_epi64x(data[i], data[64+i]);
+    out[i] = (DATATYPE){ data[i], data[64+i] };
 }
 
-void unorthogonalize(__m128i *in, uint64_t* data) {
+void unorthogonalize(DATATYPEi *in, uint64_t* data) {
   for (int i = 0; i < 64; i++) {
-    uint64_t tmp[2];
-    _mm_store_si128 ((__m128i*)tmp, in[i]);
-    data[i] = tmp[0];
-    data[64+i] = tmp[1];
+    data[i] = in[i][0];
+    data[64+i] = in[i][1];
   }
   real_ortho(data);
   real_ortho(&(data[64]));
@@ -94,14 +93,16 @@ void unorthogonalize(__m128i *in, uint64_t* data) {
 
 #else
 
-void orthogonalize(uint64_t *in, __m128i *out) {
+void orthogonalize(uint64_t *in, DATATYPE *out) {
   for (int i = 0; i < 64; i++)
-    out[i] = _mm_set_epi64x (in[i*2], in[i*2+1]);
+    out[i] = (DATATYPE){in[i*2], in[i*2+1]};
 }
 
-void unorthogonalize(__m128i *in, uint64_t *out) {
-  for (int i = 0; i < 64; i++)
-    _mm_store_si128 ((__m128i*)&(out[i*2]), in[i]);
+void unorthogonalize(DATATYPE *in, uint64_t *out) {
+  for (int i = 0; i < 64; i++) {
+    out[i*2] = in[i][0];
+    out[i*2+1] = in[i][1];    
+  }
 }
 
 #endif /* ORTHO */

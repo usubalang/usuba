@@ -15,7 +15,7 @@ my @cc = qw(clang gcc icc);
 my $bench   = "CSE-CP";
 my $outfile = 'cse-cp.tex';
 
-my $opts = "-no-precalc-tbl -no-sched -no-arr -no-share -bench -no-ortho -arch std";
+my $opts = "-bench -no-ortho -arch std";
 
 my $out_w = 'des-cse-cp.c';
 my $out_n = 'des-no-cse-cp.c';
