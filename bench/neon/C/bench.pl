@@ -19,7 +19,7 @@ my %benchs = (
 my %times;
 for (1 .. $nb_run) {
     for my $bench (keys %benchs) {
-        $times{$bench} += `./$bench` / $nb_run;
+        $times{$bench} += (split ' ',`./$bench`)[0] / $nb_run;
     }
 }
 

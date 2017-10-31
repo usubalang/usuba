@@ -5,7 +5,7 @@ use warnings;
 use v5.18;
 
 
-my $nb_run  = 2;
+my $nb_run  = 30;
 my $bench   = "OpenMP";
 my $cc      = "gcc";
 my $opts    = "-std=gnu11 -fopenmp -O3 -march=native -Iarch";

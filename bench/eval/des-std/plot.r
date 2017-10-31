@@ -13,4 +13,4 @@ ggplot(melted,aes(reorder(V1,value),value, fill=variable)) +
   theme(legend.title=element_blank()) 
   
 ggsave("/home/dada/Workspace/usuba/bench/eval/des-std/speed_std2.pdf", plot = last_plot(),
-       device = "pdf")
+       device = "pdf", width = 221, height = 173, units = c('mm'))

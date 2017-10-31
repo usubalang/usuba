@@ -8,11 +8,11 @@ use File::Path qw( remove_tree make_path );
 use FindBin;
 
 
-my $nb_cores = 45;
+my $nb_cores = 4;
 
 my $bench   = "OpenMP";
 
-my $opts = "-bench -arch std";
+my $opts = "-bench -arch avx";
 
 sub talk {
     say "Bench $bench: ", @_;
