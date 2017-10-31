@@ -72,6 +72,54 @@ void real_ortho(uint64_t data[]) {
   }
 }
 
+void real_ortho_256x256(__m256i data[]) {
+
+  __m256i mask_l[8] = {
+    _mm256_set1_epi64x(0xaaaaaaaaaaaaaaaaUL),
+    _mm256_set1_epi64x(0xccccccccccccccccUL),
+    _mm256_set1_epi64x(0xf0f0f0f0f0f0f0f0UL),
+    _mm256_set1_epi64x(0xff00ff00ff00ff00UL),
+    _mm256_set1_epi64x(0xffff0000ffff0000UL),
+    _mm256_set1_epi64x(0xffffffff00000000UL),
+    _mm256_set_epi64x(0x0000000000000000UL,0xffffffffffffffffUL,0x0000000000000000UL,0xffffffffffffffffUL),
+    _mm256_set_epi64x(0x0000000000000000UL,0x0000000000000000UL,0xffffffffffffffffUL,0xffffffffffffffffUL),
+  
+  };
+
+  __m256i mask_r[8] = {
+    _mm256_set1_epi64x(0x5555555555555555UL),
+    _mm256_set1_epi64x(0x3333333333333333UL),
+    _mm256_set1_epi64x(0x0f0f0f0f0f0f0f0fUL),
+    _mm256_set1_epi64x(0x00ff00ff00ff00ffUL),
+    _mm256_set1_epi64x(0x0000ffff0000ffffUL),
+    _mm256_set1_epi64x(0x00000000ffffffffUL),
+    _mm256_set_epi64x(0xffffffffffffffffUL,0x0000000000000000UL,0xffffffffffffffffUL,0x0000000000000000UL),
+    _mm256_set_epi64x(0xffffffffffffffffUL,0xffffffffffffffffUL,0x0000000000000000UL,0x0000000000000000UL),
+  };
+  
+  for (int i = 0; i < 8; i ++) {
+    int n = (1UL << i);
+    for (int j = 0; j < 256; j += (2 * n))
+      for (int k = 0; k < n; k ++) {
+        __m256i u = _mm256_and_si256(data[j + k], mask_l[i]);
+        __m256i v = _mm256_and_si256(data[j + k], mask_r[i]);
+        __m256i x = _mm256_and_si256(data[j + n + k], mask_l[i]);
+        __m256i y = _mm256_and_si256(data[j + n + k], mask_r[i]);
+        if (i <= 5) {
+          data[j + k] = _mm256_or_si256(u, _mm256_srli_epi64(x, n));
+          data[j + n + k] = _mm256_or_si256(_mm256_slli_epi64(v, n), y);
+        } else if (i == 6) {
+          /* Note the "inversion" of srli and slli. */
+          data[j + k] = _mm256_or_si256(u, _mm256_slli_si256(x, 8));
+          data[j + n + k] = _mm256_or_si256(_mm256_srli_si256(v, 8), y);
+        } else {
+          data[j + k] = _mm256_or_si256(u, _mm256_permute2f128_ps( x , x , 1));
+          data[j + n + k] = _mm256_or_si256(_mm256_permute2f128_ps( v , v , 1), y);
+        }
+      }
+  }
+}
+
 #ifdef ORTHO
 
 void orthogonalize(uint64_t* data, __m256i* out) {
@@ -87,15 +135,33 @@ void unorthogonalize(__m256i *in, uint64_t* data) {
   for (int i = 0; i < 64; i++) {
     uint64_t tmp[4];
     _mm256_store_si256 ((__m256i*)tmp, in[i]);
-    data[i] = tmp[0];
-    data[64+i] = tmp[1];
-    data[128+i] = tmp[2];
-    data[192+i] = tmp[3];
+    data[i] = tmp[3];
+    data[64+i] = tmp[2];
+    data[128+i] = tmp[1];
+    data[192+i] = tmp[0];
   }
   real_ortho(data);
   real_ortho(&(data[64]));
   real_ortho(&(data[128]));
   real_ortho(&(data[192]));
+}
+
+void orthogonalize_256x256(uint64_t* data, __m256i* out) {
+  for (int i = 0; i < 256; i++)
+    out[i] = _mm256_set_epi64x(data[i], data[256+i], data[512+i], data[768+i]);
+  real_ortho_256x256(out);
+}
+
+void unorthogonalize_256x256(__m256i *in, uint64_t* data) {
+  real_ortho_256x256(in);
+  for (int i = 0; i < 256; i++) {
+    uint64_t tmp[4];
+    _mm256_store_si256 ((__m256i*)tmp, in[i]);
+    data[i] = tmp[3];
+    data[256+i] = tmp[2];
+    data[512+i] = tmp[1];
+    data[768+i] = tmp[0];
+  }
 }
 
 #else

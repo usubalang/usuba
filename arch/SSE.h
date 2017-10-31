@@ -85,8 +85,8 @@ void unorthogonalize(__m128i *in, uint64_t* data) {
   for (int i = 0; i < 64; i++) {
     uint64_t tmp[2];
     _mm_store_si128 ((__m128i*)tmp, in[i]);
-    data[i] = tmp[0];
-    data[64+i] = tmp[1];
+    data[i] = tmp[1];
+    data[64+i] = tmp[0];
   }
   real_ortho(data);
   real_ortho(&(data[64]));

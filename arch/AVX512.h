@@ -92,14 +92,14 @@ void unorthogonalize(__m512i *in, uint64_t* data) {
   for (int i = 0; i < 64; i++) {
     uint64_t tmp[8];
     _mm512_store_si512 ((__m512i*)tmp, in[i]);
-    data[i] = tmp[0];
-    data[64+i] = tmp[1];
-    data[128+i] = tmp[2];
-    data[192+i] = tmp[3];
-    data[256+i] = tmp[4];
-    data[320+i] = tmp[5];
-    data[384+i] = tmp[6];
-    data[448+i] = tmp[7];
+    data[i] = tmp[7];
+    data[64+i] = tmp[6];
+    data[128+i] = tmp[5];
+    data[192+i] = tmp[4];
+    data[256+i] = tmp[3];
+    data[320+i] = tmp[2];
+    data[384+i] = tmp[1];
+    data[448+i] = tmp[0];
   }
   real_ortho(data);
   real_ortho(&(data[64]));
