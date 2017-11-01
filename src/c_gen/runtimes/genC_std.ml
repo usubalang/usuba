@@ -61,27 +61,31 @@ int main() {
   FILE* fh_out = fopen(\"output.txt\",\"wb\");
   
   // Allocating various stuffs
-  DATATYPE *plain_ortho  = ALLOC(BLOCK_SIZE);
-  DATATYPE *cipher_ortho = ALLOC(BLOCK_SIZE);
-  uint64_t *plain_std = ALLOC(REG_SIZE);
+  DATATYPE *plain_ortho  = ALLOC(REG_SIZE);
+  DATATYPE *cipher_ortho = ALLOC(REG_SIZE);
+  uint64_t *plain_std = ALLOC(CHUNK_SIZE);
 
 
-  while(fread(plain_std, 8, REG_SIZE, fh_in)) {
+  while(fread(plain_std, 8, CHUNK_SIZE, fh_in)) {
 
-    for (int i = 0; i < REG_SIZE; i++)
+    for (int i = 0; i < CHUNK_SIZE; i++)
       plain_std[i] = __builtin_bswap64(plain_std[i]);
 
     ORTHOGONALIZE(plain_std, plain_ortho);
+
+    for (int i = 0; i < CHUNK_SIZE / REG_SIZE; i++) {
     
-    memcpy(key_ortho,key_cst,KEY_SIZE*sizeof *key_cst);
-    %s(plain_ortho, key_ortho, cipher_ortho);
+      memcpy(key_ortho,key_cst,KEY_SIZE*sizeof *key_cst);
+      %s(&plain_ortho[i*64], key_ortho, &cipher_ortho[i*64]);
+
+    }
     
     UNORTHOGONALIZE(cipher_ortho,plain_std);
     
-    for (int i = 0; i < REG_SIZE; i++)
+    for (int i = 0; i < CHUNK_SIZE; i++)
       plain_std[i] = __builtin_bswap64(plain_std[i]);
 
-    fwrite(plain_std, 8, REG_SIZE, fh_out);
+    fwrite(plain_std, 8, CHUNK_SIZE, fh_out);
   }
 
   fclose(fh_in);

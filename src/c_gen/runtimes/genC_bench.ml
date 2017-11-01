@@ -67,8 +67,8 @@ int main() {
   rewind(fh_in);
   
   // Allocating various stuffs
-  DATATYPE *plain_ortho  = ALLOC(BLOCK_SIZE);
-  DATATYPE *cipher_ortho = ALLOC(BLOCK_SIZE);
+  DATATYPE *plain_ortho  = ALLOC(REG_SIZE);
+  DATATYPE *cipher_ortho = ALLOC(REG_SIZE);
   uint64_t *plain_std = ALLOC(size);
 
   // Storing the input file
@@ -81,25 +81,29 @@ int main() {
   clock_t timer = clock();
   clock_t ortho_ck = 0;
   for (int u = 0; u < NB_LOOP; u++) {
-    for (int x = 0; x < size/8; x += REG_SIZE) {
+    for (int x = 0; x < size/8; x += CHUNK_SIZE) {
   
       uint64_t* loc_std = plain_std + x;
     
-      for (int i = 0; i < REG_SIZE; i++)
+      for (int i = 0; i < CHUNK_SIZE; i++)
         loc_std[i] = __builtin_bswap64(loc_std[i]);
 
       ortho_ck -= clock();
       ORTHOGONALIZE(loc_std, plain_ortho);
       ortho_ck += clock();
     
-      memcpy(key_ortho,key_cst,KEY_SIZE*sizeof *key_cst);
-      %s(plain_ortho, key_ortho, cipher_ortho);
+      for (int i = 0; i < CHUNK_SIZE / REG_SIZE; i++) {
+
+        memcpy(key_ortho,key_cst,KEY_SIZE*sizeof *key_cst);
+        %s(&plain_ortho[i*BLOCK_SIZE], key_ortho, &cipher_ortho[i*BLOCK_SIZE]);
+
+      }
     
       ortho_ck -= clock();
       UNORTHOGONALIZE(cipher_ortho,loc_std);
       ortho_ck += clock();
 
-      for (int i = 0; i < REG_SIZE; i++)
+      for (int i = 0; i < CHUNK_SIZE; i++)
         loc_std[i] = __builtin_bswap64(loc_std[i]);
     }
   }
