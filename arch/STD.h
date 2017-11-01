@@ -19,6 +19,7 @@
 
 /* Defining macros */
 #define REG_SIZE BITS_PER_REG
+#define CHUNK_SIZE 64
 
 #define AND(a,b)  ((a) & (b))
 #define OR(a,b)   ((a) | (b))
@@ -62,9 +63,9 @@ static uint64_t mask_r[6] = {
 
 
 void real_ortho(uint64_t data[]) {
-  for (int i = 0; i < LOG2_BITS_PER_REG; i ++) {
+  for (int i = 0; i < 6; i ++) {
     int n = (1UL << i);
-    for (int j = 0; j < BITS_PER_REG; j += (2 * n))
+    for (int j = 0; j < 64; j += (2 * n))
       for (int k = 0; k < n; k ++) {
         uint64_t u = data[j + k] & mask_l[i];
         uint64_t v = data[j + k] & mask_r[i];

@@ -15,7 +15,8 @@
 #define ONES ((uint64x2_t){ -1, -1 })
 
 /* Defining macros */
-#define REG_SIZE 128
+#define REG_SIZE   128
+#define CHUNK_SIZE 128
 
 #define AND(a,b)  vandq_u64(a,b)
 #define OR(a,b)   vorrq_u64(a,b)

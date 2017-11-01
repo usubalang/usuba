@@ -16,6 +16,7 @@
 
 /* Defining macros */
 #define REG_SIZE 256
+#define CHUNK_SIZE 1024
 
 #define AND(a,b)  _mm256_and_si256(a,b)
 #define OR(a,b)   _mm256_or_si256(a,b)
@@ -122,7 +123,7 @@ void real_ortho_256x256(__m256i data[]) {
 
 #ifdef ORTHO
 
-void orthogonalize(uint64_t* data, __m256i* out) {
+void orthogonalize_256x64(uint64_t* data, __m256i* out) {
   real_ortho(data);
   real_ortho(&(data[64]));
   real_ortho(&(data[128]));
@@ -131,7 +132,7 @@ void orthogonalize(uint64_t* data, __m256i* out) {
     out[i] = _mm256_set_epi64x(data[i], data[64+i], data[128+i], data[192+i]);
 }
 
-void unorthogonalize(__m256i *in, uint64_t* data) {
+void unorthogonalize_64x256(__m256i *in, uint64_t* data) {
   for (int i = 0; i < 64; i++) {
     uint64_t tmp[4];
     _mm256_store_si256 ((__m256i*)tmp, in[i]);
@@ -164,15 +165,22 @@ void unorthogonalize_256x256(__m256i *in, uint64_t* data) {
   }
 }
 
+void orthogonalize(uint64_t* data, __m256i* out) {
+  orthogonalize_256x256(data,out);
+}
+void unorthogonalize(__m256i *in, uint64_t* data) {
+  unorthogonalize_256x256(in,data);
+}
+
 #else
 
 void orthogonalize(uint64_t *in, __m256i *out) {
-  for (int i = 0; i < 64; i++)
+  for (int i = 0; i < 256; i++)
     out[i] = _mm256_set_epi64x (in[i*4], in[i*4+1], in[i*4+2], in[i*4+3]);
 }
 
 void unorthogonalize(__m256i *in, uint64_t *out) {
-  for (int i = 0; i < 64; i++)
+  for (int i = 0; i < 256; i++)
     _mm256_store_si256 ((__m256i*)&(out[i*4]), in[i]);
 }
 
