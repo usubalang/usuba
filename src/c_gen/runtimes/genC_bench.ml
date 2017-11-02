@@ -79,7 +79,6 @@ int main() {
   fclose(fh_in);
 
   clock_t timer = clock();
-  clock_t ortho_ck = 0;
   for (int u = 0; u < NB_LOOP; u++) {
     for (int x = 0; x < size/8; x += CHUNK_SIZE) {
   
@@ -88,9 +87,7 @@ int main() {
       for (int i = 0; i < CHUNK_SIZE; i++)
         loc_std[i] = __builtin_bswap64(loc_std[i]);
 
-      ortho_ck -= clock();
       ORTHOGONALIZE(loc_std, plain_ortho);
-      ortho_ck += clock();
     
       for (int i = 0; i < CHUNK_SIZE / REG_SIZE; i++) {
 
@@ -99,15 +96,23 @@ int main() {
 
       }
     
-      ortho_ck -= clock();
       UNORTHOGONALIZE(cipher_ortho,loc_std);
-      ortho_ck += clock();
 
       for (int i = 0; i < CHUNK_SIZE; i++)
         loc_std[i] = __builtin_bswap64(loc_std[i]);
     }
   }
   timer = clock() - timer;
+
+  clock_t ortho_ck = clock();
+  for (int u = 0; u < 16; u++)
+    for (int x = 0; x < size/8; x += CHUNK_SIZE) {
+      uint64_t* loc_std = plain_std + x;
+      ORTHOGONALIZE(loc_std, plain_ortho);
+      UNORTHOGONALIZE(plain_ortho,loc_std);
+    }
+  ortho_ck = clock() - ortho_ck;
+
   double speed = size*NB_LOOP/((double)timer/CLOCKS_PER_SEC)/1e6;
   double ortho_time = speed * ortho_ck / timer;
   printf(\"%%.2f %%.2f\\n\",speed,ortho_time);

@@ -49,10 +49,12 @@ let norm_prog (prog: prog) (conf:config) : prog  =
   let optimized = Optimize.opt_prog normalized conf in
   print "OPTIMIZED:" optimized conf;
 
-  if conf.check_tbl then
-    Soundness.tables_sound renamed optimized;
-
   let clock_fixed = Fix_clocks.fix_prog optimized in
   print "CLOCKS FIXED:" clock_fixed conf;
   
-  Norm_bitslice.norm_prog clock_fixed
+  let norm_ok = Norm_bitslice.norm_prog clock_fixed in
+
+  if conf.check_tbl then
+    Soundness.tables_sound renamed norm_ok;
+
+  norm_ok

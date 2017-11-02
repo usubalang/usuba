@@ -63,7 +63,6 @@ for (1 .. $nb_run) {
 
 
 # Fixing the throughput values
-my $tot_size = -s 'input.txt';
 for my $name (values %arch) {
     $times{$name} = sprintf "%d", $times{$name};
 }

@@ -20,7 +20,7 @@ module Usuba0 = struct
                       | Or  -> List.map2 (||) (interp_expr_rec x) (interp_expr_rec y)
                       | Xor -> List.map2 (fun x y -> (x && (not y)) || ((not x) && y))
                                          (interp_expr_rec x) (interp_expr_rec y)
-                      | Andn -> List.map2 (fun x y -> x && (not y))
+                      | Andn -> List.map2 (fun x y -> (not x) && y)
                                           (interp_expr_rec x) (interp_expr_rec y))
     | Fun(f,l) -> let l' = List.flatten (List.map interp_expr_rec l) in
                   let f' = env_fetch env_fun f in

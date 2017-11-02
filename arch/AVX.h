@@ -82,8 +82,8 @@ void real_ortho_256x256(__m256i data[]) {
     _mm256_set1_epi64x(0xff00ff00ff00ff00UL),
     _mm256_set1_epi64x(0xffff0000ffff0000UL),
     _mm256_set1_epi64x(0xffffffff00000000UL),
-    _mm256_set_epi64x(0x0000000000000000UL,0xffffffffffffffffUL,0x0000000000000000UL,0xffffffffffffffffUL),
-    _mm256_set_epi64x(0x0000000000000000UL,0x0000000000000000UL,0xffffffffffffffffUL,0xffffffffffffffffUL),
+    _mm256_set_epi64x(0UL,-1UL,0UL,-1UL),
+    _mm256_set_epi64x(0UL,0UL,-1UL,-1UL),
   
   };
 
@@ -94,8 +94,8 @@ void real_ortho_256x256(__m256i data[]) {
     _mm256_set1_epi64x(0x00ff00ff00ff00ffUL),
     _mm256_set1_epi64x(0x0000ffff0000ffffUL),
     _mm256_set1_epi64x(0x00000000ffffffffUL),
-    _mm256_set_epi64x(0xffffffffffffffffUL,0x0000000000000000UL,0xffffffffffffffffUL,0x0000000000000000UL),
-    _mm256_set_epi64x(0xffffffffffffffffUL,0xffffffffffffffffUL,0x0000000000000000UL,0x0000000000000000UL),
+    _mm256_set_epi64x(-1UL,0UL,-1UL,0UL),
+    _mm256_set_epi64x(-1UL,-1UL,0UL,0UL),
   };
   
   for (int i = 0; i < 8; i ++) {
@@ -114,8 +114,8 @@ void real_ortho_256x256(__m256i data[]) {
           data[j + k] = _mm256_or_si256(u, _mm256_slli_si256(x, 8));
           data[j + n + k] = _mm256_or_si256(_mm256_srli_si256(v, 8), y);
         } else {
-          data[j + k] = _mm256_or_si256(u, _mm256_permute2f128_ps( x , x , 1));
-          data[j + n + k] = _mm256_or_si256(_mm256_permute2f128_ps( v , v , 1), y);
+          data[j + k] = _mm256_or_si256(u, _mm256_permute2x128_si256( x , x , 1));
+          data[j + n + k] = _mm256_or_si256(_mm256_permute2x128_si256( v , v , 1), y);
         }
       }
   }

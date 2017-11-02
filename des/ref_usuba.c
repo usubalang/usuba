@@ -23,7 +23,7 @@ void unorthogonalize(__m256i *in, unsigned long *out) {
     unsigned long tmp[4];
     _mm256_store_si256 ((__m256i*)tmp, in[63-j]);
     for (int i = 0; i < 256; i++)
-      out[i] |= (tmp[i/64]>>i%64 & 1) << j;
+      out[i] |= (tmp[3-i/64]>>i%64 & 1) << j;
   }
 }
 

@@ -28,7 +28,7 @@ tel
 node ShiftRows (inputSR:u8[16]) returns (output:bool[128])
 vars
 let
-    output = inputSR[0,1,2,3,5,6,7,4,10,11,8,9,15,12,13,14]
+    output = inputSR[0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11]
 tel
 
 node times2 (i:bool[8]) returns (o:bool[8])
@@ -48,7 +48,7 @@ vars
 let
     out[0] = times2(inp[0]) ^ times3(inp[1]) ^ inp[2] ^ inp[3];
     out[1] = inp[0] ^ times2(inp[1]) ^ times3(inp[2]) ^ inp[3];
-    out[2] = inp[0] ^ inp[1] ^ times2(inp[3]) ^ times3(inp[3]);
+    out[2] = inp[0] ^ inp[1] ^ times2(inp[2]) ^ times3(inp[3]);
     out[3] = times3(inp[0]) ^ inp[1] ^ inp[2] ^ times2(inp[3])
 tel
 

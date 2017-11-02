@@ -5,10 +5,10 @@ CC = clang
 default: $(TARGET)
 all: default
 
-ortho:
+ortho: ortho.c
 	$(CC) $(CFLAGS) ortho.c -o $@
 
-simd:
+simd: simd.c
 	$(CC) $(CFLAGS) simd.c -o $@
 
 clean:

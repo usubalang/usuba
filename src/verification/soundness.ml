@@ -12,7 +12,7 @@ let compare_tables (orig:def) (norm:def)  =
     let out_orig = Interp.Usuba.interp_table orig input in
     let out_norm = Interp.Usuba0.interp_node (Hashtbl.create 0) norm input in
     if out_orig <> out_norm then
-      raise (Unsound (Printf.sprintf "%s: %d => %d vs %d" orig.id.name i
+      raise (Unsound (Printf.sprintf "%s: %d => expect:%d -- got:%d" orig.id.name i
                                      (boollist_to_int out_orig)
                                      (boollist_to_int out_norm)))    
   done

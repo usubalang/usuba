@@ -99,39 +99,33 @@ and remove_calls env_fun l : deq list * expr list =
     
 
 and norm_expr env_fun (e: expr) : deq list * expr = 
-  let pre_deqs = ref [] in
-  let normalized_e =
-    match e with
-    | Const _ | ExpVar _ -> e
-    | Tuple (l) ->
-       let (deqs,l') = remove_calls env_fun l in
-       pre_deqs := deqs;
-       Tuple l'
-    | Fun(f,l) ->
-       let (deqs,l') = remove_calls env_fun l in
-       pre_deqs := deqs;
-       Fun(f, l')
-    | Log(op,x1,x2) ->
-       let (deqs1, x1') = remove_call env_fun x1 in
-       let (deqs2, x2') = remove_call env_fun x2 in
-       pre_deqs := deqs1 @ deqs2;
-       ( match x1', x2' with
-         | Tuple l1,Tuple l2 ->
-            Tuple(List.map2 (fun x y -> Log(op,x,y)) l1 l2)
-         | _ -> Log(op,x1',x2'))
-    | Not e ->
-       let (deqs,e') = remove_call env_fun e in
-       pre_deqs := deqs;
-       ( match e' with
-         | Tuple l -> Tuple(List.map (fun x -> Not x) l)
-         | _ -> Not e' )
-    | Shift(op,e,n) ->
-       let (deqs,e') = remove_call env_fun e in
-       pre_deqs := deqs;
-       Shift(op,e',n)
-    | _ -> raise (Invalid_AST "Invalid expr") in
-  !pre_deqs, normalized_e
-    
+  match e with
+  | Const _ | ExpVar _ -> [], e
+  | Tuple (l) ->
+     let (deqs,l') = remove_calls env_fun l in
+     deqs, Tuple l'
+  | Fun(f,l) ->
+     let (deqs,l') = remove_calls env_fun l in
+     deqs, Fun(f, l')
+  | Log(op,x1,x2) ->
+     let (deqs1, x1') = remove_call env_fun x1 in
+     let (deqs2, x2') = remove_call env_fun x2 in
+     deqs1 @ deqs2,
+     ( match x1', x2' with
+       | Tuple l1,Tuple l2 ->
+           Tuple (List.map2 (fun x y -> Log(op,x,y)) l1 l2)
+       | _ -> Log(op,x1',x2'))
+  | Not e ->
+     let (deqs,e') = remove_call env_fun e in
+     deqs,
+     ( match e' with
+       | Tuple l -> Tuple (List.map (fun x -> Not x) l)
+       | _ -> Not e' )
+  | Shift(op,e,n) ->
+     let (deqs,e') = remove_call env_fun e in
+     deqs, Shift(op,e',n)
+  | _ -> raise (Invalid_AST "Invalid expr")
+               
 let norm_deq env_fun (body: deq list) : deq list =
   List.flatten
     (List.map

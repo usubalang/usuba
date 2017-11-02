@@ -95,6 +95,11 @@ let gen_list (id: string) (n: int) : string list =
     if n <= 0 then acc
     else aux (n-1) ((id ^ (string_of_int n))::acc) 
   in aux n []
+let gen_list0 (id: string) (n: int) : string list =
+  let rec aux n acc =
+    if n <= 0 then acc
+    else aux (n-1) ((id ^ (string_of_int (n-1)))::acc) 
+  in aux n []
 
 let gen_list_0 (id: ident) (n: int) : ident list =
   let rec aux n acc =

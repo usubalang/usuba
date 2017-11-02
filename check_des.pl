@@ -31,17 +31,15 @@ error if system './usubac -o tmp_c/des.c -arch avx samples/usuba/des.ua' ;
 
 chdir 'tmp_c';
 copy '../des/ref_usuba.c', '.';
-copy '../bench/make_input.c', '.';
 
 
 # Compiling the C files
 say "Compiling the test executable...";
 error if system 'clang -O3 -march=native -I../arch -o des_to_test des.c';
-error if system 'clang -o make_input make_input.c -O3 -march=native';
-error if system 'clang -o des_ref ref_usuba.c -O3 -march=native';
+error if system 'clang -O3 -march=native -o des_ref ref_usuba.c';
 
 say "Running the test...";
-error if system './make_input';
+error if system 'head -c 8M </dev/urandom > input.txt';
 error if system './des_ref';
 move 'output.txt', 'output_ref.txt';
 error if system './des_to_test';

@@ -61,6 +61,16 @@ let params_to_arr (params: p) : string list =
             | Int n -> Printf.sprintf "%s[%d]" id.name n
             | Array(t,Const_e n) -> Printf.sprintf "%s[%d]" id.name (n*typ_size t)
             | _ -> raise (Not_implemented "Invalid input")) params
+
+let rec gen_list_typ (x:string) (typ:typ) : string list =
+  match typ with
+  | Bool  -> [ x ]
+  | Int n -> gen_list (x ^ "'") n
+  | Array(t',Const_e n) -> List.flatten @@
+                             List.map (fun x -> gen_list_typ x t')
+                                      (gen_list0 (x ^ "'") n)
+  | _ -> assert false
+                              
            
 let inputs_to_arr (def:def) =
   let inputs = Hashtbl.create 100 in
@@ -79,9 +89,10 @@ let inputs_to_arr (def:def) =
                                (fun x y ->
                                 Hashtbl.add inputs x
                                             (Printf.sprintf "%s[%d]" (rename id) y))
-                               (List.flatten
+                               (* (List.flatten
                                   (List.map (fun x -> gen_list (x ^ "'") n)
-                                                     (gen_list (id ^ "'") size)))
+                                                     (gen_list (id ^ "'") size))) *)
+                               (gen_list_typ id typ)
                                (gen_list_0_int (size * n))
              | _ -> Printf.printf "%s => %s:%s\n" def.id.name id
                                   (Usuba_print.typ_to_str typ);

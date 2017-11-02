@@ -9,6 +9,10 @@
 #include <stdlib.h>
 #include <time.h>
 
+#ifndef NB_LOOP
+#define NB_LOOP 16
+#endif
+
 
 /*
  * Generated S-box files.
@@ -1131,7 +1135,7 @@ int main() {
   fclose(fh_in);
   
   clock_t timer = clock();
-  for (int u = 0; u < 16; u++) {
+  for (int u = 0; u < NB_LOOP; u++) {
     for (int x = 0; x < size/8; x += 64) {
   
       unsigned long* loc_std = plain_std + x;
@@ -1149,7 +1153,20 @@ int main() {
         loc_std[i] = __builtin_bswap64(loc_std[i]);
     }
   }
-  printf("%f\n",((double)clock()-timer)/CLOCKS_PER_SEC);
+  timer = clock() - timer;
+
+  clock_t ortho_ck = clock();
+  for (int u = 0; u < 16; u++)
+    for (int x = 0; x < size/8; x += 64) {
+      unsigned long* loc_std = plain_std + x;
+      orthogonalize(loc_std, loc_std);
+      unorthogonalize(loc_std,loc_std);
+    }
+  ortho_ck = clock() - ortho_ck;
+  
+  double speed = size*NB_LOOP/((double)timer/CLOCKS_PER_SEC)/1e6;
+  double ortho_time = speed * ortho_ck / timer;
+  printf("%.2f %.2f\n",speed,ortho_time);
   
   FILE* fh_out = fopen("output.txt","wb");
   fwrite(plain_std,size,1,fh_out);
