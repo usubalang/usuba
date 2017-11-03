@@ -44,9 +44,11 @@ Printf.sprintf
 #define KEY_SIZE   %d
 
 void single_%s (uint64_t *buff_in, uint64_t* buff_out,
-                 DATATYPE *key_ortho, uint64_t size) {
-  DATATYPE *plain_ortho  = ALLOC(BLOCK_SIZE);
-  DATATYPE *cipher_ortho = ALLOC(BLOCK_SIZE);
+                 DATATYPE *key_in, uint64_t size) {
+  DATATYPE plain_ortho[BLOCK_SIZE];
+  DATATYPE cipher_ortho[BLOCK_SIZE];
+  DATATYPE key_ortho[KEY_SIZE];
+  memcpy(key_ortho,key_in,KEY_SIZE*sizeof(DATATYPE));
 
   int id = omp_get_thread_num();
   

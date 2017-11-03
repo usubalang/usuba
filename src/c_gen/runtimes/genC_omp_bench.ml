@@ -43,7 +43,7 @@ Printf.sprintf
 /* runtime */
 
 #ifndef NB_LOOPS
-#define NB_LOOPS 2800 /* 2800 is calibrated for a 80 cores machine */
+#define NB_LOOPS 1500 /* 1500 is calibrated for a 80 cores machine */
 #endif
 
 #define BLOCK_SIZE %d
@@ -66,9 +66,11 @@ void timespec_diff(struct timespec *start, struct timespec *stop,
 }
 
 void single_%s (uint64_t *buff_in, uint64_t* buff_out,
-                 DATATYPE *key_ortho, uint64_t size) {
-  DATATYPE *plain_ortho  = ALLOC(BLOCK_SIZE);
-  DATATYPE *cipher_ortho = ALLOC(BLOCK_SIZE);
+                 DATATYPE *key_in, uint64_t size) {
+  DATATYPE plain_ortho[BLOCK_SIZE];
+  DATATYPE cipher_ortho[BLOCK_SIZE];
+  DATATYPE key_ortho[KEY_SIZE];
+  memcpy(key_ortho,key_in,KEY_SIZE*sizeof(DATATYPE));
 
   int id = omp_get_thread_num();
   
@@ -122,14 +124,12 @@ int main() {
   fclose(fh_in);
 
   for (int i = 1; i <= %d; i += (1 < 10 ? 1 : 5)) {
-    clock_t timer = clock();
     struct timespec ini;
     clock_gettime(CLOCK_MONOTONIC,&ini);
     #pragma omp parallel num_threads(i)
     {
       single_%s(buff_in,buff_out,key_ortho,size/i/sizeof(uint64_t));
     }
-    #pragma omp barrier
     struct timespec end;
     clock_gettime(CLOCK_MONOTONIC,&end);
     struct timespec res;

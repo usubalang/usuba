@@ -144,11 +144,52 @@ let inline_deqs env (node:def) (deqs: deq list) (conf:config): p*deq list =
   !add_vars,body
 
 
-let inline (prog:prog) (conf:config) : prog =
+(* (\* Returns true if the node can be inlined now. ie: *)
+(*     - is not already inlined *)
+(*     - it doesn't have the attribute "no_inline" *)
+(*     - it doesn't contain any function call, or *)
+(*     - every function call it contains is to a node "no_inline" *\) *)
+(* let can_inline env (node:def) : bool = *)
+(*   (\* Is not already inlined *\) *)
+(*   (not (Hashtbl.find env node.id.name)) && *)
+(*     (\* Is not "no_inline" *\) *)
+(*     (not is_noinline node) && *)
+(*       (\* Doesn't contain any call, or calls to "no_inline" *\) *)
+(*       (is_call_free env node) *)
 
-  (* List.iter (fun x -> if should_inline x then *)
-  (*                       print_endline ("Should inline: " ^ x.id) *)
-  (*                     else print_endline ("Souldn't inline: " ^ x.id)) prog.nodes; *)
+      
+(* let rec _inline (prog:prog) (conf:config) inlined : prog = *)
+  
+(*   let env = Hashtbl.create 20 in *)
+(*   List.iter (fun x -> Hashtbl.add env x.ident.name x) prog.nodes; *)
+
+(*   (\* If there is a node that can be inlined *\) *)
+(*   if List.exists (can_inline env inlined) prog.nodes then *)
+(*     (\* find the node to inline *\) *)
+(*     let to_inline = List.find (can_inline env) prog.nodes in *)
+(*     (\* inline it *\) *)
+(*     let prog' = do_inline env prog to_inline in *)
+(*     (\* add it to the hash of inlined nodes *\) *)
+(*     Hashtbl.replace inlined to_inline.id.name true; *)
+(*     (\* continue inlining *\) *)
+(*     _inline prog' conf inlined *)
+(*   else *)
+(*     (\* inlining is done, return the prog *\) *)
+(*     prog *)
+
+(* let inline (prog:prog) (conf:config) : prog = *)
+(*   (\* Hashtbl containing the inlining status of each node: *)
+(*      false if it is not already inlined, true if it is *\) *)
+(*   let inlined = Hashtbl.create 20 in *)
+(*   List.iter (fun x -> Hashtbl.add inlined x.id.name false) prog.nodes; *)
+(*   (\* The last node is the entry point, it wouldn't make sense to try inline it *\) *)
+(*   Hashtbl.replace inlined (last prog.nodes).id.name true; *)
+
+(*   (\* And now, perform the inlining *\) *)
+(*   _inline prog conf inlined *)
+  
+
+let inline (prog:prog) (conf:config) : prog =
   
   let env  = Hashtbl.create 20 in
   List.iter (fun x -> match x.node with
