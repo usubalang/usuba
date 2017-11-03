@@ -61,7 +61,7 @@ let inline_in_node ((vars,body):p*deq list) (to_inl:def) : p * deq list =
   let f_inl = to_inl.id.name in
   (* maintain a counter for variables alpha-conversion *)
   let cpt   = ref 0 in
-
+  
   let (vars,body) =
     (* Unpack the list bellow into a single list of vars and 
        a list of deqs *)

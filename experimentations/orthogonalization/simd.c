@@ -18,11 +18,12 @@ void print64bin (const unsigned long n) {
 void print256bin (const __m256i v) {
   unsigned long out[4];
   _mm256_store_si256 ((__m256i*)out, v);
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i <= 3; i++) {
     print64bin(out[i]);
   }
   puts("");
 }
+
 
 
 
@@ -101,11 +102,11 @@ void orthogonalize(__m256i data[]) {
           data[j + n + k] = _mm256_or_si256(_mm256_slli_epi64(v, n), y);
         } else if (i == 6) {
           /* Note the "inversion" of srli and slli. */
-          data[j + k] = _mm256_or_si256(u, _mm256_slli_si256(x, 8));
-          data[j + n + k] = _mm256_or_si256(_mm256_srli_si256(v, 8), y);
+          data[j + k] = _mm256_or_si256(u, _mm256_srli_si256(x, 8));
+          data[j + n + k] = _mm256_or_si256(_mm256_slli_si256(v, 8), y);
         } else {
-          data[j + k] = _mm256_or_si256(u, _mm256_permute2f128_ps( x , x , 1));
-          data[j + n + k] = _mm256_or_si256(_mm256_permute2f128_ps( v , v , 1), y);
+          data[j + k] = _mm256_or_si256(u, _mm256_permute2x128_si256( x , x , 1));
+          data[j + n + k] = _mm256_or_si256(_mm256_permute2x128_si256( v , v , 1), y);
         }
       }
   }
@@ -137,7 +138,23 @@ void check_ortho_64 () {
 
 }
 
+
+
+void testtt() {
+
+  __m256i m = _mm256_set_epi64x(-1UL,0x3333333333333333UL,-1UL,0xCCCCCCCCCCCCCCCCUL);
+  print256bin(m);
+  __m256i y = _mm256_slli_epi64(m, 8);
+  print256bin(y);
+  __m256i x = _mm256_slli_si256(m, 8);
+  print256bin(x);
+  __m256i z = _mm256_permute2f128_ps( m , m , 1);
+  print256bin(z);
+  exit(1);
+}
+
 void check_ortho () {
+  //testtt();
   
   __m256i *restrict buffer = aligned_alloc(32,256 * sizeof *buffer);
 
@@ -178,7 +195,8 @@ int main () {
 
   srand(7);
 
-  //check_ortho();
+  check_ortho();
+  exit(1);
   
   uint64_t start, end;
   int total = 1e6;

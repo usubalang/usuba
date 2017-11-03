@@ -24,10 +24,13 @@ for (1 .. $nb_run) {
         my ($nb_cores,$cycles) = split /\s*:\s*/, $line;
         $times{$nb_cores} += $cycles / $nb_run;
     }
+    open my $FH, '>', 'data.dat' or die $!;
+    for my $cores (sort keys %times) {
+        printf $FH "$cores %.4f\n", $times{$cores} * ($nb_run / $_);
+    }
 }
 
-
-open my $FH, '>', 'data.txt' or die $!;
+open my $FH, '>', 'data.dat' or die $!;
 for my $cores (sort keys %times) {
-    printf $FH "$cores: %.4f\n", $times{$cores};
+    printf $FH "$cores %.4f\n", $times{$cores};
 }
