@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use v5.18;
 use List::Util qw(max sum);
 use POSIX qw(round ceil);
 
@@ -15,6 +16,7 @@ my %data;
 while (<$FH>) {
     chomp;
     my ($core,$time) = split ' ';
+    next if $core < 10 && $core != 1 && $core != 5;
     push @{$data{$core}}, $time;
 }
 close $FH;
@@ -25,7 +27,10 @@ for my $core (keys %data) {
     $max = max($max,$data{$core});
 }
 
+delete $data{1};
+
 open $FH, '>', 'data.dat' or die $!;
+printf $FH "0 0\n";
 for my $core (sort { $a <=> $b } keys %data) {
     printf $FH "%d %d\n", $core, round($max/$data{$core});
 }
