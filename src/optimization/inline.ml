@@ -9,6 +9,7 @@ let rec update_expr var_env expr_env (e:expr) : expr =
   | ExpVar v -> ( match Hashtbl.find_opt expr_env v with
                   | Some e -> e
                   | None -> ExpVar (Hashtbl.find var_env v) )
+  | Tuple l -> Tuple (List.map rec_call l)
   | Not e -> Not (rec_call e)
   | Log(op,x,y) -> Log(op,rec_call x,rec_call y)
   | Fun(f,l) -> Fun(f,List.map rec_call l)
@@ -61,23 +62,23 @@ let inline_in_node ((vars,body):p*deq list) (to_inl:def) : p * deq list =
   (* maintain a counter for variables alpha-conversion *)
   let cpt   = ref 0 in
   
-  List.fold_left
-    (* Unpacked the list bellow into a single list of vars and 
+  let (vars,body) =
+    (* Unpack the list bellow into a single list of vars and 
        a list of deqs *)
-    (fun (vars,body) (v,b) -> (v @ vars, b @ body))
-    ([],[])
-    (* Find the calls to f_inl, and inline them. 
+    List.split      
+      (* Find the calls to f_inl, and inline them. 
        This will introduce new variables, which is 
        why maps returns a (p * deq list) list. *)
-    ( List.map (
-          fun eqn -> match eqn with
-          | Rec _ -> assert false
-          | Norec(lhs,e) -> match e with
-                            | Fun(f,l) when f.name = f_inl ->
-                               incr cpt;
-                               inline_call to_inl l lhs !cpt
-                            | _ -> [], [eqn]
-        ) body )
+      ( List.map (
+            fun eqn -> match eqn with
+                       | Rec _ -> assert false
+                       | Norec(lhs,e) -> match e with
+                                         | Fun(f,l) when f.name = f_inl ->
+                                            incr cpt;
+                                            inline_call to_inl l lhs !cpt
+                                         | _ -> [], [eqn]
+          ) body ) in
+  List.flatten vars, List.flatten body
     
 
 (* Perform the inlining of node "to_inline" at every call point *)
@@ -86,8 +87,8 @@ let do_inline (prog:prog) (to_inline:def) : prog =
   { nodes = List.map (fun def ->
                 match def.node with
                 | Single(vars,body) ->
-                   let (vars,body) = inline_in_node (vars,body) to_inline in
-                   { def with node = Single(vars,body) }
+                   let (vars',body') = inline_in_node (vars,body) to_inline in
+                   { def with node = Single(vars @ vars',body') }
                 | _ -> def) prog.nodes }
   
   
@@ -108,6 +109,7 @@ let is_call_free env (def:def) : bool =
 (* Returns true if the node can be inlined now. ie:
     - is not already inlined
     - it doesn't have the attribute "no_inline"
+       (and "inline_all" isn't set to true)
     - it doesn't contain any function call, or
     - every function call it contains is to a node "no_inline" *)
 let can_inline env inlined conf (node:def) : bool =
@@ -118,9 +120,12 @@ let can_inline env inlined conf (node:def) : bool =
       (* Doesn't contain any call, or calls to "no_inline" *)
       (is_call_free env node)
 
-      
+        
+(* Inline every node that should be and hasn't already been
+   (inlined contains the status of each node: inlined or not) *)
 let rec _inline (prog:prog) (conf:config) inlined : prog =
-  
+
+  (* A list of every node, needed for "is_call_free" *)
   let env = Hashtbl.create 20 in
   List.iter (fun x -> Hashtbl.add env x.id.name x) prog.nodes;
 
@@ -138,6 +143,7 @@ let rec _inline (prog:prog) (conf:config) inlined : prog =
     (* inlining is done, return the prog *)
     prog
 
+(* Main inlining function. _inline actually does most of the job *)
 let inline (prog:prog) (conf:config) : prog =
   (* Hashtbl containing the inlining status of each node:
      false if it is not already inlined, true if it is *)

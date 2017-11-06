@@ -1,86 +1,90 @@
 node sbox (U0:bool, U1:bool, U2:bool, U3:bool, U4:bool, U5:bool, U6:bool, U7:bool)
      returns  (S0:bool, S1:bool, S2:bool, S3:bool, S4:bool, S5:bool, S6:bool, S7:bool)
 vars
-    y1:bool,  y2:bool,  y3:bool,  y4:bool,  y5:bool,  y6:bool,  y7:bool,  y8:bool, 
-    y9:bool,  y10:bool, y11:bool, y12:bool, y13:bool, y14:bool, y15:bool, y16:bool, 
-    y17:bool, y18:bool, y19:bool, y20:bool, y21:bool, 
-    t1:bool,  t2:bool,  t3:bool,  t4:bool,  t5:bool,  t6:bool,  t7:bool,  t8:bool, 
-    t9:bool,  t10:bool, t11:bool, t12:bool, t13:bool, t14:bool, t15:bool, t16:bool, 
-    t17:bool, t18:bool, t19:bool, t20:bool, t21:bool,
-    z1:bool,  z2:bool,  z3:bool,  z4:bool,  z5:bool,  z6:bool,  z7:bool,  z8:bool, 
-    z9:bool,  z10:bool, z11:bool, z12:bool, z13:bool, z14:bool, z15:bool, z16:bool, 
-    z17:bool, z18:bool, z19:bool, z20:bool, z21:bool,
-    tc1:bool,  tc2:bool,  tc3:bool,  tc4:bool,  tc5:bool,  tc6:bool,  tc7:bool,  tc8:bool, 
-    tc9:bool,  tc10:bool, tc11:bool, tc12:bool, tc13:bool, tc14:bool, tc15:bool, tc16:bool, 
-    tc17:bool, tc18:bool, tc19:bool, tc20:bool, tc21:bool
+    y0:bool,  y1:bool,  y2:bool,  y3:bool,  y4:bool,  y5:bool,  y6:bool,  y7:bool,
+    y8:bool,  y9:bool,  y10:bool, y11:bool, y12:bool, y13:bool, y14:bool, y15:bool,
+    y16:bool, y17:bool, y18:bool, y19:bool, y20:bool, y21:bool, 
+    t0:bool,  t1:bool,  t2:bool,  t3:bool,  t4:bool,  t5:bool,  t6:bool,  t7:bool,
+    t8:bool,  t9:bool,  t10:bool, t11:bool, t12:bool, t13:bool, t14:bool, t15:bool,
+    t16:bool, t17:bool, t18:bool, t19:bool, t20:bool, t21:bool, t22:bool, t23:bool,
+    t24:bool, t25:bool, t26:bool, t27:bool, t28:bool, t29:bool, t30:bool, t31:bool,
+    t32:bool, t33:bool, t34:bool, t35:bool, t36:bool, t37:bool, t38:bool, t39:bool,
+    t40:bool, t41:bool, t42:bool, t43:bool, t44:bool, t45:bool, 
+    z0:bool,  z1:bool,  z2:bool,  z3:bool,  z4:bool,  z5:bool,  z6:bool,  z7:bool,
+    z8:bool,  z9:bool,  z10:bool, z11:bool, z12:bool, z13:bool, z14:bool, z15:bool,
+    z16:bool, z17:bool,
+    tc0:bool,  tc1:bool,  tc2:bool,  tc3:bool,  tc4:bool,  tc5:bool,  tc6:bool,
+    tc7:bool,  tc8:bool,  tc9:bool,  tc10:bool, tc11:bool, tc12:bool, tc13:bool,
+    tc14:bool, tc15:bool, tc16:bool, tc17:bool, tc18:bool, tc19:bool, tc20:bool,
+    tc21:bool, tc22:bool, tc23:bool, tc24:bool, tc25:bool, tc26:bool
 let
-  y14 = U3 | U5;
-  y13 = U0 | U6;
-  y9 = U0 | U3;
-  y8 = U0 | U5;
-  t0 = U1 | U2;
-  y1 = t0 | U7;
-  y4 = y1 | U3;
-  y12 = y13 | y14;
-  y2 = y1 | U0;
-  y5 = y1 | U6;
-  y3 = y5 | y8;
-  t1 = U4 | y12;
-  y15 = t1 | U5;
-  y20 = t1 | U1;
-  y6 = y15 | U7;
-  y10 = y15 | t0;
-  y11 = y20 | y9;
-  y7 = U7 | y11;
-  y17 = y10 | y11;
-  y19 = y10 | y8;
-  y16 = t0 | y11;
-  y21 = y13 | y16;
-  y18 = U0 | y16;
+  y14 = U3 ^ U5;
+  y13 = U0 ^ U6;
+  y9 = U0 ^ U3;
+  y8 = U0 ^ U5;
+  t0 = U1 ^ U2;
+  y1 = t0 ^ U7;
+  y4 = y1 ^ U3;
+  y12 = y13 ^ y14;
+  y2 = y1 ^ U0;
+  y5 = y1 ^ U6;
+  y3 = y5 ^ y8;
+  t1 = U4 ^ y12;
+  y15 = t1 ^ U5;
+  y20 = t1 ^ U1;
+  y6 = y15 ^ U7;
+  y10 = y15 ^ t0;
+  y11 = y20 ^ y9;
+  y7 = U7 ^ y11;
+  y17 = y10 ^ y11;
+  y19 = y10 ^ y8;
+  y16 = t0 ^ y11;
+  y21 = y13 ^ y16;
+  y18 = U0 ^ y16;
   t2 = y12 & y15;
   t3 = y3 & y6;
-  t4 = t3 | t2;
+  t4 = t3 ^ t2;
   t5 = y4 & U7;
-  t6 = t5 | t2;
+  t6 = t5 ^ t2;
   t7 = y13 & y16;
   t8 = y5 & y1;
-  t9 = t8 | t7;
+  t9 = t8 ^ t7;
   t10 = y2 & y7;
-  t11 = t10 | t7;
+  t11 = t10 ^ t7;
   t12 = y9 & y11;
   t13 = y14 & y17;
-  t14 = t13 | t12;
+  t14 = t13 ^ t12;
   t15 = y8 & y10;
-  t16 = t15 | t12;
-  t17 = t4 | y20;
-  t18 = t6 | t16;
-  t19 = t9 | t14;
-  t20 = t11 | t16;
-  t21 = t17 | t14;
-  t22 = t18 | y19;
-  t23 = t19 | y21;
-  t24 = t20 | y18;
-  t25 = t21 | t22;
+  t16 = t15 ^ t12;
+  t17 = t4 ^ y20;
+  t18 = t6 ^ t16;
+  t19 = t9 ^ t14;
+  t20 = t11 ^ t16;
+  t21 = t17 ^ t14;
+  t22 = t18 ^ y19;
+  t23 = t19 ^ y21;
+  t24 = t20 ^ y18;
+  t25 = t21 ^ t22;
   t26 = t21 & t23;
-  t27 = t24 | t26;
+  t27 = t24 ^ t26;
   t28 = t25 & t27;
-  t29 = t28 | t22;
-  t30 = t23 | t24;
-  t31 = t22 | t26;
+  t29 = t28 ^ t22;
+  t30 = t23 ^ t24;
+  t31 = t22 ^ t26;
   t32 = t31 & t30;
-  t33 = t32 | t24;
-  t34 = t23 | t33;
-  t35 = t27 | t33;
+  t33 = t32 ^ t24;
+  t34 = t23 ^ t33;
+  t35 = t27 ^ t33;
   t36 = t24 & t35;
-  t37 = t36 | t34;
-  t38 = t27 | t36;
+  t37 = t36 ^ t34;
+  t38 = t27 ^ t36;
   t39 = t29 & t38;
-  t40 = t25 | t39;
-  t41 = t40 | t37;
-  t42 = t29 | t33;
-  t43 = t29 | t40;
-  t44 = t33 | t37;
-  t45 = t42 | t41;
+  t40 = t25 ^ t39;
+  t41 = t40 ^ t37;
+  t42 = t29 ^ t33;
+  t43 = t29 ^ t40;
+  t44 = t33 ^ t37;
+  t45 = t42 ^ t41;
   z0 = t44 & y15;
   z1 = t37 & y6;
   z2 = t33 & U7;
@@ -99,32 +103,32 @@ let
   z15 = t42 & y9;
   z16 = t45 & y14;
   z17 = t41 & y8;
-  tc1 = z15 | z16;
-  tc2 = z10 | tc1;
-  tc3 = z9 | tc2;
-  tc4 = z0 | z2;
-  tc5 = z1 | z0;
-  tc6 = z3 | z4;
-  tc7 = z12 | tc4;
-  tc8 = z7 | tc6;
-  tc9 = z8 | tc7;
-  tc10 = tc8 | tc9;
-  tc11 = tc6 | tc5;
-  tc12 = z3 | z5;
-  tc13 = z13 | tc1;
-  tc14 = tc4 | tc12;
-  S3 = tc3 | tc11;
-  tc16 = z6 | tc8;
-  tc17 = z14 | tc10;
-  tc18 = tc13 | tc14;
-  S7 = ~(z12 | tc18);
-  tc20 = z15 | tc16;
-  tc21 = tc2 | z11;
-  S0 = tc3 | tc16;
-  S6 = ~(tc10 | tc18);
-  S4 = tc14 | S3;
-  S1 = ~(S3 | tc16);
-  tc26 = tc17 | tc20;
-  S2 = ~(tc26 | z17);
-  S5 = tc21 | tc17
+  tc1 = z15 ^ z16;
+  tc2 = z10 ^ tc1;
+  tc3 = z9 ^ tc2;
+  tc4 = z0 ^ z2;
+  tc5 = z1 ^ z0;
+  tc6 = z3 ^ z4;
+  tc7 = z12 ^ tc4;
+  tc8 = z7 ^ tc6;
+  tc9 = z8 ^ tc7;
+  tc10 = tc8 ^ tc9;
+  tc11 = tc6 ^ tc5;
+  tc12 = z3 ^ z5;
+  tc13 = z13 ^ tc1;
+  tc14 = tc4 ^ tc12;
+  S3 = tc3 ^ tc11;
+  tc16 = z6 ^ tc8;
+  tc17 = z14 ^ tc10;
+  tc18 = tc13 ^ tc14;
+  S7 = ~(z12 ^ tc18);
+  tc20 = z15 ^ tc16;
+  tc21 = tc2 ^ z11;
+  S0 = tc3 ^ tc16;
+  S6 = ~(tc10 ^ tc18);
+  S4 = tc14 ^ S3;
+  S1 = ~(S3 ^ tc16);
+  tc26 = tc17 ^ tc20;
+  S2 = ~(tc26 ^ z17);
+  S5 = tc21 ^ tc17
 tel
