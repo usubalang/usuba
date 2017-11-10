@@ -6,6 +6,7 @@
 
 
 /* Including headers */
+#pragma once
 #include <stdlib.h>
 #include <arm_neon.h>
 #include <stdint.h>
