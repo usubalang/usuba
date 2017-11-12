@@ -6,6 +6,7 @@
 
 
 /* Including headers */
+#pragma once
 #include <stdlib.h>
 #include <altivec.h>
 #include <stdint.h>

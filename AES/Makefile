@@ -1,6 +1,7 @@
 CC     = clang
 CFLAGS = -O3 -march=native -I../arch
 
+USUBA_OPTS = -no-runtime -no-sched -check-tbl -no-share -no-arr
 
 all: verif bench
 
@@ -11,7 +12,7 @@ bench: aes.c bench.c
 	$(CC) $(CFLAGS) -o bench bench.c
 
 aes: .FORCE
-	cd .. ; ./usubac -no-runtime -no-inlining -no-share -no-sched -no-arr -check-tbl -o AES/aes.c samples/usuba/aes.ua
+	cd .. ; ./usubac $(USUBA_OPTS) -o AES/aes.c samples/usuba/aes.ua
 	perl -i -pe 's/cipher__(\d+)__/cipher[$$1]/' aes.c
 
 .FORCE:

@@ -47,7 +47,7 @@ let bits_in_arch = function
   | AVX      -> 256
   | AVX512   -> 512
   | Neon     -> 128
-  | AltiVec  -> raise (Error "No idea how much bits in AltiVec")
+  | AltiVec  -> 128
 
 let gen_output_filename (file_in: string) : string =
   let full_name = match (String.split_on_char '.' file_in) with

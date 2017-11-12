@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-$tot = 30;
+$tot = 20;
 for ( 0 .. $tot ) {
     for (@ARGV) {
         $time{$_} += `./$_`;

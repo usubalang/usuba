@@ -6,6 +6,8 @@ let
 tel
 
 
+# x is used as if it were mutable, so this won't work.
+# for C-style for loop isn't implemented in usuba yet.
 node salsa20 (input:u32[16]) returns (out:u32[16])
 vars
     x : u32[16]

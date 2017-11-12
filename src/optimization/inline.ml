@@ -1,3 +1,15 @@
+(* ************************************************************************** *)
+(*                                  INLINING                                  *)
+(*                                                                            *)
+(* I see two ways of doing inlining:                                          *)
+(*   - iterating through the nodes' bodies, and inlining functions calls as   *)
+(*      they appear.                                                          *)
+(*   - iterating through the nodes, and for each nodes, inline every call     *)
+(*      made to it by parcouring the other nodes' bodies.                     *)
+(* I chose the latter; not sure what more efficient though.                   *)
+(* ************************************************************************** *)
+
+
 open Usuba_AST
 open Utils
        
@@ -39,7 +51,7 @@ let inline_call (to_inl:def) (args:expr list) (lhs:var list) (cpt:int) :
   let p_in  = to_inl.p_in  in
   let p_out = to_inl.p_out in
 
-  (* alpha-conversion environment *)
+  (* alpha-conversion environments *)
   let var_env = Hashtbl.create 100 in
   let expr_env = Hashtbl.create 100 in
   (* p_out replaced by the lhs *)
@@ -49,8 +61,8 @@ let inline_call (to_inl:def) (args:expr list) (lhs:var list) (cpt:int) :
   (* Create a list containing the new variables names *)
   let vars = List.map (fun ((id,typ),ck) -> ((conv_name id,typ),ck)) vars_inl in
   (* nodes variables alpha-converted *)
-  List.iter2 ( fun ((id,_),_) ((id',_),_) -> Hashtbl.add var_env (Var id)
-                                               (Var id')) vars_inl vars;
+  List.iter2 ( fun ((id,_),_) ((id',_),_) ->
+               Hashtbl.add var_env (Var id) (Var id')) vars_inl vars;
 
   vars, update_vars var_env expr_env body_inl  
   

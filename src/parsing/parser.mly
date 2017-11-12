@@ -180,7 +180,7 @@ deq_forall:
     { Rec(i, startr, endr, d) }
 
 deqs:
-  | d1=deq_forall ds=deqs { d1 :: ds }
+  | d=deq_forall ds=deqs { d :: ds }
   | d=norec_deq TOK_SEMICOLON ds=deqs { d :: ds }
   | d=deq_forall { [ d ] }
   | d=norec_deq  { [ d ] }
@@ -209,28 +209,37 @@ opt_def:
    | TOK_NOINLINE { No_inline }
 
 def:
+  (* A node *)
   | opts=list(opt_def) TOK_NODE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
     TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
     TOK_VAR vars=p TOK_LET body=deqs TOK_TEL
     { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Single(vars,body) } }
+  (* A node without local variables *)
+  | opts=list(opt_def) TOK_NODE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
+    TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
+    TOK_LET body=deqs TOK_TEL
+    { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Single([],body) } }
+  (* An array of nodes *)
   | opts=list(opt_def) TOK_NODE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
     TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
     l = def_list TOK_RBRACKET
     { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Multiple l } }
-                 
+  (* A permutation *)
   | opts=list(opt_def) TOK_PERM f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
     TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
     TOK_LCURLY l=intlist TOK_RCURLY
   { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Perm l } }
+  (* An array of permutations *)
   | opts=list(opt_def) TOK_PERM TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
     TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
     l = permlist TOK_RBRACKET
   { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=MultiplePerm l } }
-
+  (* A table *)
   | opts=list(opt_def) TOK_TABLE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
     TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
     TOK_LCURLY l=intlist TOK_RCURLY
   { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Table l } }
+  (* An array of table *)
   | opts=list(opt_def) TOK_TABLE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
     TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
     l = permlist TOK_RBRACKET
@@ -244,8 +253,11 @@ permlist:
                               delimited(TOK_LCURLY,intlist,TOK_RCURLY)) { l }
   
 def_list:
-  l=separated_nonempty_list(TOK_SEMICOLON,
-                            TOK_VAR vars=p TOK_LET body=deqs TOK_TEL { vars,body })
+  l=separated_nonempty_list(TOK_SEMICOLON, def_list_elem)
                            { l }
 
+def_list_elem:
+  | TOK_VAR vars=p TOK_LET body=deqs TOK_TEL { vars,body }
+  | TOK_LET body=deqs TOK_TEL { [],body }
+  
 %%
