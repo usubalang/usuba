@@ -57,17 +57,16 @@ chdir "..";
 open my $FH, '>', $outfile or die $!;
 
 print $FH 
-"\\begin{table}[h]
-  \\begin{tabular}{|K{2.5cm}|K{2.5cm}|K{2.5cm}|}
-    \\hline
-    \\textbf{GP (64-bits)} & \\textbf{SSE (128-bits)} & \\textbf{AVX (256-bits)}\\\\
-    \\hline
-    $times{'GP-64'} & $times{'SSE-128'} & $times{'AVX-256'} \\\\
-    \\hline
-  \\end{tabular}
-  \\caption{Comparison of the orthogonalization speed (MiB/s)}
-  \\label{tbl:perf-ortho}
-\\end{table}";
+"\\begin{tabular}{|K{2cm}|K{2cm}|K{2cm}|}
+  \\hline
+  \\textbf{\\enspace GP (64-bits)} & \\textbf{SSE (128-bits)} & \\textbf{AVX (256-bits)}\\\\
+  \\hline
+  $times{'GP-64'} & $times{'SSE-128'} & $times{'AVX-256'} \\\\
+  \\hline
+\\end{tabular}
+\\caption{Orthogonalization throughput (MiB/s)}
+\\label{tbl:perf-ortho}
+";
 
 close $FH;
 

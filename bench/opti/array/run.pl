@@ -80,28 +80,26 @@ chdir "..";
 open my $FH, '>', $outfile or die $!;
 
 print $FH '
-\\begin{table}[ht!]
-  \\begin{tabular}{|l K{1cm}|K{2cm}|K{2cm}|K{1.5cm}|}
-    \\hline
-    & \\textbf{CC} & \\textbf{w variables} &\\textbf{w arrays} & \\textbf{speedup} \\\\
-    \\hline\\hline
+\\centering
+\\begin{tabular}{|l K{1cm}|K{2cm}|K{2cm}|K{1.5cm}|}
+  \\hline
+  & \\textbf{CC} & \\textbf{variables} &\\textbf{arrays} & \\textbf{speedup} \\\\
+  \\hline\\hline
 ';
 
-my $i = 1;
 for my $cc (sort {$times{w}{$b} <=> $times{w}{$a}} @cc) {
     my $w = $times{w}{$cc};
     my $n = $times{n}{$cc};
     my $percent = -($n - $w) / $n * 100;
-    printf $FH "    (%d) & \\%s & %.2f & %.2f & %s%d\\%%\\\\\n    \\hline\n",
-    $i++, $cc, $n, $w, ($percent > 0 ? '+' : ''), round($percent);
+    printf $FH "\\%s & %.2f & %.2f & %s%d\\%%\\\\\n    \\hline\n",
+    $cc, $n, $w, ($percent > 0 ? '+' : ''), round($percent);
     
 }
 
 print $FH 
-'  \\end{tabular}
-  \\caption{Normalized performances of the use of arrays instead of variables}
-  \\label{tbl:perf-arr}
-\\end{table}
+'\\end{tabular}
+\\caption{Variables \\vs{} arrays}
+\\label{tbl:perf-arr}
 ';
 
 

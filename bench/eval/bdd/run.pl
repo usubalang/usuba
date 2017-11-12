@@ -65,21 +65,19 @@ chdir "..";
 open my $FH, '>', $outfile or die $!;
 
 print $FH 
-"\\begin{table}[h]
-  \\begin{tabular}{|K{2.5cm}|K{2.5cm}|K{2.5cm}|}
-    \\hline
-    & \\multicolumn{2}{|c|}{ \\textbf{Speed (MiB/s)} } \\\\
-    \\hline
-    \\textbf{Algorithm} & \\textbf{BDD-generated S-boxes} & \\textbf{Kwan's S-boxes}\\\\
-    \\hline\\hline
-    DES w/o ortho & $times{'bdd-n'} & $times{'kwan-n'} \\\\
-    \\hline
-    DES w ortho & $times{'bdd-w'} & $times{'kwan-w'} \\\\
-    \\hline
-  \\end{tabular}
-  \\caption{Comparison of BDD-generated and Kwan's S-boxes}
-  \\label{tbl:perf-bdd}
-\\end{table}";
+"\\begin{tabular}{|K{2.5cm}|K{2.5cm}|K{2.5cm}|}
+  \\hline
+  & \\multicolumn{2}{|c|}{ \\textbf{Speed (MiB/s)} } \\\\
+  \\hline
+  \\textbf{Algorithm} & \\textbf{BDD-generated S-boxes} & \\textbf{Kwan's S-boxes}\\\\
+  \\hline\\hline
+  DES w/o ortho & $times{'bdd-n'} & $times{'kwan-n'} \\\\
+  \\hline
+  DES w ortho & $times{'bdd-w'} & $times{'kwan-w'} \\\\
+  \\hline
+\\end{tabular}
+\\caption{BDD-generated \\vs{} Kwan's S-boxes}
+\\label{tbl:perf-bdd}";
 
 close $FH;
 

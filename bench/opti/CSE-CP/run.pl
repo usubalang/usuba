@@ -79,28 +79,26 @@ chdir "..";
 open my $FH, '>', $outfile or die $!;
 
 print $FH '
-\\begin{table}[ht!]
-  \\begin{tabular}{|l K{1cm}|K{2cm}|K{2cm}|K{1.5cm}|}
-    \\hline
-    & \\textbf{CC} & \\textbf{w/o CSE-CP} &\\textbf{w CSE-CP} & \\textbf{speedup} \\\\
-    \\hline\\hline
+\\centering
+\\begin{tabular}{|l K{1cm}|K{2cm}|K{2cm}|K{1.5cm}|}
+  \\hline
+  \\textbf{CC} & \\textbf{without} &\\textbf{with} & \\textbf{speedup} \\\\
+  \\hline\\hline
 ';
 
-my $i = 1;
 for my $cc (sort {$times{w}{$b} <=> $times{w}{$a}} @cc) {
     my $w = $times{w}{$cc};
     my $n = $times{n}{$cc};
     my $percent = -($n - $w) / $n * 100;
-    printf $FH "    (%d) & \\%s & %.2f & %.2f & %s%d\\%%\\\\\n    \\hline\n",
-    $i++, $cc, $n, $w, ($percent > 0 ? '+' : ''), round($percent);
+    printf $FH "\\%s & %.2f & %.2f & %s%d\\%%\\\\\n    \\hline\n",
+    $cc, $n, $w, ($percent > 0 ? '+' : ''), round($percent);
     
 }
 
 print $FH 
-'  \\end{tabular}
-  \\caption{Normalized performances of CSE and copy propagation}
-  \\label{tbl:perf-cse}
-\\end{table}
+'\\end{tabular}
+\\caption{CSE-CP}
+\\label{tbl:perf-cse}
 ';
 
 

@@ -84,25 +84,24 @@ my $tc  = $times{clang};
 my $tw  = $times{without};
 
 print $FH "
-\\begin{table}[ht!]
-  \\begin{tabular}{|l K{1.2cm}|K{1.5cm}|K{2cm}|K{1.5cm}|}
-    \\hline
-    & \\textbf{Inlining} &\\textbf{Speed} & \\textbf{Delta to best} & \\textbf{Code size (byte)}\\\\
-    \\hline\\hline
-    (1) & \\usuba \\& \\clang & $tuc & 0 \\\% & ", (-s 'tmp/usuba-clang'), "\\\\
-    \\hline
-    (2) & \\usuba & $tu & ",int(($tu-$tuc)/$tu*100), " \\\% & ", (-s 'tmp/usuba'), "\\\\
-    \\hline
-    (3) & partial \\usuba & $tp & ", int(($tp-$tuc)/$tp*100)," \\\% & ",  (-s 'tmp/partial') ,"\\\\
-    \\hline
-    (4) & \\clang & $tc & ", int(($tc-$tuc)/$tc*100), " \\\% & ", (-s 'tmp/clang') ,"\\\\
-    \\hline
-    (5) & without & $tw & ", int(($tw-$tuc)/$tw*100), " \\\% & ", (-s 'tmp/without'), "\\\\
-    \\hline
-    \\end{tabular}
-  \\caption{Normalized performances of inlining}
-  \\label{tbl:perf-inlining}
-\\end{table}
+\\centering
+\\begin{tabular}{|l K{1.2cm}|K{1.5cm}|K{2cm}|K{1.5cm}|}
+  \\hline
+  & \\textbf{Inlining} &\\textbf{Speed} & \\textbf{Delta to best} & \\textbf{Code size (byte)}\\\\
+  \\hline\\hline
+  (1) & \\usuba \\& \\clang & $tuc & 0 \\\% & ", (-s 'tmp/usuba-clang'), "\\\\
+  \\hline
+  (2) & \\usuba & $tu & ",int(($tu-$tuc)/$tu*100), " \\\% & ", (-s 'tmp/usuba'), "\\\\
+  \\hline
+  (3) & partial \\usuba & $tp & ", int(($tp-$tuc)/$tp*100)," \\\% & ",  (-s 'tmp/partial') ,"\\\\
+  \\hline
+  (4) & \\clang & $tc & ", int(($tc-$tuc)/$tc*100), " \\\% & ", (-s 'tmp/clang') ,"\\\\
+  \\hline
+  (5) & without & $tw & ", int(($tw-$tuc)/$tw*100), " \\\% & ", (-s 'tmp/without'), "\\\\
+  \\hline
+  \\end{tabular}
+\\caption{Inlining}
+\\label{tbl:perf-inlining}
 ";
 
 

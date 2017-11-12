@@ -13,4 +13,4 @@ set yrange [0:*]
 
 set nokey
 
-plot 'data.dat' using 2:xtic(1) with lines lt rgb "black", '' using 0:($2+3):2 with labels
+plot 'data.dat' using 2:xtic(1) with lines lt rgb "black", '' using 0:($2):2 with points pointtype 1 lt rgb "black"
