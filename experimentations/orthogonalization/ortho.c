@@ -38,6 +38,39 @@ void orthogonalize(unsigned long data[]) {
   }
 }
 
+static unsigned long m[6] = {
+  0x5555555555555555UL,
+  0x3333333333333333UL,
+  0x0f0f0f0f0f0f0f0fUL,
+  0x00ff00ff00ff00ffUL,
+  0x0000ffff0000ffffUL,
+  0x00000000ffffffffUL
+};
+static unsigned long _m[6] = {
+  0xaaaaaaaaaaaaaaaaUL,
+  0xccccccccccccccccUL,
+  0xf0f0f0f0f0f0f0f0UL,
+  0xff00ff00ff00ff00UL,
+  0xffff0000ffff0000UL,
+  0xffffffff00000000UL
+};
+
+/* Pseudo-code from "Bitslice implementation of aes" */
+void orthogonalize2(unsigned long B[]) {
+
+  for (int j = 0; j < 6; j++) {
+    unsigned long k = 1 << j;
+    unsigned long k2 = k * 2;
+    unsigned long r = k - 1;
+    for (int i = 0; i < 64 / 2; i++) {
+      unsigned long l = 2*(i - (i&r)) + (i&r);
+      unsigned long temp = (B[l] & m[j]) | ((B[l+k2] | m[j]) << k);
+      B[l+k2] = (B[l+k2] & _m[j]) | ((B[l] & _m[j]) >> k);
+      B[l] = temp;
+    }
+  }
+}
+
 int main () {
   
   uint64_t start, end;

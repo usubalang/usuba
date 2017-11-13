@@ -33,7 +33,7 @@
 #define ORTHOGONALIZE(in,out) orthogonalize(in,out)
 #define UNORTHOGONALIZE(in,out) unorthogonalize(in,out)
 
-#define ALLOC(size) aligned_alloc(32,size * sizeof(__m512i))
+#define ALLOC(size) aligned_alloc(64,size * sizeof(__m512i))
 
 
 #ifndef NO_RUNTIME
@@ -171,9 +171,9 @@ void unorthogonalize_64x512(__m512i *in, uint64_t* data) {
 
 void orthogonalize_512x512(uint64_t* data, __m512i* out) {
   for (int i = 0; i < 512; i++)
-    out[i] = _mm512_set_epi64(data[i], data[512+i], data[512+i],
-                              data[768+i], data[1024+i],data[1280+i],
-                              data[1536+i],data[1792+i]);
+    out[i] = _mm512_set_epi64(data[i], data[512+i], data[1024+i],
+                              data[1536+i], data[2048+i],data[2560+i],
+                              data[3072+i],data[3584+i]);
   real_ortho_512x512(out);
 }
 
@@ -183,13 +183,13 @@ void unorthogonalize_512x512(__m512i *in, uint64_t* data) {
     uint64_t tmp[8];
     _mm512_store_si512 ((__m512i*)tmp, in[i]);
     data[i]      = tmp[7];
-    data[256+i]  = tmp[6];
-    data[512+i]  = tmp[5];
-    data[768+i]  = tmp[4];
-    data[1024+i] = tmp[3];
-    data[1280+i] = tmp[2];
-    data[1536+i] = tmp[1];
-    data[1792+i] = tmp[0];
+    data[512+i]  = tmp[6];
+    data[1024+i] = tmp[5];
+    data[1536+i] = tmp[4];
+    data[2048+i] = tmp[3];
+    data[2560+i] = tmp[2];
+    data[3072+i] = tmp[1];
+    data[3584+i] = tmp[0];
   }
 }
 
