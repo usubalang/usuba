@@ -1,0 +1,14 @@
+set terminal pdf
+set output 'heatmaps.pdf'
+
+unset key
+set tic scale 0
+
+# Color runs from white to green
+set palette rgbformula -7,2,-7
+set cbrange [*:*]
+set cblabel "Score"
+unset cbtics
+
+set view map
+splot 'data.txt' matrix with image
