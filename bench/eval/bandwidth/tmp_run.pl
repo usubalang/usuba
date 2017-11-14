@@ -32,11 +32,13 @@ chdir "../../..";
 talk "Generating the C file";
 system "./usubac $opts -o $self_dir/tmp/des.c samples/usuba/des.ua";
 
+
 chdir "$self_dir/tmp";
+copy "../main.c", ".";
 
-my $clags = "-O3 -I ../../../../arch -march=native -w -S";
-system "$cc $clags -o des.s des.c";
-
+my $cflags = "-O3 -I ../../../../arch -march=native -w -S";
+system "$cc $cflags -o des.s des.c";
+system "$cc $cflags -o main main.c";
 
 system "../analyze.pl";
 
