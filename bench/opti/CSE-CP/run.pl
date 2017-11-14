@@ -9,13 +9,13 @@ use List::Util qw( min );
 use Math::Round;
 use FindBin;
 
-my $nb_run = 30;
+my $nb_run = $ARGV[0] // 30;
 my @cc = qw(clang gcc icc);
 
 my $bench   = "CSE-CP";
 my $outfile = 'cse-cp.tex';
 
-my $opts = "-bench -no-ortho -arch std";
+my $opts = "-no-share -bench -no-ortho -arch std";
 
 my $out_w = 'des-cse-cp.c';
 my $out_n = 'des-no-cse-cp.c';
@@ -89,9 +89,9 @@ print $FH '
 for my $cc (sort {$times{w}{$b} <=> $times{w}{$a}} @cc) {
     my $w = $times{w}{$cc};
     my $n = $times{n}{$cc};
-    my $percent = -($n - $w) / $n * 100;
-    printf $FH "\\%s & %.2f & %.2f & %s%d\\%%\\\\\n    \\hline\n",
-    $cc, $n, $w, ($percent > 0 ? '+' : ''), round($percent);
+    my $speedup = $w / $n;
+    printf $FH "\\%s & %.2f & %.2f & x%.2f\\\\\n    \\hline\n",
+    $cc, $n, $w, $speedup;
     
 }
 
@@ -102,4 +102,4 @@ print $FH
 ';
 
 
-remove_tree "tmp";
+#remove_tree "tmp";

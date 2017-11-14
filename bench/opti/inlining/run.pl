@@ -9,7 +9,7 @@ use List::Util qw( min );
 use Math::Round;
 use FindBin;
 
-my $nb_run = 30;
+my $nb_run = $ARGV[0] // 30;
 my @cc = qw(clang gcc icc);
 
 my $bench   = "Inlining";
