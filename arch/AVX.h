@@ -175,6 +175,16 @@ void unorthogonalize(__m256i *in, uint64_t* data) {
 
 #else
 
+void orthogonalize_256x64(uint64_t *in, __m256i *out) {
+  for (int i = 0; i < 64; i++)
+    out[i] = _mm256_set_epi64x (in[i*4], in[i*4+1], in[i*4+2], in[i*4+3]);
+}
+
+void unorthogonalize_64x256(__m256i *in, uint64_t *out) {
+  for (int i = 0; i < 64; i++)
+    _mm256_store_si256 ((__m256i*)&(out[i*4]), in[i]);
+}
+
 void orthogonalize(uint64_t *in, __m256i *out) {
   for (int i = 0; i < 256; i++)
     out[i] = _mm256_set_epi64x (in[i*4], in[i*4+1], in[i*4+2], in[i*4+3]);
