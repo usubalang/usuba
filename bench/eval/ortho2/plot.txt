@@ -1,0 +1,26 @@
+set terminal pdf
+set output 'ortho_speed.pdf'
+set boxwidth 0.7
+set border 3
+set tics nomirror
+
+set grid ytics
+
+set xtics out
+set ytics out
+
+set yrange [0:*]
+
+set key left
+set key samplen 2
+
+set ylabel "Cycle/bit"
+set xlabel "Implementation"
+
+set style fill solid
+
+plot                                                                         \
+      'data.dat' every  1:1:0:0:5:0                                          \
+       using 0:2:xtic(1)  with boxes fs pattern 6 lt 3,\
+       '' using 0:($2+.03):2 with labels title ''
+
