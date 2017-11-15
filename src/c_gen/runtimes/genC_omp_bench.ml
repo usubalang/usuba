@@ -126,7 +126,7 @@ int main() {
   }
   fclose(fh_in);
 
-  for (int i = 1; i <= %d; i += (1 < 10 ? 1 : 5)) {
+  for (int i = 1; i <= %d; i += (i < 10 ? 1 : 5)) {
     struct timespec ini;
     clock_gettime(CLOCK_MONOTONIC,&ini);
     #pragma omp parallel num_threads(i)
