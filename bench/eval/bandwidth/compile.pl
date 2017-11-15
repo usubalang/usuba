@@ -12,7 +12,7 @@ use File::Copy;
 use Cwd;
 
 my $cc   = 'clang';
-my $arch = 'sse';
+my $arch = 'std';
 
 my %arch_corres = (
     std     => 'STD',
@@ -49,7 +49,7 @@ copy "../input.txt", ".";
 
 
 {
-    local $^I = "~";
+    local $^I = "";
     local @ARGV = 'main.c';
     while (<>) {
         s/ARCHI/$arch_corres{$arch}/;

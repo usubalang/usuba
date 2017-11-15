@@ -39,7 +39,6 @@ for my $arch (keys %arch) {
     system "./usubac $opts -arch $arch -o $self_dir/tmp/$arch.c samples/usuba/des.ua";
 }
 
-
 chdir "$self_dir/tmp";
 
 copy "../../../input.txt", ".";

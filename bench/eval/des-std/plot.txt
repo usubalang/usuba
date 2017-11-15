@@ -4,9 +4,12 @@ set boxwidth 0.7
 set border 3
 set tics nomirror
 
+set grid ytics
+
 set xtics out
 set ytics out
 
+set xrange [-.5:*]
 set yrange [0:*]
 
 set key left
@@ -15,12 +18,17 @@ set key samplen 2
 set ylabel "Throughput (MiB/s)"
 set xlabel "Implementation"
 
-set style fill solid noborder
 set linetype 1 lc rgb '#FF0000'
 set linetype 2 lc rgb '#0000FF'
 set linetype 3 lc rgb '#0000FF'
 set linetype 4 lc rgb '#0000FF'
-#set linetype 4 lc rgb '#D7DF01'
 
+set style fill solid
 
-plot 'data.dat' using 0:2:($0+1):xtic(1) with boxes linecolor variable title '' , '' using 0:($2+20):2 with labels title ''  ,-1 lc rgb '#FF0000' lw 3 title 'Standard (non-bitsliced)' ,-1 lc rgb '#0000FF' lw 3 title "Usuba"
+plot                                                                         \
+      'data.dat' every  1:1:0:0:0:0                                          \
+       using 0:2:xtic(1) with boxes fs pattern 1 lt 1 title 'Non-bitsliced', \
+      'data.dat' every  1:1:1:0:5:0                                          \
+       using ($0+1):2:xtic(1)  with boxes fs pattern 6 lt 3 title 'Usuba',   \
+       '' using 0:($2+25):2 with labels title ''
+
