@@ -4,10 +4,14 @@
 #include <string.h>
 #include <time.h>
 #include <stdint.h>
+#include <x86intrin.h>
 
+
+
+#define NO_ORTHO
+#include "ARCHI.h"
 
 #include "des.c"
-
 
 #ifndef INIT_RAND
 #define INIT_RAND 5
@@ -39,11 +43,18 @@ int main() {
       key_ortho[63-i] = key_cst[63-i] = SET_ALL_ZERO();
   
   // Allocating various stuffs
-  DATATYPE *plain_ortho  = ALLOC(BLOCK_SIZE);
-  DATATYPE *cipher_ortho = ALLOC(BLOCK_SIZE);
-  uint64_t *plain_std = ALLOC(REG_SIZE);
+  DATATYPE *plain_ortho  = ALLOC(REG_SIZE);
+  DATATYPE *cipher_ortho = ALLOC(REG_SIZE);
+  uint64_t *plain_std = ALLOC(CHUNK_SIZE);
   for (int i = 0; i < REG_SIZE; i++) plain_std[i] = rand_ulong();
 
+  // Warming up registers
+  for (int i = 0; i < 1000; i++) {
+    ORTHOGONALIZE(plain_std, plain_ortho);
+    des__(plain_ortho, key_ortho, cipher_ortho);
+    UNORTHOGONALIZE(cipher_ortho,plain_std);
+  }
+  
   uint64_t timer;
   for (int i = 0; i < NB_LOOP; i++) {
 
@@ -58,7 +69,7 @@ int main() {
     UNORTHOGONALIZE(cipher_ortho,plain_std);
 
   }
-  printf("%lu\n",timer);
+  printf("%lu\n",timer/NB_LOOP);
   
   return 0;
 }

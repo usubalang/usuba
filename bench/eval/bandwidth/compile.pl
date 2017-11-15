@@ -11,11 +11,21 @@ use File::Path qw( remove_tree make_path );
 use File::Copy;
 use Cwd;
 
-my $cc = 'clang';
+my $cc   = 'clang';
+my $arch = 'sse';
+
+my %arch_corres = (
+    std     => 'STD',
+    sse     => 'SSE',
+    avx     => 'AVX',
+    avx512  => 'AVX512',
+    altivec => 'AltiVec',
+    neon    => 'Neon'
+    );
 
 my $bench   = "Bandwidth";
 
-my $opts = "-no-runtime -arch std -inline-all";
+my $opts = "-no-runtime -arch $arch -inline-all";
 
 sub talk {
     say "Bench $bench: ", @_;
@@ -35,10 +45,20 @@ system "./usubac $opts -o $self_dir/tmp/des.c samples/usuba/des.ua";
 
 chdir "$self_dir/tmp";
 copy "../main.c", ".";
+copy "../input.txt", ".";
 
-my $cflags = "-O3 -I ../../../../arch -march=native -w -S";
-system "$cc $cflags -o des.s des.c";
+
+{
+    local $^I = "~";
+    local @ARGV = 'main.c';
+    while (<>) {
+        s/ARCHI/$arch_corres{$arch}/;
+        print;
+    }
+}
+
+my $cflags = "-O3 -I ../../../../arch -march=native";
+system "$cc $cflags -S -o des.s des.c";
 system "$cc $cflags -o main main.c";
 
-system "../analyze.pl";
 
