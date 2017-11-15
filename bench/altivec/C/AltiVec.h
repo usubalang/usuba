@@ -6,14 +6,16 @@
 
 
 /* Including headers */
+#pragma once
 #include <stdlib.h>
 #include <altivec.h>
 #include <stdint.h>
 
 /* Defining macros */
-#define DATATYPE vector unsigned long int
+#define DATATYPE vector unsigned int
 
-#define REG_SIZE sizeof(DATATYPE)
+#define REG_SIZE (sizeof(DATATYPE)*8)
+#define CHUNK_SIZE 128
 
 /* Defining 0 and 1 */
 #define ZERO (DATATYPE){ 0  }
@@ -32,7 +34,7 @@
 #define ORTHOGONALIZE(in,out)   orthogonalize(in,out)
 #define UNORTHOGONALIZE(in,out) unorthogonalize(in,out)
 
-#define ALLOC(size) aligned_alloc(32,size * sizeof(DATATYPE))
+#define ALLOC(size) malloc(size * sizeof(DATATYPE))
 
 
 #ifndef NO_RUNTIME
@@ -75,17 +77,23 @@ void real_ortho(uint64_t data[]) {
 
 #ifdef ORTHO
 
-void orthogonalize(uint64_t* data, DATATYPEi* out) {
+void orthogonalize(uint64_t* data, DATATYPE* out) {
   real_ortho(data);
   real_ortho(&(data[64]));
-  for (int i = 0; i < 64; i++)
-    out[i] = (DATATYPE){ data[i], data[64+i] };
+  for (int i = 0; i < 64; i++) {
+    uint64_t tmp[2];
+    tmp[0] = data[i];
+    tmp[1] = data[64+i];
+    out[i] = vec_ld(0,(DATATYPE*)tmp);
+  }
 }
 
-void unorthogonalize(DATATYPEi *in, uint64_t* data) {
+void unorthogonalize(DATATYPE *in, uint64_t* data) {
   for (int i = 0; i < 64; i++) {
-    data[i] = in[i][0];
-    data[64+i] = in[i][1];
+    unsigned int tmp[4];
+    vec_st(in[i],0,(DATATYPE*)tmp);
+    data[i] = ((uint64_t*)tmp)[0];
+    data[64+i] = ((uint64_t*)tmp)[1];
   }
   real_ortho(data);
   real_ortho(&(data[64]));
@@ -95,13 +103,12 @@ void unorthogonalize(DATATYPEi *in, uint64_t* data) {
 
 void orthogonalize(uint64_t *in, DATATYPE *out) {
   for (int i = 0; i < 64; i++)
-    out[i] = (DATATYPE){in[i*2], in[i*2+1]};
+    out[i] = vec_ld(0,(DATATYPE*)&in[i*2]);
 }
 
 void unorthogonalize(DATATYPE *in, uint64_t *out) {
   for (int i = 0; i < 64; i++) {
-    out[i*2] = in[i][0];
-    out[i*2+1] = in[i][1];    
+    vec_st(in[i],0,(DATATYPE*)&out[i*2]);
   }
 }
 

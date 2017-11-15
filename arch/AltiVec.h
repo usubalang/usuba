@@ -14,7 +14,7 @@
 /* Defining macros */
 #define DATATYPE vector unsigned int
 
-#define REG_SIZE sizeof(DATATYPE)
+#define REG_SIZE (sizeof(DATATYPE)*8)
 #define CHUNK_SIZE 128
 
 /* Defining 0 and 1 */

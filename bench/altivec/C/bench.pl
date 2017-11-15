@@ -27,8 +27,8 @@ my ($vector_w, $vector_n, $gp64_w, $gp64_n) =
     @times{qw(bench-vector-ortho bench-vector-no-ortho
               bench-u64-ortho  bench-u64-no-ortho)};
 
-my $vector_speedup_n = - ($gp64_n-$vector_n) / $gp64_n * 100;
-my $vector_speedup_w = - ($gp64_w-$vector_w) / $gp64_w * 100;
+my $vector_speedup_n = $vector_n / $gp64_n;
+my $vector_speedup_w = $vector_w / $gp64_w;
     
 open my $FH, '>', $outfile or die $!;
 printf $FH '
@@ -37,13 +37,13 @@ printf $FH '
     \\hline
     \\textbf{Ortho} & \\textbf{GP-64} &\\textbf{Vector} & \\textbf{Speedup} \\\\
     \\hline\\hline
-    with    & %d & %d & +%d\\%%\\\\
+    with    & %d & %d & x%.2f\\\\
     \\hline
-    without & %d & %d & +%d\\%%\\\\
+    without & %d & %d & x%.2f\\\\
     \\hline
   \\end{tabular}
-  \\caption{Performances of Usuba\'s DES on ARMv7l (MiB/s)}
-  \\label{tbl:perf-arm}
+  \\caption{Performances of Usuba\'s DES on Power7 (MiB/s)}
+  \\label{tbl:perf-power}
 \\end{table}
 ', $gp64_w, $vector_w, $vector_speedup_w,
     $gp64_n, $vector_n, $vector_speedup_n;
