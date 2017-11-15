@@ -43,8 +43,8 @@ Printf.sprintf
 #define BLOCK_SIZE %d
 #define KEY_SIZE   %d
 
-void single_%s (uint64_t *buff_in, uint64_t* buff_out,
-                 DATATYPE *key_in, uint64_t size) {
+void single_%s (uint64_t *buff_in, uint64_t* buff_out, const DATATYPE *key_in, 
+                const uint64_t nb_threads, const uint64_t size) {
   DATATYPE plain_ortho[BLOCK_SIZE];
   DATATYPE cipher_ortho[BLOCK_SIZE];
   DATATYPE key_ortho[KEY_SIZE];
@@ -52,20 +52,23 @@ void single_%s (uint64_t *buff_in, uint64_t* buff_out,
 
   int id = omp_get_thread_num();
   
-  for (int i = 0; i < size; i += REG_SIZE) {
-    uint64_t* plain_std  = &(buff_in[size*id+i]);
-    uint64_t* cipher_std = &(buff_out[size*id+i]);
+  for (int i = id * CHUNK_SIZE; i < size; i += CHUNK_SIZE * nb_threads) {
+    uint64_t* plain_std  = &(buff_in[i]);
+    uint64_t* cipher_std = &(buff_out[i]);
     
-    for (int i = 0; i < REG_SIZE; i++)
+    for (int i = 0; i < CHUNK_SIZE; i++)
       plain_std[i] = __builtin_bswap64(plain_std[i]);
 
-    orthogonalize(plain_std, plain_ortho);
+    ORTHOGONALIZE(plain_std, plain_ortho);
 
-    %s(plain_ortho, key_ortho, cipher_ortho);
+    for (int i = 0; i < CHUNK_SIZE / REG_SIZE; i++) {
+      memcpy(key_ortho,key_in,KEY_SIZE*sizeof *key_in);
+      %s(&plain_ortho[i*64], key_ortho, &cipher_ortho[i*64]);
+    }
 
-    unorthogonalize(cipher_ortho,cipher_std);
+    UNORTHOGONALIZE(cipher_ortho,cipher_std);
     
-    for (int i = 0; i < REG_SIZE; i++)
+    for (int i = 0; i < CHUNK_SIZE; i++)
       cipher_std[i] = __builtin_bswap64(cipher_std[i]);
   }
 }
@@ -103,7 +106,7 @@ int main() {
   clock_t timer = clock();
   #pragma omp parallel num_threads(%d)
   {
-     single_%s(buff_in,buff_out,key_ortho,size/%d/sizeof(uint64_t));
+     single_%s(buff_in,buff_out,key_ortho,%d,size/sizeof(uint64_t));
   }
   
   FILE* fh_out = fopen(\"output.txt\",\"wb\");
