@@ -67,8 +67,8 @@ void timespec_diff(struct timespec *start, struct timespec *stop,
 
 void single_%s (uint64_t *buff_in, uint64_t* buff_out, const DATATYPE *key_in, 
                 const uint64_t nb_threads, const uint64_t size) {
-  DATATYPE plain_ortho[BLOCK_SIZE];
-  DATATYPE cipher_ortho[BLOCK_SIZE];
+  DATATYPE plain_ortho[REG_SIZE];
+  DATATYPE cipher_ortho[REG_SIZE];
   DATATYPE key_ortho[KEY_SIZE];
   memcpy(key_ortho,key_in,KEY_SIZE*sizeof(DATATYPE));
 
