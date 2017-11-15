@@ -94,14 +94,17 @@ let inline_in_node ((vars,body):p*deq list) (to_inl:def) : p * deq list =
     
 
 (* Perform the inlining of node "to_inline" at every call point *)
+(* And removes the node from the program *)
 let do_inline (prog:prog) (to_inline:def) : prog =
 
-  { nodes = List.map (fun def ->
-                match def.node with
-                | Single(vars,body) ->
-                   let (vars',body') = inline_in_node (vars,body) to_inline in
-                   { def with node = Single(vars @ vars',body') }
-                | _ -> def) prog.nodes }
+  { nodes =
+      List.filter (fun def -> def.id <> to_inline.id) @@
+        List.map (fun def ->
+                  match def.node with
+                  | Single(vars,body) ->
+                     let (vars',body') = inline_in_node (vars,body) to_inline in
+                     { def with node = Single(vars @ vars',body') }
+                  | _ -> def) prog.nodes }
   
   
 (* Returns true if def doesn't contain any function call,
