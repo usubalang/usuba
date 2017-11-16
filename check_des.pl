@@ -30,7 +30,7 @@ say "Regenerating the des code...";
 error if system './usubac -o tmp_c/des.c -arch avx samples/usuba/des.ua' ;
 
 chdir 'tmp_c';
-copy '../des/ref_usuba.c', '.';
+copy '../DES/ref_usuba.c', '.';
 
 
 # Compiling the C files

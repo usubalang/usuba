@@ -15,7 +15,7 @@
 #define DATATYPE vector unsigned int
 
 #define REG_SIZE (sizeof(DATATYPE)*8)
-#define CHUNK_SIZE 128
+#define CHUNK_SIZE 256
 
 /* Defining 0 and 1 */
 #define ZERO (DATATYPE){ 0  }
@@ -25,7 +25,7 @@
 #define OR(a,b)   vec_or(a,b)
 #define XOR(a,b)  vec_xor(a,b)
 #define ANDN(a,b) vec_nand(a,b)
-#define NOT(a)    vec_and(a,ONES)
+#define NOT(a)    vec_nand(a,ONES)
 
 
 #define SET_ALL_ONE()  ONES
@@ -75,9 +75,57 @@ void real_ortho(uint64_t data[]) {
   }
 }
 
+void real_ortho_128x128(DATATYPE data[]) {
+
+  DATATYPE mask_l[7] = {
+    (DATATYPE){ 0xaaaaaaaa, 0xaaaaaaaa, 0xaaaaaaaa, 0xaaaaaaaa },
+    (DATATYPE){ 0xcccccccc, 0xcccccccc, 0xcccccccc, 0xcccccccc },
+    (DATATYPE){ 0xf0f0f0f0, 0xf0f0f0f0, 0xf0f0f0f0, 0xf0f0f0f0 },
+    (DATATYPE){ 0xff00ff00, 0xff00ff00, 0xff00ff00, 0xff00ff00 },
+    (DATATYPE){ 0xffff0000, 0xffff0000, 0xffff0000, 0xffff0000 },
+    (DATATYPE){ -1, 0, -1, 0 },
+    (DATATYPE){ -1, -1, 0, 0 }
+  };
+
+  DATATYPE mask_r[7] = {
+    (DATATYPE){ 0x55555555, 0x55555555, 0x55555555, 0x55555555 },
+    (DATATYPE){ 0x33333333, 0x33333333, 0x33333333, 0x33333333 },
+    (DATATYPE){ 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f, 0x0f0f0f0f },
+    (DATATYPE){ 0x00ff00ff, 0x00ff00ff, 0x00ff00ff, 0x00ff00ff },
+    (DATATYPE){ 0x0000ffff, 0x0000ffff, 0x0000ffff, 0x0000ffff },
+    (DATATYPE){ 0, -1, 0, -1 },
+    (DATATYPE){ 0, 0, -1, -1 }
+  };
+  
+  for (int i = 0; i < 7; i ++) {
+    int n = (1UL << i);
+    for (int j = 0; j < 128; j += (2 * n))
+      for (int k = 0; k < n; k ++) {
+        DATATYPE u = AND(data[j + k], mask_l[i]);
+        DATATYPE v = AND(data[j + k], mask_r[i]);
+        DATATYPE x = AND(data[j + n + k], mask_l[i]);
+        DATATYPE y = AND(data[j + n + k], mask_r[i]);
+        if (i <= 4) {
+          data[j + k] = OR(u, vec_sr(x,(DATATYPE){n,n,n,n}));
+          data[j + n + k] = OR(vec_sl(v,(DATATYPE){n,n,n,n}), y);
+        } else if (i == 5) {
+          data[j + k] =
+            OR(u,vec_sro(x,(vector unsigned char){0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x20}));
+          data[j + n + k] =
+            OR(vec_sro(x,(vector unsigned char){0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x20}),y);
+        } else { /* i == 6 */
+          data[j + k] =
+            OR(u,vec_sro(x,(vector unsigned char){0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x40}));
+          data[j + n + k] =
+            OR(vec_sro(x,(vector unsigned char){0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x40}),y);
+        } 
+      }
+  }
+}
+
 #ifdef ORTHO
 
-void orthogonalize(uint64_t* data, DATATYPE* out) {
+void orthogonalize_128x64(uint64_t* data, DATATYPE* out) {
   real_ortho(data);
   real_ortho(&(data[64]));
   for (int i = 0; i < 64; i++) {
@@ -88,7 +136,7 @@ void orthogonalize(uint64_t* data, DATATYPE* out) {
   }
 }
 
-void unorthogonalize(DATATYPE *in, uint64_t* data) {
+void unorthogonalize_64x128(DATATYPE *in, uint64_t* data) {
   for (int i = 0; i < 64; i++) {
     unsigned int tmp[4];
     vec_st(in[i],0,(DATATYPE*)tmp);
@@ -99,18 +147,63 @@ void unorthogonalize(DATATYPE *in, uint64_t* data) {
   real_ortho(&(data[64]));
 }
 
+void orthogonalize_128x128(uint64_t* data, DATATYPE* out) {
+  for (int i = 0; i < 128; i++) {
+    uint64_t tmp[2] = { data[i], data[128+i] };
+    out[i] = vec_ld(0,(DATATYPE*)tmp);
+  }
+  real_ortho_128x128(out);
+}
+
+void unorthogonalize_128x128(DATATYPE *in, uint64_t* data) {
+  real_ortho_128x128(in);
+  for (int i = 0; i < 128; i++) {
+    uint64_t tmp[2];
+    vec_st(in[i],0,(DATATYPE*)tmp);
+    data[i] = tmp[1];
+    data[128+i] = tmp[0];
+  }
+}
+
+void orthogonalize(uint64_t* data, DATATYPE* out) {
+  orthogonalize_128x128(data,out);
+}
+void unorthogonalize(DATATYPE *in, uint64_t* data) {
+  unorthogonalize_128x128(in,data);
+}
+
 #else
 
-void orthogonalize(uint64_t *in, DATATYPE *out) {
+void orthogonalize_128x64(uint64_t *in, DATATYPE *out) {
   for (int i = 0; i < 64; i++)
     out[i] = vec_ld(0,(DATATYPE*)&in[i*2]);
 }
 
-void unorthogonalize(DATATYPE *in, uint64_t *out) {
+void unorthogonalize_64x128(DATATYPE *in, uint64_t *out) {
   for (int i = 0; i < 64; i++) {
     vec_st(in[i],0,(DATATYPE*)&out[i*2]);
   }
 }
+
+void orthogonalize_128x128(uint64_t *in, DATATYPE *out) {
+  for (int i = 0; i < 128; i++)
+    out[i] = vec_ld(0,(DATATYPE*)&in[i*2]);
+}
+
+void unorthogonalize_128x128(DATATYPE *in, uint64_t *out) {
+  for (int i = 0; i < 128; i++) {
+    vec_st(in[i],0,(DATATYPE*)&out[i*2]);
+  }
+}
+
+void orthogonalize(uint64_t *in, DATATYPE *out) {
+  orthogonalize_128x128(in,out);
+}
+void unorthogonalize(DATATYPE *in, uint64_t *out) {
+  unorthogonalize_128x128(in,out);
+}
+
+
 
 #endif /* ORTHO */
 

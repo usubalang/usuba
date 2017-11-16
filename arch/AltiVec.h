@@ -106,18 +106,17 @@ void real_ortho_128x128(DATATYPE data[]) {
         DATATYPE x = AND(data[j + n + k], mask_l[i]);
         DATATYPE y = AND(data[j + n + k], mask_r[i]);
         if (i <= 4) {
-          data[j + k] = OR(u, vec_sr(x,(DATATYPE){n,n,n,n}));
-          data[j + n + k] = OR(vec_sl(v,(DATATYPE){n,n,n,n}), y);
+	  DATATYPE shift_mask = {n,n,n,n}; 
+          data[j + k] = OR(u, vec_sr(x,shift_mask));
+          data[j + n + k] = OR(vec_sl(v,shift_mask), y);
         } else if (i == 5) {
-          data[j + k] =
-            OR(u,vec_sro(x,(vector unsigned char){0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x20}));
-          data[j + n + k] =
-            OR(vec_sro(x,(vector unsigned char){0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x20}),y);
+	  vector unsigned char shift_mask = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x20};
+          data[j + k] = OR(u,vec_sro(x,shift_mask));
+          data[j + n + k] = OR(vec_slo(x,shift_mask),y);
         } else { /* i == 6 */
-          data[j + k] =
-            OR(u,vec_sro(x,(vector unsigned char){0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x40}));
-          data[j + n + k] =
-            OR(vec_sro(x,(vector unsigned char){0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x40}),y);
+	  vector unsigned char shift_mask = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x40};
+          data[j + k] = OR(u,vec_sro(x,shift_mask));
+          data[j + n + k] = OR(vec_slo(x,shift_mask),y);
         } 
       }
   }
