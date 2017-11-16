@@ -74,7 +74,6 @@ void real_ortho(uint64_t data[]) {
   }
 }
 
-
 void real_ortho_128x128(__m128i data[]) {
 
   __m128i mask_l[7] = {
@@ -84,7 +83,7 @@ void real_ortho_128x128(__m128i data[]) {
     _mm_set1_epi64x(0xff00ff00ff00ff00UL),
     _mm_set1_epi64x(0xffff0000ffff0000UL),
     _mm_set1_epi64x(0xffffffff00000000UL),
-    _mm_set_epi64x(0x0000000000000000UL,0xffffffffffffffffUL),
+    _mm_set_epi64x(0UL,-1UL),
   
   };
 
@@ -95,24 +94,42 @@ void real_ortho_128x128(__m128i data[]) {
     _mm_set1_epi64x(0x00ff00ff00ff00ffUL),
     _mm_set1_epi64x(0x0000ffff0000ffffUL),
     _mm_set1_epi64x(0x00000000ffffffffUL),
-    _mm_set_epi64x(0xffffffffffffffffUL,0x0000000000000000UL),
+    _mm_set_epi64x(-1UL,0UL),
   };
   
   for (int i = 0; i < 7; i ++) {
     int n = (1UL << i);
     for (int j = 0; j < 128; j += (2 * n))
       for (int k = 0; k < n; k ++) {
-        __m128i u = _mm_and_si128(data[j + k], mask_l[i]);
-        __m128i v = _mm_and_si128(data[j + k], mask_r[i]);
-        __m128i x = _mm_and_si128(data[j + n + k], mask_l[i]);
-        __m128i y = _mm_and_si128(data[j + n + k], mask_r[i]);
-        if (i <= 5) {
+        if (i <= 3) {
+          __m128i u = _mm_and_si128(data[j + k], mask_l[i]);
+          __m128i v = _mm_and_si128(data[j + k], mask_r[i]);
+          __m128i x = _mm_and_si128(data[j + n + k], mask_l[i]);
+          __m128i y = _mm_and_si128(data[j + n + k], mask_r[i]);
           data[j + k] = _mm_or_si128(u, _mm_srli_epi64(x, n));
           data[j + n + k] = _mm_or_si128(_mm_slli_epi64(v, n), y);
+        } else if (i == 4) {
+          __m128i u = _mm_and_si128(data[j + k], mask_l[i]);
+          __m128i v = _mm_and_si128(data[j + k], mask_r[i]);
+          __m128i x = _mm_and_si128(data[j + n + k], mask_l[i]);
+          __m128i y = _mm_and_si128(data[j + n + k], mask_r[i]);
+          data[j + k] = _mm_blend_epi16(u,_mm_srli_epi64(x, n), 0b01010101);
+          data[j + n + k] = _mm_blend_epi16(_mm_slli_epi64(v, n), y, 0b01010101);
+        } else if (i == 5) {
+          __m128i u = data[j + k];
+          __m128i v = data[j + k];
+          __m128i x = data[j + n + k];
+          __m128i y = data[j + n + k];
+          data[j + k] = (__m128i)_mm_blend_ps((__m128)u,(__m128)_mm_srli_epi64(x, n), 0b0101);
+          data[j + n + k] = (__m128i)_mm_blend_ps((__m128)_mm_slli_epi64(v, n),(__m128)y, 0b0101);
         } else {
+          __m128i u = data[j + k];
+          __m128i v = data[j + k];
+          __m128i x = data[j + n + k];
+          __m128i y = data[j + n + k];
           /* Note the "inversion" of srli and slli. */
-          data[j + k] = _mm_or_si128(u, _mm_slli_si128(x, 8));
-          data[j + n + k] = _mm_or_si128(_mm_srli_si128(v, 8), y);
+          data[j + k] = (__m128i)_mm_blend_pd((__m128d)u,(__m128d)_mm_slli_si128(x,8),2);
+          data[j + n + k] = (__m128i)_mm_blend_pd((__m128d)_mm_srli_si128(v, 8), (__m128d)y, 2);
         } 
       }
   }
