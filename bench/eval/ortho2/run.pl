@@ -75,3 +75,6 @@ close $FH;
 # Cleaning temporary directory
 remove_tree "tmp";
 
+
+# Plotting the data
+system "gnuplot plot.txt"
