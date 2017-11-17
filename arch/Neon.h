@@ -1,6 +1,6 @@
 /* ******************************************** *\
  * 
- * 
+ *  gcc -O3 -std=gnu11 -mfpu=neon -flax-vector-conversions 
  *
 \* ******************************************** */
 
@@ -12,8 +12,8 @@
 #include <stdint.h>
 
 /* Defining 0 and 1 */
-#define ZERO ((uint64x2_t){  0,  0 })
-#define ONES ((uint64x2_t){ -1, -1 })
+#define ZERO ((uint64x2_t){  0ULL,  0ULL })
+#define ONES ((uint64x2_t){ -1ULL, -1ULL })
 
 /* Defining macros */
 #define REG_SIZE   128
@@ -70,6 +70,48 @@ void real_ortho(uint64_t data[]) {
         uint64_t y = data[j + n + k] & mask_r[i];
         data[j + k] = u | (x >> n);
         data[j + n + k] = (v << n) | y;
+      }
+  }
+}
+
+void real_ortho_128x128(DATATYPE data[]) {
+
+  DATATYPE mask_l[7] = {
+    (DATATYPE){ 0xaaaaaaaaaaaaaaaaULL, 0xaaaaaaaaaaaaaaaaULL },
+    (DATATYPE){ 0xccccccccccccccccULL, 0xccccccccccccccccULL },
+    (DATATYPE){ 0xf0f0f0f0f0f0f0f0ULL, 0xf0f0f0f0f0f0f0f0ULL },
+    (DATATYPE){ 0xff00ff00ff00ff00ULL, 0xff00ff00ff00ff00ULL },
+    (DATATYPE){ 0xffff0000ffff0000ULL, 0xffff0000ffff0000ULL },
+    (DATATYPE){ 0xffffffff00000000ULL, 0xffffffff00000000ULL },
+    (DATATYPE){ 0x0000000000000000ULL, 0xffffffffffffffffULL },  
+  };
+
+  DATATYPE mask_r[7] = {
+    (DATATYPE){ 0x5555555555555555ULL, 0x5555555555555555ULL },
+    (DATATYPE){ 0x3333333333333333ULL, 0x3333333333333333ULL },
+    (DATATYPE){ 0x0f0f0f0f0f0f0f0fULL, 0x0f0f0f0f0f0f0f0fULL },
+    (DATATYPE){ 0x00ff00ff00ff00ffULL, 0x00ff00ff00ff00ffULL },
+    (DATATYPE){ 0x0000ffff0000ffffULL, 0x0000ffff0000ffffULL },
+    (DATATYPE){ 0x00000000ffffffffULL, 0x00000000ffffffffULL },
+    (DATATYPE){ 0xffffffffffffffffULL, 0x0000000000000000ULL },
+  };
+  
+  for (int i = 0; i < 7; i ++) {
+    int n = (1UL << i);
+    for (int j = 0; j < 128; j += (2 * n))
+      for (int k = 0; k < n; k ++) {
+        DATATYPE u = AND(data[j + k], mask_l[i]);
+        DATATYPE v = AND(data[j + k], mask_r[i]);
+        DATATYPE x = AND(data[j + n + k], mask_l[i]);
+        DATATYPE y = AND(data[j + n + k], mask_r[i]);
+        if (i <= 5) {
+          data[j + k] = OR(u, vshrq_n_u64(x, n));
+          data[j + n + k] = OR(vshlq_n_u64(v, n), y);
+        } else {
+          // Manually do a VSWP.
+          data[j + k] = OR(u, _mm_slli_si128(x, 8));
+          data[j + n + k] = OR(_mm_srli_si128(v, 8), y);
+        } 
       }
   }
 }
