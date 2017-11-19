@@ -1,6 +1,3 @@
-# Still a little bug in the compiler, gotta check that out.
-
-
 table[] sbox (input:u4) returns (out:u4) [
     { 3, 8,15, 1,10, 6, 5,11,14,13, 4, 2, 7, 0, 9,12 } ;
 	{15,12, 2, 7, 9, 0, 5,10, 1,11,14, 8, 6,13, 3, 4 } ;
@@ -58,7 +55,7 @@ let
     out = (x0[4],x1[3],x2[4],x3[3])
 tel
 
-perm ip (input:u128) returns (out:u128) {
+perm ip_table (input:u128) returns (out:u128) {
     1, 33, 65, 97, 2, 34, 66, 98, 3, 35, 67, 99, 4, 36, 68, 100,
     5, 37, 69, 101, 6, 38, 70, 102, 7, 39, 71, 103, 8, 40, 72, 104,
     9, 41, 73, 105, 10, 42, 74, 106, 11, 43, 75, 107, 12, 44, 76, 108,
@@ -69,7 +66,7 @@ perm ip (input:u128) returns (out:u128) {
     29, 61, 93, 125, 30, 62, 94, 126, 31, 63, 95, 127, 32, 64, 96, 128
 }
 
-perm fp (input:u128) returns (out:u128) {
+perm fp_table (input:u128) returns (out:u128) {
     1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49, 53, 57, 61,
     65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125,
     2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58, 62,
@@ -80,30 +77,56 @@ perm fp (input:u128) returns (out:u128) {
     68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124, 128
 }
 
+// Due to how the algorithm works, the output of the sbox need to be fixed
+// in bitslicing mode.
+perm fix_sbox (input:u128) returns (out:u128) {
+    1,5,9,13,17,21,25,29,33,37,41,45,49,53,57,61,65,69,73,77,81,85,89,93,
+    97,101,105,109,113,117,121,125,
+    2,6,10,14,18,22,26,30,34,38,42,46,50,54,58,62,66,70,74,78,82,86,90,94,
+    98,102,106,110,114,118,122,126,
+    3,7,11,15,19,23,27,31,35,39,43,47,51,55,59,63,67,71,75,79,83,87,91,95,
+    99,103,107,111,115,119,123,127,
+    4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,
+    100,104,108,112,116,120,124,128,
+}
+
+
+node serpent_round (input:u128) returns (out:u128)
+vars
+    s:u4[32]::_
+let
+    out = lt(fix_sbox(sbox[i](s[1]), sbox[i](s[2]), sbox[i](s[3]), sbox[i](s[4]),
+                      sbox[i](s[5]), sbox[i](s[6]), sbox[i](s[7]), sbox[i](s[8]),
+                      sbox[i](s[9]), sbox[i](s[10]), sbox[i](s[11]), sbox[i](s[12]),
+                      sbox[i](s[13]), sbox[i](s[14]), sbox[i](s[15]), sbox[i](s[16]),
+                      sbox[i](s[17]), sbox[i](s[18]), sbox[i](s[19]), sbox[i](s[20]),
+                      sbox[i](s[21]), sbox[i](s[22]), sbox[i](s[23]), sbox[i](s[24]),
+                      sbox[i](s[25]), sbox[i](s[26]), sbox[i](s[27]), sbox[i](s[28]),
+                      sbox[i](s[29]), sbox[i](s[30]), sbox[i](s[31]), sbox[i](s[32]))
+tel
 
 
 node main (plaintext:u128, keys:u128[33]) returns (ciphertext:u128)
 vars
-    s_in   : u4[1024], // 1024 = 32*32
-    s_out  : u4[1024],
-    rounds : u128[32]
+    rounds : u128[32],
+    s:u4[32]
 let
-    rounds[0] = plaintext;
-    
-    forall i in [0,0] {
-
-        s_in[i*32 .. (i+1)*32-1] = rounds[i] ^ keys[i];
-
-        forall j in [0, 31] {
-          s_out[i*32+j] = sbox[i](s_in[i*32+j])
-        }
-
-        rounds[i+1] = fp(lt(ip(s_out[i*32 .. (i+1)*32-1])))        
+    rounds[0] = ip_table(plaintext);
+    forall i in [1,32] {
+        rounds[i] = serpent_round(rounds[i-1] ^ keys[i]);
     }
-
-    #s_in[31*32 .. 32*32-1] = rounds[31] ^ keys[31];
-    #forall j in [0,31] { s_out[31*32+j] = sbox[31](s_in[31*32+j]) }
-
-    ciphertext = s_out[31*32 .. 32*32-1] ^ keys[32]
     
+
+    (r,key_tmp) = fill_i<serpent_single;32>(ip_table(plaintext),key);
+    s = r[32];
+    ciphertext =
+        fp_table((sbox[32](s[1]), sbox[32](s[2]), sbox[32](s[3]), sbox[32](s[4]),
+                  sbox[32](s[5]), sbox[32](s[6]), sbox[32](s[7]), sbox[32](s[8]),
+                  sbox[32](s[9]), sbox[32](s[10]), sbox[32](s[11]), sbox[32](s[12]),
+                  sbox[32](s[13]), sbox[32](s[14]), sbox[32](s[15]), sbox[32](s[16]),
+                  sbox[32](s[17]), sbox[32](s[18]), sbox[32](s[19]), sbox[32](s[20]),
+                  sbox[32](s[21]), sbox[32](s[22]), sbox[32](s[23]), sbox[32](s[24]),
+                  sbox[32](s[25]), sbox[32](s[26]), sbox[32](s[27]), sbox[32](s[28]),
+                  sbox[32](s[29]), sbox[32](s[30]), sbox[32](s[31]), sbox[32](s[32]))
+                 ^ key )
 tel

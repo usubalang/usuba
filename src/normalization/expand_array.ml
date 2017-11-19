@@ -36,7 +36,8 @@ let rec expand_var_range (v:var) : var list =
   in
   
   match v with
-  | Range(id,Const_e ei,Const_e ef) -> expand_range id ei ef []
+  | Range(id,Const_e ei,Const_e ef) ->
+     expand_range id ei ef []
   | Slice(id,l) -> List.flatten @@
                      List.map
                      expand_var_range
@@ -166,8 +167,8 @@ let rewrite_deqs p_in p_out vars (deqs:deq list) : deq list =
   let rec aux env deq =
     match deq with
     | Norec(vars,e) ->
-       [ Norec(rewrite_pat env env_var vars,
-               rewrite_expr env env_var e) ]
+       [ Norec(rewrite_pat env env_var (expand_pat_range (rewrite_pat env env_var vars)),
+               rewrite_expr env env_var (expand_expr_range (rewrite_expr env env_var e))) ]
     | Rec(i,startr,endr,d) ->
        let i_init = eval_arith env startr in
        let i_end  = eval_arith env endr in
@@ -200,18 +201,6 @@ let expand_array (prog: prog) : prog =
                                                 node = Single(vars,body) }) nodes
                          | _ -> [ x ] ) prog.nodes in
 
-  let range_removed =
-    List.map (fun def ->
-              match def.node with
-              | Single(vars,body) ->
-                 { def with node =  Single(vars,
-                                           List.map (fun x -> match x with
-                                                              | Norec(pat,e) ->
-                                                                 Norec(expand_pat_range pat,
-                                                                       expand_expr_range e)
-                                                              | _ -> x) body) }
-              | _ -> def) prog' in
-
   let expanded =
     List.map (fun def ->
               match def.node with
@@ -220,7 +209,7 @@ let expand_array (prog: prog) : prog =
                             p_out = rewrite_p def.p_out;
                             node = Single(rewrite_p vars,
                                           rewrite_deqs def.p_in def.p_out vars body ) }
-              | _ -> def) range_removed in
-
+              | _ -> def) prog' in
+  
   { nodes = expanded } 
     

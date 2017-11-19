@@ -31,7 +31,7 @@ let norm_prog (prog: prog) (conf:config) : prog  =
   print "TABLES CONVERTED:" tables_converted conf;
 
   let normalized =
-    (let normed = Norm_bitslice.norm_prog tables_converted in
+    (let normed = Norm_bitslice.norm_prog tables_converted conf in
      print "PRE-NORMALIZED:" normed conf;
      let init_sched = Init_scheduler.schedule_prog normed in
      print "INIT SCHEDULED:" init_sched conf;
@@ -41,7 +41,7 @@ let norm_prog (prog: prog) (conf:config) : prog  =
      let inlined = if conf.inlining then
                      Inline.inline scheduled conf else scheduled in
      print "INLINED:" inlined conf;
-     Norm_bitslice.norm_prog inlined) in
+     Norm_bitslice.norm_prog inlined conf) in
   print "NORMALIZED:" normalized conf;
   
   assert (Assert_lang.Usuba_norm.is_usuba_normalized normalized);
@@ -52,7 +52,7 @@ let norm_prog (prog: prog) (conf:config) : prog  =
   let clock_fixed = Fix_clocks.fix_prog optimized in
   print "CLOCKS FIXED:" clock_fixed conf;
   
-  let norm_ok = Norm_bitslice.norm_prog clock_fixed in
+  let norm_ok = Norm_bitslice.norm_prog clock_fixed conf in
 
   if conf.check_tbl then
     Soundness.tables_sound renamed norm_ok;

@@ -53,7 +53,8 @@ let norm_pat env (pat: var list) : var list =
                                    else [ Var id ]
                                 | None -> [ Var id ]) (* undeclared bool *)
                  | Field(Var id,Const_e i) -> [Var (fresh_suffix id (string_of_int i)) ]
-                 | _ -> raise (Invalid_AST "Illegal array access")) pat)
+                 | _ -> raise (Invalid_AST ("Illegal array access : " ^
+                                              (Usuba_print.var_to_str x)))) pat)
     
 let norm_deq env (body: deq list) : deq list =
    List.map

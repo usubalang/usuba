@@ -7,7 +7,7 @@ exception Unsound of string
 let rec eval_arith (e:arith_expr) : int =
   match e with
   | Const_e n -> n
-  | Var_e id  -> raise (Unsound "Var in typ")
+  | Var_e id  -> 1
   | Op_e(op,x,y) -> let x' = eval_arith x in
                     let y' = eval_arith y in
                     match op with
@@ -68,40 +68,45 @@ let rec type_arith (idx_env: int env) (e:arith_expr) : bool =
 
 let size_var loc_env (idx_env: int env) (v:var) : int =
   match v with
-  | Var v' -> ( match env_fetch loc_env v' with
-                | Some(_,size) -> size
-                | None -> raise (Unsound (v'.name ^ " undeclared")))
-  | Field(v',i) -> ( match v' with
-                     | Var v' -> ( match env_fetch loc_env v' with
-                                   | Some _ -> 1
-                                   | None   -> raise (Unsound (v'.name ^ " undeclared")))
-                     | Index(v',_) -> ( match env_fetch loc_env v' with
-                                        | Some(typ,_) ->
-                                           (match typ with
-                                            | Array(Int _,_) -> 1
-                                            | _ -> raise
-                                                     (Unsound(v'.name ^ " not an int or not an array")))
-                                        | None -> raise (Unsound (v'.name ^ " undeclared")))
-                     | _ -> raise (Unsound ("Invalid field: " ^ (var_to_str v))))
-  | Index(v',e) -> if type_arith idx_env e then
-                     match env_fetch loc_env v' with
-                     | Some(Array(typ,_),_) -> type_size typ
-                     | _ -> raise (Unsound ("Invalid index: not an array: " ^ (var_to_str v)))
-                   else raise (Unsound ("Bad arith: " ^ (arith_to_str e)))
-  | Range(v',ei,ef) -> if type_arith idx_env ei then
-                         if type_arith idx_env ef then
-                           match env_fetch loc_env v' with
-                           | Some(Array(typ,_),_) -> (type_size typ) *
-                                                       (1 + (abs ((eval_arith ei) - (eval_arith ef))))
-                           | _ -> raise (Unsound ("Invalid Range: not an array: " ^ (var_to_str v)))
-                         else raise (Unsound ("Bad arith: " ^ (arith_to_str ef)))
-                       else raise (Unsound ("Bad arith: " ^ (arith_to_str ei)))
-  | Slice(v',l) -> if List.for_all (type_arith idx_env) l then
-                     match env_fetch loc_env v' with
-                     | Some(Array(typ,_),_) -> (type_size typ) * (List.length l)
-                     | _ -> raise (Unsound ("Invalid Slice: not an array: " ^ (var_to_str v)))
-                   else raise (Unsound ("Invalid slice: " ^ (var_to_str v)))
-                    
+  | Var v' ->
+     ( match env_fetch loc_env v' with
+       | Some(_,size) -> size
+       | None -> raise (Unsound (v'.name ^ " undeclared")))
+  | Field(v',i) ->
+     ( match v' with
+       | Var v' -> ( match env_fetch loc_env v' with
+                     | Some _ -> 1
+                     | None   -> raise (Unsound (v'.name ^ " undeclared")))
+       | Index(v',_) -> ( match env_fetch loc_env v' with
+                          | Some(typ,_) ->
+                             (match typ with
+                              | Array(Int _,_) -> 1
+                              | _ -> raise
+                                       (Unsound(v'.name ^ " not an int or not an array")))
+                          | None -> raise (Unsound (v'.name ^ " undeclared")))
+       | _ -> raise (Unsound ("Invalid field: " ^ (var_to_str v))))
+  | Index(v',e) ->
+     if type_arith idx_env e then
+       match env_fetch loc_env v' with
+       | Some(Array(typ,_),_) -> type_size typ
+       | _ -> raise (Unsound ("Invalid index: not an array: " ^ (var_to_str v)))
+     else raise (Unsound ("Bad arith: " ^ (arith_to_str e)))
+  | Range(v',ei,ef) ->
+     if type_arith idx_env ei then
+       if type_arith idx_env ef then
+         match env_fetch loc_env v' with
+         | Some(Array(typ,_),_) -> (type_size typ) *
+                                     (1 + (abs ((eval_arith ei) - (eval_arith ef))))
+         | _ -> raise (Unsound ("Invalid Range: not an array: " ^ (var_to_str v)))
+       else raise (Unsound ("Bad arith: " ^ (arith_to_str ef)))
+     else raise (Unsound ("Bad arith: " ^ (arith_to_str ei)))
+  | Slice(v',l) ->
+     if List.for_all (type_arith idx_env) l then
+       match env_fetch loc_env v' with
+       | Some(Array(typ,_),_) -> (type_size typ) * (List.length l)
+       | _ -> raise (Unsound ("Invalid Slice: not an array: " ^ (var_to_str v)))
+     else raise (Unsound ("Invalid slice: " ^ (var_to_str v)))
+                
 (* Note: a "Const" has any size. Therefore, this function return a tuple (size,status),
    where status is true if the expr contains a Const, in which case its size doesn't 
    matter *)
@@ -109,7 +114,8 @@ let rec type_expr glob_env loc_env idx_env (e:expr) : int * bool =
   let rec_call = type_expr glob_env loc_env idx_env in
   match e with
   | Const _  -> 0, true
-  | ExpVar v -> size_var loc_env idx_env v, false
+  | ExpVar v -> ( try size_var loc_env idx_env v, false with
+                    Unsound _ -> 0, true)
   | Tuple l  -> let l' = List.map rec_call l in
                 List.fold_left (fun (sum,stat) (curr,statcurr) ->
                                 sum + curr, stat || statcurr) (0,false) l'

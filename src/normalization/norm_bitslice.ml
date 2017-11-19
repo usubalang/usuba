@@ -142,6 +142,13 @@ let norm_def env_fun (def: def) : def =
      new_vars := [];
      let body = norm_deq env_fun body in
      { def with node = Single(p_var @ !new_vars,body) }
+  | Perm _ ->
+     env_add_fun def.id def.p_in def.p_out env_fun;
+     def
+  | MultiplePerm l ->
+     List.iteri (fun i _ -> env_add_fun (fresh_suffix def.id (string_of_int i))
+                                        def.p_in def.p_out env_fun) l;
+     def
   | _ ->
      def
 
@@ -169,54 +176,58 @@ let norm_def_z3 env_fun (def: def) : def =
   | _ -> unreached ()
      
 
-let print title body =
-  if false then
+let print title body conf =
+  if conf.verbose >= 5 then
     begin
       print_endline title;
-      if true then print_endline (Usuba_print.prog_to_str body)
+      if conf.verbose >= 100 then print_endline (Usuba_print.prog_to_str body)
     end
             
       
 (* Note: the print actually if the boolean if the function "print" above 
          are set to true (or at least the first one) *)
-let norm_prog (prog: prog)  =
+let norm_prog (prog: prog) (conf:config) =
 
   (* Convert const to tuples *)
   let const_norm = Expand_const.expand_prog prog in
-  print "CONST NORM:" const_norm;
+  print "CONST NORM:" const_norm conf;
   
   (* Convert uint_n to n bools *)
   let uintn_norm = Norm_uintn.norm_uintn const_norm in
-  print "UINTN NORM:" uintn_norm;
-
-  (* Replace permutations by assignments *)
-  let perm_expanded = Expand_permut.expand_permut uintn_norm in
-  print "PERM EXPANDED:" perm_expanded;
+  print "UINTN NORM:" uintn_norm conf;
 
   (* Remove nested function calls by introducing temporary variables *)
   let env_fun = Hashtbl.create 10 in
-  let pre_normalized = { nodes = List.map (norm_def env_fun) perm_expanded.nodes } in
-  print "PRE NORMALIZED:" pre_normalized;
+  let pre_normalized = { nodes = List.map (norm_def env_fun) uintn_norm.nodes } in
+  print "PRE NORMALIZED:" pre_normalized conf;
+
+  Usuba_print.print_prog pre_normalized;
+  exit 1;
+  (* (_tmp3939_ ^ _tmp3940_) *)
+  
+  (* Replace permutations by assignments *)
+  let perm_expanded = Expand_permut.expand_permut pre_normalized in
+  print "PERM EXPANDED:" perm_expanded conf;
 
   (* Convert tuples assignment to multiple single assignment, if possible *)
-  let tuples_splitted = Norm_tuples.Split_tuples.split_tuples pre_normalized in
-  print "TUPLES SPLITTED:" tuples_splitted;
+  let tuples_splitted = Norm_tuples.Split_tuples.split_tuples perm_expanded in
+  print "TUPLES SPLITTED:" tuples_splitted conf;
 
   (* Convert tuples of one element to simple variables *)
   let tuples_simpl = Norm_tuples.Simplify_tuples.simplify_tuples tuples_splitted in
-  print "TUPLES SIMPLIFIED:" tuples_simpl;
+  print "TUPLES SIMPLIFIED:" tuples_simpl conf;
 
   (* Apply shifts *)
   let shifts_done = Bitslice_shift.expand_shifts tuples_simpl in
-  print "SHIFTS EXPANDED:" tuples_simpl;
+  print "SHIFTS EXPANDED:" tuples_simpl conf;
 
   (* Applying the shifts may have "free" some tuples that we couldn't split before *)
   (* Convert tuples assignment to multiple single assignment, if possible *)
   let tuples_resplit = Norm_tuples.Split_tuples.split_tuples shifts_done in
-  print "TUPLES RE-SPLITTED:" tuples_resplit;
+  print "TUPLES RE-SPLITTED:" tuples_resplit conf;
 
   (* Convert tuples of one element to simple variables *)
   let tuples_resimpl = Norm_tuples.Simplify_tuples.simplify_tuples tuples_resplit in
-  print "TUPLES RE-SIMPLIFIED:" tuples_resimpl;
+  print "TUPLES RE-SIMPLIFIED:" tuples_resimpl conf;
 
   tuples_resimpl
