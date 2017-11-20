@@ -17,7 +17,7 @@
 
 /* Defining macros */
 #define REG_SIZE   128
-#define CHUNK_SIZE 128
+#define CHUNK_SIZE 256
 
 #define AND(a,b)  vandq_u64(a,b)
 #define OR(a,b)   vorrq_u64(a,b)
@@ -108,9 +108,8 @@ void real_ortho_128x128(DATATYPE data[]) {
           data[j + k] = OR(u, vshrq_n_u64(x, n));
           data[j + n + k] = OR(vshlq_n_u64(v, n), y);
         } else {
-          // Manually do a VSWP.
-          data[j + k] = OR(u, _mm_slli_si128(x, 8));
-          data[j + n + k] = OR(_mm_srli_si128(v, 8), y);
+          data[j + k] = OR(u, vcombine_s64(vget_low_s64(x),vget_high_s64(x)));
+          data[j + n + k] = OR(vcombine_s64(vget_low_s64(v),vget_high_s64(v)), y);
         } 
       }
   }
@@ -118,7 +117,7 @@ void real_ortho_128x128(DATATYPE data[]) {
 
 #ifdef ORTHO
 
-void orthogonalize(uint64_t* data, uint64x2_t* out) {
+void orthogonalize_128x64(uint64_t* data, uint64x2_t* out) {
   real_ortho(data);
   real_ortho(&(data[64]));
   for (int i = 0; i < 64; i++) {
@@ -129,7 +128,7 @@ void orthogonalize(uint64_t* data, uint64x2_t* out) {
   }
 }
 
-void unorthogonalize(uint64x2_t *in, uint64_t* data) {
+void unorthogonalize_64x128(uint64x2_t *in, uint64_t* data) {
   for (int i = 0; i < 64; i++) {
     uint64_t tmp[2];
     vst1q_u64((uint64_t*)tmp,in[i]);
@@ -140,17 +139,65 @@ void unorthogonalize(uint64x2_t *in, uint64_t* data) {
   real_ortho(&(data[64]));
 }
 
+
+void orthogonalize_128x128(uint64_t* data, DATATYPE* out) {
+  for (int i = 0; i < 128; i++) {
+    uint64_t tmp[2];
+    tmp[0] = data[i];
+    tmp[1] = data[i+128];
+    out[i] = vld1q_u64(tmp);
+  }
+  real_ortho_128x128(out);
+}
+
+void unorthogonalize_128x128(DATATYPE *in, uint64_t* data) {
+  real_ortho_128x128(in);
+  for (int i = 0; i < 128; i++) {
+    uint64_t tmp[2];
+    vst1q_u64(tmp, in[i]);
+    data[i] = tmp[1];
+    data[128+i] = tmp[0];
+  }
+}
+
+void orthogonalize(uint64_t* data, DATATYPE* out) {
+  orthogonalize_128x128(data,out);
+}
+void unorthogonalize(DATATYPE *in, uint64_t* data) {
+  unorthogonalize_128x128(in,data);
+}
+
+
 #else
 
-void orthogonalize(uint64_t *in, uint64x2_t *out) {
+void orthogonalize_128x64(uint64_t *in, uint64x2_t *out) {
   for (int i = 0; i < 64; i++)
-    out[i] = vld1q_u64((uint64_t*)&in[i]);
+    out[i] = vld1q_u64(&in[i*2]);
 }
 
-void unorthogonalize(uint64x2_t *in, uint64_t *out) {
+void unorthogonalize_64x128(uint64x2_t *in, uint64_t *out) {
   for (int i = 0; i < 64; i++)
-    vst1q_u64((uint64_t*)&out[i],in[i]);
+    vst1q_u64(&out[i*2],in[i]);
 }
+
+
+void orthogonalize_128x128(uint64_t *in, uint64x2_t *out) {
+  for (int i = 0; i < 128; i++)
+    out[i] = vld1q_u64(&in[i*2]);
+}
+
+void unorthogonalize_128x128(uint64x2_t *in, uint64_t *out) {
+  for (int i = 0; i < 64; i++)
+    vst1q_u64(&out[i*2],in[i]);
+}
+
+void orthogonalize(uint64_t *in, DATATYPE *out) {
+  orthogonalize_128x128(in,out);
+}
+void unorthogonalize(DATATYPE *in, uint64_t *out) {
+  unorthogonalize_128x128(in,out);
+}
+
 
 #endif /* ORTHO */
 
