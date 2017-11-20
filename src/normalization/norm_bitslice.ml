@@ -200,10 +200,6 @@ let norm_prog (prog: prog) (conf:config) =
   let env_fun = Hashtbl.create 10 in
   let pre_normalized = { nodes = List.map (norm_def env_fun) uintn_norm.nodes } in
   print "PRE NORMALIZED:" pre_normalized conf;
-
-  Usuba_print.print_prog pre_normalized;
-  exit 1;
-  (* (_tmp3939_ ^ _tmp3940_) *)
   
   (* Replace permutations by assignments *)
   let perm_expanded = Expand_permut.expand_permut pre_normalized in

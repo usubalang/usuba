@@ -8,7 +8,7 @@ use File::Path qw( remove_tree make_path );
 use FindBin;
 
 
-my $nb_cores = 4;
+my $nb_cores = 80;
 
 my $bench   = "OpenMP";
 
