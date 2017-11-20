@@ -48,36 +48,28 @@ void real_ortho_128x128(__m128i data[]) {
     int n = (1UL << i);
     for (int j = 0; j < 128; j += (2 * n))
       for (int k = 0; k < n; k ++) {
-        if (i <= 3) {
-          __m128i u = _mm_and_si128(data[j + k], mask_l[i]);
-          __m128i v = _mm_and_si128(data[j + k], mask_r[i]);
-          __m128i x = _mm_and_si128(data[j + n + k], mask_l[i]);
-          __m128i y = _mm_and_si128(data[j + n + k], mask_r[i]);
-          data[j + k] = _mm_or_si128(u, _mm_srli_epi64(x, n));
-          data[j + n + k] = _mm_or_si128(_mm_slli_epi64(v, n), y);
-        } else if (i == 4) {
-          __m128i u = data[j + k];
-          __m128i v = data[j + k];
-          __m128i x = data[j + n + k];
-          __m128i y = data[j + n + k];
+        __m128i u = data[j + k];
+        __m128i v = data[j + k];
+        __m128i x = data[j + n + k];
+        __m128i y = data[j + n + k];
+        switch (i) {
+        case 4:
           data[j + k] = _mm_blend_epi16(u,_mm_srli_epi64(x, n), 0b01010101);
           data[j + n + k] = _mm_blend_epi16(_mm_slli_epi64(v, n), y, 0b01010101);
-        } else if (i == 5) {
-          __m128i u = data[j + k];
-          __m128i v = data[j + k];
-          __m128i x = data[j + n + k];
-          __m128i y = data[j + n + k];
+          break;
+        case 5:
           data[j + k] = _mm_blend_epi16(u,_mm_srli_epi64(x, n), 0b00110011);
           data[j + n + k] = _mm_blend_epi16(_mm_slli_epi64(v, n), y, 0b00110011);
-        } else {
-          __m128i u = data[j + k];
-          __m128i v = data[j + k];
-          __m128i x = data[j + n + k];
-          __m128i y = data[j + n + k];
+          break;
+        case 6:
           /* Note the "inversion" of srli and slli. */
           data[j + k] = _mm_blend_epi16(u,_mm_slli_si128(x,8), 0b11110000);
           data[j + n + k] = _mm_blend_epi16(_mm_srli_si128(v, 8), y, 0b11110000);
-        } 
+          break;
+        default:
+          data[j + k] = _mm_or_si128(_mm_and_si128(u,mask_l[i]), _mm_srli_epi64(_mm_and_si128(x,mask_l[i]), n));
+          data[j + n + k] = _mm_or_si128(_mm_slli_epi64(_mm_and_si128(v,mask_r[i]), n), _mm_and_si128(y,mask_r[i]));
+        }
       }
   }
 }
