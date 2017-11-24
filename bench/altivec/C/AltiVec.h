@@ -24,8 +24,8 @@
 #define AND(a,b)  vec_and(a,b)
 #define OR(a,b)   vec_or(a,b)
 #define XOR(a,b)  vec_xor(a,b)
-#define ANDN(a,b) vec_nand(a,b)
-#define NOT(a)    vec_nand(a,ONES)
+#define ANDN(a,b) vec_andc(b,a)
+#define NOT(a)    vec_andc(ONES,a)
 
 
 #define SET_ALL_ONE()  ONES
@@ -106,18 +106,17 @@ void real_ortho_128x128(DATATYPE data[]) {
         DATATYPE x = AND(data[j + n + k], mask_l[i]);
         DATATYPE y = AND(data[j + n + k], mask_r[i]);
         if (i <= 4) {
-          data[j + k] = OR(u, vec_sr(x,(DATATYPE){n,n,n,n}));
-          data[j + n + k] = OR(vec_sl(v,(DATATYPE){n,n,n,n}), y);
+	  DATATYPE shift_mask = {n,n,n,n}; 
+          data[j + k] = OR(u, vec_sr(x,shift_mask));
+          data[j + n + k] = OR(vec_sl(v,shift_mask), y);
         } else if (i == 5) {
-          data[j + k] =
-            OR(u,vec_sro(x,(vector unsigned char){0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x20}));
-          data[j + n + k] =
-            OR(vec_sro(x,(vector unsigned char){0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x20}),y);
-        } else { /* i == 6 */
-          data[j + k] =
-            OR(u,vec_sro(x,(vector unsigned char){0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x40}));
-          data[j + n + k] =
-            OR(vec_sro(x,(vector unsigned char){0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x40}),y);
+	  vector unsigned char shift_mask = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x20};
+          data[j + k] = OR(u,vec_sro(x,shift_mask));
+          data[j + n + k] = OR(vec_slo(v,shift_mask),y);
+        } else { /* i == 6 */ 
+	  vector unsigned char shift_mask = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0x40};
+          data[j + k] = OR(u,vec_sro(x,shift_mask));
+          data[j + n + k] = OR(vec_slo(v,shift_mask),y);
         } 
       }
   }
@@ -149,8 +148,10 @@ void unorthogonalize_64x128(DATATYPE *in, uint64_t* data) {
 
 void orthogonalize_128x128(uint64_t* data, DATATYPE* out) {
   for (int i = 0; i < 128; i++) {
-    uint64_t tmp[2] = { data[i], data[128+i] };
-    out[i] = vec_ld(0,(DATATYPE*)tmp);
+    //uint64_t tmp[2] = { data[i], data[128+i] };
+    //out[i] = vec_ld(0,(DATATYPE*)tmp);
+    /* NOTE: could be "128+i" then "i" */
+    out[i] = (DATATYPE){ data[i], data[128+i] };
   }
   real_ortho_128x128(out);
 }
@@ -158,10 +159,12 @@ void orthogonalize_128x128(uint64_t* data, DATATYPE* out) {
 void unorthogonalize_128x128(DATATYPE *in, uint64_t* data) {
   real_ortho_128x128(in);
   for (int i = 0; i < 128; i++) {
-    uint64_t tmp[2];
-    vec_st(in[i],0,(DATATYPE*)tmp);
-    data[i] = tmp[1];
-    data[128+i] = tmp[0];
+    DATATYPE tmp_vec;
+    vec_st(in[i],0,&tmp_vec);
+    uint64_t* tmp = (uint64_t*)&tmp_vec;
+    /* NOTE: could be "0" then "1" */
+    data[i] = tmp[0];
+    data[128+i] = tmp[1];
   }
 }
 

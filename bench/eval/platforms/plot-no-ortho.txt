@@ -1,0 +1,35 @@
+set terminal pdf enhanced font ",14"
+set output 'perf-no-ortho.pdf'
+
+set style data histogram
+set style histogram cluster gap 1
+
+set key left top
+
+set ylabel "Speedup"
+set xlabel "Architecture"
+
+set ytics 0,2
+set grid ytics
+set grid
+
+
+set key font ",14"
+set xtics font ",14" 
+set ytics font ",14" 
+
+set style fill solid border rgb "black"
+
+set xrange [-0.7:3.7]
+
+set linetype 1 lc rgb '#b30000'
+set linetype 2 lc rgb '#FF9E00'
+set linetype 3 lc rgb '#7a0177'
+set linetype 4 lc rgb '#CE0000'
+set linetype 5 lc rgb '#253494'
+
+plot 'data-no-ortho.dat' using 2:xtic(1) title col fs pattern 1 lt 1, \
+        '' using 3:xtic(1) title col fs pattern 2 lt 2, \
+        '' using 4:xtic(1) title col fs pattern 7 lt 3, \
+        '' using 5:xtic(1) title col fs pattern 6 lt 4, \
+        '' using 6:xtic(1) title col fs pattern 5 lt 5, 

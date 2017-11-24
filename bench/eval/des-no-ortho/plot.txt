@@ -1,7 +1,7 @@
 set terminal pdf
 set output 'speed_no_ortho.pdf'
 set boxwidth 0.6
-set border 3
+#set border 3
 set tics nomirror
 
 set grid ytics
@@ -31,5 +31,5 @@ plot                                                                         \
        using 0:2:xtic(1) with boxes fs pattern 1 lt 1 title 'Manual',        \
       'data.dat' every  1:1:1:0:5:0                                          \
        using ($0+1):2:xtic(1)  with boxes fs pattern 6 lt 3 title 'Usuba',   \
-       '' using 0:($2+35):2 with labels title ''
+       '' using 0:($2+60):2 with labels title ''
 
