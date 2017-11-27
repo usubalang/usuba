@@ -1,6 +1,6 @@
 set terminal pdf
 set output 'openmp.pdf'
-set boxwidth 0.6
+
 set border 3
 set tics nomirror
 
@@ -9,8 +9,14 @@ set ytics out
 
 set xlabel "cores"
 set ylabel "speedup factor"
-set yrange [0:*]
 
-set nokey
+set yrange [0:80]
+set xrange [0:80]
 
-plot 'data.dat' using 2:xtic(5) with lines lt rgb "black"
+f(x) = x
+
+#set nokey
+set key left top
+
+plot 'data.dat' using 2:xtic(5) notitle pt 1 ps .5 lt rgb "black", \
+     f(x) title 'x = y' with lines linestyle 7 
