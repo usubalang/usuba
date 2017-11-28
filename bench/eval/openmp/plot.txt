@@ -18,5 +18,5 @@ f(x) = x
 #set nokey
 set key left top
 
-plot 'data.dat' using 2:xtic(5) notitle pt 1 ps .5 lt rgb "black", \
-     f(x) title 'x = y' with lines linestyle 7 
+plot 'data.dat' using 2:xtic(5) title 'experimental speedup' pt 1 ps .5 lt rgb "black", \
+     f(x) title 'ideal speedup' with lines linestyle 7 
