@@ -7,8 +7,10 @@ use File::Path qw( remove_tree make_path );
 use File::Copy;
 use FindBin;
 
-my $nb_run = 30;
-my $cc = 'clang';
+chdir $FindBin::Bin;
+
+my $nb_run = $ARGV[0] // 30;
+my $cc = $ARGV[1] // 'clang';
 
 my $bench   = "orthogonalization";
 my $outfile = 'perf-ortho.tex';
@@ -25,15 +27,7 @@ my %benchs = (
     'avx512.c' => 'AVX-512'
     );
 
-chdir $FindBin::Bin;
-
-make_path 'tmp';
-copy $_, 'tmp' for keys %benchs;
-chdir 'tmp';
-
-copy "../../../input.txt", ".";
-
-my $cflags = "-O3 -I ../../../../arch -march=native -w";
+my $cflags = "-O3 -I arch -std=gnu11 -march=native -mavx512bw -mavx512f";
 
 talk "Compiling the C files";
 for my $file (keys %benchs) {
@@ -54,11 +48,10 @@ for my $name (keys %times) {
 }
 
 # Printing the results
-chdir "..";
 open my $FH, '>', $outfile or die $!;
 
 print $FH 
-"\\begin{tabular}{|K{2cm}|K{2cm}|K{2cm}|}
+"\\begin{tabular}{|K{2cm}|K{2cm}|K{2cm}|K{2cm}|}
   \\hline
   \\textbf{\\enspace GP (64-bits)} & \\textbf{SSE (128-bits)} & \\textbf{AVX2 (256-bits)} & \\textbf{AVX-512}\\\\
   \\hline
@@ -71,6 +64,6 @@ print $FH
 
 close $FH;
 
-# Cleaning temporary directory
-remove_tree "tmp";
+# Cleaning files
+unlink $_ for values %benchs, "output.txt";
 

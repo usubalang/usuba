@@ -1,7 +1,5 @@
 #!/usr/bin/perl
 
-# Note: this script is named "tmp_run.pl" instead of "run.pl" so it is not ran
-# automatically by the main benchmark script ("bench/bench.pl").
 
 use strict;
 use warnings;
@@ -12,7 +10,7 @@ use File::Copy;
 use Cwd;
 
 my $cc   = 'clang';
-my $arch = 'std';
+my $arch = 'avx';
 
 my %arch_corres = (
     std     => 'STD',
