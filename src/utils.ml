@@ -70,6 +70,20 @@ let last l =
   List.nth l (List.length l - 1)
 let is_empty = function [] -> true | _ -> false
 
+
+let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
+  match e with
+  | Const_e n -> n
+  | Var_e id  -> Hashtbl.find env id.name
+  | Op_e(op,x,y) -> let x' = eval_arith env x in
+                    let y' = eval_arith env y in
+                    match op with
+                    | Add -> x' + y'
+                    | Mul -> x' * y'
+                    | Sub -> x' - y'
+                    | Div -> x' / y'
+                    | Mod -> if x' > 0 then x' mod y' else y' + (x' mod y')
+                                            
 let rec join s l = String.concat s l
 
 let indent (tab: int) : string =
@@ -128,7 +142,7 @@ let rec typ_size (typ:typ) : int =
   match typ with
   | Bool -> 1
   | Int n -> n
-  | Array(t,Const_e n) -> n*(typ_size t)
+  | Array(t,n) -> (eval_arith (Hashtbl.create 1) n)*(typ_size t)
   | _ -> raise (Error "Invalid Array with non-const size")
          
 let id_generator =
@@ -230,18 +244,6 @@ let contains s1 s2 =
   try ignore (Str.search_forward re s1 0); true
   with Not_found -> false
 
-let rec eval_arith (env: int env) (e:Usuba_AST.arith_expr) : int =
-  match e with
-  | Const_e n -> n
-  | Var_e id  -> Hashtbl.find env id.name
-  | Op_e(op,x,y) -> let x' = eval_arith env x in
-                    let y' = eval_arith env y in
-                    match op with
-                    | Add -> x' + y'
-                    | Mul -> x' * y'
-                    | Sub -> x' - y'
-                    | Div -> x' / y'
-                    | Mod -> if x' > 0 then x' mod y' else y' + (x' mod y')
 
    
 let rec get_used_vars (e:expr) : var list =
