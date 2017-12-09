@@ -1,3 +1,12 @@
+(***************************************************************************** )
+                              remove_ctrl.ml                                 
+
+  Removes 'When' and 'Merge' by using masks instead.
+
+( *************************************************************************** *)
+
+
+
 open Usuba_AST
 open Utils
 
@@ -10,7 +19,7 @@ let rec clean_expr (e:expr) : expr =
   | Log(op,e1,e2)   -> Log(op,e1,e2)
   | Arith(op,e1,e2) -> Arith(op,e1,e2)
   | Fun(f,l)        -> Fun(f,List.map clean_expr l)
-  (* Removing When and Merge*)
+  (* Removing When and Merge *)
   | When(e,_,_)     -> e
   | Merge(id,l)     -> List.fold_left
                          (fun x y -> Log(Or,x,y))

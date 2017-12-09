@@ -133,7 +133,7 @@ let norm_deq env_fun (body: deq list) : deq list =
          | Norec (p,e) ->
             let (expr_l, e') = norm_expr env_fun e in
             expr_l @ [Norec(p,e')]
-         | Rec _ -> raise (Error "REC")) body)
+         | Rec _ -> assert false) body)
 
 let norm_def env_fun (def: def) : def =
   match def.node with
@@ -173,7 +173,7 @@ let norm_def_z3 env_fun (def: def) : def =
      List.iteri (fun i _ -> env_add_fun (fresh_suffix def.id (string_of_int i))
                                         def.p_in def.p_out env_fun) l;
      def
-  | _ -> unreached ()
+  | _ -> assert false
      
 
 let print title body conf =
@@ -188,16 +188,17 @@ let print title body conf =
          are set to true (or at least the first one) *)
 let norm_prog (prog: prog) (conf:config) =
 
-  (* Convert const to tuples *)
-  let const_norm = Expand_const.expand_prog prog in
-  print "CONST NORM:" const_norm conf;
   
   (* Convert uint_n to n bools *)
-  let uintn_norm = Norm_uintn.norm_uintn const_norm in
+  let uintn_norm = Norm_uintn.norm_uintn prog in
   print "UINTN NORM:" uintn_norm conf;
 
+  (* Convert const to tuples *)
+  let const_norm = Expand_const.expand_prog uintn_norm in
+  print "CONST NORM:" const_norm conf;
+
   (* Replace permutations by assignments *)
-  let perm_expanded = Expand_permut.expand_permut uintn_norm in
+  let perm_expanded = Expand_permut.expand_permut const_norm in
   print "PERM EXPANDED:" perm_expanded conf;
   
   (* Remove nested function calls by introducing temporary variables *)
