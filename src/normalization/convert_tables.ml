@@ -38,9 +38,8 @@ let get_bits (l:int list) (i:int) : int list =
 let tmp_var i j k =
   fresh_ident ("tmp_" ^ (string_of_int i) ^ "_" ^ (string_of_int j) ^ "_" ^ (string_of_int k))
 
-(* let mux c a b = Log(Xor,[Var a; Log(And,[c; Var b])]) *)
-(* let mux c a b = Log(Xor,[Var a; Log(And,[c;Log(Xor,[Var a;Var b])])]) *)
 let mux c a b = Log(Or,Log(Andn,c,ExpVar(Var a)),Log(And,c,ExpVar(Var b)))
+(* let mux c a b = Log(Xor,ExpVar(Var a),Log(And,c,Log(Xor,ExpVar(Var a),ExpVar(Var b)))) *)
 
                    
 let rewrite_table (id:ident) (p_in:p) (p_out:p)
