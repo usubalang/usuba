@@ -49,6 +49,13 @@ let norm_prog (prog: prog) (conf:config) : prog  =
   let optimized = Optimize.opt_prog normalized conf in
   print "OPTIMIZED:" optimized conf;
 
+  (* BDD verification of the optimizations *)
+  (*print_endline "Gonna compare.";
+  if Bdd_verif.compare_prog normalized optimized then
+    print_endline "Compare ok."
+  else
+    print_endline "Compare not ok";*)
+
   let clock_fixed = Fix_clocks.fix_prog optimized in
   print "CLOCKS FIXED:" clock_fixed conf;
   
