@@ -46,6 +46,10 @@ let deqs_to_bdd (node1:def) (deqs1:deq list) (node2:def) (deqs2:deq list) =
   build_bdd deqs1 env1;
   build_bdd deqs2 env2;
 
+  (*let ((id,_),_) = List.nth node1.p_out 3 in
+  print_endline (MLBDD.to_string (env_fetch env1 id));
+  print_endline (join "," (List.map string_of_int (MLBDD.list_of_support (MLBDD.support (env_fetch env1 id)))));*)
+
   env1, env2
 
 
