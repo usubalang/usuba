@@ -151,10 +151,10 @@ perm[] roundkey (key : u1x64) returns ( roundkey : u48 )
 ]
 
 
-node des_single ( left_in : u1x32, right_in : u1x32, key : u6x8 )
-        returns ( out : u1x64 )
+node des_single ( left_in : u32x1, right_in : u32x1, key : u8x6 )
+        returns ( out : u64x1 )
 vars
-    sbox_in : u6x8, sbox_out : u4x8
+    sbox_in : u8x6, sbox_out : u8x4
 let
     # Initial expansion and xor with the key
     // Il y a un passage vers le monde bitslicé dans cette opération
@@ -169,11 +169,11 @@ tel
 
 # Toute cette fonction est dans le monde non-bitslicé.
 # des_single en revanche, passe dans le monde bitslicé.
-node des ( plaintext : u1x64, key : u6x8[16] )
-     returns ( ciphered : u64 )
+node des ( plaintext : u64x1, key : u8x6[16] )
+     returns ( ciphered : u64x1 )
 vars
-    des : u1x64[17],
-    left : u1x32, right : u1x32
+    des : u32x1[17][2],
+    left : u32x1, right : u32x1
 let
     # Initialisation (initial permutation)
     des[0] = init_p(plaintext);
