@@ -30,11 +30,27 @@ perm ShiftRows (inputSR:u16x8) returns (out:u16x8) {
      0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11
 }
 
-# NOTE: dunno what to write.
-node MixColumn (inputMC:u16x8) returns (out:u16x8])
+node times2 (i:u1x8) returns (o:u1x8)
 vars
 let
-    
+    o = (i << 1) ^ (0,0,0,i[0],i[0],0,i[0],i[0])
+tel
+
+node times3 (i:u1x8) returns (o:u1x8)
+vars
+let
+    o = times2(i) ^ i
+tel
+
+# NOTE: that would be nice..
+node MixColumn (inputMC:u16x8) returns (out:u16x8)
+vars
+let
+    out = inputMC * [ [2,3,1,1], [1,2,3,1], [1,1,2,3], [3,1,1,2] ]
+        with (*2) = times2
+        and  (*3) = times3
+        and  (*1) = id
+        and  (+)  = (^)
 tel
 
 

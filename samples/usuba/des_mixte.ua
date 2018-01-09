@@ -152,16 +152,19 @@ perm[] roundkey (key : u1x64) returns ( roundkey : u48 )
 
 
 node des_single ( left_in : u32x1, right_in : u32x1, key : u8x6 )
-        returns ( out : u64x1 )
+        returns ( out : u32x2 )
 vars
-    sbox_in : u8x6, sbox_out : u8x4
+    sbox_in : u8x6, sbox_out : u32x1
 let
     # Initial expansion and xor with the key
     // Il y a un passage vers le monde bitslicé dans cette opération
     sbox_in = expand(right_in) ^ key;
 
     # Computing the s-boxes
-    forall i in [0,7] { sbox_out[i] = sbox[i](sbox_in[i]) }
+    # Some type annotation (or something like that) should imply that
+    # all the Sboxes should be computed at once, and that  sbox_in (u8x6)
+    # needs to be converted to u32x6
+    sbox_out = sbox(sbox_in);
 
     # linear permutation and final xor and switch left/right
     out = (right_in,left_in ^ permut(sbox_out))
