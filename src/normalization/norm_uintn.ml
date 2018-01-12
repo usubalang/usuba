@@ -68,10 +68,10 @@ let norm_p (p: p) : p =
     (List.map
        (fun ((id,typ),ck) ->
         match typ with
-        | Bool    -> [ (id,Bool),ck ]
-        | Int n   -> expand_intn_typed id n ck
-        | Nat     -> raise (Invalid_AST "Illegal nat")
-        | Array _ -> raise (Invalid_AST "Illegal Array")) p)
+        | Bool     -> [ (id,Bool),ck ]
+        | Int(_,n) -> expand_intn_typed id n ck
+        | Nat      -> raise (Invalid_AST "Illegal nat")
+        | Array _  -> raise (Invalid_AST "Illegal Array")) p)
 
 let norm_def (def: def) : def =
   match def.node with

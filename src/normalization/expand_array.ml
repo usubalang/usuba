@@ -20,11 +20,18 @@ open Printf
 
 (* Abstracting Hashtbl.
    This functions should replace the ones in Utils, one day. *)
-let print_env env = ignore(Hashtbl.fold (fun k v _ -> print_endline k.name) env ())
+let print_env env = ignore(Hashtbl.fold (fun k v n -> printf "%s:%d\n" k.name n; 1) env 0)
 let make_env () = Hashtbl.create 100
 let env_add env v e = Hashtbl.replace env v e
 let env_fetch env v = Hashtbl.find env v
-                                   
+
+(* Note: this version of "typ_size" returns 1 for an Int *)
+let rec typ_size (typ:typ) : int =
+  match typ with
+  | Bool -> 1
+  | Int _ -> 1 
+  | Array(t,n) -> (eval_arith (Hashtbl.create 1) n)*(typ_size t)
+  | _ -> raise (Error "Invalid Array with non-const size")                                   
 
 let rec fetch_subarr (id:ident) (i:int) : ident =
   fresh_suffix id (sprintf "%d'" i)
@@ -37,14 +44,6 @@ let rec gen_list_bounds i f =
     i :: (gen_list_bounds (i-1) f)
   else [ f ]
 
-  
-let rec typ_size (typ:typ) : int =
-  match typ with
-  | Bool -> 1
-  | Int n -> 1
-  | Array(t,n) -> (eval_arith (Hashtbl.create 1) n)*(typ_size t)
-  | _ -> raise (Error "Invalid Array with non-const size")
-         
 
 (* Expand variables: arrays are converted to booleans *)
 let rec expand_var (arith_env:(string,int) Hashtbl.t)
@@ -54,7 +53,8 @@ let rec expand_var (arith_env:(string,int) Hashtbl.t)
   match v with
   (* If the variable has size 1 it's a boolean -> leave it as is,
      else, it's an array -> convert it to booleans *)
-  | Var id -> ( match env_fetch type_env id with
+  | Var id ->
+     ( match env_fetch type_env id with
                 | 1 -> [ Var id ]
                 | n -> List.flatten @@
                          List.map (fun x -> rec_call (Var(fetch_subarr id x)))

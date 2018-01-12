@@ -21,7 +21,7 @@ let get_var_size env (v:ident) : int =
   | None -> raise (Undeclared v)
   | Some typ -> match typ with
                 | Bool -> 1
-                | Int n -> n
+                | Int(_,n) -> n
                 | _ -> raise (Error "Invalid type")
 
 let rec get_expr_size env (e:expr) : int =

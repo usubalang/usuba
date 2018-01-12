@@ -141,7 +141,7 @@ let rec gen_list_bound (n1: int) (n2:int) : int list =
 let rec typ_size (typ:typ) : int =
   match typ with
   | Bool -> 1
-  | Int n -> n
+  | Int(_,n) -> n
   | Array(t,n) -> (eval_arith (Hashtbl.create 1) n)*(typ_size t)
   | _ -> raise (Error "Invalid Array with non-const size")
          
@@ -176,7 +176,7 @@ let rec env_add_var (vars: p) (env_var: int env) : unit =
   | ((id,typ),_)::tl -> ( env_add env_var id
                                 (match typ with
                                  | Bool  -> 1
-                                 | Int n -> n
+                                 | Int(_,n) -> n
                                  | Nat -> raise (Invalid_AST "Nat")
                                  | Array _ -> raise (Invalid_AST "Array (1)"));
                         env_add_var tl env_var )
@@ -188,7 +188,7 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
     | [] -> []
     | ((_,typ),_)::tl -> (match typ with
                          | Bool -> 1
-                         | Int n -> n
+                         | Int(_,n) -> n
                          | Nat -> raise (Invalid_AST "Nat")
                          | Array _ -> raise (Invalid_AST "Array (2)"))
                         :: (get_param_in_size tl)
@@ -197,7 +197,7 @@ let env_add_fun (name: ident) (p_in: p) (p_out: p)
     | [] -> 0
     | ((_,typ),_)::tl -> (match typ with
                         | Bool -> 1
-                        | Int n -> n
+                        | Int(_,n) -> n
                         | Nat -> raise (Invalid_AST "Nat")
                         | Array _ -> raise (Invalid_AST "Array (3)"))
                        + (get_param_out_size tl)
@@ -307,7 +307,7 @@ let rec p_size (p:p) : int =
   let typ_size (t:typ) =
     match t with
     | Bool -> 1
-    | Int n -> n
+    | Int(_,n) -> n
     | _ -> raise (Not_implemented "p_size restricted to Bool & Int") in
   match p with
   | [] -> 0

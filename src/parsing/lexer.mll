@@ -40,7 +40,15 @@ let next_line lexbuf =
                  pos_lnum = pos.pos_lnum + 1
     }
 
+(* if bitslicing is true then the program is purely bitsliced.
+   it means that u_n are equivalent to u_1xm.
+   if bitslicing is false, then the program is vectorized, 
+   and u_n mean u_nx1 
+   *)
+let bitslicing = ref true
+                     
 }
+
 
 rule token = parse
 
@@ -50,11 +58,20 @@ rule token = parse
 | '#' [^ '\n' '\r']*     { token lexbuf; }
 | "//" [^ '\n' '\r']*    { token lexbuf; }
 
-                           
-| "uint_" (['0' - '9']+ as n)    { TOK_type (Int(int_of_string n))  }
-| "u" (['0' - '9']+ as n)        { TOK_type (Int(int_of_string n))  }
-| "bool"                         { TOK_type Bool                    }
-| "nat"                          { TOK_type Nat                     }
+(* pragmas *)
+| "#pragma" [' ']+ "bitslicing"    { bitslicing := true; token lexbuf  }
+| "#pragma" [' ']+ "vectorization" { bitslicing := false; token lexbuf }
+
+                                   
+(* types *)
+| "u" (['0' - '9']+ as n)
+      { match !bitslicing with
+        | true  -> TOK_type (Int(1,int_of_string n))
+        | false -> TOK_type (Int(int_of_string n,1)) }
+| "u" (['0' - '9']+ as n) "x" (['0' - '9']+ as m)
+                   { TOK_type (Int(int_of_string n,int_of_string m)) }
+| "bool"                         { TOK_type Bool                     }
+| "nat"                          { TOK_type Nat                      }
 
 (* identifiers / keywords *)
 | "True"   { TOK_constr True  }

@@ -24,11 +24,11 @@ Inductive shift_op := Lshift | Rshift | Lrotate | Rrotate.
 Inductive arith_expr :=
   | Const_e (i: Z)
   | Var_e (x: ident)
-  | Op_e (op: arith_op)(e1 e2: arith_expr).
+  | Op_e (op: arith_op)(e1 e2: arith_expr). 
 
 Inductive typ :=
   | Bool
-  | Int (i: N)
+  | Int (i: N) (j :N)
   | Nat (* for recurrence variables. Not part of usuba0 normalized *)
   | Array (t: typ)(ae: arith_expr). (* arrays *)
 

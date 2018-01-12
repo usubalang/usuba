@@ -58,14 +58,15 @@ let params_to_arr (params: p) : string list =
   List.map (fun ((id,typ),_) ->
             match typ with
             | Bool -> id.name
-            | Int n -> Printf.sprintf "%s[%d]" id.name n
+            | Int(_,n) -> Printf.sprintf "%s[%d]" id.name n
             | Array(t,Const_e n) -> Printf.sprintf "%s[%d]" id.name (n*typ_size t)
             | _ -> raise (Not_implemented "Invalid input")) params
 
 let rec gen_list_typ (x:string) (typ:typ) : string list =
+  print_endline ("Suspicious \"'\" at: " ^ __LOC__);
   match typ with
   | Bool  -> [ x ]
-  | Int n -> gen_list (x ^ "'") n
+  | Int(_,n) -> gen_list (x ^ "'") n
   | Array(t',Const_e n) -> List.flatten @@
                              List.map (fun x -> gen_list_typ x t')
                                       (gen_list0 (x ^ "'") n)
@@ -78,7 +79,7 @@ let inputs_to_arr (def:def) =
     let id = id.name in
     match typ with
              | Bool -> Hashtbl.add inputs id (Printf.sprintf "%s[0]" (rename id))
-             | Int n -> List.iter2
+             | Int(_,n) -> List.iter2
                           (fun x y ->
                            Hashtbl.add inputs x
                                        (Printf.sprintf "%s[%d]" (rename id) y))

@@ -109,7 +109,7 @@ let pat_to_str_types pat =
 let rec typ_to_str typ =
   match typ with
   | Bool -> "bool"
-  | Int n -> "uint_"^(string_of_int n)
+  | Int(n,m) -> sprintf "u%dx%d" n m
   | Nat -> "nat"
   | Array(typ,e) -> (typ_to_str typ) ^ "[" ^ (arith_to_str e) ^ "]"
 

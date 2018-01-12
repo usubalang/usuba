@@ -21,7 +21,7 @@ let rec eval_arith (e:arith_expr) : int =
 let rec type_size (t:typ) : int =
   match t with
   | Bool -> 1
-  | Int n -> n
+  | Int(_,n) -> n
   | Array(typ,e) -> (type_size typ) * (eval_arith e)
   | Nat -> raise (Error "Unexpected Nat")
 
@@ -29,7 +29,7 @@ let rec p_size (p:p) : int =
   let rec typ_size (t:typ) =
     match t with
     | Bool -> 1
-    | Int n -> n
+    | Int(_,n) -> n
     | Array(t,e) -> (typ_size t) * (eval_arith e)
     | _ -> raise (Error "Unexpected Nat") in
   match p with

@@ -12,7 +12,7 @@ let p_to_int_list (p:p) : int list =
   List.flatten @@
     List.map (fun ((_,typ),_) -> match typ with
                                | Bool -> [1]
-                               | Int n -> make_int_list n
+                               | Int(_,n) -> make_int_list n
                                | _ -> raise (Not_implemented "")) p
 
 let clean_name (id:ident) : string =

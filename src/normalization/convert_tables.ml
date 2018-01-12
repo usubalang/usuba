@@ -28,7 +28,7 @@ let rec rewrite_p (p: p) : var list =
     List.map (fun ((id,typ),_) ->
         match typ with
         | Bool  -> [ Var id ]
-        | Int x -> expand_intn id x
+        | Int(_,x) -> expand_intn id x
         | Nat -> raise (Invalid_AST "Nat")
         | Array _ -> raise (Invalid_AST "Array (convert_tables)")) p
 
