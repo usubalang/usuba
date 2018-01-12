@@ -10,7 +10,7 @@ use File::Copy;
 use Cwd;
 
 my $cc   = 'clang';
-my $arch = 'avx';
+my $arch = 'std';
 
 my %arch_corres = (
     std     => 'STD',
