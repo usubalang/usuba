@@ -1,7 +1,7 @@
 Require Import Coq.FSets.FMapPositive.
 Module PM := Coq.FSets.FMapPositive.PositiveMap.
 
-Require Import Coq.ZArith.ZArith.
+Require Import Coq.NArith.NArith.
 Require Import List.
 Import ListNotations.
 
@@ -51,13 +51,13 @@ Definition sem_log_op (op: log_op): bool -> bool -> bool :=
   | Andn => (fun x y => negb (andb x y))
   end.
 
-Definition sem_arith_op (op: arith_op): Z -> Z -> Z :=
+Definition sem_arith_op (op: arith_op): N -> N -> N :=
    match op with
-   | Add => Z.add
-   | Mul => Z.mul
-   | Sub => Z.sub
-   | Div => Z.div
-   | Mod => Z.modulo
+   | Add => N.add
+   | Mul => N.mul
+   | Sub => N.sub
+   | Div => N.div
+   | Mod => N.modulo
    end.
 
 (* XXX: shifts are a bit dodgy, they potentially introduce ill-typed data *)
@@ -72,7 +72,7 @@ refine (
 Admitted.
 
 (* Arithmetic expressions, fully-reduced at compile-time *)
-Fixpoint sem_arith_expr (ae: arith_expr)(env: PM.t Z): option Z :=
+Fixpoint sem_arith_expr (ae: arith_expr)(env: PM.t N): option N :=
   match ae with
   | Const_e i => Some i
   | Var_e x => PM.find (uid x) env
@@ -83,10 +83,10 @@ Fixpoint sem_arith_expr (ae: arith_expr)(env: PM.t Z): option Z :=
 
 Print var.
 
-Definition val_lookup (v: val)(k: Z): option val :=
+Definition val_lookup (v: val)(k: N): option val :=
   match v with
   | Atom _ => None
-  | Tup xs => List.nth_error xs (Z.to_nat k)
+  | Tup xs => List.nth_error xs (N.to_nat k)
   end.
 
 Fixpoint mask {A}(l: list A)(k1 k2: nat): option (list A) :=
@@ -110,16 +110,16 @@ Fixpoint mask {A}(l: list A)(k1 k2: nat): option (list A) :=
 Lemma test__mask: mask [0; 1; 2; 3; 4; 5; 6; 7] 2 5 = Some [2; 3; 4].
 Proof. auto. Qed.
 
-Definition val_mask (v: val)(k1 k2: Z): option val :=
+Definition val_mask (v: val)(k1 k2: N): option val :=
   match v with
   | Atom _ => None
-  | Tup xs => fmap Tup (mask xs (Z.to_nat k1) (Z.to_nat k2))
+  | Tup xs => fmap Tup (mask xs (N.to_nat k1) (N.to_nat k2))
   end.
 
 Section SemExpr.
 
 Variable prog: PM.t def.
-Variable senv: PM.t Z.
+Variable senv: PM.t N.
 
 Inductive sem_var (env: PM.t value): var -> value -> Prop :=
 | sem_Var: forall x v,
@@ -154,7 +154,7 @@ Inductive sem_expr: PM.t value -> expr -> value -> Prop :=
 | sem_Shift: forall env op e ae k ve v,
     sem_expr env e (Tup ve) ->
     sem_arith_expr ae senv = Some k ->
-    sem_shift_op op ve (Z.to_nat k) = v ->
+    sem_shift_op op ve (N.to_nat k) = v ->
     sem_expr env (Shift op e ae) (Tup v)
 | sem_Log: forall env op e1 e2 b1 b2 v,
     sem_expr env e1 (Atom b1) ->

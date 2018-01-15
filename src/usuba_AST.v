@@ -1,5 +1,5 @@
 Require Import String.
-Require Import Coq.ZArith.ZArith.
+Require Import Coq.NArith.NArith.
 Require Import List.
 Import ListNotations.
 
@@ -25,7 +25,7 @@ Inductive arith_op := Add | Mul | Sub | Div | Mod.
 Inductive shift_op := Lshift | Rshift | Lrotate | Rrotate.
 
 Inductive arith_expr :=
-  | Const_e (i: Z)
+  | Const_e (i: N)
   | Var_e (x: ident)
   | Op_e (op: arith_op)(e1 e2: arith_expr). 
 

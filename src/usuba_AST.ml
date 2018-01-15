@@ -91,9 +91,11 @@ type arch =
 | Neon
 | AltiVec
 
-type config = { block_size : int; key_size : int; warnings : bool; verbose : int;
-                verif : bool; type_check : bool; clock_check : bool; check_tbl : bool;
-                inlining : bool; inline_all : bool; cse_cp : bool; scheduling : bool;
-                array_opti : bool; share_var : bool; precal_tbl : bool; archi : arch;
-                bit_per_reg : int; bench : bool; rand_input : bool; runtime : bool;
-                ortho : bool; openmp : int }
+type config = { block_size : int; key_size : int; warnings : bool;
+                verbose : int; verif : bool; type_check : bool;
+                clock_check : bool; check_tbl : bool; inlining : bool;
+                inline_all : bool; cse_cp : bool; scheduling : bool;
+                array_opti : bool; share_var : bool; precal_tbl : bool;
+                archi : arch; bit_per_reg : int; bench : bool;
+                rand_input : bool; runtime : bool; ortho : bool; openmp : 
+                int }
