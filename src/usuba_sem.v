@@ -129,11 +129,11 @@ Proof. trivial. Qed.
 (* Arithmetic expressions, fully-reduced at compile-time *)
 Fixpoint sem_arith_expr (ae: arith_expr)(env: PM.t N): option N :=
   match ae with
-  | Const_e i => Some i
+  | Const_e i => ret! i
   | Var_e x => PM.find (uid x) env
   | Op_e op e1 e2 => let! x := sem_arith_expr e1 env in
                     let! y := sem_arith_expr e2 env in
-                    Some (sem_arith_op op x y)
+                    ret! (sem_arith_op op x y)
   end.
 
 Print var.
