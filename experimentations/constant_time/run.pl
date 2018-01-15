@@ -16,10 +16,10 @@ system "$CC $CFLAGS -c des.c";
 my @times;
 
 # Full 0 & full 1
-system "$CC -DFULL_ZERO=1 $CFLAGS -o main main.c des.o";
-push @times, [ split ' ', `./main` ];
-system "$CC -DFULL_ONE=1 $CFLAGS -o main main.c des.o";
-push @times, [ split ' ', `./main` ];
+#system "$CC -DFULL_ZERO=1 $CFLAGS -o main main.c des.o";
+#push @times, [ split ' ', `./main` ];
+#system "$CC -DFULL_ONE=1 $CFLAGS -o main main.c des.o";
+#push @times, [ split ' ', `./main` ];
 
 # Random values
 system "$CC $CFLAGS -o main main.c des.o";
