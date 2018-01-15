@@ -60,16 +60,71 @@ Definition sem_arith_op (op: arith_op): N -> N -> N :=
    | Mod => N.modulo
    end.
 
-(* XXX: shifts are a bit dodgy, they potentially introduce ill-typed data *)
-Definition sem_shift_op (op: shift_op): list val -> nat -> list val.
-refine (
+Definition sem_shift_op {A}(op: shift_op)(d : A)(l: list A)(n: nat): list A :=
   match op with
-  | Lshift => _
-  | Rshift => _
-  | Lrotate => _
-  | Rrotate => _
-  end).
-Admitted.
+  | Lshift => let r := skipn n l in
+              r ++ repeat d (min n (length l))
+  | Rshift => let r := firstn (length l - n) l in
+              repeat d (min n (length l)) ++ r
+  | Lrotate => let n := Nat.modulo n (length l) in
+               let e := firstn n l in
+               let r := skipn n l in
+               r ++ e
+  | Rrotate => let n := Nat.modulo n (length l) in
+               let e := firstn (length l - n) l in
+               let r := skipn (length l - n) l in
+               r ++ e
+  end.
+
+Lemma test__Lshift0: sem_shift_op Lshift 0 [1; 2; 3; 4; 5] 0 = [1; 2; 3; 4; 5].
+Proof. trivial. Qed.
+
+Lemma test__Lshift1: sem_shift_op Lshift 0 [1; 2; 3; 4; 5] 1 = [2; 3; 4; 5; 0].
+Proof. trivial. Qed.
+
+Lemma test__Lshift5: sem_shift_op Lshift 0 [1; 2; 3; 4; 5] 5 = [0; 0; 0; 0; 0].
+Proof. trivial. Qed.
+
+Lemma test__Lshift6: sem_shift_op Lshift 0 [1; 2; 3; 4; 5] 6 = [0; 0; 0; 0; 0].
+Proof. trivial. Qed.
+
+Lemma test__Rshift1: sem_shift_op Rshift 0 [1; 2; 3; 4; 5] 1 = [0; 1; 2; 3; 4].
+Proof. trivial. Qed.
+
+Lemma test__Rshift5: sem_shift_op Rshift 0 [1; 2; 3; 4; 5] 5 = [0; 0; 0; 0; 0].
+Proof. trivial. Qed.
+
+Lemma test__Rshift6: sem_shift_op Rshift 0 [1; 2; 3; 4; 5] 6 = [0; 0; 0; 0; 0].
+Proof. trivial. Qed.
+
+
+Lemma test__Lrotate0: sem_shift_op Lrotate 0 [1; 2; 3; 4; 5] 0 = [1; 2; 3; 4; 5].
+Proof. trivial. Qed.
+
+Lemma test__Lrotate1: sem_shift_op Lrotate 0 [1; 2; 3; 4; 5] 1 = [2; 3; 4; 5; 1].
+Proof. trivial. Qed.
+
+Lemma test__Lrotate4: sem_shift_op Lrotate 0 [1; 2; 3; 4; 5] 4 = [5; 1; 2; 3; 4].
+Proof. trivial. Qed.
+
+Lemma test__Lrotate5: sem_shift_op Lrotate 0 [1; 2; 3; 4; 5] 5 = [1; 2; 3; 4; 5].
+Proof. trivial. Qed.
+
+Lemma test__Lrotate6: sem_shift_op Lrotate 0 [1; 2; 3; 4; 5] 6 = [2; 3; 4; 5; 1].
+Proof. trivial. Qed.
+
+Lemma test__Rrotate1: sem_shift_op Rrotate 0 [1; 2; 3; 4; 5] 1 = [5; 1; 2; 3; 4].
+Proof. trivial. Qed.
+
+Lemma test__Rrotate4: sem_shift_op Rrotate 0 [1; 2; 3; 4; 5] 4 = [2; 3; 4; 5; 1].
+Proof. trivial. Qed.
+
+Lemma test__Rrotate5: sem_shift_op Rrotate 0 [1; 2; 3; 4; 5] 5 = [1; 2; 3; 4; 5].
+Proof. trivial. Qed.
+
+Lemma test__Rrotate6: sem_shift_op Rrotate 0 [1; 2; 3; 4; 5] 6 = [5; 1; 2; 3; 4].
+Proof. trivial. Qed.
+
 
 (* Arithmetic expressions, fully-reduced at compile-time *)
 Fixpoint sem_arith_expr (ae: arith_expr)(env: PM.t N): option N :=
@@ -154,7 +209,7 @@ Inductive sem_expr: PM.t value -> expr -> value -> Prop :=
 | sem_Shift: forall env op e ae k ve v,
     sem_expr env e (Tup ve) ->
     sem_arith_expr ae senv = Some k ->
-    sem_shift_op op ve (N.to_nat k) = v ->
+    sem_shift_op op (Atom false) ve (N.to_nat k) = v ->
     sem_expr env (Shift op e ae) (Tup v)
 | sem_Log: forall env op e1 e2 b1 b2 v,
     sem_expr env e1 (Atom b1) ->
