@@ -52,16 +52,15 @@ let bitslicing = ref true
 
 rule token = parse
 
+(* pragmas *)
+| "#pragma" [' ']+ "bitslicing"    { bitslicing := true; token lexbuf  }
+| "#pragma" [' ']+ "vectorization" { bitslicing := false; token lexbuf }
+                                   
 (* spaces *)
 | [' ' '\t']+  { token lexbuf; }
 | ['\n']       { next_line lexbuf; token lexbuf; }
 | '#' [^ '\n' '\r']*     { token lexbuf; }
 | "//" [^ '\n' '\r']*    { token lexbuf; }
-
-(* pragmas *)
-| "#pragma" [' ']+ "bitslicing"    { bitslicing := true; token lexbuf  }
-| "#pragma" [' ']+ "vectorization" { bitslicing := false; token lexbuf }
-
                                    
 (* types *)
 | "u" (['0' - '9']+ as n)
@@ -69,9 +68,9 @@ rule token = parse
         | true  -> TOK_type (Int(1,int_of_string n))
         | false -> TOK_type (Int(int_of_string n,1)) }
 | "u" (['0' - '9']+ as n) "x" (['0' - '9']+ as m)
-                   { TOK_type (Int(int_of_string n,int_of_string m)) }
-| "bool"                         { TOK_type Bool                     }
-| "nat"                          { TOK_type Nat                      }
+           { TOK_type (Int(int_of_string n,int_of_string m)) }
+| "bool"   { TOK_type Bool }
+| "nat"    { TOK_type Nat  }
 
 (* identifiers / keywords *)
 | "True"   { TOK_constr True  }

@@ -104,6 +104,7 @@ let main () =
       "-o", Arg.Set_string output, "Set the output filename";
     ] in
   let usage_msg = "Usage: usuba [switches] [files]" in
+  
   let compile s =
     let prog = Parse_file.parse_file s in
     let bits_per_reg = if !bit_per_reg <> 64 then !bit_per_reg

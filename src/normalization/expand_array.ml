@@ -159,9 +159,9 @@ let make_env_from_p (p_in:p) (p_out:p) (vars:p) =
                                                 t),ck)) (gen_list_0_int size)
       (* TODO: remove Int *)
       | Int _ -> env_add type_env id 1
-      (* | Int n -> env_add type_env id n;
-       *            List.iter (fun i -> aux ((fresh_suffix id (sprintf "%d'" i),Bool),ck))
-       *                      (gen_list_0_int n) *)
+      (* | Int(n,m) -> env_add type_env id m; *)
+      (*               List.iter (fun i -> aux ((fresh_suffix id (sprintf "%d'" i), *)
+      (*                                         Int(n,1)),ck)) (gen_list_0_int m) *)
       | _ -> assert false in
     List.iter aux p in
 
@@ -186,33 +186,20 @@ let expand_def (def:def) : def =
                                (* Expanding variables in the equations *)
                                expand_deqs (make_env ()) type_env body)
                      | _ -> def.node }
-                                                     
-
-(* Expand "Multiple" to several "Single" *)
-let rec expand_multiple (defs:def list) : def list =
-  List.flatten @@
-    List.map (fun def -> 
-              match def.node with
-              | Multiple nodes ->
-                 List.mapi (fun i (vars,body) ->
-                            { def with id = fresh_suffix def.id (sprintf "%d'" i);
-                                       node = Single(vars,body) }) nodes
-              | _ -> [ def ]) defs
+    
 
              
 let rec expand_array (prog:prog) : prog =
 
   (* Removing 'Multiple' *)
-  (* (and build the environment of functions at the same time *)
   let no_multiple = 
-    List.flatten @@
-      List.map (fun def -> 
-                match def.node with
-                | Multiple nodes ->
-                   List.mapi (fun i (vars,body) ->
-                       { def with id = fresh_suffix def.id (sprintf "%d'" i);
-                                  node = Single(vars,body) }) nodes
-                | _ -> [ def ]) prog.nodes in
+    flat_map (fun def -> 
+              match def.node with
+              | Multiple nodes ->
+                 List.mapi (fun i (vars,body) ->
+                            { def with id = fresh_suffix def.id (sprintf "%d'" i);
+                                       node = Single(vars,body) }) nodes
+              | _ -> [ def ]) prog.nodes in
              
   (* Removing arrays in the nodes *)
   { nodes = List.map expand_def no_multiple }

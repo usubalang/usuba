@@ -70,6 +70,8 @@ let last l =
   List.nth l (List.length l - 1)
 let is_empty = function [] -> true | _ -> false
 
+let flat_map f l = List.flatten @@ List.map f l
+
 
 let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
   match e with
