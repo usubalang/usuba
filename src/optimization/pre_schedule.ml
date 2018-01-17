@@ -1,5 +1,8 @@
+(* Note: this file needs a full rework. It's too hacky, poorly written, etc. *)
+
 open Usuba_AST
 open Utils
+open Printf
        
                       
 let update_hoh hash k1 k2 =
@@ -12,6 +15,7 @@ let update_hoh hash k1 k2 =
 
 let make_var_ready (ready:(var,var list * expr) Hashtbl.t)
                    (is_sched:(var list*expr,bool) Hashtbl.t)
+                   (sched_vars:(var,bool) Hashtbl.t)
                    (var:var) : (var list * expr) list =
   let rec aux (var:var) : (var list * expr) list =
     match Hashtbl.find_opt ready var with
@@ -22,48 +26,61 @@ let make_var_ready (ready:(var,var list * expr) Hashtbl.t)
                                              List.map aux (get_used_vars e) in
                                Hashtbl.remove ready var;
                                Hashtbl.add is_sched (l,e) true;
+                               List.iter (fun x -> Hashtbl.add sched_vars x true) l;
                                (l,e) :: prevs in
   List.rev @@ aux var
 
                   
 let schedule_pre (ready:(var,var list * expr) Hashtbl.t)
                  (is_sched:(var list*expr,bool) Hashtbl.t)
+                 (sched_vars:(var,bool) Hashtbl.t)
                  (args:var list) : (var list * expr) list =
   List.rev @@
     List.flatten @@
-      List.map (make_var_ready ready is_sched) args
+      List.map (make_var_ready ready is_sched sched_vars) args
 
 
 let schedule_post (deps:(var,(var,bool) Hashtbl.t) Hashtbl.t)
                   (defs:(var,var list * expr) Hashtbl.t)
                   (is_sched:(var list*expr,bool) Hashtbl.t)
+                  (sched_vars:(var,bool) Hashtbl.t)
                   (vars:var list) : (var list * expr) list =
   List.rev @@
     List.flatten @@
-      List.map (fun x ->
-                List.flatten @@
-                  List.map (fun y -> let def = Hashtbl.find defs y in
-                                     match Hashtbl.find_opt is_sched def with
-                                     | Some _ -> []
-                                     | None   -> Hashtbl.add is_sched def true;
-                                                 [ def ])
+      List.map
+        (fun x ->
+         List.flatten @@
+           List.map (fun y ->
+                     let def = Hashtbl.find defs y in
+                     match Hashtbl.find_opt is_sched def with
+                     | Some _ -> []
+                     | None   ->
+                        if List.for_all (fun x -> Hashtbl.mem sched_vars x)
+                                        (get_used_vars (snd def)) then (
+                          Hashtbl.add is_sched def true;
+                          Hashtbl.add sched_vars x true;
+                          [ def ])
+                        else
+                          [] )
                            (keys_2nd_layer deps x)) vars
              
              
 let schedule_asgn (ready:(var,var list * expr) Hashtbl.t)
                   (is_sched:(var list*expr,bool) Hashtbl.t)
+                  (sched_vars:(var,bool) Hashtbl.t)
                   (schedule:(var list * expr) list ref)
                   (deps:(var,(var,bool) Hashtbl.t) Hashtbl.t)
                   (defs:(var,var list * expr) Hashtbl.t)
                   (l:var list) (e:expr) : unit =  
   match e with
-  | Fun(f,args) -> schedule := (schedule_pre ready is_sched
+  | Fun(f,args) -> schedule := (schedule_pre ready is_sched sched_vars
                                              (List.flatten
                                                 (List.map get_used_vars args)))
                                @ !schedule;
                    Hashtbl.add is_sched (l,e) true;
+                   List.iter (fun x -> Hashtbl.add sched_vars x true) l;
                    schedule := (l,e) :: !schedule;
-                   schedule := (schedule_post deps defs is_sched l) @ !schedule
+                   schedule := (schedule_post deps defs is_sched sched_vars l) @ !schedule
   | _ -> List.iter (fun x -> match Hashtbl.find_opt is_sched (l,e) with
                              | Some _ -> ()
                              | None   -> Hashtbl.add ready x (l,e)) l
@@ -92,14 +109,17 @@ let build_deps (deqs: deq list) =
 
   deps_down,deps_up,defs
                    
-let schedule_deqs (deqs:deq list) : deq list =
+let schedule_deqs (deqs:deq list) (def:def): deq list =
   let (deps_down,deps_up,defs)  = build_deps deqs in
   let ready    = Hashtbl.create 500 in
   let is_sched = Hashtbl.create 500 in
+  let sched_vars = Hashtbl.create 500 in
   let schedule = ref [] in
+
+  List.iter (fun ((id,_),_) -> Hashtbl.add sched_vars (Var id) true) def.p_in;
   
   List.iter (function
-              | Norec(l,e) -> schedule_asgn ready is_sched schedule deps_down defs l e
+              | Norec(l,e) -> schedule_asgn ready is_sched sched_vars schedule deps_down defs l e
               | _ -> raise (Error "Invalid Rec")) deqs;
 
   List.iter (function
@@ -113,7 +133,7 @@ let schedule_deqs (deqs:deq list) : deq list =
        
 let schedule_node (def:def) : def =
   { def with node = match def.node with
-                    | Single(vars,deqs) -> Single(vars,schedule_deqs deqs)
+                    | Single(vars,deqs) -> Single(vars,schedule_deqs deqs def)
                     | _ -> def.node }
        
 let schedule (prog:prog) : prog =
