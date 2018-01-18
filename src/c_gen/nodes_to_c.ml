@@ -78,28 +78,31 @@ let inputs_to_arr (def:def) =
   let aux ((id,typ),_) =
     let id = id.name in
     match typ with
-             | Bool -> Hashtbl.add inputs id (Printf.sprintf "%s[0]" (rename id))
-             | Int(_,n) -> List.iter2
-                          (fun x y ->
-                           Hashtbl.add inputs x
-                                       (Printf.sprintf "%s[%d]" (rename id) y))
-                          (gen_list (id ^ "'") n)
-                          (gen_list_0_int n)
-             | Array(t,Const_e n) -> let size = typ_size t in
-                             List.iter2
-                               (fun x y ->
-                                Hashtbl.add inputs x
-                                            (Printf.sprintf "%s[%d]" (rename id) y))
-                               (* (List.flatten
+    | Bool -> Hashtbl.add inputs id (Printf.sprintf "%s[0]" (rename id))
+    | Int(_,1) -> Hashtbl.add inputs id (Printf.sprintf "%s[0]" (rename id))
+    | Int(_,n) -> List.iter2
+                    (fun x y ->
+                     Hashtbl.add inputs
+                                 (Printf.sprintf "%s'" x)
+                                 (Printf.sprintf "%s[%d]" (rename id) y))
+                    (gen_list0 id n)
+                    (gen_list_0_int n)
+    | Array(t,Const_e n) -> let size = typ_size t in
+                            List.iter2
+                              (fun x y ->
+                               Hashtbl.add inputs x
+                                           (Printf.sprintf "%s[%d]" (rename id) y))
+                              (* (List.flatten
                                   (List.map (fun x -> gen_list (x ^ "'") n)
                                                      (gen_list (id ^ "'") size))) *)
-                               (gen_list_typ id typ)
-                               (gen_list_0_int (size * n))
-             | _ -> Printf.printf "%s => %s:%s\n" def.id.name id
-                                  (Usuba_print.typ_to_str typ);
-                                  raise (Not_implemented "Arrays as input") in
-  List.iter aux def.p_in;
-  List.iter aux def.p_out;
+                              (gen_list_typ id typ)
+                              (gen_list_0_int (size * n))
+    | _ -> Printf.printf "%s => %s:%s\n" def.id.name id
+                         (Usuba_print.typ_to_str typ);
+           raise (Not_implemented "Arrays as input") in
+  
+  List.iter aux (Rename.rename_p def.p_in);
+  List.iter aux (Rename.rename_p def.p_out);
   inputs
     
 let outputs_to_ptr (def:def) =
@@ -136,11 +139,11 @@ let def_to_c (orig:def) (def:def) (array:bool) : string =
 
   (* Parameters *)
   (join "," (if array then
-               List.map (fun x -> "DATATYPE " ^ x) (params_to_arr orig.p_in)
+               List.map (fun x -> "DATATYPE " ^ (rename x)) (params_to_arr (Rename.rename_p orig.p_in))
              else
                List.map (fun ((id,_),_) -> "DATATYPE " ^ (rename id.name)) def.p_in))
   (join "," (if array then
-               List.map (fun x -> "DATATYPE " ^  x) (params_to_arr orig.p_out)
+               List.map (fun x -> "DATATYPE " ^  (rename x)) (params_to_arr (Rename.rename_p orig.p_out))
              else
                List.map (fun ((id,_),_) -> "DATATYPE* " ^ (rename id.name)) def.p_out))
 

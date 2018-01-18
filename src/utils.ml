@@ -72,6 +72,17 @@ let is_empty = function [] -> true | _ -> false
 
 let flat_map f l = List.flatten @@ List.map f l
 
+let filter_elems l indices =
+  let rec aux i acc l indices =
+    match indices with
+    | [] -> List.rev acc
+    | _  -> match l with
+            | [] -> List.rev acc
+            | hd::tl -> if List.hd indices = i then
+                          aux (i+1) (hd::acc) tl (List.tl indices)
+                        else aux (i+1) acc tl indices in
+  aux 0 [] l indices
+
 
 let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
   match e with
@@ -262,10 +273,8 @@ let rec get_used_vars (e:expr) : var list =
 let rec get_var_name (v:var) : ident =
   match v with
   | Var id -> id
-  | Field(v,_) -> get_var_name v
-  | Index(id,_) -> id
-  | Range(id,_,_) -> id
-  | Slice(id,_) -> id
+  | Field(v,_) | Index(v,_)
+  | Range(v,_,_) | Slice(v,_) -> get_var_name v
 
 (* Retrieving the keys of a hash *)
 let keys hash = Hashtbl.fold (fun k _ acc -> k :: acc) hash []
@@ -304,6 +313,10 @@ let int_to_boollist (n : int) (size: int) : bool list =
     if i = 0 then List.rev l
     else aux (i-1) (((n lsr (i-1)) land 1 = 1) :: l) in
   aux size []
+
+
+      
+      
 
 let rec p_size (p:p) : int =
   let typ_size (t:typ) =

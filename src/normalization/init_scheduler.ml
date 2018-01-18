@@ -34,7 +34,14 @@ let schedule_deqs (def:def) (deqs:deq list) : deq list =
   in
   List.iter sched_it deqs;
   if List.length !body <> List.length deqs then
-    raise (Error (Printf.sprintf "Couldn't find a valid scheduling. (%s)" def.id.name))
+    (
+      let hash = Hashtbl.create 1000 in
+      List.iter (fun x -> Hashtbl.add hash x true) !body;
+      List.iter (fun x -> match Hashtbl.find_opt hash x with
+                          | Some _ -> ()
+                          | None -> Printf.printf "Didn't schedule %s\n" (Usuba_print.deq_to_str x)) deqs;
+      raise (Error (Printf.sprintf "Couldn't find a valid scheduling. (%s)" def.id.name))
+    )
   else
     List.rev !body
               

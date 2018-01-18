@@ -80,7 +80,6 @@
 %nonassoc TOK_WHEN
 %nonassoc TOK_WHENOT
 %nonassoc TOK_ARROW
-%nonassoc TOK_LT
        
 %nonassoc TOK_LSHIFT TOK_RSHIFT TOK_LROTATE TOK_RROTATE
 
@@ -128,12 +127,12 @@ arith_exp:
 var:
   | id=TOK_id { Var id  }
   | v=var TOK_DOT n=arith_exp { Field(v,n) }
-  | i=TOK_id TOK_LBRACKET n=arith_exp TOK_RBRACKET { Index (i,n) }
-  | i=TOK_id TOK_LBRACKET ei=arith_exp TOK_RANGE ef=arith_exp TOK_RBRACKET
-    { Range(i,ei,ef) }
-  | i=TOK_id TOK_LBRACKET e1=arith_exp TOK_COMMA
+  | v=var TOK_LBRACKET n=arith_exp TOK_RBRACKET { Index (v,n) }
+  | v=var TOK_LBRACKET ei=arith_exp TOK_RANGE ef=arith_exp TOK_RBRACKET
+    { Range(v,ei,ef) }
+  | v=var TOK_LBRACKET e1=arith_exp TOK_COMMA
     l=separated_nonempty_list(TOK_COMMA,arith_exp) TOK_RBRACKET
-    { Slice(i,e1::l) }
+    { Slice(v,e1::l) }
 
 exp:
   | TOK_LPAREN e=exp TOK_RPAREN { e }
@@ -146,7 +145,7 @@ exp:
   | x=exp o=shift_op y=arith_exp { Shift(o,x,y) }
   | TOK_TILDE x=exp { Not x }
   | f=TOK_id TOK_LPAREN args=explist TOK_RPAREN { Fun(f, args) }
-  | f=TOK_id TOK_LBRACKET n=arith_exp TOK_RBRACKET
+  | f=TOK_id TOK_LT n=arith_exp TOK_GT
     TOK_LPAREN args=explist TOK_RPAREN { Fun_v(f, n, args) }
   | a=exp TOK_WHEN constr=TOK_constr TOK_LPAREN x=TOK_id TOK_RPAREN { When(a,constr, x) }
   | a=exp TOK_WHENOT constr=TOK_constr TOK_LPAREN x=TOK_id TOK_RPAREN
@@ -156,8 +155,8 @@ exp:
       | False -> When(a,True, x) }
   | TOK_MERGE ck=TOK_id c=caselist { Merge(ck,c) }
   | init=exp TOK_FBY follow=exp { Fby(init,follow,None) }
-  | init=exp TOK_LT f=TOK_id TOK_GT TOK_FBY follow=exp
-    { Fby(init,follow,Some f) }
+  (* | init=exp TOK_LT f=TOK_id TOK_GT TOK_FBY follow=exp *)
+  (*   { Fby(init,follow,Some f) } *)
                                      
 explist: l=separated_nonempty_list(TOK_COMMA,exp) { l }
 

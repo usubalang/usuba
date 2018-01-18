@@ -39,9 +39,9 @@ Inductive constr :=
 Inductive var :=
   | Var (i: ident)
   | Field (v: var)(ae: arith_expr)
-  | Index (x: ident)(ae: arith_expr)
-  | Range (x: ident)(ae1 ae2: arith_expr)
-  | Slice (x: ident)(aes: list arith_expr).
+  | Index (x: var)(ae: arith_expr)
+  | Range (x: var)(ae1 ae2: arith_expr)
+  | Slice (x: var)(aes: list arith_expr).
 
 (* XXX: factorize operations in a single case *)
 Inductive expr :=

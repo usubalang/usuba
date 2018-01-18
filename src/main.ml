@@ -137,7 +137,7 @@ let main () =
       raise (Error ("Invalid -fix-size " ^ (string_of_int conf.bit_per_reg)));
 
     if !type_check then
-     if not (Type_checker.is_typed prog) then
+      if false (*not (Type_checker.is_typed prog)*) then
        raise (Error "Unsound program: bad types");
     if !clock_check then
       if not (Clock_checker.is_clocked prog) then

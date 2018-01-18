@@ -44,38 +44,40 @@ let rec gen_list_bounds i f =
     i :: (gen_list_bounds (i-1) f)
   else [ f ]
 
-
+(* like 'filter_elems' but with a special case for an empty indices list *)
+let filter_elems_loc l indices =
+  match indices with
+  | [] -> l
+  | _ -> filter_elems l indices
+         
 (* Expand variables: arrays are converted to booleans *)
+(* Note: because of multiple dimensions arrays, I'm using ~retain to 
+   keep only certain elements in a recursive call. Because the lists
+   are flattened, this is (I think) the easy way. *)
 let rec expand_var (arith_env:(string,int) Hashtbl.t)
                    (type_env:(ident,int) Hashtbl.t)
+                   ?(retain=[])
                    (v:var) : var list =
   let rec_call = expand_var arith_env type_env in
   match v with
-  (* If the variable has size 1 it's a boolean -> leave it as is,
-     else, it's an array -> convert it to booleans *)
   | Var id ->
      ( match env_fetch type_env id with
                 | 1 -> [ Var id ]
-                | n -> List.flatten @@
-                         List.map (fun x -> rec_call (Var(fetch_subarr id x)))
-                                  (gen_list_0_int n) )
-  (* Slices become Lists of variables *)
-  | Slice(id,l) ->
-     List.flatten @@
-       (List.map (fun x -> rec_call (Var(fetch_subarr id
-                                           (eval_arith arith_env x)))) l)
-  (* Ranges become Lists of variables *)
-  | Range(id,ei,ef) ->
+                | n -> List.flatten
+                         (filter_elems_loc
+                            (List.map (fun x -> rec_call (Var(fetch_subarr id x)))
+                                      (gen_list_0_int n))
+                            retain))
+  | Slice(v,l) ->
+     filter_elems_loc (rec_call ~retain:(List.map (eval_arith arith_env) l) v) retain
+  | Range(v,ei,ef) ->
      let ei = eval_arith arith_env ei in
      let ef = eval_arith arith_env ef in
-     List.flatten @@
-       List.map (fun x -> rec_call (Var(fetch_subarr id x)))
-                (gen_list_bounds ei ef)
-  (* Index and u_n should be removed soon *)
-  | Index(id,e) -> let e = eval_arith arith_env e in
-                   rec_call (Var(fetch_subarr id e))
-  (* | Field(var,e) -> let e = eval_arith arith_env e in
-                    [ List.nth (rec_call var) e ] *)
+     filter_elems_loc (rec_call ~retain:(gen_list_bounds ei ef) v) retain
+  | Index(v,e) -> let e = eval_arith arith_env e in
+                  filter_elems_loc (rec_call ~retain:[e] v) retain
+  (* Field is a bit special: we don't want to expand them right now.
+     (actually, we probably never want to expand them) *)
   | Field(_,_)  -> [ v ]
        
 
@@ -128,19 +130,19 @@ let rec expand_deqs (arith_env:(string,int) Hashtbl.t)
 
 (* Expand 'p' variables: Booleans are left as is, and array expanded to booleans *)
 let expand_p (p:p) : p =
-  (* Need an auxiliary function operating on a single var to allow reccursion *)
   let rec aux v =
     let ((id,typ),ck) = v in
     match typ with
     | Bool -> [ v ]
     | Array(t,s) -> let size = eval_arith (make_env ()) s in
-                    List.flatten @@
-                      List.map (fun i -> aux ((fresh_suffix id (sprintf "%d'" i),
-                                               t),ck)) (gen_list_0_int size)
-    | Int _ -> [ v ]
+                    flat_map (fun i -> aux ((fresh_suffix id (sprintf "%d'" i), t),ck))
+                             (gen_list_0_int size)
+    | Int(n,1) -> [ v ]
+    | Int(n,m) -> flat_map (fun i -> aux ((fresh_suffix id (sprintf "%d'" i), Int(n,1)),ck))
+                           (gen_list_0_int m)
     | _ -> assert false in
   (* Actually expand the list of variables *)
-  List.flatten @@ List.map aux p
+  flat_map aux p
 
 
 (* Create the environment containing the size associated to each variable 
@@ -157,11 +159,10 @@ let make_env_from_p (p_in:p) (p_out:p) (vars:p) =
                       let size = eval_arith (make_env ()) s in
                       List.iter (fun i -> aux ((fresh_suffix id (sprintf "%d'" i),
                                                 t),ck)) (gen_list_0_int size)
-      (* TODO: remove Int *)
-      | Int _ -> env_add type_env id 1
-      (* | Int(n,m) -> env_add type_env id m; *)
-      (*               List.iter (fun i -> aux ((fresh_suffix id (sprintf "%d'" i), *)
-      (*                                         Int(n,1)),ck)) (gen_list_0_int m) *)
+      | Int(_,1) -> env_add type_env id 1
+      | Int(n,m) -> env_add type_env id m;
+                    List.iter (fun i -> aux ((fresh_suffix id (sprintf "%d'" i),
+                                              Int(n,1)),ck)) (gen_list_0_int m)
       | _ -> assert false in
     List.iter aux p in
 

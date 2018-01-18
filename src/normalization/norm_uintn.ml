@@ -69,6 +69,7 @@ let norm_p (p: p) : p =
        (fun ((id,typ),ck) ->
         match typ with
         | Bool     -> [ (id,Bool),ck ]
+        | Int(_,1) -> [ (id,Bool),ck ]
         | Int(_,n) -> expand_intn_typed id n ck
         | Nat      -> raise (Invalid_AST "Illegal nat")
         | Array _  -> raise (Invalid_AST "Illegal Array")) p)
