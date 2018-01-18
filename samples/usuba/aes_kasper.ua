@@ -1,4 +1,4 @@
-_no_inline table SubBytes_single (input:u8) returns (output:u8) {
+_no_inline table SubBytes_single (input:u1x8) returns (output:u1x8) {
     99, 124, 119, 123, 242, 107, 111, 197, 48, 1, 103, 43, 254, 215, 171, 118,
     202, 130, 201, 125, 250, 89, 71, 240, 173, 212, 162, 175, 156, 164, 114, 192,
     183, 253, 147, 38, 54, 63, 247, 204, 52, 165, 229, 241, 113, 216, 49, 21,
@@ -20,14 +20,16 @@ _no_inline table SubBytes_single (input:u8) returns (output:u8) {
 node SubBytes (inputSB:u16x8) returns (out:u16x8)
 vars
 let
-    forall i in [0,15] {
-      out[i] = SubBytes_single(inputSB[i])
-    }
+    out = SubBytes_single(inputSB)
 tel
 
 # NOTE: this should work.
-perm ShiftRows (inputSR:u16x8) returns (out:u16x8) {
+perm ShiftRows_single (inputSR:u16x1) returns (out:u16x1) {
      0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11
+}
+
+node ShiftRows (inputSR:u16x8) returns (out:u16x8) {
+     forall i in [0,7] { out[i] = ShiftRows_single(inputSR[i]) }
 }
 
 node times2 (i:u1x8) returns (o:u1x8)
@@ -42,16 +44,34 @@ let
     o = times2(i) ^ i
 tel
 
-# NOTE: that would be nice..
-node MixColumn (inputMC:u16x8) returns (out:u16x8)
+node MixColumn_single (inp:u4x8) returns (out:u4x8)
 vars
 let
-    out = inputMC * [ [2,3,1,1], [1,2,3,1], [1,1,2,3], [3,1,1,2] ]
-        with (*2) = times2
-        and  (*3) = times3
-        and  (*1) = id
-        and  (+)  = (^)
+    out.0 = times2(inp.0) ^ times3(inp.1) ^ inp.2 ^ inp.3;
+    out.1 = inp.0 ^ times2(inp.1) ^ times3(inp.2) ^ inp.3;
+    out.2 = inp.0 ^ inp.1 ^ times2(inp.2) ^ times3(inp.3);
+    out.3 = times3(inp.0) ^ inp[1] ^ inp.3 ^ times2(inp.3)
 tel
+
+node MixColumn (inp:u16x8) returns (out:u16x8)
+vars
+let
+    forall i in [0,3] {
+       # le forall est probablement inutile
+       out[][i*4 .. i*4+4] = MixColumn_single(inp[][i*4 .. i*4 + 4])
+    }
+tel
+
+# NOTE: that would be nice..
+# node MixColumn (inputMC:u16x8) returns (out:u16x8)
+# vars
+# let
+#     out = inputMC * [ [2,3,1,1], [1,2,3,1], [1,1,2,3], [3,1,1,2] ]
+#         with (*2) = times2
+#         and  (*3) = times3
+#         and  (*1) = id
+#         and  (+)  = (^)
+# tel
 
 
 node AES (plain:u16x8,key:u16x8[11]) returns (cipher:u16x8)
