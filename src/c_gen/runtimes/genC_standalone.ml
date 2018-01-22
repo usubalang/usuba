@@ -8,8 +8,8 @@ let gen_runtime (orig:prog) (prog:prog) (conf:config) : string =
   
   let entry = List.(def_to_c (nth orig.nodes (length orig.nodes -1))
                              (nth prog.nodes (length prog.nodes -1))
-                             true) in
-  let prog_c = map_no_end (fun x -> def_to_c x x false) prog.nodes in
+                             true conf) in
+  let prog_c = map_no_end (fun x -> def_to_c x x false conf) prog.nodes in
 
 Printf.sprintf 
 "

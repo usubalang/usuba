@@ -122,8 +122,7 @@ let c_header (arch:arch) : string =
   | Neon    -> "Neon.h"
   | AltiVec -> "AltiVec.h"
     
-let def_to_c (orig:def) (def:def) (array:bool) : string =
-  let (vars,body) = get_vars_body def.node in
+let single_to_c (orig:def) (def:def) (array:bool) (vars:p) (body:deq list) : string =
   sprintf
 "void %s (/*inputs*/ %s, /*outputs*/ %s) {
   
@@ -154,3 +153,26 @@ let def_to_c (orig:def) (def:def) (array:bool) : string =
   (deqs_to_c (if array then inputs_to_arr orig else outputs_to_ptr def) body)
 
 
+let perm_to_c (def:def) (l:int list) : string =
+  sprintf
+"void %s(/*input*/ DATATYPE %s, /*outputs*/ DATATYPE* %s) {
+   *%s = PERMUT_8(%s,%s);
+}"
+  (* Node name *)
+  (rename def.id.name)
+
+  (* parameters *)
+  (rename (fst (fst (List.hd def.p_in))).name)
+  (rename (fst (fst (List.hd def.p_out))).name)
+
+  (* body *)
+  (rename (fst (fst (List.hd def.p_out))).name)
+  (rename (fst (fst (List.hd def.p_in))).name)
+  (join "," (List.map string_of_int l))
+  
+
+let def_to_c (orig:def) (def:def) (array:bool) (conf:config) : string =
+  match def.node with
+  | Single(vars,body) -> single_to_c orig def array vars body
+  | Perm l -> perm_to_c def l
+  | _ -> assert false
