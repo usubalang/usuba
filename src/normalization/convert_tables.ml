@@ -15,6 +15,7 @@
 
 open Usuba_AST
 open Utils
+open Printf
 
 
 let expand_intn (id: ident) (n: int) : var list =
@@ -109,13 +110,10 @@ let rec rewrite_def (def: def) (conf:config) : def list =
   | Table l -> [ rewrite_single_table id p_in p_out opt l conf ]
   | MultipleTable l ->
      List.mapi (fun i x -> 
-                rewrite_single_table (fresh_suffix id (string_of_int i)) p_in p_out opt x conf) l
+                rewrite_single_table (fresh_suffix id (sprintf "%d'" i)) p_in p_out opt x conf) l
   | _ -> [ def ]
            
                        
 let convert_tables (p: prog) (conf:config): prog =
-  let res = { nodes = List.flatten
-                        (List.map
-                           (fun x -> rewrite_def x conf)
-                           p.nodes) } in
+  let res = { nodes = flat_map (fun x -> rewrite_def x conf) p.nodes } in
   res

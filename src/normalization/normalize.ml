@@ -18,20 +18,20 @@ let norm_prog (prog: prog) (conf:config) : prog  =
   let renamed = Rename.rename_prog prog in
   print "RENAMED:" renamed conf;
 
+  (* convert lookup-tables to circuit (ie. to nodes) *)
+  let tables_converted = Convert_tables.convert_tables renamed conf in
+  print "TABLES CONVERTED:" tables_converted conf;
+
   (* remove arrays and recursion *)
-  let array_expanded = Expand_array.expand_array renamed in
+  let array_expanded = Expand_array.expand_array tables_converted in
   print "ARRAYS EXPANDED:"  array_expanded conf;
 
   (* remove when/merge *)
   let no_ctrl = Remove_ctrl.remove_ctrl array_expanded in
   print "WHEN/MERGE EXPANDED:"  no_ctrl conf;
   
-  (* convert lookup-tables to circuit (ie. to nodes) *)
-  let tables_converted = Convert_tables.convert_tables no_ctrl conf in
-  print "TABLES CONVERTED:" tables_converted conf;
-
   let normalized =
-    (let normed = Norm_bitslice.norm_prog tables_converted conf in
+    (let normed = Norm_bitslice.norm_prog no_ctrl conf in
      print "PRE-NORMALIZED:" normed conf;
      let init_sched = Init_scheduler.schedule_prog normed in
      print "INIT SCHEDULED:" init_sched conf;

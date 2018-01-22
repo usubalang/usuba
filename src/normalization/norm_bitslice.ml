@@ -1,6 +1,7 @@
 open Usuba_AST
 open Utils
 open Rename
+open Printf
 
 exception Undeclared of ident
 
@@ -45,7 +46,7 @@ let rec get_expr_size env_fun l =
                  | Some (_,v) -> v
                  | None -> if contains f.name "print" then 1
                            else raise (Error ("Undeclared " ^ f.name)))
-  | _ -> raise (Error "Not implemented yet")
+  | _ -> raise (Error (Printf.sprintf "Not implemented yet get_expr_size(%s)\n" (Usuba_print.expr_to_str l)))
 
 (* flatten_expr removes nested tuples *)
 let rec flatten_expr (l: expr list) : expr list =
@@ -146,7 +147,7 @@ let norm_def env_fun (def: def) : def =
      env_add_fun def.id def.p_in def.p_out env_fun;
      def
   | MultiplePerm l ->
-     List.iteri (fun i _ -> env_add_fun (fresh_suffix def.id (string_of_int i))
+     List.iteri (fun i _ -> env_add_fun (fresh_suffix def.id (sprintf "%i'" i))
                                         def.p_in def.p_out env_fun) l;
      def
   | _ ->

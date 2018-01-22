@@ -23,7 +23,8 @@ open Printf
 let print_env env = ignore(Hashtbl.fold (fun k v n -> printf "%s:%d\n" k.name n; 1) env 0)
 let make_env () = Hashtbl.create 100
 let env_add env v e = Hashtbl.replace env v e
-let env_fetch env v = Hashtbl.find env v
+let env_fetch env v = try Hashtbl.find env v
+                      with Not_found -> raise (Error v.name)
 
 (* Note: this version of "typ_size" returns 1 for an Int *)
 let rec typ_size (typ:typ) : int =
@@ -79,7 +80,7 @@ let rec expand_var (arith_env:(string,int) Hashtbl.t)
                   filter_elems_loc (rec_call ~retain:[e] v) retain
   (* Field is a bit special: we don't want to expand them right now.
      (actually, we probably never want to expand them) *)
-  | Field(_,_)  -> [ v ]
+  | Field(v,_)  -> [ v ]
        
 
 (* Expand the variables inside an expression, and converted Fun_v to Fun *)
@@ -97,7 +98,7 @@ let rec expand_expr (arith_env:(string,int) Hashtbl.t)
   | Log(op,e1,e2)   -> Log(op,rec_call e1,rec_call e2)
   | Arith(op,e1,e2) -> Arith(op,rec_call e1,rec_call e2)
   | Fun(f,l)        -> Fun(f,List.map rec_call l)
-  | Fun_v(f,ae,l)   -> Fun(fresh_suffix f (string_of_int (eval_arith arith_env ae)),
+  | Fun_v(f,ae,l)   -> Fun(fresh_suffix f (sprintf "%d'" (eval_arith arith_env ae)),
                            List.map rec_call l)
   | When(e,x,y)     -> When(rec_call e,x,y)
   | Merge(x,l)      -> Merge(x,List.map (fun (c,e) -> c,rec_call e) l)

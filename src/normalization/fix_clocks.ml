@@ -30,6 +30,7 @@ let fix_def (def:def) : def =
   match def.node with
   | Single(vars,body) -> let env = init_env def.p_in def.p_out vars in
                          { def with node = Single(vars,List.map (fix_deq env) body) }
+  | Perm _ -> def
   | _ -> assert false
        
 let fix_prog (prog:prog) : prog =

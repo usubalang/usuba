@@ -7,14 +7,22 @@
     This is actually a temporary solution, as we'd rather like the permutation
     tables to just rename registers.
     
-    After this module has ran, there souldn't be any "Perm" nor "MultiplePerm" 
-    left.
+    After this module has ran, there souldn't be any "MultiplePerm" left.
 
 ( *****************************************************************************)
 
 open Usuba_AST
 open Utils
 
+(* Returns true if the perm should be expanded (typically in full bitslicing) *)
+(* in n-slicing, perm become vector permutations, and therefore are not expanded *)
+let need_expanding (def:def) : bool =
+  List.for_all (fun ((_,typ),_) ->
+                match typ with
+                | Int(1,_) -> true
+                | Int(_,_) -> false
+                | _ -> true) def.p_in
+               
 let list_from_perm (perm:int list) (l:expr list) : expr list =
   let args = Array.of_list l in
   List.map (fun i -> args.(i-1)) perm
@@ -45,16 +53,30 @@ let apply_perm env (deqs: deq list) : deq list =
 let rec rewrite_defs (l: def list) : def list =
   let env = Hashtbl.create 10 in
   List.iter (fun x -> match x.node with
-                      | Perm l -> env_add env x.id l
-                      | MultiplePerm l ->
-                         List.iteri (fun i p -> env_add env (fresh_suffix x.id (string_of_int i)) p) l
+                      | Perm l -> ( match need_expanding x with
+                                    | true -> env_add env x.id l
+                                    | false -> () )
+                      (* Note: MultiplePerm have already been removed *)
                       | _ -> ()) l;
   List.map (fun x -> match x.node with
                      | Single(vars,body) ->
                         { x with node = Single(vars,apply_perm env body) }
                      | _ -> x) l
-      
+
+           
 let expand_permut (p: prog) : prog =
+  
+  (* Removing 'MultiplePerm' *)
+  let no_multiple = 
+    flat_map (fun def -> 
+              match def.node with
+              | MultiplePerm l ->
+                 List.mapi (fun i l ->
+                            { def with id = fresh_suffix def.id (Printf.sprintf "%d'" i);
+                                       node = Perm l }) l
+              | _ -> [ def ]) p.nodes in
+  
   { nodes = List.filter (fun x -> match x.node with
-                                  | Perm _ | MultiplePerm _ -> false
-                                  | _ -> true) (rewrite_defs p.nodes) }
+                                  | MultiplePerm _ -> false
+                                  | Perm _ -> not (need_expanding x)
+                                  | _ -> true) (rewrite_defs no_multiple) }

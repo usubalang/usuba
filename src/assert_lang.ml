@@ -41,14 +41,14 @@ module Usuba_norm = struct
                    | _ -> true) p
   
   let check_def (def:def) : bool =
-    match def with
-    | { id = _; p_in = p_in; p_out = p_out; opt = _;
-        node = Single(vars,body) } ->
-       check_p p_in && check_p p_out && check_p vars
+    match def.node with
+    | Single(vars,body) ->
+       check_p def.p_in && check_p def.p_out && check_p vars
        && List.for_all (function
                          | Norec(p,e) -> List.for_all check_var p && check_expr e
                                          && check_pat_e p e
                          | _ -> false) body
+    | Perm _ -> not (Expand_permut.need_expanding def)
     | _ -> false
   
   let is_usuba_normalized (prog:prog) : bool =

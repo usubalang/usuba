@@ -44,17 +44,16 @@ let rec norm_expr env (e: expr) : expr =
   | _ -> raise (Invalid_AST "Invalid expr")
 
 let norm_pat env (pat: var list) : var list =
-  List.flatten
-    (List.map
-       (fun x -> match x with
-                 | Var id -> (match env_fetch env id with
-                                | Some size ->
-                                   if size > 1 then expand_intn_pat id size
-                                   else [ Var id ]
-                                | None -> [ Var id ]) (* undeclared bool *)
-                 | Field(Var id,Const_e i) -> [Var (fresh_suffix id (string_of_int i)) ]
-                 | _ -> raise (Invalid_AST ("Illegal array access : " ^
-                                              (Usuba_print.var_to_str x)))) pat)
+  flat_map
+    (fun x -> match x with
+              | Var id -> (match env_fetch env id with
+                           | Some size ->
+                              if size > 1 then expand_intn_pat id size
+                              else [ Var id ]
+                           | None -> [ Var id ]) (* undeclared bool *)
+              | Field(Var id,Const_e i) -> [Var (fresh_suffix id (string_of_int i)) ]
+              | _ -> raise (Invalid_AST ("Illegal array access : " ^
+                                           (Usuba_print.var_to_str x)))) pat
     
 let norm_deq env (body: deq list) : deq list =
    List.map
@@ -88,4 +87,5 @@ let norm_def (def: def) : def =
 
 
 let norm_uintn (prog: prog) : prog =
-  { nodes = List.map norm_def prog.nodes } 
+  (* { nodes = List.map norm_def prog.nodes } *)
+  prog
