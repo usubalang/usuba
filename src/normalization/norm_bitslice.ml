@@ -197,17 +197,17 @@ let norm_prog (prog: prog) (conf:config) =
   let const_norm = Expand_const.expand_prog uintn_norm in
   print "CONST NORM:" const_norm conf;
 
-  (* Replace permutations by assignments *)
-  let perm_expanded = Expand_permut.expand_permut const_norm in
-  print "PERM EXPANDED:" perm_expanded conf;
-  
   (* Remove nested function calls by introducing temporary variables *)
   let env_fun = Hashtbl.create 10 in
-  let pre_normalized = { nodes = List.map (norm_def env_fun) perm_expanded.nodes } in
+  let pre_normalized = { nodes = List.map (norm_def env_fun) const_norm.nodes } in
   print "PRE NORMALIZED:" pre_normalized conf;
+  
+  (* Replace permutations by assignments *)
+  let perm_expanded = Expand_permut.expand_permut pre_normalized in
+  print "PERM EXPANDED:" perm_expanded conf;
 
   (* Convert tuples assignment to multiple single assignment, if possible *)
-  let tuples_splitted = Norm_tuples.Split_tuples.split_tuples pre_normalized in
+  let tuples_splitted = Norm_tuples.Split_tuples.split_tuples perm_expanded in
   print "TUPLES SPLITTED:" tuples_splitted conf;
 
   (* Convert tuples of one element to simple variables *)

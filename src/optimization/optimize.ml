@@ -197,6 +197,7 @@ end
 let opt_prog (prog: Usuba_AST.prog) (conf:config) : Usuba_AST.prog =
 
   (* CSE - CP *)
+  (* CSE - CP is already done in the normalization *)
   let optimized = if conf.cse_cp then CSE_CF.cse_prog prog else prog in
 
   (* Reusing variables *)
@@ -207,3 +208,4 @@ let opt_prog (prog: Usuba_AST.prog) (conf:config) : Usuba_AST.prog =
 
   (* Scheduling *)
   if conf.scheduling then Scheduler.schedule cleaned else cleaned
+  (* if conf.scheduling then Pre_schedule.schedule cleaned else cleaned *)

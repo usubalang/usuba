@@ -36,7 +36,9 @@ let norm_prog (prog: prog) (conf:config) : prog  =
      let init_sched = Init_scheduler.schedule_prog normed in
      print "INIT SCHEDULED:" init_sched conf;
      let scheduled = if conf.scheduling then
-                       Pre_schedule.schedule init_sched else init_sched in
+                       Pre_schedule.schedule
+                         (if conf.cse_cp then Optimize.CSE_CF.cse_prog init_sched else init_sched)
+                     else init_sched in
      print "SCHEDULED:" scheduled conf;
      let inlined = if conf.inlining then
                      Inline.inline scheduled conf else scheduled in
@@ -48,13 +50,6 @@ let norm_prog (prog: prog) (conf:config) : prog  =
   
   let optimized = Optimize.opt_prog normalized conf in
   print "OPTIMIZED:" optimized conf;
-
-  (* BDD verification of the optimizations *)
-  (*print_endline "Gonna compare.";
-  if Bdd_verif.compare_prog normalized optimized then
-    print_endline "Compare ok."
-  else
-    print_endline "Compare not ok";*)
 
   let clock_fixed = Fix_clocks.fix_prog optimized in
   print "CLOCKS FIXED:" clock_fixed conf;

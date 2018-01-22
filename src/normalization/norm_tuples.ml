@@ -51,7 +51,7 @@ module Split_tuples = struct
 
   let split_tuples_def (def: def) : def =
     match def.node with
-      | Single(p_var,body) ->
+    | Single(p_var,body) ->
        { def with node  = Single(p_var, split_tuples_deq body) }
     | _ -> def
                  

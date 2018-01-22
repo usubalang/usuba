@@ -62,14 +62,15 @@ let rec expand_var (arith_env:(string,int) Hashtbl.t)
   match v with
   | Var id ->
      ( match env_fetch type_env id with
-                | 1 -> [ Var id ]
-                | n -> List.flatten
-                         (filter_elems_loc
-                            (List.map (fun x -> rec_call (Var(fetch_subarr id x)))
-                                      (gen_list_0_int n))
-                            retain))
-  | Slice(v,l) ->
-     filter_elems_loc (rec_call ~retain:(List.map (eval_arith arith_env) l) v) retain
+       | 1 -> [ Var id ]
+       | n ->
+          match retain with
+          | [] -> flat_map 
+                    (fun x -> rec_call (Var(fetch_subarr id x)))
+                    (gen_list_0_int n)
+          | _ ->  flat_map (fun x -> rec_call (Var(fetch_subarr id x))) retain)
+  | Slice(v',l) ->
+     filter_elems_loc (rec_call ~retain:(List.map (eval_arith arith_env) l) v') retain
   | Range(v,ei,ef) ->
      let ei = eval_arith arith_env ei in
      let ef = eval_arith arith_env ef in
