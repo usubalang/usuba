@@ -25,7 +25,10 @@ tel
 
 # NOTE: this should work.
 perm ShiftRows_single (inputSR:u16x1) returns (out:u16x1) {
-     0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11
+      0,  1,  2,  3,
+      5,  6,  7,  4,
+     10, 11,  8,  9,
+     15, 12, 13, 14
 }
 
 node ShiftRows (inputSR:u16x8) returns (out:u16x8)
@@ -34,34 +37,31 @@ let
     forall i in [0,7] { out[i] = ShiftRows_single(inputSR[i]) }
 tel
 
-node times2 (i:u1x8) returns (o:u1x8)
-vars
-let
-    o = (i << 1) ^ (0,0,0,i[0],i[0],0,i[0],i[0])
-tel
+perm RL32 (input:u16x1) returns (out:u16x1) {
+      4,  5,  6,  7,
+      8,  9, 10, 11,
+     12, 13, 14, 15,
+      0,  1,  2,  3
+}
 
-node times3 (i:u1x8) returns (o:u1x8)
-vars
-let
-    o = times2(i) ^ i
-tel
+perm RL64 (input:u16x1) returns (out:u16x1) {
+      8,  9, 10, 11,
+     12, 13, 14, 15,
+      0,  1,  2,  3,
+      4,  5,  6,  7
+}
 
-node MixColumn_single (inp:u4x8) returns (out:u4x8)
+node MixColumn (a:u16x8) returns (b:u16x8)
 vars
 let
-    out.0 = times2(inp.0) ^ times3(inp.1) ^ inp.2 ^ inp.3;
-    out.1 = inp.0 ^ times2(inp.1) ^ times3(inp.2) ^ inp.3;
-    out.2 = inp.0 ^ inp.1 ^ times2(inp.2) ^ times3(inp.3);
-    out.3 = times3(inp.0) ^ inp[1] ^ inp.3 ^ times2(inp.3)
-tel
-
-node MixColumn (inp:u16x8) returns (out:u16x8)
-vars
-let
-    forall i in [0,3] {
-       # le forall est probablement inutile
-       out[][i*4 .. i*4+4] = MixColumn_single(inp[][i*4 .. i*4 + 4])
-    }
+    b[0] = (a[7] ^ (RL32(a[7]))) ^ (RL32(a[0])) ^ RL64(a[0] ^ (RL32(a[0])));
+    b[1] = (a[0] ^ (RL32(a[0]))) ^ (a[7] ^ (RL32(a[7]))) ^ (RL32(a[1])) ^ RL64(a[1] ^ (RL32(a[1])));
+    b[2] = (a[1] ^ (RL32(a[1]))) ^ (RL32(a[2])) ^ RL64(a[2] ^ (RL32(a[2])));
+    b[3] = (a[2] ^ (RL32(a[2]))) ^ (a[7] ^ (RL32(a[7]))) ^ (RL32(a[3])) ^ RL64(a[3] ^ (RL32(a[3])));
+    b[4] = (a[3] ^ (RL32(a[3]))) ^ (a[7] ^ (RL32(a[7]))) ^ (RL32(a[4])) ^ RL64(a[4] ^ (RL32(a[4])));
+    b[5] = (a[4] ^ (RL32(a[4]))) ^ (RL32(a[5])) ^ RL64(a[5] ^ (RL32(a[5])));
+    b[6] = (a[5] ^ (RL32(a[5]))) ^ (RL32(a[6])) ^ RL64(a[6] ^ (RL32(a[6])));
+    b[7] = (a[6] ^ (RL32(a[6]))) ^ (RL32(a[7])) ^ RL64(a[7] ^ (RL32(a[7])))
 tel
 
 # NOTE: that would be nice..
