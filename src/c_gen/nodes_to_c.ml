@@ -64,12 +64,13 @@ let params_to_arr (params: p) : string list =
 
 let rec gen_list_typ (x:string) (typ:typ) : string list =
   print_endline ("Suspicious \"'\" at: " ^ __LOC__);
+  print_endline ("On " ^ x);
   match typ with
   | Bool  -> [ x ]
-  | Int(_,n) -> gen_list (x ^ "'") n
+  | Int(_,n) -> List.map (sprintf "%s'") (gen_list0 x n)
   | Array(t',Const_e n) -> List.flatten @@
                              List.map (fun x -> gen_list_typ x t')
-                                      (gen_list0 (x ^ "'") n)
+                                      (List.map (sprintf "%s'") (gen_list0 x n))
   | _ -> assert false
                               
            
@@ -156,7 +157,7 @@ let single_to_c (orig:def) (def:def) (array:bool) (vars:p) (body:deq list) : str
 let perm_to_c (def:def) (l:int list) : string =
   sprintf
 "void %s(/*input*/ DATATYPE %s, /*outputs*/ DATATYPE* %s) {
-   *%s = PERMUT_8(%s,%s);
+   *%s = PERMUT_%d(%s,%s);
 }"
   (* Node name *)
   (rename def.id.name)
@@ -167,6 +168,7 @@ let perm_to_c (def:def) (l:int list) : string =
 
   (* body *)
   (rename (fst (fst (List.hd def.p_out))).name)
+  (List.length l)
   (rename (fst (fst (List.hd def.p_in))).name)
   (join "," (List.map string_of_int l))
   
