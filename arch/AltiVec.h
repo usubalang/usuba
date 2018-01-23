@@ -32,7 +32,7 @@
 #define SET_ALL_ZERO() ZERO
 
 
-#define PERMUT_8(a,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16) \
+#define PERMUT_16(a,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16) \
   vec_perm(a,a,(vector unsigned char){x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16})
 
   
