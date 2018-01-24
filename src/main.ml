@@ -82,7 +82,7 @@ let main () =
       "-verif", Arg.Set verif, "Activate verification";
       "-check-tbl", Arg.Set check_tbl, "Activate verification of tables";
       "-no-type-check", Arg.Clear type_check, "Deactivate type checking";
-      "-no-clock-check", Arg.Clear type_check, "Deactivate clock checking";
+      "-no-clock-check", Arg.Clear clock_check, "Deactivate clock checking";
       "-no-checks", Arg.Unit (fun () -> type_check := false;
                                         clock_check := false),
                     "Deactivate both type and clock checking";
