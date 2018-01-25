@@ -295,6 +295,11 @@ let is_noinline (def:def) : bool =
                 | Inline    -> false
                 | No_inline -> true) def.opt
 
+let is_perm (def:def) : bool =
+  match def.node with
+  | Perm _ -> true
+  | _ -> false
+              
 let print_bool_list (l:bool list) : unit =
   List.iter (fun x -> print_int (if x then 1 else 0)) l;
   print_endline ""

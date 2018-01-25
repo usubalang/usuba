@@ -117,6 +117,7 @@ let is_call_free env (def:def) : bool =
          | Rec _ -> assert false
          | Norec(_,e) -> match e with
                          | Fun(f,_) -> is_noinline (Hashtbl.find env f.name)
+                                       || is_perm (Hashtbl.find env f.name)
                          | _ -> true) body
   | _ -> false
   
