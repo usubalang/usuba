@@ -59,6 +59,8 @@ let params_to_arr (params: p) : string list =
             match typ with
             | Bool -> id.name
             | Int(_,n) -> Printf.sprintf "%s[%d]" id.name n
+            (* Hard-coding the case ukxn[m] for now *)
+            | Array(Int(_,n),Const_e m) -> Printf.sprintf "%s[%d][%d]" id.name m n
             | Array(t,Const_e n) -> Printf.sprintf "%s[%d]" id.name (n*typ_size t)
             | _ -> raise (Not_implemented "Invalid input")) params
 
@@ -77,6 +79,16 @@ let inputs_to_arr (def:def) =
   let aux ((id,typ),_) =
     let id = id.name in
     match typ with
+    (* Hard-coding the case ukxn[m] for now *)
+    | Array(Int(_,n),Const_e m) ->
+       List.iteri
+         (fun i x ->
+          List.iteri (fun j y ->
+                      Hashtbl.add inputs
+                                  (Printf.sprintf "%s'" y)
+                                  (Printf.sprintf "%s[%d][%d]" (rename id) i j))
+                     (gen_list0 (Printf.sprintf "%s'" x) n))
+         (gen_list0 id m)
     | Bool -> Hashtbl.add inputs id (Printf.sprintf "%s[0]" (rename id))
     | Int(_,1) -> Hashtbl.add inputs id (Printf.sprintf "%s[0]" (rename id))
     | Int(_,n) -> List.iter2
@@ -91,9 +103,6 @@ let inputs_to_arr (def:def) =
                               (fun x y ->
                                Hashtbl.add inputs x
                                            (Printf.sprintf "%s[%d]" (rename id) y))
-                              (* (List.flatten
-                                  (List.map (fun x -> gen_list (x ^ "'") n)
-                                                     (gen_list (id ^ "'") size))) *)
                               (gen_list_typ id typ)
                               (gen_list_0_int (size * n))
     | _ -> Printf.printf "%s => %s:%s\n" def.id.name id
@@ -137,11 +146,13 @@ let single_to_c (orig:def) (def:def) (array:bool) (vars:p) (body:deq list) : str
 
   (* Parameters *)
   (join "," (if array then
-               List.map (fun x -> "DATATYPE " ^ (rename x)) (params_to_arr (Rename.rename_p orig.p_in))
+               List.map (fun x -> "DATATYPE " ^ (rename x))
+                        (params_to_arr (Rename.rename_p orig.p_in))
              else
                List.map (fun ((id,_),_) -> "DATATYPE " ^ (rename id.name)) def.p_in))
   (join "," (if array then
-               List.map (fun x -> "DATATYPE " ^  (rename x)) (params_to_arr (Rename.rename_p orig.p_out))
+               List.map (fun x -> "DATATYPE " ^  (rename x))
+                        (params_to_arr (Rename.rename_p orig.p_out))
              else
                List.map (fun ((id,_),_) -> "DATATYPE* " ^ (rename id.name)) def.p_out))
 
