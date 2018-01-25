@@ -63,8 +63,6 @@ let params_to_arr (params: p) : string list =
             | _ -> raise (Not_implemented "Invalid input")) params
 
 let rec gen_list_typ (x:string) (typ:typ) : string list =
-  print_endline ("Suspicious \"'\" at: " ^ __LOC__);
-  print_endline ("On " ^ x);
   match typ with
   | Bool  -> [ x ]
   | Int(_,n) -> List.map (sprintf "%s'") (gen_list0 x n)
