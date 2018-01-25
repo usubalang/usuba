@@ -60,20 +60,21 @@ let
 tel
 
 
+# NOTE: that would be nice..
+# node MixColumn (inputMC:u16x8) returns (out:u16x8)
+# vars
+# let
+#     out = inputMC * [ [2,3,1,1], [1,2,3,1], [1,1,2,3], [3,1,1,2] ]
+#         with (*2) = times2
+#         and  (*3) = times3
+#         and  (*1) = id
+#         and  (+)  = (^)
+# tel
 
-node AES (plain:u16x8,key:u16x8[11]) returns (cipher:u16x8)
+
+node AES (plain:u16x8,key:u16x8) returns (cipher:u16x8)
 vars
     tmp : u16x8[10]
 let
-    # Initial AddRoundKey
-    tmp[0] = plain ^ key[0];
-
-    # 9 rounds (the last is special)
-    forall i in [1,9] {
-      tmp[i] = MixColumn( ShiftRows( SubBytes( tmp[i-1] ) ) ) ^ key[i]
-    }
-
-    # Last (10th) round (no MixColumn)
-    cipher = ShiftRows(SubBytes(tmp[9])) ^ key[10]
-
+    cipher = MixColumn( ShiftRows( SubBytes( plain ^ key ) ) )
 tel
