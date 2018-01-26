@@ -1,43 +1,19 @@
 
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <stdint.h>
-#include <x86intrin.h>
 
+/* Do NOT change the order of those define/include */
 
-void print128hex (const __m128i v) {
-  uint8_t a[16];
-  _mm_store_si128 ((__m128i*)a, v);
-  for (int i = 0; i < 16; i++)
-    printf("%02X",a[i]);
-  puts("");  
-}
+/* defining "BENCH" or "STD" */
+/* (will impact the .h functions loaded by the .h) */
+#define NO_RUNTIME
+/* including the architecture specific .h */
+#include "SSE.h"
 
-void print64bin (const uint64_t n) {
-  for (int i = 1; i <= 64; i++)
-    printf("%lu",(n>>(64-i)) & 1);
-}
-void print8bin (const uint8_t n) {
-  for (int i = 1; i <= 8; i++)
-    printf("%d",(n>>(8-i)) & 1);
-}
-
-void print128bin (const __m128i v) {
-  uint8_t out[16];
-  _mm_store_si128 ((__m128i*)out, v);
-  for (int i = 0; i < 16; i++) {
-    print8bin(out[i]);
-  }
-  puts("");
-}
-
-
-
-void real_ortho_128x128(__m128i data[8]) {
+void orthogonalize(__m128i data[8]) {
 
   __m128i mask_l[3] = {
     _mm_set1_epi64x(0xaaaaaaaaaaaaaaaaUL),
@@ -72,14 +48,6 @@ void real_ortho_128x128(__m128i data[8]) {
                                                      12,8,4,0));  
 }
 
-
-/* Do NOT change the order of those define/include */
-
-/* defining "BENCH" or "STD" */
-/* (will impact the .h functions loaded by the .h) */
-#define NO_RUNTIME
-/* including the architecture specific .h */
-#include "SSE.h"
 
 /* auxiliary functions */
 void SubBytes_single__ (/*inputs*/ DATATYPE U0,DATATYPE U1,DATATYPE U2,DATATYPE U3,DATATYPE U4,DATATYPE U5,DATATYPE U6,DATATYPE U7, /*outputs*/ DATATYPE* S0,DATATYPE* S1,DATATYPE* S2,DATATYPE* S3,DATATYPE* S4,DATATYPE* S5,DATATYPE* S6,DATATYPE* S7) {
@@ -1531,54 +1499,42 @@ void AES__ (/*inputs*/ DATATYPE plain__[8],DATATYPE key__[11][8], /*outputs*/ DA
 
 }
 
-#include "key_sched.c"
 
-#define NB_LOOP 10000000
+#ifndef NB_LOOP
+#define NB_LOOP 16
+#endif
+
+#include "../experimentations/verif_aes/key_sched.c"
 
 int main() {
 
-  __m128i plain[8], cipher[8];
   
-  uint8_t plain_std[16] = { 0x54, 0x77, 0x6F, 0x20, 0x4F, 0x6E, 0x65, 0x20,
-                            0x4E, 0x69, 0x6E, 0x65, 0x20, 0x54, 0x77, 0x6F };
-  for (int i = 0; i < 8; i++)
-    plain[i] = _mm_load_si128((__m128i*)plain_std);
-  real_ortho_128x128(plain);
-
-  
-  char key_base[16] = { 0x54, 0x68, 0x61, 0x74, 0x73, 0x20, 0x6D, 0x79,
-                   0x20, 0x4B, 0x75, 0x6E, 0x67, 0x20, 0x46, 0x75 };
+  char key_base[16] = "0123456789ABCDEF";
   char* sched_key = key_sched(key_base);
   __m128i key[11][8];
   for (int i = 0; i < 11; i++) {
     for (int j = 0; j < 8; j++)
       key[i][j] = _mm_load_si128((__m128i*)&sched_key[i*16]);
-    real_ortho_128x128(key[i]);
+    orthogonalize(key[i]);
   }
 
-  /* Warming up the caches */
-  for (int i = 0; i < 10000; i++) {
-    real_ortho_128x128(plain);
-    AES__(plain,key,cipher);
-    real_ortho_128x128(cipher);
-  }
-   
+  // Reading the input file
+  FILE* fh_in = fopen("input.txt","rb");
+  FILE* fh_out = fopen("output.txt","wb");
+  
+  // Allocating various stuffs
+  __m128i plain[8];
 
-  uint64_t timer = _rdtsc();
-  for (int i = 0; i < NB_LOOP; i++) {
+  while (fread(plain,128,1,fh_in) != 0) {
+    __m128i cipher[8];
+    orthogonalize(plain);
     AES__(plain,key,cipher);
+    orthogonalize(cipher);
+    fwrite(cipher,128,1,fh_out);
   }
-  timer = _rdtsc() - timer;
-  printf("Just AES (no transpo): %lu\n",timer/NB_LOOP);
-  
-  timer = _rdtsc();
-  for (int i = 0; i < NB_LOOP; i++) {
-    real_ortho_128x128(plain);
-    AES__(plain,key,cipher);
-    real_ortho_128x128(cipher);
-  }
-  timer = _rdtsc() - timer;
-  printf("AES with transpo: %lu\n",timer/NB_LOOP);
-  
+
+  fclose(fh_in);
+  fclose(fh_out);
+
   return 0;
 }

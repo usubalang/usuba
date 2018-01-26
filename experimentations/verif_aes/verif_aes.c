@@ -1,4 +1,16 @@
+/* Should print
 
+29C3505F571420F6402299B31A02D73A
+29C3505F571420F6402299B31A02D73A
+29C3505F571420F6402299B31A02D73A
+29C3505F571420F6402299B31A02D73A
+29C3505F571420F6402299B31A02D73A
+29C3505F571420F6402299B31A02D73A
+29C3505F571420F6402299B31A02D73A
+29C3505F571420F6402299B31A02D73A
+
+
+ */
 
 
 #include <stdio.h>
@@ -1533,8 +1545,6 @@ void AES__ (/*inputs*/ DATATYPE plain__[8],DATATYPE key__[11][8], /*outputs*/ DA
 
 #include "key_sched.c"
 
-#define NB_LOOP 10000000
-
 int main() {
 
   __m128i plain[8], cipher[8];
@@ -1543,6 +1553,7 @@ int main() {
                             0x4E, 0x69, 0x6E, 0x65, 0x20, 0x54, 0x77, 0x6F };
   for (int i = 0; i < 8; i++)
     plain[i] = _mm_load_si128((__m128i*)plain_std);
+  
   real_ortho_128x128(plain);
 
   
@@ -1555,30 +1566,12 @@ int main() {
       key[i][j] = _mm_load_si128((__m128i*)&sched_key[i*16]);
     real_ortho_128x128(key[i]);
   }
-
-  /* Warming up the caches */
-  for (int i = 0; i < 10000; i++) {
-    real_ortho_128x128(plain);
-    AES__(plain,key,cipher);
-    real_ortho_128x128(cipher);
-  }
-   
-
-  uint64_t timer = _rdtsc();
-  for (int i = 0; i < NB_LOOP; i++) {
-    AES__(plain,key,cipher);
-  }
-  timer = _rdtsc() - timer;
-  printf("Just AES (no transpo): %lu\n",timer/NB_LOOP);
   
-  timer = _rdtsc();
-  for (int i = 0; i < NB_LOOP; i++) {
-    real_ortho_128x128(plain);
-    AES__(plain,key,cipher);
-    real_ortho_128x128(cipher);
-  }
-  timer = _rdtsc() - timer;
-  printf("AES with transpo: %lu\n",timer/NB_LOOP);
+  AES__(plain,key,cipher);
+
+  real_ortho_128x128(cipher);
+  for (int i = 0; i < 8; i++)
+    print128hex(cipher[i]);
   
   return 0;
 }
