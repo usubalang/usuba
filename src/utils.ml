@@ -95,7 +95,7 @@ let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
                     | Mul -> x' * y'
                     | Sub -> x' - y'
                     | Div -> x' / y'
-                    | Mod -> if x' > 0 then x' mod y' else y' + (x' mod y')
+                    | Mod -> if x' >= 0 then x' mod y' else y' + (x' mod y')
                                             
 let rec join s l = String.concat s l
 
