@@ -53,8 +53,12 @@ let bitslicing = ref true
 rule token = parse
 
 (* pragmas *)
-| "#pragma" [' ']+ "bitslicing"    { bitslicing := true; token lexbuf  }
-| "#pragma" [' ']+ "vectorization" { bitslicing := false; token lexbuf }
+| "#pragma" [' ']+ (['a' - 'z']+ as pragma)    
+  { (match pragma with
+      | "bitslicing"    -> bitslicing := true
+      | "vectorization" -> bitslicing := false
+      | _ -> raise (Error ("Unknown pragma " ^ pragma)));
+    token lexbuf }
                                    
 (* spaces *)
 | [' ' '\t']+  { token lexbuf; }
@@ -108,6 +112,7 @@ rule token = parse
 | "*"    { TOK_STAR      }
 | "-"    { TOK_DASH      }
 | "/"    { TOK_SLASH     }
+| "%"    { TOK_MOD       }
          
 (* integers *)
 | ['0'-'9']+ as i { TOK_int (int_of_string i) }

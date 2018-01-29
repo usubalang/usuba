@@ -65,6 +65,7 @@
 %token TOK_STAR
 %token TOK_DASH
 %token TOK_SLASH
+%token TOK_MOD
 
 %token <Usuba_AST.ident> TOK_id
 %token <int> TOK_int               
@@ -84,7 +85,7 @@
 %nonassoc TOK_LSHIFT TOK_RSHIFT TOK_LROTATE TOK_RROTATE
 
 %left TOK_PLUS TOK_DASH
-%left TOK_STAR TOK_SLASH
+%left TOK_STAR TOK_SLASH TOK_MOD
 
 %left TOK_AND TOK_XOR TOK_PIPE
 %nonassoc TOK_TILDE
@@ -111,6 +112,7 @@ prog:
   | TOK_STAR  { Mul }
   | TOK_DASH  { Sub }
   | TOK_SLASH { Div }
+  | TOK_MOD   { Mod }
 
 %inline shift_op:
   | TOK_LSHIFT  { Lshift  }
