@@ -23,9 +23,12 @@ let rec update_expr var_env expr_env (e:expr) : expr =
                   | None -> ExpVar (Hashtbl.find var_env v) )
   | Tuple l -> Tuple (List.map rec_call l)
   | Not e -> Not (rec_call e)
+  (* TODO: Should do something with 'ae' *)
+  | Shift(op,e,ae) -> Shift(op,rec_call e,ae)
   | Log(op,x,y) -> Log(op,rec_call x,rec_call y)
   | Fun(f,l) -> Fun(f,List.map rec_call l)
-  | _ -> assert false
+  | _ -> print_endline (Usuba_print.expr_to_str e);
+         assert false
 
 (* Convert the variable names *)
 let update_vars (var_env : (var,var) Hashtbl.t)

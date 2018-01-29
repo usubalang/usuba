@@ -16,22 +16,9 @@
 open Usuba_AST
 open Utils
 open Printf
-
-
-let expand_intn (id: ident) (n: int) : var list =
-  let rec aux i =
-    if i > n then []
-    else (Field(Var id,Const_e i)) :: (aux (i+1))
-  in aux 1
-         
-let rec rewrite_p (p: p) : var list =
-  List.flatten @@
-    List.map (fun ((id,typ),_) ->
-        match typ with
-        | Bool  -> [ Var id ]
-        | Int(_,x) -> expand_intn id x
-        | Nat -> raise (Invalid_AST "Nat")
-        | Array _ -> raise (Invalid_AST "Array (convert_tables)")) p
+       
+let rewrite_p (p:p) : var list =
+  List.map (fun ((id,_),_) -> Var id) (Expand_array.expand_p p)
 
 let get_bits (l:int list) (i:int) : int list =
   List.rev @@ List.map (fun x -> x lsr i land 1) l

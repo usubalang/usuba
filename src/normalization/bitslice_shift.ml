@@ -29,17 +29,20 @@ let do_shift op l n =
                 if i = 0 then acc @ (List.rev l)
                 else aux (i-1) (List.tl l) ((Const 0)::acc)
               in aux n (List.rev l) []     
-                      
-let rec shift op e n =
+
+(* TODO: I'm pretty sure this doesn't cover every cases *)
+let rec shift (op:shift_op) (e:expr) (n:int) =
   match e with
-  | Const e -> raise (Not_implemented "Shift Const")
-  | ExpVar(Var id) -> raise (Not_implemented "Shift Var")
+  | Const _ -> Shift(op,e,Const_e n)
+  | ExpVar _ -> Shift(op,e,Const_e n)
   | Tuple l -> Tuple(do_shift op l n)
   | Not(e) -> Not(shift op e n)
-  | Shift(op',e',Const_e n') -> let t = shift op' e' n' in
-                        ( match t with
-                          | Tuple l -> Tuple(do_shift op l n)
-                          | _ -> unreached () )
+  | Shift(op',e',Const_e n') ->
+     let t = shift op' e' n' in
+     if t = e then
+       Shift(op,e,Const_e n)
+     else
+       shift op t n
   | _ -> raise (Error "I can't shift this")
 
 let rec shift_expr (e:expr) : expr =
@@ -47,7 +50,7 @@ let rec shift_expr (e:expr) : expr =
   | ExpVar _ | Const _ -> e
   | Tuple l -> Tuple(List.map shift_expr l)
   | Not e' -> Not (shift_expr e')
-  | Shift(op,e,Const_e n) -> shift op e n
+  | Shift(op,e,Const_e n) -> shift op (shift_expr e) n
   | Log(op,x,y) -> Log(op,shift_expr x,shift_expr y)
   | Arith(op,x,y) -> Arith(op,shift_expr x,shift_expr y)
   | Fun(f,l) -> Fun(f,List.map shift_expr l)

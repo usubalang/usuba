@@ -20,6 +20,26 @@ let op_to_c = function
   | Or   -> "OR"
   | Xor  -> "XOR"
   | Andn -> "ANDN"
+
+let shift_op_to_c = function
+  | Lshift  -> "L_SHIFT"
+  | Rshift  -> "R_SHIFT"
+  | Lrotate -> "L_ROTATE"
+  | Rrotate -> "R_ROTATE"
+
+let arith_op_to_c = function
+  | Add -> "+"
+  | Mul -> "*"
+  | Sub -> "-"
+  | Div -> "/"
+  | Mod -> "%"
+
+let rec aexpr_to_c (e:arith_expr) : string =
+  match e with
+  | Const_e n -> sprintf "%d" n
+  | Var_e x   -> rename x.name
+  | Op_e(op,x,y) -> sprintf "((%s) %s (%s))"
+                            (aexpr_to_c x) (arith_op_to_c op) (aexpr_to_c y)
                 
 let rec expr_to_c env (e:expr) : string =
   match e with
@@ -34,6 +54,17 @@ let rec expr_to_c env (e:expr) : string =
                            (op_to_c op)
                            (expr_to_c env x)
                            (expr_to_c env y)
+  | Shift(op,e,ae) ->
+     sprintf "%s(%s,%s%s)"
+             (shift_op_to_c op)
+             (expr_to_c env e)
+             (aexpr_to_c ae)
+             (* The last argument is needed for rotations *)
+             (match op with
+              | Lshift | Rshift -> ""
+              | Lrotate | Rrotate ->
+                           Printf.fprintf stderr "Hard-coded integer size in rotation.\n";
+                           sprintf ",%d" 32)
   | _ -> raise (Error (Usuba_print.expr_to_str e))
                
 let fun_call_to_c env (p:var list) (f:ident) (args: expr list) : string =

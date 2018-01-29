@@ -20,7 +20,7 @@ open Printf
 
 (* Abstracting Hashtbl.
    This functions should replace the ones in Utils, one day. *)
-let print_env env = ignore(Hashtbl.fold (fun k v n -> printf "%s:%d\n" k.name n; 1) env 0)
+let print_env env = Hashtbl.fold (fun k v _ -> printf "%s:%d\n" k v) env ()
 let make_env () = Hashtbl.create 100
 let env_add env v e = Hashtbl.replace env v e
 let env_fetch env v = try Hashtbl.find env v

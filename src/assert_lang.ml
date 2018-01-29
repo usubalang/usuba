@@ -26,7 +26,7 @@ module Usuba_norm = struct
     | ExpVar v -> check_var v
     | Tuple l  -> List.for_all check_expr l
     | Not e -> check_expr e
-    | Shift(_,_,_) -> false
+    | Shift(_,e,_) -> check_expr e
     | Log(_,x,y) -> check_expr x && check_expr y
     | Arith(_,x,y) -> check_expr x && check_expr y
     | Fun(_,l) -> List.for_all check_expr l

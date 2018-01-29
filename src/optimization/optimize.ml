@@ -193,18 +193,28 @@ module Clean = struct
   let clean_vars_decl (prog:prog) : prog =
     { nodes = List.map clean_def prog.nodes }
 end
-       
+          
+let print title body conf =
+  if conf.verbose >= 5 then
+    begin
+      print_endline title;
+      if conf.verbose >= 100 then print_endline (Usuba_print.prog_to_str body)
+    end
+      
 let opt_prog (prog: Usuba_AST.prog) (conf:config) : Usuba_AST.prog =
 
   (* CSE - CP *)
   (* CSE - CP is already done in the normalization *)
   let optimized = if conf.cse_cp then CSE_CF.cse_prog prog else prog in
+  print "CSE-CP:" optimized conf;
 
   (* Reusing variables *)
   let vars_shared = if conf.share_var then Share_var.share_prog optimized else optimized in
+  print "VARS SHARED:" optimized conf;
 
   (* Removing unused variables *)
   let cleaned = Clean.clean_vars_decl vars_shared in
+  print "CLEANED:" optimized conf;
 
   (* Scheduling *)
   if conf.scheduling then Scheduler.schedule cleaned else cleaned
