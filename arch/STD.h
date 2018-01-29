@@ -28,6 +28,12 @@
 #define ANDN(a,b) (~(a) & (b))
 #define NOT(a)    (~(a))
 
+#define L_SHIFT(a,b) ((a) << (b))
+#define R_SHIFT(a,b) ((a) >> (b))
+#define L_ROTATE(a,b,c) ((a << b) | (a >> (c-b)))
+#define R_ROTATE(a,b,c) ((a >> b) | (a << (c-b)))
+
+
 #define DATATYPE uint64_t
 
 #define SET_ALL_ONE()  -1
