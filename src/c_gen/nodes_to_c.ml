@@ -55,16 +55,12 @@ let rec expr_to_c env (e:expr) : string =
                            (expr_to_c env x)
                            (expr_to_c env y)
   | Shift(op,e,ae) ->
-     sprintf "%s(%s,%s%s)"
+     sprintf "%s(%s,%s,%d)"
              (shift_op_to_c op)
              (expr_to_c env e)
              (aexpr_to_c ae)
-             (* The last argument is needed for rotations *)
-             (match op with
-              | Lshift | Rshift -> ""
-              | Lrotate | Rrotate ->
-                           Printf.fprintf stderr "Hard-coded integer size in rotation.\n";
-                           sprintf ",%d" 32)
+             (Printf.fprintf stderr "Hard-coded integer size in rotation.\n";
+              32)
   | _ -> raise (Error (Usuba_print.expr_to_str e))
                
 let fun_call_to_c env (p:var list) (f:ident) (args: expr list) : string =

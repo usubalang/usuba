@@ -25,6 +25,19 @@
 #define ANDN(a,b) _mm_andnot_si128(a,b)
 #define NOT(a)    _mm_andnot_si128(a,ONES)
 
+#define L_SHIFT(a,b,c)                                                  \
+  c == 16 ? _mm_slli_epi16(a,b) : c == 32 ? _mm_slli_epi32(a,b) : _mm_slli_epi64(a,b)
+#define R_SHIFT(a,b,c)                                                  \
+  c == 16 ? _mm_srli_epi16(a,b) : c == 32 ? _mm_srli_epi32(a,b) : _mm_srli_epi64(a,b)
+#define L_ROTATE(a,b,c)                                                 \
+  c == 16 ? OR(_mm_slli_epi16(a,b), _mm_srli_epi16(a,c-b)) :            \
+    c == 32 ? OR(_mm_slli_epi32(a,b), _mm_srli_epi32(a,c-b)) :          \
+    OR(_mm_slli_epi64(a,b),_mm_srli_epi64(a,c-b))
+#define R_ROTATE(a,b,c)                                                 \
+  c == 16 ? OR(_mm_srli_epi16(a,b), _mm_slli_epi16(a,c-b)) :            \
+    c == 32 ? OR(_mm_srli_epi32(a,b), _mm_slli_epi32(a,c-b)) :          \
+    OR(_mm_srli_epi64(a,b),_mm_slli_epi64(a,c-b))
+
 #define DATATYPE __m128i
 
 #define SET_ALL_ONE()  ONES
