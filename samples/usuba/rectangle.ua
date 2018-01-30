@@ -14,7 +14,7 @@ perm RL13 (input:u16x1) returns (out:u16x1) {
     13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12
 }
 
-node ShiftRows (input:u16x8) returns (out:u16x8)
+node ShiftRows (input:u16x4) returns (out:u16x4)
 vars
 let
     out[0] = input[0];
