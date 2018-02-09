@@ -1,7 +1,11 @@
 open Usuba_AST
 open Utils
+open Printf
 
 exception Unsound of string
+
+let print_env env = Hashtbl.fold (fun k _ _ -> printf "%s\n" k) env ()
+                       
 
 let compare_tables (orig:def) (norm:def)  =
   let nb_inputs = p_size norm.p_in in
@@ -16,13 +20,13 @@ let compare_tables (orig:def) (norm:def)  =
                                      (boollist_to_int out_orig)
                                      (boollist_to_int out_norm)))    
   done
-  (* Printf.fprintf stderr "Table %s sound.\n" orig.id *)
+  (* Printf.fprintf stderr "Table %s sound.\n" orig.id.name *)
     
 
 let tables_sound (orig:prog) (normalized:prog) : unit =
   let tables = Hashtbl.create 10 in
   List.iter (fun x -> match x.node with
                       | Table _ -> env_add tables x.id x
-                      | _ -> ()) orig.nodes;
+                      | _ -> ()) (Convert_tables.remove_tab_array orig.nodes);
   List.iter (fun x -> if env_contains tables x.id then
                         compare_tables (Hashtbl.find tables x.id.name) x) normalized.nodes;

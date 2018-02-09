@@ -99,6 +99,22 @@ let rec rewrite_def (def: def) (conf:config) : def list =
      List.mapi (fun i x -> 
                 rewrite_single_table (fresh_suffix id (sprintf "%d'" i)) p_in p_out opt x conf) l
   | _ -> [ def ]
+
+let rec remove_tab_array (defs:def list) : def list =
+  let aux (def:def) : def list =
+    let id    = def.id in
+    let p_in  = def.p_in in
+    let p_out = def.p_out in
+    let opt   = def.opt in
+    match def.node with
+    | MultipleTable l ->
+       List.mapi (fun i x -> 
+                  { id = fresh_suffix id (sprintf "%d'" i); p_in = p_in;
+                    p_out = p_out; opt = opt;
+                    node = Table x; }) l
+    | _ -> [ def ]
+  in
+  flat_map aux defs
            
                        
 let convert_tables (p: prog) (conf:config): prog =
