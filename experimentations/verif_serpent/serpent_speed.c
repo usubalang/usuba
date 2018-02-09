@@ -14,927 +14,593 @@
 /* including the architecture specific .h */
 #include "STD.h"
 
+
+void sbox__0__(DATATYPE r0, DATATYPE r1, DATATYPE r2, DATATYPE r3,
+        DATATYPE* r5, DATATYPE* r6, DATATYPE* r7, DATATYPE* r8) {
+  DATATYPE r4;
+  r3 ^= r0;
+  r4 = r1; 
+  r1 &= r3;
+  r4 ^= r2;
+  r1 ^= r0;
+  r0 |= r3;
+  r0 ^= r4;
+  r4 ^= r3;
+  r3 ^= r2;
+  r2 |= r1;
+  r2 ^= r4;
+  r4 = ~r4; 
+  r4 |= r1;
+  r1 ^= r3;
+  r1 ^= r4;
+  r3 |= r0;
+  r1 ^= r3;
+  r4 ^= r3;
+  *r5 = r1;
+  *r6 = r4;
+  *r7 = r2;
+  *r8 = r0;
+}
+
 /* auxiliary functions */
-void sbox__0__ (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2__,DATATYPE input__3__, /*outputs*/ DATATYPE* out__0__,DATATYPE* out__1__,DATATYPE* out__2__,DATATYPE* out__3__) {
+void _sbox__0__ (/*inputs*/ DATATYPE a,DATATYPE b,DATATYPE c,DATATYPE d, /*outputs*/ DATATYPE* w,DATATYPE* x,DATATYPE* y,DATATYPE* z) {
   
   // Variables declaration
-  DATATYPE _tmp115_;
-  DATATYPE _tmp117_;
-  DATATYPE _tmp118_;
-  DATATYPE _tmp119_;
-  DATATYPE _tmp120_;
-  DATATYPE _tmp17_;
-  DATATYPE _tmp18_;
-  DATATYPE _tmp19_;
-  DATATYPE _tmp20_;
-  DATATYPE _tmp21_;
-  DATATYPE _tmp24_;
-  DATATYPE _tmp25_;
-  DATATYPE _tmp26_;
-  DATATYPE _tmp27_;
-  DATATYPE _tmp28_;
-  DATATYPE _tmp29_;
-  DATATYPE _tmp30_;
-  DATATYPE _tmp3_;
-  DATATYPE _tmp55_;
-  DATATYPE _tmp56_;
-  DATATYPE _tmp57_;
-  DATATYPE _tmp59_;
-  DATATYPE _tmp60_;
-  DATATYPE _tmp85_;
-  DATATYPE _tmp86_;
-  DATATYPE _tmp87_;
-  DATATYPE _tmp88_;
-  DATATYPE _tmp89_;
-  DATATYPE _tmp90_;
-  DATATYPE tmp_1_1_4;
-  DATATYPE tmp_1_2_0;
-  DATATYPE tmp_1_2_1;
-  DATATYPE tmp_1_3_0;
-  DATATYPE tmp_1_3_1;
-  DATATYPE tmp_1_4_0;
-  DATATYPE tmp_2_2_2;
-  DATATYPE tmp_2_3_0;
-  DATATYPE tmp_2_3_1;
-  DATATYPE tmp_2_4_0;
-  DATATYPE tmp_3_2_0;
-  DATATYPE tmp_3_2_1;
-  DATATYPE tmp_3_3_0;
-  DATATYPE tmp_3_3_1;
-  DATATYPE tmp_3_4_0;
-  DATATYPE tmp_4_2_0;
-  DATATYPE tmp_4_3_0;
-  DATATYPE tmp_4_3_1;
-  DATATYPE tmp_4_4_0;
+  DATATYPE t01;
+  DATATYPE t02;
+  DATATYPE t03;
+  DATATYPE t05;
+  DATATYPE t06;
+  DATATYPE t07;
+  DATATYPE t08;
+  DATATYPE t09;
+  DATATYPE t11;
+  DATATYPE t12;
+  DATATYPE t13;
+  DATATYPE t14;
+  DATATYPE t15;
+  DATATYPE t17;
 
 
   // Instructions (body)
-  _tmp3_ = NOT(input__3__);
-  tmp_1_1_4 = OR(_tmp3_,input__3__);
-  _tmp17_ = ANDN(input__2__,input__3__);
-  _tmp18_ = AND(input__2__,_tmp3_);
-  tmp_1_2_0 = OR(_tmp17_,_tmp18_);
-  _tmp19_ = ANDN(input__2__,_tmp3_);
-  _tmp20_ = AND(input__2__,input__3__);
-  tmp_1_2_1 = OR(_tmp19_,_tmp20_);
-  _tmp21_ = ANDN(input__2__,tmp_1_1_4);
-  _tmp24_ = AND(input__2__,tmp_1_1_4);
-  _tmp25_ = ANDN(input__1__,tmp_1_2_0);
-  _tmp26_ = AND(input__1__,tmp_1_2_1);
-  tmp_1_3_0 = OR(_tmp25_,_tmp26_);
-  _tmp27_ = ANDN(input__1__,_tmp21_);
-  _tmp28_ = AND(input__1__,_tmp24_);
-  tmp_1_3_1 = OR(_tmp27_,_tmp28_);
-  _tmp29_ = ANDN(input__0__,tmp_1_3_0);
-  _tmp30_ = AND(input__0__,tmp_1_3_1);
-  tmp_1_4_0 = OR(_tmp29_,_tmp30_);
-  *out__0__ = tmp_1_4_0;
-  tmp_2_2_2 = OR(_tmp21_,_tmp18_);
-  _tmp55_ = ANDN(input__1__,_tmp18_);
-  _tmp56_ = AND(input__1__,tmp_1_2_0);
-  tmp_2_3_0 = OR(_tmp55_,_tmp56_);
-  _tmp57_ = ANDN(input__1__,tmp_2_2_2);
-  tmp_2_3_1 = OR(_tmp57_,_tmp26_);
-  _tmp59_ = ANDN(input__0__,tmp_2_3_0);
-  _tmp60_ = AND(input__0__,tmp_2_3_1);
-  tmp_2_4_0 = OR(_tmp59_,_tmp60_);
-  *out__1__ = tmp_2_4_0;
-  tmp_3_2_0 = OR(_tmp19_,_tmp18_);
-  tmp_3_2_1 = OR(_tmp21_,_tmp20_);
-  _tmp85_ = ANDN(input__1__,tmp_3_2_0);
-  _tmp86_ = AND(input__1__,tmp_3_2_1);
-  tmp_3_3_0 = OR(_tmp85_,_tmp86_);
-  _tmp87_ = ANDN(input__1__,tmp_1_2_1);
-  _tmp88_ = AND(input__1__,_tmp19_);
-  tmp_3_3_1 = OR(_tmp87_,_tmp88_);
-  _tmp89_ = ANDN(input__0__,tmp_3_3_0);
-  _tmp90_ = AND(input__0__,tmp_3_3_1);
-  tmp_3_4_0 = OR(_tmp89_,_tmp90_);
-  *out__2__ = tmp_3_4_0;
-  tmp_4_2_0 = OR(_tmp19_,_tmp24_);
-  _tmp115_ = ANDN(input__1__,tmp_4_2_0);
-  tmp_4_3_0 = OR(_tmp115_,_tmp28_);
-  _tmp117_ = ANDN(input__1__,_tmp17_);
-  _tmp118_ = AND(input__1__,tmp_3_2_0);
-  tmp_4_3_1 = OR(_tmp117_,_tmp118_);
-  _tmp119_ = ANDN(input__0__,tmp_4_3_0);
-  _tmp120_ = AND(input__0__,tmp_4_3_1);
-  tmp_4_4_0 = OR(_tmp119_,_tmp120_);
-  *out__3__ = tmp_4_4_0;
+  t01 = XOR(c,b);
+  t02 = OR(d,a);
+  t03 = XOR(b,a);
+  *z = XOR(t01,t02);
+  t05 = OR(*z,c);
+  t06 = XOR(d,a);
+  t07 = OR(c,b);
+  t08 = AND(t05,d);
+  t09 = AND(t07,t03);
+  *y = XOR(t08,t09);
+  t11 = AND(*y,t09);
+  t12 = XOR(d,c);
+  t13 = XOR(t11,t07);
+  t14 = AND(t06,b);
+  t15 = XOR(t13,t06);
+  *w = NOT(t15);
+  t17 = XOR(t14,*w);
+  *x = XOR(t17,t12);
 
 }
 
-void sbox__1__ (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2__,DATATYPE input__3__, /*outputs*/ DATATYPE* out__0__,DATATYPE* out__1__,DATATYPE* out__2__,DATATYPE* out__3__) {
+void sbox__1__(DATATYPE r0, DATATYPE r1, DATATYPE r2, DATATYPE r3,
+        DATATYPE* r5, DATATYPE* r6, DATATYPE* r7, DATATYPE* r8) {
+  DATATYPE r4;
+  r0 = ~r0;  
+  r2 = ~r2;
+  r4 = r0; 
+  r0 &= r1;
+  r2 ^= r0;
+  r0 |= r3;
+  r3 ^= r2;
+  r1 ^= r0;
+  r0 ^= r4;
+  r4 |= r1;
+  r1 ^= r3;
+  r2 |= r0;
+  r2 &= r4;
+  r0 ^= r1;
+  r1 &= r2;
+  r1 ^= r0;
+  r0 &= r2;
+  r0 ^= r4;
+  *r5 = r2;
+  *r6 = r0;
+  *r7 = r3;
+  *r8 = r1;
+}
+void _sbox__1__ (/*inputs*/ DATATYPE a,DATATYPE b,DATATYPE c,DATATYPE d, /*outputs*/ DATATYPE* w,DATATYPE* x,DATATYPE* y,DATATYPE* z) {
   
   // Variables declaration
-  DATATYPE _tmp121_;
-  DATATYPE _tmp137_;
-  DATATYPE _tmp139_;
-  DATATYPE _tmp140_;
-  DATATYPE _tmp141_;
-  DATATYPE _tmp142_;
-  DATATYPE _tmp145_;
-  DATATYPE _tmp146_;
-  DATATYPE _tmp147_;
-  DATATYPE _tmp148_;
-  DATATYPE _tmp149_;
-  DATATYPE _tmp150_;
-  DATATYPE _tmp170_;
-  DATATYPE _tmp175_;
-  DATATYPE _tmp176_;
-  DATATYPE _tmp177_;
-  DATATYPE _tmp178_;
-  DATATYPE _tmp179_;
-  DATATYPE _tmp180_;
-  DATATYPE _tmp205_;
-  DATATYPE _tmp206_;
-  DATATYPE _tmp207_;
-  DATATYPE _tmp208_;
-  DATATYPE _tmp209_;
-  DATATYPE _tmp210_;
-  DATATYPE _tmp235_;
-  DATATYPE _tmp238_;
-  DATATYPE _tmp239_;
-  DATATYPE _tmp240_;
-  DATATYPE tmp_1_1_0;
-  DATATYPE tmp_1_2_1;
-  DATATYPE tmp_1_2_2;
-  DATATYPE tmp_1_3_0;
-  DATATYPE tmp_1_3_1;
-  DATATYPE tmp_1_4_0;
-  DATATYPE tmp_2_2_0;
-  DATATYPE tmp_2_3_0;
-  DATATYPE tmp_2_3_1;
-  DATATYPE tmp_2_4_0;
-  DATATYPE tmp_3_2_0;
-  DATATYPE tmp_3_2_2;
-  DATATYPE tmp_3_2_3;
-  DATATYPE tmp_3_3_0;
-  DATATYPE tmp_3_3_1;
-  DATATYPE tmp_3_4_0;
-  DATATYPE tmp_4_3_0;
-  DATATYPE tmp_4_3_1;
-  DATATYPE tmp_4_4_0;
+  DATATYPE t01;
+  DATATYPE t02;
+  DATATYPE t03;
+  DATATYPE t04;
+  DATATYPE t05;
+  DATATYPE t06;
+  DATATYPE t07;
+  DATATYPE t08;
+  DATATYPE t10;
+  DATATYPE t11;
+  DATATYPE t12;
+  DATATYPE t13;
+  DATATYPE t16;
+  DATATYPE t17;
 
 
   // Instructions (body)
-  _tmp121_ = NOT(input__3__);
-  tmp_1_1_0 = OR(_tmp121_,input__3__);
-  _tmp137_ = ANDN(input__2__,tmp_1_1_0);
-  _tmp139_ = ANDN(input__2__,_tmp121_);
-  _tmp140_ = AND(input__2__,input__3__);
-  tmp_1_2_1 = OR(_tmp139_,_tmp140_);
-  _tmp141_ = ANDN(input__2__,input__3__);
-  _tmp142_ = AND(input__2__,tmp_1_1_0);
-  tmp_1_2_2 = OR(_tmp141_,_tmp142_);
-  _tmp145_ = ANDN(input__1__,_tmp137_);
-  _tmp146_ = AND(input__1__,tmp_1_2_1);
-  tmp_1_3_0 = OR(_tmp145_,_tmp146_);
-  _tmp147_ = ANDN(input__1__,tmp_1_2_2);
-  _tmp148_ = AND(input__1__,_tmp141_);
-  tmp_1_3_1 = OR(_tmp147_,_tmp148_);
-  _tmp149_ = ANDN(input__0__,tmp_1_3_0);
-  _tmp150_ = AND(input__0__,tmp_1_3_1);
-  tmp_1_4_0 = OR(_tmp149_,_tmp150_);
-  *out__0__ = tmp_1_4_0;
-  tmp_2_2_0 = OR(_tmp137_,_tmp140_);
-  _tmp170_ = AND(input__2__,_tmp121_);
-  _tmp175_ = ANDN(input__1__,tmp_2_2_0);
-  _tmp176_ = AND(input__1__,_tmp170_);
-  tmp_2_3_0 = OR(_tmp175_,_tmp176_);
-  _tmp177_ = ANDN(input__1__,_tmp170_);
-  _tmp178_ = AND(input__1__,tmp_2_2_0);
-  tmp_2_3_1 = OR(_tmp177_,_tmp178_);
-  _tmp179_ = ANDN(input__0__,tmp_2_3_0);
-  _tmp180_ = AND(input__0__,tmp_2_3_1);
-  tmp_2_4_0 = OR(_tmp179_,_tmp180_);
-  *out__1__ = tmp_2_4_0;
-  tmp_3_2_0 = OR(_tmp139_,_tmp142_);
-  tmp_3_2_2 = OR(_tmp141_,_tmp170_);
-  tmp_3_2_3 = OR(_tmp139_,_tmp170_);
-  _tmp205_ = ANDN(input__1__,tmp_3_2_0);
-  _tmp206_ = AND(input__1__,_tmp140_);
-  tmp_3_3_0 = OR(_tmp205_,_tmp206_);
-  _tmp207_ = ANDN(input__1__,tmp_3_2_2);
-  _tmp208_ = AND(input__1__,tmp_3_2_3);
-  tmp_3_3_1 = OR(_tmp207_,_tmp208_);
-  _tmp209_ = ANDN(input__0__,tmp_3_3_0);
-  _tmp210_ = AND(input__0__,tmp_3_3_1);
-  tmp_3_4_0 = OR(_tmp209_,_tmp210_);
-  *out__2__ = tmp_3_4_0;
-  _tmp235_ = ANDN(input__1__,tmp_1_2_1);
-  tmp_4_3_0 = OR(_tmp235_,_tmp208_);
-  _tmp238_ = AND(input__1__,tmp_3_2_2);
-  tmp_4_3_1 = OR(_tmp145_,_tmp238_);
-  _tmp239_ = ANDN(input__0__,tmp_4_3_0);
-  _tmp240_ = AND(input__0__,tmp_4_3_1);
-  tmp_4_4_0 = OR(_tmp239_,_tmp240_);
-  *out__3__ = tmp_4_4_0;
+  t01 = OR(d,a);
+  t02 = XOR(d,c);
+  t03 = NOT(b);
+  t04 = XOR(c,a);
+  t05 = OR(t03,a);
+  t06 = AND(t04,d);
+  t07 = AND(t02,t01);
+  t08 = OR(t06,b);
+  *y = XOR(t05,t02);
+  t10 = XOR(t08,t07);
+  t11 = XOR(t10,t01);
+  t12 = XOR(t11,*y);
+  t13 = AND(d,b);
+  *z = NOT(t10);
+  *x = XOR(t12,t13);
+  t16 = OR(*x,t10);
+  t17 = AND(t16,t05);
+  *w = XOR(t17,c);
 
 }
 
-void sbox__2__ (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2__,DATATYPE input__3__, /*outputs*/ DATATYPE* out__0__,DATATYPE* out__1__,DATATYPE* out__2__,DATATYPE* out__3__) {
+
+void sbox__2__(DATATYPE r0, DATATYPE r1, DATATYPE r2, DATATYPE r3,
+               DATATYPE* r5, DATATYPE* r6, DATATYPE* r7, DATATYPE* r8) {
+  DATATYPE r4;
+  r4 = r0;
+  r0 &= r2; 
+  r0 ^= r3; 
+  r2 ^= r1; 
+  r2 ^= r0; 
+  r3 |= r4; 
+  r3 ^= r1; 
+  r4 ^= r2; 
+  r1 = r3;  
+  r3 |= r4; 
+  r3 ^= r0; 
+  r0 &= r1; 
+  r4 ^= r0; 
+  r1 ^= r3; 
+  r1 ^= r4; 
+  r4 = ~r4; 
+  *r5 = r2;
+  *r6 = r3;
+  *r7 = r1;
+  *r8 = r4;
+}
+void _sbox__2__ (/*inputs*/ DATATYPE a,DATATYPE b,DATATYPE c,DATATYPE d, /*outputs*/ DATATYPE* w,DATATYPE* x,DATATYPE* y,DATATYPE* z) {
   
   // Variables declaration
-  DATATYPE _tmp241_;
-  DATATYPE _tmp257_;
-  DATATYPE _tmp258_;
-  DATATYPE _tmp259_;
-  DATATYPE _tmp260_;
-  DATATYPE _tmp262_;
-  DATATYPE _tmp265_;
-  DATATYPE _tmp266_;
-  DATATYPE _tmp267_;
-  DATATYPE _tmp268_;
-  DATATYPE _tmp269_;
-  DATATYPE _tmp270_;
-  DATATYPE _tmp295_;
-  DATATYPE _tmp296_;
-  DATATYPE _tmp297_;
-  DATATYPE _tmp298_;
-  DATATYPE _tmp299_;
-  DATATYPE _tmp300_;
-  DATATYPE _tmp326_;
-  DATATYPE _tmp327_;
-  DATATYPE _tmp329_;
-  DATATYPE _tmp330_;
-  DATATYPE _tmp351_;
-  DATATYPE _tmp355_;
-  DATATYPE _tmp356_;
-  DATATYPE _tmp357_;
-  DATATYPE _tmp358_;
-  DATATYPE _tmp359_;
-  DATATYPE _tmp360_;
-  DATATYPE tmp_1_1_3;
-  DATATYPE tmp_1_2_0;
-  DATATYPE tmp_1_2_1;
-  DATATYPE tmp_1_2_2;
-  DATATYPE tmp_1_3_0;
-  DATATYPE tmp_1_3_1;
-  DATATYPE tmp_1_4_0;
-  DATATYPE tmp_2_2_0;
-  DATATYPE tmp_2_2_1;
-  DATATYPE tmp_2_2_2;
-  DATATYPE tmp_2_3_0;
-  DATATYPE tmp_2_3_1;
-  DATATYPE tmp_2_4_0;
-  DATATYPE tmp_3_3_0;
-  DATATYPE tmp_3_3_1;
-  DATATYPE tmp_3_4_0;
-  DATATYPE tmp_4_3_0;
-  DATATYPE tmp_4_3_1;
-  DATATYPE tmp_4_4_0;
+  DATATYPE t01;
+  DATATYPE t02;
+  DATATYPE t03;
+  DATATYPE t05;
+  DATATYPE t06;
+  DATATYPE t07;
+  DATATYPE t08;
+  DATATYPE t09;
+  DATATYPE t10;
+  DATATYPE t12;
+  DATATYPE t13;
+  DATATYPE t14;
 
 
   // Instructions (body)
-  _tmp241_ = NOT(input__3__);
-  tmp_1_1_3 = OR(_tmp241_,input__3__);
-  _tmp257_ = ANDN(input__2__,_tmp241_);
-  _tmp258_ = AND(input__2__,input__3__);
-  tmp_1_2_0 = OR(_tmp257_,_tmp258_);
-  _tmp259_ = ANDN(input__2__,input__3__);
-  _tmp260_ = AND(input__2__,tmp_1_1_3);
-  tmp_1_2_1 = OR(_tmp259_,_tmp260_);
-  _tmp262_ = AND(input__2__,_tmp241_);
-  tmp_1_2_2 = OR(_tmp257_,_tmp262_);
-  _tmp265_ = ANDN(input__1__,tmp_1_2_0);
-  _tmp266_ = AND(input__1__,tmp_1_2_1);
-  tmp_1_3_0 = OR(_tmp265_,_tmp266_);
-  _tmp267_ = ANDN(input__1__,tmp_1_2_2);
-  _tmp268_ = AND(input__1__,_tmp259_);
-  tmp_1_3_1 = OR(_tmp267_,_tmp268_);
-  _tmp269_ = ANDN(input__0__,tmp_1_3_0);
-  _tmp270_ = AND(input__0__,tmp_1_3_1);
-  tmp_1_4_0 = OR(_tmp269_,_tmp270_);
-  *out__0__ = tmp_1_4_0;
-  tmp_2_2_0 = OR(_tmp259_,_tmp262_);
-  tmp_2_2_1 = OR(_tmp259_,_tmp258_);
-  tmp_2_2_2 = OR(_tmp257_,_tmp260_);
-  _tmp295_ = ANDN(input__1__,tmp_2_2_0);
-  _tmp296_ = AND(input__1__,tmp_2_2_1);
-  tmp_2_3_0 = OR(_tmp295_,_tmp296_);
-  _tmp297_ = ANDN(input__1__,tmp_2_2_2);
-  _tmp298_ = AND(input__1__,_tmp262_);
-  tmp_2_3_1 = OR(_tmp297_,_tmp298_);
-  _tmp299_ = ANDN(input__0__,tmp_2_3_0);
-  _tmp300_ = AND(input__0__,tmp_2_3_1);
-  tmp_2_4_0 = OR(_tmp299_,_tmp300_);
-  *out__1__ = tmp_2_4_0;
-  _tmp326_ = AND(input__1__,tmp_2_2_2);
-  tmp_3_3_0 = OR(_tmp295_,_tmp326_);
-  _tmp327_ = ANDN(input__1__,_tmp262_);
-  tmp_3_3_1 = OR(_tmp327_,_tmp296_);
-  _tmp329_ = ANDN(input__0__,tmp_3_3_0);
-  _tmp330_ = AND(input__0__,tmp_3_3_1);
-  tmp_3_4_0 = OR(_tmp329_,_tmp330_);
-  *out__2__ = tmp_3_4_0;
-  _tmp351_ = ANDN(input__2__,tmp_1_1_3);
-  _tmp355_ = ANDN(input__1__,_tmp260_);
-  _tmp356_ = AND(input__1__,tmp_1_2_0);
-  tmp_4_3_0 = OR(_tmp355_,_tmp356_);
-  _tmp357_ = ANDN(input__1__,_tmp351_);
-  _tmp358_ = AND(input__1__,tmp_2_2_0);
-  tmp_4_3_1 = OR(_tmp357_,_tmp358_);
-  _tmp359_ = ANDN(input__0__,tmp_4_3_0);
-  _tmp360_ = AND(input__0__,tmp_4_3_1);
-  tmp_4_4_0 = OR(_tmp359_,_tmp360_);
-  *out__3__ = tmp_4_4_0;
+  t01 = OR(c,a);
+  t02 = XOR(b,a);
+  t03 = XOR(t01,d);
+  *w = XOR(t03,t02);
+  t05 = XOR(*w,c);
+  t06 = XOR(t05,b);
+  t07 = OR(t05,b);
+  t08 = AND(t06,t01);
+  t09 = XOR(t07,t03);
+  t10 = OR(t09,t02);
+  *x = XOR(t08,t10);
+  t12 = OR(d,a);
+  t13 = XOR(*x,t09);
+  t14 = XOR(t13,b);
+  *z = NOT(t09);
+  *y = XOR(t14,t12);
 
 }
 
-void sbox__3__ (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2__,DATATYPE input__3__, /*outputs*/ DATATYPE* out__0__,DATATYPE* out__1__,DATATYPE* out__2__,DATATYPE* out__3__) {
+void sbox__3__(DATATYPE r0, DATATYPE r1, DATATYPE r2, DATATYPE r3,
+               DATATYPE* r5, DATATYPE* r6, DATATYPE* r7, DATATYPE* r8) {
+  DATATYPE r4;
+  r4 = r0; 
+  r0 |= r3;
+  r3 ^= r1;
+  r1 &= r4;
+  r4 ^= r2;
+  r2 ^= r3;
+  r3 &= r0;
+  r4 |= r1;
+  r3 ^= r4;
+  r0 ^= r1;
+  r4 &= r0;
+  r1 ^= r3;
+  r4 ^= r2;
+  r1 |= r0;
+  r1 ^= r2;
+  r0 ^= r3;
+  r2 = r1; 
+  r1 |= r3;
+  r1 ^= r0;
+  *r5 = r1;
+  *r6 = r2;
+  *r7 = r3;
+  *r8 = r4;
+}
+void _sbox__3__ (/*inputs*/ DATATYPE a,DATATYPE b,DATATYPE c,DATATYPE d, /*outputs*/ DATATYPE* w,DATATYPE* x,DATATYPE* y,DATATYPE* z) {
   
   // Variables declaration
-  DATATYPE _tmp363_;
-  DATATYPE _tmp377_;
-  DATATYPE _tmp378_;
-  DATATYPE _tmp379_;
-  DATATYPE _tmp381_;
-  DATATYPE _tmp384_;
-  DATATYPE _tmp385_;
-  DATATYPE _tmp386_;
-  DATATYPE _tmp387_;
-  DATATYPE _tmp388_;
-  DATATYPE _tmp389_;
-  DATATYPE _tmp390_;
-  DATATYPE _tmp410_;
-  DATATYPE _tmp415_;
-  DATATYPE _tmp416_;
-  DATATYPE _tmp417_;
-  DATATYPE _tmp418_;
-  DATATYPE _tmp419_;
-  DATATYPE _tmp420_;
-  DATATYPE _tmp445_;
-  DATATYPE _tmp446_;
-  DATATYPE _tmp447_;
-  DATATYPE _tmp448_;
-  DATATYPE _tmp449_;
-  DATATYPE _tmp450_;
-  DATATYPE _tmp476_;
-  DATATYPE _tmp477_;
-  DATATYPE _tmp478_;
-  DATATYPE _tmp479_;
-  DATATYPE _tmp480_;
-  DATATYPE tmp_1_1_1;
-  DATATYPE tmp_1_2_0;
-  DATATYPE tmp_1_2_3;
-  DATATYPE tmp_1_3_0;
-  DATATYPE tmp_1_3_1;
-  DATATYPE tmp_1_4_0;
-  DATATYPE tmp_2_2_1;
-  DATATYPE tmp_2_3_0;
-  DATATYPE tmp_2_3_1;
-  DATATYPE tmp_2_4_0;
-  DATATYPE tmp_3_2_0;
-  DATATYPE tmp_3_2_3;
-  DATATYPE tmp_3_3_0;
-  DATATYPE tmp_3_3_1;
-  DATATYPE tmp_3_4_0;
-  DATATYPE tmp_4_2_1;
-  DATATYPE tmp_4_3_0;
-  DATATYPE tmp_4_3_1;
-  DATATYPE tmp_4_4_0;
+  DATATYPE t01;
+  DATATYPE t02;
+  DATATYPE t03;
+  DATATYPE t04;
+  DATATYPE t05;
+  DATATYPE t06;
+  DATATYPE t07;
+  DATATYPE t08;
+  DATATYPE t09;
+  DATATYPE t10;
+  DATATYPE t11;
+  DATATYPE t13;
+  DATATYPE t14;
+  DATATYPE t15;
 
 
   // Instructions (body)
-  _tmp363_ = NOT(input__3__);
-  tmp_1_1_1 = OR(_tmp363_,input__3__);
-  _tmp377_ = ANDN(input__2__,input__3__);
-  _tmp378_ = AND(input__2__,tmp_1_1_1);
-  tmp_1_2_0 = OR(_tmp377_,_tmp378_);
-  _tmp379_ = ANDN(input__2__,tmp_1_1_1);
-  _tmp381_ = ANDN(input__2__,_tmp363_);
-  _tmp384_ = AND(input__2__,input__3__);
-  tmp_1_2_3 = OR(_tmp381_,_tmp384_);
-  _tmp385_ = ANDN(input__1__,tmp_1_2_0);
-  _tmp386_ = AND(input__1__,_tmp379_);
-  tmp_1_3_0 = OR(_tmp385_,_tmp386_);
-  _tmp387_ = ANDN(input__1__,_tmp381_);
-  _tmp388_ = AND(input__1__,tmp_1_2_3);
-  tmp_1_3_1 = OR(_tmp387_,_tmp388_);
-  _tmp389_ = ANDN(input__0__,tmp_1_3_0);
-  _tmp390_ = AND(input__0__,tmp_1_3_1);
-  tmp_1_4_0 = OR(_tmp389_,_tmp390_);
-  *out__0__ = tmp_1_4_0;
-  _tmp410_ = AND(input__2__,_tmp363_);
-  tmp_2_2_1 = OR(_tmp381_,_tmp410_);
-  _tmp415_ = ANDN(input__1__,_tmp377_);
-  _tmp416_ = AND(input__1__,tmp_2_2_1);
-  tmp_2_3_0 = OR(_tmp415_,_tmp416_);
-  _tmp417_ = ANDN(input__1__,tmp_1_2_3);
-  _tmp418_ = AND(input__1__,tmp_1_2_0);
-  tmp_2_3_1 = OR(_tmp417_,_tmp418_);
-  _tmp419_ = ANDN(input__0__,tmp_2_3_0);
-  _tmp420_ = AND(input__0__,tmp_2_3_1);
-  tmp_2_4_0 = OR(_tmp419_,_tmp420_);
-  *out__1__ = tmp_2_4_0;
-  tmp_3_2_0 = OR(_tmp377_,_tmp410_);
-  tmp_3_2_3 = OR(_tmp379_,_tmp384_);
-  _tmp445_ = ANDN(input__1__,tmp_3_2_0);
-  _tmp446_ = AND(input__1__,_tmp378_);
-  tmp_3_3_0 = OR(_tmp445_,_tmp446_);
-  _tmp447_ = ANDN(input__1__,_tmp410_);
-  _tmp448_ = AND(input__1__,tmp_3_2_3);
-  tmp_3_3_1 = OR(_tmp447_,_tmp448_);
-  _tmp449_ = ANDN(input__0__,tmp_3_3_0);
-  _tmp450_ = AND(input__0__,tmp_3_3_1);
-  tmp_3_4_0 = OR(_tmp449_,_tmp450_);
-  *out__2__ = tmp_3_4_0;
-  tmp_4_2_1 = OR(_tmp377_,_tmp384_);
-  _tmp476_ = AND(input__1__,tmp_4_2_1);
-  tmp_4_3_0 = OR(_tmp445_,_tmp476_);
-  _tmp477_ = ANDN(input__1__,_tmp379_);
-  _tmp478_ = AND(input__1__,tmp_3_2_0);
-  tmp_4_3_1 = OR(_tmp477_,_tmp478_);
-  _tmp479_ = ANDN(input__0__,tmp_4_3_0);
-  _tmp480_ = AND(input__0__,tmp_4_3_1);
-  tmp_4_4_0 = OR(_tmp479_,_tmp480_);
-  *out__3__ = tmp_4_4_0;
+  t01 = XOR(c,a);
+  t02 = OR(d,a);
+  t03 = AND(d,a);
+  t04 = AND(t02,t01);
+  t05 = OR(t03,b);
+  t06 = AND(b,a);
+  t07 = XOR(t04,d);
+  t08 = OR(t06,c);
+  t09 = XOR(t07,b);
+  t10 = AND(t05,d);
+  t11 = XOR(t10,t02);
+  *z = XOR(t09,t08);
+  t13 = OR(*z,d);
+  t14 = OR(t07,a);
+  t15 = AND(t13,b);
+  *y = XOR(t11,t08);
+  *w = XOR(t15,t14);
+  *x = XOR(t04,t05);
 
 }
 
-void sbox__4__ (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2__,DATATYPE input__3__, /*outputs*/ DATATYPE* out__0__,DATATYPE* out__1__,DATATYPE* out__2__,DATATYPE* out__3__) {
+void sbox__4__(DATATYPE r0, DATATYPE r1, DATATYPE r2, DATATYPE r3,
+               DATATYPE* r5, DATATYPE* r6, DATATYPE* r7, DATATYPE* r8) {
+  DATATYPE r4;
+  r1 ^= r3;
+  r3 = ~r3;
+  r2 ^= r3;
+  r3 ^= r0;
+  r4 = r1; 
+  r1 &= r3;
+  r1 ^= r2;
+  r4 ^= r3;
+  r0 ^= r4;
+  r2 &= r4;
+  r2 ^= r0;
+  r0 &= r1;
+  r3 ^= r0;
+  r4 |= r1;
+  r4 ^= r0;
+  r0 |= r3;
+  r0 ^= r2;
+  r2 &= r3;
+  r0 = ~r0;
+  r4 ^= r2;
+  *r5 = r1;
+  *r6 = r4;
+  *r7 = r0;
+  *r8 = r3;
+}
+void _sbox__4__ (/*inputs*/ DATATYPE a,DATATYPE b,DATATYPE c,DATATYPE d, /*outputs*/ DATATYPE* w,DATATYPE* x,DATATYPE* y,DATATYPE* z) {
   
   // Variables declaration
-  DATATYPE _tmp483_;
-  DATATYPE _tmp497_;
-  DATATYPE _tmp498_;
-  DATATYPE _tmp499_;
-  DATATYPE _tmp502_;
-  DATATYPE _tmp503_;
-  DATATYPE _tmp505_;
-  DATATYPE _tmp506_;
-  DATATYPE _tmp507_;
-  DATATYPE _tmp508_;
-  DATATYPE _tmp509_;
-  DATATYPE _tmp510_;
-  DATATYPE _tmp534_;
-  DATATYPE _tmp535_;
-  DATATYPE _tmp536_;
-  DATATYPE _tmp538_;
-  DATATYPE _tmp539_;
-  DATATYPE _tmp540_;
-  DATATYPE _tmp565_;
-  DATATYPE _tmp566_;
-  DATATYPE _tmp567_;
-  DATATYPE _tmp568_;
-  DATATYPE _tmp569_;
-  DATATYPE _tmp570_;
-  DATATYPE _tmp595_;
-  DATATYPE _tmp596_;
-  DATATYPE _tmp598_;
-  DATATYPE _tmp599_;
-  DATATYPE _tmp600_;
-  DATATYPE tmp_1_1_6;
-  DATATYPE tmp_1_2_0;
-  DATATYPE tmp_1_2_1;
-  DATATYPE tmp_1_2_3;
-  DATATYPE tmp_1_3_0;
-  DATATYPE tmp_1_3_1;
-  DATATYPE tmp_1_4_0;
-  DATATYPE tmp_2_2_1;
-  DATATYPE tmp_2_2_3;
-  DATATYPE tmp_2_3_0;
-  DATATYPE tmp_2_3_1;
-  DATATYPE tmp_2_4_0;
-  DATATYPE tmp_3_2_0;
-  DATATYPE tmp_3_3_0;
-  DATATYPE tmp_3_3_1;
-  DATATYPE tmp_3_4_0;
-  DATATYPE tmp_4_2_3;
-  DATATYPE tmp_4_3_0;
-  DATATYPE tmp_4_3_1;
-  DATATYPE tmp_4_4_0;
+  DATATYPE t01;
+  DATATYPE t02;
+  DATATYPE t03;
+  DATATYPE t04;
+  DATATYPE t05;
+  DATATYPE t06;
+  DATATYPE t08;
+  DATATYPE t09;
+  DATATYPE t10;
+  DATATYPE t11;
+  DATATYPE t12;
+  DATATYPE t13;
+  DATATYPE t14;
+  DATATYPE t15;
+  DATATYPE t16;
 
 
   // Instructions (body)
-  _tmp483_ = NOT(input__3__);
-  tmp_1_1_6 = OR(_tmp483_,input__3__);
-  _tmp497_ = ANDN(input__2__,input__3__);
-  _tmp498_ = AND(input__2__,_tmp483_);
-  tmp_1_2_0 = OR(_tmp497_,_tmp498_);
-  _tmp499_ = ANDN(input__2__,_tmp483_);
-  tmp_1_2_1 = OR(_tmp499_,_tmp498_);
-  _tmp502_ = AND(input__2__,input__3__);
-  _tmp503_ = ANDN(input__2__,tmp_1_1_6);
-  tmp_1_2_3 = OR(_tmp503_,_tmp502_);
-  _tmp505_ = ANDN(input__1__,tmp_1_2_0);
-  _tmp506_ = AND(input__1__,tmp_1_2_1);
-  tmp_1_3_0 = OR(_tmp505_,_tmp506_);
-  _tmp507_ = ANDN(input__1__,_tmp502_);
-  _tmp508_ = AND(input__1__,tmp_1_2_3);
-  tmp_1_3_1 = OR(_tmp507_,_tmp508_);
-  _tmp509_ = ANDN(input__0__,tmp_1_3_0);
-  _tmp510_ = AND(input__0__,tmp_1_3_1);
-  tmp_1_4_0 = OR(_tmp509_,_tmp510_);
-  *out__0__ = tmp_1_4_0;
-  tmp_2_2_1 = OR(_tmp499_,_tmp502_);
-  _tmp534_ = AND(input__2__,tmp_1_1_6);
-  tmp_2_2_3 = OR(_tmp497_,_tmp534_);
-  _tmp535_ = ANDN(input__1__,_tmp497_);
-  _tmp536_ = AND(input__1__,tmp_2_2_1);
-  tmp_2_3_0 = OR(_tmp535_,_tmp536_);
-  _tmp538_ = AND(input__1__,tmp_2_2_3);
-  tmp_2_3_1 = OR(_tmp505_,_tmp538_);
-  _tmp539_ = ANDN(input__0__,tmp_2_3_0);
-  _tmp540_ = AND(input__0__,tmp_2_3_1);
-  tmp_2_4_0 = OR(_tmp539_,_tmp540_);
-  *out__1__ = tmp_2_4_0;
-  tmp_3_2_0 = OR(_tmp497_,_tmp502_);
-  _tmp565_ = ANDN(input__1__,tmp_3_2_0);
-  _tmp566_ = AND(input__1__,_tmp534_);
-  tmp_3_3_0 = OR(_tmp565_,_tmp566_);
-  _tmp567_ = ANDN(input__1__,tmp_2_2_1);
-  _tmp568_ = AND(input__1__,tmp_1_2_0);
-  tmp_3_3_1 = OR(_tmp567_,_tmp568_);
-  _tmp569_ = ANDN(input__0__,tmp_3_3_0);
-  _tmp570_ = AND(input__0__,tmp_3_3_1);
-  tmp_3_4_0 = OR(_tmp569_,_tmp570_);
-  *out__2__ = tmp_3_4_0;
-  tmp_4_2_3 = OR(_tmp499_,_tmp534_);
-  _tmp595_ = ANDN(input__1__,tmp_1_2_3);
-  _tmp596_ = AND(input__1__,_tmp498_);
-  tmp_4_3_0 = OR(_tmp595_,_tmp596_);
-  _tmp598_ = AND(input__1__,tmp_4_2_3);
-  tmp_4_3_1 = OR(_tmp535_,_tmp598_);
-  _tmp599_ = ANDN(input__0__,tmp_4_3_0);
-  _tmp600_ = AND(input__0__,tmp_4_3_1);
-  tmp_4_4_0 = OR(_tmp599_,_tmp600_);
-  *out__3__ = tmp_4_4_0;
+  t01 = OR(b,a);
+  t02 = OR(c,b);
+  t03 = XOR(t02,a);
+  t04 = XOR(d,b);
+  t05 = OR(t03,d);
+  t06 = AND(t01,d);
+  *z = XOR(t06,t03);
+  t08 = AND(t04,*z);
+  t09 = AND(t05,t04);
+  t10 = XOR(t06,c);
+  t11 = AND(c,b);
+  t12 = XOR(t08,t04);
+  t13 = OR(t03,t11);
+  t14 = XOR(t09,t10);
+  t15 = AND(t05,a);
+  t16 = OR(t12,t11);
+  *y = XOR(t08,t13);
+  *x = XOR(t16,t15);
+  *w = NOT(t14);
 
 }
 
-void sbox__5__ (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2__,DATATYPE input__3__, /*outputs*/ DATATYPE* out__0__,DATATYPE* out__1__,DATATYPE* out__2__,DATATYPE* out__3__) {
+void sbox__5__(DATATYPE r0, DATATYPE r1, DATATYPE r2, DATATYPE r3,
+               DATATYPE* r5, DATATYPE* r6, DATATYPE* r7, DATATYPE* r8) {
+   DATATYPE r4;
+   r0 ^= r1;
+   r1 ^= r3;
+   r3 = ~r3;
+   r4 = r1; 
+   r1 &= r0;
+   r2 ^= r3;
+   r1 ^= r2;
+   r2 |= r4;
+   r4 ^= r3;
+   r3 &= r1;
+   r3 ^= r0;
+   r4 ^= r1;
+   r4 ^= r2;
+   r2 ^= r0;
+   r0 &= r3;
+   r2 = ~r2;
+   r0 ^= r4;
+   r4 |= r3;
+   r2 ^= r4;
+  *r5 = r1;
+  *r6 = r3;
+  *r7 = r0;
+  *r8 = r2;
+}
+void _sbox__5__ (/*inputs*/ DATATYPE a,DATATYPE b,DATATYPE c,DATATYPE d, /*outputs*/ DATATYPE* w,DATATYPE* x,DATATYPE* y,DATATYPE* z) {
   
   // Variables declaration
-  DATATYPE _tmp601_;
-  DATATYPE _tmp617_;
-  DATATYPE _tmp618_;
-  DATATYPE _tmp619_;
-  DATATYPE _tmp620_;
-  DATATYPE _tmp625_;
-  DATATYPE _tmp626_;
-  DATATYPE _tmp627_;
-  DATATYPE _tmp628_;
-  DATATYPE _tmp629_;
-  DATATYPE _tmp630_;
-  DATATYPE _tmp647_;
-  DATATYPE _tmp652_;
-  DATATYPE _tmp655_;
-  DATATYPE _tmp656_;
-  DATATYPE _tmp657_;
-  DATATYPE _tmp658_;
-  DATATYPE _tmp659_;
-  DATATYPE _tmp660_;
-  DATATYPE _tmp685_;
-  DATATYPE _tmp686_;
-  DATATYPE _tmp687_;
-  DATATYPE _tmp688_;
-  DATATYPE _tmp689_;
-  DATATYPE _tmp690_;
-  DATATYPE _tmp715_;
-  DATATYPE _tmp716_;
-  DATATYPE _tmp717_;
-  DATATYPE _tmp718_;
-  DATATYPE _tmp719_;
-  DATATYPE _tmp720_;
-  DATATYPE tmp_1_1_3;
-  DATATYPE tmp_1_2_0;
-  DATATYPE tmp_1_2_1;
-  DATATYPE tmp_1_3_0;
-  DATATYPE tmp_1_3_1;
-  DATATYPE tmp_1_4_0;
-  DATATYPE tmp_2_2_3;
-  DATATYPE tmp_2_3_0;
-  DATATYPE tmp_2_3_1;
-  DATATYPE tmp_2_4_0;
-  DATATYPE tmp_3_2_0;
-  DATATYPE tmp_3_2_2;
-  DATATYPE tmp_3_3_0;
-  DATATYPE tmp_3_3_1;
-  DATATYPE tmp_3_4_0;
-  DATATYPE tmp_4_2_0;
-  DATATYPE tmp_4_3_0;
-  DATATYPE tmp_4_3_1;
-  DATATYPE tmp_4_4_0;
+  DATATYPE t01;
+  DATATYPE t02;
+  DATATYPE t03;
+  DATATYPE t04;
+  DATATYPE t05;
+  DATATYPE t07;
+  DATATYPE t08;
+  DATATYPE t09;
+  DATATYPE t10;
+  DATATYPE t11;
+  DATATYPE t12;
+  DATATYPE t13;
+  DATATYPE t14;
 
 
   // Instructions (body)
-  _tmp601_ = NOT(input__3__);
-  tmp_1_1_3 = OR(_tmp601_,input__3__);
-  _tmp617_ = ANDN(input__2__,_tmp601_);
-  _tmp618_ = AND(input__2__,input__3__);
-  tmp_1_2_0 = OR(_tmp617_,_tmp618_);
-  _tmp619_ = ANDN(input__2__,input__3__);
-  _tmp620_ = AND(input__2__,tmp_1_1_3);
-  tmp_1_2_1 = OR(_tmp619_,_tmp620_);
-  _tmp625_ = ANDN(input__1__,tmp_1_2_0);
-  _tmp626_ = AND(input__1__,tmp_1_2_1);
-  tmp_1_3_0 = OR(_tmp625_,_tmp626_);
-  _tmp627_ = ANDN(input__1__,_tmp620_);
-  _tmp628_ = AND(input__1__,_tmp617_);
-  tmp_1_3_1 = OR(_tmp627_,_tmp628_);
-  _tmp629_ = ANDN(input__0__,tmp_1_3_0);
-  _tmp630_ = AND(input__0__,tmp_1_3_1);
-  tmp_1_4_0 = OR(_tmp629_,_tmp630_);
-  *out__0__ = tmp_1_4_0;
-  _tmp647_ = ANDN(input__2__,tmp_1_1_3);
-  _tmp652_ = AND(input__2__,_tmp601_);
-  tmp_2_2_3 = OR(_tmp647_,_tmp652_);
-  _tmp655_ = ANDN(input__1__,_tmp647_);
-  _tmp656_ = AND(input__1__,tmp_1_2_0);
-  tmp_2_3_0 = OR(_tmp655_,_tmp656_);
-  _tmp657_ = ANDN(input__1__,_tmp652_);
-  _tmp658_ = AND(input__1__,tmp_2_2_3);
-  tmp_2_3_1 = OR(_tmp657_,_tmp658_);
-  _tmp659_ = ANDN(input__0__,tmp_2_3_0);
-  _tmp660_ = AND(input__0__,tmp_2_3_1);
-  tmp_2_4_0 = OR(_tmp659_,_tmp660_);
-  *out__1__ = tmp_2_4_0;
-  tmp_3_2_0 = OR(_tmp617_,_tmp620_);
-  tmp_3_2_2 = OR(_tmp619_,_tmp652_);
-  _tmp685_ = ANDN(input__1__,tmp_3_2_0);
-  _tmp686_ = AND(input__1__,_tmp619_);
-  tmp_3_3_0 = OR(_tmp685_,_tmp686_);
-  _tmp687_ = ANDN(input__1__,tmp_3_2_2);
-  _tmp688_ = AND(input__1__,tmp_3_2_2);
-  tmp_3_3_1 = OR(_tmp687_,_tmp688_);
-  _tmp689_ = ANDN(input__0__,tmp_3_3_0);
-  _tmp690_ = AND(input__0__,tmp_3_3_1);
-  tmp_3_4_0 = OR(_tmp689_,_tmp690_);
-  *out__2__ = tmp_3_4_0;
-  tmp_4_2_0 = OR(_tmp647_,_tmp618_);
-  _tmp715_ = ANDN(input__1__,tmp_4_2_0);
-  _tmp716_ = AND(input__1__,_tmp652_);
-  tmp_4_3_0 = OR(_tmp715_,_tmp716_);
-  _tmp717_ = ANDN(input__1__,_tmp619_);
-  _tmp718_ = AND(input__1__,tmp_3_2_0);
-  tmp_4_3_1 = OR(_tmp717_,_tmp718_);
-  _tmp719_ = ANDN(input__0__,tmp_4_3_0);
-  _tmp720_ = AND(input__0__,tmp_4_3_1);
-  tmp_4_4_0 = OR(_tmp719_,_tmp720_);
-  *out__3__ = tmp_4_4_0;
+  t01 = XOR(d,b);
+  t02 = OR(d,b);
+  t03 = AND(t01,a);
+  t04 = XOR(t02,c);
+  t05 = XOR(t04,t03);
+  *w = NOT(t05);
+  t07 = XOR(t01,a);
+  t08 = OR(*w,d);
+  t09 = OR(t05,b);
+  t10 = XOR(t08,d);
+  t11 = OR(t07,b);
+  t12 = OR(*w,t03);
+  t13 = OR(t10,t07);
+  t14 = XOR(t11,t01);
+  *y = XOR(t13,t09);
+  *x = XOR(t08,t07);
+  *z = XOR(t14,t12);
 
 }
 
-void sbox__6__ (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2__,DATATYPE input__3__, /*outputs*/ DATATYPE* out__0__,DATATYPE* out__1__,DATATYPE* out__2__,DATATYPE* out__3__) {
+void sbox__6__(DATATYPE r0, DATATYPE r1, DATATYPE r2, DATATYPE r3,
+               DATATYPE* r5, DATATYPE* r6, DATATYPE* r7, DATATYPE* r8) {
+   DATATYPE r4;
+   r2 = ~r2; 
+   r4 = r3; 
+   r3 &= r0;
+   r0 ^= r4;
+   r3 ^= r2;
+   r2 |= r4;
+   r1 ^= r3;
+   r2 ^= r0;
+   r0 |= r1;
+   r2 ^= r1;
+   r4 ^= r0;
+   r0 |= r3;
+   r0 ^= r2;
+   r4 ^= r3;
+   r4 ^= r0;
+   r3 = ~r3;
+   r2 &= r4;
+   r2 ^= r3;
+  *r5 = r0;
+  *r6 = r1;
+  *r7 = r4;
+  *r8 = r2;
+}
+void _sbox__6__ (/*inputs*/ DATATYPE a,DATATYPE b,DATATYPE c,DATATYPE d, /*outputs*/ DATATYPE* w,DATATYPE* x,DATATYPE* y,DATATYPE* z) {
   
   // Variables declaration
-  DATATYPE _tmp723_;
-  DATATYPE _tmp738_;
-  DATATYPE _tmp739_;
-  DATATYPE _tmp740_;
-  DATATYPE _tmp741_;
-  DATATYPE _tmp745_;
-  DATATYPE _tmp746_;
-  DATATYPE _tmp747_;
-  DATATYPE _tmp748_;
-  DATATYPE _tmp749_;
-  DATATYPE _tmp750_;
-  DATATYPE _tmp768_;
-  DATATYPE _tmp769_;
-  DATATYPE _tmp775_;
-  DATATYPE _tmp776_;
-  DATATYPE _tmp777_;
-  DATATYPE _tmp778_;
-  DATATYPE _tmp779_;
-  DATATYPE _tmp780_;
-  DATATYPE _tmp805_;
-  DATATYPE _tmp806_;
-  DATATYPE _tmp809_;
-  DATATYPE _tmp810_;
-  DATATYPE _tmp836_;
-  DATATYPE _tmp837_;
-  DATATYPE _tmp838_;
-  DATATYPE _tmp839_;
-  DATATYPE _tmp840_;
-  DATATYPE tmp_1_1_4;
-  DATATYPE tmp_1_2_1;
-  DATATYPE tmp_1_2_2;
-  DATATYPE tmp_1_2_3;
-  DATATYPE tmp_1_3_0;
-  DATATYPE tmp_1_3_1;
-  DATATYPE tmp_1_4_0;
-  DATATYPE tmp_2_2_0;
-  DATATYPE tmp_2_2_1;
-  DATATYPE tmp_2_3_0;
-  DATATYPE tmp_2_3_1;
-  DATATYPE tmp_2_4_0;
-  DATATYPE tmp_3_3_0;
-  DATATYPE tmp_3_3_1;
-  DATATYPE tmp_3_4_0;
-  DATATYPE tmp_4_2_2;
-  DATATYPE tmp_4_3_0;
-  DATATYPE tmp_4_3_1;
-  DATATYPE tmp_4_4_0;
+  DATATYPE t01;
+  DATATYPE t02;
+  DATATYPE t03;
+  DATATYPE t04;
+  DATATYPE t05;
+  DATATYPE t07;
+  DATATYPE t08;
+  DATATYPE t09;
+  DATATYPE t10;
+  DATATYPE t11;
+  DATATYPE t12;
+  DATATYPE t13;
+  DATATYPE t15;
+  DATATYPE t17;
+  DATATYPE t18;
 
 
   // Instructions (body)
-  _tmp723_ = NOT(input__3__);
-  tmp_1_1_4 = OR(_tmp723_,input__3__);
-  _tmp738_ = AND(input__2__,_tmp723_);
-  _tmp739_ = ANDN(input__2__,_tmp723_);
-  _tmp740_ = AND(input__2__,input__3__);
-  tmp_1_2_1 = OR(_tmp739_,_tmp740_);
-  _tmp741_ = ANDN(input__2__,tmp_1_1_4);
-  tmp_1_2_2 = OR(_tmp741_,_tmp740_);
-  tmp_1_2_3 = OR(_tmp739_,_tmp738_);
-  _tmp745_ = ANDN(input__1__,_tmp738_);
-  _tmp746_ = AND(input__1__,tmp_1_2_1);
-  tmp_1_3_0 = OR(_tmp745_,_tmp746_);
-  _tmp747_ = ANDN(input__1__,tmp_1_2_2);
-  _tmp748_ = AND(input__1__,tmp_1_2_3);
-  tmp_1_3_1 = OR(_tmp747_,_tmp748_);
-  _tmp749_ = ANDN(input__0__,tmp_1_3_0);
-  _tmp750_ = AND(input__0__,tmp_1_3_1);
-  tmp_1_4_0 = OR(_tmp749_,_tmp750_);
-  *out__0__ = tmp_1_4_0;
-  _tmp768_ = AND(input__2__,tmp_1_1_4);
-  tmp_2_2_0 = OR(_tmp739_,_tmp768_);
-  _tmp769_ = ANDN(input__2__,input__3__);
-  tmp_2_2_1 = OR(_tmp769_,_tmp738_);
-  _tmp775_ = ANDN(input__1__,tmp_2_2_0);
-  _tmp776_ = AND(input__1__,tmp_2_2_1);
-  tmp_2_3_0 = OR(_tmp775_,_tmp776_);
-  _tmp777_ = ANDN(input__1__,tmp_1_2_1);
-  _tmp778_ = AND(input__1__,_tmp739_);
-  tmp_2_3_1 = OR(_tmp777_,_tmp778_);
-  _tmp779_ = ANDN(input__0__,tmp_2_3_0);
-  _tmp780_ = AND(input__0__,tmp_2_3_1);
-  tmp_2_4_0 = OR(_tmp779_,_tmp780_);
-  *out__1__ = tmp_2_4_0;
-  _tmp805_ = ANDN(input__1__,_tmp741_);
-  _tmp806_ = AND(input__1__,_tmp768_);
-  tmp_3_3_0 = OR(_tmp805_,_tmp806_);
-  tmp_3_3_1 = OR(_tmp777_,_tmp776_);
-  _tmp809_ = ANDN(input__0__,tmp_3_3_0);
-  _tmp810_ = AND(input__0__,tmp_3_3_1);
-  tmp_3_4_0 = OR(_tmp809_,_tmp810_);
-  *out__2__ = tmp_3_4_0;
-  tmp_4_2_2 = OR(_tmp769_,_tmp768_);
-  _tmp836_ = AND(input__1__,_tmp740_);
-  tmp_4_3_0 = OR(_tmp777_,_tmp836_);
-  _tmp837_ = ANDN(input__1__,tmp_4_2_2);
-  _tmp838_ = AND(input__1__,_tmp741_);
-  tmp_4_3_1 = OR(_tmp837_,_tmp838_);
-  _tmp839_ = ANDN(input__0__,tmp_4_3_0);
-  _tmp840_ = AND(input__0__,tmp_4_3_1);
-  tmp_4_4_0 = OR(_tmp839_,_tmp840_);
-  *out__3__ = tmp_4_4_0;
+  t01 = AND(d,a);
+  t02 = XOR(c,b);
+  t03 = XOR(d,a);
+  t04 = XOR(t02,t01);
+  t05 = OR(c,b);
+  *x = NOT(t04);
+  t07 = AND(t05,t03);
+  t08 = AND(*x,b);
+  t09 = OR(c,a);
+  t10 = XOR(t08,t07);
+  t11 = OR(d,b);
+  t12 = XOR(t11,c);
+  t13 = XOR(t10,t09);
+  *y = NOT(t13);
+  t15 = AND(t03,*x);
+  *z = XOR(t07,t12);
+  t17 = XOR(b,a);
+  t18 = XOR(t15,*y);
+  *w = XOR(t18,t17);
 
 }
 
-void sbox__7__ (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2__,DATATYPE input__3__, /*outputs*/ DATATYPE* out__0__,DATATYPE* out__1__,DATATYPE* out__2__,DATATYPE* out__3__) {
+void sbox__7__(DATATYPE r0, DATATYPE r1, DATATYPE r2, DATATYPE r3,
+               DATATYPE* r5, DATATYPE* r6, DATATYPE* r7, DATATYPE* r8) {
+  DATATYPE r4;
+  r4 = r2;  
+  r2 &= r1;
+  r2 ^= r3;
+  r3 &= r1;
+  r4 ^= r2;
+  r2 ^= r1;
+  r1 ^= r0;
+  r0 |= r4;
+  r0 ^= r2;
+  r3 ^= r1;
+  r2 ^= r3;
+  r3 &= r0;
+  r3 ^= r4;
+  r4 ^= r2;
+  r2 &= r0;
+  r4 = ~r4;
+  r2 ^= r4;
+  r4 &= r0;
+  r1 ^= r3;
+  r4 ^= r1;
+  *r5 = r4;
+  *r6 = r3;
+  *r7 = r1;
+  *r8 = r0;
+}
+void _sbox__7__ (/*inputs*/ DATATYPE a,DATATYPE b,DATATYPE c,DATATYPE d, /*outputs*/ DATATYPE* w,DATATYPE* x,DATATYPE* y,DATATYPE* z) {
   
   // Variables declaration
-  DATATYPE _tmp843_;
-  DATATYPE _tmp857_;
-  DATATYPE _tmp858_;
-  DATATYPE _tmp859_;
-  DATATYPE _tmp860_;
-  DATATYPE _tmp862_;
-  DATATYPE _tmp863_;
-  DATATYPE _tmp865_;
-  DATATYPE _tmp866_;
-  DATATYPE _tmp867_;
-  DATATYPE _tmp868_;
-  DATATYPE _tmp869_;
-  DATATYPE _tmp870_;
-  DATATYPE _tmp897_;
-  DATATYPE _tmp898_;
-  DATATYPE _tmp899_;
-  DATATYPE _tmp900_;
-  DATATYPE _tmp925_;
-  DATATYPE _tmp926_;
-  DATATYPE _tmp927_;
-  DATATYPE _tmp928_;
-  DATATYPE _tmp929_;
-  DATATYPE _tmp930_;
-  DATATYPE _tmp956_;
-  DATATYPE _tmp957_;
-  DATATYPE _tmp958_;
-  DATATYPE _tmp959_;
-  DATATYPE _tmp960_;
-  DATATYPE tmp_1_1_2;
-  DATATYPE tmp_1_2_0;
-  DATATYPE tmp_1_2_1;
-  DATATYPE tmp_1_3_0;
-  DATATYPE tmp_1_3_1;
-  DATATYPE tmp_1_4_0;
-  DATATYPE tmp_2_2_2;
-  DATATYPE tmp_2_3_0;
-  DATATYPE tmp_2_3_1;
-  DATATYPE tmp_2_4_0;
-  DATATYPE tmp_3_2_1;
-  DATATYPE tmp_3_2_2;
-  DATATYPE tmp_3_2_3;
-  DATATYPE tmp_3_3_0;
-  DATATYPE tmp_3_3_1;
-  DATATYPE tmp_3_4_0;
-  DATATYPE tmp_4_3_0;
-  DATATYPE tmp_4_3_1;
-  DATATYPE tmp_4_4_0;
+  DATATYPE t01;
+  DATATYPE t02;
+  DATATYPE t03;
+  DATATYPE t04;
+  DATATYPE t05;
+  DATATYPE t06;
+  DATATYPE t08;
+  DATATYPE t09;
+  DATATYPE t10;
+  DATATYPE t11;
+  DATATYPE t13;
+  DATATYPE t14;
+  DATATYPE t15;
+  DATATYPE t16;
+  DATATYPE t17;
 
 
   // Instructions (body)
-  _tmp843_ = NOT(input__3__);
-  tmp_1_1_2 = OR(_tmp843_,input__3__);
-  _tmp857_ = ANDN(input__2__,input__3__);
-  _tmp858_ = AND(input__2__,_tmp843_);
-  tmp_1_2_0 = OR(_tmp857_,_tmp858_);
-  _tmp859_ = ANDN(input__2__,tmp_1_1_2);
-  _tmp860_ = AND(input__2__,input__3__);
-  tmp_1_2_1 = OR(_tmp859_,_tmp860_);
-  _tmp862_ = AND(input__2__,tmp_1_1_2);
-  _tmp863_ = ANDN(input__2__,_tmp843_);
-  _tmp865_ = ANDN(input__1__,tmp_1_2_0);
-  _tmp866_ = AND(input__1__,tmp_1_2_1);
-  tmp_1_3_0 = OR(_tmp865_,_tmp866_);
-  _tmp867_ = ANDN(input__1__,_tmp862_);
-  _tmp868_ = AND(input__1__,_tmp863_);
-  tmp_1_3_1 = OR(_tmp867_,_tmp868_);
-  _tmp869_ = ANDN(input__0__,tmp_1_3_0);
-  _tmp870_ = AND(input__0__,tmp_1_3_1);
-  tmp_1_4_0 = OR(_tmp869_,_tmp870_);
-  *out__0__ = tmp_1_4_0;
-  tmp_2_2_2 = OR(_tmp859_,_tmp858_);
-  tmp_2_3_0 = OR(_tmp865_,_tmp868_);
-  _tmp897_ = ANDN(input__1__,tmp_2_2_2);
-  _tmp898_ = AND(input__1__,_tmp862_);
-  tmp_2_3_1 = OR(_tmp897_,_tmp898_);
-  _tmp899_ = ANDN(input__0__,tmp_2_3_0);
-  _tmp900_ = AND(input__0__,tmp_2_3_1);
-  tmp_2_4_0 = OR(_tmp899_,_tmp900_);
-  *out__1__ = tmp_2_4_0;
-  tmp_3_2_1 = OR(_tmp863_,_tmp862_);
-  tmp_3_2_2 = OR(_tmp863_,_tmp860_);
-  tmp_3_2_3 = OR(_tmp857_,_tmp860_);
-  _tmp925_ = ANDN(input__1__,_tmp858_);
-  _tmp926_ = AND(input__1__,tmp_3_2_1);
-  tmp_3_3_0 = OR(_tmp925_,_tmp926_);
-  _tmp927_ = ANDN(input__1__,tmp_3_2_2);
-  _tmp928_ = AND(input__1__,tmp_3_2_3);
-  tmp_3_3_1 = OR(_tmp927_,_tmp928_);
-  _tmp929_ = ANDN(input__0__,tmp_3_3_0);
-  _tmp930_ = AND(input__0__,tmp_3_3_1);
-  tmp_3_4_0 = OR(_tmp929_,_tmp930_);
-  *out__2__ = tmp_3_4_0;
-  _tmp956_ = AND(input__1__,_tmp860_);
-  tmp_4_3_0 = OR(_tmp897_,_tmp956_);
-  _tmp957_ = ANDN(input__1__,_tmp863_);
-  _tmp958_ = AND(input__1__,tmp_2_2_2);
-  tmp_4_3_1 = OR(_tmp957_,_tmp958_);
-  _tmp959_ = ANDN(input__0__,tmp_4_3_0);
-  _tmp960_ = AND(input__0__,tmp_4_3_1);
-  tmp_4_4_0 = OR(_tmp959_,_tmp960_);
-  *out__3__ = tmp_4_4_0;
+  t01 = AND(c,a);
+  t02 = NOT(d);
+  t03 = AND(t02,a);
+  t04 = OR(t01,b);
+  t05 = AND(b,a);
+  t06 = XOR(t04,c);
+  *z = XOR(t06,t03);
+  t08 = OR(*z,c);
+  t09 = OR(t05,d);
+  t10 = XOR(t08,a);
+  t11 = AND(*z,t04);
+  *x = XOR(t10,t09);
+  t13 = XOR(*x,b);
+  t14 = XOR(*x,t01);
+  t15 = XOR(t05,c);
+  t16 = OR(t13,t11);
+  t17 = OR(t14,t02);
+  *w = XOR(t17,t15);
+  *y = XOR(t16,a);
 
 }
+
 
 void transform__ (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2__,DATATYPE input__3__, /*outputs*/ DATATYPE* out__0__,DATATYPE* out__1__,DATATYPE* out__2__,DATATYPE* out__3__) {
-  
+    
   // Variables declaration
-  DATATYPE _tmp961_;
-  DATATYPE _tmp962_;
-  DATATYPE _tmp963_;
-  DATATYPE _tmp964_;
-  DATATYPE _tmp965_;
-  DATATYPE _tmp966_;
-  DATATYPE x0__0__;
+  DATATYPE _tmp1_;
+  DATATYPE _tmp2_;
+  DATATYPE _tmp3_;
+  DATATYPE _tmp4_;
+  DATATYPE _tmp5_;
+  DATATYPE _tmp6_;
   DATATYPE x0__1__;
   DATATYPE x0__2__;
   DATATYPE x0__3__;
   DATATYPE x1__1__;
   DATATYPE x1__2__;
-  DATATYPE x2__0__;
   DATATYPE x2__1__;
   DATATYPE x2__2__;
   DATATYPE x2__3__;
   DATATYPE x3__1__;
   DATATYPE x3__2__;
 
-
   // Instructions (body)
-  x0__1__ = L_ROTATE(x0__0__,13,32);
-  x2__1__ = L_ROTATE(x2__0__,3,32);
-  _tmp961_ = XOR(input__1__,x0__1__);
-  x1__1__ = XOR(_tmp961_,x2__1__);
-  _tmp962_ = XOR(input__3__,x2__1__);
-  _tmp963_ = L_SHIFT(x0__1__,3,32);
-  x3__1__ = XOR(_tmp962_,_tmp963_);
+  x0__1__ = L_ROTATE(input__0__,13,32);
+  x2__1__ = L_ROTATE(input__2__,3,32);
+  _tmp1_ = XOR(x0__1__,input__1__);
+  x1__1__ = XOR(x2__1__,_tmp1_);
+  _tmp2_ = XOR(x2__1__,input__3__);
+  _tmp3_ = L_SHIFT(x0__1__,3,32);
+  x3__1__ = XOR(_tmp3_,_tmp2_);
   x1__2__ = L_ROTATE(x1__1__,1,32);
   x3__2__ = L_ROTATE(x3__1__,7,32);
-  _tmp964_ = XOR(x0__1__,x1__2__);
-  x0__2__ = XOR(_tmp964_,x3__2__);
-  _tmp965_ = XOR(x2__1__,x3__2__);
-  _tmp966_ = L_SHIFT(x1__2__,7,32);
-  x2__2__ = XOR(_tmp965_,_tmp966_);
+  _tmp4_ = XOR(x1__2__,x0__1__);
+  x0__2__ = XOR(x3__2__,_tmp4_);
+  _tmp5_ = XOR(x3__2__,x2__1__);
+  _tmp6_ = L_SHIFT(x1__2__,7,32);
+  x2__2__ = XOR(_tmp6_,_tmp5_);
   x0__3__ = L_ROTATE(x0__2__,5,32);
   x2__3__ = L_ROTATE(x2__2__,22,32);
   *out__0__ = x0__3__;
   *out__1__ = x1__2__;
   *out__2__ = x2__3__;
   *out__3__ = x3__2__;
+
 
 }
 
@@ -1531,7 +1197,7 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE keys__[33][4], /*out
 /* Let's assume the key is 256 bits at the begining. */
 void key_sched(char key_base[32], unsigned long key[33][4]) {
   unsigned long k[132];
-  unsigned long* w = malloc(132 * sizeof *w);
+  unsigned long* w = malloc(140 * sizeof *w);
 
   strncpy((char*)w,key_base,32);
   
@@ -1587,12 +1253,9 @@ void key_sched(char key_base[32], unsigned long key[33][4]) {
 
 int main() {
     
-  DATATYPE plain[4], cipher[4];
+  unsigned long plain[4] = { 0x01234567, 0x89ABCDEF, 0xFEDCBA98, 0x76543210 };
+  unsigned long cipher[4];
   
-  uint8_t plain_std[16] = { 0x54, 0x77, 0x6F, 0x20, 0x4F, 0x6E, 0x65, 0x20,
-                            0x4E, 0x69, 0x6E, 0x65, 0x20, 0x54, 0x77, 0x6F };
-  for (int i = 0; i < 4; i++)
-    plain[i] = *plain_std;
 
   
   char key_base[32] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
@@ -1601,11 +1264,6 @@ int main() {
                         0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF   };
   DATATYPE key[33][4];
   key_sched(key_base,key);
-  
-
-  printf("%08X\n",(unsigned int)key[0][0]);
-  return 0;
-  
 
   /* Warming up the caches */
   for (int i = 0; i < 10000; i++) {
@@ -1613,12 +1271,23 @@ int main() {
   }
    
 
+  clock_t timer_clock = clock();
   uint64_t timer = _rdtsc();
   for (int i = 0; i < NB_LOOP; i++) {
     Serpent__(plain,key,cipher);
   }
   timer = _rdtsc() - timer;
-  printf("Serpent: %lu\n",timer/NB_LOOP);
+  timer_clock = clock() - timer_clock;
+  
+  printf("Serpent:\n  %lu cycles/128 bits,\n  %.2f cycles/byte,\n  %d MiB/s\n",
+         timer/NB_LOOP,
+         (double)(timer/NB_LOOP)/16,
+         (int)(NB_LOOP*16/((double)timer_clock/CLOCKS_PER_SEC)/1e6));
+
+  FILE* fh = fopen("/dev/null","w");
+  fprintf(fh, "%lu,%lu,%lu,%lu\n",cipher[0],cipher[1],cipher[2],cipher[3]);
+  fclose(fh);
   
   return 0;
 }
+ 
