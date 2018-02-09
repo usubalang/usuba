@@ -52,6 +52,8 @@ module CSE_CF = struct
          | _, _ -> Log(op,x',y') )
     | Fun(f,l) -> Fun(f,List.map (fold_expr not_env) l)
     | Tuple l -> Tuple(List.map (fold_expr not_env) l)
+    | Shift(op,e,ae) -> Shift(op,fold_expr not_env e,ae)
+    | Arith(op,x,y)  -> Arith(op,fold_expr not_env x, fold_expr not_env y)
     | Not x -> let x' = fold_expr not_env x in
                ( match x with
                  | Const 1 -> Const 0
@@ -79,6 +81,7 @@ module CSE_CF = struct
                  | Not e -> Not (cse_expr env not_env e)
                  | Fun(f,l) -> Fun(f,List.map (cse_expr env not_env) l)
                  | Tuple l -> Tuple(List.map (cse_expr env not_env) l)
+                 | Shift(op,e,ae) -> Shift(op,cse_expr env not_env e, ae)
                  | _ -> e ) in
     match Hashtbl.find_opt env e' with
     | Some x -> x
