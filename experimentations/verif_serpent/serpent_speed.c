@@ -14,6 +14,9 @@
 /* including the architecture specific .h */
 #include "STD.h"
 
+#undef DATATYPE
+#define DATATYPE unsigned int
+
 
 void sbox__0__(DATATYPE r0, DATATYPE r1, DATATYPE r2, DATATYPE r3,
         DATATYPE* r5, DATATYPE* r6, DATATYPE* r7, DATATYPE* r8) {
@@ -558,6 +561,8 @@ void _sbox__7__ (/*inputs*/ DATATYPE a,DATATYPE b,DATATYPE c,DATATYPE d, /*outpu
 
 }
 
+#undef L_ROTATE
+#define L_ROTATE(a,b,c) (a << b) | (a >> (32-b))
 
 void transform__ (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2__,DATATYPE input__3__, /*outputs*/ DATATYPE* out__0__,DATATYPE* out__1__,DATATYPE* out__2__,DATATYPE* out__3__) {
     
@@ -1190,23 +1195,37 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE keys__[33][4], /*out
 }
 
 
-#define ROL(x,n) ((((unsigned long)(x))<<(n))| \
-                  (((unsigned long)(x))>>(32-(n))))
+#define ROL(x,n) ((((unsigned int)(x))<<(n))| \
+                  (((unsigned int)(x))>>(32-(n))))
 #define PHI 0x9e3779b9
+#define min(x,y) (((x)<(y))?(x):(y))
+int serpent_convert_from_string(int len, const char *str, unsigned int *val);
 
-/* Let's assume the key is 256 bits at the begining. */
-void key_sched(char key_base[32], unsigned long key[33][4]) {
-  unsigned long k[132];
-  unsigned long* w = malloc(140 * sizeof *w);
+/*  CORRECT */
+int makeKey(const char* keyMaterial, unsigned int key[33][4]) {
+  unsigned int i,j;
+  unsigned int w[132],k[132];
+  unsigned int rc;
+  unsigned int key_int[8];
 
-  strncpy((char*)w,key_base,32);
-  
-  for(int i=8; i<140; i++)
+  unsigned int keyLen = 256;
+
+  rc=serpent_convert_from_string(keyLen, keyMaterial, key_int);
+
+  for(i=0; i<keyLen/32; i++)
+    w[i]=key_int[i];
+  if(keyLen<256)
+    w[i]=(key_int[i]&((1L<<((keyLen&31)))-1))|(1L<<((keyLen&31)));
+  for(i++; i<8; i++)
+    w[i]=0;
+  for(i=8; i<16; i++)
+    w[i]=ROL(w[i-8]^w[i-5]^w[i-3]^w[i-1]^PHI^(i-8),11);
+  for(i=0; i<8; i++)
+    w[i]=w[i+8];
+  for(i=8; i<132; i++)
     w[i]=ROL(w[i-8]^w[i-5]^w[i-3]^w[i-1]^PHI^i,11);
 
-  /* Ignoring the first 8 cases */
-  w = &w[8];
-
+    
   sbox__3__(w[  0], w[  1], w[  2], w[  3], &k[  0], &k[  1], &k[  2], &k[  3]);
   sbox__2__(w[  4], w[  5], w[  6], w[  7], &k[  4], &k[  5], &k[  6], &k[  7]);
   sbox__1__(w[  8], w[  9], w[ 10], w[ 11], &k[  8], &k[  9], &k[ 10], &k[ 11]);
@@ -1241,11 +1260,54 @@ void key_sched(char key_base[32], unsigned long key[33][4]) {
   sbox__4__(w[124], w[125], w[126], w[127], &k[124], &k[125], &k[126], &k[127]);
   sbox__3__(w[128], w[129], w[130], w[131], &k[128], &k[129], &k[130], &k[131]);
 
-  for(int i=0; i<=32; i++)
-    for(int j=0; j<4; j++)
+  //for (int i = 0; i < 8; i++) printf("%016lX\n", k[i]);
+  
+  
+  for(i=0; i<=32; i++)
+    for(j=0; j<4; j++)
       key[i][j] = k[4*i+j];
+
+  return 1;
 }
 
+int serpent_convert_from_string(int len, const char *str, unsigned int *val)
+/* the size of val must be at least the next multiple of 32 */
+/* bits after len bits */
+{
+  unsigned int is, iv;
+  unsigned int slen=min(strlen(str), (len+3)/4);
+
+  if(len<0)
+    return -1;		/* Error!!! */
+
+  if(len>slen*4 || len<slen*4-3)
+    return -1;		/* Error!!! */
+
+  for(is=0; is<slen; is++)
+    if(((str[is]<'0')||(str[is]>'9')) &&
+       ((str[is]<'A')||(str[is]>'F')) &&
+       ((str[is]<'a')||(str[is]>'f')))
+      return -1;	/* Error!!! */
+
+  for(is=slen, iv=0; is>=8; is-=8, iv++)
+    {
+      int t;
+      sscanf(&str[is-8], "%08X", &t);
+      val[iv] = t;
+    }
+  if(is>0)
+    {
+      char tmp[10];
+      int t;
+      strncpy(tmp, str, is);
+      tmp[is] = 0;
+      sscanf(tmp, "%08X", &t);
+      val[iv++] = t;
+    }
+  for(; iv<(len+31)/32; iv++)
+    val[iv] = 0;
+  return iv;
+}
 
 
 #define NB_LOOP 10000000
@@ -1253,17 +1315,13 @@ void key_sched(char key_base[32], unsigned long key[33][4]) {
 
 int main() {
     
-  unsigned long plain[4] = { 0x01234567, 0x89ABCDEF, 0xFEDCBA98, 0x76543210 };
-  unsigned long cipher[4];
+  unsigned int plain[4] = { 0x01234567, 0x89ABCDEF, 0xFEDCBA98, 0x76543210 };
+  unsigned int cipher[4];
   
-
-  
-  char key_base[32] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
-                        0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF,
-                        0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
-                        0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF   };
+  char* key_base = "01234567" "89ABCDEF" "FEDCBA98" "76543210"
+                   "01234567" "89ABCDEF" "FEDCBA98" "76543210";
   DATATYPE key[33][4];
-  key_sched(key_base,key);
+  makeKey(key_base,key);
 
   /* Warming up the caches */
   for (int i = 0; i < 10000; i++) {
@@ -1285,7 +1343,7 @@ int main() {
          (int)(NB_LOOP*16/((double)timer_clock/CLOCKS_PER_SEC)/1e6));
 
   FILE* fh = fopen("/dev/null","w");
-  fprintf(fh, "%lu,%lu,%lu,%lu\n",cipher[0],cipher[1],cipher[2],cipher[3]);
+  fprintf(fh, "%d,%d,%d,%d\n",cipher[0],cipher[1],cipher[2],cipher[3]);
   fclose(fh);
   
   return 0;
