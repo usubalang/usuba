@@ -1504,7 +1504,7 @@ void AES__ (/*inputs*/ DATATYPE plain__[8],DATATYPE key__[11][8], /*outputs*/ DA
 #define NB_LOOP 16
 #endif
 
-#include "../experimentations/verif_aes/key_sched.c"
+#include "../key_sched.c"
 
 int main() {
 

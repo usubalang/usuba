@@ -1,0 +1,22 @@
+
+name = aes-ctr
+type = sync
+std = -ansi
+
+srcdir = .
+root := $(shell \
+  cd "$(srcdir)"; root="$(srcdir)"; \
+  while [ "`pwd`" != "/" ]; do \
+    if [ -r "`pwd`/test/ecrypt-test.mk" ]; then  \
+      echo $$root; exit; \
+    fi; \
+    cd ..; root="$$root"/..; \
+  done; \
+  echo ".")
+
+include $(root)/test/ecrypt-test.mk
+
+
+aes-ctr.s: aes_bs.s key_sched.s
+	cat $^ > aes-ctr.s
+

@@ -1569,7 +1569,7 @@ int main() {
     AES__(plain,key,cipher);
   }
   timer = _rdtsc() - timer;
-  printf("Just AES (no transpo): %lu\n",timer/NB_LOOP);
+  printf("Just AES (no transpo): %lu        => %.2f cycle/byte\n",timer/NB_LOOP,(double)timer/NB_LOOP/(16.*8));
   
   timer = _rdtsc();
   for (int i = 0; i < NB_LOOP; i++) {
@@ -1578,7 +1578,7 @@ int main() {
     real_ortho_128x128(cipher);
   }
   timer = _rdtsc() - timer;
-  printf("AES with transpo: %lu\n",timer/NB_LOOP);
+  printf("AES with transpo: %lu        => %.2f cycle/byte\n",timer/NB_LOOP,(double)timer/NB_LOOP/(16.*8));
   
   return 0;
 }
