@@ -1,5 +1,15 @@
 
+type nat =
+| O
+| S of nat
+
+
+
 type ident = { uid : int; name : string }
+
+type typ =
+| ATOM of nat
+| TUP of typ list
 
 type clock =
 | Defclock
@@ -7,11 +17,9 @@ type clock =
 | On of clock * ident
 | Onot of clock * ident
 
-type log_op =
-| And
-| Or
-| Xor
-| Andn
+type val0 =
+| Atom of nat * int
+| Tup of val0 list
 
 type arith_op =
 | Add
@@ -20,55 +28,48 @@ type arith_op =
 | Div
 | Mod
 
-type shift_op =
-| Lshift
-| Rshift
-| Lrotate
-| Rrotate
-
 type arith_expr =
 | Const_e of int
 | Var_e of ident
 | Op_e of arith_op * arith_expr * arith_expr
-
-type typ =
-| Bool
-| Int of int
-| Nat
-| Array of typ * arith_expr
-
-type constr =
-| True
-| False
 
 type var =
 | Var of ident
 | Slice of var * arith_expr list
 | Range of var * arith_expr * arith_expr
 
+type log_op =
+| And
+| Or
+| Xor
+| Andn
+
+type shift_op =
+| Lshift
+| Rshift
+| Lrotate
+| Rrotate
+
 type expr =
-| Const of int
+| Const of val0
 | ExpVar of var
 | Tuple of expr list
 | Not of expr
 | Shift of shift_op * expr * arith_expr
 | Log of log_op * expr * expr
 | Fun of ident * expr list
-| Fun_v of ident * arith_expr * expr list
-| When of expr * constr * ident
-| Merge of ident * (constr * expr) list
-| Arith of arith_op * expr * expr
-| Fby of expr * expr * ident option
 
 type deq =
 | Norec of var list * expr
 | Rec of ident * arith_expr * arith_expr * deq list
 
-type p = ((ident * typ) * clock) list
+type formal = { t : typ; c : clock }
+
+type formals = (ident * formal) list
 
 type def_i =
-| Single of p * deq list
-| Multiple of (p * deq list) list
+| Single of formals * deq list
+| Multiple of (formals * deq list) list
 | Perm of int list
 | MultiplePerm of int list list
 | Table of int list
@@ -78,9 +79,10 @@ type def_opt =
 | Inline
 | No_inline
 
-type def = { id : ident; p_in : p; p_out : p; opt : def_opt list; node : def_i }
+type def = { d_name : string; p_in : formals; p_out : formals;
+             opt : def_opt list; node : def_i }
 
-type prog = { nodes : def list }
+type prog = (ident * def) list
 
 type arch =
 | Std

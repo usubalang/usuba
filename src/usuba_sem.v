@@ -5,50 +5,19 @@ Require Import Coq.NArith.NArith.
 Require Import List.
 Import ListNotations.
 
-(*****************************************************************)
-
-(* XXX: lengthy prelude *)
-
-Definition fmap {A B} (f: A -> B)(x: option A) : option B :=
-  match x with
-  | None => None
-  | Some i => Some (f i)
-  end.
-
-Definition bind {A B} (x: option A)(f : A -> option B): option B :=
-  match x with
-  | None => None
-  | Some i => f i
-  end.
-
-Notation "'let!' x ':=' ma 'in' f" := 
-  (bind ma (fun x => f)) 
-    (at level 200, right associativity).
-
-Notation "'ret!' x" := (Some x)
-                         (at level 200).
-
-Notation "'fail!'" := (None)
-                         (at level 200).
-
-Inductive val := 
-| Atom: bool -> val
-| Tup: list val -> val.
-
-Definition value := (*option*) val.
-Definition Env := PM.t value.
-
-(*****************************************************************)
-
 Require Import usuba_AST.
+Require Import lib.
 
 
-Definition sem_log_op (op: log_op): bool -> bool -> bool :=
+
+Definition BOTTOM : val := Tup [].
+
+Definition sem_log_op (op: log_op)(k: nat): N -> N -> N :=
   match op with
-  | And => andb
-  | Or => orb
-  | Xor => xorb
-  | Andn => (fun x y => negb (andb x y))
+  | And => N.land
+  | Or => N.lor
+  | Xor => N.lxor
+  | Andn => lnand k
   end.
 
 Definition sem_arith_op (op: arith_op): N -> N -> N :=
@@ -60,71 +29,14 @@ Definition sem_arith_op (op: arith_op): N -> N -> N :=
    | Mod => N.modulo
    end.
 
+(* identity for [n >= length l] *)
 Definition sem_shift_op {A}(op: shift_op)(d : A)(l: list A)(n: nat): list A :=
   match op with
-  | Lshift => let r := skipn n l in
-              r ++ repeat d (min n (length l))
-  | Rshift => let r := firstn (length l - n) l in
-              repeat d (min n (length l)) ++ r
-  | Lrotate => let n := Nat.modulo n (length l) in
-               let e := firstn n l in
-               let r := skipn n l in
-               r ++ e
-  | Rrotate => let n := Nat.modulo n (length l) in
-               let e := firstn (length l - n) l in
-               let r := skipn (length l - n) l in
-               r ++ e
+  | Lshift => shl n d l
+  | Rshift => shr n d l
+  | Lrotate => rotl n l
+  | Rrotate => rotr n l
   end.
-
-Lemma test__Lshift0: sem_shift_op Lshift 0 [1; 2; 3; 4; 5] 0 = [1; 2; 3; 4; 5].
-Proof. trivial. Qed.
-
-Lemma test__Lshift1: sem_shift_op Lshift 0 [1; 2; 3; 4; 5] 1 = [2; 3; 4; 5; 0].
-Proof. trivial. Qed.
-
-Lemma test__Lshift5: sem_shift_op Lshift 0 [1; 2; 3; 4; 5] 5 = [0; 0; 0; 0; 0].
-Proof. trivial. Qed.
-
-Lemma test__Lshift6: sem_shift_op Lshift 0 [1; 2; 3; 4; 5] 6 = [0; 0; 0; 0; 0].
-Proof. trivial. Qed.
-
-Lemma test__Rshift1: sem_shift_op Rshift 0 [1; 2; 3; 4; 5] 1 = [0; 1; 2; 3; 4].
-Proof. trivial. Qed.
-
-Lemma test__Rshift5: sem_shift_op Rshift 0 [1; 2; 3; 4; 5] 5 = [0; 0; 0; 0; 0].
-Proof. trivial. Qed.
-
-Lemma test__Rshift6: sem_shift_op Rshift 0 [1; 2; 3; 4; 5] 6 = [0; 0; 0; 0; 0].
-Proof. trivial. Qed.
-
-
-Lemma test__Lrotate0: sem_shift_op Lrotate 0 [1; 2; 3; 4; 5] 0 = [1; 2; 3; 4; 5].
-Proof. trivial. Qed.
-
-Lemma test__Lrotate1: sem_shift_op Lrotate 0 [1; 2; 3; 4; 5] 1 = [2; 3; 4; 5; 1].
-Proof. trivial. Qed.
-
-Lemma test__Lrotate4: sem_shift_op Lrotate 0 [1; 2; 3; 4; 5] 4 = [5; 1; 2; 3; 4].
-Proof. trivial. Qed.
-
-Lemma test__Lrotate5: sem_shift_op Lrotate 0 [1; 2; 3; 4; 5] 5 = [1; 2; 3; 4; 5].
-Proof. trivial. Qed.
-
-Lemma test__Lrotate6: sem_shift_op Lrotate 0 [1; 2; 3; 4; 5] 6 = [2; 3; 4; 5; 1].
-Proof. trivial. Qed.
-
-Lemma test__Rrotate1: sem_shift_op Rrotate 0 [1; 2; 3; 4; 5] 1 = [5; 1; 2; 3; 4].
-Proof. trivial. Qed.
-
-Lemma test__Rrotate4: sem_shift_op Rrotate 0 [1; 2; 3; 4; 5] 4 = [2; 3; 4; 5; 1].
-Proof. trivial. Qed.
-
-Lemma test__Rrotate5: sem_shift_op Rrotate 0 [1; 2; 3; 4; 5] 5 = [1; 2; 3; 4; 5].
-Proof. trivial. Qed.
-
-Lemma test__Rrotate6: sem_shift_op Rrotate 0 [1; 2; 3; 4; 5] 6 = [5; 1; 2; 3; 4].
-Proof. trivial. Qed.
-
 
 (* Arithmetic expressions, fully-reduced at compile-time *)
 Fixpoint sem_arith_expr (ae: arith_expr)(env: PM.t N): option N :=
@@ -132,54 +44,39 @@ Fixpoint sem_arith_expr (ae: arith_expr)(env: PM.t N): option N :=
   | Const_e i => ret! i
   | Var_e x => PM.find (uid x) env
   | Op_e op e1 e2 => let! x := sem_arith_expr e1 env in
-                    let! y := sem_arith_expr e2 env in
-                    ret! (sem_arith_op op x y)
+                     let! y := sem_arith_expr e2 env in
+                     ret! (sem_arith_op op x y)
   end.
 
-Print var.
-
-Definition val_lookup (v: val)(k: N): option val :=
+Definition val_lookup (v: val)(k: N): val :=
   match v with
-  | Atom _ => None
-  | Tup xs => List.nth_error xs (N.to_nat k)
-  end.
-
-Fixpoint mask {A}(l: list A)(k1 k2: nat): option (list A) :=
-  match k2 with
-  | 0 => ret! []
-  | S k2 => 
-    match k1 with
-    | S k1 => match l with
-             | [] => fail!
-             | x :: xs => mask xs k1 k2
-             end
-    | 0 => match l with
-          | [] => fail!
-          | x :: xs => 
-            let! xs := mask xs 0 k2 in
-            ret! (x :: xs)
-          end
-    end
-  end.
-
-Lemma test__mask: mask [0; 1; 2; 3; 4; 5; 6; 7] 2 5 = Some [2; 3; 4].
-Proof. auto. Qed.
-
-Definition val_mask (v: val)(k1 k2: N): option val :=
-  match v with
-  | Atom _ => None
-  | Tup xs => fmap Tup (mask xs (N.to_nat k1) (N.to_nat k2))
+  | Atom _ _ => BOTTOM
+  | Tup xs => List.nth (N.to_nat k) xs BOTTOM
   end.
 
 Section SemExpr.
 
-Variable prog: PM.t def.
-Variable senv: PM.t N.
+Variable prog: list (ident * def).
+(* XXX: restore static environment for code expansions *)
+(*Variable senv: PM.t N. *)
 
-Inductive sem_var (env: PM.t value): var -> value -> Prop :=
+Definition get_def : ident -> option def.
+Admitted.
+
+Definition sem_ident (env: PM.t val)(x: ident)(v: val): Prop :=
+  PM.find (uid x) env = Some v.
+
+Definition val_mask (v: val)(k1 k2: N): option val :=
+  match v with
+  | Atom _ _ => None
+  | Tup xs => fmap Tup (mask xs (N.to_nat k1) (N.to_nat k2))
+  end.
+
+Inductive sem_var (env: PM.t val): var -> val -> Prop :=
 | sem_Var: forall x v,
-    PM.find (uid x) env = Some v ->
-    sem_var env (Var x) v
+    sem_ident env x v ->
+    sem_var env (Var x) v.
+(*
 | sem_Slice: forall x aes ks vx vs,
     sem_var env x vx ->
     Forall2 (fun ae k => sem_arith_expr ae senv = Some k) aes ks ->
@@ -190,36 +87,65 @@ Inductive sem_var (env: PM.t value): var -> value -> Prop :=
     sem_arith_expr ae1 senv = Some k1 ->
     sem_arith_expr ae2 senv = Some k2 ->
     val_mask vx k1 k2 = Some v ->
-    sem_var env (Range x ae1 ae2) v.
+    sem_var env (Range x ae1 ae2) v.*)
 
-Inductive sem_expr: PM.t value -> expr -> value -> Prop :=
-(* XXX: problem with const: to which tuple do we compile to? *)
-(*| sem_Const: forall i,
-    sem_expr (Const i) (Some ?).
-*)
+Inductive lift1 (f : nat -> N -> N): val -> val -> Prop :=
+| lift1_Atom: forall k n n',
+    f k n = n' ->
+    lift1 f (Atom k n) (Atom k n')
+| lift1_Tup: forall ns ns',
+    Forall2 (lift1 f) ns ns' ->
+    lift1 f (Tup ns) (Tup ns').
+
+Inductive lift2 (f : nat -> N -> N -> N): val -> val -> val -> Prop :=
+| lift2_Atom: forall k n1 n2 n3,
+    f k n1 n2 = n3 ->
+    lift2 f (Atom k n1) (Atom k n2) (Atom k n3)
+| lift2_Tup: forall ns1 ns2 ns3,
+    Forall3 (lift2 f) ns1 ns2 ns3 ->
+    lift2 f (Tup ns1) (Tup ns2) (Tup ns3).
+
+Inductive sem_expr: PM.t val -> expr -> val -> Prop :=
+| sem_Const: forall env v,
+    sem_expr env (Const v) v
 | sem_ExpVar: forall env v i,
     sem_var env v i ->
     sem_expr env (ExpVar v) i
 | sem_Tuple: forall env es vs,
     List.Forall2 (sem_expr env) es vs ->
     sem_expr env (Tuple es) (Tup vs)
-| sem_Not: forall env e b,
-    sem_expr env e (Atom b) ->
-    sem_expr env (Not e) (Atom (negb b))
+| sem_Not: forall env e v v',
+    sem_expr env e v ->
+    lift1 (fun k n => N.lnot n (N.of_nat k)) v v' ->
+    sem_expr env (Not e) v'
 | sem_Shift: forall env op e ae k ve v,
+    (* Zero-cost shifts & rotations *)
     sem_expr env e (Tup ve) ->
-    sem_arith_expr ae senv = Some k ->
-    sem_shift_op op (Atom false) ve (N.to_nat k) = v ->
+(* XXX: restore   sem_arith_expr ae senv = Some k -> *)
+    sem_shift_op op BOTTOM ve (N.to_nat k) = v ->
     sem_expr env (Shift op e ae) (Tup v)
-| sem_Log: forall env op e1 e2 b1 b2 v,
-    sem_expr env e1 (Atom b1) ->
-    sem_expr env e2 (Atom b2) ->
-    sem_log_op op b1 b2 = v ->
-    sem_expr env (Log op e1 e2) (Atom v)
-| sem_Fun: forall env f es node vs v,
-    PM.find (uid f) prog = Some node ->
-    Forall2 (sem_expr env) es vs ->
-    sem_node node vs v ->
-    sem_expr env (Fun f es) v
-with sem_node: def -> list value -> value -> Prop :=
- (* XXX: stopped here *).
+| sem_Log: forall env op e1 e2 v1 v2 v,
+    sem_expr env e1 v1 ->
+    sem_expr env e2 v2 ->
+    lift2 (sem_log_op op) v1 v2 v ->
+    sem_expr env (Log op e1 e2) v
+| sem_Fun: forall env f es node ins outs,
+    get_def f = Some node ->
+    Forall2 (sem_expr env) es ins ->
+    sem_node node ins outs ->
+    sem_expr env (Fun f es) (Tup outs)
+with sem_node: def -> list val -> list val -> Prop :=
+| sem_Single: forall d locals eqs ins outs env,
+    d.(node) = Single locals eqs ->
+    Forall2 (sem_ident env) (vars_of d.(p_in)) ins ->
+    Forall2 (sem_ident env) (vars_of d.(p_out)) outs ->
+    Forall (sem_deq env) eqs ->
+    sem_node d ins outs
+with sem_deq: PM.t val -> deq -> Prop :=
+| sem_Norec: forall env xs vs eq,
+    (* XXX: perform eta-expansion instead, to handle singletons *)
+    sem_expr env eq (Tup vs) ->
+    Forall2 (sem_var env) xs vs ->
+    sem_deq env (Norec xs eq).
+
+End SemExpr.
