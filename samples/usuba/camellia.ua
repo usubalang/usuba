@@ -63,11 +63,11 @@ vars
 let
     t_in = f_in ^ key;
     
-    forall i in [0,3] { t_out[i] = SBOX[i](t_in[i]) }
-    t_out[4] = SBOX[1](t_in[4]);
-    t_out[5] = SBOX[2](t_in[5]);
-    t_out[6] = SBOX[3](t_in[6]);
-    t_out[7] = SBOX[0](t_in[7]);
+    forall i in [0,3] { t_out[i] = SBOX<i>(t_in[i]) }
+    t_out[4] = SBOX<1>(t_in[4]);
+    t_out[5] = SBOX<2>(t_in[5]);
+    t_out[6] = SBOX<3>(t_in[6]);
+    t_out[7] = SBOX<0>(t_in[7]);
 
     y[0] = t_out[0] ^ t_out[2] ^ t_out[3] ^ t_out[5] ^ t_out[6] ^ t_out[7];
     y[1] = t_out[0] ^ t_out[1] ^ t_out[3] ^ t_out[4] ^ t_out[6] ^ t_out[7];

@@ -18,31 +18,31 @@ _no_inline table SubBytes_single (input:u1x8) returns (output:u1x8) {
 }
 
 node SubBytes (inputSB:u16x8) returns (out:u16x8)
-vars
 let
     out = SubBytes_single(inputSB)
 tel
 
-perm ShiftRows_single (inputSR:u16x1) returns (out:u16x1) {
-      0,  1,  2,  3,
-      5,  6,  7,  4,
-     10, 11,  8,  9,
-     15, 12, 13, 14
-}
-
 node ShiftRows (inputSR:u16x8) returns (out:u16x8)
-vars
 let
-    forall i in [0,7] { out[i] = ShiftRows_single(inputSR[i]) }
+    forall i in [0,7] {
+        out[i] = Shuffle(inputSR[i],[ 0,  1,  2,  3,
+                                      5,  6,  7,  4,
+                                     10, 11,  8,  9,
+                                     15, 12, 13, 14] )
+     }
 tel
 
-perm RL32 (input:u16x1) returns (out:u16x1) {
-     1,2,3,0
-}
+node RL32 (input:u16x1) returns (out:u16x1)
+let
+     out = Shuffle(input,[1,2,3,0])
+     #out = input{1,2,3,0}
+tel
 
-perm RL64 (input:u16x1) returns (out:u16x1) {
-      2,3,0,1
-}
+node RL64 (input:u16x1) returns (out:u16x1)
+let
+     out = Shuffle(input,[2,3,0,1])
+     #out = input{2,3,0,1}
+tel
 
 # Note: the 7-x are due to the fact that Kasper & Schwabe don't index their array
 # the same way we do.
