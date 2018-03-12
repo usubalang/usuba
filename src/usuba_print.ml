@@ -156,46 +156,56 @@ let def_to_str def =
     (match def.node with
      | Single(vars,deq) ->
         single_node_to_str id p_in p_out vars deq
-     | Multiple l ->
-        "node " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in))
-        ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[\n"
-        ^  (join "\n;\n"
-                 (List.map
-                    (fun (v,d) -> "vars\n"
-                                  ^ (join ",\n"
-                                          (List.map
-                                             (fun x -> "  " ^ (p_to_str x)) v))
-                                  ^ "\nlet\n" 
-                                  ^ (join ";\n"
-                                          (List.map deq_to_str d))
-                                  ^ "\ntel\n") l))
-        ^ "\n]\n"
      | Perm l ->
         "perm " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in))
         ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n{\n  "
         ^ (join ", " (List.map string_of_int l)) ^ "\n}\n"
-     | MultiplePerm l ->
-        "perm[] " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in))
-        ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[ "
-        ^ (join "\n;\n"
-                (List.map
-                   (fun l -> "["
-                             ^ (join ", " (List.map string_of_int l))
-                             ^ "]") l))
-        ^ "\n]\n"
      | Table l ->
         "table " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in))
         ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n{\n  "
         ^ (join ", " (List.map string_of_int l)) ^ "\n}\n"
-     | MultipleTable l ->
-        "table[] " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in))
-        ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[ "
-        ^ (join "\n;\n"
-                (List.map
-                   (fun l -> "{"
-                             ^ (join ", " (List.map string_of_int l))
-                             ^ "}") l))
-        ^ "\n]\n")
+                                                     
+     | Multiple l ->
+        match List.nth l 0 with
+        | Single _ ->
+           "node " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in))
+           ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[\n"
+           ^  (join "\n;\n"
+                    (List.map
+                       (fun x -> match x with
+                                 | Single (v,d) -> "vars\n"
+                                                   ^ (join ",\n"
+                                                           (List.map
+                                                              (fun x -> "  " ^ (p_to_str x)) v))
+                                                   ^ "\nlet\n" 
+                                                   ^ (join ";\n"
+                                                           (List.map deq_to_str d))
+                                                   ^ "\ntel\n"
+                                 | _ -> assert false) l))
+           ^ "\n]\n"
+        | Perm _   ->
+           "perm[] " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in))
+           ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[ "
+           ^ (join "\n;\n"
+                   (List.map
+                      (fun x -> match x with
+                                | Perm l -> "["
+                                            ^ (join ", " (List.map string_of_int l))
+                                            ^ "]"
+                                | _ -> assert false) l))
+           ^ "\n]\n"
+        | Table _  ->
+           "table[] " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in))
+           ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[ "
+           ^ (join "\n;\n"
+                   (List.map
+                      (fun x -> match x with
+                                | Table l -> "{"
+                                             ^ (join ", " (List.map string_of_int l))
+                                             ^ "}"
+                                | _ -> assert false) l))
+           ^ "\n]\n"
+        | _ -> assert false)
                                                        
 let prog_to_str (prog:prog) : string=
   join "\n\n" (List.map def_to_str prog.nodes)

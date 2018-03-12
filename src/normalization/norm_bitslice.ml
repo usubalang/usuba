@@ -146,10 +146,6 @@ let norm_def env_fun (def: def) : def =
   | Perm _ ->
      env_add_fun def.id def.p_in def.p_out env_fun;
      def
-  | MultiplePerm l ->
-     List.iteri (fun i _ -> env_add_fun (fresh_suffix def.id (sprintf "%i'" i))
-                                        def.p_in def.p_out env_fun) l;
-     def
   | _ ->
      def
 
@@ -163,16 +159,8 @@ let norm_def_z3 env_fun (def: def) : def =
   | Perm _ ->
      env_add_fun def.id def.p_in def.p_out env_fun;
      def
-  | MultiplePerm l ->
-     List.iteri (fun i _ -> env_add_fun (fresh_suffix def.id (string_of_int i))
-                                        def.p_in def.p_out env_fun) l;
-     def
   | Table _ ->
      env_add_fun def.id def.p_in def.p_out env_fun;
-     def
-  | MultipleTable l -> 
-     List.iteri (fun i _ -> env_add_fun (fresh_suffix def.id (string_of_int i))
-                                        def.p_in def.p_out env_fun) l;
      def
   | _ -> assert false
      

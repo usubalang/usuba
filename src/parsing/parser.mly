@@ -226,49 +226,34 @@ def:
     TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
     TOK_LET body=deqs TOK_TEL
     { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Single([],body) } }
-  (* An array of nodes *)
-  | opts=list(opt_def) TOK_NODE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
-    TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
-    l = def_list TOK_RBRACKET
-    { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Multiple l } }
   (* A permutation *)
   | opts=list(opt_def) TOK_PERM f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
     TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
     TOK_LCURLY l=intlist TOK_RCURLY
   { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Perm l } }
-  (* An array of permutations *)
-  | opts=list(opt_def) TOK_PERM TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
-    TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
-    l = permlist TOK_RBRACKET
-  { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=MultiplePerm l } }
   (* A table *)
   | opts=list(opt_def) TOK_TABLE f=TOK_id TOK_LPAREN p_in=p TOK_RPAREN
     TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
     TOK_LCURLY l=intlist TOK_RCURLY
   { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Table l } }
+
+  (* ARRAYS *)
+  (* An array of nodes *)
+  | opts=list(opt_def) TOK_NODE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
+    TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
+    l = def_list TOK_RBRACKET
+    { { id=f;p_in=p_in;p_out=p_out;opt=opts;
+        node=Multiple (List.map (fun (x,y) -> Single(x,y)) l) } }
+  (* An array of permutations *)
+  | opts=list(opt_def) TOK_PERM TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
+    TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
+    l = permlist TOK_RBRACKET
+  { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Multiple (List.map (fun x -> Perm x ) l) } }
   (* An array of table *)
   | opts=list(opt_def) TOK_TABLE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p
     TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
     l = permlist TOK_RBRACKET
-  { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=MultipleTable l } }
-
-  (* (\* ARRAYS *\) *)
-  (* (\* An array of nodes *\) *)
-  (* | opts=list(opt_def) TOK_NODE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p *)
-  (*   TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET *)
-  (*   l = def_list TOK_RBRACKET *)
-  (*   { { id=f;p_in=p_in;p_out=p_out;opt=opts; *)
-  (*       node=Multiple (List.map (fun (x,y) -> Single(x,y)) l) } } *)
-  (* (\* An array of permutations *\) *)
-  (* | opts=list(opt_def) TOK_PERM TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p *)
-  (*   TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET *)
-  (*   l = permlist TOK_RBRACKET *)
-  (* { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Multiple (List.map (fun x -> Perm x ) l) } } *)
-  (* (\* An array of table *\) *)
-  (* | opts=list(opt_def) TOK_TABLE TOK_LBRACKET TOK_RBRACKET f=TOK_id TOK_LPAREN p_in=p *)
-  (*   TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET *)
-  (*   l = permlist TOK_RBRACKET *)
-  (* { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Multiple (List.map (fun x -> Table x) l) } } *)
+  { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Multiple (List.map (fun x -> Table x) l) } }
 
   
 intlist: l=separated_nonempty_list(TOK_COMMA, TOK_int) { l }

@@ -174,43 +174,11 @@ module Usuba = struct
     let converted = 
       match def.node with
       | Single(vars,body) -> z3_node def
-      | Multiple l ->
-         join "\n" (List.mapi
-                    (fun i (v,b) ->
-                     z3_def { def with id = fresh_suffix def.id (string_of_int i);
-                                               node = Single(v,b) }) l)
       | Perm l -> z3_perm def l true
-      | MultiplePerm l ->
-         join "\n" (List.mapi
-                    (fun i l' ->
-                     z3_def { def with id = fresh_suffix def.id (string_of_int i);
-                                               node = Perm l'}) l)
       | Table l -> z3_table def l
-      | MultipleTable l ->
-         join "\n" (List.mapi
-                    (fun i l' ->
-                     z3_def { def with id = fresh_suffix def.id (string_of_int i);
-                                               node = Table l'}) l)
+      | _ -> assert false
     in
     converted
-
-  let remove_def_array (prog:prog) : prog =
-    { nodes =
-        List.flatten @@
-          List.map
-            (fun def ->
-             match def.node with
-             | Single _ | Perm _ | Table _ -> [ def ]
-             | Multiple l -> List.mapi (fun i (v,b) ->
-                                        { def with id = fresh_suffix def.id (string_of_int i);
-                                                   node = Single(v,b) }) l
-             | MultiplePerm l -> List.mapi (fun i l' ->
-                                            { def with id = fresh_suffix def.id (string_of_int i);
-                                                       node = Perm l' }) l
-             | MultipleTable l -> List.mapi (fun i l' ->
-                                             { def with id = fresh_suffix def.id (string_of_int i);
-                                                        node = Table l' }) l
-            ) prog.nodes }
 
   let norm_def env_fun (def:def) : def =
     (* remove tuples of 1 elt *)
@@ -234,7 +202,7 @@ module Usuba = struct
 
       
   let simplify (prog:prog) : prog =
-    let prog = remove_def_array (Rename.rename_prog prog) in
+    let prog = Expand_multiples.expand_multiples (Rename.rename_prog prog) in
     let env_fun = Hashtbl.create 100 in
     { nodes = List.map (norm_def env_fun) prog.nodes } 
                                             
@@ -249,7 +217,7 @@ module Get_funcalls = struct
 
   let rec funcalls_expr (e:expr) : string list =
     match e with
-    | Const _ | ExpVar _ -> []
+    | Const _ | ExpVar _ | Shuffle _ -> []
     | Tuple l -> List.flatten @@ List.map funcalls_expr l
     | Not e -> funcalls_expr e
     | Shift(_,e,_) -> funcalls_expr e

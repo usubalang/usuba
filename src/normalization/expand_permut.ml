@@ -13,15 +13,6 @@
 
 open Usuba_AST
 open Utils
-
-(* Returns true if the perm should be expanded (typically in full bitslicing) *)
-(* in n-slicing, perm become vector permutations, and therefore are not expanded *)
-let need_expanding (def:def) : bool =
-  List.for_all (fun ((_,typ),_) ->
-                match typ with
-                | Int(1,_) -> true
-                | Int(_,_) -> false
-                | _ -> true) def.p_in
                
 let list_from_perm (perm:int list) (l:expr list) : expr list =
   let args = Array.of_list l in
@@ -53,9 +44,7 @@ let apply_perm env (deqs: deq list) : deq list =
 let rec rewrite_defs (l: def list) : def list =
   let env = Hashtbl.create 10 in
   List.iter (fun x -> match x.node with
-                      | Perm l -> ( match need_expanding x with
-                                    | true -> env_add env x.id l
-                                    | false -> () )
+                      | Perm l -> env_add env x.id l
                       (* Note: MultiplePerm have already been removed *)
                       | _ -> ()) l;
   List.map (fun x -> match x.node with
@@ -66,17 +55,6 @@ let rec rewrite_defs (l: def list) : def list =
            
 let expand_permut (p: prog) : prog =
   
-  (* Removing 'MultiplePerm' *)
-  let no_multiple = 
-    flat_map (fun def -> 
-              match def.node with
-              | MultiplePerm l ->
-                 List.mapi (fun i l ->
-                            { def with id = fresh_suffix def.id (Printf.sprintf "%d'" i);
-                                       node = Perm l }) l
-              | _ -> [ def ]) p.nodes in
-  
   { nodes = List.filter (fun x -> match x.node with
-                                  | MultiplePerm _ -> false
-                                  | Perm _ -> not (need_expanding x)
-                                  | _ -> true) (rewrite_defs no_multiple) }
+                                  | Perm _ -> false
+                                  | _ -> true) (rewrite_defs p.nodes) }

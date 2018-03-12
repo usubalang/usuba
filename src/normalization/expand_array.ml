@@ -196,17 +196,7 @@ let expand_def (def:def) : def =
 
              
 let rec expand_array (prog:prog) : prog =
-
-  (* Removing 'Multiple' *)
-  let no_multiple = 
-    flat_map (fun def -> 
-              match def.node with
-              | Multiple nodes ->
-                 List.mapi (fun i (vars,body) ->
-                            { def with id = fresh_suffix def.id (sprintf "%d'" i);
-                                       node = Single(vars,body) }) nodes
-              | _ -> [ def ]) prog.nodes in
              
   (* Removing arrays in the nodes *)
-  { nodes = List.map expand_def no_multiple }
+  { nodes = List.map expand_def prog.nodes }
 

@@ -80,7 +80,9 @@ let rename_def (def:def) : def =
            | Single (p_var, body) ->
               Single(rename_p p_var, rename_deq body)
            | Multiple nodes ->
-              Multiple(List.map (fun (vars,body) -> rename_p vars, rename_deq body) nodes)
+              Multiple(List.map (fun node -> match node with
+                                             | Single(vars,body) -> Single(rename_p vars, rename_deq body)
+                                             | _ -> node) nodes)
            | _ -> def.node }
      
                                    

@@ -88,35 +88,15 @@ let rewrite_single_table (id:ident) (p_in:p) (p_out:p)
     with Not_found -> rewrite_table id p_in p_out opt l
   else rewrite_table id p_in p_out opt l
 
-let rec rewrite_def (def: def) (conf:config) : def list =
+let rec rewrite_def (def: def) (conf:config) : def =
   let id    = def.id in
   let p_in  = def.p_in in
   let p_out = def.p_out in
   let opt   = def.opt in
   match def.node with
-  | Table l -> [ rewrite_single_table id p_in p_out opt l conf ]
-  | MultipleTable l ->
-     List.mapi (fun i x -> 
-                rewrite_single_table (fresh_suffix id (sprintf "%d'" i)) p_in p_out opt x conf) l
-  | _ -> [ def ]
-
-let rec remove_tab_array (defs:def list) : def list =
-  let aux (def:def) : def list =
-    let id    = def.id in
-    let p_in  = def.p_in in
-    let p_out = def.p_out in
-    let opt   = def.opt in
-    match def.node with
-    | MultipleTable l ->
-       List.mapi (fun i x -> 
-                  { id = fresh_suffix id (sprintf "%d'" i); p_in = p_in;
-                    p_out = p_out; opt = opt;
-                    node = Table x; }) l
-    | _ -> [ def ]
-  in
-  flat_map aux defs
+  | Table l -> rewrite_single_table id p_in p_out opt l conf
+  | _ -> def
            
                        
 let convert_tables (p: prog) (conf:config): prog =
-  let res = { nodes = flat_map (fun x -> rewrite_def x conf) p.nodes } in
-  res
+  { nodes = List.map (fun x -> rewrite_def x conf) p.nodes }

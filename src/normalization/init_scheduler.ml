@@ -50,8 +50,6 @@ let schedule_def (def:def) : def =
   { def with node =
                match def.node with
                | Single(vars,body) -> Single(vars,schedule_deqs def body)
-               | Multiple l -> Multiple(List.map (fun (vars,body) ->
-                                                  (vars,schedule_deqs def body)) l)
                | _ -> def.node }
 
 (* Must be called once arrays (and thus Rec) have been removed. *)

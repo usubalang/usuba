@@ -49,7 +49,6 @@ module Usuba_norm = struct
                          | Norec(p,e) -> List.for_all check_var p && check_expr e
                                          && check_pat_e p e
                          | _ -> false) body
-    | Perm _ -> not (Expand_permut.need_expanding def)
     | _ -> false
   
   let is_usuba_normalized (prog:prog) : bool =

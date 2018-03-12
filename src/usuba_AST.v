@@ -70,10 +70,10 @@ Inductive def_i :=
   | Single        (n: p)(ds: list deq) (* regular node *)
   | Perm          (pi: list N) (* permutation *)
   | Table         (t: list N) (* lookup table *)
-  | Multiple      (an: list (p * list deq)) (*array of nodes*)
-  | MultiplePerm  (pis: list (list N)) (* array of perm *)
-  | MultipleTable (ts: list (list N)). (* array of lookup tables *)
-  (* | Multiple      (l: list def_i). *)
+  | Multiple      (l: list def_i).
+  (* | Multiple      (an: list (p * list deq)) (*array of nodes*) *)
+  (* | MultiplePerm  (pis: list (list N)) (* array of perm *) *)
+  (* | MultipleTable (ts: list (list N)). (* array of lookup tables *) *)
 
 Inductive def_opt := Inline | No_inline.
 

@@ -27,6 +27,6 @@ let tables_sound (orig:prog) (normalized:prog) : unit =
   let tables = Hashtbl.create 10 in
   List.iter (fun x -> match x.node with
                       | Table _ -> env_add tables x.id x
-                      | _ -> ()) (Convert_tables.remove_tab_array orig.nodes);
+                      | _ -> ()) (Expand_multiples.expand_multiples orig).nodes;
   List.iter (fun x -> if env_contains tables x.id then
                         compare_tables (Hashtbl.find tables x.id.name) x) normalized.nodes;

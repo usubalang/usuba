@@ -1,7 +1,6 @@
 open Usuba_AST
 open Utils
-
-       
+               
        
 let print title body conf =
   if conf.verbose >= 5 then
@@ -18,8 +17,12 @@ let norm_prog (prog: prog) (conf:config) : prog  =
   let renamed = Rename.rename_prog prog in
   print "RENAMED:" renamed conf;
 
+  (* Remove arrays of nodes/perm/table *)
+  let multiples_expanded = Expand_multiples.expand_multiples renamed in
+  print "ARRAYS OF NODE EXPANDED:" multiples_expanded conf;
+
   (* convert lookup-tables to circuit (ie. to nodes) *)
-  let tables_converted = Convert_tables.convert_tables renamed conf in
+  let tables_converted = Convert_tables.convert_tables multiples_expanded conf in
   print "TABLES CONVERTED:" tables_converted conf;
 
   (* remove arrays and recursion *)

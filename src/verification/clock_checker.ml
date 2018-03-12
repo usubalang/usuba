@@ -78,9 +78,12 @@ let check_def (def:def) : bool =
   | Single(vars,body) -> let env = init_env def.p_in def.p_out vars in
                          List.for_all (check_deq env) body
   | Multiple l -> List.fold_left (&&) true
-                        (List.map (fun (vars,body) ->
-                                   let env = init_env def.p_in def.p_out vars in
-                                   List.for_all (check_deq env) body) l)
+                                 (List.map (fun x ->
+                                            match x with
+                                            | Single(vars,body) ->
+                                               let env = init_env def.p_in def.p_out vars in
+                                               List.for_all (check_deq env) body
+                                            | _ -> true) l)
   | _ -> true
 
 let check_prog (prog:prog) : bool =
