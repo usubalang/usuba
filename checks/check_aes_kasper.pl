@@ -34,7 +34,7 @@ remove_tree $temp_dir if -d $temp_dir;
 mkdir $temp_dir;
 
 # Compiling Usuba DES.
-say "Regenerating the des code...";
+say "Compiling AES from Usuba to C...";
 error if system "./usubac -o $temp_dir/aes.c -arch sse -no-runtime samples/usuba/aes_kasper.ua" ;
 
 chdir $temp_dir;
