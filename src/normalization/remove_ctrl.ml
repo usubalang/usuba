@@ -12,7 +12,7 @@ open Utils
 
 let rec clean_expr (e:expr) : expr =
   match e with
-  | Const _ | ExpVar _ -> e
+  | Const _ | ExpVar _ | Shuffle _ -> e
   | Tuple l -> Tuple(List.map clean_expr l)
   | Not e   -> Not (clean_expr e)
   | Shift(op,e,ae)  -> Shift(op,clean_expr e,ae)

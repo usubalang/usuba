@@ -61,6 +61,8 @@ let rec expr_to_str_types = function
   | Log(Andn,x,y) -> "Andn: " ^ (expr_to_str_types (unfold_andn (Log(Andn,x,y))))
   | Log(o,x,y) -> "Log: " ^ "(" ^ (expr_to_str_types x) ^ (log_op_to_str o)
                   ^ (expr_to_str_types y) ^ ")"
+  | Shuffle(v,l) -> sprintf "Shuffle: Shuffle(%s,[%s])" (var_to_str v)
+                            (join "," (List.map string_of_int l))
   | Arith(o,x,y) -> "Arith: " ^ "(" ^ (expr_to_str_types x) ^ (arith_op_to_str o)
                     ^ (expr_to_str_types y) ^ ")"
   | Shift(o,x,y) -> "Shift: " ^ "(" ^ (expr_to_str_types x) ^ (shift_op_to_str o)
@@ -84,6 +86,8 @@ let rec expr_to_str = function
   | Tuple t -> sprintf "(%s)" (join "," (List.map expr_to_str t))
   | Log(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
                           (log_op_to_str o) (expr_to_str y)
+  | Shuffle(v,l) -> sprintf "Shuffle(%s,[%s])" (var_to_str v)
+                            (join "," (List.map string_of_int l))
   | Arith(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
                             (arith_op_to_str o) (expr_to_str y)
   | Shift(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str_types x)

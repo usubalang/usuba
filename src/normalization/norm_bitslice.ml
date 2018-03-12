@@ -101,7 +101,7 @@ and remove_calls env_fun l : deq list * expr list =
 
 and norm_expr env_fun (e: expr) : deq list * expr = 
   match e with
-  | Const _ | ExpVar _ -> [], e
+  | Const _ | ExpVar _ | Shuffle _-> [], e
   | Tuple (l) ->
      let (deqs,l') = remove_calls env_fun l in
      deqs, Tuple l'
@@ -125,7 +125,7 @@ and norm_expr env_fun (e: expr) : deq list * expr =
   | Shift(op,e,n) ->
      let (deqs,e') = remove_call env_fun e in
      deqs, Shift(op,e',n)
-  | _ -> raise (Invalid_AST "Invalid expr")
+  | _ -> assert false
                
 let norm_deq env_fun (body: deq list) : deq list =
   List.flatten

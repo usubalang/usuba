@@ -9,6 +9,7 @@ let rec contains_const (e:expr) : bool =
   | Not e -> contains_const e
   | Shift(_,e,_) -> contains_const e
   | Log(_,x,y)   -> contains_const x || contains_const y
+  | Shuffle _    -> false
   | Arith(_,x,y) -> contains_const x || contains_const y
   | Fun(_,l)     -> List.exists (fun x -> x) (List.map contains_const l)
   | Fun_v(_,_,l) -> List.exists (fun x -> x) (List.map contains_const l)
@@ -34,6 +35,7 @@ let rec get_expr_size env (e:expr) : int =
   | Not e -> get_expr_size env e
   | Shift(_,e,_) -> get_expr_size env e
   | Log(_,x,y)   -> (try get_expr_size env x with Error _ -> get_expr_size env y)
+  | Shuffle(v,_) -> get_expr_size env (ExpVar v)
   | Arith(_,x,y) -> (try get_expr_size env x with Error _ -> get_expr_size env y)
   | Fun(_,l)     -> List.fold_left (+) 0 (List.map (get_expr_size env) l)
   | Fun_v(_,_,l) -> List.fold_left (+) 0 (List.map (get_expr_size env) l)
@@ -80,6 +82,7 @@ and expand_expr env (size:int) (e:expr) : expr =
   | Not e    -> Not (rec_call e)
   | Shift(op,x,y) -> Shift(op,rec_call x,y)
   | Log(op,x,y)   -> Log(op,rec_call x,rec_call y)
+  | Shuffle _     -> e
   | Arith(op,x,y) -> Arith(op,rec_call x,rec_call y)
   | Fun(f,l)      -> Fun(f,expand_list env size l)
   | Fun_v(f,ei,l) -> Fun_v(f,ei,expand_list env size l)

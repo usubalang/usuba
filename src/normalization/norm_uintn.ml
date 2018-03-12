@@ -41,7 +41,7 @@ let rec norm_expr env (e: expr) : expr =
                        | _, _ -> Log(op,x1',x2'))
   | Not e -> Not(norm_expr env e)
   | Shift(op,e,n) -> Shift(op,norm_expr env e,n)
-  | _ -> raise (Invalid_AST "Invalid expr")
+  | _ -> assert false
 
 let norm_pat env (pat: var list) : var list =
   flat_map

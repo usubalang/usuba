@@ -8,7 +8,7 @@ let update_var env (var:var) (n:int) : unit =
        
 let rec update_expr env (n:int) (e:expr) : unit =
   match e with
-  | Const _ -> ()
+  | Const _ | Shuffle _ -> ()
   | ExpVar v -> update_var env v n
   | Tuple l -> List.iter (update_expr env n) l
   | Not e -> update_expr env n e
@@ -16,7 +16,7 @@ let rec update_expr env (n:int) (e:expr) : unit =
   | Log(_,x,y) -> update_expr env n x; update_expr env n y
   | Arith(_,x,y) -> update_expr env n x; update_expr env n y
   | Fun(_,l) -> List.iter (update_expr env n) l
-  | _ -> raise (Invalid_AST "")
+  | _ -> assert false
 
 let rec replace_expr env (e:expr) : expr =
   match e with
@@ -24,13 +24,16 @@ let rec replace_expr env (e:expr) : expr =
   | ExpVar v -> (match Hashtbl.find_opt env v with
                  | Some x -> ExpVar x
                  | None -> e)
+  | Shuffle(v,l) -> Shuffle((match Hashtbl.find_opt env v with
+                             | Some x -> x
+                             | None -> v),l)
   | Tuple l -> Tuple(List.map (replace_expr env) l)
   | Not e -> Not(replace_expr env e)
   | Shift(op,x,y) -> Shift(op,replace_expr env x,y)
   | Log(op,x,y) -> Log(op,replace_expr env x, replace_expr env y)
   | Arith(op,x,y) -> Arith(op,replace_expr env x, replace_expr env y)
   | Fun(f,l) -> Fun(f,List.map (replace_expr env) l)
-  | _ -> raise (Invalid_AST "")
+  | _ -> assert false
 
 
 let get_live (deqs:deq list) =

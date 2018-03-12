@@ -42,6 +42,7 @@ let rec rename_expr (e:expr) =
   | ExpVar v -> ExpVar (rename_var v)
   | Tuple l  -> Tuple(List.map rename_expr l)
   | Log(op,x,y) -> Log(op,rename_expr x,rename_expr y)
+  | Shuffle(v,l) -> Shuffle(rename_var v,l)
   | Arith(op,x,y) -> Arith(op,rename_expr x,rename_expr y)
   | Shift(op,x,y) -> Shift(op,rename_expr x,rename_arith_expr y)
   | Not e -> Not (rename_expr e)

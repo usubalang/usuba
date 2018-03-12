@@ -51,6 +51,7 @@ Inductive expr :=
   | Not (e: expr) (* special case for bitwise not *)
   | Shift (op: shift_op)(e: expr)(ae: arith_expr)
   | Log  (op: log_op)(e1 e2: expr)
+  | Shuffle (v:var) (pat: list N)
   | Arith (op: arith_op)(e1 e2: expr)
   | Fun (x: ident)(es: list expr)
   | Fun_v (x: ident)(ae: arith_expr)(es: list expr) (* nodes arrays *)
@@ -67,11 +68,12 @@ Definition p := list (ident * typ * clock).
 
 Inductive def_i :=
   | Single        (n: p)(ds: list deq) (* regular node *)
-  | Multiple      (an: list (p * list deq)) (*array of nodes*)
   | Perm          (pi: list N) (* permutation *)
-  | MultiplePerm  (pis: list (list N)) (* array of perm *)
   | Table         (t: list N) (* lookup table *)
+  | Multiple      (an: list (p * list deq)) (*array of nodes*)
+  | MultiplePerm  (pis: list (list N)) (* array of perm *)
   | MultipleTable (ts: list (list N)). (* array of lookup tables *)
+  (* | Multiple      (l: list def_i). *)
 
 Inductive def_opt := Inline | No_inline.
 

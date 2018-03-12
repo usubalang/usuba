@@ -54,6 +54,10 @@ let rec expr_to_c env (e:expr) : string =
                            (op_to_c op)
                            (expr_to_c env x)
                            (expr_to_c env y)
+  | Shuffle(Var id,l) -> sprintf "PERMUT_%d(%s,%s)"
+                                 (List.length l)
+                                 (var_to_c env id)
+                                 (join "," (List.map string_of_int l))
   | Shift(op,e,ae) ->
      sprintf "%s(%s,%s,%d)"
              (shift_op_to_c op)
@@ -62,6 +66,7 @@ let rec expr_to_c env (e:expr) : string =
              (Printf.fprintf stderr "Hard-coded integer size in rotation.\n";
               32)
   | _ -> raise (Error (Usuba_print.expr_to_str e))
+
                
 let fun_call_to_c env (p:var list) (f:ident) (args: expr list) : string =
   sprintf "  %s(%s,%s);"
@@ -188,29 +193,9 @@ let single_to_c (orig:def) (def:def) (array:bool) (vars:p) (body:deq list) : str
 
   (* body *)
   (deqs_to_c (if array then inputs_to_arr orig else outputs_to_ptr def) body)
-
-
-let perm_to_c (def:def) (l:int list) : string =
-  sprintf
-"void %s(/*input*/ DATATYPE %s, /*outputs*/ DATATYPE* %s) {
-   *%s = PERMUT_%d(%s,%s);
-}"
-  (* Node name *)
-  (rename def.id.name)
-
-  (* parameters *)
-  (rename (fst (fst (List.hd def.p_in))).name)
-  (rename (fst (fst (List.hd def.p_out))).name)
-
-  (* body *)
-  (rename (fst (fst (List.hd def.p_out))).name)
-  (List.length l)
-  (rename (fst (fst (List.hd def.p_in))).name)
-  (join "," (List.map string_of_int l))
   
 
 let def_to_c (orig:def) (def:def) (array:bool) (conf:config) : string =
   match def.node with
   | Single(vars,body) -> single_to_c orig def array vars body
-  | Perm l -> perm_to_c def l
   | _ -> assert false

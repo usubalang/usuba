@@ -33,6 +33,7 @@ let rec clock_expr env (e:expr) : clock * bool =
   match e with
   | Const _ -> Defclock, true
   | ExpVar v -> get_clock env v, true
+  | Shuffle(v,_) -> get_clock env v, true
   | Tuple l | Fun(_,l) | Fun_v(_,_,l)
         -> let l = List.map (clock_expr env) l in
            List.fold_left (fun (ck1,ok1) (ck2,ok2)

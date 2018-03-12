@@ -28,6 +28,7 @@ module Usuba_norm = struct
     | Not e -> check_expr e
     | Shift(_,e,_) -> check_expr e
     | Log(_,x,y) -> check_expr x && check_expr y
+    | Shuffle(v,_) -> check_var v
     | Arith(_,x,y) -> check_expr x && check_expr y
     | Fun(_,l) -> List.for_all check_expr l
     | Fun_v _ -> false

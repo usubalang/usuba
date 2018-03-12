@@ -12,6 +12,8 @@
 
 open Usuba_AST
 open Utils
+
+       
        
 (* Convert variables names inside an expression *)
 let rec update_expr var_env expr_env (e:expr) : expr =
@@ -21,6 +23,10 @@ let rec update_expr var_env expr_env (e:expr) : expr =
   | ExpVar v -> ( match Hashtbl.find_opt expr_env v with
                   | Some e -> e
                   | None -> ExpVar (Hashtbl.find var_env v) )
+  | Shuffle(v,l) -> ( match Hashtbl.find_opt expr_env v with
+                      | Some (ExpVar v) -> Shuffle(v,l)
+                      | None -> Shuffle(Hashtbl.find var_env v,l)
+                      | _ -> assert false)
   | Tuple l -> Tuple (List.map rec_call l)
   | Not e -> Not (rec_call e)
   (* TODO: Should do something with 'ae' *)

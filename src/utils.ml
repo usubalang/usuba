@@ -263,12 +263,13 @@ let rec get_used_vars (e:expr) : var list =
   match e with
   | Const _ -> []
   | ExpVar v -> [ v ]
+  | Shuffle(v,_) -> [ v ]
   | Tuple l -> List.flatten @@ List.map get_used_vars l
   | Not e -> get_used_vars e
   | Shift(_,e,_) -> get_used_vars e
   | Log(_,x,y) | Arith(_,x,y) -> (get_used_vars x) @ (get_used_vars y)
   | Fun(_,l) -> List.flatten @@ List.map get_used_vars l
-  | _ -> raise (Error "Not supported expr")
+  | _ -> assert false
 
 let rec get_var_name (v:var) : ident =
   match v with

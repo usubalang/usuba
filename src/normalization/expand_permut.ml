@@ -29,7 +29,7 @@ let list_from_perm (perm:int list) (l:expr list) : expr list =
             
 let rec apply_perm_e env (e:expr) : expr =
   match e with
-  | Const _ | ExpVar _ -> e
+  | Const _ | ExpVar _ | Shuffle _ -> e
   | Tuple l -> Tuple (List.map (apply_perm_e env) l)
   | Not e -> Not (apply_perm_e env e)
   | Shift(op,e,n) -> Shift(op,apply_perm_e env e,n)

@@ -83,13 +83,16 @@ let rec expand_var (arith_env:(string,int) Hashtbl.t)
   | Field(v,_)  -> [ v ]
        
 
-(* Expand the variables inside an expression, and converted Fun_v to Fun *)
+(* Expand the variables inside an expression, and convert Fun_v to Fun *)
 let rec expand_expr (arith_env:(string,int) Hashtbl.t)
                     (type_env:(ident,int) Hashtbl.t)
                     (e:expr) : expr =
   let rec_call = expand_expr arith_env type_env in
   match e with
   | Const _  -> e
+  | Shuffle(v,l) -> ( match expand_var arith_env type_env v with
+                      | v'::[] -> Shuffle(v',l)
+                      | _ -> assert false )
   | ExpVar v -> Tuple(List.map (fun x -> ExpVar x)
                                (expand_var arith_env type_env v))
   | Tuple l  -> Tuple(List.map rec_call l)

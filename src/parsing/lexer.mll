@@ -31,6 +31,7 @@ let _ =
      "on", TOK_ON;
      "onot", TOK_ONOT;
      "base", TOK_BASE;
+     "Shuffle", TOK_SHUFFLE;
     ]
 
 let next_line lexbuf =
