@@ -1,10 +1,12 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
+use strict;
+use warnings;
 use v5.14;
+
 use Cwd;
 use File::Path qw( remove_tree );
 use File::Copy;
-no warnings 'experimental';
 use FindBin;
 
 sub error {
@@ -12,24 +14,30 @@ sub error {
     exit $?;
 }
 
+my $temp_dir = "tmp_des";
+
+say "###################### DES ######################";
+
 # switching to usuba dir
-chdir $FindBin::Bin;
+chdir "$FindBin::Bin/..";
 
 # Compiling the compiler.
-say "Compiling...";
-error if system 'make';
+unless ($ARGV[0]) { 
+    say "Compiling...";
+    error if system 'make';
+}
 
 
 # Switching to temporary directory.
 say "Preparing the files for the test...";
-remove_tree 'tmp_c' if -d 'tmp_c';
-mkdir 'tmp_c';
+remove_tree $temp_dir if -d $temp_dir;
+mkdir $temp_dir;
 
 # Compiling Usuba DES.
 say "Regenerating the des code...";
-error if system './usubac -o tmp_c/des.c -arch avx samples/usuba/des.ua' ;
+error if system "./usubac -o $temp_dir/des.c -arch avx samples/usuba/des.ua" ;
 
-chdir 'tmp_c';
+chdir $temp_dir;
 copy '../DES/ref_usuba.c', '.';
 
 
@@ -47,6 +55,6 @@ error if system './des_to_test';
 error if system 'cmp --silent output_ref.txt output.txt';
 
 chdir '..';
-remove_tree 'tmp_c';
+remove_tree $temp_dir;
 
-say "C DES OK.";
+say "Bitslice DES OK.\n\n";
