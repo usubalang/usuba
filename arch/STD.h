@@ -34,7 +34,9 @@
 #define R_ROTATE(a,b,c) ((a >> b) | (a << (c-b)))
 
 
+#ifndef DATATYPE
 #define DATATYPE uint64_t
+#endif
 
 #define SET_ALL_ONE()  -1
 #define SET_ALL_ZERO() 0
