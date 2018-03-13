@@ -14,12 +14,12 @@ sub error {
     exit $?;
 }
 
-my $temp_dir = "tmp_aes";
+my $temp_dir = "tmp_des";
 
-say "###################### AES Kasper ######################";
+say "################################## DES ################################";
 
 # switching to usuba dir
-chdir "$FindBin::Bin/..";
+chdir "$FindBin::Bin/../..";
 
 # Compiling the compiler.
 unless ($ARGV[0]) { 
@@ -34,25 +34,27 @@ remove_tree $temp_dir if -d $temp_dir;
 mkdir $temp_dir;
 
 # Compiling Usuba DES.
-say "Compiling AES from Usuba to C...";
-error if system "./usubac -o $temp_dir/aes.c -arch sse -no-runtime samples/usuba/aes_kasper.ua" ;
+say "Regenerating the des code...";
+error if system "./usubac -o $temp_dir/des.c -arch avx samples/usuba/des.ua" ;
 
 chdir $temp_dir;
-copy $_, '.' for glob "../checks/aes_kasper/*";
+copy '../DES/ref_usuba.c', '.';
 
 
 # Compiling the C files
 say "Compiling the test executable...";
-error if system 'clang -O3 -march=native -I../arch -o aes main.c';
+error if system 'clang -O3 -march=native -I../arch -o des_to_test des.c';
+error if system 'clang -O3 -march=native -o des_ref ref_usuba.c';
 
 say "Running the test...";
 error if system 'head -c 8M </dev/urandom > input.txt';
-error if system 'perl aes.pl';
-error if system './aes';
+error if system './des_ref';
+move 'output.txt', 'output_ref.txt';
+error if system './des_to_test';
 
-error if system 'cmp --silent output.txt out.txt';
+error if system 'cmp --silent output_ref.txt output.txt';
 
 chdir '..';
 remove_tree $temp_dir;
 
-say "n-sliced AES OK.\n\n";
+say "Bitslice DES OK.\n\n";
