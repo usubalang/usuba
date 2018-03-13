@@ -17,9 +17,10 @@ sub error {
 # switching to usuba dir
 chdir $FindBin::Bin;
 
-say "###################### Compiling ######################";
+say "################################ Compiling ############################";
 error if system 'make';
 say "\n";
 
 
-system "./$_ 1" for glob('checks/*.pl');
+say "###################### Correctness verifications ######################\n";
+system "./$_ 1" for glob('checks/correctness/*.pl');
