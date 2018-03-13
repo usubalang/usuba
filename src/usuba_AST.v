@@ -117,7 +117,7 @@ Record config := {
   share_var   : bool;
   precal_tbl  : bool;
   archi       : arch;
-  bit_per_reg : N;
+  bits_per_reg : N;
   bench       : bool;
   rand_input  : bool;
   runtime     : bool;

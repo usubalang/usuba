@@ -123,8 +123,8 @@ int main() {
 
   return 0;
 }"
-  (if conf.archi = Std then conf.bit_per_reg else 64)
-  (int_of_float (log(float_of_int (if conf.archi = Std then conf.bit_per_reg else 64)) /. log(2.0)))
+  (if conf.archi = Std then conf.bits_per_reg else 64)
+  (int_of_float (log(float_of_int (if conf.archi = Std then conf.bits_per_reg else 64)) /. log(2.0)))
   (if conf.ortho then "ORTHO" else "NO_ORTHO")
   (c_header conf.archi)
   (join "\n\n" prog_c)

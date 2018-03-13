@@ -22,7 +22,7 @@ let precal_tbl  = ref true
 
 let runtime     = ref true
 let arch        = ref Std
-let bit_per_reg = ref 64
+let bits_per_reg = ref 64
 let bench       = ref false
 let rand_input  = ref false
 let ortho       = ref true
@@ -94,7 +94,7 @@ let main () =
       "-no-share", Arg.Clear share_var, "Deactivate variable sharing";
       "-no-precalc-tbl", Arg.Clear precal_tbl, "Don't use pre-computed tables";
       "-arch", Arg.String (fun s -> arch := str_to_arch s), "Set architecture";
-      "-bits-per-reg", Arg.Set_int bit_per_reg, "Set number of bits to use in the registers (with -arch std only, needs to be a multiple of 2)";
+      "-bits-per-reg", Arg.Set_int bits_per_reg, "Set number of bits to use in the registers (with -arch std only, needs to be a multiple of 2)";
       "-no-runtime", Arg.Clear runtime, "Do not generate a runtime";
       "-bench", Arg.Set bench, "Generate benchmark runtime";
       "-rand-input", Arg.Set rand_input, "Bench on random inputs rather than on a file (implies -bench)";
@@ -107,7 +107,7 @@ let main () =
   
   let compile s =
     let prog = Parse_file.parse_file s in
-    let bits_per_reg = if !bit_per_reg <> 64 then !bit_per_reg
+    let bits_per_reg = if !bits_per_reg <> 64 then !bits_per_reg
                        else bits_in_arch !arch in
     let conf = { block_size  = !block_size;
                  key_size    = !key_size;
@@ -125,7 +125,7 @@ let main () =
                  share_var   = !share_var;
                  precal_tbl  = !precal_tbl;
                  archi       = !arch;
-                 bit_per_reg = bits_per_reg; (* local var! *)
+                 bits_per_reg = bits_per_reg; (* local var! *)
                  runtime     = !runtime;
                  bench       = !bench || !rand_input;
                  rand_input  = !rand_input;
@@ -133,8 +133,8 @@ let main () =
                  openmp      = !openmp;
                } in
 
-    if conf.archi = Std && conf.bit_per_reg mod 2 <> 0 then
-      raise (Error ("Invalid -fix-size " ^ (string_of_int conf.bit_per_reg)));
+    if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then
+      raise (Error ("Invalid -fix-size " ^ (string_of_int conf.bits_per_reg)));
 
     if !type_check then
       if false (*not (Type_checker.is_typed prog)*) then
