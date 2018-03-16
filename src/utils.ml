@@ -286,6 +286,16 @@ let keys_2nd_layer hash k =
     keys (Hashtbl.find hash k)
   with Not_found -> []
 
+let is_unroll (opts:stmt_opt list) : bool =
+  List.exists (function
+                | Unroll    -> true
+                | No_unroll -> false) opts
+
+let is_nounroll (opts:stmt_opt list) : bool =
+  List.exists (function
+                | Unroll    -> false
+                | No_unroll -> true) opts
+
 let is_inline (def:def) : bool =
   List.exists (function
                 | Inline    -> true

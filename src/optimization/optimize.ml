@@ -179,7 +179,7 @@ module Clean = struct
     let rec aux = function
       | Norec(l,e) -> List.iter (clean_var env) l;
                       clean_expr env e
-      | Rec(_,_,_,d) -> List.iter aux d in
+      | Rec(_,_,_,d,_) -> List.iter aux d in
     List.iter aux deqs;
     List.sort_uniq (fun a b -> compare a b)
                    ( List.filter (fun ((id,_),_) -> match Hashtbl.find_opt env id with

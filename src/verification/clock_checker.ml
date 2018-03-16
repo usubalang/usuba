@@ -71,7 +71,7 @@ let rec check_deq env (deq:deq) : bool =
   | Norec(lhs,e) -> let l = List.map (get_clock env) lhs in
                     let (ck,is_ok) = clock_expr env e in
                     is_ok && List.for_all (fun x -> x = ck) l
-  | Rec(_,_,_,l) -> List.for_all (check_deq env) l
+  | Rec(_,_,_,l,_) -> List.for_all (check_deq env) l
     
 let check_def (def:def) : bool =
   match def.node with

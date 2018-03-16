@@ -127,17 +127,26 @@ let rec clock_to_str ck =
 let p_to_str ((id,typ),ck) =
   id.name ^ ":" ^ (typ_to_str typ) ^  "::" ^ (clock_to_str ck)
 
+let optstmt_to_str = function
+  | Unroll    -> "_unroll"
+  | No_unroll -> "_no_unroll"
+                   
 let rec deq_to_str = function
-  | Norec(pat,e) -> (pat_to_str pat) ^ " = " ^ (expr_to_str e)
-  | Rec(id,ei,ef,d) -> "forall " ^ id.name ^ " in [" ^
-                         (arith_to_str ei) ^ "," ^ (arith_to_str ef)
-                         ^ "] {\n" ^ (join "\n    " (List.map deq_to_str d)) ^ "\n  }"
+  | Norec(pat,e) -> sprintf "%s = %s" (pat_to_str pat) (expr_to_str e)
+  | Rec(id,ei,ef,d,opts) ->
+     sprintf "%s forall %s in [%s,%s] {\n    %s\n  }"
+             (join " " (List.map optstmt_to_str opts))
+             id.name  (arith_to_str ei) (arith_to_str ef)
+             (join "\n    " (List.map deq_to_str d))
                                                                                  
 let rec deq_to_str_types = function
-  | Norec(pat,e) -> (pat_to_str_types pat) ^ " = " ^ (expr_to_str_types e)
-  | Rec(id,ei,ef,d) -> "forall " ^ id.name ^ " in [" ^
-                         (arith_to_str_types ei) ^ "," ^ (arith_to_str_types ef)
-                         ^ "] {\n" ^ (join "\n    " (List.map deq_to_str_types d)) ^ "\n  }"
+  | Norec(pat,e) -> sprintf "%s = %s" (pat_to_str_types pat) (expr_to_str_types e)
+  | Rec(id,ei,ef,d,opts) ->
+     sprintf "%s forall %s in [%s,%s] {\n    %s\n  }"
+             (join " " (List.map optstmt_to_str opts))
+             id.name  (arith_to_str_types ei) (arith_to_str_types ef)
+             (join "\n    " (List.map deq_to_str_types d))
+     
                                                                 
 let single_node_to_str id p_in p_out vars deq =
   "node " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in)) ^ ")\n  returns "

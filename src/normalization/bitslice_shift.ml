@@ -60,7 +60,7 @@ let rec shift_expr (e:expr) : expr =
 let rec shift_deq (deq:deq) : deq =
   match deq with
   | Norec(p,e) -> Norec(p,shift_expr e)
-  | Rec(id,ei,ef,d) -> Rec(id,ei,ef,List.map shift_deq d)
+  | Rec(id,ei,ef,d,opts) -> Rec(id,ei,ef,List.map shift_deq d,opts)
                              
                             
 let shift_def (def:def) : def =

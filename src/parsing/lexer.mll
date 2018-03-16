@@ -23,8 +23,6 @@ let _ =
      "fby", TOK_FBY;
      "forall", TOK_FORALL;
      "in", TOK_IN;
-     "_inline", TOK_INLINE;
-     "_no_inline", TOK_NOINLINE;
      "merge", TOK_MERGE;
      "when", TOK_WHEN;
      "whenot", TOK_WHENOT;
@@ -32,6 +30,10 @@ let _ =
      "onot", TOK_ONOT;
      "base", TOK_BASE;
      "Shuffle", TOK_SHUFFLE;
+     "_inline", TOK_INLINE;
+     "_no_inline", TOK_NOINLINE;
+     "_unroll", TOK_UNROLL;
+     "_no_unroll", TOK_NOUNROLL;
     ]
 
 let next_line lexbuf =

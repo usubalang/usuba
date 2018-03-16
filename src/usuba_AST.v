@@ -59,9 +59,11 @@ Inductive expr :=
   | When (e: expr)(x: constr) (y: ident)
   | Merge (x: ident)(xs: list (constr * expr)).
 
+Inductive stmt_opt := Unroll | No_unroll.
+
 Inductive deq :=
   | Norec (vs: list var)(e: expr)
-  | Rec (x: ident)(ae1 ae2: arith_expr)(dl: list deq).
+  | Rec (x: ident)(ae1 ae2: arith_expr)(dl: list deq) (opts:list stmt_opt).
 
 (* XXX: define a record for [ident * typ * clock] *)
 Definition p := list (ident * typ * clock).
@@ -71,9 +73,6 @@ Inductive def_i :=
   | Perm          (pi: list N) (* permutation *)
   | Table         (t: list N) (* lookup table *)
   | Multiple      (l: list def_i).
-  (* | Multiple      (an: list (p * list deq)) (*array of nodes*) *)
-  (* | MultiplePerm  (pis: list (list N)) (* array of perm *) *)
-  (* | MultipleTable (ts: list (list N)). (* array of lookup tables *) *)
 
 Inductive def_opt := Inline | No_inline.
 

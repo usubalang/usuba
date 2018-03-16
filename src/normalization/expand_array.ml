@@ -2,7 +2,6 @@
                               expand_array.ml                                 
 
    This module has several main functionalities:
-    - Convert arrays of nodes into multiple nodes. 
     - Convert forall into a list of regular instructions.
     - Convert Ranges into multiple Tuples of Fields.
     - Convert Slices into multiple Tuples of Fields.
@@ -17,6 +16,9 @@
 open Usuba_AST
 open Utils
 open Printf
+
+(* Very temporary function, for testing purpose *)
+let should_expand_arr () : bool = false
 
 (* Abstracting Hashtbl.
    This functions should replace the ones in Utils, one day. *)
@@ -118,7 +120,7 @@ let rec expand_deqs (arith_env:(string,int) Hashtbl.t)
         | Norec(lhs,e) ->
            [ Norec(List.(flatten @@ map (expand_var arith_env type_env) lhs),
                    expand_expr arith_env type_env e) ]
-        | Rec(x,ei,ef,l) ->
+        | Rec(x,ei,ef,l,opts) ->
            let ei = eval_arith arith_env ei in
            let ef = eval_arith arith_env ef in
            let eqs =

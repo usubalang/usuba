@@ -74,16 +74,21 @@ let fun_call_to_c (conf:config) env (p:var list) (f:ident) (args: expr list) : s
                                 | Var id -> "&" ^ (var_to_c env id)
                                 | _ -> unreached ()) p))
           
-let deqs_to_c env (deqs: deq list) (conf:config) : string =
+let rec deqs_to_c env (deqs: deq list) (conf:config) : string =
   join "\n"
        (List.map
           (fun deq -> match deq with
             | Norec(p,Fun(f,l)) -> fun_call_to_c conf env p f l
             | Norec([Var p],e) ->
                sprintf "  %s = %s;" (var_to_c env p) (expr_to_c conf env e)
-            | _ ->
-               print_endline (Usuba_print.deq_to_str_types deq);
-               assert false) deqs)
+            | Rec(i,ei,ef,l,_) ->
+               sprintf "  for (int %s = %s; %s < %s; %s++) {\n%s\n}"
+                       i.name (aexpr_to_c ei)
+                       i.name (aexpr_to_c ef)
+                       i.name
+                       (deqs_to_c env l conf)
+            | _ -> print_endline (Usuba_print.deq_to_str deq);
+                   assert false) deqs)
 
 let params_to_arr (params: p) : string list =
   List.map (fun ((id,typ),_) ->

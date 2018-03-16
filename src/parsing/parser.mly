@@ -26,8 +26,6 @@
 %token TOK_TABLE
 %token TOK_FORALL
 %token TOK_IN
-%token TOK_INLINE
-%token TOK_NOINLINE
 %token TOK_WHEN
 %token TOK_WHENOT
 %token TOK_MERGE
@@ -35,6 +33,10 @@
 %token TOK_ONOT
 %token TOK_BASE
 %token TOK_SHUFFLE
+%token TOK_INLINE
+%token TOK_NOINLINE
+%token TOK_UNROLL
+%token TOK_NOUNROLL
        
 %token TOK_LPAREN
 %token TOK_RPAREN
@@ -181,10 +183,14 @@ norec_deq:
   | p=pat op=log_op TOK_EQUAL e=exp    { Norec( p, Log(op,left_to_right p,e)) }
   | p=pat op=arith_op TOK_EQUAL e=exp  { Norec( p, Arith(op,left_to_right p,e)) }
 
+opt_stmt:
+   | TOK_UNROLL   { Unroll    }
+   | TOK_NOUNROLL { No_unroll }
+                  
 deq_forall:
-  | TOK_FORALL i=TOK_id TOK_IN TOK_LBRACKET startr=arith_exp TOK_COMMA
-    endr=arith_exp TOK_RBRACKET TOK_LCURLY d=deqs TOK_RCURLY
-    { Rec(i, startr, endr, d) }
+ | opts=list(opt_stmt) TOK_FORALL i=TOK_id TOK_IN TOK_LBRACKET startr=arith_exp
+   TOK_COMMA endr=arith_exp TOK_RBRACKET TOK_LCURLY d=deqs TOK_RCURLY
+    { Rec(i, startr, endr, d, opts) }
 
 deqs:
   | d=deq_forall ds=deqs { d :: ds }
