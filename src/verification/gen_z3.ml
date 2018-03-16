@@ -202,7 +202,7 @@ module Usuba = struct
 
       
   let simplify (prog:prog) : prog =
-    let prog = Expand_multiples.expand_multiples (Rename.rename_prog prog) in
+    let prog = Expand_multiples.expand_multiples (Rename.rename_prog prog default_conf) in
     let env_fun = Hashtbl.create 100 in
     { nodes = List.map (norm_def env_fun) prog.nodes } 
                                             

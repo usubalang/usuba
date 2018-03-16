@@ -142,7 +142,7 @@ let main () =
     if !clock_check then
       if not (Clock_checker.is_clocked prog) then
         raise (Error "Unsound program: bad clocks");
-    if !verif then Gen_z3.verify prog s conf;
+    (* if !verif then Gen_z3.verify prog s conf; *)
     print_c s prog conf in
       
   

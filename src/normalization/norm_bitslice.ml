@@ -189,7 +189,7 @@ let norm_prog (prog: prog) (conf:config) =
   (* Remove nested function calls by introducing temporary variables *)
   let env_fun = Hashtbl.create 10 in
   let pre_normalized = { nodes = List.map (norm_def env_fun) const_norm.nodes } in
-  print "PRE NORMALIZED:" pre_normalized conf;
+  print "PRE NORMALIZED (bitslice):" pre_normalized conf;
   
   (* Replace permutations by assignments *)
   let perm_expanded = Expand_permut.expand_permut pre_normalized in

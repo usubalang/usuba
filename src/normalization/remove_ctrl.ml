@@ -41,5 +41,5 @@ let clean_def (def:def) : def =
   | Single(vars,body) -> {def with node = Single(vars,List.map clean_deq body) }
   | _ -> def
 
-let remove_ctrl (prog:prog) : prog =
+let remove_ctrl (prog:prog) (conf:config) : prog =
   { nodes = List.map clean_def prog.nodes }

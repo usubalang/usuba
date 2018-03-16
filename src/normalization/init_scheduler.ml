@@ -53,5 +53,5 @@ let schedule_def (def:def) : def =
                | _ -> def.node }
 
 (* Must be called once arrays (and thus Rec) have been removed. *)
-let schedule_prog (prog:prog) : prog =
+let schedule_prog (prog:prog) (conf:config): prog =
   { nodes = List.map schedule_def prog.nodes }

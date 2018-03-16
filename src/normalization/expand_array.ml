@@ -197,7 +197,7 @@ let expand_def (def:def) : def =
     
 
              
-let rec expand_array (prog:prog) : prog =
+let rec expand_array (prog:prog) (conf:config): prog =
              
   (* Removing arrays in the nodes *)
   { nodes = List.map expand_def prog.nodes }

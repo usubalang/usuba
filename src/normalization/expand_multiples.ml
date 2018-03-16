@@ -2,7 +2,7 @@ open Usuba_AST
 open Utils
 
        
-let expand_multiples (prog:prog) : prog =
+let expand_multiples (prog:prog) (conf:config) : prog =
   { nodes =
       flat_map (fun def ->
                 match def.node with

@@ -169,12 +169,14 @@ let rec _inline (prog:prog) (conf:config) inlined : prog =
 
 (* Main inlining function. _inline actually does most of the job *)
 let inline (prog:prog) (conf:config) : prog =
-  (* Hashtbl containing the inlining status of each node:
+  if conf.inlining then
+    (* Hashtbl containing the inlining status of each node:
      false if it is not already inlined, true if it is *)
-  let inlined = Hashtbl.create 20 in
-  List.iter (fun x -> Hashtbl.add inlined x.id.name false) prog.nodes;
-  (* The last node is the entry point, it wouldn't make sense to try inline it *)
-  Hashtbl.replace inlined (last prog.nodes).id.name true;
+    let inlined = Hashtbl.create 20 in
+    List.iter (fun x -> Hashtbl.add inlined x.id.name false) prog.nodes;
+    (* The last node is the entry point, it wouldn't make sense to try inline it *)
+    Hashtbl.replace inlined (last prog.nodes).id.name true;
 
-  (* And now, perform the inlining *)
-  _inline prog conf inlined
+    (* And now, perform the inlining *)
+    _inline prog conf inlined
+  else prog

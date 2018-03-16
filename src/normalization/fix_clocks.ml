@@ -33,5 +33,5 @@ let fix_def (def:def) : def =
   | Perm _ -> def
   | _ -> assert false
        
-let fix_prog (prog:prog) : prog =
+let fix_prog (prog:prog) (conf:config) : prog =
   { nodes = List.map fix_def prog.nodes }

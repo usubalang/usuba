@@ -64,9 +64,10 @@ let rec rename_pat pat =
 let rec rename_deq deqs =
     List.map (function
                | Norec(pat,expr) -> Norec(rename_pat pat,rename_expr expr)
-               | Rec(id,ei,ef,d) -> Rec(fresh_suffix id "'",rename_arith_expr ei,
-                                        rename_arith_expr ef,
-                                        rename_deq d)) deqs
+               | Rec(id,ei,ef,d,opts) -> Rec(fresh_suffix id "'",rename_arith_expr ei,
+                                             rename_arith_expr ef,
+                                             rename_deq d,
+                                             opts)) deqs
              
 let rec rename_p p =
   List.map (fun ((id,typ),ck) -> ((fresh_suffix id "'",typ),ck)) p
@@ -86,6 +87,6 @@ let rename_def (def:def) : def =
            | _ -> def.node }
      
                                    
-let rename_prog (p: prog) : prog =
+let rename_prog (p: prog) (conf:config) : prog =
   { nodes = List.map rename_def p.nodes }
 
