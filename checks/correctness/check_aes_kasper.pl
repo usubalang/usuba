@@ -40,8 +40,8 @@ error if system "./usubac -o $temp_dir/aes.c -arch sse -no-runtime samples/usuba
     local $^I = "";
     push @ARGV, "$temp_dir/aes.c";
     while(<>) {
-        s/#include "AVX.h"//g;
-    }
+        s/#include .*//;
+    } continue { print }
 }
 
 
@@ -49,26 +49,19 @@ chdir $temp_dir;
 copy $_, '.' for glob "$FindBin::Bin/aes_kasper/*";
 
 
-# Compiling the C files
-say "Compiling the test executable with SSE SSE...";
-error if system 'clang -D SSE -O3 -march=native -I../arch -o aes main.c';
+for my $ARCH (qw(AVX SSE)) {
+    # Compiling the C files
+    say "Compiling the test executable with $ARCH...";
+    error if system "clang -D $ARCH -O3 -march=native -I../arch -o aes main.c";
 
-say "Running the test with SSE...";
-error if system 'head -c 8M </dev/urandom > input.txt';
-error if system 'perl aes.pl';
-error if system './aes';
+    say "Running the test with $ARCH...";
+    error if system 'head -c 8M </dev/urandom > input.txt';
+    error if system 'perl aes.pl';
+    error if system './aes';
 
-error if system 'cmp --silent output.txt out.txt';
-
-say "Compiling the test executable with SSE SSE...";
-error if system 'clang -D SSE -O3 -march=native -I../arch -o aes main.c';
-
-say "Running the test with SSE...";
-error if system 'head -c 8M </dev/urandom > input.txt';
-error if system 'perl aes.pl';
-error if system './aes';
-
-error if system 'cmp --silent output.txt out.txt';
+    error if system 'cmp --silent output.txt out.txt';
+    unlink 'output.txt', 'out.txt';
+}
 
 chdir '..';
 remove_tree $temp_dir;
