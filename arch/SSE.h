@@ -43,7 +43,7 @@
 #define SET_ALL_ONE()  ONES
 #define SET_ALL_ZERO() ZERO
 
-/* Not the reverse of the pattern. */
+/* Note the reverse of the pattern. */
 #define PERMUT_16(a,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16) \
   _mm_shuffle_epi8(a,_mm_set_epi8(x16,x15,x14,x13,x12,x11,x10,x9,x8,x7,x6,x5,x4,x3,x2,x1))
 #define PERMUT_4(a,x1,x2,x3,x4) _mm_shuffle_epi32(a,(x4<<6)|(x3<<4)|(x2<<2)|x1)
