@@ -121,10 +121,9 @@ void RL13__(/*input*/ DATATYPE input__, /*outputs*/ DATATYPE* out__) {
 }
 
 /* main function */
-void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE key__[25][4], /*outputs*/ DATATYPE cipher__[4]) {
+void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE key__[26][4], /*outputs*/ DATATYPE cipher__[4]) {
   
-  // Variables declaration
-
+  // Variables declaration  
 
   // Instructions (body)
   plain__[0] = XOR(plain__[0],key__[0][0]);
@@ -327,12 +326,43 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE key__[25][4], /*output
   RL1__(plain__[1],&plain__[1]);
   RL12__(plain__[2],&plain__[2]);
   RL13__(plain__[3],&plain__[3]);
+  plain__[0] = XOR(plain__[0],key__[25][0]);
+  plain__[1] = XOR(plain__[1],key__[25][1]);
+  plain__[2] = XOR(plain__[2],key__[25][2]);
+  plain__[3] = XOR(plain__[3],key__[25][3]);
   cipher__[0] = plain__[0];
   cipher__[1] = plain__[1];
   cipher__[2] = plain__[2];
   cipher__[3] = plain__[3];
 
 }
+
+/* main function */
+void RectangleLoop (/*inputs*/ DATATYPE plain__[4],DATATYPE key__[26][4], /*outputs*/ DATATYPE cipher__[4]) {
+  
+  // Variables declaration
+
+
+  for (int i = 0; i < 25; i++) {
+    plain__[0] = XOR(plain__[0],key__[i][0]);
+    plain__[1] = XOR(plain__[1],key__[i][1]);
+    plain__[2] = XOR(plain__[2],key__[i][2]);
+    plain__[3] = XOR(plain__[3],key__[i][3]);
+    SubColumn__(plain__[0],plain__[1],plain__[2],plain__[3],&plain__[0],&plain__[1],&plain__[2],&plain__[3]);
+    RL1__(plain__[1],&plain__[1]);
+    RL12__(plain__[2],&plain__[2]);
+    RL13__(plain__[3],&plain__[3]);
+  }
+
+  cipher__[0] = XOR(plain__[0],key__[25][0]);
+  cipher__[1] = XOR(plain__[1],key__[25][1]);
+  cipher__[2] = XOR(plain__[2],key__[25][2]);
+  cipher__[3] = XOR(plain__[3],key__[25][3]);
+
+}
+
+
+
 #define NB_LOOP 10000000
 
 int main() {
@@ -348,8 +378,8 @@ int main() {
   real_ortho_128x128(plain);
 
   
-  __m128i key[25][4];
-  for (int i = 0; i < 25; i++) {
+  __m128i key[26][4];
+  for (int i = 0; i < 26; i++) {
     for (int j = 0; j < 4; j++) {
       key[i][j] = _mm_set_epi64x(rand(), rand());
     }
@@ -367,7 +397,7 @@ int main() {
     Rectangle__(plain,key,cipher);
   }
   timer = _rdtsc() - timer;
-  printf("Just Rectangle (no transpo): %lu        => %.2f cycle/byte\n",timer/NB_LOOP,(double)timer/NB_LOOP/(16.*8));
+  printf("Just Rectangle (no transpo): %lu        => %.2f cycle/byte\n",timer/NB_LOOP,(double)timer/NB_LOOP/(8.*8));
   
   timer = _rdtsc();
   for (int i = 0; i < NB_LOOP; i++) {
@@ -376,6 +406,16 @@ int main() {
     real_ortho_128x128(cipher);
   }
   timer = _rdtsc() - timer;
-  printf("Rectangle with transpo: %lu        => %.2f cycle/byte\n",timer/NB_LOOP,(double)timer/NB_LOOP/(16.*8));
+  printf("Rectangle with transpo: %lu        => %.2f cycle/byte\n",timer/NB_LOOP,(double)timer/NB_LOOP/(8.*8));
+
+  timer = _rdtsc();
+  for (int i = 0; i < NB_LOOP; i++) {
+    real_ortho_128x128(plain);
+    RectangleLoop(plain,key,cipher);
+    real_ortho_128x128(cipher);
+  }
+  timer = _rdtsc() - timer;
+  printf("Rectangle with transpo (with loop): %lu        => %.2f cycle/byte\n",timer/NB_LOOP,(double)timer/NB_LOOP/(8.*8));
+  
   return 0;
 }

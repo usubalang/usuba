@@ -10,7 +10,7 @@ open my $FH, '<', 'input.txt';
 chomp(my $plaintext = <$FH>);
 
 my $key = "0123456789ABCDEF";
-my $ecb = Crypt::Mode::ECB->new('AES');
+my $ecb = Crypt::Mode::ECB->new('AES',0);
 my $ciphertext = $ecb->encrypt($plaintext, $key);
 
 open $FH, '>', 'out.txt' or die $!;

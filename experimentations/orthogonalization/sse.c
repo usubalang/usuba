@@ -47,7 +47,7 @@ void real_ortho_128x128(__m128i data[]) {
     _mm_set_epi64x(-1UL,0UL),
   };
   
-  for (int i = 0; i < 7; i ++) {
+  for (int i = 0; i < 3; i ++) {
     int n = (1UL << i);
     for (int j = 0; j < 128; j += (2 * n))
       for (int k = 0; k < n; k ++) {

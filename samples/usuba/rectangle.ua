@@ -2,17 +2,20 @@ _no_inline table SubColumn (input:u1x4) returns (out:u1x4) {
     6, 5, 12, 10, 1, 14, 7, 9, 11, 0, 3, 13, 8, 15, 4, 2
 }
 
-perm RL1 (input:u16x1) returns (out:u16x1) {
-    1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0
-}
+node RL1 (input:u16x1) returns (out:u16x1)
+let
+    out = Shuffle(input,[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0])
+tel
 
-perm RL12 (input:u16x1) returns (out:u16x1) {
-    12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11
-}
+node RL12 (input:u16x1) returns (out:u16x1)
+let
+    out = Shuffle(input,[12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11])
+tel
 
-perm RL13 (input:u16x1) returns (out:u16x1) {
-    13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12
-}
+node RL13 (input:u16x1) returns (out:u16x1)
+let
+    out = Shuffle(input,[13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12])
+tel
 
 node ShiftRows (input:u16x4) returns (out:u16x4)
 vars
@@ -30,7 +33,7 @@ let
 
     tmp[0] = plain;
 
-    forall i in [0,24] {
+    _no_unroll forall i in [0,24] {
       tmp[i+1] = ShiftRows( SubColumn( tmp[i] ^ key[i] ) )
     }
 
