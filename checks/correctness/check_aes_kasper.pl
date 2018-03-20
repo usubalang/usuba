@@ -38,7 +38,7 @@ say "Compiling AES from Usuba to C...";
 error if system "./usubac -o $temp_dir/aes.c -arch sse -no-runtime samples/usuba/aes_kasper.ua" ;
 {
     local $^I = "";
-    push @ARGV, "$temp_dir/aes.c";
+    local @ARGV = "$temp_dir/aes.c";
     while(<>) {
         s/#include .*//;
     } continue { print }
