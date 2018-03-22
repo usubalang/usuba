@@ -46,12 +46,22 @@ Inductive clock :=
 (*################################################################*)
 (* Values *)
 
-Inductive val :=
-| Atom: nat -> N -> val (* N.size_nat n < k *)
-| Tup: list val -> val.
+Parameter atom_size: nat.
+Definition atom := N. (* N.size_nat n < atom_size *)
 
-Definition Ttrue := Atom 1 1%N.
-Definition Tfalse := Atom 1 0%N.
+Definition val := list atom.
+
+Definition Ttrue: atom := 1%N.
+Definition Tfalse: atom := 0%N.
+
+Definition val_of_nat (n: N): val.
+(* convert [n] in F(2^wordsize)[X] *)
+Admitted.
+
+Definition val_to_nat (v: val): N.
+(* convert back *)
+Admitted.
+
 
 (*################################################################*)
 (* Compile-time expressions *)
@@ -81,7 +91,7 @@ Inductive shift_op := Lshift | Rshift | Lrotate | Rrotate.
 
 (* XXX: factorize operations in a single case *)
 Inductive expr :=
-  | Const (v: val)
+  | Const (v: N)
   | ExpVar (v: var)
   | Tuple (es: list expr)
   | Not (e: expr) (* special case for bitwise not *)
@@ -130,7 +140,7 @@ Record def := {
   node  : def_i;
 }.
 
-Definition prog := list (ident * def).
+Definition prog := PM.t def.
 
 
 Inductive arch :=

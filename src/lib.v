@@ -142,3 +142,14 @@ Inductive Forall3 {A B C : Type} (R : A -> B -> C -> Prop) : list A -> list B ->
     Forall3_nil : Forall3 R [] [] []
   | Forall3_cons : forall (x : A) (y : B)(z : C) (l : list A) (l' : list B)(l'' : list C),
                    R x y z -> Forall3 R l l' l'' -> Forall3 R (x :: l) (y :: l') (z :: l'').
+
+
+Definition map2 {X Y Z} (f : X -> Y -> Z) : list X -> list Y -> list Z.
+Admitted.
+
+Inductive Rename {A} (xs : list A) : list nat -> list A -> Prop :=
+| Rename_nil: Rename xs [] []
+| Rename_cons: forall n ns y ys,
+    Some y = nth_error xs n ->
+    Rename xs ns ys ->
+    Rename xs (n :: ns) (y :: ys).
