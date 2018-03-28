@@ -59,11 +59,12 @@ let rec expr_to_c (conf:config) env (e:expr) : string =
                                  (var_to_c env id)
                                  (join "," (List.map string_of_int l))
   | Shift(op,e,ae) ->
+     Printf.fprintf stderr "Hardcoded rotation size\n";
      sprintf "%s(%s,%s,%d)"
              (shift_op_to_c op)
              (expr_to_c conf env e)
              (aexpr_to_c ae)
-             conf.bits_per_reg
+             32
   | _ -> raise (Error (Usuba_print.expr_to_str e))
 
                

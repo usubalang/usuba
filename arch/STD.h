@@ -11,11 +11,11 @@
 #include <stdint.h>
 
 
-#ifndef LOG2_BITS_PER_REG
-#define LOG2_BITS_PER_REG 6
-#endif
 #ifndef BITS_PER_REG
 #define BITS_PER_REG 64
+#endif
+#ifndef LOG2_BITS_PER_REG
+#define LOG2_BITS_PER_REG 6
 #endif
 
 /* Defining macros */

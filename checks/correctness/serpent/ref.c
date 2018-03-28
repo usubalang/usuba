@@ -250,7 +250,7 @@ int main() {
 
   // Reading the input file
   FILE* fh_in = fopen("input.txt","rb");
-  FILE* fh_out = fopen("output.txt","wb");
+  FILE* fh_out = fopen("out.txt","wb");
   
   unsigned int plain[4];
   while (fread(plain,16,1,fh_in) != 0) {
