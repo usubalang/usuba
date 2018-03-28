@@ -56,8 +56,6 @@ Definition val_lookup (v: val)(k: N): val :=
 Section SemExpr.
 
 Variable prog: PM.t def.
-(* XXX: restore static environment for code expansions *)
-(*Variable senv: PM.t N. *)
 
 Definition sem_ident (env: PM.t val)(x: ident)(v: val): Prop :=
   PM.find (uid x) env = Some v.
@@ -83,58 +81,59 @@ Inductive sem_var (env: PM.t val): var -> val -> Prop :=
     sem_var env (Range x ae1 ae2) v.*)
 
 
-Inductive sem_expr: PM.t val -> expr -> val -> Prop :=
-| sem_Const: forall env n v,
+Inductive sem_expr: PM.t val -> PM.t N -> expr -> val -> Prop :=
+| sem_Const: forall env senv n v,
     val_of_nat n = v ->
-    sem_expr env (Const n) v
-| sem_ExpVar: forall env v i,
+    (* XXX: switch to any ae *)
+    sem_expr env senv (Const n) v
+| sem_ExpVar: forall env senv v i,
     sem_var env v i ->
-    sem_expr env (ExpVar v) i
-| sem_Tuple: forall env es vs v,
-    List.Forall2 (sem_expr env) es vs ->
+    sem_expr env senv (ExpVar v) i
+| sem_Tuple: forall env senv es vs v,
+    List.Forall2 (sem_expr env senv) es vs ->
     List.concat vs = v ->
-    sem_expr env (Tuple es) v
-| sem_Not: forall env e v v',
-    sem_expr env e v ->
+    sem_expr env senv (Tuple es) v
+| sem_Not: forall env senv e v v',
+    sem_expr env senv e v ->
     List.map (fun n => N.lnot n (N.of_nat atom_size)) v = v' ->
-    sem_expr env (Not e) v'
-| sem_Shift: forall env op e ae ve k v,
+    sem_expr env senv (Not e) v'
+| sem_Shift: forall env senv op e ae ve k v,
     (* Zero-cost shifts & rotations *)
-    sem_expr env e ve ->
-(* XXX: restore   sem_arith_expr ae senv = Some k -> *)
+    sem_expr env senv e ve ->
+    sem_arith_expr ae senv = Some k ->
     sem_shift_op op BOTTOM ve (N.to_nat k) = v ->
-    sem_expr env (Shift op e ae) v
-| sem_Log: forall env op e1 e2 v1 v2 v,
-    sem_expr env e1 v1 ->
-    sem_expr env e2 v2 ->
+    sem_expr env senv (Shift op e ae) v
+| sem_Log: forall env senv op e1 e2 v1 v2 v,
+    sem_expr env senv e1 v1 ->
+    sem_expr env senv e2 v2 ->
     map2 (sem_log_op op) v1 v2 = v ->
-    sem_expr env (Log op e1 e2) v
-| sem_Fun: forall env f ae es i node ins outs v,
+    sem_expr env senv (Log op e1 e2) v
+| sem_Fun: forall env senv f ae es i node ins outs v,
     PM.find (uid f) prog = Some node ->
-    (* XXX: restore   sem_arith_expr ae senv = Some i -> *)
-    Forall2 (sem_expr env) es ins ->
-    sem_node node i ins outs ->
+    sem_arith_expr ae senv = Some i ->
+    Forall2 (sem_expr env senv) es ins ->
+    sem_node node senv (N.to_nat i) ins outs ->
     List.concat outs = v ->
-    sem_expr env (Fun f ae es) v
-with sem_node: def -> nat -> list val -> list val -> Prop :=
-| sem_Node: forall d i ins outs env def var_ins var_outs,
+    sem_expr env senv (Fun f ae es) v
+with sem_node: def -> PM.t N -> nat -> list val -> list val -> Prop :=
+| sem_Node: forall d senv i ins outs env def var_ins var_outs,
     var_ins = vars_of d.(p_in) ->
     var_outs = vars_of d.(p_out) ->
     Forall2 (sem_ident env) var_ins ins ->
     Forall2 (sem_ident env) var_outs outs ->
     List.nth_error d.(node) i = Some def ->
-    sem_def_i def env var_ins var_outs ->
-    sem_node d i ins outs
-with sem_def_i : def_i -> PM.t val -> list ident -> list ident -> Prop :=
-| sem_Single: forall locals eqs env var_ins var_outs,
-    Forall (sem_deq env) eqs ->
-    sem_def_i (Single locals eqs) env var_ins var_outs
-| sem_Perm: forall xs env tmps tmps' var_ins var_outs,
+    sem_def_i def env senv var_ins var_outs ->
+    sem_node d senv i ins outs
+with sem_def_i : def_i -> PM.t val -> PM.t N -> list ident -> list ident -> Prop :=
+| sem_Single: forall senv locals eqs env var_ins var_outs,
+    Forall (sem_deq env senv) eqs ->
+    sem_def_i (Single locals eqs) env senv var_ins var_outs
+| sem_Perm: forall xs env senv tmps tmps' var_ins var_outs,
     Forall2 (sem_ident env) var_ins tmps ->
     Rename tmps (List.map N.to_nat xs) tmps' ->
     Forall2 (sem_ident env) var_outs tmps' ->
-    sem_def_i (Perm xs) env var_ins var_outs
-| sem_Table: forall xs env var_ins v_in n v v_out v_outs var_outs,
+    sem_def_i (Perm xs) env senv var_ins var_outs
+| sem_Table: forall xs env senv var_ins v_in n v v_out v_outs var_outs,
     Forall2 (sem_ident env) var_ins v_in ->
     val_to_nat (List.concat v_in) = n ->
     nth_error xs (N.to_nat n) = Some v ->
@@ -142,12 +141,20 @@ with sem_def_i : def_i -> PM.t val -> list ident -> list ident -> Prop :=
     (* XXX: unpleasantly non-constructive spec: *)
     List.concat v_outs = v_out ->
     Forall2 (sem_ident env) var_outs v_outs ->
-    sem_def_i (Table xs) env var_ins var_outs
-with sem_deq: PM.t val -> deq -> Prop :=
-| sem_Norec: forall env xs vs v eq,
-    sem_expr env eq v ->
+    sem_def_i (Table xs) env senv var_ins var_outs
+with sem_deq: PM.t val -> PM.t N -> deq -> Prop :=
+| sem_Norec: forall env senv xs vs v eq,
+    sem_expr env senv eq v ->
     Forall2 (sem_var env) xs vs ->
     List.concat vs = v ->
-    sem_deq env (Norec xs eq).
+    sem_deq env senv (Norec xs eq)
+| sem_Rec: forall x env senv ae1 ae2 eqs i j ij,
+    sem_arith_expr ae1 senv = Some i ->
+    sem_arith_expr ae2 senv = Some j ->
+    seq (N.to_nat i) (N.to_nat j) = ij ->
+    List.Forall (fun k =>
+      List.Forall (sem_deq env (PM.add (uid x) (N.of_nat k) senv)) eqs) ij ->
+    sem_deq env senv (Rec x ae1 ae2 eqs).
+
 
 End SemExpr.

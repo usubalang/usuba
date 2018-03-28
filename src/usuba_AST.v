@@ -109,7 +109,6 @@ Inductive expr :=
 
 Inductive deq :=
   | Norec (vs: list var)(e: expr)
-  (* XXX: what is the meaning of [x]? *)
   | Rec (x: ident)(ae1 ae2: arith_expr)(dl: list deq).
 
 Record formal := { t : typ ;
