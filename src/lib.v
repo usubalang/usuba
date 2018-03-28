@@ -160,14 +160,13 @@ Proof. auto. Qed.
 Lemma test__mask2: mask [0; 1; 2; 3; 4; 5; 6; 7] 5 2 = Some [5; 4; 3; 2].
 Proof. auto. Qed.
 
-Inductive Forall3 {A B C : Type} (R : A -> B -> C -> Prop) : list A -> list B -> list C -> Prop :=
-    Forall3_nil : Forall3 R [] [] []
-  | Forall3_cons : forall (x : A) (y : B)(z : C) (l : list A) (l' : list B)(l'' : list C),
-                   R x y z -> Forall3 R l l' l'' -> Forall3 R (x :: l) (y :: l') (z :: l'').
 
-
-Definition map2 {X Y Z} (f : X -> Y -> Z) : list X -> list Y -> list Z.
-Admitted.
+Fixpoint map2 {X Y Z} (f : X -> Y -> Z)(xs : list X)(ys : list Y): list Z :=
+  match xs, ys with
+  | [], _ => []
+  | _, [] => []
+  | x :: xs, y :: ys => f x y :: map2 f xs ys
+  end.
 
 Inductive Rename {A} (xs : list A) : list nat -> list A -> Prop :=
 | Rename_nil: Rename xs [] []

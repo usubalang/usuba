@@ -11,27 +11,13 @@ Require Import lib.
 Definition context := PM.t typ.
 Definition scontext := PM.t N.
 
-(*
-Definition scontext := PM.t (N * N).
-
-Definition bounds_arith_op (op: arith_op)(xmM: N * N)(ymM: N * N): N * N :=
-   match op with
-   | Add => (N.add (fst xmM) (fst ymM), N.add (snd ymM) (snd ymM))
-   | Mul => (N.mul (fst xmM) (fst ymM), N.mul (snd ymM) (snd ymM))
-   | Sub => (N.sub (fst xmM) (snd ymM), N.sub (snd xmM) (fst ymM))
-   | Div => (N.div (fst xmM) (snd ymM), N.div (snd xmM) (fst ymM))
-   | Mod => (0%N, snd ymM)
-   end.
-
-Fixpoint bounds_arith_expr (ae: arith_expr)(sctxt: scontext): option (N * N) :=
-  match ae with
-  | Const_e i => ret! (i, i)
-  | Var_e x => PM.find (uid x) sctxt
-  | Op_e op e1 e2 => let! xmM := bounds_arith_expr e1 sctxt in
-                     let! ymM := bounds_arith_expr e2 sctxt in
-                     ret! (bounds_arith_op op xmM ymM)
+Fixpoint ctxt_ext (x: formals)(ctxt: PM.t typ): PM.t typ :=
+  match x with
+  | [] => ctxt
+  | (x, formal) :: xs => ctxt_ext xs (PM.add (uid x) formal.(t) ctxt)
   end.
-*)
+
+Definition ctxt_of x  := ctxt_ext x (PM.empty _).
 
 Inductive ty_var: context -> scontext -> var -> typ -> Prop :=
   | ty_Var: forall ctxt sctxt i ty,
@@ -103,14 +89,6 @@ Inductive ty_expr: context -> scontext -> expr -> typ -> Prop :=
       N.to_nat ix < List.length def.(node) ->
       ty_expr ctxt sctxt (Fun x ae es) k.
 
-Fixpoint append (x: formals)(ctxt: PM.t typ): PM.t typ :=
-  match x with
-  | [] => ctxt
-  | (x, formal) :: xs => append xs (PM.add (uid x) formal.(t) ctxt)
-  end.
-
-Definition ctxt_of x  := append x (PM.empty _).
-
 Inductive ty_deq: context -> scontext -> deq -> Prop :=
   | ty_Norec : forall ctxt sctxt vs e tys ty,
       Forall2 (ty_var ctxt sctxt) vs tys ->
@@ -128,7 +106,7 @@ Inductive ty_deq: context -> scontext -> deq -> Prop :=
 
 Inductive ty_def_i: context -> scontext -> typ -> typ -> def_i -> Prop :=
   | ty_Single: forall ctxt sctxt locals ds lctxt ty_in ty_out,
-      append locals ctxt = lctxt ->
+      ctxt_ext locals ctxt = lctxt ->
       Forall (ty_deq lctxt sctxt) ds ->
       ty_def_i ctxt sctxt ty_in ty_out (Single locals ds)
   | ty_Perm: forall ctxt sctxt p ty_in ty_out,
