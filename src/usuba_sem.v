@@ -20,15 +20,6 @@ Definition sem_log_op (op: log_op): N -> N -> N :=
   | Andn => lnand atom_size
   end.
 
-Definition sem_arith_op (op: arith_op): N -> N -> N :=
-   match op with
-   | Add => N.add
-   | Mul => N.mul
-   | Sub => N.sub
-   | Div => N.div
-   | Mod => N.modulo
-   end.
-
 (* identity for [n >= length l] *)
 Definition sem_shift_op {A}(op: shift_op)(d : A)(l: list A)(n: nat): list A :=
   match op with
@@ -38,15 +29,6 @@ Definition sem_shift_op {A}(op: shift_op)(d : A)(l: list A)(n: nat): list A :=
   | Rrotate => rotr n l
   end.
 
-(* Arithmetic expressions, fully-reduced at compile-time *)
-Fixpoint sem_arith_expr (ae: arith_expr)(env: PM.t N): option N :=
-  match ae with
-  | Const_e i => ret! i
-  | Var_e x => PM.find (uid x) env
-  | Op_e op e1 e2 => let! x := sem_arith_expr e1 env in
-                     let! y := sem_arith_expr e2 env in
-                     ret! (sem_arith_op op x y)
-  end.
 
 Definition val_lookup (v: val)(k: N)(a: atom): Prop :=
   List.nth_error v (N.to_nat k) = Some a.
@@ -74,6 +56,8 @@ Inductive sem_var (env: PM.t val)(senv: PM.t N): var -> val -> Prop :=
     sem_var env senv x vx ->
     sem_arith_expr ae1 senv = Some k1 ->
     sem_arith_expr ae2 senv = Some k2 ->
+    (* XXX: only defined for k1 < k2:
+       1. wrong interval; 2. need support for k2 > k1  *)
     val_mask vx k1 k2 = Some v ->
     sem_var env senv (Range x ae1 ae2) v.
 

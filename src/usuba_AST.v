@@ -11,6 +11,7 @@ Require Import Coq.extraction.ExtrOcamlBasic.
 Require Import Coq.extraction.ExtrOcamlZInt.
 Require Import Coq.extraction.ExtrOcamlString.
 
+Require Import lib.
 
 (* XXX: this won't work for actual extraction*)
 Extract Inductive string => "string"  [ """" "^" ].
@@ -24,15 +25,8 @@ Record ident := { uid: positive;
 (*################################################################*)
 (* Types *)
 
-Inductive typ :=
-  (* [[Atom k]] is a machine word of size [[k]] *)
-  | ATOM: nat -> typ
-  (* [[TUP tys]] is an heterogeneous list *)
-  | TUP (t: list typ).
-  (* XXX: I don't understand these: *)
-  (* | Int (i: N) (j :N) *)
-  (* | Nat (* for recurrence variables. Not part of usuba0 normalized *) *)
-  (* | Array (t: typ)(ae: arith_expr) (* arrays *) *)
+(* The type of a value is its size *)
+Definition typ := nat.
 
 (*################################################################*)
 (* Clocks *)
@@ -76,6 +70,25 @@ Inductive arith_expr :=
   | Const_e (i: N)
   | Var_e (x: ident)
   | Op_e (op: arith_op)(e1 e2: arith_expr).
+
+
+Definition sem_arith_op (op: arith_op): N -> N -> N :=
+   match op with
+   | Add => N.add
+   | Mul => N.mul
+   | Sub => N.sub
+   | Div => N.div
+   | Mod => N.modulo
+   end.
+(* Arithmetic expressions, fully-reduced at compile-time *)
+Fixpoint sem_arith_expr (ae: arith_expr)(env: PM.t N): option N :=
+  match ae with
+  | Const_e i => ret! i
+  | Var_e x => PM.find (uid x) env
+  | Op_e op e1 e2 => let! x := sem_arith_expr e1 env in
+                     let! y := sem_arith_expr e2 env in
+                     ret! (sem_arith_op op x y)
+  end.
 
 (*################################################################*)
 (* Run-time expressions *)
