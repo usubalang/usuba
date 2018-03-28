@@ -82,10 +82,10 @@ Inductive sem_var (env: PM.t val): var -> val -> Prop :=
 
 
 Inductive sem_expr: PM.t val -> PM.t N -> expr -> val -> Prop :=
-| sem_Const: forall env senv ae n v,
+| sem_Const: forall env senv k ae n v,
     sem_arith_expr ae senv = Some n ->
-    val_of_nat n = v ->
-    sem_expr env senv (Const ae) v
+    val_of_nat k n = v ->
+    sem_expr env senv (Const k ae) v
 | sem_ExpVar: forall env senv v i,
     sem_var env v i ->
     sem_expr env senv (ExpVar v) i
@@ -133,15 +133,15 @@ with sem_def_i : def_i -> PM.t val -> PM.t N -> list ident -> list ident -> Prop
     Rename tmps (List.map N.to_nat xs) tmps' ->
     Forall2 (sem_ident env) var_outs tmps' ->
     sem_def_i (Perm xs) env senv var_ins var_outs
-| sem_Table: forall xs env senv var_ins v_in n v v_out v_outs var_outs,
+| sem_Table: forall k xs env senv var_ins v_in n v v_out v_outs var_outs,
     Forall2 (sem_ident env) var_ins v_in ->
     val_to_nat (List.concat v_in) = n ->
     nth_error xs (N.to_nat n) = Some v ->
-    val_of_nat v = v_out ->
+    val_of_nat k v = v_out ->
     (* XXX: unpleasantly non-constructive spec: *)
     List.concat v_outs = v_out ->
     Forall2 (sem_ident env) var_outs v_outs ->
-    sem_def_i (Table xs) env senv var_ins var_outs
+    sem_def_i (Table k xs) env senv var_ins var_outs
 with sem_deq: PM.t val -> PM.t N -> deq -> Prop :=
 | sem_Norec: forall env senv xs vs v eq,
     sem_expr env senv eq v ->

@@ -47,21 +47,25 @@ Inductive clock :=
 (* Values *)
 
 Parameter atom_size: nat.
-Definition atom := N. (* N.size_nat n < atom_size *)
+Definition MAX_ATOM := N.sub (N.shiftl 1 (N.of_nat atom_size)) 1.
 
-Definition val := list atom.
+Definition atom := N. (* N.size_nat n < atom_size *)
+Definition val := list atom. (* length val > 0 *)
 
 Definition Ttrue: atom := 1%N.
 Definition Tfalse: atom := 0%N.
 
-Definition val_of_nat (n: N): val.
-(* convert [n] in F(2^wordsize)[X] *)
-Admitted.
+Fixpoint val_of_nat (k: nat)(n: N): val :=
+  match k with
+  | 0 => []
+  | S k => N.land n MAX_ATOM :: val_of_nat k (N.shiftr n (N.of_nat atom_size))
+  end.
 
-Definition val_to_nat (v: val): N.
-(* convert back *)
-Admitted.
-
+Fixpoint val_to_nat (v: val): N :=
+  match v with
+  | [] => 0
+  | x :: v => N.land x (N.shiftl (val_to_nat v) (N.of_nat atom_size))
+  end.
 
 (*################################################################*)
 (* Compile-time expressions *)
@@ -91,7 +95,7 @@ Inductive shift_op := Lshift | Rshift | Lrotate | Rrotate.
 
 (* XXX: factorize operations in a single case *)
 Inductive expr :=
-  | Const (ae: arith_expr)
+  | Const (k: nat)(ae: arith_expr) (* produces a value of size [k] *)
   | ExpVar (v: var)
   | Tuple (es: list expr)
   | Not (e: expr) (* special case for bitwise not *)
@@ -122,7 +126,7 @@ Definition typs_of (p: formals): list typ := map (fun x => (snd x).(t)) p.
 Inductive def_i :=
   | Single        (locals: formals)(ds: list deq) (* regular node *)
   | Perm          (pi: list N) (* permutation *)
-  | Table         (t: list N) (* lookup table *).
+  | Table         (k: nat)(t: list N) (* lookup table *).
 
 Inductive def_opt := Inline | No_inline.
 

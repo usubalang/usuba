@@ -467,7 +467,7 @@ type shift_op =
 | Rrotate
 
 type expr =
-| Const of arith_expr
+| Const of nat * arith_expr
 | ExpVar of var
 | Tuple of expr list
 | Not of expr
@@ -486,7 +486,7 @@ type formals = (ident * formal) list
 type def_i =
 | Single of formals * deq list
 | Perm of int list
-| Table of int list
+| Table of nat * int list
 
 type def_opt =
 | Inline
