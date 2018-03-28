@@ -118,26 +118,22 @@ with sem_node: def -> PM.t N -> nat -> list val -> list val -> Prop :=
     Forall2 (sem_ident env) var_ins ins ->
     Forall2 (sem_ident env) var_outs outs ->
     List.nth_error d.(node) i = Some def ->
-    sem_def_i def env senv var_ins var_outs ->
+    sem_def_i def env senv ins outs ->
     sem_node d senv i ins outs
-with sem_def_i : def_i -> PM.t val -> PM.t N -> list ident -> list ident -> Prop :=
-| sem_Single: forall senv locals eqs env var_ins var_outs,
+with sem_def_i : def_i -> PM.t val -> PM.t N -> list val -> list val -> Prop :=
+| sem_Single: forall senv locals eqs env ins outs,
     Forall (sem_deq env senv) eqs ->
-    sem_def_i (Single locals eqs) env senv var_ins var_outs
-| sem_Perm: forall xs env senv tmps tmps' var_ins var_outs,
-    Forall2 (sem_ident env) var_ins tmps ->
-    Rename tmps (List.map N.to_nat xs) tmps' ->
-    Forall2 (sem_ident env) var_outs tmps' ->
-    sem_def_i (Perm xs) env senv var_ins var_outs
-| sem_Table: forall k xs env senv var_ins v_in n v v_out v_outs var_outs,
-    Forall2 (sem_ident env) var_ins v_in ->
-    val_to_nat (List.concat v_in) = n ->
+    sem_def_i (Single locals eqs) env senv ins outs
+| sem_Perm: forall xs env senv ins outs,
+    Rename ins (List.map N.to_nat xs) outs ->
+    sem_def_i (Perm xs) env senv ins outs
+| sem_Table: forall k xs env senv ins n v v_out outs,
+    val_to_nat (List.concat ins) = n ->
     nth_error xs (N.to_nat n) = Some v ->
     val_of_nat k v = v_out ->
     (* XXX: unpleasantly non-constructive spec: *)
-    List.concat v_outs = v_out ->
-    Forall2 (sem_ident env) var_outs v_outs ->
-    sem_def_i (Table k xs) env senv var_ins var_outs
+    List.concat outs = v_out ->
+    sem_def_i (Table k xs) env senv ins outs
 with sem_deq: PM.t val -> PM.t N -> deq -> Prop :=
 | sem_Norec: forall env senv xs vs v eq,
     sem_expr env senv eq v ->
