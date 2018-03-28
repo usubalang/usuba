@@ -114,29 +114,51 @@ Lemma test__Rrotate6: rotr 6 [1; 2; 3; 4; 5] = [1; 2; 3; 4; 5].
 Proof. trivial. Qed.
 
 
-Fixpoint mask {A}(l: list A)(k1 k2: nat): option (list A) :=
+Fixpoint mask_up {A}(l: list A)(k1 k2: nat): option (list A) :=
   match k2 with
-  | 0 => ret! []
+  | 0 =>
+    match l with
+    | [] => fail!
+    | x :: _ => ret! (x :: [])
+    end
   | S k2 =>
     match k1 with
     | S k1 => match l with
              | [] => fail!
-             | x :: xs => mask xs k1 k2
+             | x :: xs => mask_up xs k1 k2
              end
     | 0 => match l with
           | [] => fail!
           | x :: xs =>
-            let! xs := mask xs 0 k2 in
+            let! xs := mask_up xs 0 k2 in
             ret! (x :: xs)
           end
     end
   end.
 
-Lemma test__mask: mask [0; 1; 2; 3; 4; 5; 6; 7] 2 5 = Some [2; 3; 4].
+Fixpoint mask_down {A}(l: list A)(k1 k2: nat): option (list A) :=
+  let n := List.length l - 1 in
+  let! r := mask_up (List.rev l) (n - k1) (n - k2) in
+  ret! r.
+
+Definition mask {A}(l: list A)(k1 k2: nat): option (list A) :=
+  if Nat.ltb k1 k2 then mask_up l k1 k2
+  else mask_down l k1 k2.
+
+Lemma test__mask_up: mask_up [0; 1; 2; 3; 4; 5; 6; 7] 2 5 = Some [2; 3; 4; 5].
 Proof. auto. Qed.
 
+Lemma test__mask_down: mask_down [0; 1; 2; 3; 4; 5; 6; 7] 5 2 = Some [5; 4; 3; 2].
+Proof. auto. Qed.
 
+Lemma test__mask_down2: mask_down [0] 0 0 = Some [0].
+Proof. auto. Qed.
 
+Lemma test__mask1: mask [0; 1; 2; 3; 4; 5; 6; 7] 2 5 = Some [2; 3; 4; 5].
+Proof. auto. Qed.
+
+Lemma test__mask2: mask [0; 1; 2; 3; 4; 5; 6; 7] 5 2 = Some [5; 4; 3; 2].
+Proof. auto. Qed.
 
 Inductive Forall3 {A B C : Type} (R : A -> B -> C -> Prop) : list A -> list B -> list C -> Prop :=
     Forall3_nil : Forall3 R [] [] []
