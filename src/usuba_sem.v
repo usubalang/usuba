@@ -48,10 +48,8 @@ Fixpoint sem_arith_expr (ae: arith_expr)(env: PM.t N): option N :=
                      ret! (sem_arith_op op x y)
   end.
 
-(*
-Definition val_lookup (v: val)(k: N): val :=
-  List.nth (N.to_nat k) v BOTTOM.
-*)
+Definition val_lookup (v: val)(k: N)(a: atom): Prop :=
+  List.nth_error v (N.to_nat k) = Some a.
 
 Section SemExpr.
 
@@ -63,23 +61,21 @@ Definition sem_ident (env: PM.t val)(x: ident)(v: val): Prop :=
 Definition val_mask (v: val)(k1 k2: N): option val :=
   mask v (N.to_nat k1) (N.to_nat k2).
 
-Inductive sem_var (env: PM.t val): var -> val -> Prop :=
+Inductive sem_var (env: PM.t val)(senv: PM.t N): var -> val -> Prop :=
 | sem_Var: forall x v,
     sem_ident env x v ->
-    sem_var env (Var x) v.
-(*
+    sem_var env senv (Var x) v
 | sem_Slice: forall x aes ks vx vs,
-    sem_var env x vx ->
+    sem_var env senv x vx ->
     Forall2 (fun ae k => sem_arith_expr ae senv = Some k) aes ks ->
-    Forall2 (fun k v => val_lookup vx k = Some v) ks vs ->
-    sem_var env (Slice x aes) (Tup vs)
+    Forall2 (fun k v => val_lookup vx k v) ks vs ->
+    sem_var env senv (Slice x aes) vs
 | sem_Range: forall x ae1 ae2 k1 k2 vx v,
-    sem_var env x vx ->
+    sem_var env senv x vx ->
     sem_arith_expr ae1 senv = Some k1 ->
     sem_arith_expr ae2 senv = Some k2 ->
     val_mask vx k1 k2 = Some v ->
-    sem_var env (Range x ae1 ae2) v.*)
-
+    sem_var env senv (Range x ae1 ae2) v.
 
 Inductive sem_expr: PM.t val -> PM.t N -> expr -> val -> Prop :=
 | sem_Const: forall env senv k ae n v,
@@ -87,7 +83,7 @@ Inductive sem_expr: PM.t val -> PM.t N -> expr -> val -> Prop :=
     val_of_nat k n = v ->
     sem_expr env senv (Const k ae) v
 | sem_ExpVar: forall env senv v i,
-    sem_var env v i ->
+    sem_var env senv v i ->
     sem_expr env senv (ExpVar v) i
 | sem_Tuple: forall env senv es vs v,
     List.Forall2 (sem_expr env senv) es vs ->
@@ -145,7 +141,7 @@ with sem_def_i : def_i -> PM.t val -> PM.t N -> list ident -> list ident -> Prop
 with sem_deq: PM.t val -> PM.t N -> deq -> Prop :=
 | sem_Norec: forall env senv xs vs v eq,
     sem_expr env senv eq v ->
-    Forall2 (sem_var env) xs vs ->
+    Forall2 (sem_var env senv) xs vs ->
     List.concat vs = v ->
     sem_deq env senv (Norec xs eq)
 | sem_Rec: forall x env senv ae1 ae2 eqs i j ij,
