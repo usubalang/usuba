@@ -473,7 +473,7 @@ type expr =
 | Not of expr
 | Shift of shift_op * expr * arith_expr
 | Log of log_op * expr * expr
-| Fun of ident * expr list
+| Fun of ident * arith_expr * expr list
 
 type deq =
 | Norec of var list * expr
@@ -485,18 +485,15 @@ type formals = (ident * formal) list
 
 type def_i =
 | Single of formals * deq list
-| Multiple of (formals * deq list) list
 | Perm of int list
-| MultiplePerm of int list list
 | Table of int list
-| MultipleTable of int list list
 
 type def_opt =
 | Inline
 | No_inline
 
 type def = { d_name : string; p_in : formals; p_out : formals;
-             opt : def_opt list; node : def_i }
+             opt : def_opt list; node : def_i list }
 
 type prog = def PM.t
 

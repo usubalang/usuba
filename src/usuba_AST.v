@@ -97,9 +97,7 @@ Inductive expr :=
   | Not (e: expr) (* special case for bitwise not *)
   | Shift (op: shift_op)(e: expr)(ae: arith_expr)
   | Log  (op: log_op)(e1 e2: expr)
-  | Fun (x: ident)(es: list expr)
-  (* XXX: not yet supported by the semantics *)
-(*  | Fun_v (x: ident)(ae: arith_expr)(es: list expr) (* nodes arrays *) *)
+  | Fun (x: ident)(ae: arith_expr)(es: list expr)
   (* XXX: not yet supported by the semantics *)
 (*  | When (e: expr)(x: constr) (y: ident) *)
   (* XXX: not yet supported by the semantics *)
@@ -124,11 +122,8 @@ Definition typs_of (p: formals): list typ := map (fun x => (snd x).(t)) p.
 
 Inductive def_i :=
   | Single        (locals: formals)(ds: list deq) (* regular node *)
-  | Multiple      (an: list (formals * list deq)) (*array of nodes*)
   | Perm          (pi: list N) (* permutation *)
-  | MultiplePerm  (pis: list (list N)) (* array of perm *)
-  | Table         (t: list N) (* lookup table *)
-  | MultipleTable (ts: list (list N)). (* array of lookup tables *)
+  | Table         (t: list N) (* lookup table *).
 
 Inductive def_opt := Inline | No_inline.
 
@@ -137,7 +132,7 @@ Record def := {
   p_in  : formals;
   p_out : formals;
   opt   : list def_opt;
-  node  : def_i;
+  node  : list def_i;
 }.
 
 Definition prog := PM.t def.

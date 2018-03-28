@@ -109,20 +109,22 @@ Inductive sem_expr: PM.t val -> expr -> val -> Prop :=
     sem_expr env e2 v2 ->
     map2 (sem_log_op op) v1 v2 = v ->
     sem_expr env (Log op e1 e2) v
-| sem_Fun: forall env f es node ins outs v,
+| sem_Fun: forall env f ae es i node ins outs v,
     PM.find (uid f) prog = Some node ->
+    (* XXX: restore   sem_arith_expr ae senv = Some i -> *)
     Forall2 (sem_expr env) es ins ->
-    sem_node node ins outs ->
+    sem_node node i ins outs ->
     List.concat outs = v ->
-    sem_expr env (Fun f es) v
-with sem_node: def -> list val -> list val -> Prop :=
-| sem_Node: forall d ins outs env var_ins var_outs,
+    sem_expr env (Fun f ae es) v
+with sem_node: def -> nat -> list val -> list val -> Prop :=
+| sem_Node: forall d i ins outs env def var_ins var_outs,
     var_ins = vars_of d.(p_in) ->
     var_outs = vars_of d.(p_out) ->
     Forall2 (sem_ident env) var_ins ins ->
     Forall2 (sem_ident env) var_outs outs ->
-    sem_def_i d.(node) env var_ins var_outs ->
-    sem_node d ins outs
+    List.nth_error d.(node) i = Some def ->
+    sem_def_i def env var_ins var_outs ->
+    sem_node d i ins outs
 with sem_def_i : def_i -> PM.t val -> list ident -> list ident -> Prop :=
 | sem_Single: forall locals eqs env var_ins var_outs,
     Forall (sem_deq env) eqs ->
@@ -141,7 +143,6 @@ with sem_def_i : def_i -> PM.t val -> list ident -> list ident -> Prop :=
     List.concat v_outs = v_out ->
     Forall2 (sem_ident env) var_outs v_outs ->
     sem_def_i (Table xs) env var_ins var_outs
-(* XXX: missing Multi.* *)
 with sem_deq: PM.t val -> deq -> Prop :=
 | sem_Norec: forall env xs vs v eq,
     sem_expr env eq v ->
