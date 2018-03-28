@@ -91,7 +91,7 @@ Inductive shift_op := Lshift | Rshift | Lrotate | Rrotate.
 
 (* XXX: factorize operations in a single case *)
 Inductive expr :=
-  | Const (v: N)
+  | Const (ae: arith_expr)
   | ExpVar (v: var)
   | Tuple (es: list expr)
   | Not (e: expr) (* special case for bitwise not *)

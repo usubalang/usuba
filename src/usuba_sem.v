@@ -82,10 +82,10 @@ Inductive sem_var (env: PM.t val): var -> val -> Prop :=
 
 
 Inductive sem_expr: PM.t val -> PM.t N -> expr -> val -> Prop :=
-| sem_Const: forall env senv n v,
+| sem_Const: forall env senv ae n v,
+    sem_arith_expr ae senv = Some n ->
     val_of_nat n = v ->
-    (* XXX: switch to any ae *)
-    sem_expr env senv (Const n) v
+    sem_expr env senv (Const ae) v
 | sem_ExpVar: forall env senv v i,
     sem_var env v i ->
     sem_expr env senv (ExpVar v) i

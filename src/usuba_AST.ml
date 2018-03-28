@@ -467,7 +467,7 @@ type shift_op =
 | Rrotate
 
 type expr =
-| Const of int
+| Const of arith_expr
 | ExpVar of var
 | Tuple of expr list
 | Not of expr
