@@ -53,16 +53,17 @@ Inductive ty_atom (n: atom): Prop :=
     ty_atom n.
 
 Inductive ty_val: val -> typ -> Prop :=
-  | ty_Tup: forall vs n,
+  | ty_Tup: forall vs ty,
       Forall ty_atom vs  ->
-      List.length vs = n ->
-      ty_val vs n.
+      List.length vs = ty ->
+      ty_val vs ty.
 
 Definition sum (ks: list nat): nat := fold_right plus 0 ks.
 
 Inductive ty_expr: context -> scontext -> expr -> typ -> Prop :=
   | ty_Const: forall ctxt sctxt k ty ae,
       k = ty ->
+      (* XXX: check that [ae] is less than [ty * 2^atom_size] *)
       ty_expr ctxt sctxt (Const k ae) ty
   | ty_ExpVar: forall ctxt sctxt v ty,
       ty_var ctxt sctxt v ty ->
@@ -115,6 +116,7 @@ Inductive ty_def_i: context -> scontext -> typ -> typ -> def_i -> Prop :=
       ty_def_i ctxt sctxt ty_in ty_out (Perm p)
   | ty_Table: forall ctxt sctxt k xs ty_in ty_out,
       k = ty_out ->
+      (* XXX: check that every element of [xs] is less than [ty_out * 2^atom_size] *)
       ty_def_i ctxt sctxt ty_in ty_out (Table k xs).
 
 Definition ty_node (d: def): Prop :=

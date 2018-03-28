@@ -56,8 +56,6 @@ Inductive sem_var (env: PM.t val)(senv: PM.t N): var -> val -> Prop :=
     sem_var env senv x vx ->
     sem_arith_expr ae1 senv = Some k1 ->
     sem_arith_expr ae2 senv = Some k2 ->
-    (* XXX: only defined for k1 < k2:
-       1. wrong interval; 2. need support for k2 > k1  *)
     val_mask vx k1 k2 = Some v ->
     sem_var env senv (Range x ae1 ae2) v.
 
