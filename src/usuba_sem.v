@@ -37,7 +37,7 @@ Section SemExpr.
 
 Variable prog: PM.t def.
 
-Definition sem_ident (env: PM.t val)(x: ident)(v: val): Prop :=
+Definition sem_ident {A} (env: PM.t A)(x: ident)(v: A): Prop :=
   PM.find (uid x) env = Some v.
 
 Definition val_mask (v: val)(k1 k2: N): option val :=
@@ -90,32 +90,32 @@ Inductive sem_expr: PM.t val -> PM.t N -> expr -> val -> Prop :=
     PM.find (uid f) prog = Some node ->
     sem_arith_expr ae senv = Some i ->
     Forall2 (sem_expr env senv) es ins ->
-    sem_node node senv (N.to_nat i) ins outs ->
+    sem_node node (N.to_nat i) ins outs ->
     List.concat outs = v ->
     sem_expr env senv (Fun f ae es) v
-with sem_node: def -> PM.t N -> nat -> list val -> list val -> Prop :=
-| sem_Node: forall d senv i ins outs env def var_ins var_outs,
+with sem_node: def -> nat -> list val -> list val -> Prop :=
+| sem_Node: forall d i ins outs env def var_ins var_outs,
     var_ins = vars_of d.(p_in) ->
     var_outs = vars_of d.(p_out) ->
     Forall2 (sem_ident env) var_ins ins ->
     Forall2 (sem_ident env) var_outs outs ->
     List.nth_error d.(node) i = Some def ->
-    sem_def_i def env senv ins outs ->
-    sem_node d senv i ins outs
-with sem_def_i : def_i -> PM.t val -> PM.t N -> list val -> list val -> Prop :=
-| sem_Single: forall senv locals eqs env ins outs,
-    Forall (sem_deq env senv) eqs ->
-    sem_def_i (Single locals eqs) env senv ins outs
-| sem_Perm: forall xs env senv ins outs,
+    sem_def_i def env ins outs ->
+    sem_node d i ins outs
+with sem_def_i : def_i -> PM.t val -> list val -> list val -> Prop :=
+| sem_Single: forall locals eqs env ins outs,
+    Forall (sem_deq env (PM.empty _)) eqs ->
+    sem_def_i (Single locals eqs) env ins outs
+| sem_Perm: forall xs env ins outs,
     Rename ins (List.map N.to_nat xs) outs ->
-    sem_def_i (Perm xs) env senv ins outs
-| sem_Table: forall k xs env senv ins n v v_out outs,
+    sem_def_i (Perm xs) env ins outs
+| sem_Table: forall k xs env ins n v v_out outs,
     val_to_nat (List.concat ins) = n ->
     nth_error xs (N.to_nat n) = Some v ->
     val_of_nat k v = v_out ->
     (* XXX: unpleasantly non-constructive spec: *)
     List.concat outs = v_out ->
-    sem_def_i (Table k xs) env senv ins outs
+    sem_def_i (Table k xs) env ins outs
 with sem_deq: PM.t val -> PM.t N -> deq -> Prop :=
 | sem_Norec: forall env senv xs vs v eq,
     sem_expr env senv eq v ->
@@ -132,3 +132,12 @@ with sem_deq: PM.t val -> PM.t N -> deq -> Prop :=
 
 
 End SemExpr.
+
+Section SemProg.
+
+Variable (main: PM.key).
+
+Definition sem_prog (p: prog)(ins: list val)(outs: list val) :=
+  forall def, PM.find main p = Some def -> sem_node p def 0 ins outs.
+
+End SemProg.
