@@ -9,39 +9,44 @@ Fixpoint is_usuba0_var (v:var) : bool :=
 
 Fixpoint is_usuba0_expr (e:expr) : bool :=
   match e with
-  | Const 0 | Const 1 => true
+  | Const 1 _ => true
+  | Const _ _ => false
   | ExpVar v => is_usuba0_var v
   | Not e => is_usuba0_expr e
   | Log _ e1 e2 => andb (is_usuba0_expr e1) (is_usuba0_expr e2)
-  (* "forall" instead of "fold_left && map" ? *)
-  | Fun _ l => fold_left andb (map is_usuba0_expr l) true
-  | _ => false
+  | Fun _ _ l => forallb is_usuba0_expr l
+  | Tuple _ => false
+  | Shift _ _ _ => false
   end.
 
 Fixpoint is_usuba0_deq (d:deq) : bool :=
   match d with
-  | Norec vs e => andb (fold_left andb (map is_usuba0_var vs) true)
-                       (is_usuba0_expr e)
+  | Norec vs e => andb (forallb is_usuba0_var vs)
+                      (is_usuba0_expr e)
+  | Rec _ _ _ _ => false
+  end.
+
+Fixpoint is_usuba0_formal (p: (ident * formal)): bool :=
+  match (snd p).(t) with
+  | 1 => true
   | _ => false
   end.
 
-Fixpoint is_usuba0_p (p:p) : bool :=
-  fold_left andb (map (fun x => match x with
-                                | (_,Bool,_) => true
-                                | _    => false
-                                end) p) true.
+Fixpoint is_usuba0_formals (p:formals) : bool :=
+  forallb is_usuba0_formal p.
 
 Fixpoint is_usuba0_defi (d:def_i) : bool :=
   match d with
-  | Single p ds => andb (is_usuba0_p p)
-                        (fold_left andb (map is_usuba0_deq ds) true)
-  | _ => false
+  | Single p ds => andb (is_usuba0_formals p)
+                       (forallb is_usuba0_deq ds)
+  | Table _ _ => false
+  | Perm _ => false
   end.
 
 Fixpoint is_usuba0_def (d:def) : bool :=
-  andb (is_usuba0_defi (node d))
-       (andb (is_usuba0_p (p_in d))
-             (is_usuba0_p (p_out d))).
+  andb (forallb is_usuba0_defi d.(node))
+       (andb (is_usuba0_formals d.(p_in))
+             (is_usuba0_formals d.(p_out))).
 
-Fixpoint is_usuba0_prog (p:prog) : bool :=
-  fold_left andb (map is_usuba0_def (nodes p)) true.
+Fixpoint is_usuba0 (p:prog) : bool :=
+  forallb (fun ip => is_usuba0_def (snd ip)) (PM.elements p).
