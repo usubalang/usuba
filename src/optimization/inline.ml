@@ -32,6 +32,7 @@ let rec update_expr var_env expr_env (e:expr) : expr =
   (* TODO: Should do something with 'ae' *)
   | Shift(op,e,ae) -> Shift(op,rec_call e,ae)
   | Log(op,x,y) -> Log(op,rec_call x,rec_call y)
+  | Arith(op,x,y) -> Arith(op,rec_call x,rec_call y)
   | Fun(f,l) -> Fun(f,List.map rec_call l)
   | _ -> print_endline (Usuba_print.expr_to_str e);
          assert false

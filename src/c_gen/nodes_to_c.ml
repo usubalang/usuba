@@ -15,7 +15,7 @@ let var_to_c env (id:ident) : string =
   | Some s -> s
   | None -> rename id.name
 
-let op_to_c = function
+let log_op_to_c = function
   | And  -> "AND"
   | Or   -> "OR"
   | Xor  -> "XOR"
@@ -33,6 +33,13 @@ let arith_op_to_c = function
   | Sub -> "-"
   | Div -> "/"
   | Mod -> "%"
+             
+let arith_op_to_c_generic = function
+  | Add -> "ADD"
+  | Mul -> "MUL"
+  | Sub -> "SUB"
+  | Div -> "DIV"
+  | Mod -> "MOD"
 
 let rec aexpr_to_c (e:arith_expr) : string =
   match e with
@@ -51,9 +58,16 @@ let rec expr_to_c (conf:config) env (e:expr) : string =
   | ExpVar(Var id) -> var_to_c env id
   | Not e -> sprintf "NOT(%s)" (expr_to_c conf env e)
   | Log(op,x,y) -> sprintf "%s(%s,%s)"
-                           (op_to_c op)
+                           (log_op_to_c op)
                            (expr_to_c conf env x)
                            (expr_to_c conf env y)
+  | Arith(op,x,y) -> 
+     Printf.fprintf stderr "Hardcoded arith op size\n";
+     sprintf "%s(%s,%s,%d)"
+                             (arith_op_to_c_generic op)
+                             (expr_to_c conf env x)
+                             (expr_to_c conf env y)
+                             32
   | Shuffle(Var id,l) -> sprintf "PERMUT_%d(%s,%s)"
                                  (List.length l)
                                  (var_to_c env id)

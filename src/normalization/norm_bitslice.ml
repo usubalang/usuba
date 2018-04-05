@@ -116,6 +116,15 @@ and norm_expr env_fun (e: expr) : deq list * expr =
        | Tuple l1,Tuple l2 ->
            Tuple (List.map2 (fun x y -> Log(op,x,y)) l1 l2)
        | _ -> Log(op,x1',x2'))
+  | Arith(op,x1,x2) ->
+     let (deqs1, x1') = remove_call env_fun x1 in
+     let (deqs2, x2') = remove_call env_fun x2 in
+     deqs1 @ deqs2,
+     ( match x1', x2' with
+       | Tuple l1,Tuple l2 ->
+          Tuple (List.map2 (fun x y -> Arith(op,x,y)) l1 l2)
+       | _ -> Arith(op,x1',x2'))
+       
   | Not e ->
      let (deqs,e') = remove_call env_fun e in
      deqs,
