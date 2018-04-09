@@ -28,6 +28,8 @@
 #define ANDN(a,b) (~(a) & (b))
 #define NOT(a)    (~(a))
 
+#define ADD(a,b,c) ((a) + (b))
+
 #define L_SHIFT(a,b,c) ((a) << (b))
 #define R_SHIFT(a,b,c) ((a) >> (b))
 #define L_ROTATE(a,b,c) ((a << b) | (a >> (c-b)))
@@ -35,7 +37,11 @@
 
 
 #ifndef DATATYPE
+#if BITS_PER_REG == 32
+#define DATATYPE unsigned int
+#else
 #define DATATYPE uint64_t
+#endif
 #endif
 
 #define SET_ALL_ONE()  -1

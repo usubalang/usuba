@@ -21,9 +21,8 @@ Printf.sprintf
 
 /* Do NOT change the order of those define/include */
 
-/* defining \"BENCH\" or \"STD\" */
-/* (will impact the .h functions loaded by the .h) */
 #define NO_RUNTIME
+#define BITS_PER_REG %d
 /* including the architecture specific .h */
 #include \"%s\"
 
@@ -32,7 +31,8 @@ Printf.sprintf
 
 /* main function */
 %s
-"
+ "
+  (if conf.archi = Std then conf.bits_per_reg else 64)
   (c_header conf.archi)
   (join "\n\n" prog_c)
   entry
