@@ -22,7 +22,9 @@ Printf.sprintf
 /* Do NOT change the order of those define/include */
 
 #define NO_RUNTIME
+#ifndef BITS_PER_REG
 #define BITS_PER_REG %d
+#endif
 /* including the architecture specific .h */
 #include \"%s\"
 
