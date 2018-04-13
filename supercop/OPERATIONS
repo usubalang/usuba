@@ -1,0 +1,2 @@
+crypto_verify :_BYTES (const unsigned char *,const unsigned char *)
+crypto_stream :_xor:_KEYBYTES:_NONCEBYTES (unsigned char *,unsigned long long,const unsigned char *,const unsigned char *):_xor(unsigned char *,const unsigned char *,unsigned long long,const unsigned char *,const unsigned char *)
