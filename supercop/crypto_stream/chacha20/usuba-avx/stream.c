@@ -39,8 +39,7 @@ unsigned int chacha_const[4] = { 0x61707865, 0x3320646e, 0x79622d32, 0x6b206574 
 
 
 #define load_input()                                                   \
-  state[12] = _mm256_add_epi32(state[12],_mm256_set1_epi32(1));         \
-  //  state[12] = _mm256_set_epi32(c1,c1+1,c1+2,c1+3,c1+4,c1+5,c1+6,c1+7); \
+  state[12] = _mm256_set_epi32(c1,c1+1,c1+2,c1+3,c1+4,c1+5,c1+6,c1+7);  \
   state[13] = _mm256_set1_epi32(c2);                                    \
   c1 += 8;                                                              \
   if (!c1) c2++;                                                        \
