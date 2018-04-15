@@ -12,19 +12,25 @@ use File::Path qw(remove_tree);
 
 use Getopt::Long;
 
+use constant {
+    TRUE  => 1,
+    FALSE => 0,
+    V_LOW_PRIO => 5,
+    V_MED_PRIO => 3,
+    V_HIGH_PRIO => 1
+};
 
-
-my $make_usubac = ''; # If true, then recompile Usubac (implies --generate)
-my $generate    = ''; # If true, then regenerate the C sources from Usuba
-my $verbose     = 5;
-my $run_benchs  = 0;
-my $collect     = 1;
+my $make_usubac = FALSE; # If true, then recompile Usubac (implies --generate)
+my $generate    = FALSE; # If true, then regenerate the C sources from Usuba
+my $verbose     = V_LOW_PRIO;
+my $run_benchs  = FALSE; # If true, run the benchmarks
+my $collect     = TRUE ; # If true, collects the data from the benchmakrs
 
 GetOptions('make-usubac' => sub { $make_usubac = $generate = 1 },
-           'generate' => \$generate,
-           'verbose=i' => \$verbose,
-           'run-benchs' => \$run_benchs,
-           'collect' => \$collect);
+           'generate'    => \$generate,
+           'verbose=i'   => \$verbose,
+           'run-benchs'  => \$run_benchs,
+           'collect'     => \$collect);
 
 
 sub status {
@@ -34,8 +40,8 @@ sub status {
     }
 }
 our $job_str = ''; # Don't pay attention, I'm gonna play with dynamic scoping :p
-sub status_start { status(1, "$job_str: in progress...") }
-sub status_end   { status(1, "$job_str: done.") }
+sub status_start { status(V_HIGH_PRIO, "$job_str: in progress...") }
+sub status_end   { status(V_HIGH_PRIO, "$job_str: done.") }
 
 
 
@@ -80,9 +86,9 @@ sub generate {
                        dir => 'chacha20', opts => '-bits-per-reg 32' });
 
     while (my ($cipher,$cconf) = each %conf) {
-        status(3, "Generating $cipher...");
+        status(V_MED_PRIO, "Generating $cipher...");
         for my $arch (@{$cconf->{archs}}) {
-            status(5, "Generating ${cipher}::${arch}...");
+            status(V_LOW_PRIO, "Generating ${cipher}::${arch}...");
 
             my $dst_dir = "supercop/crypto_stream/$cconf->{dir}/usuba-$arch/";
             
@@ -98,9 +104,9 @@ sub generate {
             # Making sure the arch specific header is up-to-date
             copy "arch/" . uc($arch) . ".h", $dst_dir;
             
-            status(5, "Generating ${cipher}::${arch}: done.");
+            status(V_LOW_PRIO, "Generating ${cipher}::${arch}: done.");
         }
-        status(3, "Generating $cipher: done.");
+        status(V_MED_PRIO, "Generating $cipher: done.");
     }
     
     status_end;
@@ -125,6 +131,8 @@ sub collect {
     local $job_str = "Collecting results";
     status_start;
 
+    
+    #supercop-data/dadavm/amd64/try/c/
     
 
     status_end;

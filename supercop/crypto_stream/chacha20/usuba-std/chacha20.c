@@ -989,7 +989,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___1_DR_start___1_QR___1__tmp5_4 = L_ROTATE(DR___1_DR_start___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___1_DR_start___1_QR___1__tmp5_3 = ADD(plain__[8],DR___1_DR_start___1_QR___1__tmp5_4,32);
   DR___1_DR_start___1_QR___1_QR_start___1__tmp2_ = XOR(plain__[4],DR___1_DR_start___1_QR___1__tmp5_3);
-  DR___1_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___1_DR_start___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___1_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___1_DR_start___1_QR___1_QR_start___1__tmp2_,8,32);
   DR___1__tmp6_1 = ADD(DR___1_DR_start___1_QR___1__tmp5_1,DR___1_DR_start___1_QR___1__tmp5_2,32);
   DR___1_DR_start___1_QR___1_QR_end___1__tmp3_ = XOR(DR___1_DR_start___1_QR___1__tmp5_4,DR___1__tmp6_1);
   DR___1__tmp6_13 = L_ROTATE(DR___1_DR_start___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1001,7 +1001,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___1_DR_start___1_QR___2__tmp5_4 = L_ROTATE(DR___1_DR_start___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___1_DR_start___1_QR___2__tmp5_3 = ADD(plain__[9],DR___1_DR_start___1_QR___2__tmp5_4,32);
   DR___1_DR_start___1_QR___2_QR_start___1__tmp2_ = XOR(plain__[5],DR___1_DR_start___1_QR___2__tmp5_3);
-  DR___1_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___1_DR_start___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___1_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___1_DR_start___1_QR___2_QR_start___1__tmp2_,8,32);
   DR___1__tmp6_2 = ADD(DR___1_DR_start___1_QR___2__tmp5_1,DR___1_DR_start___1_QR___2__tmp5_2,32);
   DR___1_DR_start___1_QR___2_QR_end___1__tmp3_ = XOR(DR___1_DR_start___1_QR___2__tmp5_4,DR___1__tmp6_2);
   DR___1__tmp6_14 = L_ROTATE(DR___1_DR_start___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1013,7 +1013,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___1_DR_start___1_QR___3__tmp5_4 = L_ROTATE(DR___1_DR_start___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___1_DR_start___1_QR___3__tmp5_3 = ADD(plain__[10],DR___1_DR_start___1_QR___3__tmp5_4,32);
   DR___1_DR_start___1_QR___3_QR_start___1__tmp2_ = XOR(plain__[6],DR___1_DR_start___1_QR___3__tmp5_3);
-  DR___1_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___1_DR_start___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___1_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___1_DR_start___1_QR___3_QR_start___1__tmp2_,8,32);
   DR___1__tmp6_3 = ADD(DR___1_DR_start___1_QR___3__tmp5_1,DR___1_DR_start___1_QR___3__tmp5_2,32);
   DR___1_DR_start___1_QR___3_QR_end___1__tmp3_ = XOR(DR___1_DR_start___1_QR___3__tmp5_4,DR___1__tmp6_3);
   DR___1__tmp6_15 = L_ROTATE(DR___1_DR_start___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1025,7 +1025,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___1_DR_start___1_QR___4__tmp5_4 = L_ROTATE(DR___1_DR_start___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___1_DR_start___1_QR___4__tmp5_3 = ADD(plain__[11],DR___1_DR_start___1_QR___4__tmp5_4,32);
   DR___1_DR_start___1_QR___4_QR_start___1__tmp2_ = XOR(plain__[7],DR___1_DR_start___1_QR___4__tmp5_3);
-  DR___1_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___1_DR_start___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___1_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___1_DR_start___1_QR___4_QR_start___1__tmp2_,8,32);
   DR___1__tmp6_4 = ADD(DR___1_DR_start___1_QR___4__tmp5_1,DR___1_DR_start___1_QR___4__tmp5_2,32);
   DR___1_DR_start___1_QR___4_QR_end___1__tmp3_ = XOR(DR___1_DR_start___1_QR___4__tmp5_4,DR___1__tmp6_4);
   DR___1__tmp6_16 = L_ROTATE(DR___1_DR_start___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1037,7 +1037,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___1_DR_end___1_QR___1__tmp5_4 = L_ROTATE(DR___1_DR_end___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___1_DR_end___1_QR___1__tmp5_3 = ADD(DR___1__tmp6_11,DR___1_DR_end___1_QR___1__tmp5_4,32);
   DR___1_DR_end___1_QR___1_QR_start___1__tmp2_ = XOR(DR___1__tmp6_6,DR___1_DR_end___1_QR___1__tmp5_3);
-  DR___1_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___1_DR_end___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___1_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___1_DR_end___1_QR___1_QR_start___1__tmp2_,8,32);
   state__1__0__ = ADD(DR___1_DR_end___1_QR___1__tmp5_1,DR___1_DR_end___1_QR___1__tmp5_2,32);
   DR___1_DR_end___1_QR___1_QR_end___1__tmp3_ = XOR(DR___1_DR_end___1_QR___1__tmp5_4,state__1__0__);
   state__1__15__ = L_ROTATE(DR___1_DR_end___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1049,7 +1049,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___1_DR_end___1_QR___2__tmp5_4 = L_ROTATE(DR___1_DR_end___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___1_DR_end___1_QR___2__tmp5_3 = ADD(DR___1__tmp6_12,DR___1_DR_end___1_QR___2__tmp5_4,32);
   DR___1_DR_end___1_QR___2_QR_start___1__tmp2_ = XOR(DR___1__tmp6_7,DR___1_DR_end___1_QR___2__tmp5_3);
-  DR___1_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___1_DR_end___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___1_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___1_DR_end___1_QR___2_QR_start___1__tmp2_,8,32);
   state__1__1__ = ADD(DR___1_DR_end___1_QR___2__tmp5_1,DR___1_DR_end___1_QR___2__tmp5_2,32);
   DR___1_DR_end___1_QR___2_QR_end___1__tmp3_ = XOR(DR___1_DR_end___1_QR___2__tmp5_4,state__1__1__);
   state__1__12__ = L_ROTATE(DR___1_DR_end___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1061,7 +1061,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___1_DR_end___1_QR___3__tmp5_4 = L_ROTATE(DR___1_DR_end___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___1_DR_end___1_QR___3__tmp5_3 = ADD(DR___1__tmp6_9,DR___1_DR_end___1_QR___3__tmp5_4,32);
   DR___1_DR_end___1_QR___3_QR_start___1__tmp2_ = XOR(DR___1__tmp6_8,DR___1_DR_end___1_QR___3__tmp5_3);
-  DR___1_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___1_DR_end___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___1_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___1_DR_end___1_QR___3_QR_start___1__tmp2_,8,32);
   state__1__2__ = ADD(DR___1_DR_end___1_QR___3__tmp5_1,DR___1_DR_end___1_QR___3__tmp5_2,32);
   DR___1_DR_end___1_QR___3_QR_end___1__tmp3_ = XOR(DR___1_DR_end___1_QR___3__tmp5_4,state__1__2__);
   state__1__13__ = L_ROTATE(DR___1_DR_end___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1073,7 +1073,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___1_DR_end___1_QR___4__tmp5_4 = L_ROTATE(DR___1_DR_end___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___1_DR_end___1_QR___4__tmp5_3 = ADD(DR___1__tmp6_10,DR___1_DR_end___1_QR___4__tmp5_4,32);
   DR___1_DR_end___1_QR___4_QR_start___1__tmp2_ = XOR(DR___1__tmp6_5,DR___1_DR_end___1_QR___4__tmp5_3);
-  DR___1_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___1_DR_end___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___1_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___1_DR_end___1_QR___4_QR_start___1__tmp2_,8,32);
   state__1__3__ = ADD(DR___1_DR_end___1_QR___4__tmp5_1,DR___1_DR_end___1_QR___4__tmp5_2,32);
   DR___1_DR_end___1_QR___4_QR_end___1__tmp3_ = XOR(DR___1_DR_end___1_QR___4__tmp5_4,state__1__3__);
   state__1__14__ = L_ROTATE(DR___1_DR_end___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1085,7 +1085,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___2_DR_start___1_QR___1__tmp5_4 = L_ROTATE(DR___2_DR_start___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___2_DR_start___1_QR___1__tmp5_3 = ADD(state__1__8__,DR___2_DR_start___1_QR___1__tmp5_4,32);
   DR___2_DR_start___1_QR___1_QR_start___1__tmp2_ = XOR(state__1__4__,DR___2_DR_start___1_QR___1__tmp5_3);
-  DR___2_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___2_DR_start___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___2_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___2_DR_start___1_QR___1_QR_start___1__tmp2_,8,32);
   DR___2__tmp6_1 = ADD(DR___2_DR_start___1_QR___1__tmp5_1,DR___2_DR_start___1_QR___1__tmp5_2,32);
   DR___2_DR_start___1_QR___1_QR_end___1__tmp3_ = XOR(DR___2_DR_start___1_QR___1__tmp5_4,DR___2__tmp6_1);
   DR___2__tmp6_13 = L_ROTATE(DR___2_DR_start___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1097,7 +1097,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___2_DR_start___1_QR___2__tmp5_4 = L_ROTATE(DR___2_DR_start___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___2_DR_start___1_QR___2__tmp5_3 = ADD(state__1__9__,DR___2_DR_start___1_QR___2__tmp5_4,32);
   DR___2_DR_start___1_QR___2_QR_start___1__tmp2_ = XOR(state__1__5__,DR___2_DR_start___1_QR___2__tmp5_3);
-  DR___2_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___2_DR_start___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___2_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___2_DR_start___1_QR___2_QR_start___1__tmp2_,8,32);
   DR___2__tmp6_2 = ADD(DR___2_DR_start___1_QR___2__tmp5_1,DR___2_DR_start___1_QR___2__tmp5_2,32);
   DR___2_DR_start___1_QR___2_QR_end___1__tmp3_ = XOR(DR___2_DR_start___1_QR___2__tmp5_4,DR___2__tmp6_2);
   DR___2__tmp6_14 = L_ROTATE(DR___2_DR_start___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1109,7 +1109,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___2_DR_start___1_QR___3__tmp5_4 = L_ROTATE(DR___2_DR_start___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___2_DR_start___1_QR___3__tmp5_3 = ADD(state__1__10__,DR___2_DR_start___1_QR___3__tmp5_4,32);
   DR___2_DR_start___1_QR___3_QR_start___1__tmp2_ = XOR(state__1__6__,DR___2_DR_start___1_QR___3__tmp5_3);
-  DR___2_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___2_DR_start___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___2_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___2_DR_start___1_QR___3_QR_start___1__tmp2_,8,32);
   DR___2__tmp6_3 = ADD(DR___2_DR_start___1_QR___3__tmp5_1,DR___2_DR_start___1_QR___3__tmp5_2,32);
   DR___2_DR_start___1_QR___3_QR_end___1__tmp3_ = XOR(DR___2_DR_start___1_QR___3__tmp5_4,DR___2__tmp6_3);
   DR___2__tmp6_15 = L_ROTATE(DR___2_DR_start___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1121,7 +1121,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___2_DR_start___1_QR___4__tmp5_4 = L_ROTATE(DR___2_DR_start___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___2_DR_start___1_QR___4__tmp5_3 = ADD(state__1__11__,DR___2_DR_start___1_QR___4__tmp5_4,32);
   DR___2_DR_start___1_QR___4_QR_start___1__tmp2_ = XOR(state__1__7__,DR___2_DR_start___1_QR___4__tmp5_3);
-  DR___2_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___2_DR_start___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___2_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___2_DR_start___1_QR___4_QR_start___1__tmp2_,8,32);
   DR___2__tmp6_4 = ADD(DR___2_DR_start___1_QR___4__tmp5_1,DR___2_DR_start___1_QR___4__tmp5_2,32);
   DR___2_DR_start___1_QR___4_QR_end___1__tmp3_ = XOR(DR___2_DR_start___1_QR___4__tmp5_4,DR___2__tmp6_4);
   DR___2__tmp6_16 = L_ROTATE(DR___2_DR_start___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1133,7 +1133,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___2_DR_end___1_QR___1__tmp5_4 = L_ROTATE(DR___2_DR_end___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___2_DR_end___1_QR___1__tmp5_3 = ADD(DR___2__tmp6_11,DR___2_DR_end___1_QR___1__tmp5_4,32);
   DR___2_DR_end___1_QR___1_QR_start___1__tmp2_ = XOR(DR___2__tmp6_6,DR___2_DR_end___1_QR___1__tmp5_3);
-  DR___2_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___2_DR_end___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___2_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___2_DR_end___1_QR___1_QR_start___1__tmp2_,8,32);
   state__2__0__ = ADD(DR___2_DR_end___1_QR___1__tmp5_1,DR___2_DR_end___1_QR___1__tmp5_2,32);
   DR___2_DR_end___1_QR___1_QR_end___1__tmp3_ = XOR(DR___2_DR_end___1_QR___1__tmp5_4,state__2__0__);
   state__2__15__ = L_ROTATE(DR___2_DR_end___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1145,7 +1145,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___2_DR_end___1_QR___2__tmp5_4 = L_ROTATE(DR___2_DR_end___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___2_DR_end___1_QR___2__tmp5_3 = ADD(DR___2__tmp6_12,DR___2_DR_end___1_QR___2__tmp5_4,32);
   DR___2_DR_end___1_QR___2_QR_start___1__tmp2_ = XOR(DR___2__tmp6_7,DR___2_DR_end___1_QR___2__tmp5_3);
-  DR___2_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___2_DR_end___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___2_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___2_DR_end___1_QR___2_QR_start___1__tmp2_,8,32);
   state__2__1__ = ADD(DR___2_DR_end___1_QR___2__tmp5_1,DR___2_DR_end___1_QR___2__tmp5_2,32);
   DR___2_DR_end___1_QR___2_QR_end___1__tmp3_ = XOR(DR___2_DR_end___1_QR___2__tmp5_4,state__2__1__);
   state__2__12__ = L_ROTATE(DR___2_DR_end___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1157,7 +1157,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___2_DR_end___1_QR___3__tmp5_4 = L_ROTATE(DR___2_DR_end___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___2_DR_end___1_QR___3__tmp5_3 = ADD(DR___2__tmp6_9,DR___2_DR_end___1_QR___3__tmp5_4,32);
   DR___2_DR_end___1_QR___3_QR_start___1__tmp2_ = XOR(DR___2__tmp6_8,DR___2_DR_end___1_QR___3__tmp5_3);
-  DR___2_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___2_DR_end___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___2_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___2_DR_end___1_QR___3_QR_start___1__tmp2_,8,32);
   state__2__2__ = ADD(DR___2_DR_end___1_QR___3__tmp5_1,DR___2_DR_end___1_QR___3__tmp5_2,32);
   DR___2_DR_end___1_QR___3_QR_end___1__tmp3_ = XOR(DR___2_DR_end___1_QR___3__tmp5_4,state__2__2__);
   state__2__13__ = L_ROTATE(DR___2_DR_end___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1169,7 +1169,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___2_DR_end___1_QR___4__tmp5_4 = L_ROTATE(DR___2_DR_end___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___2_DR_end___1_QR___4__tmp5_3 = ADD(DR___2__tmp6_10,DR___2_DR_end___1_QR___4__tmp5_4,32);
   DR___2_DR_end___1_QR___4_QR_start___1__tmp2_ = XOR(DR___2__tmp6_5,DR___2_DR_end___1_QR___4__tmp5_3);
-  DR___2_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___2_DR_end___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___2_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___2_DR_end___1_QR___4_QR_start___1__tmp2_,8,32);
   state__2__3__ = ADD(DR___2_DR_end___1_QR___4__tmp5_1,DR___2_DR_end___1_QR___4__tmp5_2,32);
   DR___2_DR_end___1_QR___4_QR_end___1__tmp3_ = XOR(DR___2_DR_end___1_QR___4__tmp5_4,state__2__3__);
   state__2__14__ = L_ROTATE(DR___2_DR_end___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1181,7 +1181,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___3_DR_start___1_QR___1__tmp5_4 = L_ROTATE(DR___3_DR_start___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___3_DR_start___1_QR___1__tmp5_3 = ADD(state__2__8__,DR___3_DR_start___1_QR___1__tmp5_4,32);
   DR___3_DR_start___1_QR___1_QR_start___1__tmp2_ = XOR(state__2__4__,DR___3_DR_start___1_QR___1__tmp5_3);
-  DR___3_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___3_DR_start___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___3_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___3_DR_start___1_QR___1_QR_start___1__tmp2_,8,32);
   DR___3__tmp6_1 = ADD(DR___3_DR_start___1_QR___1__tmp5_1,DR___3_DR_start___1_QR___1__tmp5_2,32);
   DR___3_DR_start___1_QR___1_QR_end___1__tmp3_ = XOR(DR___3_DR_start___1_QR___1__tmp5_4,DR___3__tmp6_1);
   DR___3__tmp6_13 = L_ROTATE(DR___3_DR_start___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1193,7 +1193,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___3_DR_start___1_QR___2__tmp5_4 = L_ROTATE(DR___3_DR_start___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___3_DR_start___1_QR___2__tmp5_3 = ADD(state__2__9__,DR___3_DR_start___1_QR___2__tmp5_4,32);
   DR___3_DR_start___1_QR___2_QR_start___1__tmp2_ = XOR(state__2__5__,DR___3_DR_start___1_QR___2__tmp5_3);
-  DR___3_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___3_DR_start___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___3_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___3_DR_start___1_QR___2_QR_start___1__tmp2_,8,32);
   DR___3__tmp6_2 = ADD(DR___3_DR_start___1_QR___2__tmp5_1,DR___3_DR_start___1_QR___2__tmp5_2,32);
   DR___3_DR_start___1_QR___2_QR_end___1__tmp3_ = XOR(DR___3_DR_start___1_QR___2__tmp5_4,DR___3__tmp6_2);
   DR___3__tmp6_14 = L_ROTATE(DR___3_DR_start___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1205,7 +1205,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___3_DR_start___1_QR___3__tmp5_4 = L_ROTATE(DR___3_DR_start___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___3_DR_start___1_QR___3__tmp5_3 = ADD(state__2__10__,DR___3_DR_start___1_QR___3__tmp5_4,32);
   DR___3_DR_start___1_QR___3_QR_start___1__tmp2_ = XOR(state__2__6__,DR___3_DR_start___1_QR___3__tmp5_3);
-  DR___3_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___3_DR_start___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___3_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___3_DR_start___1_QR___3_QR_start___1__tmp2_,8,32);
   DR___3__tmp6_3 = ADD(DR___3_DR_start___1_QR___3__tmp5_1,DR___3_DR_start___1_QR___3__tmp5_2,32);
   DR___3_DR_start___1_QR___3_QR_end___1__tmp3_ = XOR(DR___3_DR_start___1_QR___3__tmp5_4,DR___3__tmp6_3);
   DR___3__tmp6_15 = L_ROTATE(DR___3_DR_start___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1217,7 +1217,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___3_DR_start___1_QR___4__tmp5_4 = L_ROTATE(DR___3_DR_start___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___3_DR_start___1_QR___4__tmp5_3 = ADD(state__2__11__,DR___3_DR_start___1_QR___4__tmp5_4,32);
   DR___3_DR_start___1_QR___4_QR_start___1__tmp2_ = XOR(state__2__7__,DR___3_DR_start___1_QR___4__tmp5_3);
-  DR___3_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___3_DR_start___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___3_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___3_DR_start___1_QR___4_QR_start___1__tmp2_,8,32);
   DR___3__tmp6_4 = ADD(DR___3_DR_start___1_QR___4__tmp5_1,DR___3_DR_start___1_QR___4__tmp5_2,32);
   DR___3_DR_start___1_QR___4_QR_end___1__tmp3_ = XOR(DR___3_DR_start___1_QR___4__tmp5_4,DR___3__tmp6_4);
   DR___3__tmp6_16 = L_ROTATE(DR___3_DR_start___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1229,7 +1229,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___3_DR_end___1_QR___1__tmp5_4 = L_ROTATE(DR___3_DR_end___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___3_DR_end___1_QR___1__tmp5_3 = ADD(DR___3__tmp6_11,DR___3_DR_end___1_QR___1__tmp5_4,32);
   DR___3_DR_end___1_QR___1_QR_start___1__tmp2_ = XOR(DR___3__tmp6_6,DR___3_DR_end___1_QR___1__tmp5_3);
-  DR___3_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___3_DR_end___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___3_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___3_DR_end___1_QR___1_QR_start___1__tmp2_,8,32);
   state__3__0__ = ADD(DR___3_DR_end___1_QR___1__tmp5_1,DR___3_DR_end___1_QR___1__tmp5_2,32);
   DR___3_DR_end___1_QR___1_QR_end___1__tmp3_ = XOR(DR___3_DR_end___1_QR___1__tmp5_4,state__3__0__);
   state__3__15__ = L_ROTATE(DR___3_DR_end___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1241,7 +1241,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___3_DR_end___1_QR___2__tmp5_4 = L_ROTATE(DR___3_DR_end___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___3_DR_end___1_QR___2__tmp5_3 = ADD(DR___3__tmp6_12,DR___3_DR_end___1_QR___2__tmp5_4,32);
   DR___3_DR_end___1_QR___2_QR_start___1__tmp2_ = XOR(DR___3__tmp6_7,DR___3_DR_end___1_QR___2__tmp5_3);
-  DR___3_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___3_DR_end___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___3_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___3_DR_end___1_QR___2_QR_start___1__tmp2_,8,32);
   state__3__1__ = ADD(DR___3_DR_end___1_QR___2__tmp5_1,DR___3_DR_end___1_QR___2__tmp5_2,32);
   DR___3_DR_end___1_QR___2_QR_end___1__tmp3_ = XOR(DR___3_DR_end___1_QR___2__tmp5_4,state__3__1__);
   state__3__12__ = L_ROTATE(DR___3_DR_end___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1253,7 +1253,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___3_DR_end___1_QR___3__tmp5_4 = L_ROTATE(DR___3_DR_end___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___3_DR_end___1_QR___3__tmp5_3 = ADD(DR___3__tmp6_9,DR___3_DR_end___1_QR___3__tmp5_4,32);
   DR___3_DR_end___1_QR___3_QR_start___1__tmp2_ = XOR(DR___3__tmp6_8,DR___3_DR_end___1_QR___3__tmp5_3);
-  DR___3_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___3_DR_end___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___3_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___3_DR_end___1_QR___3_QR_start___1__tmp2_,8,32);
   state__3__2__ = ADD(DR___3_DR_end___1_QR___3__tmp5_1,DR___3_DR_end___1_QR___3__tmp5_2,32);
   DR___3_DR_end___1_QR___3_QR_end___1__tmp3_ = XOR(DR___3_DR_end___1_QR___3__tmp5_4,state__3__2__);
   state__3__13__ = L_ROTATE(DR___3_DR_end___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1265,7 +1265,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___3_DR_end___1_QR___4__tmp5_4 = L_ROTATE(DR___3_DR_end___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___3_DR_end___1_QR___4__tmp5_3 = ADD(DR___3__tmp6_10,DR___3_DR_end___1_QR___4__tmp5_4,32);
   DR___3_DR_end___1_QR___4_QR_start___1__tmp2_ = XOR(DR___3__tmp6_5,DR___3_DR_end___1_QR___4__tmp5_3);
-  DR___3_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___3_DR_end___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___3_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___3_DR_end___1_QR___4_QR_start___1__tmp2_,8,32);
   state__3__3__ = ADD(DR___3_DR_end___1_QR___4__tmp5_1,DR___3_DR_end___1_QR___4__tmp5_2,32);
   DR___3_DR_end___1_QR___4_QR_end___1__tmp3_ = XOR(DR___3_DR_end___1_QR___4__tmp5_4,state__3__3__);
   state__3__14__ = L_ROTATE(DR___3_DR_end___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1277,7 +1277,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___4_DR_start___1_QR___1__tmp5_4 = L_ROTATE(DR___4_DR_start___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___4_DR_start___1_QR___1__tmp5_3 = ADD(state__3__8__,DR___4_DR_start___1_QR___1__tmp5_4,32);
   DR___4_DR_start___1_QR___1_QR_start___1__tmp2_ = XOR(state__3__4__,DR___4_DR_start___1_QR___1__tmp5_3);
-  DR___4_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___4_DR_start___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___4_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___4_DR_start___1_QR___1_QR_start___1__tmp2_,8,32);
   DR___4__tmp6_1 = ADD(DR___4_DR_start___1_QR___1__tmp5_1,DR___4_DR_start___1_QR___1__tmp5_2,32);
   DR___4_DR_start___1_QR___1_QR_end___1__tmp3_ = XOR(DR___4_DR_start___1_QR___1__tmp5_4,DR___4__tmp6_1);
   DR___4__tmp6_13 = L_ROTATE(DR___4_DR_start___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1289,7 +1289,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___4_DR_start___1_QR___2__tmp5_4 = L_ROTATE(DR___4_DR_start___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___4_DR_start___1_QR___2__tmp5_3 = ADD(state__3__9__,DR___4_DR_start___1_QR___2__tmp5_4,32);
   DR___4_DR_start___1_QR___2_QR_start___1__tmp2_ = XOR(state__3__5__,DR___4_DR_start___1_QR___2__tmp5_3);
-  DR___4_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___4_DR_start___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___4_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___4_DR_start___1_QR___2_QR_start___1__tmp2_,8,32);
   DR___4__tmp6_2 = ADD(DR___4_DR_start___1_QR___2__tmp5_1,DR___4_DR_start___1_QR___2__tmp5_2,32);
   DR___4_DR_start___1_QR___2_QR_end___1__tmp3_ = XOR(DR___4_DR_start___1_QR___2__tmp5_4,DR___4__tmp6_2);
   DR___4__tmp6_14 = L_ROTATE(DR___4_DR_start___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1301,7 +1301,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___4_DR_start___1_QR___3__tmp5_4 = L_ROTATE(DR___4_DR_start___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___4_DR_start___1_QR___3__tmp5_3 = ADD(state__3__10__,DR___4_DR_start___1_QR___3__tmp5_4,32);
   DR___4_DR_start___1_QR___3_QR_start___1__tmp2_ = XOR(state__3__6__,DR___4_DR_start___1_QR___3__tmp5_3);
-  DR___4_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___4_DR_start___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___4_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___4_DR_start___1_QR___3_QR_start___1__tmp2_,8,32);
   DR___4__tmp6_3 = ADD(DR___4_DR_start___1_QR___3__tmp5_1,DR___4_DR_start___1_QR___3__tmp5_2,32);
   DR___4_DR_start___1_QR___3_QR_end___1__tmp3_ = XOR(DR___4_DR_start___1_QR___3__tmp5_4,DR___4__tmp6_3);
   DR___4__tmp6_15 = L_ROTATE(DR___4_DR_start___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1313,7 +1313,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___4_DR_start___1_QR___4__tmp5_4 = L_ROTATE(DR___4_DR_start___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___4_DR_start___1_QR___4__tmp5_3 = ADD(state__3__11__,DR___4_DR_start___1_QR___4__tmp5_4,32);
   DR___4_DR_start___1_QR___4_QR_start___1__tmp2_ = XOR(state__3__7__,DR___4_DR_start___1_QR___4__tmp5_3);
-  DR___4_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___4_DR_start___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___4_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___4_DR_start___1_QR___4_QR_start___1__tmp2_,8,32);
   DR___4__tmp6_4 = ADD(DR___4_DR_start___1_QR___4__tmp5_1,DR___4_DR_start___1_QR___4__tmp5_2,32);
   DR___4_DR_start___1_QR___4_QR_end___1__tmp3_ = XOR(DR___4_DR_start___1_QR___4__tmp5_4,DR___4__tmp6_4);
   DR___4__tmp6_16 = L_ROTATE(DR___4_DR_start___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1325,7 +1325,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___4_DR_end___1_QR___1__tmp5_4 = L_ROTATE(DR___4_DR_end___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___4_DR_end___1_QR___1__tmp5_3 = ADD(DR___4__tmp6_11,DR___4_DR_end___1_QR___1__tmp5_4,32);
   DR___4_DR_end___1_QR___1_QR_start___1__tmp2_ = XOR(DR___4__tmp6_6,DR___4_DR_end___1_QR___1__tmp5_3);
-  DR___4_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___4_DR_end___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___4_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___4_DR_end___1_QR___1_QR_start___1__tmp2_,8,32);
   state__4__0__ = ADD(DR___4_DR_end___1_QR___1__tmp5_1,DR___4_DR_end___1_QR___1__tmp5_2,32);
   DR___4_DR_end___1_QR___1_QR_end___1__tmp3_ = XOR(DR___4_DR_end___1_QR___1__tmp5_4,state__4__0__);
   state__4__15__ = L_ROTATE(DR___4_DR_end___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1337,7 +1337,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___4_DR_end___1_QR___2__tmp5_4 = L_ROTATE(DR___4_DR_end___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___4_DR_end___1_QR___2__tmp5_3 = ADD(DR___4__tmp6_12,DR___4_DR_end___1_QR___2__tmp5_4,32);
   DR___4_DR_end___1_QR___2_QR_start___1__tmp2_ = XOR(DR___4__tmp6_7,DR___4_DR_end___1_QR___2__tmp5_3);
-  DR___4_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___4_DR_end___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___4_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___4_DR_end___1_QR___2_QR_start___1__tmp2_,8,32);
   state__4__1__ = ADD(DR___4_DR_end___1_QR___2__tmp5_1,DR___4_DR_end___1_QR___2__tmp5_2,32);
   DR___4_DR_end___1_QR___2_QR_end___1__tmp3_ = XOR(DR___4_DR_end___1_QR___2__tmp5_4,state__4__1__);
   state__4__12__ = L_ROTATE(DR___4_DR_end___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1349,7 +1349,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___4_DR_end___1_QR___3__tmp5_4 = L_ROTATE(DR___4_DR_end___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___4_DR_end___1_QR___3__tmp5_3 = ADD(DR___4__tmp6_9,DR___4_DR_end___1_QR___3__tmp5_4,32);
   DR___4_DR_end___1_QR___3_QR_start___1__tmp2_ = XOR(DR___4__tmp6_8,DR___4_DR_end___1_QR___3__tmp5_3);
-  DR___4_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___4_DR_end___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___4_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___4_DR_end___1_QR___3_QR_start___1__tmp2_,8,32);
   state__4__2__ = ADD(DR___4_DR_end___1_QR___3__tmp5_1,DR___4_DR_end___1_QR___3__tmp5_2,32);
   DR___4_DR_end___1_QR___3_QR_end___1__tmp3_ = XOR(DR___4_DR_end___1_QR___3__tmp5_4,state__4__2__);
   state__4__13__ = L_ROTATE(DR___4_DR_end___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1361,7 +1361,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___4_DR_end___1_QR___4__tmp5_4 = L_ROTATE(DR___4_DR_end___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___4_DR_end___1_QR___4__tmp5_3 = ADD(DR___4__tmp6_10,DR___4_DR_end___1_QR___4__tmp5_4,32);
   DR___4_DR_end___1_QR___4_QR_start___1__tmp2_ = XOR(DR___4__tmp6_5,DR___4_DR_end___1_QR___4__tmp5_3);
-  DR___4_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___4_DR_end___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___4_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___4_DR_end___1_QR___4_QR_start___1__tmp2_,8,32);
   state__4__3__ = ADD(DR___4_DR_end___1_QR___4__tmp5_1,DR___4_DR_end___1_QR___4__tmp5_2,32);
   DR___4_DR_end___1_QR___4_QR_end___1__tmp3_ = XOR(DR___4_DR_end___1_QR___4__tmp5_4,state__4__3__);
   state__4__14__ = L_ROTATE(DR___4_DR_end___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1373,7 +1373,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___5_DR_start___1_QR___1__tmp5_4 = L_ROTATE(DR___5_DR_start___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___5_DR_start___1_QR___1__tmp5_3 = ADD(state__4__8__,DR___5_DR_start___1_QR___1__tmp5_4,32);
   DR___5_DR_start___1_QR___1_QR_start___1__tmp2_ = XOR(state__4__4__,DR___5_DR_start___1_QR___1__tmp5_3);
-  DR___5_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___5_DR_start___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___5_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___5_DR_start___1_QR___1_QR_start___1__tmp2_,8,32);
   DR___5__tmp6_1 = ADD(DR___5_DR_start___1_QR___1__tmp5_1,DR___5_DR_start___1_QR___1__tmp5_2,32);
   DR___5_DR_start___1_QR___1_QR_end___1__tmp3_ = XOR(DR___5_DR_start___1_QR___1__tmp5_4,DR___5__tmp6_1);
   DR___5__tmp6_13 = L_ROTATE(DR___5_DR_start___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1385,7 +1385,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___5_DR_start___1_QR___2__tmp5_4 = L_ROTATE(DR___5_DR_start___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___5_DR_start___1_QR___2__tmp5_3 = ADD(state__4__9__,DR___5_DR_start___1_QR___2__tmp5_4,32);
   DR___5_DR_start___1_QR___2_QR_start___1__tmp2_ = XOR(state__4__5__,DR___5_DR_start___1_QR___2__tmp5_3);
-  DR___5_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___5_DR_start___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___5_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___5_DR_start___1_QR___2_QR_start___1__tmp2_,8,32);
   DR___5__tmp6_2 = ADD(DR___5_DR_start___1_QR___2__tmp5_1,DR___5_DR_start___1_QR___2__tmp5_2,32);
   DR___5_DR_start___1_QR___2_QR_end___1__tmp3_ = XOR(DR___5_DR_start___1_QR___2__tmp5_4,DR___5__tmp6_2);
   DR___5__tmp6_14 = L_ROTATE(DR___5_DR_start___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1397,7 +1397,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___5_DR_start___1_QR___3__tmp5_4 = L_ROTATE(DR___5_DR_start___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___5_DR_start___1_QR___3__tmp5_3 = ADD(state__4__10__,DR___5_DR_start___1_QR___3__tmp5_4,32);
   DR___5_DR_start___1_QR___3_QR_start___1__tmp2_ = XOR(state__4__6__,DR___5_DR_start___1_QR___3__tmp5_3);
-  DR___5_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___5_DR_start___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___5_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___5_DR_start___1_QR___3_QR_start___1__tmp2_,8,32);
   DR___5__tmp6_3 = ADD(DR___5_DR_start___1_QR___3__tmp5_1,DR___5_DR_start___1_QR___3__tmp5_2,32);
   DR___5_DR_start___1_QR___3_QR_end___1__tmp3_ = XOR(DR___5_DR_start___1_QR___3__tmp5_4,DR___5__tmp6_3);
   DR___5__tmp6_15 = L_ROTATE(DR___5_DR_start___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1409,7 +1409,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___5_DR_start___1_QR___4__tmp5_4 = L_ROTATE(DR___5_DR_start___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___5_DR_start___1_QR___4__tmp5_3 = ADD(state__4__11__,DR___5_DR_start___1_QR___4__tmp5_4,32);
   DR___5_DR_start___1_QR___4_QR_start___1__tmp2_ = XOR(state__4__7__,DR___5_DR_start___1_QR___4__tmp5_3);
-  DR___5_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___5_DR_start___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___5_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___5_DR_start___1_QR___4_QR_start___1__tmp2_,8,32);
   DR___5__tmp6_4 = ADD(DR___5_DR_start___1_QR___4__tmp5_1,DR___5_DR_start___1_QR___4__tmp5_2,32);
   DR___5_DR_start___1_QR___4_QR_end___1__tmp3_ = XOR(DR___5_DR_start___1_QR___4__tmp5_4,DR___5__tmp6_4);
   DR___5__tmp6_16 = L_ROTATE(DR___5_DR_start___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1421,7 +1421,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___5_DR_end___1_QR___1__tmp5_4 = L_ROTATE(DR___5_DR_end___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___5_DR_end___1_QR___1__tmp5_3 = ADD(DR___5__tmp6_11,DR___5_DR_end___1_QR___1__tmp5_4,32);
   DR___5_DR_end___1_QR___1_QR_start___1__tmp2_ = XOR(DR___5__tmp6_6,DR___5_DR_end___1_QR___1__tmp5_3);
-  DR___5_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___5_DR_end___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___5_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___5_DR_end___1_QR___1_QR_start___1__tmp2_,8,32);
   state__5__0__ = ADD(DR___5_DR_end___1_QR___1__tmp5_1,DR___5_DR_end___1_QR___1__tmp5_2,32);
   DR___5_DR_end___1_QR___1_QR_end___1__tmp3_ = XOR(DR___5_DR_end___1_QR___1__tmp5_4,state__5__0__);
   state__5__15__ = L_ROTATE(DR___5_DR_end___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1433,7 +1433,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___5_DR_end___1_QR___2__tmp5_4 = L_ROTATE(DR___5_DR_end___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___5_DR_end___1_QR___2__tmp5_3 = ADD(DR___5__tmp6_12,DR___5_DR_end___1_QR___2__tmp5_4,32);
   DR___5_DR_end___1_QR___2_QR_start___1__tmp2_ = XOR(DR___5__tmp6_7,DR___5_DR_end___1_QR___2__tmp5_3);
-  DR___5_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___5_DR_end___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___5_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___5_DR_end___1_QR___2_QR_start___1__tmp2_,8,32);
   state__5__1__ = ADD(DR___5_DR_end___1_QR___2__tmp5_1,DR___5_DR_end___1_QR___2__tmp5_2,32);
   DR___5_DR_end___1_QR___2_QR_end___1__tmp3_ = XOR(DR___5_DR_end___1_QR___2__tmp5_4,state__5__1__);
   state__5__12__ = L_ROTATE(DR___5_DR_end___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1445,7 +1445,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___5_DR_end___1_QR___3__tmp5_4 = L_ROTATE(DR___5_DR_end___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___5_DR_end___1_QR___3__tmp5_3 = ADD(DR___5__tmp6_9,DR___5_DR_end___1_QR___3__tmp5_4,32);
   DR___5_DR_end___1_QR___3_QR_start___1__tmp2_ = XOR(DR___5__tmp6_8,DR___5_DR_end___1_QR___3__tmp5_3);
-  DR___5_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___5_DR_end___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___5_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___5_DR_end___1_QR___3_QR_start___1__tmp2_,8,32);
   state__5__2__ = ADD(DR___5_DR_end___1_QR___3__tmp5_1,DR___5_DR_end___1_QR___3__tmp5_2,32);
   DR___5_DR_end___1_QR___3_QR_end___1__tmp3_ = XOR(DR___5_DR_end___1_QR___3__tmp5_4,state__5__2__);
   state__5__13__ = L_ROTATE(DR___5_DR_end___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1457,7 +1457,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___5_DR_end___1_QR___4__tmp5_4 = L_ROTATE(DR___5_DR_end___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___5_DR_end___1_QR___4__tmp5_3 = ADD(DR___5__tmp6_10,DR___5_DR_end___1_QR___4__tmp5_4,32);
   DR___5_DR_end___1_QR___4_QR_start___1__tmp2_ = XOR(DR___5__tmp6_5,DR___5_DR_end___1_QR___4__tmp5_3);
-  DR___5_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___5_DR_end___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___5_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___5_DR_end___1_QR___4_QR_start___1__tmp2_,8,32);
   state__5__3__ = ADD(DR___5_DR_end___1_QR___4__tmp5_1,DR___5_DR_end___1_QR___4__tmp5_2,32);
   DR___5_DR_end___1_QR___4_QR_end___1__tmp3_ = XOR(DR___5_DR_end___1_QR___4__tmp5_4,state__5__3__);
   state__5__14__ = L_ROTATE(DR___5_DR_end___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1469,7 +1469,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___6_DR_start___1_QR___1__tmp5_4 = L_ROTATE(DR___6_DR_start___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___6_DR_start___1_QR___1__tmp5_3 = ADD(state__5__8__,DR___6_DR_start___1_QR___1__tmp5_4,32);
   DR___6_DR_start___1_QR___1_QR_start___1__tmp2_ = XOR(state__5__4__,DR___6_DR_start___1_QR___1__tmp5_3);
-  DR___6_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___6_DR_start___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___6_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___6_DR_start___1_QR___1_QR_start___1__tmp2_,8,32);
   DR___6__tmp6_1 = ADD(DR___6_DR_start___1_QR___1__tmp5_1,DR___6_DR_start___1_QR___1__tmp5_2,32);
   DR___6_DR_start___1_QR___1_QR_end___1__tmp3_ = XOR(DR___6_DR_start___1_QR___1__tmp5_4,DR___6__tmp6_1);
   DR___6__tmp6_13 = L_ROTATE(DR___6_DR_start___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1481,7 +1481,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___6_DR_start___1_QR___2__tmp5_4 = L_ROTATE(DR___6_DR_start___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___6_DR_start___1_QR___2__tmp5_3 = ADD(state__5__9__,DR___6_DR_start___1_QR___2__tmp5_4,32);
   DR___6_DR_start___1_QR___2_QR_start___1__tmp2_ = XOR(state__5__5__,DR___6_DR_start___1_QR___2__tmp5_3);
-  DR___6_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___6_DR_start___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___6_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___6_DR_start___1_QR___2_QR_start___1__tmp2_,8,32);
   DR___6__tmp6_2 = ADD(DR___6_DR_start___1_QR___2__tmp5_1,DR___6_DR_start___1_QR___2__tmp5_2,32);
   DR___6_DR_start___1_QR___2_QR_end___1__tmp3_ = XOR(DR___6_DR_start___1_QR___2__tmp5_4,DR___6__tmp6_2);
   DR___6__tmp6_14 = L_ROTATE(DR___6_DR_start___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1493,7 +1493,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___6_DR_start___1_QR___3__tmp5_4 = L_ROTATE(DR___6_DR_start___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___6_DR_start___1_QR___3__tmp5_3 = ADD(state__5__10__,DR___6_DR_start___1_QR___3__tmp5_4,32);
   DR___6_DR_start___1_QR___3_QR_start___1__tmp2_ = XOR(state__5__6__,DR___6_DR_start___1_QR___3__tmp5_3);
-  DR___6_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___6_DR_start___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___6_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___6_DR_start___1_QR___3_QR_start___1__tmp2_,8,32);
   DR___6__tmp6_3 = ADD(DR___6_DR_start___1_QR___3__tmp5_1,DR___6_DR_start___1_QR___3__tmp5_2,32);
   DR___6_DR_start___1_QR___3_QR_end___1__tmp3_ = XOR(DR___6_DR_start___1_QR___3__tmp5_4,DR___6__tmp6_3);
   DR___6__tmp6_15 = L_ROTATE(DR___6_DR_start___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1505,7 +1505,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___6_DR_start___1_QR___4__tmp5_4 = L_ROTATE(DR___6_DR_start___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___6_DR_start___1_QR___4__tmp5_3 = ADD(state__5__11__,DR___6_DR_start___1_QR___4__tmp5_4,32);
   DR___6_DR_start___1_QR___4_QR_start___1__tmp2_ = XOR(state__5__7__,DR___6_DR_start___1_QR___4__tmp5_3);
-  DR___6_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___6_DR_start___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___6_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___6_DR_start___1_QR___4_QR_start___1__tmp2_,8,32);
   DR___6__tmp6_4 = ADD(DR___6_DR_start___1_QR___4__tmp5_1,DR___6_DR_start___1_QR___4__tmp5_2,32);
   DR___6_DR_start___1_QR___4_QR_end___1__tmp3_ = XOR(DR___6_DR_start___1_QR___4__tmp5_4,DR___6__tmp6_4);
   DR___6__tmp6_16 = L_ROTATE(DR___6_DR_start___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1517,7 +1517,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___6_DR_end___1_QR___1__tmp5_4 = L_ROTATE(DR___6_DR_end___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___6_DR_end___1_QR___1__tmp5_3 = ADD(DR___6__tmp6_11,DR___6_DR_end___1_QR___1__tmp5_4,32);
   DR___6_DR_end___1_QR___1_QR_start___1__tmp2_ = XOR(DR___6__tmp6_6,DR___6_DR_end___1_QR___1__tmp5_3);
-  DR___6_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___6_DR_end___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___6_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___6_DR_end___1_QR___1_QR_start___1__tmp2_,8,32);
   state__6__0__ = ADD(DR___6_DR_end___1_QR___1__tmp5_1,DR___6_DR_end___1_QR___1__tmp5_2,32);
   DR___6_DR_end___1_QR___1_QR_end___1__tmp3_ = XOR(DR___6_DR_end___1_QR___1__tmp5_4,state__6__0__);
   state__6__15__ = L_ROTATE(DR___6_DR_end___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1529,7 +1529,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___6_DR_end___1_QR___2__tmp5_4 = L_ROTATE(DR___6_DR_end___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___6_DR_end___1_QR___2__tmp5_3 = ADD(DR___6__tmp6_12,DR___6_DR_end___1_QR___2__tmp5_4,32);
   DR___6_DR_end___1_QR___2_QR_start___1__tmp2_ = XOR(DR___6__tmp6_7,DR___6_DR_end___1_QR___2__tmp5_3);
-  DR___6_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___6_DR_end___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___6_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___6_DR_end___1_QR___2_QR_start___1__tmp2_,8,32);
   state__6__1__ = ADD(DR___6_DR_end___1_QR___2__tmp5_1,DR___6_DR_end___1_QR___2__tmp5_2,32);
   DR___6_DR_end___1_QR___2_QR_end___1__tmp3_ = XOR(DR___6_DR_end___1_QR___2__tmp5_4,state__6__1__);
   state__6__12__ = L_ROTATE(DR___6_DR_end___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1541,7 +1541,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___6_DR_end___1_QR___3__tmp5_4 = L_ROTATE(DR___6_DR_end___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___6_DR_end___1_QR___3__tmp5_3 = ADD(DR___6__tmp6_9,DR___6_DR_end___1_QR___3__tmp5_4,32);
   DR___6_DR_end___1_QR___3_QR_start___1__tmp2_ = XOR(DR___6__tmp6_8,DR___6_DR_end___1_QR___3__tmp5_3);
-  DR___6_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___6_DR_end___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___6_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___6_DR_end___1_QR___3_QR_start___1__tmp2_,8,32);
   state__6__2__ = ADD(DR___6_DR_end___1_QR___3__tmp5_1,DR___6_DR_end___1_QR___3__tmp5_2,32);
   DR___6_DR_end___1_QR___3_QR_end___1__tmp3_ = XOR(DR___6_DR_end___1_QR___3__tmp5_4,state__6__2__);
   state__6__13__ = L_ROTATE(DR___6_DR_end___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1553,7 +1553,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___6_DR_end___1_QR___4__tmp5_4 = L_ROTATE(DR___6_DR_end___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___6_DR_end___1_QR___4__tmp5_3 = ADD(DR___6__tmp6_10,DR___6_DR_end___1_QR___4__tmp5_4,32);
   DR___6_DR_end___1_QR___4_QR_start___1__tmp2_ = XOR(DR___6__tmp6_5,DR___6_DR_end___1_QR___4__tmp5_3);
-  DR___6_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___6_DR_end___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___6_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___6_DR_end___1_QR___4_QR_start___1__tmp2_,8,32);
   state__6__3__ = ADD(DR___6_DR_end___1_QR___4__tmp5_1,DR___6_DR_end___1_QR___4__tmp5_2,32);
   DR___6_DR_end___1_QR___4_QR_end___1__tmp3_ = XOR(DR___6_DR_end___1_QR___4__tmp5_4,state__6__3__);
   state__6__14__ = L_ROTATE(DR___6_DR_end___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1565,7 +1565,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___7_DR_start___1_QR___1__tmp5_4 = L_ROTATE(DR___7_DR_start___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___7_DR_start___1_QR___1__tmp5_3 = ADD(state__6__8__,DR___7_DR_start___1_QR___1__tmp5_4,32);
   DR___7_DR_start___1_QR___1_QR_start___1__tmp2_ = XOR(state__6__4__,DR___7_DR_start___1_QR___1__tmp5_3);
-  DR___7_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___7_DR_start___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___7_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___7_DR_start___1_QR___1_QR_start___1__tmp2_,8,32);
   DR___7__tmp6_1 = ADD(DR___7_DR_start___1_QR___1__tmp5_1,DR___7_DR_start___1_QR___1__tmp5_2,32);
   DR___7_DR_start___1_QR___1_QR_end___1__tmp3_ = XOR(DR___7_DR_start___1_QR___1__tmp5_4,DR___7__tmp6_1);
   DR___7__tmp6_13 = L_ROTATE(DR___7_DR_start___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1577,7 +1577,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___7_DR_start___1_QR___2__tmp5_4 = L_ROTATE(DR___7_DR_start___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___7_DR_start___1_QR___2__tmp5_3 = ADD(state__6__9__,DR___7_DR_start___1_QR___2__tmp5_4,32);
   DR___7_DR_start___1_QR___2_QR_start___1__tmp2_ = XOR(state__6__5__,DR___7_DR_start___1_QR___2__tmp5_3);
-  DR___7_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___7_DR_start___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___7_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___7_DR_start___1_QR___2_QR_start___1__tmp2_,8,32);
   DR___7__tmp6_2 = ADD(DR___7_DR_start___1_QR___2__tmp5_1,DR___7_DR_start___1_QR___2__tmp5_2,32);
   DR___7_DR_start___1_QR___2_QR_end___1__tmp3_ = XOR(DR___7_DR_start___1_QR___2__tmp5_4,DR___7__tmp6_2);
   DR___7__tmp6_14 = L_ROTATE(DR___7_DR_start___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1589,7 +1589,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___7_DR_start___1_QR___3__tmp5_4 = L_ROTATE(DR___7_DR_start___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___7_DR_start___1_QR___3__tmp5_3 = ADD(state__6__10__,DR___7_DR_start___1_QR___3__tmp5_4,32);
   DR___7_DR_start___1_QR___3_QR_start___1__tmp2_ = XOR(state__6__6__,DR___7_DR_start___1_QR___3__tmp5_3);
-  DR___7_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___7_DR_start___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___7_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___7_DR_start___1_QR___3_QR_start___1__tmp2_,8,32);
   DR___7__tmp6_3 = ADD(DR___7_DR_start___1_QR___3__tmp5_1,DR___7_DR_start___1_QR___3__tmp5_2,32);
   DR___7_DR_start___1_QR___3_QR_end___1__tmp3_ = XOR(DR___7_DR_start___1_QR___3__tmp5_4,DR___7__tmp6_3);
   DR___7__tmp6_15 = L_ROTATE(DR___7_DR_start___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1601,7 +1601,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___7_DR_start___1_QR___4__tmp5_4 = L_ROTATE(DR___7_DR_start___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___7_DR_start___1_QR___4__tmp5_3 = ADD(state__6__11__,DR___7_DR_start___1_QR___4__tmp5_4,32);
   DR___7_DR_start___1_QR___4_QR_start___1__tmp2_ = XOR(state__6__7__,DR___7_DR_start___1_QR___4__tmp5_3);
-  DR___7_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___7_DR_start___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___7_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___7_DR_start___1_QR___4_QR_start___1__tmp2_,8,32);
   DR___7__tmp6_4 = ADD(DR___7_DR_start___1_QR___4__tmp5_1,DR___7_DR_start___1_QR___4__tmp5_2,32);
   DR___7_DR_start___1_QR___4_QR_end___1__tmp3_ = XOR(DR___7_DR_start___1_QR___4__tmp5_4,DR___7__tmp6_4);
   DR___7__tmp6_16 = L_ROTATE(DR___7_DR_start___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1613,7 +1613,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___7_DR_end___1_QR___1__tmp5_4 = L_ROTATE(DR___7_DR_end___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___7_DR_end___1_QR___1__tmp5_3 = ADD(DR___7__tmp6_11,DR___7_DR_end___1_QR___1__tmp5_4,32);
   DR___7_DR_end___1_QR___1_QR_start___1__tmp2_ = XOR(DR___7__tmp6_6,DR___7_DR_end___1_QR___1__tmp5_3);
-  DR___7_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___7_DR_end___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___7_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___7_DR_end___1_QR___1_QR_start___1__tmp2_,8,32);
   state__7__0__ = ADD(DR___7_DR_end___1_QR___1__tmp5_1,DR___7_DR_end___1_QR___1__tmp5_2,32);
   DR___7_DR_end___1_QR___1_QR_end___1__tmp3_ = XOR(DR___7_DR_end___1_QR___1__tmp5_4,state__7__0__);
   state__7__15__ = L_ROTATE(DR___7_DR_end___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1625,7 +1625,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___7_DR_end___1_QR___2__tmp5_4 = L_ROTATE(DR___7_DR_end___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___7_DR_end___1_QR___2__tmp5_3 = ADD(DR___7__tmp6_12,DR___7_DR_end___1_QR___2__tmp5_4,32);
   DR___7_DR_end___1_QR___2_QR_start___1__tmp2_ = XOR(DR___7__tmp6_7,DR___7_DR_end___1_QR___2__tmp5_3);
-  DR___7_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___7_DR_end___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___7_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___7_DR_end___1_QR___2_QR_start___1__tmp2_,8,32);
   state__7__1__ = ADD(DR___7_DR_end___1_QR___2__tmp5_1,DR___7_DR_end___1_QR___2__tmp5_2,32);
   DR___7_DR_end___1_QR___2_QR_end___1__tmp3_ = XOR(DR___7_DR_end___1_QR___2__tmp5_4,state__7__1__);
   state__7__12__ = L_ROTATE(DR___7_DR_end___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1637,7 +1637,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___7_DR_end___1_QR___3__tmp5_4 = L_ROTATE(DR___7_DR_end___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___7_DR_end___1_QR___3__tmp5_3 = ADD(DR___7__tmp6_9,DR___7_DR_end___1_QR___3__tmp5_4,32);
   DR___7_DR_end___1_QR___3_QR_start___1__tmp2_ = XOR(DR___7__tmp6_8,DR___7_DR_end___1_QR___3__tmp5_3);
-  DR___7_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___7_DR_end___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___7_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___7_DR_end___1_QR___3_QR_start___1__tmp2_,8,32);
   state__7__2__ = ADD(DR___7_DR_end___1_QR___3__tmp5_1,DR___7_DR_end___1_QR___3__tmp5_2,32);
   DR___7_DR_end___1_QR___3_QR_end___1__tmp3_ = XOR(DR___7_DR_end___1_QR___3__tmp5_4,state__7__2__);
   state__7__13__ = L_ROTATE(DR___7_DR_end___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1649,7 +1649,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___7_DR_end___1_QR___4__tmp5_4 = L_ROTATE(DR___7_DR_end___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___7_DR_end___1_QR___4__tmp5_3 = ADD(DR___7__tmp6_10,DR___7_DR_end___1_QR___4__tmp5_4,32);
   DR___7_DR_end___1_QR___4_QR_start___1__tmp2_ = XOR(DR___7__tmp6_5,DR___7_DR_end___1_QR___4__tmp5_3);
-  DR___7_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___7_DR_end___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___7_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___7_DR_end___1_QR___4_QR_start___1__tmp2_,8,32);
   state__7__3__ = ADD(DR___7_DR_end___1_QR___4__tmp5_1,DR___7_DR_end___1_QR___4__tmp5_2,32);
   DR___7_DR_end___1_QR___4_QR_end___1__tmp3_ = XOR(DR___7_DR_end___1_QR___4__tmp5_4,state__7__3__);
   state__7__14__ = L_ROTATE(DR___7_DR_end___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1661,7 +1661,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___8_DR_start___1_QR___1__tmp5_4 = L_ROTATE(DR___8_DR_start___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___8_DR_start___1_QR___1__tmp5_3 = ADD(state__7__8__,DR___8_DR_start___1_QR___1__tmp5_4,32);
   DR___8_DR_start___1_QR___1_QR_start___1__tmp2_ = XOR(state__7__4__,DR___8_DR_start___1_QR___1__tmp5_3);
-  DR___8_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___8_DR_start___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___8_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___8_DR_start___1_QR___1_QR_start___1__tmp2_,8,32);
   DR___8__tmp6_1 = ADD(DR___8_DR_start___1_QR___1__tmp5_1,DR___8_DR_start___1_QR___1__tmp5_2,32);
   DR___8_DR_start___1_QR___1_QR_end___1__tmp3_ = XOR(DR___8_DR_start___1_QR___1__tmp5_4,DR___8__tmp6_1);
   DR___8__tmp6_13 = L_ROTATE(DR___8_DR_start___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1673,7 +1673,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___8_DR_start___1_QR___2__tmp5_4 = L_ROTATE(DR___8_DR_start___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___8_DR_start___1_QR___2__tmp5_3 = ADD(state__7__9__,DR___8_DR_start___1_QR___2__tmp5_4,32);
   DR___8_DR_start___1_QR___2_QR_start___1__tmp2_ = XOR(state__7__5__,DR___8_DR_start___1_QR___2__tmp5_3);
-  DR___8_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___8_DR_start___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___8_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___8_DR_start___1_QR___2_QR_start___1__tmp2_,8,32);
   DR___8__tmp6_2 = ADD(DR___8_DR_start___1_QR___2__tmp5_1,DR___8_DR_start___1_QR___2__tmp5_2,32);
   DR___8_DR_start___1_QR___2_QR_end___1__tmp3_ = XOR(DR___8_DR_start___1_QR___2__tmp5_4,DR___8__tmp6_2);
   DR___8__tmp6_14 = L_ROTATE(DR___8_DR_start___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1685,7 +1685,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___8_DR_start___1_QR___3__tmp5_4 = L_ROTATE(DR___8_DR_start___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___8_DR_start___1_QR___3__tmp5_3 = ADD(state__7__10__,DR___8_DR_start___1_QR___3__tmp5_4,32);
   DR___8_DR_start___1_QR___3_QR_start___1__tmp2_ = XOR(state__7__6__,DR___8_DR_start___1_QR___3__tmp5_3);
-  DR___8_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___8_DR_start___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___8_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___8_DR_start___1_QR___3_QR_start___1__tmp2_,8,32);
   DR___8__tmp6_3 = ADD(DR___8_DR_start___1_QR___3__tmp5_1,DR___8_DR_start___1_QR___3__tmp5_2,32);
   DR___8_DR_start___1_QR___3_QR_end___1__tmp3_ = XOR(DR___8_DR_start___1_QR___3__tmp5_4,DR___8__tmp6_3);
   DR___8__tmp6_15 = L_ROTATE(DR___8_DR_start___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1697,7 +1697,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___8_DR_start___1_QR___4__tmp5_4 = L_ROTATE(DR___8_DR_start___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___8_DR_start___1_QR___4__tmp5_3 = ADD(state__7__11__,DR___8_DR_start___1_QR___4__tmp5_4,32);
   DR___8_DR_start___1_QR___4_QR_start___1__tmp2_ = XOR(state__7__7__,DR___8_DR_start___1_QR___4__tmp5_3);
-  DR___8_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___8_DR_start___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___8_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___8_DR_start___1_QR___4_QR_start___1__tmp2_,8,32);
   DR___8__tmp6_4 = ADD(DR___8_DR_start___1_QR___4__tmp5_1,DR___8_DR_start___1_QR___4__tmp5_2,32);
   DR___8_DR_start___1_QR___4_QR_end___1__tmp3_ = XOR(DR___8_DR_start___1_QR___4__tmp5_4,DR___8__tmp6_4);
   DR___8__tmp6_16 = L_ROTATE(DR___8_DR_start___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1709,7 +1709,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___8_DR_end___1_QR___1__tmp5_4 = L_ROTATE(DR___8_DR_end___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___8_DR_end___1_QR___1__tmp5_3 = ADD(DR___8__tmp6_11,DR___8_DR_end___1_QR___1__tmp5_4,32);
   DR___8_DR_end___1_QR___1_QR_start___1__tmp2_ = XOR(DR___8__tmp6_6,DR___8_DR_end___1_QR___1__tmp5_3);
-  DR___8_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___8_DR_end___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___8_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___8_DR_end___1_QR___1_QR_start___1__tmp2_,8,32);
   state__8__0__ = ADD(DR___8_DR_end___1_QR___1__tmp5_1,DR___8_DR_end___1_QR___1__tmp5_2,32);
   DR___8_DR_end___1_QR___1_QR_end___1__tmp3_ = XOR(DR___8_DR_end___1_QR___1__tmp5_4,state__8__0__);
   state__8__15__ = L_ROTATE(DR___8_DR_end___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1721,7 +1721,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___8_DR_end___1_QR___2__tmp5_4 = L_ROTATE(DR___8_DR_end___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___8_DR_end___1_QR___2__tmp5_3 = ADD(DR___8__tmp6_12,DR___8_DR_end___1_QR___2__tmp5_4,32);
   DR___8_DR_end___1_QR___2_QR_start___1__tmp2_ = XOR(DR___8__tmp6_7,DR___8_DR_end___1_QR___2__tmp5_3);
-  DR___8_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___8_DR_end___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___8_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___8_DR_end___1_QR___2_QR_start___1__tmp2_,8,32);
   state__8__1__ = ADD(DR___8_DR_end___1_QR___2__tmp5_1,DR___8_DR_end___1_QR___2__tmp5_2,32);
   DR___8_DR_end___1_QR___2_QR_end___1__tmp3_ = XOR(DR___8_DR_end___1_QR___2__tmp5_4,state__8__1__);
   state__8__12__ = L_ROTATE(DR___8_DR_end___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1733,7 +1733,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___8_DR_end___1_QR___3__tmp5_4 = L_ROTATE(DR___8_DR_end___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___8_DR_end___1_QR___3__tmp5_3 = ADD(DR___8__tmp6_9,DR___8_DR_end___1_QR___3__tmp5_4,32);
   DR___8_DR_end___1_QR___3_QR_start___1__tmp2_ = XOR(DR___8__tmp6_8,DR___8_DR_end___1_QR___3__tmp5_3);
-  DR___8_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___8_DR_end___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___8_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___8_DR_end___1_QR___3_QR_start___1__tmp2_,8,32);
   state__8__2__ = ADD(DR___8_DR_end___1_QR___3__tmp5_1,DR___8_DR_end___1_QR___3__tmp5_2,32);
   DR___8_DR_end___1_QR___3_QR_end___1__tmp3_ = XOR(DR___8_DR_end___1_QR___3__tmp5_4,state__8__2__);
   state__8__13__ = L_ROTATE(DR___8_DR_end___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1745,7 +1745,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___8_DR_end___1_QR___4__tmp5_4 = L_ROTATE(DR___8_DR_end___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___8_DR_end___1_QR___4__tmp5_3 = ADD(DR___8__tmp6_10,DR___8_DR_end___1_QR___4__tmp5_4,32);
   DR___8_DR_end___1_QR___4_QR_start___1__tmp2_ = XOR(DR___8__tmp6_5,DR___8_DR_end___1_QR___4__tmp5_3);
-  DR___8_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___8_DR_end___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___8_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___8_DR_end___1_QR___4_QR_start___1__tmp2_,8,32);
   state__8__3__ = ADD(DR___8_DR_end___1_QR___4__tmp5_1,DR___8_DR_end___1_QR___4__tmp5_2,32);
   DR___8_DR_end___1_QR___4_QR_end___1__tmp3_ = XOR(DR___8_DR_end___1_QR___4__tmp5_4,state__8__3__);
   state__8__14__ = L_ROTATE(DR___8_DR_end___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1757,7 +1757,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___9_DR_start___1_QR___1__tmp5_4 = L_ROTATE(DR___9_DR_start___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___9_DR_start___1_QR___1__tmp5_3 = ADD(state__8__8__,DR___9_DR_start___1_QR___1__tmp5_4,32);
   DR___9_DR_start___1_QR___1_QR_start___1__tmp2_ = XOR(state__8__4__,DR___9_DR_start___1_QR___1__tmp5_3);
-  DR___9_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___9_DR_start___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___9_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___9_DR_start___1_QR___1_QR_start___1__tmp2_,8,32);
   DR___9__tmp6_1 = ADD(DR___9_DR_start___1_QR___1__tmp5_1,DR___9_DR_start___1_QR___1__tmp5_2,32);
   DR___9_DR_start___1_QR___1_QR_end___1__tmp3_ = XOR(DR___9_DR_start___1_QR___1__tmp5_4,DR___9__tmp6_1);
   DR___9__tmp6_13 = L_ROTATE(DR___9_DR_start___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1769,7 +1769,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___9_DR_start___1_QR___2__tmp5_4 = L_ROTATE(DR___9_DR_start___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___9_DR_start___1_QR___2__tmp5_3 = ADD(state__8__9__,DR___9_DR_start___1_QR___2__tmp5_4,32);
   DR___9_DR_start___1_QR___2_QR_start___1__tmp2_ = XOR(state__8__5__,DR___9_DR_start___1_QR___2__tmp5_3);
-  DR___9_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___9_DR_start___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___9_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___9_DR_start___1_QR___2_QR_start___1__tmp2_,8,32);
   DR___9__tmp6_2 = ADD(DR___9_DR_start___1_QR___2__tmp5_1,DR___9_DR_start___1_QR___2__tmp5_2,32);
   DR___9_DR_start___1_QR___2_QR_end___1__tmp3_ = XOR(DR___9_DR_start___1_QR___2__tmp5_4,DR___9__tmp6_2);
   DR___9__tmp6_14 = L_ROTATE(DR___9_DR_start___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1781,7 +1781,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___9_DR_start___1_QR___3__tmp5_4 = L_ROTATE(DR___9_DR_start___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___9_DR_start___1_QR___3__tmp5_3 = ADD(state__8__10__,DR___9_DR_start___1_QR___3__tmp5_4,32);
   DR___9_DR_start___1_QR___3_QR_start___1__tmp2_ = XOR(state__8__6__,DR___9_DR_start___1_QR___3__tmp5_3);
-  DR___9_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___9_DR_start___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___9_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___9_DR_start___1_QR___3_QR_start___1__tmp2_,8,32);
   DR___9__tmp6_3 = ADD(DR___9_DR_start___1_QR___3__tmp5_1,DR___9_DR_start___1_QR___3__tmp5_2,32);
   DR___9_DR_start___1_QR___3_QR_end___1__tmp3_ = XOR(DR___9_DR_start___1_QR___3__tmp5_4,DR___9__tmp6_3);
   DR___9__tmp6_15 = L_ROTATE(DR___9_DR_start___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1793,7 +1793,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___9_DR_start___1_QR___4__tmp5_4 = L_ROTATE(DR___9_DR_start___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___9_DR_start___1_QR___4__tmp5_3 = ADD(state__8__11__,DR___9_DR_start___1_QR___4__tmp5_4,32);
   DR___9_DR_start___1_QR___4_QR_start___1__tmp2_ = XOR(state__8__7__,DR___9_DR_start___1_QR___4__tmp5_3);
-  DR___9_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___9_DR_start___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___9_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___9_DR_start___1_QR___4_QR_start___1__tmp2_,8,32);
   DR___9__tmp6_4 = ADD(DR___9_DR_start___1_QR___4__tmp5_1,DR___9_DR_start___1_QR___4__tmp5_2,32);
   DR___9_DR_start___1_QR___4_QR_end___1__tmp3_ = XOR(DR___9_DR_start___1_QR___4__tmp5_4,DR___9__tmp6_4);
   DR___9__tmp6_16 = L_ROTATE(DR___9_DR_start___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1805,7 +1805,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___9_DR_end___1_QR___1__tmp5_4 = L_ROTATE(DR___9_DR_end___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___9_DR_end___1_QR___1__tmp5_3 = ADD(DR___9__tmp6_11,DR___9_DR_end___1_QR___1__tmp5_4,32);
   DR___9_DR_end___1_QR___1_QR_start___1__tmp2_ = XOR(DR___9__tmp6_6,DR___9_DR_end___1_QR___1__tmp5_3);
-  DR___9_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___9_DR_end___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___9_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___9_DR_end___1_QR___1_QR_start___1__tmp2_,8,32);
   state__9__0__ = ADD(DR___9_DR_end___1_QR___1__tmp5_1,DR___9_DR_end___1_QR___1__tmp5_2,32);
   DR___9_DR_end___1_QR___1_QR_end___1__tmp3_ = XOR(DR___9_DR_end___1_QR___1__tmp5_4,state__9__0__);
   state__9__15__ = L_ROTATE(DR___9_DR_end___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1817,7 +1817,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___9_DR_end___1_QR___2__tmp5_4 = L_ROTATE(DR___9_DR_end___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___9_DR_end___1_QR___2__tmp5_3 = ADD(DR___9__tmp6_12,DR___9_DR_end___1_QR___2__tmp5_4,32);
   DR___9_DR_end___1_QR___2_QR_start___1__tmp2_ = XOR(DR___9__tmp6_7,DR___9_DR_end___1_QR___2__tmp5_3);
-  DR___9_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___9_DR_end___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___9_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___9_DR_end___1_QR___2_QR_start___1__tmp2_,8,32);
   state__9__1__ = ADD(DR___9_DR_end___1_QR___2__tmp5_1,DR___9_DR_end___1_QR___2__tmp5_2,32);
   DR___9_DR_end___1_QR___2_QR_end___1__tmp3_ = XOR(DR___9_DR_end___1_QR___2__tmp5_4,state__9__1__);
   state__9__12__ = L_ROTATE(DR___9_DR_end___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1829,7 +1829,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___9_DR_end___1_QR___3__tmp5_4 = L_ROTATE(DR___9_DR_end___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___9_DR_end___1_QR___3__tmp5_3 = ADD(DR___9__tmp6_9,DR___9_DR_end___1_QR___3__tmp5_4,32);
   DR___9_DR_end___1_QR___3_QR_start___1__tmp2_ = XOR(DR___9__tmp6_8,DR___9_DR_end___1_QR___3__tmp5_3);
-  DR___9_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___9_DR_end___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___9_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___9_DR_end___1_QR___3_QR_start___1__tmp2_,8,32);
   state__9__2__ = ADD(DR___9_DR_end___1_QR___3__tmp5_1,DR___9_DR_end___1_QR___3__tmp5_2,32);
   DR___9_DR_end___1_QR___3_QR_end___1__tmp3_ = XOR(DR___9_DR_end___1_QR___3__tmp5_4,state__9__2__);
   state__9__13__ = L_ROTATE(DR___9_DR_end___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1841,7 +1841,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___9_DR_end___1_QR___4__tmp5_4 = L_ROTATE(DR___9_DR_end___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___9_DR_end___1_QR___4__tmp5_3 = ADD(DR___9__tmp6_10,DR___9_DR_end___1_QR___4__tmp5_4,32);
   DR___9_DR_end___1_QR___4_QR_start___1__tmp2_ = XOR(DR___9__tmp6_5,DR___9_DR_end___1_QR___4__tmp5_3);
-  DR___9_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___9_DR_end___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___9_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___9_DR_end___1_QR___4_QR_start___1__tmp2_,8,32);
   state__9__3__ = ADD(DR___9_DR_end___1_QR___4__tmp5_1,DR___9_DR_end___1_QR___4__tmp5_2,32);
   DR___9_DR_end___1_QR___4_QR_end___1__tmp3_ = XOR(DR___9_DR_end___1_QR___4__tmp5_4,state__9__3__);
   state__9__14__ = L_ROTATE(DR___9_DR_end___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1853,7 +1853,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___10_DR_start___1_QR___1__tmp5_4 = L_ROTATE(DR___10_DR_start___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___10_DR_start___1_QR___1__tmp5_3 = ADD(state__9__8__,DR___10_DR_start___1_QR___1__tmp5_4,32);
   DR___10_DR_start___1_QR___1_QR_start___1__tmp2_ = XOR(state__9__4__,DR___10_DR_start___1_QR___1__tmp5_3);
-  DR___10_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___10_DR_start___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___10_DR_start___1_QR___1__tmp5_2 = L_ROTATE(DR___10_DR_start___1_QR___1_QR_start___1__tmp2_,8,32);
   DR___10__tmp6_1 = ADD(DR___10_DR_start___1_QR___1__tmp5_1,DR___10_DR_start___1_QR___1__tmp5_2,32);
   DR___10_DR_start___1_QR___1_QR_end___1__tmp3_ = XOR(DR___10_DR_start___1_QR___1__tmp5_4,DR___10__tmp6_1);
   DR___10__tmp6_13 = L_ROTATE(DR___10_DR_start___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1865,7 +1865,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___10_DR_start___1_QR___2__tmp5_4 = L_ROTATE(DR___10_DR_start___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___10_DR_start___1_QR___2__tmp5_3 = ADD(state__9__9__,DR___10_DR_start___1_QR___2__tmp5_4,32);
   DR___10_DR_start___1_QR___2_QR_start___1__tmp2_ = XOR(state__9__5__,DR___10_DR_start___1_QR___2__tmp5_3);
-  DR___10_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___10_DR_start___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___10_DR_start___1_QR___2__tmp5_2 = L_ROTATE(DR___10_DR_start___1_QR___2_QR_start___1__tmp2_,8,32);
   DR___10__tmp6_2 = ADD(DR___10_DR_start___1_QR___2__tmp5_1,DR___10_DR_start___1_QR___2__tmp5_2,32);
   DR___10_DR_start___1_QR___2_QR_end___1__tmp3_ = XOR(DR___10_DR_start___1_QR___2__tmp5_4,DR___10__tmp6_2);
   DR___10__tmp6_14 = L_ROTATE(DR___10_DR_start___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1877,7 +1877,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___10_DR_start___1_QR___3__tmp5_4 = L_ROTATE(DR___10_DR_start___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___10_DR_start___1_QR___3__tmp5_3 = ADD(state__9__10__,DR___10_DR_start___1_QR___3__tmp5_4,32);
   DR___10_DR_start___1_QR___3_QR_start___1__tmp2_ = XOR(state__9__6__,DR___10_DR_start___1_QR___3__tmp5_3);
-  DR___10_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___10_DR_start___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___10_DR_start___1_QR___3__tmp5_2 = L_ROTATE(DR___10_DR_start___1_QR___3_QR_start___1__tmp2_,8,32);
   DR___10__tmp6_3 = ADD(DR___10_DR_start___1_QR___3__tmp5_1,DR___10_DR_start___1_QR___3__tmp5_2,32);
   DR___10_DR_start___1_QR___3_QR_end___1__tmp3_ = XOR(DR___10_DR_start___1_QR___3__tmp5_4,DR___10__tmp6_3);
   DR___10__tmp6_15 = L_ROTATE(DR___10_DR_start___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1889,7 +1889,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___10_DR_start___1_QR___4__tmp5_4 = L_ROTATE(DR___10_DR_start___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___10_DR_start___1_QR___4__tmp5_3 = ADD(state__9__11__,DR___10_DR_start___1_QR___4__tmp5_4,32);
   DR___10_DR_start___1_QR___4_QR_start___1__tmp2_ = XOR(state__9__7__,DR___10_DR_start___1_QR___4__tmp5_3);
-  DR___10_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___10_DR_start___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___10_DR_start___1_QR___4__tmp5_2 = L_ROTATE(DR___10_DR_start___1_QR___4_QR_start___1__tmp2_,8,32);
   DR___10__tmp6_4 = ADD(DR___10_DR_start___1_QR___4__tmp5_1,DR___10_DR_start___1_QR___4__tmp5_2,32);
   DR___10_DR_start___1_QR___4_QR_end___1__tmp3_ = XOR(DR___10_DR_start___1_QR___4__tmp5_4,DR___10__tmp6_4);
   DR___10__tmp6_16 = L_ROTATE(DR___10_DR_start___1_QR___4_QR_end___1__tmp3_,8,32);
@@ -1901,7 +1901,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___10_DR_end___1_QR___1__tmp5_4 = L_ROTATE(DR___10_DR_end___1_QR___1_QR_start___1__tmp1_,16,32);
   DR___10_DR_end___1_QR___1__tmp5_3 = ADD(DR___10__tmp6_11,DR___10_DR_end___1_QR___1__tmp5_4,32);
   DR___10_DR_end___1_QR___1_QR_start___1__tmp2_ = XOR(DR___10__tmp6_6,DR___10_DR_end___1_QR___1__tmp5_3);
-  DR___10_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___10_DR_end___1_QR___1_QR_start___1__tmp2_,12,32);
+  DR___10_DR_end___1_QR___1__tmp5_2 = L_ROTATE(DR___10_DR_end___1_QR___1_QR_start___1__tmp2_,8,32);
   state__10__0__ = ADD(DR___10_DR_end___1_QR___1__tmp5_1,DR___10_DR_end___1_QR___1__tmp5_2,32);
   DR___10_DR_end___1_QR___1_QR_end___1__tmp3_ = XOR(DR___10_DR_end___1_QR___1__tmp5_4,state__10__0__);
   state__10__15__ = L_ROTATE(DR___10_DR_end___1_QR___1_QR_end___1__tmp3_,8,32);
@@ -1913,7 +1913,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___10_DR_end___1_QR___2__tmp5_4 = L_ROTATE(DR___10_DR_end___1_QR___2_QR_start___1__tmp1_,16,32);
   DR___10_DR_end___1_QR___2__tmp5_3 = ADD(DR___10__tmp6_12,DR___10_DR_end___1_QR___2__tmp5_4,32);
   DR___10_DR_end___1_QR___2_QR_start___1__tmp2_ = XOR(DR___10__tmp6_7,DR___10_DR_end___1_QR___2__tmp5_3);
-  DR___10_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___10_DR_end___1_QR___2_QR_start___1__tmp2_,12,32);
+  DR___10_DR_end___1_QR___2__tmp5_2 = L_ROTATE(DR___10_DR_end___1_QR___2_QR_start___1__tmp2_,8,32);
   state__10__1__ = ADD(DR___10_DR_end___1_QR___2__tmp5_1,DR___10_DR_end___1_QR___2__tmp5_2,32);
   DR___10_DR_end___1_QR___2_QR_end___1__tmp3_ = XOR(DR___10_DR_end___1_QR___2__tmp5_4,state__10__1__);
   state__10__12__ = L_ROTATE(DR___10_DR_end___1_QR___2_QR_end___1__tmp3_,8,32);
@@ -1925,7 +1925,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___10_DR_end___1_QR___3__tmp5_4 = L_ROTATE(DR___10_DR_end___1_QR___3_QR_start___1__tmp1_,16,32);
   DR___10_DR_end___1_QR___3__tmp5_3 = ADD(DR___10__tmp6_9,DR___10_DR_end___1_QR___3__tmp5_4,32);
   DR___10_DR_end___1_QR___3_QR_start___1__tmp2_ = XOR(DR___10__tmp6_8,DR___10_DR_end___1_QR___3__tmp5_3);
-  DR___10_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___10_DR_end___1_QR___3_QR_start___1__tmp2_,12,32);
+  DR___10_DR_end___1_QR___3__tmp5_2 = L_ROTATE(DR___10_DR_end___1_QR___3_QR_start___1__tmp2_,8,32);
   state__10__2__ = ADD(DR___10_DR_end___1_QR___3__tmp5_1,DR___10_DR_end___1_QR___3__tmp5_2,32);
   DR___10_DR_end___1_QR___3_QR_end___1__tmp3_ = XOR(DR___10_DR_end___1_QR___3__tmp5_4,state__10__2__);
   state__10__13__ = L_ROTATE(DR___10_DR_end___1_QR___3_QR_end___1__tmp3_,8,32);
@@ -1937,7 +1937,7 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DR___10_DR_end___1_QR___4__tmp5_4 = L_ROTATE(DR___10_DR_end___1_QR___4_QR_start___1__tmp1_,16,32);
   DR___10_DR_end___1_QR___4__tmp5_3 = ADD(DR___10__tmp6_10,DR___10_DR_end___1_QR___4__tmp5_4,32);
   DR___10_DR_end___1_QR___4_QR_start___1__tmp2_ = XOR(DR___10__tmp6_5,DR___10_DR_end___1_QR___4__tmp5_3);
-  DR___10_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___10_DR_end___1_QR___4_QR_start___1__tmp2_,12,32);
+  DR___10_DR_end___1_QR___4__tmp5_2 = L_ROTATE(DR___10_DR_end___1_QR___4_QR_start___1__tmp2_,8,32);
   state__10__3__ = ADD(DR___10_DR_end___1_QR___4__tmp5_1,DR___10_DR_end___1_QR___4__tmp5_2,32);
   DR___10_DR_end___1_QR___4_QR_end___1__tmp3_ = XOR(DR___10_DR_end___1_QR___4__tmp5_4,state__10__3__);
   state__10__14__ = L_ROTATE(DR___10_DR_end___1_QR___4_QR_end___1__tmp3_,8,32);
