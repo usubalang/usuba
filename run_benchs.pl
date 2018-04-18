@@ -4,11 +4,16 @@ use strict;
 use warnings;
 use v5.14;
 
+use Data::Dumper;
+use Data::Printer;
+
 use FindBin;
 chdir $FindBin::Bin;
 
 use File::Copy;
 use File::Path qw(remove_tree);
+use Sys::Hostname;
+use List::Util qw( sum );
 
 use Getopt::Long;
 
@@ -122,6 +127,8 @@ sub run_benchs {
     
     die "Error in supercop benchmark." if system "./data-do";
 
+    chdir "..";
+    
     local $job_str = "Running Supercop";
     status_end;
 }
@@ -131,9 +138,95 @@ sub collect {
     local $job_str = "Collecting results";
     status_start;
 
+    my $hostname = lc hostname =~ s/\W//gr;
+
+    my %perfs;
+    my $res_dir = "supercop-data/$hostname/amd64/try/c";
+    # structure of the results directory:
+    # res_dir/compiler/crypto_stream/cipher/implem/data"
+    # (with krovetz, implem has a subdir)
+    for my $file (glob("$res_dir/*/crypto_stream/*/*/{*/,}data")) {
+        my $perf = perf_from_file($file) || next;
+        my ($cc,$opts,$cipher) = $file =~ m{.*?(clang|gcc)_-(.*?)_.*?crypto_stream/(.*?)/data};
+        $perfs{$cc}->{$opts}->{$cipher} = $perf;
+    }
+
+    my @refs;
+    # Serpent, AES & Chacha Usuba
+    for (['serpent','serpent128ctr'], ['aes', 'aes128ctr'], ['chacha20','chacha20']) {
+        my ($file, $cipher) = @$_;
+        for (['std', 'GP\n64-bit'], ['sse', 'SSE'], ['avx', 'AVX2']) {
+            my ($implem,$name) = @$_;
+            push @refs, { cipher => $cipher, implem => "usuba-$implem",
+                          cc => 'clang', opts => 'march=native',
+                          file => $file, name => $name },
+        }
+    }
+    # Serpent Kivilinna 64-bits, SSE and Götzfried
+    for (['linux_c','Kivilinna\n64-bit'],['sse2-8way','Kivilinna\nSSE'],
+         ['avx2-16way-1','Götzfried\nAVX2']) {
+        my ($implem,$name) = @$_;
+        push @refs, { cipher => 'serpent128ctr', implem => $implem,
+                      cc => 'gcc', opts => 'march=native',
+                      file => 'serpent', name => $name };
+    }
+    # AES K&S and Kivilinna
+    for (['kivilinna-avx','Kivilinna SSE'],['kasper_sse','K\\&S\nSSE']) {
+        my ($implem,$name) = @$_;
+        push @refs, { cipher => 'aes128ctr', implem => $implem,
+                      cc => 'gcc', opts => 'march=native',
+                      file => 'aes', name => $name };
+    }
+    # Chacha20 Krovetz SSE and AVX2
+    for (['krovetz/vec128','Krovetz SSE'],['krovetz/avx2','Krovetz AVX2']) {
+        my ($implem,$name) = @$_;
+        push @refs, { cipher => 'chacha20', implem => $implem,
+                      cc => 'gcc', opts => 'march=native',
+                      file => 'chacha20', name => $name };
+    }
     
-    #supercop-data/dadavm/amd64/try/c/
-    
+    # Gathering the results
+    my %data;
+    for (@refs) {
+        my $perf = $perfs{$_->{cc}}->{$_->{opts}}->{"$_->{cipher}/$_->{implem}"} || next;
+        push @{$data{$_->{file}}},{ name => $_->{name}, perf => $perf, ttt => "$_->{cipher}/$_->{implem}" };
+    }
+
+    # Printing the data files
+    for my $cipher (keys %data) {
+        open my $FP, '>', "supercop/plots/data-$cipher.dat" or die $!;
+        for (sort { $b->{perf} <=> $a->{perf} } @{$data{$cipher}}) {
+            say $FP qq("$_->{name}" $_->{perf});
+        }
+        close $FP;
+    }
+
+    # Generating the graphs
+    chdir 'supercop/plots';
+    system("gnuplot $_") for glob "plot-*.txt";
 
     status_end;
+}
+
+sub perf_from_file {
+    my $filename = shift;
+    
+    my $last_line;
+    open my $FP, '<', $filename;
+
+    my @cycles;
+    while (<$FP>) {
+        if (/xor_cycles 4096 (.*)/) {
+            push @cycles, split ' ', $1;
+        }
+    }
+
+    if (@cycles) {
+        @cycles = (sort { $a <=> $b } @cycles)[0 .. 5];
+        my $cycles_avg = (sum @cycles) / @cycles;
+        return sprintf "%.02f", $cycles_avg / 4096;
+    } else {
+        return 0;
+    }
+    
 }
