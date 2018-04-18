@@ -7,7 +7,7 @@ let
     aR = a + b;
     dR = (d ^ aR) <<< 16;
     cR = c + dR;
-    bR = (b ^ cR) <<< 8
+    bR = (b ^ cR) <<< 12
 tel
 
 
