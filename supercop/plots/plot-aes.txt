@@ -18,7 +18,7 @@ set key right
 set key samplen 2
 
 set ylabel "Cycles/Byte"
-set xlabel "Implementation"
+set xlabel " "
 
 set linetype 1 lc rgb '#0000FF'
 set linetype 2 lc rgb '#FF0000'
