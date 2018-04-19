@@ -55,12 +55,12 @@
     incr_counter(counter);                                              \
     __m128i high_part = _mm_load_si128((__m128i*) counter);             \
     incr_counter(counter);                                              \
-    input[nb_blocks/2] = _mm256_loadu2_m128i(&low_part,&high_part);     \
+    input[nb_blocks/2] = _mm256_loadu2_m128i(&high_part,&low_part);     \
   }                                                                
 
 /* This macro should just call the encryption function, with the parameters
    input, key and out_buff */
-#define encrypt() aes_bs(input, key, out_buff);
+#define encrypt() aes_bs(input, key, out_buff)
 
 
 /* ******************************************************************* */
