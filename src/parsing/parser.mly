@@ -202,10 +202,10 @@ p:
   | l=separated_list(TOK_COMMA, x=TOK_id TOK_COLON t=typ ck=pclock { ((x, t), ck) }) { l }
 
 typ:
-  | t=TOK_type size=option(delimited(TOK_LBRACKET,arith_exp,TOK_RBRACKET))
-                          { match size with
-                            | Some n -> Array(t,n)
-                            | None -> t }
+  | t=TOK_type sizes=list(delimited(TOK_LBRACKET,arith_exp,TOK_RBRACKET))
+                          { match sizes with
+                            | [] -> t
+                            | _ -> List.fold_left (fun i s -> Array(i,s)) t sizes }
                                       
 pclock:
    | { Base }
