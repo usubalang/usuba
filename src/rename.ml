@@ -31,7 +31,6 @@ let rec rename_arith_expr (e:arith_expr) =
 let rec rename_var (v:var) =
   match v with
   | Var v -> Var (fresh_suffix v "'")
-  | Field(v,e) -> Field(rename_var v,rename_arith_expr e)
   | Index(v,e) -> Index(rename_var v,rename_arith_expr e)
   | Range(v,ei,ef) -> Range(rename_var v,rename_arith_expr ei,rename_arith_expr ef)
   | Slice(v,l) -> Slice(rename_var v,List.map rename_arith_expr l)

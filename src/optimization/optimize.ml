@@ -158,7 +158,7 @@ module Clean = struct
   let rec clean_var env (var:var) : unit =
     match var with
     | Var id -> Hashtbl.replace env id 1
-    | Field(v,_) | Index(v,_)
+    | Index(v,_)
     | Range(v,_,_) | Slice(v,_) -> clean_var env v
 
   let rec clean_expr env (e:expr) : unit =

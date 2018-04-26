@@ -131,7 +131,6 @@ arith_exp:
 
 var:
   | id=TOK_id { Var id  }
-  | v=var TOK_DOT n=arith_exp { Field(v,n) }
   | v=var TOK_LBRACKET n=arith_exp TOK_RBRACKET { Index (v,n) }
   | v=var TOK_LBRACKET ei=arith_exp TOK_RANGE ef=arith_exp TOK_RBRACKET
     { Range(v,ei,ef) }

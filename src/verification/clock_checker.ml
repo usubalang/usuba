@@ -26,7 +26,7 @@ let init_env (p_in:p) (p_out:p) (vars:p) =
 let rec get_clock env (v: var) : clock =
   match v with
   | Var id -> Hashtbl.find env id
-  | Field(v,_) | Index(v,_)
+  | Index(v,_)
   | Range(v,_,_) | Slice(v,_)-> get_clock env v
 
 let rec clock_expr env (e:expr) : clock * bool =

@@ -1,22 +1,20 @@
 (***************************************************************************** )
                               expand_array.ml                                 
 
-   This module has several main functionalities:
-    - Convert forall into a list of regular instructions.
-    - Convert Ranges into multiple Tuples of Fields.
-    - Convert Slices into multiple Tuples of Fields.
-    - Convert access to arrays (variables) into access to variables
-      (for instance, a[0] will become a'0)
-    
-    After this module has ran, there souldn't be any "Index" variable left, 
-    nor any "Multiple" node.
-
 ( *****************************************************************************)
 
 open Usuba_AST
 open Utils
 open Printf
 
+(* If the program contains permutations, then arrays must be unrolled
+ This is a bit of a simplification: 
+  - The permutation could be at some point where it doesn't impact unrolling
+  - Dummy assigments are a sign that indicates that arrays should be unrolled as well
+ *)
+let must_expand (prog:prog) =
+  List.exists (fun x -> match x.node with Perm _ -> true | _ -> false) prog.nodes
+       
 (* Very temporary function, for testing purpose *)
 let should_expand_arr () : bool = false
 
@@ -80,10 +78,6 @@ let rec expand_var (arith_env:(string,int) Hashtbl.t)
      filter_elems_loc (rec_call ~retain:(gen_list_bounds ei ef) v) retain
   | Index(v,e) -> let e = eval_arith arith_env e in
                   filter_elems_loc (rec_call ~retain:[e] v) retain
-  (* Field is a bit special: we don't want to expand them right now.
-     (actually, we probably never want to expand them) *)
-  | Field(v,_)  -> [ v ]
-       
 
 (* Expand the variables inside an expression, and convert Fun_v to Fun *)
 let rec expand_expr (arith_env:(string,int) Hashtbl.t)
@@ -108,7 +102,7 @@ let rec expand_expr (arith_env:(string,int) Hashtbl.t)
   | When(e,x,y)     -> When(rec_call e,x,y)
   | Merge(x,l)      -> Merge(x,List.map (fun (c,e) -> c,rec_call e) l)
   | _ -> assert false
-
+                
 (* Expand the variables inside deq, and remove Rec *)
 let rec expand_deqs (arith_env:(string,int) Hashtbl.t)
                     (type_env:(ident,int) Hashtbl.t)
@@ -116,20 +110,21 @@ let rec expand_deqs (arith_env:(string,int) Hashtbl.t)
   List.flatten @@
     List.map
       (fun deq ->
-        match deq with
-        | Norec(lhs,e) ->
-           [ Norec(List.(flatten @@ map (expand_var arith_env type_env) lhs),
-                   expand_expr arith_env type_env e) ]
-        | Rec(x,ei,ef,l,opts) ->
-           let ei = eval_arith arith_env ei in
-           let ef = eval_arith arith_env ef in
-           let eqs =
-             List.flatten @@
-               List.map (fun i -> Hashtbl.replace arith_env x.name i;
-                                  expand_deqs arith_env type_env l)
-                 (gen_list_bounds ei ef) in
-           Hashtbl.remove arith_env x.name;
-           eqs) deqs
+       match deq with
+       | Norec(lhs,e) ->
+          [ Norec(List.(flatten @@ map (expand_var arith_env type_env) lhs),
+                  expand_expr arith_env type_env e) ]
+       | Rec(x,ei,ef,l,opts) ->
+          (*if List.mem No_unroll opts then*)
+          let ei = eval_arith arith_env ei in
+          let ef = eval_arith arith_env ef in
+          let eqs =
+            List.flatten @@
+              List.map (fun i -> Hashtbl.replace arith_env x.name i;
+                                 expand_deqs arith_env type_env l)
+                       (gen_list_bounds ei ef) in
+          Hashtbl.remove arith_env x.name;
+          eqs) deqs
 
 (* For the coherence of "ident", the functions make_env and expand_p should be
    combined into a single function. (It's not hard to do btw)
@@ -151,6 +146,11 @@ let expand_p (p:p) : p =
   (* Actually expand the list of variables *)
   flat_map aux p
 
+let rec expand_typ (t:typ) : typ =
+  match t with
+  | Array(t',s) -> Array(expand_typ t',s)
+  | Int(n,m) when m <> 1 -> Array(Int(n,1),Const_e m)
+  | _ -> t
 
 (* Create the environment containing the size associated to each variable 
    (even the one resulting from expansion of arrays) *)
@@ -162,10 +162,12 @@ let make_env_from_p (p_in:p) (p_out:p) (vars:p) =
       let ((id,typ),ck) = v in
       match typ with
       | Bool -> env_add type_env id 1
-      | Array(t,s) -> env_add type_env id (typ_size typ);
-                      let size = eval_arith (make_env ()) s in
-                      List.iter (fun i -> aux ((fresh_suffix id (sprintf "%d'" i),
-                                                t),ck)) (gen_list_0_int size)
+      | Array(t,s) ->
+         env_add type_env id (typ_size typ);
+         if exp_arr then
+           let size = eval_arith (make_env ()) s in
+           List.iter (fun i -> aux ((fresh_suffix id (sprintf "%d'" i),
+                                     t),ck)) (gen_list_0_int size)
       | Int(_,1) -> env_add type_env id 1
       | Int(n,m) -> env_add type_env id m;
                     List.iter (fun i -> aux ((fresh_suffix id (sprintf "%d'" i),

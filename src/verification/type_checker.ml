@@ -72,19 +72,6 @@ let size_var loc_env (idx_env: int env) (v:var) : int =
      ( match env_fetch loc_env v' with
        | Some(_,size) -> size
        | None -> raise (Unsound (v'.name ^ " undeclared")))
-  | Field(v',i) ->
-     ( match v' with
-       | Var v' -> ( match env_fetch loc_env v' with
-                     | Some _ -> 1
-                     | None   -> raise (Unsound (v'.name ^ " undeclared")))
-       | Index(v',_) -> ( match env_fetch loc_env v' with
-                          | Some(typ,_) ->
-                             (match typ with
-                              | Array(Int _,_) -> 1
-                              | _ -> raise
-                                       (Unsound(v'.name ^ " not an int or not an array")))
-                          | None -> raise (Unsound (v'.name ^ " undeclared")))
-       | _ -> raise (Unsound ("Invalid field: " ^ (var_to_str v))))
   | Index(v',e) ->
      if type_arith idx_env e then
        match env_fetch loc_env v' with

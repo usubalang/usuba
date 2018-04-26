@@ -8,7 +8,10 @@ exception Empty_list
 exception Undeclared of ident
 exception Invalid_param_size
 exception Invalid_operator_call
-exception Break            
+exception Break
+
+(* Should arrays be expanded ? *)
+let exp_arr = true
 
 let unreached () = raise (Error "This point can't be reached")
 
@@ -96,6 +99,26 @@ let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
                     | Sub -> x' - y'
                     | Div -> x' / y'
                     | Mod -> if x' >= 0 then x' mod y' else y' + (x' mod y')
+
+(* Evaluates the arithmetic expression as much as possible: if the variables are
+in the environment, then replaces them by their values, otherwise let them as is. *)
+let rec simpl_arith env (e: arith_expr) : arith_expr =
+  match e with
+  | Const_e n -> e
+  | Var_e id  -> (try Hashtbl.find env id.name
+                  with Not_found -> Var_e id)
+  | Op_e(op,x,y) -> let x' = simpl_arith env x in
+                    let y' = simpl_arith env y in
+                    match x', y' with
+                    | Const_e n1, Const_e n2 ->
+                       Const_e (match op with
+                                | Add -> n1 + n2
+                                | Mul -> n1 * n2
+                                | Sub -> n1 - n2
+                                | Div -> n1 / n2
+                                | Mod -> if n1 >= 0 then n1 mod n2 else n2 + (n1 mod n2))
+                    | _ -> Op_e(op,x',y')
+              
                                             
 let rec join s l = String.concat s l
 
@@ -274,7 +297,7 @@ let rec get_used_vars (e:expr) : var list =
 let rec get_var_name (v:var) : ident =
   match v with
   | Var id -> id
-  | Field(v,_) | Index(v,_)
+  | Index(v,_)
   | Range(v,_,_) | Slice(v,_) -> get_var_name v
 
 (* Retrieving the keys of a hash *)

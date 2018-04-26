@@ -3,8 +3,7 @@
 
     This module converts uint_n to n booleans.
     
-    After this module has ran, there souldn't be any "uint_n" variables, nor
-    any "Field" expression.
+    After this module has ran, there souldn't be any "uint_n" variables.
 
 ( *****************************************************************************)
 
@@ -30,7 +29,6 @@ let rec norm_expr env (e: expr) : expr =
                             Tuple(flatten_expr @@ expand_intn_expr id n)
                          | _ ->
                             e )
-  | ExpVar(Field(Var id, Const_e n)) -> ExpVar(Var (fresh_suffix id (string_of_int n)))
   | Tuple (l) -> Tuple(flatten_expr @@ List.map (norm_expr env) l)
   | Fun(f,l) -> Fun(f,flatten_expr @@ List.map (norm_expr env) l)
   | Log(op,x1,x2) -> let x1' = norm_expr env x1 in
@@ -51,7 +49,6 @@ let norm_pat env (pat: var list) : var list =
                               if size > 1 then expand_intn_pat id size
                               else [ Var id ]
                            | None -> [ Var id ]) (* undeclared bool *)
-              | Field(Var id,Const_e i) -> [Var (fresh_suffix id (string_of_int i)) ]
               | _ -> raise (Invalid_AST ("Illegal array access : " ^
                                            (Usuba_print.var_to_str x)))) pat
     

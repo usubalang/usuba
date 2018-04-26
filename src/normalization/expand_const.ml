@@ -28,7 +28,6 @@ let get_var_size env (v:ident) : int =
 let rec get_expr_size env (e:expr) : int =
   match e with
   | Const _ -> raise (Error "Can't guess size")
-  | ExpVar(Field(_,_)) -> 1
   | ExpVar(Var v) -> get_var_size env v
   | ExpVar _ -> raise (Error "Invalid var")
   | Tuple l -> List.fold_left (+) 0 (List.map (get_expr_size env) l)
@@ -98,7 +97,6 @@ let expand_deqs env (deq:deq) : deq =
        let size =
          List.fold_left (+) 0 (List.map (function
                                           | Var v -> get_var_size env v
-                                          | Field _ -> 1
                                           | _ -> raise (Error "Invalid var")) p) in
        Norec(p,expand_expr env size e)
      else

@@ -36,14 +36,12 @@ let rec arith_to_str_types = function
 
 let rec var_to_str = function
   | Var v -> v.name
-  | Field(v,e) -> sprintf "%s.%s" (var_to_str v) (arith_to_str e)
   | Index(v,e) -> sprintf "%s[%s]" (var_to_str v) (arith_to_str e)
   | Range(v,ei,ef) -> sprintf "%s[%s .. %s]" (var_to_str v) (arith_to_str ei) (arith_to_str ef)
   | Slice(v,l) -> sprintf "%s[%s]" (var_to_str v) (join "," (List.map arith_to_str l))
                                               
 let rec var_to_str_types = function
   | Var v -> sprintf "Var: %s" v.name
-  | Field(v,e) -> sprintf "Field: %s.(%s)" (var_to_str_types v) (arith_to_str_types e)
   | Index(v,e) -> sprintf "Index: %s[%s]" (var_to_str_types v) (arith_to_str_types e)
   | Range(v,ei,ef) -> sprintf "Range: %s[%s..%s] " (var_to_str_types v) (arith_to_str_types ei)
                               (arith_to_str_types ef)
