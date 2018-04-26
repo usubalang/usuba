@@ -57,7 +57,7 @@ vars
     state : u32x16[11]
 let
     state[0] = plain;
-    forall i in [1,10] {
+    _no_unroll forall i in [1,10] {
       state[i] = DR(state[i-1])
     }
     cipher = state[10]
