@@ -1,4 +1,5 @@
 open Usuba_AST
+open Basic_utils
 open Utils
        
 let prog_to_c (orig:prog) (prog:prog) (conf:config) : string =

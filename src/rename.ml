@@ -15,6 +15,7 @@
 
 
 open Usuba_AST
+open Basic_utils
 open Utils
        
 (* Since the transformation of the code will produce new variable names,

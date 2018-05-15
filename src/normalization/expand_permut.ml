@@ -12,6 +12,7 @@
 ( *****************************************************************************)
 
 open Usuba_AST
+open Basic_utils
 open Utils
                
 let list_from_perm env_var (perm:int list) (l:expr list) : expr list =

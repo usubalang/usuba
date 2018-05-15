@@ -1,5 +1,6 @@
 open Usuba_AST
-
+open Basic_utils
+       
 exception Invalid_AST of string
 exception Error of string
 exception Syntax_error
@@ -10,11 +11,8 @@ exception Invalid_param_size
 exception Invalid_operator_call
 exception Break
 
-(* Should arrays be expanded ? *)
-let exp_arr = true
-
 let unreached () = raise (Error "This point can't be reached")
-
+            
 let default_conf : config =
   { block_size  = 64;
     key_size    = 64;
@@ -39,37 +37,7 @@ let default_conf : config =
     openmp      = 1;
     no_arr      = false;
   }
-
-let print_conf (conf:config) : unit =
-  Printf.printf
-"config = {
-  inlining     = %B;
-  gen_z3       = %B;
-  check_tables = %B;
-  verbose      = %d;
-  warnings     = %B;
-}\n" conf.inlining conf.verif conf.check_tbl
-conf.verbose conf.warnings
     
-let rec map_no_end f = function
-  | [] -> []
-  | [x] -> []
-  | hd::tl -> (f hd) :: (map_no_end f tl)
-
-let rec pow a = function
-  | 0 -> 1
-  | 1 -> a
-  | n -> 
-     let b = pow a (n / 2) in
-     b * b * (if n mod 2 = 0 then 1 else a)
-                
-
-let last l =
-  List.nth l (List.length l - 1)
-let is_empty = function [] -> true | _ -> false
-
-let flat_map f l = List.flatten @@ List.map f l
-
 let make_env () = Hashtbl.create 100
 let env_add env v e = Hashtbl.replace env v e
 let env_update env v e = Hashtbl.replace env v e
@@ -104,7 +72,7 @@ let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
                     | Mod -> if x' >= 0 then x' mod y' else y' + (x' mod y')
 
 let eval_arith_ne (e:Usuba_AST.arith_expr) : int =
-  eval_arith (make_env ()) e
+  eval_arith (Hashtbl.create 100) e
              
 (* Evaluates the arithmetic expression as much as possible: if the variables are
 in the environment, then replaces them by their values, otherwise let them as is. *)
@@ -125,13 +93,6 @@ let rec simpl_arith (env:(ident,int) Hashtbl.t) (e: arith_expr) : arith_expr =
                                 | Mod -> if n1 >= 0 then n1 mod n2 else n2 + (n1 mod n2))
                     | _ -> Op_e(op,x',y')
               
-                                            
-let rec join s l = String.concat s l
-
-let indent (tab: int) : string =
-  String.make (tab * 4) ' '
-let indent_small (tab: int) : string =
-  String.make (tab * 2) ' '
 
 let fresh_ident (name: string): ident =
   (* XXX: glue code, not actually maintaining a freshness of uid *)
@@ -321,13 +282,6 @@ let rec expand_intn_list (id: ident) (n: int) : ident list =
     else (fresh_suffix id (string_of_int i)) :: (aux (i+1))
   in aux 1
 
-let contains s1 s2 =
-  let re = Str.regexp_string s2
-  in
-  try ignore (Str.search_forward re s1 0); true
-  with Not_found -> false
-
-
    
 let rec get_used_vars (e:expr) : var list =
   match e with
@@ -347,14 +301,6 @@ let rec get_var_name (v:var) : ident =
   | Index(v,_)
   | Range(v,_,_) | Slice(v,_) -> get_var_name v
 
-(* Retrieving the keys of a hash *)
-let keys hash = Hashtbl.fold (fun k _ acc -> k :: acc) hash []
-
-(* Retrieving the keys of a HoH's 2nd layer*)
-let keys_2nd_layer hash k =
-  try
-    keys (Hashtbl.find hash k)
-  with Not_found -> []
 
 let is_unroll (opts:stmt_opt list) : bool =
   List.exists (function
@@ -380,10 +326,6 @@ let is_perm (def:def) : bool =
   match def.node with
   | Perm _ -> true
   | _ -> false
-              
-let print_bool_list (l:bool list) : unit =
-  List.iter (fun x -> print_int (if x then 1 else 0)) l;
-  print_endline ""
 
 (* Note: boollist_to_int (int_to_boollist x n) == x 
    (if x is less than 2^n) *)

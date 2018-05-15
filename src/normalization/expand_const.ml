@@ -1,4 +1,5 @@
 open Usuba_AST
+open Basic_utils
 open Utils
 
 let rec contains_const (e:expr) : bool =

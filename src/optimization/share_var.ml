@@ -1,5 +1,6 @@
 open Usuba_AST
 open Usuba_print
+open Basic_utils
 open Utils
 
 
@@ -216,10 +217,6 @@ let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) : deq list =
   List.iter (fun ((id,_),_) -> Hashtbl.replace env_out (Var id) true) p_out;
   (* replacement env for variables that have been replaced *)
   let env_replace = Hashtbl.create 1000 in
-
-  (*Printf.fprintf stderr "\n\n*****************************************\n";
-  Hashtbl.iter (fun k v -> Printf.fprintf stderr "%s:%d\n" (Usuba_print.var_to_str k) v) last_used ;
-  Printf.fprintf stderr "*****************************************\n\n";*)
 
   let rec do_it ?(cpt_start=0) (deqs:deq list) : deq list =
     let cpt = ref cpt_start in
