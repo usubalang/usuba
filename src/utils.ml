@@ -10,8 +10,6 @@ exception Undeclared of ident
 exception Invalid_param_size
 exception Invalid_operator_call
 exception Break
-
-let unreached () = raise (Error "This point can't be reached")
             
 let default_conf : config =
   { block_size  = 64;

@@ -69,7 +69,7 @@ module Usuba = struct
     let idx = boollist_to_int l in
     match node.node with
     | Table tbl -> int_to_boollist (List.nth tbl idx) (p_size node.p_out)
-    | _ -> unreached ()
+    | _ -> assert false
     
                      
 end

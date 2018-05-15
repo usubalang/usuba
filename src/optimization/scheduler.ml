@@ -111,7 +111,7 @@ module Random_scheduler = struct
                                 l := eq :: !l
                               ) prec;
                     Hashtbl.add status eq (ref (List.length prec))
-                 | _ -> unreached ()) deqs;
+                 | _ -> assert false) deqs;
 
     (* Setting successors of p_in to ready *)
     List.iter
@@ -141,7 +141,7 @@ module Random_scheduler = struct
                                                  | Some n -> decr n
                                                  | None -> ()) !l
                           | None -> ())) p
-      | _ -> unreached()
+      | _ -> assert false
     done;
 
     (* Need to reverse as we added elements in 1st position in the list *)
@@ -180,14 +180,6 @@ module Depth_first_sched = struct
     | None   -> let h = Hashtbl.create 60 in
                 Hashtbl.add h k2 true;
                 Hashtbl.add hash k1 h
-                              
-                              
-  let keys hash = Hashtbl.fold (fun k _ acc -> k :: acc) hash []
-
-  let keys_2nd_layer hash k =
-    try
-      keys (Hashtbl.find hash k)
-    with Not_found -> []
                             
   type node = { current: var list * expr; sons: node list; father: node list }
 
@@ -202,7 +194,7 @@ module Depth_first_sched = struct
                    let used = get_used_vars e in
                    List.iter (fun x -> update_hoh using x (l,e)) used;
                    List.iter (fun x -> Hashtbl.add decls x (l,e)) l
-                | _ -> unreached ()) deqs;
+                | _ -> assert false) deqs;
 
     using,decls
               
@@ -221,7 +213,7 @@ module Depth_first_sched = struct
                   | Norec(l,e) -> if List.filter (fun x -> not (exists available x))
                                                  (get_used_vars e) = [] then
                                     ready := (l,e) :: !ready
-                  | _ -> unreached ()) deqs );
+                  | _ -> assert false) deqs );
     
     let rec do_schedule ((l,e):var list*expr) =
       (* Only if "l" isn't scheduled already *)

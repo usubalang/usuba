@@ -150,7 +150,7 @@ let rec type_expr glob_env loc_env idx_env (e:expr) : int * bool =
                                       else raise (Unsound ("Different sizes in merge: "
                                                            ^ (expr_to_str e)))
                                      ) hd tl
-                   | _ -> unreached ())
+                   | _ -> assert false)
       | None   -> raise (Unsound ("Undeclared var " ^ id.name)))
                   
                   
