@@ -43,18 +43,6 @@ let env_remove env v = Hashtbl.remove env v
 let env_fetch env v = try Hashtbl.find env v
                       with Not_found -> raise (Error (__LOC__ ^ ":Not found: " ^ v.name))
 
-                                            
-let filter_elems l indices =
-  let rec aux i acc l indices =
-    match indices with
-    | [] -> List.rev acc
-    | _  -> match l with
-            | [] -> List.rev acc
-            | hd::tl -> if List.hd indices = i then
-                          aux (i+1) (hd::acc) tl (List.tl indices)
-                        else aux (i+1) acc tl indices in
-  aux 0 [] l indices
-
       
 let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
   match e with
@@ -133,14 +121,6 @@ let gen_list_0_int (n: int) : int list =
     if n <= 0 then acc
     else aux (n-1) ((n-1) :: acc)
   in aux n []
-
-(* Generates the list of integers between i and f *)
-let rec gen_list_bounds i f =
-  if i < f then
-    i :: (gen_list_bounds (i+1) f)
-  else if i > f then
-    i :: (gen_list_bounds (i-1) f)
-  else [ f ]
 
          
 let env_fetch env v =
@@ -223,13 +203,6 @@ let rec get_var_base (v:var) : var =
   | Var _ -> v
   | Index(v,_) | Slice(v,_) | Range(v,_,_) -> get_var_base v
   
-let id_generator =
-  let current = ref 0 in
-  fun () -> incr current; !current
-                           
-let id_generator_var =
-  let current = ref 0 in
-  fun () -> incr current; !current
 
 let env_fetch (env: ('b, 'a) Hashtbl.t) (id: ident) : 'a option =
   try
@@ -301,44 +274,23 @@ let rec get_var_name (v:var) : ident =
 
 
 let is_unroll (opts:stmt_opt list) : bool =
-  List.exists (function
-                | Unroll    -> true
-                | No_unroll -> false) opts
+  List.mem Unroll opts
 
 let is_nounroll (opts:stmt_opt list) : bool =
-  List.exists (function
-                | Unroll    -> false
-                | No_unroll -> true) opts
+  List.mem No_unroll opts
 
 let is_inline (def:def) : bool =
-  List.exists (function
-                | Inline    -> true
-                | No_inline -> false) def.opt
-
+  List.mem Inline def.opt
+           
 let is_noinline (def:def) : bool =
-  List.exists (function
-                | Inline    -> false
-                | No_inline -> true) def.opt
+  List.mem No_inline def.opt
 
 let is_perm (def:def) : bool =
   match def.node with
   | Perm _ -> true
   | _ -> false
 
-(* Note: boollist_to_int (int_to_boollist x n) == x 
-   (if x is less than 2^n) *)
-let boollist_to_int (l: bool list) : int =
-  let rec aux l n =
-    match l with
-    | [] -> n
-    | hd :: tl -> aux tl ((n lsl 1) lor (if hd then 1 else 0)) in
-  aux l 0
 
-let int_to_boollist (n : int) (size: int) : bool list =
-  let rec aux i l =
-    if i = 0 then List.rev l
-    else aux (i-1) (((n lsr (i-1)) land 1 = 1) :: l) in
-  aux size []
 
 let rec p_size (p:p) : int =
   match p with

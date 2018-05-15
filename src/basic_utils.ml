@@ -34,7 +34,7 @@ let is_empty = function [] -> true | _ -> false
 let flat_map f l = List.flatten @@ List.map f l
 
 (* Alias for String.concat *)
-let rec join (s:string) (l:string list) : string = String.concat s l
+let rec join = String.concat
 
 (* Returns true if s1 contains s2 *)
 let contains (s1:string) (s2:string) : bool =
@@ -51,3 +51,22 @@ let keys_2nd_layer hash k =
   try
     keys (Hashtbl.find hash k)
   with Not_found -> []
+
+(* Generates the list of integers between i and f *)
+let rec gen_list_bounds (i:int) (f:int) : int list =
+  if i < f then
+    i :: (gen_list_bounds (i+1) f)
+  else if i > f then
+    i :: (gen_list_bounds (i-1) f)
+  else [ f ]
+
+(* Note: boollist_to_int (int_to_boollist x n) == x 
+   (if x is less than 2^n) *)
+let boollist_to_int (l: bool list) : int =
+  List.fold_left (fun n b -> (n lsl 1) lor (if b then 1 else 0)) 0 l
+
+let int_to_boollist (n : int) (size: int) : bool list =
+  let rec aux i l =
+    if i = 0 then List.rev l
+    else aux (i-1) (((n lsr (i-1)) land 1 = 1) :: l) in
+  aux size []

@@ -1,10 +1,8 @@
 
 open Usuba_AST
-(*open Basic_utils
-open Utils*)
+open Basic_utils
 open Printf
 
-let rec join s l = String.concat s l
 let lift f = fun l -> join "," (List.map f l)
                            
 let unfold_andn e =
