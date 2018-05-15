@@ -69,5 +69,5 @@ let shift_def (def:def) : def =
      { def with node  = Single(vars,List.map shift_deq body) }
   | _ -> def
            
-let expand_shifts (prog:prog) : prog =
+let expand_shifts (prog:prog) (conf:config) : prog =
   { nodes = List.map shift_def prog.nodes }

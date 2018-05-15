@@ -4,19 +4,7 @@ open Usuba_print
 
 exception Unsound of string
 
-let rec eval_arith (e:arith_expr) : int =
-  match e with
-  | Const_e n -> n
-  | Var_e id  -> 1
-  | Op_e(op,x,y) -> let x' = eval_arith x in
-                    let y' = eval_arith y in
-                    match op with
-                    | Add -> x' + y'
-                    | Mul -> x' * y'
-                    | Sub -> x' - y'
-                    | Div -> x' / y'
-                    | Mod -> if x' > 0 then x' mod y' else y' + (x' mod y')
-
+let rec eval_arith = eval_arith_ne
             
 let rec type_size (t:typ) : int =
   match t with

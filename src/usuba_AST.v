@@ -111,7 +111,6 @@ Record config := {
   inline_all  : bool;
   cse_cp      : bool;
   scheduling  : bool;
-  array_opti  : bool;
   share_var   : bool;
   precal_tbl  : bool;
   archi       : arch;
@@ -121,6 +120,7 @@ Record config := {
   runtime     : bool;
   ortho       : bool;
   openmp      : N;
+  no_arr      : bool;
 }.
 
 Set Extraction KeepSingleton.

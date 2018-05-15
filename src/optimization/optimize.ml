@@ -63,7 +63,7 @@ module CSE_CF = struct
              
   let is_dummy_assign (e:expr) : bool =
     match e with
-    | ExpVar(Var _) | Const _ -> true
+    | ExpVar _ | Const _ -> true
     | _ -> false
 
   let pat_to_expr (pat:var list) : expr =
@@ -123,25 +123,25 @@ module CSE_CF = struct
                                        | Some _ -> true
                                        | None -> false) p) > 0
                                                   
-  let p_to_pat (p:p) : var list =
+  let p_to_var (p:p) : var list =
     List.map (fun ((x,_),_) -> Var x) p
              
-  let cse_deq (deq: deq list) no_opti : deq list =
+  let rec cse_deq (deq: deq list) no_opti : deq list =
     let env = Hashtbl.create 40 in
     let not_env = Hashtbl.create 40 in
     let no_opt_env = Hashtbl.create 20 in
-    List.iter (fun x -> Hashtbl.add no_opt_env x 1) (p_to_pat no_opti);
-    List.flatten @@
-      List.map
-        (function
-          | Norec (p,e) ->
-             if dont_opti p no_opt_env then
-                 [Norec(p,cse_expr env not_env e)]
-             else
-               ( let r = cse_single_deq env not_env (p,e) in
-                 List.map (fun (p,e) -> Norec(p,e)) r)
-          | Rec _ -> raise (Invalid_AST "Invalid Rec")) deq           
-                 
+    List.iter (fun x -> Hashtbl.add no_opt_env x 1) (p_to_var no_opti);
+    flat_map
+      (function
+        | Norec (p,e) ->
+           if dont_opti p no_opt_env then
+             [Norec(p,cse_expr env not_env e)]
+           else
+             ( let r = cse_single_deq env not_env (p,e) in
+               List.map (fun (p,e) -> Norec(p,e)) r)
+        | Rec(i,ei,ef,dl,opts) ->
+           [ Rec(i,ei,ef,cse_deq dl no_opti,opts) ]) deq           
+      
   let cse_def (def: def) : def =
     match def.node with
     | Single(p_var,body) ->
@@ -208,7 +208,7 @@ let opt_prog (prog: Usuba_AST.prog) (conf:config) : Usuba_AST.prog =
 
   (* CSE - CP *)
   (* CSE - CP is already done in the normalization *)
-  let optimized = if conf.cse_cp then CSE_CF.cse_prog prog else prog in
+  let optimized = if conf.cse_cp then CSE_CF_CP.opt_prog prog conf else prog in
   print "CSE-CP:" optimized conf;
 
   (* Reusing variables *)

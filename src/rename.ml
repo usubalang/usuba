@@ -22,12 +22,14 @@ open Utils
    with those new names (or with any ocaml builtin name).
    Basically, it means adding an "'" at the end of every identifier name. *)
 
-let rec rename_arith_expr (e:arith_expr) =
+let rec rename_arith_expr (e:arith_expr) = e
+(*
   match e with
   | Const_e c -> Const_e c
   | Var_e v -> Var_e (fresh_suffix v "'")
   | Op_e(op,x,y) -> Op_e(op,rename_arith_expr x,rename_arith_expr y)
-       
+ *)       
+
 let rec rename_var (v:var) =
   match v with
   | Var v -> Var (fresh_suffix v "'")
@@ -63,10 +65,7 @@ let rec rename_pat pat =
 let rec rename_deq deqs =
     List.map (function
                | Norec(pat,expr) -> Norec(rename_pat pat,rename_expr expr)
-               | Rec(id,ei,ef,d,opts) -> Rec(fresh_suffix id "'",rename_arith_expr ei,
-                                             rename_arith_expr ef,
-                                             rename_deq d,
-                                             opts)) deqs
+               | Rec(id,ei,ef,d,opts) -> Rec(id,ei,ef,rename_deq d,opts)) deqs
              
 let rec rename_p p =
   List.map (fun ((id,typ),ck) -> ((fresh_suffix id "'",typ),ck)) p

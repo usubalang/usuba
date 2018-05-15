@@ -14,47 +14,46 @@
 open Usuba_AST
 open Utils
                
-let list_from_perm (perm:int list) (l:expr list) : expr list =
-  let args = Array.of_list l in
+let list_from_perm env_var (perm:int list) (l:expr list) : expr list =
+  let args = Array.of_list (flat_map (Unfold_unnest.expand_expr env_var) l) in
   List.map (fun i -> args.(i-1)) perm
             
-let rec apply_perm_e env (e:expr) : expr =
+let rec apply_perm_e env_fun env_var (e:expr) : expr =
   match e with
   | Const _ | ExpVar _ | Shuffle _ -> e
-  | Tuple l -> Tuple (List.map (apply_perm_e env) l)
-  | Not e -> Not (apply_perm_e env e)
-  | Shift(op,e,n) -> Shift(op,apply_perm_e env e,n)
-  | Log(op,x,y) -> Log(op,apply_perm_e env x,apply_perm_e env y)
-  | Arith(op,x,y) -> Arith(op,apply_perm_e env x,apply_perm_e env y)
-  | Fun(f,l) -> let l' = List.map (apply_perm_e env) l in
-                (match env_fetch env f with
-                 | Some perm -> Tuple (list_from_perm perm l')
+  | Tuple l -> Tuple (List.map (apply_perm_e env_fun env_var) l)
+  | Not e -> Not (apply_perm_e env_fun env_var e)
+  | Shift(op,e,n) -> Shift(op,apply_perm_e env_fun env_var e,n)
+  | Log(op,x,y) -> Log(op,apply_perm_e env_fun env_var x,apply_perm_e env_fun env_var y)
+  | Arith(op,x,y) -> Arith(op,apply_perm_e env_fun env_var x,apply_perm_e env_fun env_var y)
+  | Fun(f,l) -> let l' = List.map (apply_perm_e env_fun env_var) l in
+                (match env_fetch env_fun f with
+                 | Some perm -> Tuple (list_from_perm env_var perm l')
                  | None -> Fun(f,l'))
-  | Fby(ei,ef,f) -> Fby(apply_perm_e env ei,apply_perm_e env ef,f)
-  | When(e,c,x)  -> When(apply_perm_e env e, c, x)
-  | Merge(x,l)   -> Merge(x,List.map (fun (c,e) -> c,apply_perm_e env e) l)
+  | Fby(ei,ef,f) -> Fby(apply_perm_e env_fun env_var ei,apply_perm_e env_fun env_var ef,f)
+  | When(e,c,x)  -> When(apply_perm_e env_fun env_var e, c, x)
+  | Merge(x,l)   -> Merge(x,List.map (fun (c,e) -> c,apply_perm_e env_fun env_var e) l)
   | Fun_v(_,_,_) -> assert false
                         
             
-let apply_perm env (deqs: deq list) : deq list =
+let apply_perm env_fun env_var (deqs: deq list) : deq list =
   List.map (fun x -> match x with
-                     | Norec(p,e) -> Norec(p,apply_perm_e env e)
+                     | Norec(p,e) -> Norec(p,apply_perm_e env_fun env_var e)
                      | _ -> x) deqs
             
 let rec rewrite_defs (l: def list) : def list =
-  let env = Hashtbl.create 10 in
+  let env_fun = Hashtbl.create 10 in
   List.iter (fun x -> match x.node with
-                      | Perm l -> env_add env x.id l
-                      (* Note: MultiplePerm have already been removed *)
+                      | Perm l -> env_add env_fun x.id l
                       | _ -> ()) l;
   List.map (fun x -> match x.node with
                      | Single(vars,body) ->
-                        { x with node = Single(vars,apply_perm env body) }
+                        let env_var = build_env_var x.p_in x.p_out vars in
+                        { x with node = Single(vars,apply_perm env_fun env_var body) }
                      | _ -> x) l
 
            
-let expand_permut (p: prog) : prog =
-  
+let expand_permut (p: prog) (conf:config) : prog =
   { nodes = List.filter (fun x -> match x.node with
                                   | Perm _ -> false
                                   | _ -> true) (rewrite_defs p.nodes) }

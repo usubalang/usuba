@@ -17,7 +17,12 @@ module Simplify_tuples = struct
     | Fun(f,l) -> Fun(f,List.map simpl_tuple l)
     | Fun_v(f,n,l) -> Fun_v(f,n,List.map simpl_tuple l)
     | _ -> t
-                 
+
+  let rec simpl_deqs (deq:deq list) : deq list =
+    List.map (function
+               | Norec(p,e) -> Norec(p,simpl_tuple e)
+               | Rec(i,ei,ef,dl,opts) -> Rec(i,ei,ef,simpl_deqs dl,opts)) deq
+             
   let simpl_tuples_def (def: def) : def =
     match def.node with
     | Single(p_var,body) ->
@@ -25,36 +30,34 @@ module Simplify_tuples = struct
          p_in  = def.p_in;
          p_out = def.p_out;
          opt   = def.opt;
-         node  = Single(p_var,
-                        List.map (function
-                                   | Norec(p,e) -> Norec(p,simpl_tuple e)
-                                   | Rec _ -> raise (Error "REC")) body) }
+         node  = Single(p_var, simpl_deqs body) }
     | _ -> def
                      
-  let simplify_tuples (p: prog) : prog =
+  let simplify_tuples (p: prog) (conf:config) : prog =
     { nodes = List.map simpl_tuples_def p.nodes }
 end
 
 (* Split tuples into atomic operations, if possible *)
 module Split_tuples = struct
-  let real_split_tuple (p: var list) (l: expr list) : deq list =
-    List.map2 (fun l r -> Norec([l],r)) p l
+  let real_split_tuple env (p: var list) (l: expr list) : deq list =
+    List.map2 (fun l r -> Norec([l],r)) (flat_map (expand_var env) p)
+              (flat_map (Unfold_unnest.expand_expr env) l)
                
-  let split_tuples_deq (body: deq list) : deq list =
-    List.flatten
-      (List.map
-         (fun x -> match x with
-                   | Norec (p,e) -> (match e with
-                                     | Tuple l -> real_split_tuple p l
-                                     | _ -> [ x ])
-                   | Rec _ -> raise (Error "REC")) body)
+  let rec split_tuples_deq env (body: deq list) : deq list =
+    flat_map
+      (fun x -> match x with
+                | Norec (p,e) -> (match e with
+                                  | Tuple l -> real_split_tuple env p l
+                                  | _ -> [ x ])
+                | Rec(i,ei,ef,dl,opts) -> [ Rec(i,ei,ef,split_tuples_deq env dl,opts) ]) body
 
   let split_tuples_def (def: def) : def =
     match def.node with
     | Single(p_var,body) ->
-       { def with node  = Single(p_var, split_tuples_deq body) }
+       let env = build_env_var def.p_in def.p_out p_var in
+       { def with node  = Single(p_var, split_tuples_deq env body) }
     | _ -> def
                  
-  let split_tuples (p: prog) : prog =
+  let split_tuples (p: prog) (conf:config) : prog =
     { nodes = List.map split_tuples_def p.nodes }
 end

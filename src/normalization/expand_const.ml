@@ -113,6 +113,6 @@ let expand_def (def:def) : def =
      { def with node  = Single(vars,List.map (expand_deqs env) body) }
   | _ -> def                     
        
-let expand_prog (prog:prog) : prog =
+let expand_prog (prog:prog) (conf:config) : prog =
   (* { nodes = List.map expand_def prog.nodes } *)
   prog

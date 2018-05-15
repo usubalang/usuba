@@ -9,20 +9,16 @@ let print title body conf =
       if conf.verbose >= 100 then print_endline (Usuba_print.prog_to_str body)
     end
 
+
 let run_pass title func conf prog =
   if conf.verbose >= 5 then
     Printf.printf "Running %s...\n" title;
-
   let res = func prog conf in
-
   if conf.verbose >= 5 then
     Printf.printf "%s done.\n" title;
-
   if conf.verbose >= 100 then
     Printf.printf "%s\n" (Usuba_print.prog_to_str res);
-
   res
-      
 
 (* Note: the print actually print if the booleans in the function "print" above 
          are set to true (or at least the first one) *)
@@ -34,7 +30,8 @@ let norm_prog (prog: prog) (conf:config) : prog  =
 
   let sched_fun prog conf =
     if conf.scheduling then
-      if conf.cse_cp then Optimize.CSE_CF.cse_prog prog else prog
+      Pre_schedule.schedule
+        (if conf.cse_cp then CSE_CF_CP.opt_prog prog conf else prog)
     else prog in
   
   let normalized =
@@ -45,13 +42,14 @@ let norm_prog (prog: prog) (conf:config) : prog  =
       (run_pass "Expand_array" Expand_array.expand_array) |>
       (run_pass "Remove_ctrl" Remove_ctrl.remove_ctrl) |>
       (run_pass "Norm_bitslice 1" Norm_bitslice.norm_prog) |>
+      (run_pass "Expand_parameters" Expand_parameters.expand_parameters) |>
       (run_pass "Init_scheduler" Init_scheduler.schedule_prog) |>
       (run_pass "Pre_schedule" sched_fun) |>
       (run_pass "Inline" Inline.inline) |>
       (run_pass "Norm_bitslice 2" Norm_bitslice.norm_prog) in
       
   
-  assert (Assert_lang.Usuba_norm.is_usuba_normalized normalized);
+  (* assert (Assert_lang.Usuba_norm.is_usuba_normalized normalized); *)
 
   let optimized   = run_pass "Optimize" Optimize.opt_prog normalized in
   let clock_fixed = run_pass "Fix_clocks" Fix_clocks.fix_prog optimized in

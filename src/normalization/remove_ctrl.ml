@@ -31,10 +31,10 @@ let rec clean_expr (e:expr) : expr =
                                                                
   | _ -> assert false
        
-let clean_deq (deq:deq) : deq = 
+let rec clean_deq (deq:deq) : deq = 
   match deq with
   | Norec(lhs,e) -> Norec(lhs,clean_expr e)
-  | _ -> assert false
+  | Rec(x,ei,ef,dl,opts) -> Rec(x,ei,ef,List.map clean_deq dl,opts)
   
 let clean_def (def:def) : def =
   match def.node with

@@ -11,6 +11,18 @@
 open Usuba_AST
 open Utils
 
+               
+(* Adds the variables vars to env_var *)
+let rec env_add_var (vars: p) (env_var: int env) : unit =
+  match vars with
+  | [] -> ()
+  | ((id,typ),_)::tl -> ( env_add env_var id
+                                (match typ with
+                                 | Bool  -> 1
+                                 | Int(_,n) -> n
+                                 | Nat -> raise (Invalid_AST "Nat")
+                                 | Array _ -> raise (Invalid_AST "Array (1)"));
+                        env_add_var tl env_var )
        
 (* "norm_exp" potentially introduce a lot of nested tuples, so we need
    to clean them. That's what "flatten_expr" does. *)
@@ -83,6 +95,6 @@ let norm_def (def: def) : def =
   | _ -> def
 
 
-let norm_uintn (prog: prog) : prog =
+let norm_uintn (prog: prog) (conf:config) : prog =
   (* { nodes = List.map norm_def prog.nodes } *)
   prog

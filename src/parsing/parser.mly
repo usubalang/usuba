@@ -50,7 +50,6 @@
 %token TOK_COLON
 %token TOK_SEMICOLON
 %token TOK_PIPE  
-%token TOK_DOT
 %token TOK_LROTATE
 %token TOK_LSHIFT
 %token TOK_RROTATE
@@ -93,8 +92,6 @@
 %left TOK_AND TOK_XOR TOK_PIPE
 %nonassoc TOK_TILDE
   
-%nonassoc TOK_DOT
-
 
 (******************************** Entry Point *********************************)
 %start<Usuba_AST.prog> prog

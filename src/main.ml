@@ -16,10 +16,10 @@ let inlining    = ref true
 let inline_all  = ref false
 let cse_cp      = ref true
 let scheduling  = ref true
-let array_opti  = ref true
 let share_var   = ref true
 let precal_tbl  = ref true
-
+let no_arr      = ref false
+                      
 let runtime     = ref true
 let arch        = ref Std
 let bits_per_reg = ref 64
@@ -90,9 +90,9 @@ let main () =
       "-inline-all", Arg.Set inline_all, "Force inlining of every node";
       "-no-CSE-CP", Arg.Clear cse_cp, "Deactive CSE and CP opti";
       "-no-sched", Arg.Clear scheduling, "Deactivate scheduling opti";
-      "-no-arr", Arg.Clear array_opti, "Deactivate array opti";
       "-no-share", Arg.Clear share_var, "Deactivate variable sharing";
       "-no-precalc-tbl", Arg.Clear precal_tbl, "Don't use pre-computed tables";
+      "-no-arr", Arg.Set no_arr, "Don't keep any array";
       "-arch", Arg.String (fun s -> arch := str_to_arch s), "Set architecture";
       "-bits-per-reg", Arg.Set_int bits_per_reg, "Set number of bits to use in the registers (with -arch std only, needs to be a multiple of 2)";
       "-no-runtime", Arg.Clear runtime, "Do not generate a runtime";
@@ -121,7 +121,6 @@ let main () =
                  inline_all  = !inline_all;
                  cse_cp      = !cse_cp;
                  scheduling  = !scheduling;
-                 array_opti  = !array_opti;
                  share_var   = !share_var;
                  precal_tbl  = !precal_tbl;
                  archi       = !arch;
@@ -131,6 +130,7 @@ let main () =
                  rand_input  = !rand_input;
                  ortho       = !ortho;
                  openmp      = !openmp;
+                 no_arr      = !no_arr;
                } in
 
     if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then

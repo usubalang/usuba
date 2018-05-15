@@ -137,6 +137,8 @@ let schedule_node (def:def) : def =
                     | _ -> def.node }
        
 let schedule (prog:prog) : prog =
-  { nodes = List.map schedule_node prog.nodes }
+  try
+    { nodes = List.map schedule_node prog.nodes }
+  with Error _ -> prog
   
   

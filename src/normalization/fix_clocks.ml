@@ -8,10 +8,16 @@ open Utils
 
 let init_env (p_in:p) (p_out:p) (vars:p) =
   let env = Hashtbl.create 100 in
-  List.iter (fun ((id,_),ck) -> Hashtbl.add env (Var id) ck) p_in;
-  List.iter (fun ((id,_),ck) -> Hashtbl.add env (Var id) ck) p_out;
-  List.iter (fun ((id,_),ck) -> Hashtbl.add env (Var id) ck) vars;
+  List.iter (fun ((id,_),ck) -> Hashtbl.add env id ck) p_in;
+  List.iter (fun ((id,_),ck) -> Hashtbl.add env id ck) p_out;
+  List.iter (fun ((id,_),ck) -> Hashtbl.add env id ck) vars;
   env
+
+let rec get_var_clock env (v:var) : clock =
+  match v with
+  | Var x -> Hashtbl.find env x
+  | Index(v',_) -> get_var_clock env v'
+  | _ -> assert false
 
 let rec get_ck_name (ck:clock) : expr list =
   match ck with
@@ -21,9 +27,9 @@ let rec get_ck_name (ck:clock) : expr list =
                                      
 let rec fix_deq env (deq:deq) : deq =
   match deq with
-  | Norec(lhs,e) -> let ck = get_ck_name (Hashtbl.find env (List.hd lhs)) in
+  | Norec(lhs,e) -> let ck = get_ck_name (get_var_clock env (List.hd lhs)) in
                     Norec(lhs,List.fold_left (fun x y -> Log(And,x,y)) e ck)
-  | Rec _ -> assert false
+  | Rec(i,ei,ef,dl,opts) -> Rec(i,ei,ef,List.map (fix_deq env) dl,opts)
 
     
 let fix_def (def:def) : def =

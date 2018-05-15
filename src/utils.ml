@@ -28,7 +28,6 @@ let default_conf : config =
     inline_all  = false;
     cse_cp      = true;
     scheduling  = true;
-    array_opti  = true;
     share_var   = true;
     precal_tbl  = true;
     runtime     = true;
@@ -38,6 +37,7 @@ let default_conf : config =
     rand_input  = false;
     ortho       = true;
     openmp      = 1;
+    no_arr      = false;
   }
 
 let print_conf (conf:config) : unit =
@@ -50,8 +50,7 @@ let print_conf (conf:config) : unit =
   warnings     = %B;
 }\n" conf.inlining conf.verif conf.check_tbl
 conf.verbose conf.warnings
-
-               
+    
 let rec map_no_end f = function
   | [] -> []
   | [x] -> []
@@ -63,11 +62,7 @@ let rec pow a = function
   | n -> 
      let b = pow a (n / 2) in
      b * b * (if n mod 2 = 0 then 1 else a)
-
-let unfold_andn e =
-  match e with
-  | Log(Andn,x,y) -> Log(And,Not x,y)
-  | _ -> e          
+                
 
 let last l =
   List.nth l (List.length l - 1)
@@ -75,6 +70,14 @@ let is_empty = function [] -> true | _ -> false
 
 let flat_map f l = List.flatten @@ List.map f l
 
+let make_env () = Hashtbl.create 100
+let env_add env v e = Hashtbl.replace env v e
+let env_update env v e = Hashtbl.replace env v e
+let env_remove env v = Hashtbl.remove env v
+let env_fetch env v = try Hashtbl.find env v
+                      with Not_found -> raise (Error (__LOC__ ^ ":Not found: " ^ v.name))
+
+                                            
 let filter_elems l indices =
   let rec aux i acc l indices =
     match indices with
@@ -86,11 +89,11 @@ let filter_elems l indices =
                         else aux (i+1) acc tl indices in
   aux 0 [] l indices
 
-
+      
 let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
   match e with
   | Const_e n -> n
-  | Var_e id  -> Hashtbl.find env id.name
+  | Var_e id  -> Hashtbl.find env id
   | Op_e(op,x,y) -> let x' = eval_arith env x in
                     let y' = eval_arith env y in
                     match op with
@@ -100,12 +103,15 @@ let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
                     | Div -> x' / y'
                     | Mod -> if x' >= 0 then x' mod y' else y' + (x' mod y')
 
+let eval_arith_ne (e:Usuba_AST.arith_expr) : int =
+  eval_arith (make_env ()) e
+             
 (* Evaluates the arithmetic expression as much as possible: if the variables are
 in the environment, then replaces them by their values, otherwise let them as is. *)
-let rec simpl_arith env (e: arith_expr) : arith_expr =
+let rec simpl_arith (env:(ident,int) Hashtbl.t) (e: arith_expr) : arith_expr =
   match e with
   | Const_e n -> e
-  | Var_e id  -> (try Hashtbl.find env id.name
+  | Var_e id  -> (try Const_e (Hashtbl.find env id)
                   with Not_found -> Var_e id)
   | Op_e(op,x,y) -> let x' = simpl_arith env x in
                     let y' = simpl_arith env y in
@@ -169,18 +175,95 @@ let gen_list_0_int (n: int) : int list =
     else aux (n-1) ((n-1) :: acc)
   in aux n []
 
-let rec gen_list_bound (n1: int) (n2:int) : int list =
-  if n1 < n2 then n1 :: (gen_list_bound (n1 + 1) n2)
-  else if n2 < n1 then n1 :: (gen_list_bound (n1 - 1) n2)
-  else [n1]
+(* Generates the list of integers between i and f *)
+let rec gen_list_bounds i f =
+  if i < f then
+    i :: (gen_list_bounds (i+1) f)
+  else if i > f then
+    i :: (gen_list_bounds (i-1) f)
+  else [ f ]
 
-let rec typ_size (typ:typ) : int =
-  match typ with
-  | Bool -> 1
-  | Int(_,n) -> n
-  | Array(t,n) -> (eval_arith (Hashtbl.create 1) n)*(typ_size t)
-  | _ -> raise (Error "Invalid Array with non-const size")
          
+let env_fetch env v =
+  try Hashtbl.find env v
+  with Not_found -> raise (Error (__LOC__ ^ ":Not found: " ^ v.name))
+
+
+(* Constructs a map { variables : types } *)
+let build_env_var (p_in:p) (p_out:p) (vars:p) : (ident, typ) Hashtbl.t =
+  let env = make_env () in
+
+  let add_to_env ((id,typ),_) =
+    env_add env id typ in
+  
+  List.iter add_to_env p_in;
+  List.iter add_to_env p_out;
+  List.iter add_to_env vars;
+
+  env
+                          
+let rec typ_size (t:typ) : int =
+  match t with
+  | Bool -> 1
+  | Int(_,m) -> m
+  | Array(t',ae) -> (typ_size t') * (eval_arith_ne ae)
+  | _ -> assert false
+                        
+let elem_size (t:typ) : int =
+  match t with
+  | Array(t',_) -> typ_size t'
+  | _ -> assert false
+                
+let rec get_var_type env (v:var) : typ =
+  match v with
+  | Var x -> env_fetch env x
+  | Index(v',_) -> (match get_var_type env v' with
+                    | Bool -> Bool
+                    | Array(t,_) -> t
+                    | Int(n,m) -> Int(n,1)
+                    | _ -> assert false)
+  | _ -> assert false
+
+let get_var_size env (v:var) : int =
+  typ_size @@ get_var_type env v
+
+let rec get_expr_size env (e:expr) : int =
+  match e with
+  | Const _ -> 1
+  | ExpVar v -> get_var_size env v
+  | Tuple l -> List.fold_left (+) 0 (List.map (get_expr_size env) l)
+  | Not e -> get_expr_size env e
+  | Shift(_,e,_) -> get_expr_size env e
+  | Log(_,e,_) -> get_expr_size env e
+  | Shuffle(v,_) -> get_var_size env v
+  | Arith(_,e,_) -> get_expr_size env e
+  | Fun _ -> Printf.fprintf stderr "Not implemented yet, get_expr_size(Fun...).\n";
+             assert false
+  | _ -> assert false
+
+                           
+let rec expand_var env_var ?(env_it=Hashtbl.create 100) ?(partial=false) (v:var) : var list =
+  let typ = get_var_type env_var v in
+  match typ with
+  | Bool -> [ v ]
+  | Int(_,1) -> [ v ]
+  | Int(_,m) -> List.map (fun i -> Index(v,Const_e i)) (gen_list_0_int m)
+  | Array(_,ae) -> if partial then
+                     List.map (fun i -> Index(v,Const_e i))
+                              (gen_list_0_int (eval_arith env_it ae))
+                   else
+                     flat_map (fun i -> expand_var env_var ~env_it:env_it (Index(v,Const_e i)))
+                              (gen_list_0_int (eval_arith env_it ae))
+  | _ -> assert false
+
+let rec expand_var_partial env_var ?(env_it=Hashtbl.create 100) (v:var) : var list =
+  expand_var env_var ~env_it:env_it ~partial:true v
+
+let rec get_var_base (v:var) : var =
+  match v with
+  | Var _ -> v
+  | Index(v,_) | Slice(v,_) | Range(v,_,_) -> get_var_base v
+  
 let id_generator =
   let current = ref 0 in
   fun () -> incr current; !current
@@ -204,42 +287,6 @@ type 'a env = (string, 'a) Hashtbl.t
 
 let env_add (env: 'a env) (id: ident) (value: 'a) : unit =
   Hashtbl.add env id.name value
-              
-(* Adds the variables vars to env_var *)
-let rec env_add_var (vars: p) (env_var: int env) : unit =
-  match vars with
-  | [] -> ()
-  | ((id,typ),_)::tl -> ( env_add env_var id
-                                (match typ with
-                                 | Bool  -> 1
-                                 | Int(_,n) -> n
-                                 | Nat -> raise (Invalid_AST "Nat")
-                                 | Array _ -> raise (Invalid_AST "Array (1)"));
-                        env_add_var tl env_var )
-
-(* Add a function (name,p_in,p_out) to env_fun *)
-let env_add_fun (name: ident) (p_in: p) (p_out: p)
-                (env_fun: (int list * int) env) : unit =
-  let rec get_param_in_size = function
-    | [] -> []
-    | ((_,typ),_)::tl -> (match typ with
-                         | Bool -> 1
-                         | Int(_,n) -> n
-                         | Nat -> raise (Invalid_AST "Nat")
-                         | Array _ -> raise (Invalid_AST "Array (2)"))
-                        :: (get_param_in_size tl)
-  in
-  let rec get_param_out_size = function
-    | [] -> 0
-    | ((_,typ),_)::tl -> (match typ with
-                        | Bool -> 1
-                        | Int(_,n) -> n
-                        | Nat -> raise (Invalid_AST "Nat")
-                        | Array _ -> raise (Invalid_AST "Array (3)"))
-                       + (get_param_out_size tl)
-  in
-  env_add env_fun name (get_param_in_size p_in,get_param_out_size p_out)
-
 
 let rec get_typ (id: ident) (vars: p) =
   match vars with
@@ -353,16 +400,7 @@ let int_to_boollist (n : int) (size: int) : bool list =
     else aux (i-1) (((n lsr (i-1)) land 1 = 1) :: l) in
   aux size []
 
-
-      
-      
-
 let rec p_size (p:p) : int =
-  let typ_size (t:typ) =
-    match t with
-    | Bool -> 1
-    | Int(_,n) -> n
-    | _ -> raise (Not_implemented "p_size restricted to Bool & Int") in
   match p with
   | [] -> 0
   | ((_,typ),_) :: tl -> (typ_size typ) + (p_size tl)

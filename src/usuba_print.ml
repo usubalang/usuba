@@ -1,7 +1,15 @@
 
 open Usuba_AST
-open Utils
+(*open Utils*)
 open Printf
+
+let rec join s l = String.concat s l
+let lift f = fun l -> join "," (List.map f l)
+                           
+let unfold_andn e =
+  match e with
+  | Log(Andn,x,y) -> Log(And,Not x,y)
+  | _ -> e         
 
 let log_op_to_str = function
   | And -> "&"
@@ -39,6 +47,7 @@ let rec var_to_str = function
   | Index(v,e) -> sprintf "%s[%s]" (var_to_str v) (arith_to_str e)
   | Range(v,ei,ef) -> sprintf "%s[%s .. %s]" (var_to_str v) (arith_to_str ei) (arith_to_str ef)
   | Slice(v,l) -> sprintf "%s[%s]" (var_to_str v) (join "," (List.map arith_to_str l))
+let var_to_str_l = lift var_to_str
                                               
 let rec var_to_str_types = function
   | Var v -> sprintf "Var: %s" v.name
@@ -102,6 +111,7 @@ let rec expr_to_str = function
                                                  sprintf "| %s -> %s "
                                                          (constr_to_str c)
                                                          (expr_to_str y)) c))
+let expr_to_str_l = lift expr_to_str
 
 let pat_to_str pat =
   "(" ^ (join "," (List.map var_to_str pat)) ^ ")"
@@ -124,6 +134,7 @@ let rec clock_to_str ck =
                                                                   
 let p_to_str ((id,typ),ck) =
   id.name ^ ":" ^ (typ_to_str typ) ^  "::" ^ (clock_to_str ck)
+let p_to_str_l = lift p_to_str
 
 let optstmt_to_str = function
   | Unroll    -> "_unroll"
@@ -136,6 +147,7 @@ let rec deq_to_str = function
              (join " " (List.map optstmt_to_str opts))
              id.name  (arith_to_str ei) (arith_to_str ef)
              (join "\n    " (List.map deq_to_str d))
+let deq_to_str_l = lift deq_to_str
                                                                                  
 let rec deq_to_str_types = function
   | Norec(pat,e) -> sprintf "%s = %s" (pat_to_str_types pat) (expr_to_str_types e)
@@ -213,6 +225,7 @@ let def_to_str def =
                                 | _ -> assert false) l))
            ^ "\n]\n"
         | _ -> assert false)
+let def_to_str_l = lift def_to_str
                                                        
 let prog_to_str (prog:prog) : string=
   join "\n\n" (List.map def_to_str prog.nodes)
