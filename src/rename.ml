@@ -69,7 +69,9 @@ let rec rename_deq deqs =
                | Rec(id,ei,ef,d,opts) -> Rec(id,ei,ef,rename_deq d,opts)) deqs
              
 let rec rename_p p =
-  List.map (fun ((id,typ),ck) -> ((fresh_suffix id "'",typ),ck)) p
+  List.map (fun ((id,typ),ck) -> match typ with
+                                 | Nat -> ((id,typ),ck)
+                                 | _ -> ((fresh_suffix id "'",typ),ck)) p
                                           
 let rename_def (def:def) : def =
   { id    = fresh_suffix def.id "'";

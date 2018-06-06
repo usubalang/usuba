@@ -134,11 +134,12 @@ let rec deqs_to_c (env:(string,string) Hashtbl.t)
             | _ -> print_endline (Usuba_print.deq_to_str deq);
                    assert false) deqs)
 
-let params_to_arr (params: p) : string list =
+let params_to_arr (params: p) (marker:string) : string list =
   List.map (fun ((id,typ),_) ->
             match typ with
-            | Bool -> id.name
-            | Int(_,n) -> Printf.sprintf "%s[%d]" id.name n
+            | Bool -> sprintf "%s%s" marker id.name
+            | Int(_,1) -> sprintf "%s%s" marker id.name
+            | Int(_,n) -> sprintf "%s[%d]" id.name n
             (* Hard-coding the case ukxn[m] for now *)
             | Array(Int(_,n),Const_e m) -> Printf.sprintf "%s[%d][%d]" id.name m n
             | Array(t,Const_e n) -> Printf.sprintf "%s[%d]" id.name (n*typ_size t)
@@ -156,7 +157,7 @@ let rec gen_list_typ (x:string) (typ:typ) : string list =
            
 let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
   let inputs = make_env () in
-  let aux ((id,typ),_) =
+  let aux (marker:string) ((id,typ),_) =
     let id = id.name in
     match typ with
     (* Hard-coding the case ukxn[m] for now *)
@@ -169,8 +170,8 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
                                   (Printf.sprintf "%s[%d][%d]" (rename id) i j))
                      (gen_list0 (Printf.sprintf "%s'" x) n))
          (gen_list0 id m)
-    | Bool -> Hashtbl.add inputs id (Printf.sprintf "%s[0]" (rename id))
-    | Int(_,1) -> Hashtbl.add inputs id (Printf.sprintf "%s[0]" (rename id))
+    | Bool -> Hashtbl.add inputs id (Printf.sprintf "%s%s" marker (rename id))
+    | Int(_,1) -> Hashtbl.add inputs id (Printf.sprintf "%s%s" marker (rename id));
     | Int(_,n) -> List.iter2
                     (fun x y ->
                      Hashtbl.add inputs
@@ -189,8 +190,8 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
                          (Usuba_print.typ_to_str typ);
            raise (Not_implemented "Arrays as input") in
   
-  List.iter aux (Rename.rename_p def.p_in);
-  List.iter aux (Rename.rename_p def.p_out);
+  List.iter (aux "") (Rename.rename_p def.p_in);
+  List.iter (aux "*") (Rename.rename_p def.p_out);
   inputs
     
 let outputs_to_ptr (def:def) : (string, string) Hashtbl.t =
@@ -242,12 +243,12 @@ let single_to_c (orig:def) (def:def) (array:bool) (vars:p)
   (* Parameters *)
   (join "," (if array then
                List.map (fun x -> "DATATYPE " ^ (rename x))
-                        (params_to_arr (Rename.rename_p orig.p_in))
+                        (params_to_arr (Rename.rename_p orig.p_in) "")
              else
                List.map (fun ((id,typ),_) -> "DATATYPE " ^ (var_decl_to_c id typ)) def.p_in))
   (join "," (if array then
                List.map (fun x -> "DATATYPE " ^  (rename x))
-                        (params_to_arr (Rename.rename_p orig.p_out))
+                        (params_to_arr (Rename.rename_p orig.p_out) "*")
              else
                List.map (fun ((id,typ),_) -> (match typ with
                                               | Bool | Int(_,1) -> "DATATYPE* "

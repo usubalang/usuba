@@ -38,7 +38,7 @@ let rec update_var_to_expr var_env expr_env v =
   | None ->  match Hashtbl.find_opt var_env v with
             | Some v' -> ExpVar v'
             | None -> match v with
-                      | Var _ -> assert false
+                      | Var id -> assert false
                       | Index(v',ae) ->
                          begin
                            match update_var_to_expr var_env expr_env v' with
@@ -46,7 +46,22 @@ let rec update_var_to_expr var_env expr_env v =
                            | _ -> assert false
                          end
                       | _ -> assert false
-                                              
+
+let rec expr_to_aexpr (e:expr) : arith_expr =
+  match e with
+  | Const c -> Const_e c
+  | ExpVar(Var v) -> Var_e v
+  | Arith(op,x,y) -> Op_e(op,expr_to_aexpr x,expr_to_aexpr y)
+  | _ -> assert false
+                                    
+(* TODO: this is quite messy, as we are mixing aexpr and expr ... *)
+let rec update_aexpr var_env expr_env (ae:arith_expr) : arith_expr =
+  let rec_call = update_aexpr var_env expr_env in
+  match ae with
+  | Const_e _ -> ae
+  | Var_e v -> expr_to_aexpr (update_var_to_expr var_env expr_env (Var v))
+  | Op_e(op,x,y) -> Op_e(op,rec_call x, rec_call y)
+                                    
 (* Convert variables names inside an expression *)
 let rec update_expr var_env expr_env (e:expr) : expr =
   let rec_call = update_expr var_env expr_env in
@@ -64,7 +79,7 @@ let rec update_expr var_env expr_env (e:expr) : expr =
   | Tuple l -> Tuple (List.map rec_call l)
   | Not e -> Not (rec_call e)
   (* TODO: Should do something with 'ae' *)
-  | Shift(op,e,ae) -> Shift(op,rec_call e,ae)
+  | Shift(op,e,ae) -> Shift(op,rec_call e,update_aexpr var_env expr_env ae)
   | Log(op,x,y) -> Log(op,rec_call x,rec_call y)
   | Arith(op,x,y) -> Arith(op,rec_call x,rec_call y)
   | Fun(f,l) -> Fun(f,List.map rec_call l)
