@@ -146,7 +146,7 @@ let rec typ_size (t:typ) : int =
   | Bool -> 1
   | Int(_,m) -> m
   | Array(t',ae) -> (typ_size t') * (eval_arith_ne ae)
-  | _ -> assert false
+  | Nat -> 1
                         
 let elem_size (t:typ) : int =
   match t with
