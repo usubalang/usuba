@@ -96,7 +96,7 @@ let rec expr_to_str = function
                             (join "," (List.map string_of_int l))
   | Arith(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
                             (arith_op_to_str o) (expr_to_str y)
-  | Shift(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str_types x)
+  | Shift(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
                             (shift_op_to_str o) (arith_to_str y)
   | Not e -> sprintf "(~ %s)" (expr_to_str e)
   | Fun(f,l) -> sprintf "%s(%s)" f.name (join "," (List.map expr_to_str l))
@@ -227,7 +227,10 @@ let def_to_str def =
 let def_to_str_l = lift def_to_str
                                                        
 let prog_to_str (prog:prog) : string=
-  join "\n\n" (List.map def_to_str prog.nodes)
+  join "\n\n" (List.map (fun d -> Printf.printf "Printing %s...\n" d.id.name;
+                                  let r = def_to_str d in
+                                  Printf.printf "Print done: %s\n" d.id.name;
+                                  r) prog.nodes)
 
 let print_prog (prog:prog) : unit =
   print_endline (prog_to_str prog)
