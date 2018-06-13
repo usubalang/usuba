@@ -67,14 +67,15 @@ let rec ret_var_to_c (env:(string,string) Hashtbl.t)
   | Bool | Int(_,1) -> "&" ^ (var_to_c env v)
   | Array(_,_) | Int(_,_) -> var_to_c env v
   | _ -> assert false
-                            
+
+
+(* TODO: this 64 and 32 shouldn't be hardcoded *)
 let rec expr_to_c (conf:config) (env:(string,string) Hashtbl.t) (e:expr) : string =
   match e with
   | Const n -> ( match n with
                  | 0 -> "SET_ALL_ONE()"
                  | 1 -> "SET_ALL_ZERO()"
-                 | _ -> raise (Error ("Only 0 and 1 are allowed. Got "
-                                      ^ (string_of_int n))))
+                 | n -> sprintf "SET(%d,%d)" n 64 )
   | ExpVar v -> var_to_c env v
   | Not e -> sprintf "NOT(%s)" (expr_to_c conf env e)
   | Log(op,x,y) -> sprintf "%s(%s,%s)"
@@ -208,6 +209,7 @@ let rec var_decl_to_c (id:ident) (typ:typ) : string =
      that's the role of this "start" parameter *)
   let rec aux (id:ident) (typ:typ) start =
     match typ with
+    | Nat  -> (rename id.name) ^ start
     | Bool -> (rename id.name) ^ start
     | Int(_,1) -> (rename id.name) ^ start
     | Int(_,m) -> sprintf "%s%s[%d]" (rename id.name) start m
