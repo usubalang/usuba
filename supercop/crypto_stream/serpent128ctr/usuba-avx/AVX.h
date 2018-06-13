@@ -29,8 +29,25 @@
 
 #define L_SHIFT(a,b,c)  _mm256_slli_epi##c(a,b)
 #define R_SHIFT(a,b,c)  _mm256_srli_epi##c(a,b)
-#define L_ROTATE(a,b,c) OR(L_SHIFT(a,b,c),R_SHIFT(a,c-b,c))
-#define R_ROTATE(a,b,c) OR(R_SHIFT(a,b,c),L_SHIFT(a,c-b,c))
+
+#define L_ROTATE(a,b,c)                                                 \
+  b == 8 && c == 32 ?                                                   \
+    _mm256_shuffle_epi8(a,_mm256_set_epi8(14,13,12,15,10,9,8,11,6,5,4,7,2,1,0,3, \
+                                          14,13,12,15,10,9,8,11,6,5,4,7,2,1,0,3)) : \
+    b == 16 && c == 32 ?                                                \
+    _mm256_shuffle_epi8(a,_mm256_set_epi8(13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2, \
+                                          13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2)) : \
+    OR(L_SHIFT(a,b,c),R_SHIFT(a,c-b,c))
+  
+#define R_ROTATE(a,b,c)                                                 \
+  b == 8 && c == 32 ?                                                   \
+    _mm256_shuffle_epi8(a,_mm256_set_epi8(12,15,14,13,8,11,10,9,4,7,6,5,0,3,2,1, \
+                                          12,15,14,13,8,11,10,9,4,7,6,5,0,3,2,1)) : \
+    b == 16 && c == 32 ?                                                \
+    _mm256_shuffle_epi8(a,_mm256_set_epi8(13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2, \
+                                          13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2)) : \
+    OR(R_SHIFT(a,b,c),L_SHIFT(a,c-b,c))
+
 
 #define DATATYPE __m256i
 

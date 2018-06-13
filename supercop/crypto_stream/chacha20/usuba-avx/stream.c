@@ -37,25 +37,108 @@ unsigned int chacha_const[4] = { 0x61707865, 0x3320646e, 0x79622d32, 0x6b206574 
   for (int i = 0; i < 2; i++)                                   \
     state[i+12] = _mm256_setzero_si256();                       \
 
-
-#define load_input()                                                   \
+/* Note: that's buggy: if the initial key isn't a multiple of 8, 
+   the overflow won't be right */
+#define load_input()                                                    \
   state[12] = _mm256_set_epi32(c1,c1+1,c1+2,c1+3,c1+4,c1+5,c1+6,c1+7);  \
   state[13] = _mm256_set1_epi32(c2);                                    \
   c1 += 8;                                                              \
   if (!c1) c2++;                                                        \
   signed_len -= BLOCK_SIZE*PARALLEL_FACTOR;                             \
-  unsigned int out_state[16*PARALLEL_FACTOR];                           \
+  unsigned int out_state[16*PARALLEL_FACTOR] __attribute__  ((aligned (32))); \
   int nb_blocks = PARALLEL_FACTOR;                                      \
-   
-/* This macro should just call the encryption function, with the parameters
-   input, key and out_buff */
-#define encrypt2()                                                      \
-  Chacha20__(state,(DATATYPE*)out);                                     \
+
+#define V_ELEMS 8
+
+static inline void _mm256_merge_epi32(const __m256i v0, const __m256i v1, __m256i *vl, __m256i *vh)
+{
+    __m256i va = _mm256_permute4x64_epi64(v0, _MM_SHUFFLE(3, 1, 2, 0));
+    __m256i vb = _mm256_permute4x64_epi64(v1, _MM_SHUFFLE(3, 1, 2, 0));
+    *vl = _mm256_unpacklo_epi32(va, vb);
+    *vh = _mm256_unpackhi_epi32(va, vb);
+}
+
+static inline void _mm256_merge_epi64(const __m256i v0, const __m256i v1, __m256i *vl, __m256i *vh)
+{
+    __m256i va = _mm256_permute4x64_epi64(v0, _MM_SHUFFLE(3, 1, 2, 0));
+    __m256i vb = _mm256_permute4x64_epi64(v1, _MM_SHUFFLE(3, 1, 2, 0));
+    *vl = _mm256_unpacklo_epi64(va, vb);
+    *vh = _mm256_unpackhi_epi64(va, vb);
+}
+
+static inline void _mm256_merge_si128(const __m256i v0, const __m256i v1, __m256i *vl, __m256i *vh)
+{
+    *vl = _mm256_permute2x128_si256(v0, v1, _MM_SHUFFLE(0, 2, 0, 0));
+    *vh = _mm256_permute2x128_si256(v0, v1, _MM_SHUFFLE(0, 3, 0, 1));
+}
+
+//
+// Transpose_8_8
+//
+// in place transpose of 8 x 8 int array
+//
+
+static void Transpose_8_8(
+    __m256i *v0,
+    __m256i *v1,
+    __m256i *v2,
+    __m256i *v3,
+    __m256i *v4,
+    __m256i *v5,
+    __m256i *v6,
+    __m256i *v7)
+{
+    __m256i w0, w1, w2, w3, w4, w5, w6, w7;
+    __m256i x0, x1, x2, x3, x4, x5, x6, x7;
+
+    _mm256_merge_epi32(*v0, *v1, &w0, &w1);
+    _mm256_merge_epi32(*v2, *v3, &w2, &w3);
+    _mm256_merge_epi32(*v4, *v5, &w4, &w5);
+    _mm256_merge_epi32(*v6, *v7, &w6, &w7);
+
+    _mm256_merge_epi64(w0, w2, &x0, &x1);
+    _mm256_merge_epi64(w1, w3, &x2, &x3);
+    _mm256_merge_epi64(w4, w6, &x4, &x5);
+    _mm256_merge_epi64(w5, w7, &x6, &x7);
+
+    _mm256_merge_si128(x0, x4, v0, v1);
+    _mm256_merge_si128(x1, x5, v2, v3);
+    _mm256_merge_si128(x2, x6, v4, v5);
+    _mm256_merge_si128(x3, x7, v6, v7);
+}
+
+static void unortho2(__m256i in[], __m256i out[]) {
+
+  for (int i = 0; i < 2; i++) 
+    Transpose_8_8(&in[i*8],&in[i*8+1],&in[i*8+2],&in[i*8+3],
+                  &in[i*8+4],&in[i*8+5],&in[i*8+6],&in[i*8+7]);
+
+  for (int i = 0; i < 4; i++)
+    for (int j = 0; j < 4; j++)
+      out[i*4+j] = in[i+j*4];
+}
+
+static void unortho(__m256i in[], __m256i out[]) {
+
+  for (int i = 0; i < 2; i++) 
+    Transpose_8_8(&in[i*8],&in[i*8+1],&in[i*8+2],&in[i*8+3],
+                  &in[i*8+4],&in[i*8+5],&in[i*8+6],&in[i*8+7]);
+
+  
+  for (int i = 0; i < 8; i++)
+    for (int j = 0; j < 2; j++)
+      out[(7-i)*2+j] = in[i+j*8];
+}
+
+#define encrypt()                                                       \
+  DATATYPE cipher[16];                                                  \
+  Chacha20__(state,cipher);                                             \
   for (int i = 0; i < 16; i++)                                          \
-    ((DATATYPE*)out)[i] = _mm256_add_epi32(((DATATYPE*)out)[i],state[i]); \
+    cipher[i] = _mm256_add_epi32(cipher[i],state[i]);                   \
+  unortho(cipher,(__m256i*)out_state);
 
 // ~ 0.3 cycles/byte
-#define encrypt()                                                       \
+#define encrypt2()                                                       \
   DATATYPE cipher[16];                                                  \
   Chacha20__(state,cipher);                                             \
   for (int i = 0; i < 16; i++)                                          \
@@ -63,7 +146,7 @@ unsigned int chacha_const[4] = { 0x61707865, 0x3320646e, 0x79622d32, 0x6b206574 
   unsigned int *pre_cipher = (unsigned int*)cipher;                     \
   for (int i = 0; i < PARALLEL_FACTOR; i++)                             \
     for (int j = 0; j < 16; j++)                                        \
-      out_state[i*16+j] = pre_cipher[j*4+(7-i)];                        \
+      out_state[i*16+j] = pre_cipher[j*8+(7-i)];                        \
 
 
 void print_state(unsigned int state[16]) {

@@ -369,12 +369,9 @@ int serpent_convert_from_string(int len, const char *str, unsigned int *val);
 int makeKey(const char* keyMaterial, unsigned int key[33][4]) {
   unsigned int i,j;
   unsigned int w[132],k[132];
-  unsigned int key_int[8];
+  unsigned int* key_int = (unsigned int*) keyMaterial;
 
-  int keyLen = 256;
-
-  for (int i = 0; i < 8; i++)
-    key_int[i] = (unsigned int)keyMaterial[i*4];
+  int keyLen = 128;
 
   for(i=0; i<keyLen/32; i++)
     w[i]=key_int[i];

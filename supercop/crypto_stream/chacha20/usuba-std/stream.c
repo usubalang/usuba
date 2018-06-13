@@ -48,9 +48,9 @@ unsigned int chacha_const[4] = { 0x61707865, 0x3320646e, 0x79622d32, 0x6b206574 
    input, key and out_buff */
 #define encrypt()                               \
   Chacha20__(state,out_state);                  \
-  incr_counter(state);                          \
   for (int i = 0; i < 16; i++)                  \
-    out_state[i] += state[i];
+    out_state[i] += state[i];                   \
+  incr_counter(state);                          \
 
 void print_state(unsigned int state[16]) {
   for (int i = 0; i < 4; i++) {
@@ -81,10 +81,6 @@ int crypto_stream(unsigned char *out,
   /* Key schedule */
   init();
 
-  /* Copying the counter */
-  unsigned char counter[8] __attribute__ ((aligned (32))) = { 0 };
-  counter[7] = 1;
-
   /* Encrypting... */
   while (signed_len > 0) {
     /* Loading the input (from the counter) */
@@ -101,6 +97,13 @@ int crypto_stream(unsigned char *out,
 
 }
 
+#define end_xor(type)                                                   \
+  for ( ; encrypted >= sizeof(type); encrypted -= sizeof(type) ) {      \
+    *((type*)out) = *((type*)out_state_char) ^ *((type*)in);            \
+    out += sizeof(type);                                                \
+    out_state_char += sizeof(type);                                     \
+    in += sizeof(type);                                                 \
+  }
 
 int crypto_stream_xor( unsigned char *out,
                        const unsigned char *in,
@@ -114,10 +117,6 @@ int crypto_stream_xor( unsigned char *out,
   /* Key schedule */
   init();
 
-  /* Copying the counter */
-  unsigned char counter[8] __attribute__ ((aligned (32))) = { 0 };
-  counter[7] = 1;
-
   /* Encrypting the input... */
   while (signed_len > 0) {
     /* Loading the input (from the counter) */
@@ -127,26 +126,10 @@ int crypto_stream_xor( unsigned char *out,
     /* Xoring the ciphertext with the input to produce the output */
     unsigned char* out_state_char = (unsigned char*) out_state;
     unsigned long encrypted = nb_blocks * BLOCK_SIZE + (signed_len < 0 ? signed_len : 0);
-    for ( ; encrypted >= 8; encrypted -= 8) {
-      *((unsigned long*)out) = *((unsigned long*)out_state_char) ^ *((unsigned long*)in);
-      out += 8;
-      out_state_char += 8;
-      in += 8;
-    }
     
-    for ( ; encrypted >= 4; encrypted -= 4) {
-      *((unsigned int*)out) = *((unsigned int*)out_state_char) ^ *((unsigned int*)in);
-      out += 4;
-      out_state_char += 4;
-      in += 4;
-    }
-
-    for ( ; encrypted > 0; encrypted-- ) {
-      *((unsigned char*)out) = *((unsigned char*)out_state_char) ^ *((unsigned char*)in);
-      out++;
-      out_state_char++;
-      in++;
-    }
+    end_xor(unsigned long);
+    end_xor(unsigned int);
+    end_xor(unsigned char);
   }
 
   return 0;

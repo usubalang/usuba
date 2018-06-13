@@ -36,18 +36,56 @@ unsigned int chacha_const[4] = { 0x61707865, 0x3320646e, 0x79622d32, 0x6b206574 
     state[i+14] = _mm_set1_epi32(((int*)n)[i]);                 \
   
 
-#define load_input()                                                    \
-  state[12] = _mm_set_epi32(c1,c1+1,c1+2,c1+3);                         \
-  state[13] = _mm_set_epi32(c2,c2,c2,c2);                               \
-  c1 += 4;                                                              \
-  if (!c1) c2++;                                                        \
-  signed_len -= BLOCK_SIZE*PARALLEL_FACTOR;                             \
-  unsigned int out_state[16*PARALLEL_FACTOR];                           \
-  int nb_blocks = 4;                                                    \
-   
+#define load_input()                                    \
+  int c1_1, c1_2, c1_3, c1_4, c2_1, c2_2, c2_3, c2_4;   \
+  c1_1 = c1; c2_1 = c2;                                 \
+  if (!++c1) ++c2;                                      \
+  c1_2 = c1; c2_2 = c2;                                 \
+  if (!++c1) ++c2;                                      \
+  c1_3 = c1; c2_3 = c2;                                 \
+  if (!++c1) ++c2;                                      \
+  c1_4 = c1; c2_4 = c2;                                 \
+  if (!++c1) ++c2;                                      \
+  state[12] = _mm_set_epi32(c1_1,c1_2,c1_3,c1_4);       \
+  state[13] = _mm_set_epi32(c2_1,c2_2,c2_3,c2_4);       \
+  signed_len -= BLOCK_SIZE*PARALLEL_FACTOR;             \
+  unsigned int out_state[16*PARALLEL_FACTOR];           \
+  int nb_blocks = 4;                                    \
+
+
+#define TRANSPOSE4(row0, row1, row2, row3)   \
+  do {                                              \
+    __m128 tmp3, tmp2, tmp1, tmp0;                  \
+    tmp0 = _mm_unpacklo_ps((row0), (row1));         \
+    tmp2 = _mm_unpacklo_ps((row2), (row3));         \
+    tmp1 = _mm_unpackhi_ps((row0), (row1));         \
+    tmp3 = _mm_unpackhi_ps((row2), (row3));         \
+    row0 = _mm_movelh_ps(tmp0, tmp2);             \
+    row1 = _mm_movehl_ps(tmp2, tmp0);             \
+    row2 = _mm_movelh_ps(tmp1, tmp3);             \
+    row3 = _mm_movehl_ps(tmp3, tmp1);             \
+  } while (0)
+
+static void unortho(__m128 in[], __m128 out[]) {
+
+  for (int i = 0; i < 4; i++) 
+    TRANSPOSE4(in[i*4+0],in[i*4+1],in[i*4+2],in[i*4+3]);
+
+  for (int i = 0; i < 4; i++)
+    for (int j = 0; j < 4; j++)
+      out[(3-i)*4+j] = in[i+j*4];
+}
+
 /* This macro should just call the encryption function, with the parameters
    input, key and out_buff */
 #define encrypt()                                                       \
+  DATATYPE cipher[16];                                                  \
+  Chacha20__(state,cipher);                                             \
+  for (int i = 0; i < 16; i++)                                          \
+    cipher[i] = _mm_add_epi32(cipher[i],state[i]);                      \
+  unortho((__m128*)cipher,(__m128*)out_state);
+
+#define encrypt2()                                                      \
   DATATYPE cipher[16];                                                  \
   Chacha20__(state,cipher);                                             \
   for (int i = 0; i < 16; i++)                                          \
@@ -57,13 +95,19 @@ unsigned int chacha_const[4] = { 0x61707865, 0x3320646e, 0x79622d32, 0x6b206574 
     for (int j = 0; j < 16; j++)                                        \
       out_state[i*16+j] = pre_cipher[j*4+(3-i)];                        \
   
-
-void print_state(unsigned int state[16]) {
+void print128hex (const __m128i v) {
+  unsigned int out[4];
+  _mm_store_si128 ((__m128i*)out, v);
   for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++)
-      printf("%08x ",state[i*4+j]);
-    printf("\n");
+    printf("%08X",out[i]);
   }
+  puts("");
+}
+
+void print_state(__m128i state[16]) {
+  for (int i = 0; i < 4; i++)
+    for (int j = 0; j < 4; j++)
+      print128hex(state[i*4+j]);
   printf("\n");
 }
 
