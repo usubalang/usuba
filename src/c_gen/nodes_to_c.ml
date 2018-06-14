@@ -213,8 +213,7 @@ let rec var_decl_to_c (id:ident) (typ:typ) : string =
     | Bool -> (rename id.name) ^ start
     | Int(_,1) -> (rename id.name) ^ start
     | Int(_,m) -> sprintf "%s%s[%d]" (rename id.name) start m
-    | Array(typ,size) -> aux id typ (sprintf "[%d]" (eval_arith_ne size))
-    | _ -> assert false in
+    | Array(typ,size) -> aux id typ (sprintf "[%d]" (eval_arith_ne size)) in
   aux id typ ""
       
 let c_header (arch:arch) : string =
@@ -227,7 +226,7 @@ let c_header (arch:arch) : string =
   | Neon    -> "Neon.h"
   | AltiVec -> "AltiVec.h"
     
-let single_to_c (orig:def) (def:def) (array:bool) (vars:p)
+let single_to_c (def:def) (array:bool) (vars:p)
                 (body:deq list) (conf:config) : string =
   sprintf
 "void %s (/*inputs*/ %s, /*outputs*/ %s) {
@@ -245,12 +244,12 @@ let single_to_c (orig:def) (def:def) (array:bool) (vars:p)
   (* Parameters *)
   (join "," (if array then
                List.map (fun x -> "DATATYPE " ^ (rename x))
-                        (params_to_arr (Rename.rename_p orig.p_in) "")
+                        (params_to_arr def.p_in "")
              else
                List.map (fun ((id,typ),_) -> "DATATYPE " ^ (var_decl_to_c id typ)) def.p_in))
   (join "," (if array then
                List.map (fun x -> "DATATYPE " ^  (rename x))
-                        (params_to_arr (Rename.rename_p orig.p_out) "*")
+                        (params_to_arr def.p_out "*")
              else
                List.map (fun ((id,typ),_) -> (match typ with
                                               | Bool | Int(_,1) -> "DATATYPE* "
@@ -260,11 +259,11 @@ let single_to_c (orig:def) (def:def) (array:bool) (vars:p)
   (join "" (List.map (fun ((id,typ),_) -> sprintf "  DATATYPE %s;\n" (var_decl_to_c id typ)) vars))
 
   (* body *)
-  (deqs_to_c (if array then inputs_to_arr orig else outputs_to_ptr def)
+  (deqs_to_c (if array then inputs_to_arr def else outputs_to_ptr def)
              (build_env_var def.p_in def.p_out vars) body conf)
   
 
-let def_to_c (orig:def) (def:def) (array:bool) (conf:config) : string =
+let def_to_c (def:def) (array:bool) (conf:config) : string =
   match def.node with
-  | Single(vars,body) -> single_to_c orig def array vars body conf
+  | Single(vars,body) -> single_to_c def array vars body conf
   | _ -> assert false

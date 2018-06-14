@@ -66,7 +66,7 @@ let print_c (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
 
   let normalized = Normalize.norm_prog prog conf in
 
-  let c_prog = Usuba_to_c.prog_to_c prog normalized conf in
+  let c_prog = Usuba_to_c.prog_to_c normalized conf in
   
   fprintf out "%s" c_prog;
   close_out out
