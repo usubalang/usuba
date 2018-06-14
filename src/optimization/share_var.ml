@@ -271,12 +271,6 @@ let share_def (def:def) : def =
      let body = share_deqs def.p_in def.p_out vars body in
      { def with node = Single(vars,body) }
   | _ -> def
-
-let rec apply_last l f =
-  match l with
-  | x::[] -> [ f x ]
-  | hd::tl -> hd :: (apply_last tl f)
-  | [] -> []
            
 let share_prog (prog:prog) : prog =
   (* { nodes = List.map share_def prog.nodes } *)

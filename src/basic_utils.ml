@@ -27,6 +27,12 @@ let rec pow a = function
 let last l =
   List.nth l (List.length l - 1)
 
+let rec apply_last l f =
+  match l with
+  | x::[] -> [ f x ]
+  | hd::tl -> hd :: (apply_last tl f)
+  | [] -> []
+           
 (* Returns true if a list is empty *)
 let is_empty = function [] -> true | _ -> false
 
