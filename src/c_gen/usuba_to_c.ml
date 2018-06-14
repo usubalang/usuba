@@ -4,7 +4,11 @@ open Utils
        
 let prog_to_c (prog:prog) (conf:config) : string =
 
-  (*  let prog = Interleave.interleave prog conf in *)
+  
+  let prog = if conf.interleave then
+               Interleave.interleave prog conf
+             else prog in
+  
 
   if conf.openmp > 1 then
     if conf.bench then

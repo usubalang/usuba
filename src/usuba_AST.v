@@ -121,6 +121,7 @@ Record config := {
   ortho       : bool;
   openmp      : N;
   no_arr      : bool;
+  interleave  : bool;
 }.
 
 Set Extraction KeepSingleton.

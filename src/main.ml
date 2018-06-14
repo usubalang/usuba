@@ -20,6 +20,7 @@ let scheduling  = ref true
 let share_var   = ref true
 let precal_tbl  = ref true
 let no_arr      = ref false
+let interleave  = ref false
                       
 let runtime     = ref true
 let arch        = ref Std
@@ -94,6 +95,7 @@ let main () =
       "-no-share", Arg.Clear share_var, "Deactivate variable sharing";
       "-no-precalc-tbl", Arg.Clear precal_tbl, "Don't use pre-computed tables";
       "-no-arr", Arg.Set no_arr, "Don't keep any array";
+      "-interleave", Arg.Set interleave, "Interleave encryptions";
       "-arch", Arg.String (fun s -> arch := str_to_arch s), "Set architecture";
       "-bits-per-reg", Arg.Set_int bits_per_reg, "Set number of bits to use in the registers (with -arch std only, needs to be a multiple of 2)";
       "-no-runtime", Arg.Clear runtime, "Do not generate a runtime";
@@ -132,6 +134,7 @@ let main () =
                  ortho       = !ortho;
                  openmp      = !openmp;
                  no_arr      = !no_arr;
+                 interleave  = !interleave;
                } in
 
     if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then
