@@ -227,10 +227,7 @@ let def_to_str def =
 let def_to_str_l = lift def_to_str
                                                        
 let prog_to_str (prog:prog) : string=
-  join "\n\n" (List.map (fun d -> Printf.printf "Printing %s...\n" d.id.name;
-                                  let r = def_to_str d in
-                                  Printf.printf "Print done: %s\n" d.id.name;
-                                  r) prog.nodes)
+  join "\n\n" (List.map def_to_str prog.nodes)
 
 let print_prog (prog:prog) : unit =
   print_endline (prog_to_str prog)
