@@ -1,5 +1,3 @@
-# Still a little bug in the compiler, gotta check that out.
-
 #pragma vectorization
 
 _no_inline table[] sbox (input:u32x4) returns (out:u32x4) [
@@ -35,9 +33,6 @@ let
     out = (x0[3],x1[2],x2[3],x3[2])
 tel
 
-
-# The initial permutation is better done in the runtime,
-# as I'm not yet able to manually generate an optimized implementation
 node Serpent (plaintext:u32x4, keys:u32x4[33]) returns (ciphertext:u32x4)
 vars
     tmp : u32x4[32]

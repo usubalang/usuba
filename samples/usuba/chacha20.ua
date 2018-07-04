@@ -1,4 +1,3 @@
-
 #pragma vectorization
 
 node QR_start (a:u32, b:u32, c:u32, d:u32)
@@ -19,7 +18,6 @@ let
     cR = c + dR;
     bR = (b ^ cR) <<< 7
 tel
-
 
 // Quarter round
 node QR (input:u32x4) returns (output:u32x4)
@@ -46,7 +44,7 @@ let
 tel
 
 // full double round
-node DR (state:u32x16) returns (stateR:u32x16)
+_no_inline node DR (state:u32x16) returns (stateR:u32x16)
 let
     stateR = DR_end(DR_start(state))
 tel

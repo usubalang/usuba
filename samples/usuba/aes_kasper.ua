@@ -17,12 +17,12 @@ _no_inline table SubBytes_single (input:u1x8) returns (output:u1x8) {
     140, 161, 137, 13, 191, 230, 66, 104, 65, 153, 45, 15, 176, 84, 187, 22
 }
 
-node SubBytes (inputSB:u16x8) returns (out:u16x8)
+_no_inline node SubBytes (inputSB:u16x8) returns (out:u16x8)
 let
     out = SubBytes_single(inputSB)
 tel
 
-node ShiftRows (inputSR:u16x8) returns (out:u16x8)
+_no_inline node ShiftRows (inputSR:u16x8) returns (out:u16x8)
 let
     forall i in [0,7] {
         out[i] = Shuffle(inputSR[i],[ 0,  1,  2,  3,
