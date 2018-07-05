@@ -85,7 +85,7 @@ let rewrite_single_table (id:ident) (p_in:p) (p_out:p)
       let file_name = "data/sboxes/" ^ found ^ ".ua" in
       let new_node = List.nth (Parse_file.parse_file file_name).nodes 0 in
       { new_node with id = id;
-                      opt = opt }
+                      opt = new_node.opt @ opt }
     with Not_found -> rewrite_table id p_in p_out opt l
   else rewrite_table id p_in p_out opt l
 

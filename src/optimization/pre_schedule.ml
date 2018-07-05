@@ -133,9 +133,10 @@ let schedule_deqs (deqs:deq list) (def:def): deq list =
   List.rev_map (fun (x,y) -> Norec(x,y)) !schedule
        
 let schedule_node (def:def) : def =
-  { def with node = match def.node with
-                    | Single(vars,deqs) -> Single(vars,schedule_deqs deqs def)
-                    | _ -> def.node }
+  if is_noopt def then def else
+    { def with node = match def.node with
+                      | Single(vars,deqs) -> Single(vars,schedule_deqs deqs def)
+                      | _ -> def.node }
        
 let schedule (prog:prog) : prog =
   try

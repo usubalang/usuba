@@ -190,7 +190,8 @@ let opt_def (def: def) : def =
   match def.node with
   | Single(p_var,body) ->
      let env_var = build_env_var def.p_in def.p_out p_var in
-     { def with node = Single(p_var, opt_deqs env_var body def.p_out) }
+     if is_noopt def then def else
+       { def with node = Single(p_var, opt_deqs env_var body def.p_out) }
   | _ -> def
 
 let opt_prog (prog:prog) (conf:config) : prog =

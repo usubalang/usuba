@@ -286,6 +286,9 @@ let is_inline (def:def) : bool =
 let is_noinline (def:def) : bool =
   List.mem No_inline def.opt
 
+let is_noopt (def:def) : bool =
+  List.mem No_opt def.opt
+
 let is_perm (def:def) : bool =
   match def.node with
   | Perm _ -> true
