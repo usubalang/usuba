@@ -294,6 +294,15 @@ let is_perm (def:def) : bool =
   | Perm _ -> true
   | _ -> false
 
+let default_bits_per_reg (arch:arch) : int =
+  match arch with
+  | Std     -> 64 
+  | MMX     -> 64
+  | SSE     -> 128
+  | AVX     -> 256
+  | AVX512  -> 512
+  | Neon    -> 128
+  | AltiVec -> 128
 
 
 let rec p_size (p:p) : int =
