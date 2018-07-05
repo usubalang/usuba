@@ -11,6 +11,10 @@
 #include <x86intrin.h>
 #include <stdint.h>
 
+#ifndef AVX512
+#define AVX512
+#endif
+
 /* Defining 0 and 1 */
 #define ZERO _mm512_setzero_si512()
 #define ONES _mm512_set1_epi32(-1)

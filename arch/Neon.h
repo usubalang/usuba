@@ -11,6 +11,10 @@
 #include <arm_neon.h>
 #include <stdint.h>
 
+#ifndef Neon
+#define Neon
+#endif
+
 /* Defining 0 and 1 */
 #define ZERO ((uint64x2_t){  0ULL,  0ULL })
 #define ONES ((uint64x2_t){ -1ULL, -1ULL })

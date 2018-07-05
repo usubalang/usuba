@@ -11,6 +11,10 @@
 #include <x86intrin.h>
 #include <stdint.h>
 
+#ifndef SSE
+#define SSE
+#endif
+
 /* Defining 0 and 1 */
 #define ZERO _mm_setzero_si128()
 #define ONES _mm_set1_epi32(-1)

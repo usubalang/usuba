@@ -11,6 +11,10 @@
 #include <altivec.h>
 #include <stdint.h>
 
+#ifndef AltiVec
+#define AltiVec
+#endif
+
 /* Defining macros */
 #define DATATYPE vector unsigned int
 

@@ -10,6 +10,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#ifndef STD
+#define STD
+#endif
 
 #ifndef BITS_PER_REG
 #define BITS_PER_REG 64

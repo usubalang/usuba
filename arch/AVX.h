@@ -11,6 +11,10 @@
 #include <x86intrin.h>
 #include <stdint.h>
 
+#ifndef AVX
+#define AVX
+#endif
+
 /* Defining 0 and 1 */
 #define ZERO _mm256_setzero_si256()
 #define ONES _mm256_set1_epi32(-1)
