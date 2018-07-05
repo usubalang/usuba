@@ -165,8 +165,10 @@ let single_node_to_str id p_in p_out vars deq =
   ^ "\ntel"
 
 let optdef_to_str = function
-  | Inline -> "_inline"
+  | Inline    -> "_inline"
   | No_inline -> "_no_inline"
+  | Interleave n -> sprintf "_interleave(%d)" n
+  | No_opt    -> "_no_opt"
       
 let def_to_str def =
   let (id,p_in,p_out) = (def.id,def.p_in,def.p_out) in

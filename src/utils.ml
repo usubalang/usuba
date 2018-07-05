@@ -34,7 +34,7 @@ let default_conf : config =
     ortho       = true;
     openmp      = 1;
     no_arr      = false;
-    interleave  = false;
+    interleave  = 1;
   }
     
 let make_env () = Hashtbl.create 100

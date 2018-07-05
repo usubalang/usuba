@@ -34,6 +34,8 @@ let _ =
      "_no_inline", TOK_NOINLINE;
      "_unroll", TOK_UNROLL;
      "_no_unroll", TOK_NOUNROLL;
+     "_interleave", TOK_INTERLEAVE;
+     "_no_opt", TOK_NOOPT;
     ]
 
 let next_line lexbuf =

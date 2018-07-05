@@ -37,6 +37,8 @@
 %token TOK_NOINLINE
 %token TOK_UNROLL
 %token TOK_NOUNROLL
+%token TOK_INTERLEAVE
+%token TOK_NOOPT
        
 %token TOK_LPAREN
 %token TOK_RPAREN
@@ -214,8 +216,10 @@ clock:
 
 
 opt_def:
-   | TOK_INLINE   { Inline }
+   | TOK_INLINE   { Inline    }
    | TOK_NOINLINE { No_inline }
+   | TOK_INTERLEAVE TOK_LPAREN n=TOK_int TOK_RPAREN { Interleave n }
+   | TOK_NOOPT    { No_opt    }
 
 def:
   (* A node *)

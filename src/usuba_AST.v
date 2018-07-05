@@ -73,7 +73,7 @@ Inductive def_i :=
   | Table         (t: list N) (* lookup table *)
   | Multiple      (l: list def_i).
 
-Inductive def_opt := Inline | No_inline.
+Inductive def_opt := Inline | No_inline | Interleave (n:N) | No_opt.
 
 Record def := {
   id    : ident;
@@ -121,7 +121,7 @@ Record config := {
   ortho       : bool;
   openmp      : N;
   no_arr      : bool;
-  interleave  : bool;
+  interleave  : N;
 }.
 
 Set Extraction KeepSingleton.
