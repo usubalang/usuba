@@ -12,29 +12,30 @@ exception Invalid_operator_call
 exception Break
             
 let default_conf : config =
-  { block_size  = 64;
-    key_size    = 64;
-    warnings    = true;
-    verbose     = 1;
-    verif       = false;
-    type_check  = true;
-    clock_check = true;
-    check_tbl   = false;
-    inlining    = true;
-    inline_all  = false;
-    cse_cp      = true;
-    scheduling  = true;
-    share_var   = true;
-    precal_tbl  = true;
-    runtime     = true;
-    archi       = Std;
+  { block_size   = 64;
+    key_size     = 64;
+    warnings     = true;
+    verbose      = 1;
+    verif        = false;
+    type_check   = true;
+    clock_check  = true;
+    check_tbl    = false;
+    inlining     = true;
+    inline_all   = false;
+    cse_cp       = true;
+    scheduling   = true;
+    share_var    = true;
+    precal_tbl   = true;
+    runtime      = true;
+    archi        = Std;
     bits_per_reg = 64;
-    bench       = false;
-    rand_input  = false;
-    ortho       = true;
-    openmp      = 1;
-    no_arr      = false;
-    interleave  = 1;
+    bench        = false;
+    rand_input   = false;
+    ortho        = true;
+    openmp       = 1;
+    no_arr       = false;
+    arr_entry    = true;
+    interleave   = 1;
   }
     
 let make_env () = Hashtbl.create 100

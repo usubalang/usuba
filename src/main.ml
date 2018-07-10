@@ -13,14 +13,15 @@ let type_check  = ref true
 let clock_check = ref true
 let check_tbl   = ref false
                      
-let inlining    = ref true
-let inline_all  = ref false
-let cse_cp      = ref true
-let scheduling  = ref true
-let share_var   = ref true
-let precal_tbl  = ref true
-let no_arr      = ref false
-let interleave  = ref 0
+let inlining     = ref true
+let inline_all   = ref false
+let cse_cp       = ref true
+let scheduling   = ref true
+let share_var    = ref true
+let precal_tbl   = ref true
+let no_arr       = ref false
+let arr_entry    = ref true
+let interleave   = ref 0
                       
 let runtime     = ref true
 let arch        = ref Std
@@ -95,6 +96,7 @@ let main () =
       "-no-share", Arg.Clear share_var, "Deactivate variable sharing";
       "-no-precalc-tbl", Arg.Clear precal_tbl, "Don't use pre-computed tables";
       "-no-arr", Arg.Set no_arr, "Don't keep any array";
+      "-no-arr-entry", Arg.Clear arr_entry, "Don't keep any arrays in the entry point";
       "-interleave", Arg.Int (fun n -> interleave := n), "Interleave encryptions";
       "-arch", Arg.String (fun s -> arch := str_to_arch s), "Set architecture";
       "-bits-per-reg", Arg.Set_int bits_per_reg, "Set number of bits to use in the registers (with -arch std only, needs to be a multiple of 2)";
@@ -112,29 +114,30 @@ let main () =
     let prog = Parse_file.parse_file s in
     let bits_per_reg = if !bits_per_reg <> 64 then !bits_per_reg
                        else bits_in_arch !arch in
-    let conf = { block_size  = !block_size;
-                 key_size    = !key_size;
-                 warnings    = !warnings;
-                 verbose     = !verbose;
-                 verif       = !verif;
-                 type_check  = !type_check;
-                 clock_check = !clock_check;
-                 check_tbl   = !check_tbl;
-                 inlining    = !inlining;
-                 inline_all  = !inline_all;
-                 cse_cp      = !cse_cp;
-                 scheduling  = !scheduling;
-                 share_var   = !share_var;
-                 precal_tbl  = !precal_tbl;
-                 archi       = !arch;
+    let conf = { block_size   = !block_size;
+                 key_size     = !key_size;
+                 warnings     = !warnings;
+                 verbose      = !verbose;
+                 verif        = !verif;
+                 type_check   = !type_check;
+                 clock_check  = !clock_check;
+                 check_tbl    = !check_tbl;
+                 inlining     = !inlining;
+                 inline_all   = !inline_all;
+                 cse_cp       = !cse_cp;
+                 scheduling   = !scheduling;
+                 share_var    = !share_var;
+                 precal_tbl   = !precal_tbl;
+                 archi        = !arch;
                  bits_per_reg = bits_per_reg; (* local var! *)
-                 runtime     = !runtime;
-                 bench       = !bench || !rand_input;
-                 rand_input  = !rand_input;
-                 ortho       = !ortho;
-                 openmp      = !openmp;
-                 no_arr      = !no_arr;
-                 interleave  = !interleave;
+                 runtime      = !runtime;
+                 bench        = !bench || !rand_input;
+                 rand_input   = !rand_input;
+                 ortho        = !ortho;
+                 openmp       = !openmp;
+                 no_arr       = !no_arr;
+                 arr_entry    = !arr_entry;
+                 interleave   = !interleave;
                } in
 
     if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then

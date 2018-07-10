@@ -178,5 +178,5 @@ let rec map_special_last f g l =
     
 let rec expand_array (prog:prog) (conf:config): prog =
   let force = conf.no_arr || must_expand prog in
-  { nodes = map_special_last (expand_def force false) (expand_def force true) prog.nodes }
+  { nodes = map_special_last (expand_def force false) (expand_def force conf.arr_entry) prog.nodes }
 

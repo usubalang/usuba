@@ -99,29 +99,30 @@ Inductive arch :=
 
 (* The compiler's configuration *)
 Record config := {
-  block_size  : N;
-  key_size    : N;
-  warnings    : bool;
-  verbose     : N;
-  verif       : bool;
-  type_check  : bool;
-  clock_check : bool;
-  check_tbl   : bool;
-  inlining    : bool;
-  inline_all  : bool;
-  cse_cp      : bool;
-  scheduling  : bool;
-  share_var   : bool;
-  precal_tbl  : bool;
-  archi       : arch;
+  block_size   : N;
+  key_size     : N;
+  warnings     : bool;
+  verbose      : N;
+  verif        : bool;
+  type_check   : bool;
+  clock_check  : bool;
+  check_tbl    : bool;
+  inlining     : bool;
+  inline_all   : bool;
+  cse_cp       : bool;
+  scheduling   : bool;
+  share_var    : bool;
+  precal_tbl   : bool;
+  archi        : arch;
   bits_per_reg : N;
-  bench       : bool;
-  rand_input  : bool;
-  runtime     : bool;
-  ortho       : bool;
-  openmp      : N;
-  no_arr      : bool;
-  interleave  : N;
+  bench        : bool;
+  rand_input   : bool;
+  runtime      : bool;
+  ortho        : bool;
+  openmp       : N;
+  no_arr       : bool;
+  arr_entry    : bool;
+  interleave   : N;
 }.
 
 Set Extraction KeepSingleton.

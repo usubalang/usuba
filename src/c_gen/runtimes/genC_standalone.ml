@@ -8,7 +8,7 @@ open Utils
 let gen_runtime (prog:prog) (conf:config) : string =
   
   let entry = List.(def_to_c (nth prog.nodes (length prog.nodes -1))
-                             true conf) in
+                             conf.arr_entry conf) in
   let prog_c = map_no_end (fun x -> def_to_c x false conf) prog.nodes in
 
 Printf.sprintf 
