@@ -23,7 +23,7 @@ let no_arr       = ref false
 let arr_entry    = ref true
 let interleave   = ref 0
                       
-let runtime     = ref true
+let runtime     = ref false
 let arch        = ref Std
 let bits_per_reg = ref 64
 let bench       = ref false
