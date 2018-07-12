@@ -100,6 +100,7 @@ let main () =
       "-interleave", Arg.Int (fun n -> interleave := n), "Interleave encryptions";
       "-arch", Arg.String (fun s -> arch := str_to_arch s), "Set architecture";
       "-bits-per-reg", Arg.Set_int bits_per_reg, "Set number of bits to use in the registers (with -arch std only, needs to be a multiple of 2)";
+      "-runtime", Arg.Set runtime, "Use bitslice runtime";
       "-no-runtime", Arg.Clear runtime, "Do not generate a runtime";
       "-bench", Arg.Set bench, "Generate benchmark runtime";
       "-rand-input", Arg.Set rand_input, "Bench on random inputs rather than on a file (implies -bench)";

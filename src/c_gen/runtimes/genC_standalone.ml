@@ -17,7 +17,7 @@ Printf.sprintf
 
 
 /* Do NOT change the order of those define/include */
-#define NO_RUNTIME
+%s
 #ifndef BITS_PER_REG
 #define BITS_PER_REG %d
 #endif
@@ -30,6 +30,7 @@ Printf.sprintf
 /* main function */
 %s
  "
+  (if conf.runtime then "#define RUNTIME" else "#define NO_RUNTIME")
   (if conf.archi = Std then conf.bits_per_reg else default_bits_per_reg conf.archi)
   (c_header conf.archi)
   (join "\n\n" prog_c)
