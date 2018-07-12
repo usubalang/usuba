@@ -14,4 +14,4 @@ And then, the macro `L_ROTATE` was manually modified inside them:
 
 ```
 
-And ̀_tmp9_` was manually set to `_tmp8_` inside the function `adder__` of `fdti.c`.
+And `_tmp9_` was manually set to `_tmp8_` inside the function `adder__` of `fdti.c`.
