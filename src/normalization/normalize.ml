@@ -60,4 +60,6 @@ let norm_prog (prog: prog) (conf:config) : prog  =
   if conf.check_tbl then
     Soundness.tables_sound (Rename.rename_prog prog conf) norm_ok;
 
-  norm_ok
+  let fault_detected = run_pass "Fault detection" Fault_detection.fault_detection norm_ok in
+  
+  fault_detected
