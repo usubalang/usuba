@@ -191,8 +191,8 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
                          (Usuba_print.typ_to_str typ);
            raise (Not_implemented "Arrays as input") in
   
-  List.iter (aux "") (Rename.rename_p def.p_in);
-  List.iter (aux "*") (Rename.rename_p def.p_out);
+  List.iter (aux "") def.p_in;
+  List.iter (aux "*") def.p_out;
   inputs
     
 let outputs_to_ptr (def:def) : (string, string) Hashtbl.t =
