@@ -67,9 +67,12 @@ let rec cse_expr env_expr ?(invert=true) (e:expr) : expr =
   | None -> if invert then
               (* Inverting parameters in associative operations *)
               match e with
-              | Log(op,x,y)    -> cse_expr env_expr ~invert:false (Log(op,y,x))
-              | Arith(Mul,x,y) -> cse_expr env_expr ~invert:false (Arith(Mul,y,x))
-              | Arith(Add,x,y) -> cse_expr env_expr ~invert:false (Arith(Add,y,x))
+              | Log(op,x,y)    -> let e' = cse_expr env_expr ~invert:false (Log(op,y,x)) in
+                                  if e' = Log(op,y,x) then Log(op,x,y) else e'
+              | Arith(Mul,x,y) -> let e' = cse_expr env_expr ~invert:false (Arith(Mul,y,x)) in
+                                  if e' = Arith(Mul,y,x) then Arith(Mul,x,y) else e'
+              | Arith(Add,x,y) -> let e' = cse_expr env_expr ~invert:false (Arith(Add,y,x)) in
+                                  if e' = Arith(Add,y,x) then Arith(Add,x,y) else e'
               | _ -> e
             else e
 
