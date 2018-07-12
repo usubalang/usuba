@@ -20,25 +20,27 @@ let run_pass title func conf prog =
   if conf.verbose >= 100 then
     Printf.fprintf stderr "%s\n%!" (Usuba_print.prog_to_str res);
   res
-
     
 (* Note: the print actually print if the booleans in the function "print" above 
          are set to true (or at least the first one) *)
-let norm_prog (prog: prog) (conf:config) : prog  =
-  print "INPUT:" prog conf;
+let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
 
   let run_pass title func ?(sconf = conf) prog =
     run_pass title func sconf prog in
 
+  (* Scheduling is a bit tricky: need to apply CSE_CF_CP before scheduling *)
   let sched_fun prog conf =
     if conf.scheduling then
       Pre_schedule.schedule
         (if conf.cse_cp then CSE_CF_CP.opt_prog prog conf else prog)
     else prog in
+
+  (* Rename only if param rename is true *)
+  let rename = if rename then Rename.rename_prog else (fun x _ -> x) in
   
   let normalized =
     prog |>
-      (run_pass "Rename" Rename.rename_prog)                          |>
+      (run_pass "Rename" rename)                          |>
       (run_pass "Expand_multiples" Expand_multiples.expand_multiples) |>
       (run_pass "Convert_tables" Convert_tables.convert_tables)       |>
       (run_pass "Expand_array" Expand_array.expand_array) |>
@@ -49,7 +51,6 @@ let norm_prog (prog: prog) (conf:config) : prog  =
       (run_pass "Pre_schedule" sched_fun) |>
       (run_pass "Inline" Inline.inline) |>
       (run_pass "Norm_bitslice 2" Norm_bitslice.norm_prog) in
-      
   
   (* assert (Assert_lang.Usuba_norm.is_usuba_normalized normalized); *)
 
@@ -60,6 +61,46 @@ let norm_prog (prog: prog) (conf:config) : prog  =
   if conf.check_tbl then
     Soundness.tables_sound (Rename.rename_prog prog conf) norm_ok;
 
-  let fault_detected = run_pass "Fault detection" Fault_detection.fault_detection norm_ok in
   
-  fault_detected
+  norm_ok
+
+let specialize (prog:prog) (conf:config) : prog =
+  
+  let ti_nodes = norm_prog false
+                           (Parse_file.parse_file "data/nodes/ti.ua")
+                           { conf with inlining = false } in
+
+  let run_pass title func ?(sconf = conf) prog =
+    run_pass title func sconf prog in
+
+
+  let specialized = 
+  if conf.fdti = "fdti" then
+    prog |>
+      run_pass "Fault detection" Fault_detection.fault_detection  |>
+      run_pass "Re-normalize" (norm_prog false) |>
+      run_pass "TI securisation" (Ti_secure.ti_secure ti_nodes)
+  else if conf.fdti = "tifd" then
+    prog |> 
+      run_pass "TI securisation" (Ti_secure.ti_secure ti_nodes) |>
+      run_pass "Re-normalize" (norm_prog false) |>
+      run_pass "Fault detection" Fault_detection.fault_detection
+  else if conf.fdti = "fd" then
+    prog |> run_pass "Fault detection" Fault_detection.fault_detection
+  else if conf.fdti = "ti" then
+    prog |>run_pass "TI securisation" (Ti_secure.ti_secure ti_nodes)
+  else
+    prog in
+
+  norm_prog false specialized conf
+      
+
+let compile (prog:prog) (conf:config) : prog =
+  print "INPUT:" prog conf;
+
+  let normalized = norm_prog true prog conf in
+
+  if conf.fdti <> "" then
+    specialize normalized conf
+  else
+    normalized

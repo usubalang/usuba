@@ -55,6 +55,6 @@ let schedule_def (def:def) : def =
 
 (* Must be called once arrays (and thus Rec) have been removed. *)
 let schedule_prog (prog:prog) (conf:config): prog =
-  Printf.fprintf stderr "Scheduler (simple) disabled.\n";
+  (* Printf.fprintf stderr "Scheduler (simple) disabled.\n"; *)
   prog
   (* { nodes = List.map schedule_def prog.nodes } *)

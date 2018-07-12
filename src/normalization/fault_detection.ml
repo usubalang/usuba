@@ -29,26 +29,32 @@ let rec fd_expr (e:expr) : expr =
   | Shuffle(v,l)  -> Shuffle(dup_var v,l)
   | Arith _       -> Printf.fprintf stderr "Fault detection with Arith not implemented.\n";
                      assert false
-  | _ -> assert false
+  | Fun(f,l) when f.name = "rand" -> Fun(f,l)
+  | _ -> Printf.printf "Wrong expr: %s\n" (Usuba_print.expr_to_str e);
+         assert false
   
 let rec fd_deqs (deqs:deq list) : deq list =
   flat_map (function
-      | Norec(vars,e) -> (match e with
-                          | Fun(f,l) -> [ Norec(vars @ (List.map dup_var vars),
-                                                Fun(f,flat_map (fun x -> [ x ; fd_expr x]) l)) ] 
-                          | _ -> [ Norec(vars,e) ; Norec(List.map dup_var vars,
-                                                         fd_expr e) ])
+             | Norec(vars,e) ->
+                (match e with
+                 | Fun(f,[]) when f.name = "rand" ->
+                    [ Norec(vars,e);
+                      Norec(List.map dup_var vars, ExpVar (List.hd vars)) ]
+                 | Fun(f,l) -> [ Norec(vars @ (List.map dup_var vars),
+                                       Fun(f,flat_map (fun x -> [ x ; fd_expr x]) l)) ] 
+                 | _ -> [ Norec(vars,e) ; Norec(List.map dup_var vars,
+                                                fd_expr e) ])
       | Rec(i,ei,ef,dl,opts) -> [ Rec(i,ei,ef,fd_deqs dl,opts) ] ) deqs
   
 let dup_p (p:p) : p =
-  List.map (fun ((id,typ),ck) -> ((rename_for_fd id,typ),ck)) p
+  flat_map (fun ((id,typ),ck) -> [((id,typ),ck); ((rename_for_fd id,typ),ck)]) p
    
 let fd_def (def:def) : def =
   match def.node with
   | Single(vars,body) ->
      { def with
-       p_in  = def.p_in @ (dup_p def.p_in);
-       p_out = def.p_out @ (dup_p def.p_out);
+       p_in  = dup_p def.p_in;
+       p_out = dup_p def.p_out;
        node  = Single(vars @ (dup_p vars),fd_deqs body) }
   | _ -> def
 

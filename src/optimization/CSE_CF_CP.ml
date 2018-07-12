@@ -87,6 +87,7 @@ let rec expand_vars env_var opt_out_vars (e:expr) : expr list =
                    
 let opt_expr env_expr env_var opt_out_vars (e:expr) : expr =
   match e with
+  | Fun(f,[]) when f.name = "rand" -> Fun(f,[])
   | Fun(f,l) -> cse_expr env_expr
                          (Fun (f,flat_map (expand_vars env_var opt_out_vars) l))
   | _ -> cse_expr env_expr e

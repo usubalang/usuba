@@ -30,7 +30,6 @@ let norm_prog (prog: prog) (conf:config) =
     run_pass title func sconf prog in
 
   prog |>
-    (run_pass "Norm_uintn" Norm_uintn.norm_uintn) |>
     (run_pass "Expand_const" Expand_const.expand_prog) |>
     (run_pass "Unfold_unnest" Unfold_unnest.norm_prog) |>
     (run_pass "Expand_permut" Expand_permut.expand_permut) |>

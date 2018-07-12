@@ -123,6 +123,7 @@ Record config := {
   no_arr       : bool;
   arr_entry    : bool;
   interleave   : N;
+  fdti         : string;
 }.
 
 Set Extraction KeepSingleton.

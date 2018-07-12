@@ -36,6 +36,7 @@ let default_conf : config =
     no_arr       = false;
     arr_entry    = true;
     interleave   = 1;
+    fdti         = "";
   }
     
 let make_env () = Hashtbl.create 100

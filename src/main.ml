@@ -31,6 +31,7 @@ let rand_input  = ref false
 let ortho       = ref true
 let openmp      = ref 1
 let output      = ref ""
+let fdti        = ref ""
 
 
 let str_to_arch = function
@@ -66,7 +67,7 @@ let print_c (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
     | ""  -> open_out (gen_output_filename file_in)
     | str -> open_out str in
 
-  let normalized = Normalize.norm_prog prog conf in
+  let normalized = Normalize.compile prog conf in
 
   let c_prog = Usuba_to_c.prog_to_c normalized conf in
   
@@ -107,6 +108,7 @@ let main () =
       "-ortho", Arg.Set ortho, "Perform data orthogonalization";
       "-no-ortho", Arg.Clear ortho, "Don't perform data orthogonalization";
       "-openmp", Arg.Set_int openmp, "Set the number of core to use";
+      "-fdti",Arg.Set_string fdti, "Chose fd/ti combination";
       "-o", Arg.Set_string output, "Set the output filename";
     ] in
   let usage_msg = "Usage: usuba [switches] [files]" in
@@ -139,6 +141,7 @@ let main () =
                  no_arr       = !no_arr;
                  arr_entry    = !arr_entry;
                  interleave   = !interleave;
+                 fdti         = !fdti;
                } in
 
     if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then
