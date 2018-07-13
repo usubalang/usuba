@@ -73,8 +73,10 @@ let rec expand_var env_var env_keep env force (v:var) : var list =
                     (* Not_found can be raised by the calls to eval_arith *)
          with Not_found -> raise Need_unroll)
     | Slice(v',el) -> flat_map (fun i -> aux (Index(v',i))) el in
-  if force then
+  if force = 1 then
     List.map (remove_arr env_keep) (flat_map (Utils.expand_var env_var) (aux v))
+  else if force = 2 then
+    flat_map (Utils.expand_var env_var) (aux v)
   else
     aux v
                              
@@ -89,7 +91,7 @@ let rec expand_expr env_var env_keep env force (e:expr) : expr =
                                (expand_var env_var env_keep env force v))
   | Tuple el -> Tuple(List.map rec_call el)
   | Not e' -> Not (rec_call e')
-  | Shift(op,e1,ae) -> Shift(op,rec_call e1,ae)
+  | Shift(op,e1,ae) -> Shift(op,expand_expr env_var env_keep env 2 e1,ae)
   | Log(op,e1,e2) -> Log(op,rec_call e1,rec_call e2)
   | Shuffle(v,pat) -> Tuple(List.map (fun x -> Shuffle(x,pat))
                                      (expand_var env_var env_keep env force v))
@@ -112,14 +114,14 @@ let rec do_unroll env_var env_keep env force x ei ef deqs : deq list =
     eqs
   with Not_found -> raise Need_unroll
 
-and expand_deqs env_var env_keep ?(env=make_env ()) (force:bool) (deqs:deq list) : deq list =
+and expand_deqs env_var env_keep ?(env=make_env ()) (force:int) (deqs:deq list) : deq list =
   flat_map
     (fun deq -> 
      match deq with
      | Norec(lhs,e) -> [ Norec(expand_vars env_var env_keep env force lhs,
                                expand_expr env_var env_keep env force e) ]
      | Rec(x,ei,ef,deqs,opts) ->
-        if List.mem Unroll opts || force then
+        if List.mem Unroll opts || (force = 1) then
           do_unroll env_var env_keep env force x ei ef deqs
         else
           try
@@ -155,8 +157,8 @@ let build_env_keep (p_in:p) (p_out:p) =
   env
            
            
-let expand_def (force:bool) (keep_param:bool) (def:def) : def =
-  let expand_p = if force then expand_p else (fun x -> x) in
+let expand_def (force:int) (keep_param:bool) (def:def) : def =
+  let expand_p = if force = 1 then expand_p else (fun x -> x) in
   { def with p_in  = if keep_param then def.p_in  else expand_p def.p_in;
              p_out = if keep_param then def.p_out else expand_p def.p_out;
              node  = match def.node with
@@ -177,6 +179,6 @@ let rec map_special_last f g l =
 
     
 let rec expand_array (prog:prog) (conf:config): prog =
-  let force = conf.no_arr || must_expand prog in
+  let force = if conf.no_arr || must_expand prog then 1 else 0 in
   { nodes = map_special_last (expand_def force false) (expand_def force conf.arr_entry) prog.nodes }
 
