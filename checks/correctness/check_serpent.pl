@@ -36,7 +36,7 @@ mkdir $temp_dir;
 
 # Compiling Usuba DES.
 say "Compiling Serpent from Usuba to C...";
-error if system "./usubac -o $temp_dir/serpent.c -arch std -bits-per-reg 32 -no-runtime samples/usuba/serpent.ua" ;
+error if system "./usubac -o $temp_dir/serpent.c -arch sse -no-runtime -no-share samples/usuba/serpent.ua" ;
 {
     local $^I = "";
     local @ARGV = "$temp_dir/serpent.c";
@@ -44,7 +44,6 @@ error if system "./usubac -o $temp_dir/serpent.c -arch std -bits-per-reg 32 -no-
         s/#include .*//;
     } continue { print }
 }
-
 
 chdir $temp_dir;
 copy $_, '.' for glob "$FindBin::Bin/serpent/*";

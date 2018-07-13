@@ -34,26 +34,38 @@ remove_tree $temp_dir if -d $temp_dir;
 mkdir $temp_dir;
 
 # Compiling Usuba DES.
-say "Regenerating the des code...";
-error if system "./usubac -o $temp_dir/des.c -arch avx samples/usuba/des.ua" ;
+say "Regenerating the DES code...";
+error if system "./usubac -o $temp_dir/des.c -arch avx -runtime samples/usuba/des.ua" ;
+{
+    local $^I = "";
+    local @ARGV = "$temp_dir/des.c";
+    while(<>) {
+        s/#include .*//;
+    } continue { print }
+}
 
 chdir $temp_dir;
 copy '../DES/ref_usuba.c', '.';
+copy $_, '.' for glob "$FindBin::Bin/des/*";
 
 
-# Compiling the C files
-say "Compiling the test executable...";
-error if system 'clang -O3 -march=native -I../arch -o des_to_test des.c';
 error if system 'clang -O3 -march=native -o des_ref ref_usuba.c';
 
-say "Running the test...";
-error if system 'head -c 8M </dev/urandom > input.txt';
-error if system './des_ref';
-move 'output.txt', 'output_ref.txt';
-error if system './des_to_test';
 
-error if system 'cmp --silent output_ref.txt output.txt';
+for my $ARCH (qw(STD SSE AVX)) {
+    # Compiling the C files
+    say "Compiling the test executable...";
+    error if system "clang -D $ARCH -O3 -march=native -I../arch -o des_to_test main.c";
 
+    say "Running the test with $ARCH...";
+    error if system 'head -c 8M </dev/urandom > input.txt';
+    error if system './des_ref';
+    error if system './des_to_test';
+
+    error if system 'cmp --silent output.txt output_to_test.txt';
+    unlink "output.txt output_to_test.txt"
+}
+    
 chdir '..';
 remove_tree $temp_dir;
 

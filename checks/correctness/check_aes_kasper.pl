@@ -33,7 +33,7 @@ say "Preparing the files for the test...";
 remove_tree $temp_dir if -d $temp_dir;
 mkdir $temp_dir;
 
-# Compiling Usuba DES.
+# Compiling Usuba AES.
 say "Compiling AES from Usuba to C...";
 error if system "./usubac -o $temp_dir/aes.c -arch sse -no-runtime samples/usuba/aes_kasper.ua" ;
 {
