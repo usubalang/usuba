@@ -61,6 +61,9 @@ let rec cse_expr env_expr ?(invert=true) (e:expr) : expr =
        | Fun(f,l)       -> Fun(f, List.map (cse_expr env_expr) l)
        | Tuple l        -> Tuple(List.map (cse_expr env_expr) l)
        | Shift(op,e,ae) -> Shift(op, cse_expr env_expr e, ae)
+       | Shuffle(v,l)   -> (match env_fetch_opt env_expr (ExpVar v) with
+                            | Some (ExpVar v') -> Shuffle(v',l)
+                            | _ -> e)
        | _ -> e) in
   match env_fetch_opt env_expr e with
   | Some x -> x
@@ -91,7 +94,6 @@ let opt_expr env_expr env_var opt_out_vars (e:expr) : expr =
   | Fun(f,l) -> cse_expr env_expr
                          (Fun (f,flat_map (expand_vars env_var opt_out_vars) l))
   | _ -> cse_expr env_expr e
-  
 
 let rec update_opt_out opt_out_vars (v:var) : unit =
   env_update opt_out_vars v true;
@@ -199,5 +201,6 @@ let opt_def (def: def) : def =
   | _ -> def
 
 let opt_prog (prog:prog) (conf:config) : prog =
-  Expand_parameters.expand_parameters { nodes = List.map opt_def prog.nodes } conf
+  (* Expand_parameters.expand_parameters { nodes = List.map opt_def prog.nodes } conf *)
+  { nodes = List.map opt_def prog.nodes }
     
