@@ -36,6 +36,8 @@ let default_conf : config =
     no_arr       = false;
     arr_entry    = true;
     interleave   = 1;
+    fd           = false;
+    ti           = 1;
     fdti         = "";
   }
     

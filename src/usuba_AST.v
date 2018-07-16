@@ -123,6 +123,8 @@ Record config := {
   no_arr       : bool;
   arr_entry    : bool;
   interleave   : N;
+  fd           : bool;
+  ti           : N;
   fdti         : string;
 }.
 

@@ -51,8 +51,6 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
       (run_pass "Pre_schedule" sched_fun) |>
       (run_pass "Inline" Inline.inline) |>
       (run_pass "Norm_bitslice 2" Norm_bitslice.norm_prog) in
-  
-  (* assert (Assert_lang.Usuba_norm.is_usuba_normalized normalized); *)
 
   let optimized   = run_pass "Optimize" Optimize.opt_prog normalized in
   let clock_fixed = run_pass "Fix_clocks" Fix_clocks.fix_prog optimized in
@@ -65,10 +63,8 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
   norm_ok
 
 let specialize (prog:prog) (conf:config) : prog =
-  
-  let ti_nodes = norm_prog false
-                           (Parse_file.parse_file "data/nodes/ti.ua")
-                           { conf with inlining = false } in
+
+  let ti_file  = Printf.sprintf "data/nodes/ti%d.ua" conf.ti in
 
   let run_pass title func ?(sconf = conf) prog =
     run_pass title func sconf prog in
@@ -76,18 +72,27 @@ let specialize (prog:prog) (conf:config) : prog =
 
   let specialized = 
   if conf.fdti = "fdti" then
+    let ti_nodes = norm_prog false
+                             (Parse_file.parse_file ti_file)
+                             { conf with inlining = false } in
     prog |>
       run_pass "Fault detection" Fault_detection.fault_detection  |>
       run_pass "Re-normalize" (norm_prog false) |>
       run_pass "TI securisation" (Ti_secure.ti_secure ti_nodes)
   else if conf.fdti = "tifd" then
+    let ti_nodes = norm_prog false
+                             (Parse_file.parse_file ti_file)
+                             { conf with inlining = false } in
     prog |> 
       run_pass "TI securisation" (Ti_secure.ti_secure ti_nodes) |>
       run_pass "Re-normalize" (norm_prog false) |>
       run_pass "Fault detection" Fault_detection.fault_detection
-  else if conf.fdti = "fd" then
+  else if conf.fd then
     prog |> run_pass "Fault detection" Fault_detection.fault_detection
-  else if conf.fdti = "ti" then
+  else if conf.ti > 1 then
+    let ti_nodes = norm_prog false
+                             (Parse_file.parse_file ti_file)
+                             { conf with inlining = false } in
     prog |>run_pass "TI securisation" (Ti_secure.ti_secure ti_nodes)
   else
     prog in
@@ -101,6 +106,6 @@ let compile (prog:prog) (conf:config) : prog =
   let normalized = norm_prog true prog conf in
 
   if conf.fdti <> "" then
-    specialize normalized conf
+    norm_prog false (specialize normalized conf) conf
   else
     normalized

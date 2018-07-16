@@ -31,6 +31,8 @@ let rand_input  = ref false
 let ortho       = ref true
 let openmp      = ref 1
 let output      = ref ""
+let fd          = ref false
+let ti          = ref 1
 let fdti        = ref ""
 
 
@@ -108,7 +110,9 @@ let main () =
       "-ortho", Arg.Set ortho, "Perform data orthogonalization";
       "-no-ortho", Arg.Clear ortho, "Don't perform data orthogonalization";
       "-openmp", Arg.Set_int openmp, "Set the number of core to use";
-      "-fdti",Arg.Set_string fdti, "Chose fd/ti combination";
+      "-fd", Arg.Set fd, "Generate complementary redudant code";
+      "-ti", Arg.Set_int ti, "Set the number of shares to use for Threshold Implemenation (1, 2, 4, 8)";
+      "-fdti",Arg.Set_string fdti, "Specify the order of ti and fd (tifd or fdti)";
       "-o", Arg.Set_string output, "Set the output filename";
     ] in
   let usage_msg = "Usage: usuba [switches] [files]" in
@@ -141,6 +145,8 @@ let main () =
                  no_arr       = !no_arr;
                  arr_entry    = !arr_entry;
                  interleave   = !interleave;
+                 fd           = !fd;
+                 ti           = !ti;
                  fdti         = !fdti;
                } in
 
