@@ -14,40 +14,68 @@ open Usuba_AST
 open Basic_utils
 open Utils
 
-     
+       
+let gen_iterator =
+  let cpt = ref 0 in
+  fun id ->
+    incr cpt;
+    fresh_ident (Printf.sprintf "%s%d" id.name !cpt)
 
-let make_env () = Hashtbl.create 100
-let env_add env v e = Hashtbl.replace env v e
-let env_update env v e = Hashtbl.replace env v e
-let env_remove env v = Hashtbl.remove env v
-let env_fetch env v = try Hashtbl.find env v
-                      with Not_found -> raise (Error (__LOC__ ^ ":Not found: " ^ v.name))  
+let rec update_aexpr_idx (it_env:(var,var) Hashtbl.t)
+                         (ae:arith_expr) : arith_expr =
+  match ae with
+  | Const_e _ -> ae
+  | Var_e id  -> (match Hashtbl.find_opt it_env (Var id) with
+                  | Some (Var v) -> Var_e v
+                  | _ -> Var_e id)
+  | Op_e(op,x,y) -> Op_e(op,update_aexpr_idx it_env x,update_aexpr_idx it_env y)
 
-let rec update_var_to_var var_env v =
-  match Hashtbl.find_opt var_env v with
+let rec update_in_var (it_env:(var,var) Hashtbl.t)
+                      (v:var) : var =
+  match v with
+  | Var _ -> v
+  | Index(v',ae) -> Index(update_in_var it_env v',update_aexpr_idx it_env ae)
+  | _ -> assert false
+              
+let rec  update_var_to_var (it_env:(var,var) Hashtbl.t)
+                      (var_env : (var,var) Hashtbl.t)
+                      (v:var) : var =
+  let v = update_in_var it_env v in
+  match Hashtbl.find_opt it_env v with
   | Some v' -> v'
-  | None -> match v with
-            | Var _ -> Printf.fprintf stderr "Fail: %s\n" (Usuba_print.var_to_str v);
-                       assert false
-            | Index(v',ae) -> Index(update_var_to_var var_env v',ae)
-            | _ -> assert false
-                                    
-let rec update_var_to_expr var_env expr_env v =
-  match Hashtbl.find_opt expr_env v with
-  | Some e -> e
-  | None ->  match Hashtbl.find_opt var_env v with
-            | Some v' -> ExpVar v'
-            | None -> match v with
-                      | Var id -> assert false
-                      | Index(v',ae) ->
-                         begin
-                           match update_var_to_expr var_env expr_env v' with
-                           | ExpVar v'' -> ExpVar(Index(v'',ae))
-                           | _ -> assert false
-                         end
-                      | _ -> assert false
+  | None ->
+     match Hashtbl.find_opt var_env v with
+     | Some v' -> v'
+     | None -> match v with
+               | Var _ -> Printf.fprintf stderr "Fail: %s\n" (Usuba_print.var_to_str v);
+                          assert false
+               | Index(v',ae) -> Index(update_var_to_var it_env var_env v',ae)
+               | _ -> assert false
+                             
+let rec update_var_to_expr (it_env:(var,var) Hashtbl.t)
+                           (var_env : (var,var) Hashtbl.t)
+                           (expr_env: (var,expr) Hashtbl.t)
+                           (v:var) : expr =
+  match Hashtbl.find_opt it_env v with
+  | Some v' -> ExpVar v'
+  | None ->
+     match Hashtbl.find_opt expr_env v with
+     | Some e -> e
+     | None ->
+        match Hashtbl.find_opt var_env v with
+        | Some v' -> ExpVar v'
+        | None ->
+           match v with
+           | Var id -> assert false
+           | Index(v',ae) ->
+              begin
+                match update_var_to_expr it_env var_env expr_env v' with
+                | ExpVar v'' -> ExpVar(Index(v'',update_aexpr it_env var_env expr_env ae))
+                | _ -> assert false
+              end
+           | _ -> assert false
 
-let rec expr_to_aexpr (e:expr) : arith_expr =
+and expr_to_aexpr (e:expr) : arith_expr =
   match e with
   | Const c -> Const_e c
   | ExpVar(Var v) -> Var_e v
@@ -55,20 +83,26 @@ let rec expr_to_aexpr (e:expr) : arith_expr =
   | _ -> assert false
                                     
 (* TODO: this is quite messy, as we are mixing aexpr and expr ... *)
-let rec update_aexpr var_env expr_env (ae:arith_expr) : arith_expr =
-  let rec_call = update_aexpr var_env expr_env in
+and update_aexpr(it_env:(var,var) Hashtbl.t)
+                (var_env : (var,var) Hashtbl.t)
+                (expr_env: (var,expr) Hashtbl.t)
+                (ae:arith_expr) : arith_expr =
+  let rec_call = update_aexpr it_env var_env expr_env in
   match ae with
   | Const_e _ -> ae
-  | Var_e v -> expr_to_aexpr (update_var_to_expr var_env expr_env (Var v))
+  | Var_e v -> expr_to_aexpr (update_var_to_expr it_env var_env expr_env (Var v))
   | Op_e(op,x,y) -> Op_e(op,rec_call x, rec_call y)
                                     
 (* Convert variables names inside an expression *)
-let rec update_expr var_env expr_env (e:expr) : expr =
-  let rec_call = update_expr var_env expr_env in
+let rec update_expr (it_env:(var,var) Hashtbl.t)
+                    (var_env : (var,var) Hashtbl.t)
+                    (expr_env: (var,expr) Hashtbl.t)
+                    (e:expr) : expr =
+  let rec_call = update_expr it_env var_env expr_env in
   match e with
   | Const _ -> e
-  | ExpVar v -> update_var_to_expr var_env expr_env v
-  | Shuffle(v,l) -> begin match update_var_to_expr var_env expr_env v with
+  | ExpVar v -> update_var_to_expr it_env var_env expr_env v
+  | Shuffle(v,l) -> begin match update_var_to_expr it_env var_env expr_env v with
                           | ExpVar v' -> Shuffle(v',l)
                           | _ -> assert false end
 
@@ -79,7 +113,7 @@ let rec update_expr var_env expr_env (e:expr) : expr =
   | Tuple l -> Tuple (List.map rec_call l)
   | Not e -> Not (rec_call e)
   (* TODO: Should do something with 'ae' *)
-  | Shift(op,e,ae) -> Shift(op,rec_call e,update_aexpr var_env expr_env ae)
+  | Shift(op,e,ae) -> Shift(op,rec_call e,update_aexpr it_env var_env expr_env ae)
   | Log(op,x,y) -> Log(op,rec_call x,rec_call y)
   | Arith(op,x,y) -> Arith(op,rec_call x,rec_call y)
   | Fun(f,l) -> Fun(f,List.map rec_call l)
@@ -87,13 +121,20 @@ let rec update_expr var_env expr_env (e:expr) : expr =
          assert false
 
 (* Convert the variable names *)
-let rec update_vars (var_env : (var,var) Hashtbl.t)
+let rec update_vars (it_env:(var,var) Hashtbl.t)
+                    (var_env : (var,var) Hashtbl.t)
                     (expr_env: (var,expr) Hashtbl.t)
                     (body:deq list) : deq list =
   List.map (function
-      | Norec(lhs,e) -> Norec( List.map (update_var_to_var var_env) lhs,
-                               update_expr var_env expr_env e )
-      | Rec(i,ei,ef,dl,opts) -> Rec(i,ei,ef,update_vars var_env expr_env dl,opts)) body
+      | Norec(lhs,e) -> Norec( List.map (update_var_to_var it_env var_env) lhs,
+                               update_expr it_env var_env expr_env e )
+      | Rec(i,ei,ef,dl,opts) ->
+         let i' = gen_iterator i in
+         Hashtbl.add it_env (Var i) (Var i');
+         let updated = Rec(i',ei,ef,update_vars it_env var_env expr_env dl,opts) in
+         Hashtbl.remove it_env (Var i);
+         updated
+           ) body
 
            
 (* Inline a specific call (defined by lhs & args) *)
@@ -123,7 +164,7 @@ let inline_call (to_inl:def) (args:expr list) (lhs:var list) (cpt:int) :
   List.iter2 ( fun ((id,_),_) ((id',_),_) ->
                Hashtbl.add var_env (Var id) (Var id')) vars_inl vars;
   
-  vars, update_vars var_env expr_env body_inl  
+  vars, update_vars (Hashtbl.create 10) var_env expr_env body_inl  
   
   
 (* Inline all the calls to "to_inl" in a given node 
