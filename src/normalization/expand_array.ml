@@ -91,7 +91,8 @@ let rec expand_expr env_var env_keep env force (e:expr) : expr =
                                (expand_var env_var env_keep env force v))
   | Tuple el -> Tuple(List.map rec_call el)
   | Not e' -> Not (rec_call e')
-  | Shift(op,e1,ae) -> Shift(op,expand_expr env_var env_keep env 2 e1,ae)
+  | Shift(op,e1,ae) -> Shift(op,expand_expr env_var env_keep env
+                                            (if force = 0 then 2 else force) e1,ae)
   | Log(op,e1,e2) -> Log(op,rec_call e1,rec_call e2)
   | Shuffle(v,pat) -> Tuple(List.map (fun x -> Shuffle(x,pat))
                                      (expand_var env_var env_keep env force v))
