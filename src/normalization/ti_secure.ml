@@ -9,7 +9,7 @@ let ti_or  = fresh_ident "_orTI"
 
 let rec trip_expr (e:expr) : expr =
   match e with
-  | ExpVar _ | Shuffle _ -> e
+  | Const _ | ExpVar _ | Shuffle _ -> e
   | Not e    -> Fun(ti_not,[trip_expr e])
   | Shift(op,e,ae) -> Shift(op,trip_expr e,ae)
   | Log(op,x,y) -> (match op with
@@ -19,7 +19,8 @@ let rec trip_expr (e:expr) : expr =
                     | Andn -> assert false)
   | Arith _ -> assert false
   | Fun(f,l) -> Fun(f,List.map trip_expr l)
-  | _ -> assert false
+  | _ -> Printf.printf "Unsuported ti expression: %s\n" (Usuba_print.expr_to_str e);
+         assert false
                 
 let rec trip_deqs (deqs:deq list) : deq list =
   List.map (function

@@ -59,8 +59,8 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
   if conf.check_tbl then
     Soundness.tables_sound (Rename.rename_prog prog conf) norm_ok;
 
-  
   norm_ok
+    
 
 let specialize (prog:prog) (conf:config) : prog =
 
@@ -105,7 +105,7 @@ let compile (prog:prog) (conf:config) : prog =
 
   let normalized = norm_prog true prog conf in
 
-  if conf.fdti <> "" then
-    norm_prog false (specialize normalized conf) conf
+  if conf.fd || conf.ti > 1 then
+    specialize normalized conf
   else
     normalized
