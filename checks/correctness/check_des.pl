@@ -55,7 +55,7 @@ error if system 'clang -O3 -march=native -o des_ref ref_usuba.c';
 for my $ARCH (qw(STD SSE AVX)) {
     # Compiling the C files
     say "Compiling the test executable...";
-    error if system "clang -D $ARCH -O3 -march=native -I../arch -o des_to_test main.c";
+    error if system "clang -D $ARCH -march=native -I../arch -o des_to_test main.c";
 
     say "Running the test with $ARCH...";
     error if system 'head -c 8M </dev/urandom > input.txt';

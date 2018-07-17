@@ -33,29 +33,24 @@ unless ($ARGV[0]) {
 say "Preparing the files for the test...";
 remove_tree $temp_dir if -d $temp_dir;
 mkdir $temp_dir;
+chdir $temp_dir;
 
-# Compiling Usuba AES.
+dircopy "$FindBin::Bin/aes/$_", $_ for qw(std sse avx);
+copy $_, "." for glob "$FindBin::Bin/aes/{main.c,stream.h,aes_ctr.pl}";
+
+chdir "..";
 say "Compiling AES from Usuba to C...";
-error if system "./usubac -o $temp_dir/aes.c -arch std -no-share -no-arr -no-sched -no-runtime samples/usuba/aes.ua" ;
-{
-    local $^I = "";
-    local @ARGV = "$temp_dir/aes.c";
-    while(<>) {
-        s/#include .*//;
-    } continue { print }
+for my $arch (qw(std sse avx)) {
+    error if system "./usubac -o $temp_dir/$arch/aes.c -arch $arch -no-share -no-arr -no-sched -no-runtime samples/usuba/aes.ua" ;
 }
-
 
 chdir $temp_dir;
 
-dircopy "$FindBin::Bin/aes/std", "std";
-copy $_, "." for glob "$FindBin::Bin/aes/{main.c,stream.h,aes_ctr.pl}";
 
-
-for my $ARCH (qw(std)) {
+for my $ARCH (qw(std sse avx)) {
     # Compiling the C files
     say "Compiling the test executable with $ARCH...";
-    error if system "clang -O3 -march=native -I../arch -o aes main.c $ARCH/stream.c";
+    error if system "clang -Wall -Wextra -march=native -I../arch -o aes main.c $ARCH/stream.c";
 
     say "Running the test with $ARCH...";
     error if system 'head -c 8M </dev/urandom > input.txt';
