@@ -140,15 +140,16 @@ let rec deqs_to_c (env:(string,string) Hashtbl.t)
                    assert false) deqs)
 
 let params_to_arr (params: p) (marker:string) : string list =
-  List.map (fun ((id,typ),_) ->
-            match typ with
-            | Bool -> sprintf "%s%s" marker id.name
-            | Int(_,1) -> sprintf "%s%s" marker id.name
-            | Int(_,n) -> sprintf "%s[%d]" id.name n
-            (* Hard-coding the case ukxn[m] for now *)
-            | Array(Int(_,n),Const_e m) -> Printf.sprintf "%s[%d][%d]" id.name m n
-            | Array(t,Const_e n) -> Printf.sprintf "%s[%d]" id.name (n*typ_size t)
-            | _ -> raise (Not_implemented "Invalid input")) params
+  let rec typ_to_arr typ l =
+    match typ with
+    | Bool | Int(_,1) -> l
+    | Int(_,n) -> (l @ [sprintf "[%d]" n])
+    | Array(t,Const_e n) -> typ_to_arr t ((sprintf "[%d]" n) :: l)
+    | _ -> raise (Not_implemented "Invalid input") in
+  List.map (fun ((id,typ),_) -> match typ with
+                                | Bool | Int(_,1) -> sprintf "%s%s" marker id.name
+                                | _ -> sprintf "%s%s" id.name
+                                               (join "" (typ_to_arr typ []))) params
 
 let rec gen_list_typ (x:string) (typ:typ) : string list =
   match typ with
