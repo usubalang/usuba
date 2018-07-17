@@ -248,13 +248,11 @@ let single_to_c (def:def) (array:bool) (vars:p)
 
   (* Parameters *)
   (join "," (if array then
-               List.map (fun x -> "DATATYPE " ^ (rename x))
-                        (params_to_arr def.p_in "")
+               List.map (fun x -> "DATATYPE " ^ (rename x)) (params_to_arr def.p_in "")
              else
                List.map (fun ((id,typ),_) -> "DATATYPE " ^ (var_decl_to_c id typ)) def.p_in))
   (join "," (if array then
-               List.map (fun x -> "DATATYPE " ^  (rename x))
-                        (params_to_arr def.p_out "*")
+               List.map (fun x -> "DATATYPE " ^  (rename x)) (params_to_arr def.p_out "*")
              else
                List.map (fun ((id,typ),_) -> (match typ with
                                               | Bool | Int(_,1) -> "DATATYPE* "
