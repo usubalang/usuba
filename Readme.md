@@ -6,6 +6,11 @@ optimized to C code (+ intrinsics).
 
 ---
 
+## References
+
+Paper about Usuba, published at WPMVP'18: [Usuba.pdf](http://dariusmercadier.com/files/Usuba.pdf).  
+Some slides about Usuba from a recent talk: [Slides.pdf](http://dariusmercadier.com/files/slides_usuba_07-18.pdf).  
+
 ## A few examples
 
 A few examples of Usuba codes:
