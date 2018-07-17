@@ -92,7 +92,7 @@ let main () =
       "-no-checks", Arg.Unit (fun () -> type_check := false;
                                         clock_check := false),
                     "Deactivate both type and clock checking";
-      "-no-inlining", Arg.Clear inlining, "Deactivate inlining opti";
+      "-no-inline", Arg.Clear inlining, "Deactivate inlining opti";
       "-inline-all", Arg.Set inline_all, "Force inlining of every node";
       "-no-CSE-CP", Arg.Clear cse_cp, "Deactive CSE and CP opti";
       "-no-sched", Arg.Clear scheduling, "Deactivate scheduling opti";

@@ -20,9 +20,8 @@ let run_pass title func conf prog =
   if conf.verbose >= 100 then
     Printf.fprintf stderr "%s\n%!" (Usuba_print.prog_to_str res);
   res
+
     
-(* Note: the print actually print if the booleans in the function "print" above 
-         are set to true (or at least the first one) *)
 let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
 
   let run_pass title func ?(sconf = conf) prog =
