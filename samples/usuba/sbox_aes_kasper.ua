@@ -1,4 +1,4 @@
-_no_inline table SubBytes_single (input:u1x8) returns (output:u1x8) {
+_no_inline table f (input:u1x8) returns (output:u1x8) {
     99, 124, 119, 123, 242, 107, 111, 197, 48, 1, 103, 43, 254, 215, 171, 118,
     202, 130, 201, 125, 250, 89, 71, 240, 173, 212, 162, 175, 156, 164, 114, 192,
     183, 253, 147, 38, 54, 63, 247, 204, 52, 165, 229, 241, 113, 216, 49, 21,
@@ -16,9 +16,3 @@ _no_inline table SubBytes_single (input:u1x8) returns (output:u1x8) {
     225, 248, 152, 17, 105, 217, 142, 148, 155, 30, 135, 233, 206, 85, 40, 223,
     140, 161, 137, 13, 191, 230, 66, 104, 65, 153, 45, 15, 176, 84, 187, 22
 }
-
-node SubBytes (inputSB:u16x8) returns (out:u16x8)
-vars
-let
-    out = SubBytes_single(inputSB)
-tel

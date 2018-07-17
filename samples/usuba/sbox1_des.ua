@@ -4,9 +4,3 @@ _no_inline table f (a:u6) returns (b:u4) {
     4, 15, 1, 12, 14, 8, 8, 2, 13, 4, 6, 9, 2, 1, 11, 7,
     15, 5, 12, 11, 9, 3, 7, 14, 3, 10, 10, 0, 5, 6, 0, 13
 }
-
-node main (a:u6) returns (b:u4)
-vars
-let
-   b = f(a)
-tel
