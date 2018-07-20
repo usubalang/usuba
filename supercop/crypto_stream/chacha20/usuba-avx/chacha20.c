@@ -15,7 +15,7 @@
 #include "AVX.h"
 
 /* auxiliary functions */
-void QR_start__ (/*inputs*/ DATATYPE a__,DATATYPE b__,DATATYPE c__,DATATYPE d__, /*outputs*/ DATATYPE* aR__,DATATYPE* bR__,DATATYPE* cR__,DATATYPE* dR__) {
+static void QR_start__ (/*inputs*/ DATATYPE a__,DATATYPE b__,DATATYPE c__,DATATYPE d__, /*outputs*/ DATATYPE* aR__,DATATYPE* bR__,DATATYPE* cR__,DATATYPE* dR__) {
   
   // Variables declaration
   DATATYPE _tmp1_;
@@ -32,7 +32,7 @@ void QR_start__ (/*inputs*/ DATATYPE a__,DATATYPE b__,DATATYPE c__,DATATYPE d__,
 
 }
 
-void QR_end__ (/*inputs*/ DATATYPE a__,DATATYPE b__,DATATYPE c__,DATATYPE d__, /*outputs*/ DATATYPE* aR__,DATATYPE* bR__,DATATYPE* cR__,DATATYPE* dR__) {
+static void QR_end__ (/*inputs*/ DATATYPE a__,DATATYPE b__,DATATYPE c__,DATATYPE d__, /*outputs*/ DATATYPE* aR__,DATATYPE* bR__,DATATYPE* cR__,DATATYPE* dR__) {
   
   // Variables declaration
   DATATYPE _tmp3_;
@@ -49,7 +49,7 @@ void QR_end__ (/*inputs*/ DATATYPE a__,DATATYPE b__,DATATYPE c__,DATATYPE d__, /
 
 }
 
-void QR__ (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2__,DATATYPE input__3__, /*outputs*/ DATATYPE* output__0__,DATATYPE* output__1__,DATATYPE* output__2__,DATATYPE* output__3__) {
+static void QR__ (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2__,DATATYPE input__3__, /*outputs*/ DATATYPE* output__0__,DATATYPE* output__1__,DATATYPE* output__2__,DATATYPE* output__3__) {
   
   // Variables declaration
   DATATYPE _tmp5_[4];
@@ -61,7 +61,7 @@ void QR__ (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2_
 
 }
 
-void DR_start__ (/*inputs*/ DATATYPE state__[16], /*outputs*/ DATATYPE stateR__[16]) {
+static void DR_start__ (/*inputs*/ DATATYPE state__[16], /*outputs*/ DATATYPE stateR__[16]) {
   
   // Variables declaration
 
@@ -74,7 +74,7 @@ void DR_start__ (/*inputs*/ DATATYPE state__[16], /*outputs*/ DATATYPE stateR__[
 
 }
 
-void DR_end__ (/*inputs*/ DATATYPE state__[16], /*outputs*/ DATATYPE stateR__[16]) {
+static void DR_end__ (/*inputs*/ DATATYPE state__[16], /*outputs*/ DATATYPE stateR__[16]) {
   
   // Variables declaration
 
@@ -87,7 +87,7 @@ void DR_end__ (/*inputs*/ DATATYPE state__[16], /*outputs*/ DATATYPE stateR__[16
 
 }
 
-void DR__ (/*inputs*/ DATATYPE state__[16], /*outputs*/ DATATYPE stateR__[16]) {
+static void DR__ (/*inputs*/ DATATYPE state__[16], /*outputs*/ DATATYPE stateR__[16]) {
   
   // Variables declaration
   DATATYPE _tmp6_[16];

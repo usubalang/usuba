@@ -23,7 +23,7 @@
 #define BLOCK_SIZE 16
 
 /* How many blocks can be processed at once. */
-#define PARALLEL_FACTOR 1
+#define PARALLEL_FACTOR 2
 
 /* This macro should define a variable 'key' of whatever type.         */
 /* It should only rely on the variable 'k' (of type unsigned char*).   */
@@ -39,21 +39,25 @@
    The counter is in 'counter', and the length is in 'signed_len',
    which should be updated by this macro. */
 #define load_input()                            \
-  unsigned int input[4];                        \
-  unsigned int out_buff[4];                     \
-  int nb_blocks = 1;                            \
-  {                                             \
-    memcpy(input,counter,16);                   \
-    unsigned long* tmp = (unsigned long*)input; \
-    tmp[0] = __builtin_bswap64(tmp[0]);         \
-    tmp[1] = __builtin_bswap64(tmp[1]);         \
-    incr_counter(counter);                      \
-    signed_len -= BLOCK_SIZE;                   \
+  unsigned int input[8];                            \
+  unsigned int out_buff[8];                         \
+  int nb_blocks = 2;                                \
+  {                                                 \
+    memcpy(input,counter,16);                       \
+    unsigned long* tmp = (unsigned long*)input;     \
+    tmp[0] = __builtin_bswap64(tmp[0]);             \
+    tmp[1] = __builtin_bswap64(tmp[1]);             \
+    incr_counter(counter);                          \
+    memcpy(&input[4],counter,16);                   \
+    tmp = (unsigned long*)&input[4];                \
+    tmp[0] = __builtin_bswap64(tmp[0]);             \
+    tmp[1] = __builtin_bswap64(tmp[1]);             \
+    incr_counter(counter);                          \
+    signed_len -= BLOCK_SIZE * PARALLEL_FACTOR;     \
   }
 
 /* Serpent-specific macro */
-#define serpent_bs()                            \
-  Serpent__(input,key,out_buff);
+#define serpent_bs() Serpent__(input,&input[4],key,key,out_buff,&out_buff[4]);
    
 /* This macro should just call the encryption function, with the parameters
    input, key and out_buff */

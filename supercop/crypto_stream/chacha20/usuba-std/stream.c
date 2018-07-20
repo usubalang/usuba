@@ -70,33 +70,6 @@ static void incr_counter(unsigned int state[16]) {
   if (! ++state[12]) ++state[13];
 }
 
-int crypto_stream(unsigned char *out,
-                  unsigned long long outlen,
-                  const unsigned char *n,
-                  const unsigned char *k
-                  )
-{
-  long long signed_len = outlen;
-
-  /* Key schedule */
-  init();
-
-  /* Encrypting... */
-  while (signed_len > 0) {
-    /* Loading the input (from the counter) */
-    load_input();
-    /* Encrypting it */
-    encrypt();
-    /* Storing the output */
-    memcpy(out,out_state,nb_blocks*BLOCK_SIZE + (signed_len < 0 ? signed_len : 0) );
-    /* Updating the output pointer */
-    out += nb_blocks * BLOCK_SIZE;
-  }
-
-  return 0;
-
-}
-
 #define end_xor(type)                                                   \
   for ( ; encrypted >= sizeof(type); encrypted -= sizeof(type) ) {      \
     *((type*)out) = *((type*)out_state_char) ^ *((type*)in);            \
@@ -127,10 +100,27 @@ int crypto_stream_xor( unsigned char *out,
     unsigned char* out_state_char = (unsigned char*) out_state;
     unsigned long encrypted = nb_blocks * BLOCK_SIZE + (signed_len < 0 ? signed_len : 0);
     
-    end_xor(unsigned long);
-    end_xor(unsigned int);
-    end_xor(unsigned char);
+    if (in) {
+      end_xor(unsigned long);
+      end_xor(unsigned int);
+      end_xor(unsigned char);
+    } else {
+      memcpy(out, out_state_char, encrypted);
+      out += encrypted;
+    }
   }
 
   return 0;
 }
+
+
+int crypto_stream(unsigned char *out,
+                  unsigned long long outlen,
+                  const unsigned char *n,
+                  const unsigned char *k
+                  )
+{
+  return crypto_stream_xor(out,NULL,outlen,n,k);
+
+}
+

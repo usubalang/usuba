@@ -10,6 +10,7 @@ set key font ",14"
 set xtics font ",14" 
 set ytics font ",14" 
 
+set xtics rotate by 45 right
 
 set xrange [-.5:*]
 set yrange [0:*]

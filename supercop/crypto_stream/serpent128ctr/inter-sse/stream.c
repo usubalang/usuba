@@ -13,7 +13,6 @@
 /* ******************************************************************* */
 
 /* Include your .h (or .c if you're a durty being) here. */
-#define NO_RUNTIME
 #include "SSE.h"
 #include "key_sched.c"
 #include "serpent.c"
@@ -22,7 +21,7 @@
 #define BLOCK_SIZE 16
 
 /* How many blocks can be processed at once. */
-#define PARALLEL_FACTOR 4
+#define PARALLEL_FACTOR 8
 
 /* This macro should define a variable 'key' of whatever type.         */
 /* It should only rely on the variable 'k' (of type unsigned char*).   */
@@ -49,37 +48,46 @@
   for (int i = 0; i < 4; i++) {                 \
     memcpy(&input[i*2],counter,16);             \
     incr_counter(counter);                      \
-    signed_len -= BLOCK_SIZE;                   \
-  }
+  }                                             \
+  for (int i = 0; i < 4; i++) {                 \
+    memcpy(&input[8+i*2],counter,16);           \
+    incr_counter(counter);                      \
+  }                                             \
+  signed_len -= BLOCK_SIZE*PARALLEL_FACTOR;     \
 
 
-#define TRANSPOSE4(row0, row1, row2, row3)   \
-  do {                                              \
-    __m128 tmp3, tmp2, tmp1, tmp0;                  \
-    tmp0 = _mm_unpacklo_ps((row0), (row1));         \
-    tmp2 = _mm_unpacklo_ps((row2), (row3));         \
-    tmp1 = _mm_unpackhi_ps((row0), (row1));         \
-    tmp3 = _mm_unpackhi_ps((row2), (row3));         \
-    row0 = _mm_movelh_ps(tmp0, tmp2);             \
-    row1 = _mm_movehl_ps(tmp2, tmp0);             \
-    row2 = _mm_movelh_ps(tmp1, tmp3);             \
-    row3 = _mm_movehl_ps(tmp3, tmp1);             \
+
+#define TRANSPOSE4(row0, row1, row2, row3)      \
+  do {                                          \
+    __m128 tmp3, tmp2, tmp1, tmp0;              \
+    tmp0 = _mm_unpacklo_ps((row0), (row1));     \
+    tmp2 = _mm_unpacklo_ps((row2), (row3));     \
+    tmp1 = _mm_unpackhi_ps((row0), (row1));     \
+    tmp3 = _mm_unpackhi_ps((row2), (row3));     \
+    row0 = _mm_movelh_ps(tmp0, tmp2);           \
+    row1 = _mm_movehl_ps(tmp2, tmp0);           \
+    row2 = _mm_movelh_ps(tmp1, tmp3);           \
+    row3 = _mm_movehl_ps(tmp3, tmp1);           \
   } while (0)
 
 
 /* Serpent-specific macro */
 #define serpent_bs()                                                    \
   DATATYPE *plain = (DATATYPE*) input;                                  \
-  for (int i = 0; i < 4; i++)                                           \
+  for (int i = 0; i < 8; i++)                                           \
     plain[i] = _mm_shuffle_epi8(plain[i],_mm_set_epi8(8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7)); \
-  TRANSPOSE4(plain[0],plain[1],plain[2],plain[3]);                      \
                                                                         \
-  DATATYPE cipher[4];                                                   \
-  Serpent__(plain,key,cipher);                                          \
+  TRANSPOSE4(plain[0],plain[1],plain[2],plain[3]);                      \
+  TRANSPOSE4(plain[4],plain[5],plain[6],plain[7]);                      \
+                                                                        \
+  DATATYPE cipher[8];                                                   \
+  Serpent__(plain,&plain[4],key,key,cipher,&cipher[4]);                 \
                                                                         \
                                                                         \
   TRANSPOSE4(cipher[0],cipher[1],cipher[2],cipher[3]);                  \
+  TRANSPOSE4(cipher[4],cipher[5],cipher[6],cipher[7]);                  \
   unsigned int *out_buff = (unsigned int*) cipher;
+
    
 /* This macro should just call the encryption function, with the parameters
    input, key and out_buff */
@@ -95,12 +103,12 @@ static void incr_counter(unsigned long c[2]) {
   if (++c[1] == 0) ++c[0];
 }
 
-#define end_xor(type)                                               \
-  for ( ; encrypted >= sizeof(type); encrypted -= sizeof(type) ) {  \
-    *((type*)out) = *((type*)out_buff_char) ^ *((type*)in);         \
-    out += sizeof(type);                                            \
-    out_buff_char += sizeof(type);                                  \
-    in += sizeof(type);                                             \
+#define end_xor(type)                                                   \
+  for ( ; encrypted >= sizeof(type); encrypted -= sizeof(type) ) {      \
+    *((type*)out) = *((type*)out_buff_char) ^ *((type*)in);            \
+    out += sizeof(type);                                                \
+    out_buff_char += sizeof(type);                                     \
+    in += sizeof(type);                                                 \
   }
 
 int crypto_stream_xor( unsigned char *out,

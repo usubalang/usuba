@@ -85,15 +85,6 @@ static void unortho(__m128 in[], __m128 out[]) {
     cipher[i] = _mm_add_epi32(cipher[i],state[i]);                      \
   unortho((__m128*)cipher,(__m128*)out_state);
 
-#define encrypt2()                                                      \
-  DATATYPE cipher[16];                                                  \
-  Chacha20__(state,cipher);                                             \
-  for (int i = 0; i < 16; i++)                                          \
-    cipher[i] = _mm_add_epi32(cipher[i],state[i]);                      \
-  unsigned int *pre_cipher = (unsigned int*)cipher;                     \
-  for (int i = 0; i < PARALLEL_FACTOR; i++)                             \
-    for (int j = 0; j < 16; j++)                                        \
-      out_state[i*16+j] = pre_cipher[j*4+(3-i)];                        \
   
 void print128hex (const __m128i v) {
   unsigned int out[4];
@@ -116,37 +107,13 @@ void print_state(__m128i state[16]) {
 /*                                                                     */
 /* ******************************************************************* */
 
-int crypto_stream(unsigned char *out,
-                  unsigned long long outlen,
-                  const unsigned char *n,
-                  const unsigned char *k
-                  )
-{
-  long long signed_len = outlen;
-
-  /* Key schedule */
-  init();
-
-  /* Copying the counter */
-  unsigned int c1 = 0;
-  unsigned int c2 = 0;
-
-  /* Encrypting... */
-  while (signed_len > 0) {
-    /* Loading the input (from the counter) */
-    load_input();
-    /* Encrypting it */
-    encrypt();
-    /* Storing the output */
-    memcpy(out,out_state,nb_blocks*BLOCK_SIZE + (signed_len < 0 ? signed_len : 0) );
-    /* Updating the output pointer */
-    out += nb_blocks * BLOCK_SIZE;
+#define end_xor(type)                                                   \
+  for ( ; encrypted >= sizeof(type); encrypted -= sizeof(type) ) {      \
+    *((type*)out) = *((type*)out_state_char) ^ *((type*)in);            \
+    out += sizeof(type);                                                \
+    out_state_char += sizeof(type);                                     \
+    in += sizeof(type);                                                 \
   }
-
-  return 0;
-
-}
-
 
 int crypto_stream_xor( unsigned char *out,
                        const unsigned char *in,
@@ -173,27 +140,29 @@ int crypto_stream_xor( unsigned char *out,
     /* Xoring the ciphertext with the input to produce the output */
     unsigned char* out_state_char = (unsigned char*) out_state;
     unsigned long encrypted = nb_blocks * BLOCK_SIZE + (signed_len < 0 ? signed_len : 0);
-    for ( ; encrypted >= 8; encrypted -= 8) {
-      *((unsigned long*)out) = *((unsigned long*)out_state_char) ^ *((unsigned long*)in);
-      out += 8;
-      out_state_char += 8;
-      in += 8;
+    
+    if (in) {
+      end_xor(__m128i);
+      end_xor(unsigned long);
+      end_xor(unsigned int);
+      end_xor(unsigned char);
+    } else {
+      memcpy(out, out_state_char, encrypted);
+      out += encrypted;
     }
     
-    for ( ; encrypted >= 4; encrypted -= 4) {
-      *((unsigned int*)out) = *((unsigned int*)out_state_char) ^ *((unsigned int*)in);
-      out += 4;
-      out_state_char += 4;
-      in += 4;
-    }
-
-    for ( ; encrypted > 0; encrypted-- ) {
-      *((unsigned char*)out) = *((unsigned char*)out_state_char) ^ *((unsigned char*)in);
-      out++;
-      out_state_char++;
-      in++;
-    }
   }
 
   return 0;
+}
+
+
+int crypto_stream(unsigned char *out,
+                  unsigned long long outlen,
+                  const unsigned char *n,
+                  const unsigned char *k
+                  )
+{
+  return crypto_stream_xor(out,NULL,outlen,n,k);
+
 }
