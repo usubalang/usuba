@@ -72,10 +72,15 @@ let rec ret_var_to_c (env:(string,string) Hashtbl.t)
 (* TODO: this 64 and 32 shouldn't be hardcoded *)
 let rec expr_to_c (conf:config) (env:(string,string) Hashtbl.t) (e:expr) : string =
   match e with
-  | Const n -> ( match n with
-                 | 0 -> "SET_ALL_ONE()"
-                 | 1 -> "SET_ALL_ZERO()"
-                 | n -> sprintf "SET(%d,%d)" n 64 )
+  | Const n -> ( if conf.ti > 1 then
+                   match n with
+                   | 0 -> "0"
+                   | 1 -> "1"
+                   | _ -> assert false
+                 else  match n with
+                       | 0 -> "SET_ALL_ZERO()"
+                       | 1 -> "SET_ALL_ONE()"
+                       | n -> sprintf "SET(%d,%d)" n 64 )
   | ExpVar v -> var_to_c env v
   | Not e -> sprintf "NOT(%s)" (expr_to_c conf env e)
   | Log(op,x,y) -> sprintf "%s(%s,%s)"

@@ -35,7 +35,7 @@ remove_tree $temp_dir if -d $temp_dir;
 dircopy "$FindBin::Bin/ti", $temp_dir;
 
 say "Compiling AES/DES sbox from Usuba to C and running the tests...";
-for my $ti (3) {
+for my $ti (2, 3, 4) {
     my $macro = "#undef L_ROTATE\n" .
         "#define L_ROTATE(x,n,c) ((x << n) | ((x & 0b" . ("1"x$ti) . ") >> ($ti-n)))";
     for my $sbox (qw(sbox1_des sbox_aes_kasper)) {

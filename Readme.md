@@ -62,10 +62,11 @@ headers are located in the directory [arch](arch).
 
 Usuba can generate code with Fault Detection (by complementary
 redundancy) and secure the code with Threshold Implementation. This is
-controlled by the flags `-fd`, `-ti <2|3|4|8>` (only `-ti 3` works for
-now however!), `-fdti <fdti|tifd>` (to be used when both `-fd` and `-ti`
-are active, to specify if FD or TI should be done first). When generating
-TI code, the default `L_ROTATE` will be wrong. You'll have to update it 
+controlled by the flags `-fd`, `-ti <2|3|4|8>` (8 doesn't work yet
+though, and 2 might be wrong (this will be fixed very soon)),
+`-fdti <fdti|tifd>` (to be used when both `-fd` and `-ti` are active,
+to specify if FD or TI should be done first). When generating TI code,
+the default `L_ROTATE` will be wrong. You'll have to update it
 manually (as explained [here](experimentations/FDTI/README.md).  
 The directories [experimentations/TI](experimentations/TI)
 and [experimentations/FD](experimentations/FD) might share some light
@@ -77,4 +78,4 @@ Briefly, to compile AES's sbox:
 * with FD: `./usubac -o sbox.c -fd -no-arr -no-arr-entry -no-share samples/usuba/sbox_aes_kasper.ua`
 * with TI (3 shares): `./usubac -o sbox.c -ti 3 -no-sched -no-arr -no-arr-entry -no-share samples/usuba/sbox_aes_kasper.ua`
 
-(Note that the Usuba file [sbox\_aes\_kasper.ua](samples/usuba/sbox\_aes\_kasper.ua) contain the lookup table version of the Sbox, which Usuba converts to circuit based on its internal [database](data/sboxes) (for AES, it should be Canright's circuit).
+(Note that the Usuba file [sbox\_aes\_kasper.ua](samples/usuba/sbox\_aes\_kasper.ua) contains the lookup table version of the Sbox, which Usuba converts to circuit based on its internal [database](data/sboxes) (for AES, it should be Canright's circuit)).

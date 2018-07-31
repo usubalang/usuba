@@ -3,7 +3,14 @@ open Nodes_to_c
 open Basic_utils
 open Utils
        
-
+let one = function
+  | 2 -> "0xAAAAAAAA"
+  | 3 -> "0b001001001001001001001001001001"
+  | 4 -> "0x11111111"
+  | 8 -> "0x01010101"
+  | n -> Printf.fprintf stderr "Unsupported %d-shares TI. Please, define the macro ONE_TI.\n" n;
+         "ONE_TI"
+   
 (* Note: this isn't a general function, but it will do for now *)       
 let gen_runtime (prog:prog) (conf:config) : string =
   
@@ -24,6 +31,8 @@ Printf.sprintf
 /* including the architecture specific .h */
 #include \"%s\"
 
+%s
+
 /* auxiliary functions */
 %s
 
@@ -33,5 +42,6 @@ Printf.sprintf
   (if conf.runtime then "#define RUNTIME" else "#define NO_RUNTIME")
   (if conf.archi = Std then conf.bits_per_reg else default_bits_per_reg conf.archi)
   (c_header conf.archi)
+  (if conf.ti > 1 then "/* TI specific NOT */\n#undef NOT\n#define NOT(x) ((x) ^"^(one conf.ti)^")\n" else "")
   (join "\n\n" prog_c)
   entry

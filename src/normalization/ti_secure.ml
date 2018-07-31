@@ -17,7 +17,6 @@ let rec trip_expr (e:expr) : expr =
                     | Or  -> Fun(ti_or,[trip_expr x; trip_expr y;Fun(fresh_ident "rand",[])])
                     | Xor -> Log(Xor,trip_expr x,trip_expr y)
                     | Andn -> assert false)
-  | Arith _ -> assert false
   | Fun(f,l) -> Fun(f,List.map trip_expr l)
   | _ -> Printf.printf "Unsuported ti expression: %s\n" (Usuba_print.expr_to_str e);
          assert false
