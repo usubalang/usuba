@@ -33,7 +33,7 @@ let
 tel
 
 
-node _orTI (a:u8,b:u8,r:u8) returns (x:u8)
+node _orTI (a:u8,b:u8,r1:u8,r2:u8) returns (x:u8)
 let
-    x = _notTI(_andTI(_notTI(a),_notTI(b),r))
+    x = _notTI(_andTI(_notTI(a),_notTI(b),r1,r2))
 tel
