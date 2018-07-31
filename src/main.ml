@@ -34,6 +34,7 @@ let output      = ref ""
 let fd          = ref false
 let ti          = ref 1
 let fdti        = ref ""
+let easy_ti_conf = ref true
 
 
 let str_to_arch = function
@@ -113,14 +114,25 @@ let main () =
       "-fd", Arg.Set fd, "Generate complementary redudant code";
       "-ti", Arg.Set_int ti, "Set the number of shares to use for Threshold Implemenation (1, 2, 4, 8)";
       "-fdti",Arg.Set_string fdti, "Specify the order of ti and fd (tifd or fdti)";
+      "-no-easy-ti-conf", Arg.Clear easy_ti_conf, "Don't use default TI options";
       "-o", Arg.Set_string output, "Set the output filename";
     ] in
   let usage_msg = "Usage: usuba [switches] [files]" in
   
   let compile s =
     let prog = Parse_file.parse_file s in
+
+  if !ti > 1 && !easy_ti_conf then
+    (inlining   := false;
+     scheduling := false;
+     share_var  := false;
+     no_arr     := true;
+     arr_entry  := false;
+     arch       := Std);
+  
     let bits_per_reg = if !bits_per_reg <> 64 then !bits_per_reg
                        else if !ti > 1 then 32 else bits_in_arch !arch in
+    
     let conf = { block_size   = !block_size;
                  key_size     = !key_size;
                  warnings     = !warnings;
