@@ -35,18 +35,9 @@ remove_tree $temp_dir if -d $temp_dir;
 dircopy "$FindBin::Bin/ti", $temp_dir;
 
 say "Compiling AES/DES sbox from Usuba to C and running the tests...";
-for my $ti (2, 3, 4) {
-    my $macro = "#undef L_ROTATE\n" .
-        "#define L_ROTATE(x,n,c) ((x << n) | ((x & 0b" . ("1"x$ti) . ") >> ($ti-n)))";
+for my $ti (2, 3, 4, 8) {
     for my $sbox (qw(sbox1_des sbox_aes_kasper)) {
         error if system "./usubac -o $temp_dir/$sbox/sbox.c -ti $ti -no-sched -no-arr -no-arr-entry -no-share samples/usuba/$sbox.ua";
-        {
-            local $^I = "";
-            local @ARGV = "$temp_dir/$sbox/sbox.c";
-            while(<>) {
-                s/#include "STD.h"\K/\n$macro/;
-            } continue { print }
-        }
             
     }
     chdir $temp_dir;
