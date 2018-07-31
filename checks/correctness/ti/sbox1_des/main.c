@@ -8,13 +8,17 @@
 
 #if TI == 2
 #define REDUCE(x) ((x >> 1) & 1) ^ (x & 1)
+#define LOOP_BOUND 2
 #elif TI == 3
 #define REDUCE(x) ((x >> 2) & 1) ^ ((x >> 1) & 1) ^ (x & 1)
+#define LOOP_BOUND 4
 #elif TI == 4
 #define REDUCE(x) ((x >> 3) & 1) ^ ((x >> 2) & 1) ^ ((x >> 1) & 1) ^ (x & 1)
+#define LOOP_BOUND 8
 #elif TI == 8
 #define REDUCE(x) ((x >> 7) & 1) ^ ((x >> 6) & 1) ^ ((x >> 5) & 1) ^ ((x >> 4) & 1) \
   ^ ((x >> 3) & 1) ^ ((x >> 2) & 1) ^ ((x >> 1) & 1) ^ (x & 1)
+#define LOOP_BOUND 16
 #else
 #error "Invalid TI value:"
 #endif
@@ -33,8 +37,7 @@ unsigned long table[] = {
     15, 5, 12, 11, 9, 3, 7, 14, 3, 10, 10, 0, 5, 6, 0, 13
 };
 
-
-#define FOR(x) for (DATATYPE x = 0; x < 8; x++)
+#define FOR(x) for (DATATYPE x = 0; x < LOOP_BOUND; x++)
 #define LIST4(x) x##0, x##1, x##2, x##3
 #define LIST6(x) LIST4(x), x##4, x##5
 #define BITS_TO_INT4(c,d,e,f) ((f&1) | ((e&1) << 1) | ((d&1) << 2) | ((c&1) << 3))
@@ -74,7 +77,7 @@ void speed() {
     f__(LIST6(a),LIST4(&b));
   timer = _rdtsc() - timer;
 
-  printf("original: %lu cycles/run\n",timer/NB_LOOP);
+  printf("Speed: %lu cycles/run\n",timer/NB_LOOP);
 }
 
 
@@ -83,5 +86,5 @@ int main() {
 
   verif();
 
-  speed();
+  //speed();
 }
