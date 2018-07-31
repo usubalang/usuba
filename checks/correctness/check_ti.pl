@@ -37,7 +37,7 @@ dircopy "$FindBin::Bin/ti", $temp_dir;
 say "Compiling AES/DES sbox from Usuba to C and running the tests...";
 for my $ti (2, 3, 4, 8) {
     for my $sbox (qw(sbox1_des sbox_aes_kasper)) {
-        error if system "./usubac -o $temp_dir/$sbox/sbox.c -ti $ti -no-sched -no-arr -no-arr-entry -no-share samples/usuba/$sbox.ua";
+        error if system "./usubac -o $temp_dir/$sbox/sbox.c -ti $ti samples/usuba/$sbox.ua";
             
     }
     chdir $temp_dir;
