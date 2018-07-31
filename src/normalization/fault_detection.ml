@@ -29,7 +29,7 @@ let rec fd_expr (e:expr) : expr =
   | Shuffle(v,l)  -> Shuffle(dup_var v,l)
   | Arith _       -> Printf.fprintf stderr "Fault detection with Arith not implemented.\n";
                      assert false
-  | Fun(f,l) when f.name = "rand" -> Fun(f,l)
+  | Fun(f,l) when f.name = "RAND" -> Fun(f,l)
   | _ -> Printf.printf "Wrong expr: %s\n" (Usuba_print.expr_to_str e);
          assert false
   
@@ -37,7 +37,7 @@ let rec fd_deqs (deqs:deq list) : deq list =
   flat_map (function
              | Norec(vars,e) ->
                 (match e with
-                 | Fun(f,[]) when f.name = "rand" ->
+                 | Fun(f,[]) when f.name = "RAND" ->
                     [ Norec(vars,e);
                       Norec(List.map dup_var vars, ExpVar (List.hd vars)) ]
                  | Fun(f,l) -> [ Norec(vars @ (List.map dup_var vars),

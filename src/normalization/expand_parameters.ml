@@ -138,7 +138,7 @@ let unzip l =
 let rec expand_deq env_fun env_var (deq:deq) : deq =
   match deq with
   | Norec(lhs,Fun(id,args)) ->
-     if contains id.name "rand" then deq
+     if contains id.name "RAND" then deq
      else
        let f = Hashtbl.find env_fun id in
        let _,args = unzip (match_args env_fun env_var f f.p_in args) in

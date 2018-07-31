@@ -75,7 +75,7 @@ let rec get_expr_size env_var env_fun l : int =
   | Tuple l -> List.length l
   | Fun(f,_) ->(match Utils.env_fetch env_fun f with
                  | Some (_,v) -> v
-                 | None -> if contains f.name "print" || contains f.name "rand" then 1
+                 | None -> if contains f.name "print" || contains f.name "RAND" then 1
                            else raise (Error ("Undeclared " ^ f.name)))
   | _ -> raise (Error (Printf.sprintf "Not implemented yet get_expr_size(%s)\n" (Usuba_print.expr_to_str_types l)))
 

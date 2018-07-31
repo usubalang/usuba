@@ -105,8 +105,8 @@ let rec expr_to_c (conf:config) (env:(string,string) Hashtbl.t) (e:expr) : strin
              (expr_to_c conf env e)
              (aexpr_to_c ae)
              32
-  | Fun(f,[v]) when f.name = "rand" ->
-     sprintf "%s = rand();" (expr_to_c conf env v)
+  | Fun(f,[v]) when f.name = "RAND" ->
+     sprintf "%s = RAND();" (expr_to_c conf env v)
   | _ -> raise (Error (Printf.sprintf "Wrong expr: %s" (Usuba_print.expr_to_str e)))
 
                
@@ -128,8 +128,8 @@ let rec deqs_to_c (env:(string,string) Hashtbl.t)
   join "\n"
        (List.map
           (fun deq -> match deq with
-            | Norec([v],Fun(f,[])) when f.name = "rand" ->
-               sprintf "%s%s = rand();" tabs (var_to_c env v)
+            | Norec([v],Fun(f,[])) when f.name = "RAND" ->
+               sprintf "%s%s = RAND();" tabs (var_to_c env v)
             | Norec(p,Fun(f,l)) -> fun_call_to_c conf env env_var ~tabs:tabs p f l
             | Norec([v],e) ->
                sprintf "%s%s = %s;" tabs (var_to_c env v) (expr_to_c conf env e)

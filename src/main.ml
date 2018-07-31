@@ -120,7 +120,7 @@ let main () =
   let compile s =
     let prog = Parse_file.parse_file s in
     let bits_per_reg = if !bits_per_reg <> 64 then !bits_per_reg
-                       else bits_in_arch !arch in
+                       else if !ti > 1 then 32 else bits_in_arch !arch in
     let conf = { block_size   = !block_size;
                  key_size     = !key_size;
                  warnings     = !warnings;
