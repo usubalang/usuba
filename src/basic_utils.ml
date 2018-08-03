@@ -39,6 +39,24 @@ let is_empty = function [] -> true | _ -> false
 (* Alias for List.flatten @@ List.map *)
 let flat_map f l = List.flatten @@ List.map f l
 
+let for_alli (f:int -> 'a -> bool) (l:'a list) : bool =
+  let i = ref 0 in
+  List.for_all (fun e -> let b = f !i e in
+                         incr i;
+                         b) l
+
+let map2i (f:int -> 'a -> 'b -> 'c) (la:'a list) (lb:'b list) : 'c list =
+  let i = ref 0 in
+  List.map2 (fun a b -> let c = f !i a b in
+                        incr i;
+                        c) la lb
+
+let for_all2i (f:int -> 'a -> 'b -> bool) (la:'a list) (lb:'b list) : bool =
+  let i = ref 0 in
+  List.for_all2 (fun a b -> let c = f !i a b in
+                            incr i;
+                            c) la lb
+               
 (* Alias for String.concat *)
 let rec join = String.concat
 

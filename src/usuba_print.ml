@@ -123,6 +123,7 @@ let rec typ_to_str typ =
   | Int(n,m) -> sprintf "u%dx%d" n m
   | Nat -> "nat"
   | Array(typ,e) -> (typ_to_str typ) ^ "[" ^ (arith_to_str e) ^ "]"
+let typ_to_str_l = lift typ_to_str
 
 let rec clock_to_str ck =
   match ck with

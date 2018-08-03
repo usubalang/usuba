@@ -157,7 +157,7 @@ let elem_size (t:typ) : int =
   match t with
   | Array(t',_) -> typ_size t'
   | _ -> assert false
-                
+                 
 let rec get_var_type env (v:var) : typ =
   match v with
   | Var x -> env_fetch env x
@@ -309,7 +309,5 @@ let default_bits_per_reg (arch:arch) : int =
   | AltiVec -> 128
 
 
-let rec p_size (p:p) : int =
-  match p with
-  | [] -> 0
-  | ((_,typ),_) :: tl -> (typ_size typ) + (p_size tl)
+let p_size (p:p) : int =
+  List.fold_left (fun sum ((_,typ),_) -> sum + (typ_size typ)) 0 p
