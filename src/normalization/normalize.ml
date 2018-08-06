@@ -6,8 +6,9 @@ open Utils
 let print title body conf =
   if conf.verbose >= 5 then
     begin
-      print_endline title;
-      if conf.verbose >= 100 then print_endline (Usuba_print.prog_to_str body)
+      Printf.fprintf stderr "%s\n" title;
+      if conf.verbose >= 100 then
+        Printf.fprintf stderr "%s\n" (Usuba_print.prog_to_str body)
     end
 
 

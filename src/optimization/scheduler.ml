@@ -252,10 +252,71 @@ module Depth_first_sched = struct
   let schedule (prog:prog) : prog =
     { nodes = List.map schedule_def prog.nodes }
 end
+
+module Low_pressure_sched = struct
+  (* Algorithm:
+       Schedule an instruction, then find an instruction without dependencies 
+       with it to schedule and so on. Should introduce some intra-round 
+       interleaving.
+  
+   *)
+  let rec remove_nth (l:'a list) (n:int) =
+    match n with
+    | 0 -> List.tl l
+    | _ -> (List.hd l) :: (remove_nth (List.tl l) (n-1))
+                             
+  let get_def_vars (deq:deq) : var list =
+    match deq with
+    | Norec(vs,e) -> vs
+    | Rec _ -> []
+
+  (* Returns true if l1 and l2 have at least one common element *)
+  let common_elem l1 l2 = List.fold_left (fun x y -> x || List.mem y l2) false l1;;
+
+  let get_instr_no_dep (prev:var list ref) (deqs:deq list ref) : deq =
+    let next_i = try
+          find_get_i
+                     (function
+                       | Norec(vs,e) ->
+                          let b = not (common_elem !prev (get_used_vars_complete e)) in
+                          if b then b else (prev := !prev @ vs; b)
+                       | _ -> true) !deqs
+      with Not_found -> 0 in
+    let next = List.nth !deqs next_i in
+    deqs := remove_nth !deqs next_i;
+    next
+                 
+  let rec schedule_deqs (deqs: deq list) : deq list =
+    let scheduling = ref [ List.hd deqs ] in
+    let todo       = ref (List.tl deqs) in
+
+    let prev_deqs  = ref (get_def_vars (List.hd deqs)) in
+
+    while !todo <> [] do
+      let next = get_instr_no_dep prev_deqs todo in
+      scheduling := next :: !scheduling;
+      prev_deqs := get_def_vars next
+    done;
+
+    List.rev !scheduling
+    
+    
+                 
+  let schedule_def (def:def) : def =
+    { def with node = match def.node with
+                      | Single(vars,body) ->
+                         Single(vars,schedule_deqs body)
+                      | _ -> def.node }
+
+  let schedule (prog:prog) : prog =
+    { nodes = List.map schedule_def prog.nodes }
+
+end
       
 let schedule (prog:prog) : prog =
   (* Reg_alloc.alloc_reg prog        *)
   (* Basic_scheduler.schedule prog   *)
   (* Random_scheduler.schedule prog  *)
   (* Depth_first_sched.schedule prog *)
-   prog 
+  (* Low_pressure_sched.schedule prog *)
+  prog

@@ -50,8 +50,8 @@ end
 let print title body conf =
   if conf.verbose >= 5 then
     begin
-      Printf.fprintf stderr "%s" title;
-      if conf.verbose >= 100 then Printf.fprintf stderr "%s" (Usuba_print.prog_to_str body)
+      Printf.fprintf stderr "%s\n" title;
+      if conf.verbose >= 100 then Printf.fprintf stderr "%s\n" (Usuba_print.prog_to_str body)
     end
       
 let opt_prog (prog: Usuba_AST.prog) (conf:config) : Usuba_AST.prog =

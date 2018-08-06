@@ -258,7 +258,8 @@ let rec expand_intn_list (id: ident) (n: int) : ident list =
     else (fresh_suffix id (string_of_int i)) :: (aux (i+1))
   in aux 1
 
-   
+
+(* x[5] will say x[5] is used, when it should say x is used as well *)
 let rec get_used_vars (e:expr) : var list =
   match e with
   | Const _ -> []
@@ -270,6 +271,25 @@ let rec get_used_vars (e:expr) : var list =
   | Log(_,x,y) | Arith(_,x,y) -> (get_used_vars x) @ (get_used_vars y)
   | Fun(_,l) -> List.flatten @@ List.map get_used_vars l
   | _ -> assert false
+
+              
+let rec get_used_vars_complete (e:expr) : var list =
+  let rec extract_var (v:var) : var list =
+    match v with
+    | Var _ -> [ v ]
+    | Index(v',_) -> v :: (extract_var v')
+    | _ -> assert false in
+  match e with
+  | Const _ -> []
+  | ExpVar v -> extract_var v
+  | Shuffle(v,_) -> extract_var v
+  | Tuple l -> List.flatten @@ List.map get_used_vars_complete l
+  | Not e -> get_used_vars_complete e
+  | Shift(_,e,_) -> get_used_vars_complete e
+  | Log(_,x,y) | Arith(_,x,y) -> (get_used_vars_complete x) @ (get_used_vars_complete y)
+  | Fun(_,l) -> List.flatten @@ List.map get_used_vars_complete l
+  | _ -> assert false
+  
 
 let rec get_var_name (v:var) : ident =
   match v with

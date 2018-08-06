@@ -56,7 +56,14 @@ let for_all2i (f:int -> 'a -> 'b -> bool) (la:'a list) (lb:'b list) : bool =
   List.for_all2 (fun a b -> let c = f !i a b in
                             incr i;
                             c) la lb
-               
+
+let find_get_i (f:'a -> bool) (l:'a list) : int =
+  let i = ref 0 in
+  let _ = List.find (fun a -> let b = f a in
+                              if b then b
+                              else (incr i; b)) l in
+  !i
+                
 (* Alias for String.concat *)
 let rec join = String.concat
 
