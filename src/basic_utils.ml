@@ -63,6 +63,15 @@ let find_get_i (f:'a -> bool) (l:'a list) : int =
                               if b then b
                               else (incr i; b)) l in
   !i
+
+(* Removes duplicates from a list *)
+let uniq (l:'a list) : 'a list =
+  let mem = Hashtbl.create 50 in
+  List.filter (fun e -> if Hashtbl.mem mem e then false
+                        else (Hashtbl.add mem e true; true)) l 
+
+(* Returns true if l1 and l2 have at least one common element *)
+let common_elem l1 l2 = List.fold_left (fun x y -> x || List.mem y l2) false l1
                 
 (* Alias for String.concat *)
 let rec join = String.concat

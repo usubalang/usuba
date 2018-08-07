@@ -264,38 +264,52 @@ module Low_pressure_sched = struct
     match n with
     | 0 -> List.tl l
     | _ -> (List.hd l) :: (remove_nth (List.tl l) (n-1))
-                             
-  let get_def_vars (deq:deq) : var list =
+
+  (* Expands a var a returns the intermediate vars.
+     For instance, if x:u1x1[5][2] -> 
+        get_sub_vars x = x[0], x[1], ..., x[4], x[0][0], x[0][1], x[1][0], ..., x[4][1]. *)
+  let rec get_sub_vars env_var ?(env_it=Hashtbl.create 100) (v:var) : var list =
+    let typ = get_var_type env_var v in
+    match typ with
+    | Bool -> [ v ]
+    | Int(_,1) -> [ v ]
+    | Int(_,m) -> List.map (fun i -> Index(v,Const_e i)) (gen_list_0_int m)
+    | Array(_,ae) -> (List.map (fun i -> Index(v,Const_e i))
+                               (gen_list_0_int (eval_arith env_it ae))) @
+                       (flat_map (fun i -> expand_var env_var ~env_it:env_it
+                                                      (Index(v,Const_e i)))
+                                 (gen_list_0_int (eval_arith env_it ae)))
+    | _ -> assert false
+                  
+  let get_def_vars env_var (deq:deq) : var list =
     match deq with
-    | Norec(vs,e) -> vs
+    | Norec(vs,e) -> uniq (flat_map (get_sub_vars env_var) vs)
     | Rec _ -> []
 
-  (* Returns true if l1 and l2 have at least one common element *)
-  let common_elem l1 l2 = List.fold_left (fun x y -> x || List.mem y l2) false l1;;
-
-  let get_instr_no_dep (prev:var list ref) (deqs:deq list ref) : deq =
+  let get_instr_no_dep env_var (prev:var list ref) (deqs:deq list ref) : deq =
     let next_i = try
-          find_get_i
-                     (function
-                       | Norec(vs,e) ->
-                          let b = not (common_elem !prev (get_used_vars_complete e)) in
-                          if b then b else (prev := !prev @ vs; b)
-                       | _ -> true) !deqs
+        find_get_i
+          (function
+            | Norec(vs,e) ->
+               let b = not (common_elem !prev (flat_map (get_sub_vars env_var)
+                                                        (get_used_vars e))) in
+               if b then b else (prev := !prev @ vs; b)
+            | _ -> true) !deqs
       with Not_found -> 0 in
     let next = List.nth !deqs next_i in
     deqs := remove_nth !deqs next_i;
     next
                  
-  let rec schedule_deqs (deqs: deq list) : deq list =
+  let rec schedule_deqs env_var (deqs: deq list) : deq list =
     let scheduling = ref [ List.hd deqs ] in
     let todo       = ref (List.tl deqs) in
 
-    let prev_deqs  = ref (get_def_vars (List.hd deqs)) in
+    let prev_deqs  = ref (get_def_vars env_var (List.hd deqs)) in
 
     while !todo <> [] do
-      let next = get_instr_no_dep prev_deqs todo in
+      let next = get_instr_no_dep env_var prev_deqs todo in
       scheduling := next :: !scheduling;
-      prev_deqs := get_def_vars next
+      prev_deqs := get_def_vars env_var next
     done;
 
     List.rev !scheduling
@@ -305,7 +319,8 @@ module Low_pressure_sched = struct
   let schedule_def (def:def) : def =
     { def with node = match def.node with
                       | Single(vars,body) ->
-                         Single(vars,schedule_deqs body)
+                         let env_var = build_env_var def.p_in def.p_out vars in
+                         Single(vars,schedule_deqs env_var body)
                       | _ -> def.node }
 
   let schedule (prog:prog) : prog =

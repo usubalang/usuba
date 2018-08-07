@@ -61,14 +61,16 @@ let opt_prog (prog: Usuba_AST.prog) (conf:config) : Usuba_AST.prog =
   let optimized = if conf.cse_cp then CSE_CF_CP.opt_prog prog conf else prog in
   print "CSE-CP:" optimized conf;
 
+  (* if conf.scheduling then Pre_schedule.schedule cleaned else cleaned *)
+  let scheduled =  if conf.scheduling then Scheduler.schedule optimized else optimized in
+  print "SCHEDULED:" scheduled conf;
+
   (* Reusing variables *)
   let vars_shared = if conf.share_var then Share_var.share_prog optimized else optimized in
-  print "VARS SHARED:" optimized conf;
+  print "VARS SHARED:" vars_shared conf;
 
   (* Removing unused variables *)
   let cleaned = Clean.clean_vars_decl vars_shared in
-  print "CLEANED:" optimized conf;
+  print "CLEANED:" cleaned conf;
 
-  (* Scheduling *)
-  if conf.scheduling then Scheduler.schedule cleaned else cleaned
-  (* if conf.scheduling then Pre_schedule.schedule cleaned else cleaned *)
+  cleaned
