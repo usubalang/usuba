@@ -260,10 +260,6 @@ module Low_pressure_sched = struct
        interleaving.
   
    *)
-  let rec remove_nth (l:'a list) (n:int) =
-    match n with
-    | 0 -> List.tl l
-    | _ -> (List.hd l) :: (remove_nth (List.tl l) (n-1))
 
   (* Expands a var a returns the intermediate vars.
      For instance, if x:u1x1[5][2] -> 
@@ -280,36 +276,74 @@ module Low_pressure_sched = struct
                                                       (Index(v,Const_e i)))
                                  (gen_list_0_int (eval_arith env_it ae)))
     | _ -> assert false
+
+  (* "remove the array indexes": 
+       get_up_vars x[4][5] = [ x[4][5]; x[4]; x ] *)
+  let rec get_up_vars (v:var) : var list =
+    match v with
+    | Var _ -> [ v ]
+    | Index(v',_) -> v :: (get_up_vars v')
+    | _ -> assert false
+
+  let get_dep_vars env_var (vs:var list) : var list =
+    (flat_map get_up_vars vs) @ (flat_map (get_sub_vars env_var) vs)
                   
   let get_def_vars env_var (deq:deq) : var list =
     match deq with
     | Norec(vs,e) -> uniq (flat_map (get_sub_vars env_var) vs)
     | Rec _ -> []
 
-  let get_instr_no_dep env_var (prev:var list ref) (deqs:deq list ref) : deq =
+  let rec get_first_n (l:'a list) (i:int) : 'a list =
+    match i with
+    | 0 -> []
+    | n -> match l with
+           | [] -> []
+           | hd::tl -> hd :: (get_first_n tl (n-1))
+
+  let get_instr_no_dep env_var
+                       (prev_def:var list ref)
+                       (prev_used:var list ref)
+                       (deqs:deq list ref) : deq =
+    let exception Loop in
     let next_i = try
         find_get_i
           (function
             | Norec(vs,e) ->
-               let b = not (common_elem !prev (flat_map (get_sub_vars env_var)
-                                                        (get_used_vars e))) in
-               if b then b else (prev := !prev @ vs; b)
-            | _ -> true) !deqs
-      with Not_found -> 0 in
+               let used = get_dep_vars env_var (get_used_vars e) in
+               let b = (not (common_elem !prev_def used)) &&
+                         (not (common_elem vs !prev_used)) in
+               if b then b else
+                 begin prev_def := vs @ !prev_def;
+                       prev_used := used @ !prev_used;
+                       b
+                 end
+            (* As a first approximation, "raise Not_found" for loops.
+               It makes some sense: I don't think there are a lot of cases where
+               some instructions should be scheduled from after to before a loop... *)
+            | _ -> raise Loop) !deqs
+      with Loop -> 0 in
     let next = List.nth !deqs next_i in
     deqs := remove_nth !deqs next_i;
     next
                  
-  let rec schedule_deqs env_var (deqs: deq list) : deq list =
+  let rec schedule_deqs env_var (parallel_lvl:int) (deqs: deq list) : deq list =
     let scheduling = ref [ List.hd deqs ] in
     let todo       = ref (List.tl deqs) in
 
-    let prev_deqs  = ref (get_def_vars env_var (List.hd deqs)) in
-
     while !todo <> [] do
-      let next = get_instr_no_dep env_var prev_deqs todo in
-      scheduling := next :: !scheduling;
-      prev_deqs := get_def_vars env_var next
+      let exception Found in
+      try 
+      for num_prev = parallel_lvl-1 downto 1 do
+        try
+          let prev_deqs = flat_map (get_def_vars env_var) (get_first_n !scheduling num_prev) in
+          let next = get_instr_no_dep env_var (ref prev_deqs) (ref []) todo in
+          scheduling := next :: !scheduling;
+          raise Found
+        with Not_found -> ()
+      done;
+      scheduling := (List.hd !todo) :: !scheduling;
+      todo := List.tl !todo;
+      with Found -> ()
     done;
 
     List.rev !scheduling
@@ -320,7 +354,7 @@ module Low_pressure_sched = struct
     { def with node = match def.node with
                       | Single(vars,body) ->
                          let env_var = build_env_var def.p_in def.p_out vars in
-                         Single(vars,schedule_deqs env_var body)
+                         Single(vars,schedule_deqs env_var 4 body);
                       | _ -> def.node }
 
   let schedule (prog:prog) : prog =
@@ -333,5 +367,5 @@ let schedule (prog:prog) : prog =
   (* Basic_scheduler.schedule prog   *)
   (* Random_scheduler.schedule prog  *)
   (* Depth_first_sched.schedule prog *)
-  (* Low_pressure_sched.schedule prog *)
-  prog
+  Low_pressure_sched.schedule prog
+                              (* prog *)
