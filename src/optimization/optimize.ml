@@ -66,7 +66,7 @@ let opt_prog (prog: Usuba_AST.prog) (conf:config) : Usuba_AST.prog =
   print "SCHEDULED:" scheduled conf;
 
   (* Reusing variables *)
-  let vars_shared = if conf.share_var then Share_var.share_prog optimized else optimized in
+  let vars_shared = if conf.share_var then Share_var.share_prog scheduled else scheduled in
   print "VARS SHARED:" vars_shared conf;
 
   (* Removing unused variables *)

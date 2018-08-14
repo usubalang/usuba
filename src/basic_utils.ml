@@ -64,6 +64,12 @@ let find_get_i (f:'a -> bool) (l:'a list) : int =
                               else (incr i; b)) l in
   !i
 
+(* Removes the n-th element of a list *)
+let rec remove_nth (l:'a list) (n:int) =
+    match n with
+    | 0 -> List.tl l
+    | _ -> (List.hd l) :: (remove_nth (List.tl l) (n-1))
+                            
 (* Removes duplicates from a list *)
 let uniq (l:'a list) : 'a list =
   let mem = Hashtbl.create 50 in
