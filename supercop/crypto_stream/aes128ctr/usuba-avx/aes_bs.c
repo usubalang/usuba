@@ -48,8 +48,13 @@ void orthogonalize(__m256i data[8]) {
 
 }
 
-
 void aes_bs(DATATYPE plain[8],DATATYPE key[11][8], DATATYPE cipher[8]) {
+  
+  for (int i = 0; i < 8; i++)
+    plain[i] = _mm256_shuffle_epi8(plain[i],
+                                   _mm256_set_epi8(8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,
+                                                   8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7));
+  
   orthogonalize(plain);
   AES__(plain,key,cipher);
   orthogonalize(cipher);  

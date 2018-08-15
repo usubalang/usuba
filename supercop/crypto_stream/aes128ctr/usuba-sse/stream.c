@@ -44,14 +44,14 @@
    nb_blocks is the number of blocks being actually processed.
    The counter is in 'counter', and the length is in 'signed_len',
    which should be updated by this macro. */
-#define load_input()                                                \
-  __m128i input[8], out_buff[8];                                    \
-  int nb_blocks = 0;                                                \
-  for (; (signed_len > 0) && (nb_blocks < PARALLEL_FACTOR);         \
-       signed_len -= BLOCK_SIZE, nb_blocks++) {                     \
-    input[nb_blocks] = _mm_load_si128((__m128i*)counter);           \
-    incr_counter(counter);                                          \
-  }                                                                
+#define load_input()                                        \
+  __m128i input[8], out_buff[8];                            \
+  int nb_blocks = 0;                                        \
+  for (; (signed_len > 0) && (nb_blocks < PARALLEL_FACTOR); \
+       signed_len -= BLOCK_SIZE, nb_blocks++) {             \
+    memcpy(&input[nb_blocks],counter,16) ;                  \
+    incr_counter(counter);                                  \
+  }
 
 /* This macro should just call the encryption function, with the parameters
    input, key and out_buff */
@@ -63,42 +63,17 @@
 /*                                                                     */
 /* ******************************************************************* */
 
-static void incr_counter(unsigned char c[16]) {
-  for (int i = 15; i > 0; i--)
-    if (++c[i] != 0) break;
+static void incr_counter(unsigned long c[2]) {
+  if (++c[1] == 0) ++c[0];
 }
 
-int crypto_stream(unsigned char *out,
-                  unsigned long long outlen,
-                  const unsigned char *n,
-                  const unsigned char *k
-                  )
-{
-  long long signed_len = outlen;
-
-  /* Key schedule */
-  key_schedule();
-
-  /* Copying the counter */
-  unsigned char counter[16] __attribute__ ((aligned (32)));;
-  memcpy(counter, n, 16);
-
-  /* Encrypting... */
-  while (signed_len > 0) {
-    /* Loading the input (from the counter) */
-    load_input();
-    /* Encrypting it */
-    encrypt();
-    /* Storing the output */
-    memcpy(out,out_buff,nb_blocks*BLOCK_SIZE + (signed_len < 0 ? signed_len : 0) );
-    /* Updating the output pointer */
-    out += nb_blocks * BLOCK_SIZE;
+#define end_xor(type)                                               \
+  for ( ; encrypted >= sizeof(type); encrypted -= sizeof(type) ) {  \
+    *((type*)out) = *((type*)out_buff_char) ^ *((type*)in);         \
+    out += sizeof(type);                                            \
+    out_buff_char += sizeof(type);                                  \
+    in += sizeof(type);                                             \
   }
-
-  return 0;
-  
-}
-
 
 int crypto_stream_xor( unsigned char *out,
                        const unsigned char *in,
@@ -113,8 +88,10 @@ int crypto_stream_xor( unsigned char *out,
   key_schedule();
   
   /* Copying the counter */
-  unsigned char counter[16] __attribute__ ((aligned (32)));
+  unsigned long counter[2] __attribute__ ((aligned (32)));
   memcpy(counter, n, 16);
+  counter[0] = __builtin_bswap64(counter[0]);
+  counter[1] = __builtin_bswap64(counter[1]);
 
   /* Encrypting the input... */
   while (signed_len > 0) {
@@ -123,38 +100,31 @@ int crypto_stream_xor( unsigned char *out,
     /* Encrypting it */    
     encrypt();
     /* Xoring the ciphertext with the input to produce the output */
-        
+    
     unsigned char* out_buff_char = (unsigned char*) out_buff;
     unsigned long encrypted = nb_blocks * BLOCK_SIZE + (signed_len < 0 ? signed_len : 0);
-    for ( ; encrypted >= 16; encrypted -= 16) {
-      *((__m128i*)out) = *((__m128i*)out_buff_char) ^ *((__m128i*)in);
-      out += 16;
-      out_buff_char += 16;
-      in += 16;
-    }
     
-    for ( ; encrypted >= 8; encrypted -= 8) {
-      *((unsigned long*)out) = *((unsigned long*)out_buff_char) ^ *((unsigned long*)in);
-      out += 8;
-      out_buff_char += 8;
-      in += 8;
-    }
-    
-    for ( ; encrypted >= 4; encrypted -= 4) {
-      *((unsigned int*)out) = *((unsigned int*)out_buff_char) ^ *((unsigned int*)in);
-      out += 4;
-      out_buff_char += 4;
-      in += 4;
-    }
-
-    for ( ; encrypted > 0; encrypted-- ) {
-      *((unsigned char*)out) = *((unsigned char*)out_buff_char) ^ *((unsigned char*)in);
-      out++;
-      out_buff_char++;
-      in++;
+    if (in) {
+      end_xor(__m128i);      
+      end_xor(unsigned long);
+      end_xor(unsigned int);
+      end_xor(unsigned char);
+    } else {
+      memcpy(out, out_buff_char, encrypted);
+      out += encrypted;
     }
     
   }
 
   return 0;
+}
+
+
+int crypto_stream(unsigned char *out,
+                  unsigned long long outlen,
+                  const unsigned char *n,
+                  const unsigned char *k
+                  )
+{
+  return crypto_stream_xor(out,NULL,outlen,n,k);
 }
