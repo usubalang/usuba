@@ -8,6 +8,15 @@ open Basic_utils
 open Utils
 open Printf
 
+(* Precision on the "force" parameter that we keep around in most functions:
+  It has 3 values possible:
+    0: keep array
+    1: remove arrays
+    2: split arrays: arrays are kept around, but only as Index, not as Var.
+  This was needed for rotations/shifts.
+  More explanations in this commit: 24cf4b83aed7388c31f71c1b30ac8ba7a74bdc7c.
+*)
+
 (* To notify calling function that unrolling is necessary *)
 exception Need_unroll
             
@@ -29,12 +38,14 @@ let env_fetch env v = try Hashtbl.find env v
 let must_expand (prog:prog) =
   List.exists (fun x -> match x.node with Perm _ -> true | _ -> false) prog.nodes
 
+(* Returns true iff e uses variables. *)
 let rec uses_var (e:arith_expr) : bool =
   match e with
   | Const_e _ -> false
   | Var_e _ -> true
   | Op_e(_,e1,e2) -> (uses_var e1) && (uses_var e2)
 
+(* Returns true iff v (or a 'subvar' of v is v is an Index) is in env_keep *)
 let rec need_to_keep env_keep (v:var) : bool =
   match v with
   | Var id -> begin match Hashtbl.find_opt env_keep id with
@@ -42,7 +53,10 @@ let rec need_to_keep env_keep (v:var) : bool =
                     | _ -> false end
   | Index(v,_) -> need_to_keep env_keep v
   | _ -> assert false                       
-                                        
+
+(* Replaces Index with Var, thus removing arrays.
+   remove_arr( Index(x,5) ) = Var( x'5 )  
+*)
 let rec remove_arr (v:var) : var =
   match v with
   | Var _ -> v
@@ -130,7 +144,12 @@ and expand_deqs env_var env_keep ?(env=make_env ()) (force:int) (deqs:deq list) 
           with Need_unroll -> do_unroll env_var env_keep env force x ei ef deqs)
     deqs
     
-
+(* Expands p: 
+    Bool       -> don't change
+    Int(n,1)   -> don't change
+    Int(n,m)   -> becomes a list of Int(n,1)
+    Array(t,s) -> reccursive call on t for 1 .. s.
+ *)
 let expand_p (p:p) : p =
   let rec aux v =
     let ((id,typ),ck) = v in
@@ -145,12 +164,14 @@ let expand_p (p:p) : p =
     | _ -> assert false in
   flat_map aux p
 
-           
+
+(* cf env_keep description in expand_def:
+   env_keep: in the main: contains the parameters (they should be expanded)
+             in the other functions: is empty.*)
 let build_env_keep (p_in:p) (p_out:p) =
   let env = Hashtbl.create 100 in
   
-  let f ((id,typ),_) =
-    Hashtbl.add env id true in
+  let f ((id,typ),_) = Hashtbl.add env id true in
 
   List.iter f p_in;
   List.iter f p_out;
@@ -164,7 +185,11 @@ let expand_def (force:int) (keep_param:bool) (def:def) : def =
              p_out = if keep_param then def.p_out else expand_p def.p_out;
              node  = match def.node with
                      | Single(vars,body) ->
+                        (* env_var: contains the variables and their types *)
                         let env_var  = build_env_var def.p_in def.p_out vars in
+                        (* env_keep: in the main: contains the parameters 
+                                                  (they should be expanded)
+                                     in the other functions: is empty. *)
                         let env_keep = if keep_param then build_env_keep def.p_in def.p_out
                                        else Hashtbl.create 100 in
                         Single(expand_p vars, expand_deqs env_var env_keep force body)
