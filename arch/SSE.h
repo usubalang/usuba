@@ -27,7 +27,7 @@
 #define OR(a,b)   _mm_or_si128(a,b)
 #define XOR(a,b)  _mm_xor_si128(a,b)
 #define ANDN(a,b) _mm_andnot_si128(a,b)
-#define NOT(a)    _mm_andnot_si128(a,ONES)
+#define NOT(a)    _mm_xor_si128(ONES,a)
 
 #define ADD(a,b,c) _mm_add_epi##c(a,b)
 

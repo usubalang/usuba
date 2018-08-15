@@ -27,7 +27,7 @@
 #define OR(a,b)   _mm512_or_si512(a,b)
 #define XOR(a,b)  _mm512_xor_si512(a,b)
 #define ANDN(a,b) _mm512_andnot_si512(a,b)
-#define NOT(a)    _mm512_andnot_si512(a,ONES)
+#define NOT(a)    _mm512_xor_si512(ONES,a)
 
 #define DATATYPE __m512i
 

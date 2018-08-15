@@ -27,7 +27,7 @@
 #define OR(a,b)   _mm256_or_si256(a,b)
 #define XOR(a,b)  _mm256_xor_si256(a,b)
 #define ANDN(a,b) _mm256_andnot_si256(a,b)
-#define NOT(a)    _mm256_andnot_si256(a,ONES)
+#define NOT(a)    _mm256_xor_si256(ONES,a)
 
 #define ADD(a,b,c) _mm256_add_epi##c(a,b)
 
