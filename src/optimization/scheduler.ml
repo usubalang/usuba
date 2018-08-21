@@ -350,22 +350,30 @@ module Low_pressure_sched = struct
     
     
                  
-  let schedule_def (def:def) : def =
+  let schedule_def (parallel_lvl:int) (def:def) : def =
     { def with node = match def.node with
                       | Single(vars,body) ->
                          let env_var = build_env_var def.p_in def.p_out vars in
-                         Single(vars,schedule_deqs env_var 4 body);
+                         Single(vars,schedule_deqs env_var parallel_lvl body);
                       | _ -> def.node }
 
-  let schedule (prog:prog) : prog =
-    { nodes = List.map schedule_def prog.nodes }
+
+  (* TODO: make this more precise. 
+     Could be 1 on ARM/PowerPC. *)
+  let parallel_arch (arch:arch) : int =
+    match arch with
+    | _ -> 4
+
+  let schedule (prog:prog) (conf:config): prog =
+    let parallel_lvl = parallel_arch conf.archi in
+    { nodes = List.map (schedule_def parallel_lvl) prog.nodes }
 
 end
       
-let schedule (prog:prog) : prog =
+let schedule (prog:prog) (conf:config) : prog =
   (* Reg_alloc.alloc_reg prog        *)
   (* Basic_scheduler.schedule prog   *)
   (* Random_scheduler.schedule prog  *)
   (* Depth_first_sched.schedule prog *)
-  Low_pressure_sched.schedule prog
+  Low_pressure_sched.schedule prog conf
                               (* prog *)

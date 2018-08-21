@@ -62,7 +62,7 @@ let opt_prog (prog: Usuba_AST.prog) (conf:config) : Usuba_AST.prog =
   print "CSE-CP:" optimized conf;
 
   (* if conf.scheduling then Pre_schedule.schedule cleaned else cleaned *)
-  let scheduled =  if conf.scheduling then Scheduler.schedule optimized else optimized in
+  let scheduled =  if conf.scheduling then Scheduler.schedule optimized conf else optimized in
   print "SCHEDULED:" scheduled conf;
 
   (* Reusing variables *)
