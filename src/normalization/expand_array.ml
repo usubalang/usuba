@@ -151,15 +151,18 @@ and expand_deqs env_var env_keep ?(env=make_env ()) (force:int) (deqs:deq list) 
     Array(t,s) -> reccursive call on t for 1 .. s.
  *)
 let expand_p (p:p) : p =
-  let rec aux v =
-    let ((id,typ),ck) = v in
-    match typ with
-    | Bool -> [ v ]
+  let rec aux vd =
+    match vd.vtyp with
+    | Bool -> [ vd ]
     | Array(t,s) -> let size = eval_arith (make_env ()) s in
-                    flat_map (fun i -> aux ((fresh_suffix id (sprintf "%d'" i), t),ck))
+                    flat_map (fun i ->
+                              aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
+                                            vtyp = t })
                              (gen_list_0_int size)
-    | Int(n,1) -> [ v ]
-    | Int(n,m) -> flat_map (fun i -> aux ((fresh_suffix id (sprintf "%d'" i), Int(n,1)),ck))
+    | Int(n,1) -> [ vd ]
+    | Int(n,m) -> flat_map (fun i ->
+                            aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
+                                          vtyp = Int(n,1) })
                            (gen_list_0_int m)
     | _ -> assert false in
   flat_map aux p
@@ -171,7 +174,7 @@ let expand_p (p:p) : p =
 let build_env_keep (p_in:p) (p_out:p) =
   let env = Hashtbl.create 100 in
   
-  let f ((id,typ),_) = Hashtbl.add env id true in
+  let f (vd:var_d) = Hashtbl.add env vd.vid true in
 
   List.iter f p_in;
   List.iter f p_out;

@@ -155,14 +155,14 @@ let inline_call (to_inl:def) (args:expr list) (lhs:var list) (cpt:int) :
   let var_env = Hashtbl.create 100 in
   let expr_env = Hashtbl.create 100 in
   (* p_out replaced by the lhs *)
-  List.iter2 ( fun ((id,_),_) v -> Hashtbl.add var_env (Var id) v ) p_out lhs;
+  List.iter2 ( fun vd v -> Hashtbl.add var_env (Var vd.vid) v ) p_out lhs;
   (* p_in replaced by the expressions of arguments *)
-  List.iter2 ( fun ((id,_),_) e -> Hashtbl.add expr_env (Var id) e) p_in args;
+  List.iter2 ( fun vd e -> Hashtbl.add expr_env (Var vd.vid) e) p_in args;
   (* Create a list containing the new variables names *)
-  let vars = List.map (fun ((id,typ),ck) -> ((conv_name id,typ),ck)) vars_inl in
+  let vars = List.map (fun vd -> { vd with vid = conv_name vd.vid }) vars_inl in
   (* nodes variables alpha-converted *)
-  List.iter2 ( fun ((id,_),_) ((id',_),_) ->
-               Hashtbl.add var_env (Var id) (Var id')) vars_inl vars;
+  List.iter2 ( fun vd vd' ->
+               Hashtbl.add var_env (Var vd.vid) (Var vd'.vid)) vars_inl vars;
   
   vars, update_vars (Hashtbl.create 10) var_env expr_env body_inl  
   

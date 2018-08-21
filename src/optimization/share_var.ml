@@ -27,10 +27,10 @@ module Linearize_arrays = struct
       | Array(Array(typ',ae),_) -> Array(typ',ae)
       | _ -> assert false in
     
-    List.map (fun ((id,typ),ck) -> match Hashtbl.find_opt to_linearize id with
-                                   | Some _ -> ((id,simpl_type typ),ck)
-                                   | None -> ((id,typ),ck)) vars
-
+    List.map (fun vd -> match Hashtbl.find_opt to_linearize vd.vid with
+                        | Some _ -> { vd with vtyp = simpl_type vd.vtyp }
+                        | None -> vd) vars
+             
               
   let rec replace_var to_linearize (v:var) : var =
     match v with
@@ -100,8 +100,8 @@ module Linearize_arrays = struct
       ) deqs
   
   let get_2d_arrays (vars:p) : p =
-    List.filter (fun ((id,typ),ck) ->
-                 match typ with
+    List.filter (fun vd ->
+                 match vd.vtyp with
                  | Array(Array(Bool,_),_) ->  true
                  | Array(Array(Int(_,1),_),_) -> true
                  | Array(Int(_,m),_) when m > 1 -> true
@@ -111,10 +111,9 @@ module Linearize_arrays = struct
     match def.node with
     | Single(vars,body) ->
        let to_linearize = Hashtbl.create 100 in
-       List.iter (fun v ->
-                  let id = fst (fst v) in
-                  try try_linear body id;
-                      Hashtbl.replace to_linearize id true
+       List.iter (fun vd ->
+                  try try_linear body vd.vid;
+                      Hashtbl.replace to_linearize vd.vid true
                   with Keep_it -> ()) (get_2d_arrays vars);
        let vars = update_vars to_linearize vars in
        let body = linearize to_linearize body in
@@ -211,10 +210,10 @@ let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) : deq list =
   get_last_used env_var last_used deqs;
   (* The inputs (that shouldn't be overused I think) *)
   let env_in = Hashtbl.create 100 in
-  List.iter (fun ((id,_),_) -> Hashtbl.replace env_in (Var id) true) p_in;
+  List.iter (fun vd -> Hashtbl.replace env_in (Var vd.vid) true) p_in;
   (* out variables, should be kept *)
   let env_out = Hashtbl.create 100 in
-  List.iter (fun ((id,_),_) -> Hashtbl.replace env_out (Var id) true) p_out;
+  List.iter (fun vd -> Hashtbl.replace env_out (Var vd.vid) true) p_out;
   (* replacement env for variables that have been replaced *)
   let env_replace = Hashtbl.create 1000 in
 

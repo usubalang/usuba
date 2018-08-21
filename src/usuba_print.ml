@@ -3,7 +3,8 @@ open Usuba_AST
 open Basic_utils
 open Printf
 
-let lift f = fun l -> join "," (List.map f l)
+let lift_comma f = fun l -> join "," (List.map f l)
+let lift_space f = fun l -> join " " (List.map f l)
                            
 let unfold_andn e =
   match e with
@@ -46,7 +47,7 @@ let rec var_to_str = function
   | Index(v,e) -> sprintf "%s[%s]" (var_to_str v) (arith_to_str e)
   | Range(v,ei,ef) -> sprintf "%s[%s .. %s]" (var_to_str v) (arith_to_str ei) (arith_to_str ef)
   | Slice(v,l) -> sprintf "%s[%s]" (var_to_str v) (join "," (List.map arith_to_str l))
-let var_to_str_l = lift var_to_str
+let var_to_str_l = lift_comma var_to_str
                                               
 let rec var_to_str_types = function
   | Var v -> sprintf "Var: %s" v.name
@@ -110,7 +111,7 @@ let rec expr_to_str = function
                                                  sprintf "| %s -> %s "
                                                          (constr_to_str c)
                                                          (expr_to_str y)) c))
-let expr_to_str_l = lift expr_to_str
+let expr_to_str_l = lift_comma expr_to_str
 
 let pat_to_str pat =
   "(" ^ (join "," (List.map var_to_str pat)) ^ ")"
@@ -123,7 +124,7 @@ let rec typ_to_str typ =
   | Int(n,m) -> sprintf "u%dx%d" n m
   | Nat -> "nat"
   | Array(typ,e) -> (typ_to_str typ) ^ "[" ^ (arith_to_str e) ^ "]"
-let typ_to_str_l = lift typ_to_str
+let typ_to_str_l = lift_comma typ_to_str
 
 let rec clock_to_str ck =
   match ck with
@@ -131,10 +132,21 @@ let rec clock_to_str ck =
   | Base -> "base"
   | On(ck,x) -> (clock_to_str ck) ^ " on " ^ x.name
   | Onot(ck,x) -> (clock_to_str ck) ^ " onot " ^ x.name
-                                                                  
-let p_to_str ((id,typ),ck) =
-  id.name ^ ":" ^ (typ_to_str typ) ^  "::" ^ (clock_to_str ck)
-let p_to_str_l = lift p_to_str
+
+let var_d_opt_to_str (vopt:var_d_opt) =
+  match vopt with
+  | Pconst -> "const"
+  | P_tmp  -> assert false
+let var_d_opt_to_str_l = lift_space var_d_opt_to_str
+                                                   
+let vd_to_str (vd:var_d) =
+  sprintf "%s : %s %s :: %s"
+          vd.vid.name
+          (var_d_opt_to_str_l vd.vopts)
+          (typ_to_str vd.vtyp)
+          (clock_to_str vd.vck)
+let p_to_str = lift_comma vd_to_str
+                            
 
 let optstmt_to_str = function
   | Unroll    -> "_unroll"
@@ -147,7 +159,7 @@ let rec deq_to_str = function
              (join " " (List.map optstmt_to_str opts))
              id.name  (arith_to_str ei) (arith_to_str ef)
              (join "\n    " (List.map deq_to_str d))
-let deq_to_str_l = lift deq_to_str
+let deq_to_str_l = lift_comma deq_to_str
                                                                                  
 let rec deq_to_str_types = function
   | Norec(pat,e) -> sprintf "%s = %s" (pat_to_str_types pat) (expr_to_str_types e)
@@ -158,10 +170,10 @@ let rec deq_to_str_types = function
              (join "\n    " (List.map deq_to_str_types d))
      
                                                                 
-let single_node_to_str id p_in p_out vars deq =
-  "node " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in)) ^ ")\n  returns "
-  ^ (join "," (List.map p_to_str p_out)) ^ "\nvars\n"
-  ^ (join ",\n" (List.map (fun x -> "  " ^ (p_to_str x)) vars)) ^ "\nlet\n"
+let single_node_to_str (id:ident) (p_in:p) (p_out:p) (vars:p) (deq:deq list) =
+  "node " ^ id.name ^ "(" ^ (p_to_str p_in) ^ ")\n  returns "
+  ^ (p_to_str p_out) ^ "\nvars\n"
+  ^ (join ",\n" (List.map (fun x -> "  " ^ (vd_to_str x)) vars)) ^ "\nlet\n"
   ^ (join ";\n" (List.map (fun x -> "  " ^ x) (List.map deq_to_str deq)))
   ^ "\ntel"
 
@@ -171,33 +183,33 @@ let optdef_to_str = function
   | Interleave n -> sprintf "_interleave(%d)" n
   | No_opt    -> "_no_opt"
       
-let def_to_str def =
+let def_to_str (def:def) =
   let (id,p_in,p_out) = (def.id,def.p_in,def.p_out) in
   (join " " (List.map optdef_to_str def.opt)) ^ " " ^ 
     (match def.node with
      | Single(vars,deq) ->
         single_node_to_str id p_in p_out vars deq
      | Perm l ->
-        "perm " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in))
-        ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n{\n  "
+        "perm " ^ id.name ^ "(" ^ (p_to_str p_in)
+        ^ ")\n  returns " ^ (p_to_str p_out) ^ "\n{\n  "
         ^ (join ", " (List.map string_of_int l)) ^ "\n}\n"
      | Table l ->
-        "table " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in))
-        ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n{\n  "
+        "table " ^ id.name ^ "(" ^ (p_to_str p_in)
+        ^ ")\n  returns " ^ (p_to_str p_out) ^ "\n{\n  "
         ^ (join ", " (List.map string_of_int l)) ^ "\n}\n"
                                                      
      | Multiple l ->
         match List.nth l 0 with
         | Single _ ->
-           "node " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in))
-           ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[\n"
+           "node " ^ id.name ^ "(" ^ (p_to_str p_in)
+           ^ ")\n  returns " ^ (p_to_str p_out) ^ "\n[\n"
            ^  (join "\n;\n"
                     (List.map
                        (fun x -> match x with
                                  | Single (v,d) -> "vars\n"
                                                    ^ (join ",\n"
                                                            (List.map
-                                                              (fun x -> "  " ^ (p_to_str x)) v))
+                                                              (fun x -> "  " ^ (vd_to_str x)) v))
                                                    ^ "\nlet\n" 
                                                    ^ (join ";\n"
                                                            (List.map deq_to_str d))
@@ -205,8 +217,8 @@ let def_to_str def =
                                  | _ -> assert false) l))
            ^ "\n]\n"
         | Perm _   ->
-           "perm[] " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in))
-           ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[ "
+           "perm[] " ^ id.name ^ "(" ^ (p_to_str p_in)
+           ^ ")\n  returns " ^ (p_to_str p_out) ^ "\n[ "
            ^ (join "\n;\n"
                    (List.map
                       (fun x -> match x with
@@ -216,8 +228,8 @@ let def_to_str def =
                                 | _ -> assert false) l))
            ^ "\n]\n"
         | Table _  ->
-           "table[] " ^ id.name ^ "(" ^ (join "," (List.map p_to_str p_in))
-           ^ ")\n  returns " ^ (join "," (List.map p_to_str p_out)) ^ "\n[ "
+           "table[] " ^ id.name ^ "(" ^ (p_to_str p_in)
+           ^ ")\n  returns " ^ (p_to_str p_out) ^ "\n[ "
            ^ (join "\n;\n"
                    (List.map
                       (fun x -> match x with
@@ -227,7 +239,7 @@ let def_to_str def =
                                 | _ -> assert false) l))
            ^ "\n]\n"
         | _ -> assert false)
-let def_to_str_l = lift def_to_str
+let def_to_str_l = lift_comma def_to_str
                                                        
 let prog_to_str (prog:prog) : string=
   join "\n\n" (List.map def_to_str prog.nodes)

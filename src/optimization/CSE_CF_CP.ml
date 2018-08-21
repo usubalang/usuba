@@ -175,7 +175,7 @@ let rec opt_deqs env_var (deqs:deq list) (out:p) : deq list =
   let env_expr : (expr,expr) Hashtbl.t = make_env () in
   (* The return values, that shouldn't be optimized out *)
   let ret_env : (var,bool) Hashtbl.t = make_env () in
-  List.iter (fun ((id,_),_) -> env_add ret_env (Var id) true) out;
+  List.iter (fun vd -> env_add ret_env (Var vd.vid) true) out;
   (* Array assignments that have been optimized out and use of those arrays 
      must therefore be expanded *)
   let opt_out_vars : (var,bool) Hashtbl.t = make_env () in

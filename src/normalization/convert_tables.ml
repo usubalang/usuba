@@ -19,7 +19,7 @@ open Utils
 open Printf
        
 let rewrite_p (p:p) : var list =
-  List.map (fun ((id,_),_) -> Var id) (Expand_array.expand_p p)
+  List.map (fun vd -> Var vd.vid) (Expand_array.expand_p p)
 
 let get_bits (l:int list) (i:int) : int list =
   List.rev @@ List.map (fun x -> x lsr i land 1) l
@@ -47,7 +47,7 @@ let rewrite_table (id:ident) (p_in:p) (p_out:p)
     (* initialise rank 0 *)
     for j = 1 to List.length l do
       let var = tmp_var i 0 (j-1) in
-      vars := ((var,Bool),Defclock) :: !vars;
+      vars := (simple_var_d var) :: !vars;
       body := Norec ([Var var],Const bits.(j-1)) :: !body
     done;
 
@@ -58,9 +58,9 @@ let rewrite_table (id:ident) (p_in:p) (p_out:p)
         let var_l  = tmp_var i j (k-1) in
         let var_r1 = tmp_var i (j-1) ((k-1)*2) in
         let var_r2 = tmp_var i (j-1) ((k-1)*2+1) in
-        vars := ((var_l,Bool),Defclock) ::
-                  ((var_r1,Bool),Defclock) ::
-                    ((var_r2,Bool),Defclock) :: !vars;
+        vars := (simple_var_d var_l) ::
+                  (simple_var_d var_r1) ::
+                    (simple_var_d var_r2) :: !vars;
         body := Norec ([Var var_l],
                        mux (ExpVar exp_p_in.(size_in-j)) var_r1 var_r2)
                 :: !body
@@ -69,7 +69,7 @@ let rewrite_table (id:ident) (p_in:p) (p_out:p)
     
     (* set output *)
     let var = tmp_var i size_in 0 in
-    vars := ((var,Bool),Defclock) :: !vars;
+    vars := (simple_var_d var) :: !vars;
     body := Norec ([exp_p_out.(i-1)], ExpVar(Var var)) :: !body
       
   done;

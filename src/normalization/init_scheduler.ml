@@ -5,7 +5,7 @@ open Utils
 
 let init_ready (p:p) =
   let env = Hashtbl.create 100 in
-  List.iter (fun ((id,_),_) -> Hashtbl.add env (Var id) true) p;
+  List.iter (fun vd -> Hashtbl.add env (Var vd.vid) true) p;
   env
 
 let schedule_deqs (def:def) (deqs:deq list) : deq list =

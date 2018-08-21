@@ -146,10 +146,10 @@ let params_to_arr (params: p) (marker:string) : string list =
     | Int(_,n) -> (l @ [sprintf "[%d]" n])
     | Array(t,Const_e n) -> typ_to_arr t ((sprintf "[%d]" n) :: l)
     | _ -> raise (Not_implemented "Invalid input") in
-  List.map (fun ((id,typ),_) -> match typ with
-                                | Bool | Int(_,1) -> sprintf "%s%s" marker id.name
-                                | _ -> sprintf "%s%s" id.name
-                                               (join "" (typ_to_arr typ []))) params
+  List.map (fun vd -> match vd.vtyp with
+                      | Bool | Int(_,1) -> sprintf "%s%s" marker vd.vid.name
+                      | _ -> sprintf "%s%s" vd.vid.name
+                                     (join "" (typ_to_arr vd.vtyp []))) params
 
 let rec gen_list_typ (x:string) (typ:typ) : string list =
   match typ with
@@ -163,9 +163,9 @@ let rec gen_list_typ (x:string) (typ:typ) : string list =
            
 let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
   let inputs = make_env () in
-  let aux (marker:string) ((id,typ),_) =
-    let id = id.name in
-    match typ with
+  let aux (marker:string) vd =
+    let id = vd.vid.name in
+    match vd.vtyp with
     (* Hard-coding the case ukxn[m] for now *)
     | Array(Int(_,n),Const_e m) ->
        List.iteri
@@ -190,10 +190,10 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
                               (fun x y ->
                                Hashtbl.add inputs x
                                            (Printf.sprintf "%s[%d]" (rename id) y))
-                              (gen_list_typ id typ)
+                              (gen_list_typ id vd.vtyp)
                               (gen_list_0_int (size * n))
     | _ -> Printf.printf "%s => %s:%s\n" def.id.name id
-                         (Usuba_print.typ_to_str typ);
+                         (Usuba_print.typ_to_str vd.vtyp);
            raise (Not_implemented "Arrays as input") in
   
   List.iter (aux "") def.p_in;
@@ -202,9 +202,9 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
     
 let outputs_to_ptr (def:def) : (string, string) Hashtbl.t =
   let outputs = make_env () in
-  List.iter (fun ((id,typ),_) -> 
-             let id = id.name in
-             match typ with
+  List.iter (fun vd -> 
+             let id = vd.vid.name in
+             match vd.vtyp with
              | Bool | Int(_,1) -> env_add outputs id ("*"^(rename id))
              | _ -> ()) def.p_out;
   outputs    
@@ -250,16 +250,18 @@ let single_to_c (def:def) (array:bool) (vars:p)
   (join "," (if array then
                List.map (fun x -> "DATATYPE " ^ (rename x)) (params_to_arr def.p_in "")
              else
-               List.map (fun ((id,typ),_) -> "DATATYPE " ^ (var_decl_to_c id typ)) def.p_in))
+               List.map (fun vd -> "DATATYPE " ^ (var_decl_to_c vd.vid vd.vtyp)) def.p_in))
   (join "," (if array then
                List.map (fun x -> "DATATYPE " ^  (rename x)) (params_to_arr def.p_out "*")
              else
-               List.map (fun ((id,typ),_) -> (match typ with
-                                              | Bool | Int(_,1) -> "DATATYPE* "
-                                              | _ -> "DATATYPE ") ^ (var_decl_to_c id typ)) def.p_out))
+               List.map (fun vd -> (match vd.vtyp with
+                                    | Bool | Int(_,1) -> "DATATYPE* "
+                                    | _ -> "DATATYPE ") ^
+                                     (var_decl_to_c vd.vid vd.vtyp)) def.p_out))
 
   (* declaring variabes *)
-  (join "" (List.map (fun ((id,typ),_) -> sprintf "  DATATYPE %s;\n" (var_decl_to_c id typ)) vars))
+  (join "" (List.map (fun vd -> sprintf "  DATATYPE %s;\n"
+                                        (var_decl_to_c vd.vid vd.vtyp)) vars))
 
   (* body *)
   (deqs_to_c (if array then inputs_to_arr def else outputs_to_ptr def)

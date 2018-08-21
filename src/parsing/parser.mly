@@ -39,6 +39,7 @@
 %token TOK_NOUNROLL
 %token TOK_INTERLEAVE
 %token TOK_NOOPT
+%token TOK_CONST
        
 %token TOK_LPAREN
 %token TOK_RPAREN
@@ -195,9 +196,16 @@ deqs:
   | d=norec_deq TOK_SEMICOLON ds=deqs { d :: ds }
   | d=deq_forall { [ d ] }
   | d=norec_deq  { [ d ] }
-                                      
+
+opt_var_d:
+  TOK_CONST { Pconst }
+
+var_d:
+  x=TOK_id TOK_COLON attr=list(opt_var_d) t=typ ck=pclock
+  { { vid = x; vtyp=t; vck=ck; vopts=attr } }
+
 p:
-  | l=separated_list(TOK_COMMA, x=TOK_id TOK_COLON t=typ ck=pclock { ((x, t), ck) }) { l }
+  | l=separated_list(TOK_COMMA, var_d) { l }
 
 typ:
   | t=TOK_type sizes=list(delimited(TOK_LBRACKET,arith_exp,TOK_RBRACKET))

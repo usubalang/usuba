@@ -54,9 +54,9 @@ module Dup3 = struct
               | Rec(i,ei,ef,l,opts) -> [ Rec(i,ei,ef,interleave_deqs l,opts) ]) deqs
 
   let dup_p (p:p) : p =
-    flat_map (fun ((id,typ),ck) -> [ (id,typ), ck;
-                                     (dup_id id,typ),ck;
-                                     (dup3_id id,typ),ck]) p
+    flat_map (fun vd -> [ vd;
+                          { vd with vid = dup_id vd.vid };
+                          { vd with vid = dup3_id vd.vid } ]) p
              
   let interleave_def (def:def) : def =
     match def.node with
@@ -108,8 +108,7 @@ module Dup2 = struct
               | Rec(i,ei,ef,l,opts) -> [ Rec(i,ei,ef,interleave_deqs l,opts) ]) deqs
 
   let dup_p (p:p) : p =
-    flat_map (fun ((id,typ),ck) -> [ (id,typ), ck;
-                                     (dup_id id,typ),ck ]) p
+    flat_map (fun vd -> [ vd; { vd with vid = dup_id vd.vid } ] ) p
              
   let interleave_def (def:def) : def =
     match def.node with
@@ -173,8 +172,7 @@ module Dup2_nofunc = struct
               | Rec(i,ei,ef,l,opts) -> [ Rec(i,ei,ef,interleave_deqs l,opts) ]) deqs
 
   let dup_p (p:p) : p =
-    flat_map (fun ((id,typ),ck) -> [ (id,typ), ck;
-                                     (make_2nd_id id,typ),ck ]) p
+    flat_map (fun vd -> [ vd; { vd with vid = make_2nd_id vd.vid } ]) p
              
   let interleave_def (def:def) : def =
     match def.node with
@@ -270,8 +268,7 @@ module Dup2_nofunc_param = struct
                                         Some (Rec(i,ei,ef,interleave_deqs g l,opts)))) deqs
 
   let dup_p (p:p) : p =
-    flat_map (fun ((id,typ),ck) -> [ (id,typ), ck;
-                                     (make_2nd_id id,typ),ck ]) p
+    flat_map (fun vd -> [ vd; { vd with vid = make_2nd_id vd.vid } ]) p
              
   let interleave_def (g:int) (def:def) : def =
     match def.node with

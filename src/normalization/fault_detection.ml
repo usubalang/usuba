@@ -47,7 +47,7 @@ let rec fd_deqs (deqs:deq list) : deq list =
       | Rec(i,ei,ef,dl,opts) -> [ Rec(i,ei,ef,fd_deqs dl,opts) ] ) deqs
   
 let dup_p (p:p) : p =
-  flat_map (fun ((id,typ),ck) -> [((id,typ),ck); ((rename_for_fd id,typ),ck)]) p
+  flat_map (fun vd -> [vd; { vd with vid = rename_for_fd vd.vid }]) p
    
 let fd_def (def:def) : def =
   match def.node with

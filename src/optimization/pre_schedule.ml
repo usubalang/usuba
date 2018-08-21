@@ -117,7 +117,7 @@ let schedule_deqs (deqs:deq list) (def:def): deq list =
   let sched_vars = Hashtbl.create 500 in
   let schedule = ref [] in
 
-  List.iter (fun ((id,_),_) -> Hashtbl.add sched_vars (Var id) true) def.p_in;
+  List.iter (fun vd -> Hashtbl.add sched_vars (Var vd.vid) true) def.p_in;
   
   List.iter (function
               | Norec(l,e) -> schedule_asgn ready is_sched sched_vars schedule deps_down defs l e

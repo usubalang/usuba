@@ -68,10 +68,10 @@ let rec rename_deq deqs =
                | Norec(pat,expr) -> Norec(rename_pat pat,rename_expr expr)
                | Rec(id,ei,ef,d,opts) -> Rec(id,ei,ef,rename_deq d,opts)) deqs
              
-let rec rename_p p =
-  List.map (fun ((id,typ),ck) -> match typ with
-                                 | Nat -> ((id,typ),ck)
-                                 | _ -> ((fresh_suffix id "'",typ),ck)) p
+let rec rename_p (p:p) =
+  List.map (fun vd -> match vd.vtyp with
+                      | Nat -> vd
+                      | _ -> { vd with vid = fresh_suffix vd.vid "'" } ) p
                                           
 let rename_def (def:def) : def =
   { id    = fresh_suffix def.id "'";

@@ -8,15 +8,8 @@ let no_arr = ref false
 (* Add a function (name,p_in,p_out) to env_fun *)
 let env_add_fun (name: ident) (p_in: p) (p_out: p)
                 (env_fun: (int list * int) env) : unit =
-  let rec get_param_in_size = function
-    | [] -> []
-    | ((_,typ),_)::tl -> (typ_size typ) :: (get_param_in_size tl)
-  in
-  let rec get_param_out_size = function
-    | [] -> 0
-    | ((_,typ),_)::tl -> (typ_size typ) + (get_param_out_size tl)
-  in
-  env_add env_fun name (get_param_in_size p_in,get_param_out_size p_out)
+  env_add env_fun name (List.map (fun vd -> typ_size vd.vtyp) p_in,
+                        List.fold_left (fun tot vd -> tot + (typ_size vd.vtyp)) 0 p_out)
 
           
 let make_env () = Hashtbl.create 100
@@ -49,7 +42,7 @@ let rec expand_intn_expr (id: ident) (n: int option) : expr =
   match n with
   | Some n -> Tuple(List.map (fun x -> ExpVar(Var x)) (expand_intn id n))
   | None -> ExpVar(Var id)
-
+                  
 let new_vars : p ref = ref []
                    
 let gen_tmp =
@@ -112,7 +105,8 @@ let rec expand_expr env_var (e:expr) : expr list =
   | _ -> assert false
            
 (* ************************************************************************** *)
-                
+
+
 let rec remove_call env_var env_fun e : deq list * expr =
   let (deq,e') = norm_expr env_var env_fun e in
 
@@ -125,13 +119,13 @@ let rec remove_call env_var env_fun e : deq list * expr =
                else [Var new_var] in
     if !no_arr then
       new_vars := !new_vars @ (List.map (function
-                                          | Var id -> ((id,Bool),Defclock)
+                                          | Var id -> simple_var_d id
                                           | _ -> assert false) tmp)
     else
       if size > 1 then
-        new_vars := !new_vars @ [ ((new_var,Array(Bool,Const_e size)),Defclock) ]
+        new_vars := !new_vars @ [ make_var_d new_var (Array(Bool,Const_e size)) Defclock [] ]
       else
-        new_vars := !new_vars @ [ ((new_var,Bool),Defclock) ];
+        new_vars := !new_vars @ [ make_var_d new_var Bool Defclock [] ];
     let left = tmp in
 
     deq @ [Norec(left,e')], Tuple (List.map (fun x -> ExpVar x) tmp)
@@ -153,13 +147,15 @@ and remove_calls env_var env_fun l : deq list * expr list =
                            else [Var new_var] in
                 if !no_arr then
                   new_vars := !new_vars @ (List.map (function
-                                                      | Var id -> ((id,Bool),Defclock)
+                                                      | Var id -> simple_var_d id
                                                       | _ -> assert false) tmp)
                 else
                   if size > 1 then
-                    new_vars := !new_vars @ [ ((new_var,Array(Bool,Const_e size)),Defclock) ]
+                    new_vars := !new_vars @
+                                  [ make_var_d new_var (Array(Bool,Const_e size)) Defclock [] ]
                   else
-                    new_vars := !new_vars @ [ ((new_var,Bool),Defclock) ];
+                    new_vars := !new_vars @
+                                  [ make_var_d new_var Bool Defclock [] ];
                 let left = tmp in
                 pre_deqs := !pre_deqs @ [Norec(left,e')];
                 

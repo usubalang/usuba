@@ -115,8 +115,8 @@ module Random_scheduler = struct
 
     (* Setting successors of p_in to ready *)
     List.iter
-      (fun ((id,_),_) ->
-       let v = Var id in
+      (fun vd ->
+       let v = Var vd.vid in
        match Hashtbl.find_opt imply v with
        | Some l ->
           List.iter
@@ -203,7 +203,7 @@ module Depth_first_sched = struct
     let (using,decls) = build_dep deqs in
     let available     = Hashtbl.create 1000 in
 
-    List.iter (fun ((id,_),_) -> Hashtbl.add available (Var id) true) p_in;
+    List.iter (fun vd -> Hashtbl.add available (Var vd.vid) true) p_in;
 
     let scheduling = ref [] in
     let ready      = ref [] in

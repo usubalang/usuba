@@ -32,9 +32,9 @@ module Clean = struct
       | Rec(_,_,_,d,_) -> List.iter aux d in
     List.iter aux deqs;
     List.sort_uniq (fun a b -> compare a b)
-                   ( List.filter (fun ((id,_),_) -> match Hashtbl.find_opt env id with
-                                                  | Some _ -> true
-                                                  | None -> false) vars)
+                   ( List.filter (fun vd -> match Hashtbl.find_opt env vd.vid with
+                                            | Some _ -> true
+                                            | None -> false) vars)
 
   let clean_def (def:def) : def =
     match def.node with

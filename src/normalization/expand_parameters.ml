@@ -68,42 +68,41 @@ let expand_in_node env_fun (f:def) (id:ident) (ck:clock) (size:int) (old_typ:typ
   let new_p = List.map
                 (fun i -> let id' = fresh_suffix id (sprintf "%d'" i) in
                           env_add env_var (Index(Var id,Const_e i)) [ Var id' ];
-                          ((id',new_typ),ck))
+                          make_var_d id' new_typ ck [])
                 (gen_list_0_int size) in
   let vars,body = get_vars_body f.node in
   let body = propagate_deqs env_var body in
   let new_node =
     if in_out then
-      { f with p_in = replace f.p_in ((id,old_typ),ck) new_p;
+      { f with p_in = replace f.p_in (make_var_d id old_typ ck []) new_p;
                node = Single(vars,body); }
     else
-      { f with p_out = replace f.p_out ((id,old_typ),ck) new_p;
+      { f with p_out = replace f.p_out (make_var_d id old_typ ck []) new_p;
                node = Single(vars,body); } in
   env_add env_fun new_node.id new_node
 
 
-let expand_p env_fun (f:def) ((id,typ),ck) =  
-  match typ with
+let expand_p env_fun (f:def) (vd:var_d) =  
+  match vd.vtyp with
   | Bool -> assert false
   | Int(_,1) -> assert false
   | Int(n,m) ->
-     expand_in_node env_fun f id ck m typ (Int(n,1))
+     expand_in_node env_fun f vd.vid vd.vck m vd.vtyp (Int(n,1))
   | Array(typ',ae) ->
-     expand_in_node env_fun f id ck (eval_arith_ne ae) typ typ'
+     expand_in_node env_fun f vd.vid vd.vck (eval_arith_ne ae) vd.vtyp typ'
   | _ -> assert false
-     
-                                              
+                                                   
 
 let rec match_args env_fun env_var (f:def) (p:p) (el:expr list) :
-          (((ident * typ) * clock) * expr) list =
+          (var_d * expr) list =
   match p, el with
   | [], [] -> []
-  | ((id,typ),ck) :: tl_p, e :: tl_e ->
+  | vd :: tl_p, e :: tl_e ->
      begin
-       match compare (typ_size typ) (get_expr_size env_var e) with
+       match compare (typ_size vd.vtyp) (get_expr_size env_var e) with
        | 0 -> (List.hd p, e)
               :: (match_args env_fun env_var f tl_p tl_e)
-       | 1 -> expand_p env_fun f ((id,typ),ck) true;
+       | 1 -> expand_p env_fun f vd true;
               stable := false;
               raise Updated
        | -1 -> let e_start = expand_expr env_var e in
@@ -114,14 +113,14 @@ let rec match_args env_fun env_var (f:def) (p:p) (el:expr list) :
   | _ -> assert false
 
 let rec match_ret env_fun env_var (f:def) (p:p) (vars:var list) :
-          (((ident * typ) * clock) * var) list =
+          (var_d * var) list =
   match p,vars with
   | [], [] -> []
-  | (((id,typ),ck) :: tl_p), (v :: tl_v) ->
+  | (vd :: tl_p), (v :: tl_v) ->
      begin
-       match compare (typ_size typ) (get_var_size env_var v) with
+       match compare (typ_size vd.vtyp) (get_var_size env_var v) with
        | 0 -> (List.hd p, v) :: (match_ret env_fun env_var f tl_p tl_v)
-       | 1 -> expand_p env_fun f ((id,typ),ck) false;
+       | 1 -> expand_p env_fun f vd false;
               stable := false;
               raise Updated
        | -1 -> let vars_start = expand_var_partial env_var v in

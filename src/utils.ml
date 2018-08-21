@@ -127,6 +127,13 @@ let gen_list_0_int (n: int) : int list =
     else aux (n-1) ((n-1) :: acc)
   in aux n []
 
+let make_var_d (id:ident) (typ:typ) (ck:clock) (opts:var_d_opt list) =
+  { vid   = id;
+    vtyp  = typ;
+    vck   = ck;
+    vopts = opts }
+
+let simple_var_d (id:ident) = make_var_d id Bool Defclock []
          
 let env_fetch env v =
   try Hashtbl.find env v
@@ -137,8 +144,8 @@ let env_fetch env v =
 let build_env_var (p_in:p) (p_out:p) (vars:p) : (ident, typ) Hashtbl.t =
   let env = make_env () in
 
-  let add_to_env ((id,typ),_) =
-    env_add env id typ in
+  let add_to_env (vd:var_d) : unit =
+    env_add env vd.vid vd.vtyp in
   
   List.iter add_to_env p_in;
   List.iter add_to_env p_out;
@@ -305,4 +312,4 @@ let default_bits_per_reg (arch:arch) : int =
 
 
 let p_size (p:p) : int =
-  List.fold_left (fun sum ((_,typ),_) -> sum + (typ_size typ)) 0 p
+  List.fold_left (fun sum vd -> sum + (typ_size vd.vtyp)) 0 p

@@ -64,8 +64,16 @@ Inductive deq :=
   | Norec (vs: list var)(e: expr)
   | Rec (x: ident)(ae1 ae2: arith_expr)(dl: list deq) (opts:list stmt_opt).
 
-(* XXX: define a record for [ident * typ * clock] *)
-Definition p := list (ident * typ * clock).
+Inductive var_d_opt := Pconst | P_tmp.
+
+Record var_d := {
+  vid   : ident;
+  vtyp  : typ;
+  vck   : clock;
+  vopts : list var_d_opt;
+}.
+
+Definition p := list var_d.
 
 Inductive def_i :=
   | Single        (n: p)(ds: list deq) (* regular node *)
@@ -130,6 +138,6 @@ Record config := {
 
 Set Extraction KeepSingleton.
 Extraction "usuba_AST.ml" 
-           config prog def def_opt def_i p deq
-           expr var typ arith_expr shift_op
+           config prog def def_opt def_i p var_d var_d_opt
+           deq expr var typ arith_expr shift_op
            arith_op log_op clock ident arch.

@@ -35,7 +35,7 @@ let rec trip_typ (t:typ) : typ =
   | Nat          -> Nat
   
 let trip_p (p:p) : p =
-  List.map (fun ((id,typ),ck) -> ((id,trip_typ typ),ck)) p
+  List.map (fun vd -> { vd with vtyp = trip_typ vd.vtyp }) p
    
 let secure_def (def:def) : def =
   match def.node with
