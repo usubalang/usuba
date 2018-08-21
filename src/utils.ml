@@ -225,12 +225,6 @@ type 'a env = (string, 'a) Hashtbl.t
 let env_add (env: 'a env) (id: ident) (value: 'a) : unit =
   Hashtbl.add env id.name value
 
-let rec get_typ (id: ident) (vars: p) =
-  match vars with
-  | [] -> print_endline("Type not found for " ^ id.name);Bool
-  | ((id',typ),_) :: tl -> if id = id' then typ else get_typ id tl
-
-
 (* converts an uint_n to n bools (with types and clock) *)
 let expand_intn_typed (id: ident) (n: int) (ck: clock) =
   let rec aux i =
