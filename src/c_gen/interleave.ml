@@ -207,34 +207,53 @@ module Dup2_nofunc_param = struct
   let map_n (n:int) (f:'a -> 'b) (l:'a list) : 'b list =
     map_n n f l [] []
    *)
+
+  let build_complete_env_var (p_in:p) (p_out:p) (vars:p) : (var, var_d) Hashtbl.t =
+    let env = Hashtbl.create 100 in
+
+    let add_to_env (vd:var_d) : unit =
+      Hashtbl.add env (Var vd.vid) vd in
+    
+    List.iter add_to_env p_in;
+    List.iter add_to_env p_out;
+    List.iter add_to_env vars;
+
+    env
   
   let make_2nd_id id = { id with name = id.name ^ "__2" }
                     
-  let rec make_2nd_var (v:var) : var =
+  let rec make_2nd_var env_var (v:var) : var =
     match v with
-    | Var id -> Var (make_2nd_id id)
-    | Index(v,i) -> Index(make_2nd_var v,i)
+    | Var id -> ( match List.mem Pconst (Hashtbl.find env_var (get_var_base v)).vopts with
+                  | false -> Var (make_2nd_id id)
+                  | true -> v )
+    | Index(v,i) -> Index(make_2nd_var env_var v,i)
     | _ -> assert false
                   
-  let rec make_2nd_expr (e:expr) : expr =
+  let rec make_2nd_expr env_var (e:expr) : expr =
     match e with
     | Const _ -> e
-    | ExpVar v -> ExpVar(make_2nd_var v)
-    | Tuple l -> Tuple(List.map make_2nd_expr l)
-    | Shift(op,e,ae) -> Shift(op,make_2nd_expr e,ae)
-    | Log(op,x,y)    -> Log(op,make_2nd_expr x,make_2nd_expr y)
-    | Not e    -> Not (make_2nd_expr e)
-    | Shuffle(v,p)   -> Shuffle(make_2nd_var v,p)
-    | Arith(op,x,y)  -> Arith(op,make_2nd_expr x,make_2nd_expr y)
-    | Fun(f,l)       -> Fun(f,List.map make_2nd_expr l)
+    | ExpVar v -> ExpVar(make_2nd_var env_var v)
+    | Tuple l -> Tuple(List.map (make_2nd_expr env_var) l)
+    | Shift(op,e,ae) -> Shift(op,make_2nd_expr env_var e,ae)
+    | Log(op,x,y)    -> Log(op,make_2nd_expr env_var x,make_2nd_expr env_var y)
+    | Not e    -> Not (make_2nd_expr env_var e)
+    | Shuffle(v,p)   -> Shuffle(make_2nd_var env_var v,p)
+    | Arith(op,x,y)  -> Arith(op,make_2nd_expr env_var x,make_2nd_expr env_var y)
+    | Fun(f,l)       -> Fun(f,List.map (make_2nd_expr env_var) l)
     | _ -> Printf.printf "Not valid: %s\n" (Usuba_print.expr_to_str e);
            assert false
 
-  let rec dup_var (v:var) : var list =
-    [ v ; make_2nd_var v ]
+  let rec dup_var env_var (v:var) : var list =
+    match List.mem Pconst (Hashtbl.find env_var (get_var_base v)).vopts with
+    | false -> [ v ; make_2nd_var env_var v ]
+    | true -> [ v ]
 
-  let rec dup_expr (e:expr) : expr list =
-    [ e ; make_2nd_expr e ]
+  (* TODO: this feels very wrong *)
+  let rec dup_expr env_var (e:expr) : expr list =
+    match e with
+    | ExpVar v -> List.map (fun v -> ExpVar v) (dup_var env_var v)
+    | _ -> [ e ; make_2nd_expr env_var e ]
 
   (*let rec map_n (n:int) (f:'a -> ('b option * 'b option)) (l:'a list)
                 (acc:'b list) (res:'b list) : 'b list =*)
@@ -253,29 +272,37 @@ module Dup2_nofunc_param = struct
   (* Warning: shadowing (and using) map_n above *)
   let map_n (n:int) (f:'a -> ('b option * 'b option)) (l:'a list) : 'b list =
     map_n n f l [] []
-  let rec interleave_deqs (g:int) (deqs:deq list) : deq list =
+  let rec interleave_deqs env_var (g:int) (deqs:deq list) : deq list =
     map_n g (fun d ->
              match d with
              | Norec(lhs,e) ->
                 begin match e with
                       | Fun(f,l) -> ( None,
-                                      Some (Norec(flat_map dup_var lhs,
-                                                  Fun(f,flat_map dup_expr l))))
+                                      Some (Norec(flat_map (dup_var env_var) lhs,
+                                                  Fun(f,flat_map (dup_expr env_var) l))))
                       | _ -> ( Some d,
-                               Some(Norec(List.map make_2nd_var lhs, make_2nd_expr e)))
+                               Some(Norec(List.map (make_2nd_var env_var) lhs,
+                                          make_2nd_expr env_var e)) )
                 end
-             | Rec(i,ei,ef,l,opts) -> ( None,
-                                        Some (Rec(i,ei,ef,interleave_deqs g l,opts)))) deqs
+             | Rec(i,ei,ef,l,opts) ->
+                ( None,
+                  Some (Rec(i,ei,ef,interleave_deqs env_var g l,opts)))) deqs
 
   let dup_p (p:p) : p =
-    flat_map (fun vd -> [ vd; { vd with vid = make_2nd_id vd.vid } ]) p
+    flat_map (fun vd -> match List.mem Pconst vd.vopts with
+                        | true  -> [ vd ]
+                        | false -> [ vd; { vd with vid = make_2nd_id vd.vid } ]) p
              
   let interleave_def (g:int) (def:def) : def =
     match def.node with
     | Single(vars,body) ->
-       { def with p_in  = dup_p def.p_in;
-                  p_out = dup_p def.p_out;
-                  node  = Single(dup_p vars,interleave_deqs g body) }     
+       let p_in  = dup_p def.p_in in
+       let p_out = dup_p def.p_out in
+       let vars  = dup_p vars in
+       let env_var = build_complete_env_var p_in p_out vars in
+       { def with p_in  = p_in;
+                  p_out = p_out;
+                  node  = Single(vars,interleave_deqs env_var g body) }     
     | _ -> assert false 
                   
   let interleave (g:int) (prog:prog) (conf:config) : prog =
