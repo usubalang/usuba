@@ -75,7 +75,20 @@ let rewrite_table (id:ident) (p_in:p) (p_out:p)
   done;
   { id = id; p_in = p_in; p_out = p_out; opt = opt;
     node = Single(!vars,List.rev !body) }
-
+    
+(* A bit hacky: should convert types as needed.
+   (for instance: bool[4] to u16[4] (rectangle)) *)
+let fix_p (old_p:p) (new_p:p) : p =
+  let t = get_base_type (List.hd old_p).vtyp in
+  List.map (fun x -> { x with vtyp =
+                                match x.vtyp with
+                                | Array(_,n) -> Array(t,n)
+                                | Int(_,m) -> ( match t with
+                                                | Bool -> Int(1,m)
+                                                | Int(n,1) -> Int(n,m)
+                                                | _ -> assert false)
+                                | _ -> t }) new_p
+    
 let rewrite_single_table (id:ident) (p_in:p) (p_out:p)
                          (opt:def_opt list) (l:int list)
                          (conf:config) : def =
@@ -85,6 +98,8 @@ let rewrite_single_table (id:ident) (p_in:p) (p_out:p)
       let file_name = "data/sboxes/" ^ found ^ ".ua" in
       let new_node = List.nth (Parse_file.parse_file file_name).nodes 0 in
       { new_node with id = id;
+                      p_in = fix_p p_in new_node.p_in;
+                      p_out = fix_p p_out new_node.p_out;                      
                       opt = new_node.opt @ opt }
     with Not_found -> rewrite_table id p_in p_out opt l
   else rewrite_table id p_in p_out opt l

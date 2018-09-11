@@ -34,7 +34,7 @@ module Simplify_tuples = struct
          node  = Single(p_var, simpl_deqs body) }
     | _ -> def
                      
-  let simplify_tuples (p: prog) (conf:config) : prog =
+  let simplify_tuples (p: prog) : prog =
     { nodes = List.map simpl_tuples_def p.nodes }
 end
 
@@ -59,6 +59,53 @@ module Split_tuples = struct
        { def with node  = Single(p_var, split_tuples_deq env body) }
     | _ -> def
                  
-  let split_tuples (p: prog) (conf:config) : prog =
+  let split_tuples (p: prog) : prog =
     { nodes = List.map split_tuples_def p.nodes }
 end
+
+
+(* Flatten tuples == removes nested tuples
+    ((a,b),c) ==> (a,b,c) *)
+module Flatten_tuples = struct
+
+  let rec flatten_tuples_expr (e:expr) : expr =
+    let rec rec_call_list (l:expr list) : expr list =
+      flat_map (fun x -> match flatten_tuples_expr x with
+                         | Tuple l' -> l'
+                         | x -> [ x ]) l in
+    match e with
+    | Const _ | ExpVar _ | Shuffle _ -> e
+    | Tuple l -> Tuple (rec_call_list l)
+    | Not e' -> Not (flatten_tuples_expr e')
+    | Shift(op,e',ae) -> Shift(op,flatten_tuples_expr e',ae)
+    | Log(op,x,y) -> Log(op,flatten_tuples_expr x,flatten_tuples_expr y)
+    | Arith(op,x,y) -> Arith(op,flatten_tuples_expr x,flatten_tuples_expr y)
+    | Fun(f,l) -> Fun(f,rec_call_list l)
+    | Fun_v(f,ae,l) -> Fun_v(f,ae,rec_call_list l)
+    | _ -> assert false
+  
+  let rec flatten_tuples_deq (body:deq list) : deq list =
+    List.map (function
+               | Norec(p,e) -> Norec(p,flatten_tuples_expr e)
+               | Rec(i,ei,ef,dl,opts) -> Rec(i,ei,ef,flatten_tuples_deq dl,opts)) body
+  
+  let flatten_tuples_def (def:def) : def =
+    match def.node with
+    | Single(p_var,body) ->
+       { def with node = Single(p_var,flatten_tuples_deq body) }
+    | _ -> def
+  
+  let flatten_tuples (p:prog) : prog =
+    { nodes = List.map flatten_tuples_def p.nodes }
+end
+
+let norm_tuples (prog:prog) (conf:config) : prog =
+  (* Dunno if I should loop for a fixpoint or not... 
+     For now, this should be sufficient. *)
+  prog |>
+    Simplify_tuples.simplify_tuples |>
+    Split_tuples.split_tuples |>
+    Flatten_tuples.flatten_tuples |>
+    Simplify_tuples.simplify_tuples |>
+    Split_tuples.split_tuples
+  

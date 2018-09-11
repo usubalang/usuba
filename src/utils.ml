@@ -140,6 +140,13 @@ let env_fetch env v =
   with Not_found -> raise (Error (__LOC__ ^ ":Not found: " ^ v.name))
 
 
+(* Constructs a map { fun : def } *)
+let build_env_fun (nodes:def list) : (ident,def) Hashtbl.t =
+  let env_fun = Hashtbl.create 20 in
+  List.iter (fun d -> Hashtbl.add env_fun d.id d) nodes;
+  env_fun
+  
+                          
 (* Constructs a map { variables : types } *)
 let build_env_var (p_in:p) (p_out:p) (vars:p) : (ident, typ) Hashtbl.t =
   let env = make_env () in
@@ -159,6 +166,15 @@ let rec typ_size (t:typ) : int =
   | Int(_,m) -> m
   | Array(t',ae) -> (typ_size t') * (eval_arith_ne ae)
   | Nat -> 1
+             
+let rec reg_size (t:typ) : int =
+  match t with
+  | Bool -> 1
+  | Int(n,1) -> n
+  | _ -> Printf.fprintf stderr "Non linear type `%s', can't get reg_size.\n"
+                        (Usuba_print.typ_to_str t);
+         assert false
+                        
                         
 let elem_size (t:typ) : int =
   match t with
@@ -191,6 +207,43 @@ let rec get_expr_size env (e:expr) : int =
   | Fun _ -> Printf.fprintf stderr "Not implemented yet, get_expr_size(Fun...).\n";
              assert false
   | _ -> assert false
+              
+
+let get_reg_size env (v:var) : int =
+  reg_size @@ get_var_type env v
+                           
+let rec get_expr_reg_size env (e:expr) : int =
+  match e with
+  | Const n -> Printf.fprintf stderr "Can't infer `Const %d' size.\n" n;
+               assert false
+  | ExpVar v -> get_reg_size env v
+  | Not e -> get_expr_reg_size env e
+  | Shift(_,e,_) -> get_expr_reg_size env e
+  | Log(_,e,_) -> get_expr_reg_size env e
+  | Shuffle(v,_) -> get_reg_size env v
+  | Arith(_,e,_) -> get_expr_reg_size env e
+  | Fun _ -> Printf.fprintf stderr "Not implemented yet, get_reg_size(Fun...).\n";
+             assert false
+  | Tuple l -> Printf.fprintf stderr "Non linear expression Tuple(%s), can't get reg_size.\n"
+                              (Usuba_print.expr_to_str_l l);
+               assert false
+               
+  | _ -> assert false
+
+let rec get_expr_type env_fun env_var (e:expr) : typ list =
+  match e with
+  | Const n -> Printf.fprintf stderr "Can't infer `Const %d' type.\n" n;
+               assert false
+  | ExpVar v -> [ get_var_type env_var v ]
+  | Tuple l -> flat_map (get_expr_type env_fun env_var) l
+  | Not e -> get_expr_type env_fun env_var e
+  | Shift(_,e,_) -> get_expr_type env_fun env_var e
+  | Log(_,e,_) -> get_expr_type env_fun env_var e
+  | Shuffle(v,_) -> [ get_var_type env_var v ]
+  | Arith(_,e,_) -> get_expr_type env_fun env_var e
+  | Fun(f,_) -> let def = Hashtbl.find env_fun f in
+                List.map (fun vd -> vd.vtyp) def.p_out               
+  | _ -> assert false
 
                            
 let rec expand_var env_var ?(env_it=Hashtbl.create 100) ?(partial=false) (v:var) : var list =
@@ -214,7 +267,15 @@ let rec get_var_base (v:var) : var =
   match v with
   | Var _ -> v
   | Index(v,_) | Slice(v,_) | Range(v,_,_) -> get_var_base v
-  
+
+                                                           
+let rec get_base_type (typ:typ) : typ =
+  match typ with
+  | Bool -> Bool
+  | Int(n,_) -> Int(n,1)
+  | Array(t,_) -> get_base_type t
+  | _ -> assert false
+                
 
 let env_fetch (env: ('b, 'a) Hashtbl.t) (id: ident) : 'a option =
   try

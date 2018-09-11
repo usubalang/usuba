@@ -36,7 +36,9 @@ let rec expand_expr env_var (e:expr) : expr list =
   match e with
   | Const _ -> [ e ]
   | ExpVar v -> List.map (fun x -> ExpVar x) (expand_var_partial env_var v)
-  | _ -> assert false
+  | _ -> Printf.fprintf stderr "Invalid expression: %s.\n"
+                        (Usuba_print.expr_to_str e);
+         assert false
               
 let rec propagate_expr env_var (e:expr) : expr =
   match e with

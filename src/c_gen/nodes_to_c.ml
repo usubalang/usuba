@@ -70,24 +70,25 @@ let rec ret_var_to_c (env:(string,string) Hashtbl.t)
 
 
 (* TODO: this 64 and 32 shouldn't be hardcoded *)
-let rec expr_to_c (conf:config) (env:(string,string) Hashtbl.t) (e:expr) : string =
+let rec expr_to_c (conf:config) (env:(string,string) Hashtbl.t)
+                  (env_var:(ident,typ) Hashtbl.t) (e:expr) : string =
   match e with
   | Const n -> ( match n with
                  | 0 -> "SET_ALL_ONE()"
                  | 1 -> "SET_ALL_ZERO()"
                  | n -> sprintf "SET(%d,%d)" n 64 )
   | ExpVar v -> var_to_c env v
-  | Not e -> sprintf "NOT(%s)" (expr_to_c conf env e)
+  | Not e -> sprintf "NOT(%s)" (expr_to_c conf env env_var e)
   | Log(op,x,y) -> sprintf "%s(%s,%s)"
                            (log_op_to_c op)
-                           (expr_to_c conf env x)
-                           (expr_to_c conf env y)
+                           (expr_to_c conf env env_var x)
+                           (expr_to_c conf env env_var y)
   | Arith(op,x,y) -> 
      (*Printf.fprintf stderr "Hardcoded arith op size\n";*)
      sprintf "%s(%s,%s,%d)"
                              (arith_op_to_c_generic op)
-                             (expr_to_c conf env x)
-                             (expr_to_c conf env y)
+                             (expr_to_c conf env env_var x)
+                             (expr_to_c conf env env_var y)
                              32
   | Shuffle(v,l) -> sprintf "PERMUT_%d(%s,%s)"
                                  (List.length l)
@@ -97,11 +98,11 @@ let rec expr_to_c (conf:config) (env:(string,string) Hashtbl.t) (e:expr) : strin
      (*Printf.fprintf stderr "Hardcoded rotation size\n";*)
      sprintf "%s(%s,%s,%d)"
              (shift_op_to_c op)
-             (expr_to_c conf env e)
+             (expr_to_c conf env env_var e)
              (aexpr_to_c ae)
-             32
+             (get_expr_reg_size env_var e)
   | Fun(f,[v]) when f.name = "rand" ->
-     sprintf "%s = rand();" (expr_to_c conf env v)
+     sprintf "%s = rand();" (expr_to_c conf env env_var v)
   | _ -> raise (Error (Printf.sprintf "Wrong expr: %s" (Usuba_print.expr_to_str e)))
 
                
@@ -112,7 +113,7 @@ let fun_call_to_c (conf:config)
                   (p:var list) (f:ident) (args: expr list) : string =
   sprintf "%s%s(%s,%s);"
           tabs
-          (rename f.name) (join "," (List.map (expr_to_c conf env) args))
+          (rename f.name) (join "," (List.map (expr_to_c conf env env_var) args))
           (join "," (List.map (fun v -> ret_var_to_c env env_var v) p))
           
 let rec deqs_to_c (env:(string,string) Hashtbl.t)
@@ -127,7 +128,7 @@ let rec deqs_to_c (env:(string,string) Hashtbl.t)
                sprintf "%s%s = rand();" tabs (var_to_c env v)
             | Norec(p,Fun(f,l)) -> fun_call_to_c conf env env_var ~tabs:tabs p f l
             | Norec([v],e) ->
-               sprintf "%s%s = %s;" tabs (var_to_c env v) (expr_to_c conf env e)
+               sprintf "%s%s = %s;" tabs (var_to_c env v) (expr_to_c conf env env_var e)
             | Rec(i,ei,ef,l,_) ->
                sprintf "%sfor (int %s = %s; %s <= %s; %s++) {\n%s\n%s}"
                        tabs

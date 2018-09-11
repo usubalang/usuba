@@ -248,8 +248,12 @@ let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) : deq list =
                        | Some v' ->
                           Hashtbl.add used v' true;
                           Hashtbl.replace env_replace (get_var_base v) (get_var_base v');
-                          Hashtbl.replace last_used v' (Hashtbl.find last_used v);
-                          v'
+                          (try
+                              Hashtbl.replace last_used v' (Hashtbl.find last_used v)
+                            with Not_found -> Printf.fprintf stderr "Not_found: %s.\n"
+                                                             (Usuba_print.var_to_str v');
+                                              raise Not_found);
+                            v'
                        | None -> v
                    ) lhs, e)
         | Rec(i,ei,ef,dl,opts) -> 
@@ -274,6 +278,6 @@ let share_def (def:def) : def =
 let share_prog (prog:prog) : prog =
   (* { nodes = List.map share_def prog.nodes } *)
   let prog = Linearize_arrays.linearize_arrays prog in
-  { nodes = apply_last prog.nodes share_def }
+  (* { nodes = apply_last prog.nodes share_def } *)
   (* Printf.fprintf stderr "Share_var disabled.\n"; *)
-  (* prog  *)
+  prog

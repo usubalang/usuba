@@ -5,12 +5,9 @@ open Utils
 
 let no_arr = ref false 
        
-(* Add a function (name,p_in,p_out) to env_fun *)
-let env_add_fun (name: ident) (p_in: p) (p_out: p)
-                (env_fun: (int list * int) env) : unit =
-  env_add env_fun name (List.map (fun vd -> typ_size vd.vtyp) p_in,
-                        List.fold_left (fun tot vd -> tot + (typ_size vd.vtyp)) 0 p_out)
-
+          
+let sum_type = List.fold_left (fun tot vd -> tot + (typ_size vd.vtyp)) 0
+          
           
 let make_env () = Hashtbl.create 100
 let env_add env v e = Hashtbl.replace env v e
@@ -23,6 +20,14 @@ let env_fetch env v = try Hashtbl.find env v
           
 (* ************************************************************************** *)
 
+let reduce_same_list l =
+  try
+    List.fold_left (fun acc t -> if acc = t then acc else raise Exit) (List.hd l) l
+  with Exit -> Printf.fprintf stderr "Error: list [%s] isn't type-homogeneous.\n"
+                               (Usuba_print.typ_to_str_l l);
+                assert false
+                                 
+                                              
 let rec expand_intn (id: ident) (n: int) : ident list =
   if n = 1 || n = 0 then
     [ id ]
@@ -47,16 +52,10 @@ let new_vars : p ref = ref []
                    
 let gen_tmp =
   let cpt = ref 0 in
-  fun env_var size ->
+  fun env_var typ ->
     incr cpt;
     let var = fresh_ident ("_tmp" ^ (string_of_int !cpt) ^ "_") in
-    if !no_arr then
-      List.iter (fun x -> env_add env_var x Bool) (expand_intn var size)
-    else
-      if size > 1 then
-        env_add env_var var (Array(Bool,Const_e size))
-      else
-        env_add env_var var Bool;
+    env_add env_var var typ;
     var
                              
 (* Note that when this function is called, Var have already been normalized *)
@@ -66,10 +65,10 @@ let rec get_expr_size env_var env_fun l : int =
   | ExpVar v -> get_var_size env_var v
   | Shift(_,e,_) -> get_expr_size env_var env_fun e
   | Tuple l -> List.length l
-  | Fun(f,_) ->(match Utils.env_fetch env_fun f with
-                 | Some (_,v) -> v
-                 | None -> if contains f.name "print" || contains f.name "rand" then 1
-                           else raise (Error ("Undeclared " ^ f.name)))
+  | Fun(f,_) -> ( match Hashtbl.find_opt env_fun f with
+                  | Some deq -> sum_type deq.p_out
+                  | None -> if contains f.name "print" || contains f.name "rand" then 1
+                            else raise (Error ("Undeclared " ^ f.name)))
   | _ -> raise (Error (Printf.sprintf "Not implemented yet get_expr_size(%s)\n" (Usuba_print.expr_to_str_types l)))
 
 (* flatten_expr removes nested tuples *)
@@ -106,29 +105,20 @@ let rec expand_expr env_var (e:expr) : expr list =
            
 (* ************************************************************************** *)
 
-
 let rec remove_call env_var env_fun e : deq list * expr =
   let (deq,e') = norm_expr env_var env_fun e in
 
   if is_primitive e' then
     deq, e'
   else
-    let size = get_expr_size env_var env_fun e' in
-    let new_var = gen_tmp env_var size in
-    let tmp  = if !no_arr then List.map (fun x -> Var x) (expand_intn new_var size)
-               else [Var new_var] in
-    if !no_arr then
-      new_vars := !new_vars @ (List.map (function
-                                          | Var id -> simple_var_d id
-                                          | _ -> assert false) tmp)
-    else
-      if size > 1 then
-        new_vars := !new_vars @ [ make_var_d new_var (Array(Bool,Const_e size)) Defclock [] ]
-      else
-        new_vars := !new_vars @ [ make_var_d new_var Bool Defclock [] ];
-    let left = tmp in
+    let expr_typ_l = get_expr_type env_fun env_var e' in
+    let typ = if List.length expr_typ_l > 1
+              then Array(reduce_same_list expr_typ_l,Const_e (List.length expr_typ_l))
+              else List.hd expr_typ_l in
+    let new_var = gen_tmp env_var typ in
+    new_vars := (make_var_d new_var typ Defclock []) :: !new_vars;
 
-    deq @ [Norec(left,e')], Tuple (List.map (fun x -> ExpVar x) tmp)
+    deq @ [Norec([Var new_var],e')], ExpVar (Var new_var)
 
 and remove_calls env_var env_fun l : deq list * expr list =
   let pre_deqs = ref [] in
@@ -141,30 +131,21 @@ and remove_calls env_var env_fun l : deq list * expr list =
               if is_primitive e' then
                 [ e' ]
               else
-                let size = get_expr_size env_var env_fun e' in
-                let new_var = gen_tmp env_var size in
-                let tmp  = if !no_arr then List.map (fun x -> Var x) (expand_intn new_var size)
-                           else [Var new_var] in
-                if !no_arr then
-                  new_vars := !new_vars @ (List.map (function
-                                                      | Var id -> simple_var_d id
-                                                      | _ -> assert false) tmp)
-                else
-                  if size > 1 then
-                    new_vars := !new_vars @
-                                  [ make_var_d new_var (Array(Bool,Const_e size)) Defclock [] ]
-                  else
-                    new_vars := !new_vars @
-                                  [ make_var_d new_var Bool Defclock [] ];
-                let left = tmp in
-                pre_deqs := !pre_deqs @ [Norec(left,e')];
+                let expr_typ_l = get_expr_type env_fun env_var e' in
+                let typ = if List.length expr_typ_l > 1
+                          then Array(reduce_same_list expr_typ_l,
+                                     Const_e (List.length expr_typ_l))
+                          else List.hd expr_typ_l in
+                let new_var = gen_tmp env_var typ in
+                new_vars := (make_var_d new_var typ Defclock []) :: !new_vars;
+                pre_deqs := !pre_deqs @ [(Norec([Var new_var],e'))];
                 
-                List.map (fun x -> ExpVar x) tmp)
+                [ExpVar (Var new_var)])
              l in
   !pre_deqs, flatten_expr (List.flatten l')
     
 
-and norm_expr env_var env_fun (e: expr) : deq list * expr = 
+and norm_expr env_var env_fun (e: expr) : deq list * expr =
   match e with
   | Const _ | ExpVar _ | Shuffle _-> [], e
   | Tuple (l) ->
@@ -219,18 +200,14 @@ let norm_def env_fun (def: def) : def =
   match def.node with
   | Single(p_var,body) ->
      let env_var = build_env_var def.p_in def.p_out p_var in
-     env_add_fun def.id def.p_in def.p_out env_fun;
      new_vars := [];
      let body = norm_deq env_var env_fun body in
      { def with node = Single(p_var @ !new_vars,body) }
-  | Perm _ ->
-     env_add_fun def.id def.p_in def.p_out env_fun;
-     def
   | _ ->
      def
 
 let norm_prog (prog:prog) (conf:config) : prog =
   no_arr := conf.no_arr;
-  let env_fun = make_env () in
+  let env_fun = build_env_fun prog.nodes in
   { nodes = List.map (norm_def env_fun) prog.nodes }
   
