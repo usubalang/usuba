@@ -15,6 +15,10 @@
 #define SSE
 #endif
 
+#ifndef BITS_PER_REG
+#define BITS_PER_REG 128
+#endif
+
 /* Defining 0 and 1 */
 #define ZERO _mm_setzero_si128()
 #define ONES _mm_set1_epi32(-1)

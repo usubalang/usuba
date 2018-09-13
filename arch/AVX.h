@@ -15,6 +15,10 @@
 #define AVX
 #endif
 
+#ifndef BITS_PER_REG
+#define BITS_PER_REG 256
+#endif
+
 /* Defining 0 and 1 */
 #define ZERO _mm256_setzero_si256()
 #define ONES _mm256_set1_epi32(-1)
