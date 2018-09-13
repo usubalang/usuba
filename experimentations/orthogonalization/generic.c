@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define NO_RUNTIME
-#include "../../arch/SSE.h"
+#include "SSE.h"
 
 #define SET1_EPI64(x)         _mm_set1_epi64x(x)
 #define SET_EPI64_2(a,b)      _mm_set_epi64x(a,b)
@@ -183,6 +183,7 @@ void visual_nslice_8x128() {
 }
 
 /* For instance: AES n-slice */
+#define PRINTS 0
 void visual_nslice_8x64() {
   unsigned long data_int[16];
   for (int i = 0; i < 8; i++) {
@@ -197,29 +198,27 @@ void visual_nslice_8x64() {
 
   for (int i = 0; i < 8; i++) print128binSPC8(data[i]); puts("");
 
-  puts("Orthogonalized:");
   orthogonalize(data,8,3,0);
-  for (int i = 0; i < 8; i++) print128binSPC8(data[i]); puts("");
+  puts("Orthogonalized:"); for (int i = 0; i < 8; i++) print128binSPC8(data[i]); puts("");
 
-  puts("Shuffled (>>> 64):");
   __m128i tmp[8];  
   for (int i = 0; i < 8; i++) tmp[i] = _mm_shuffle_epi32(data[i],0b01001110);
-  for (int i = 0; i < 8; i++) print128binSPC8(tmp[i]); puts("");
+  puts("Shuffled (>>> 64):"); for (int i = 0; i < 8; i++) print128binSPC8(tmp[i]); puts("");
 
-  puts("Shifted (>> 4):");
-  for (int i = 0; i < 8; i++) tmp[i] = _mm_srli_epi16(tmp[i],4);
-  for (int i = 0; i < 8; i++) print128binSPC8(tmp[i]); puts("");
-
-  puts("Combined (|):");
-  for (int i = 0; i < 4; i++) data[i] = _mm_or_si128(data[i],data[i+4]);
-  for (int i = 0; i < 4; i++) print128binSPC8(data[i]); puts("");
-
-  puts("Shuffled (mixed):");
   for (int i = 0; i < 4; i++)
-    data[i] = _mm_shuffle_epi8(data[i],_mm_set_epi8(15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0));
-  for (int i = 0; i < 4; i++) print128binSPC8(data[i]); puts("");
+    data[i] = OR(OR(AND(data[i],_mm_set_epi64x(0,-1)),
+                    AND(tmp[i+4],_mm_set_epi64x(-1,0))),
+                 OR(AND(_mm_srli_epi16(data[i+4],4),_mm_set_epi64x(-1,0)),
+                    AND(_mm_srli_epi16(tmp[i],4),_mm_set_epi64x(0,-1))));
+  puts("Combined (|):"); for (int i = 0; i < 4; i++) print128binSPC8(data[i]); puts(""); 
   
-
+  for (int i = 0; i < 4; i++)
+    data[i] = _mm_shuffle_epi8(data[i],_mm_set_epi8(15,13,11,9,7,5,3,1,14,12,10,8,6,4,2,0));
+  puts("Shuffled (mixed):"); for (int i = 0; i < 4; i++) print128binSPC8(data[i]); puts("");
+  
+  orthogonalize(data,4,2,3);
+  puts("Finale transpose:"); for (int i = 0; i < 4; i++) print128binSPC8(data[i]); puts("");
+    
   puts("");
 }
 
