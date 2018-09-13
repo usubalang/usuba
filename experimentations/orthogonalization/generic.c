@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define NO_RUNTIME
-#include "SSE.h"
+#include "../../arch/SSE.h"
 
 #define SET1_EPI64(x)         _mm_set1_epi64x(x)
 #define SET_EPI64_2(a,b)      _mm_set_epi64x(a,b)
@@ -72,7 +72,7 @@ void print128hex(__m128i toPrint) {
 #define R_SHIFT(a,b,c) _R_SHIFT(a,b,c)
 
 
-void orthogonalize(DATATYPE data[], int M, int LOG2_M, int LOG2_A) {
+inline void orthogonalize(DATATYPE data[], int M, int LOG2_M, int LOG2_A) {
   DATATYPE mask_l[] = {
     SET1_EPI64(0xaaaaaaaaaaaaaaaaUL),
     SET1_EPI64(0xccccccccccccccccUL),
@@ -114,12 +114,36 @@ void orthogonalize(DATATYPE data[], int M, int LOG2_M, int LOG2_A) {
         }
       }
     }
-    /* for (int i = 0; i < 4; i++) print128bin(data[i]); puts(""); */
   }
 }
 #pragma pop_macro("L_SHIFT")
 #pragma pop_macro("R_SHIFT")
 
+
+
+#define MAKE_SPEED_FUN(name,BUFF_SIZE,NB_LOOP,FUN_CALL)         \
+  void speed_##name() {                                         \
+    uint64_t data[BUFF_SIZE];                                   \
+                                                                \
+    /* Initializing the data  */                                \
+    for (int i = 0; i < BUFF_SIZE; i++)                         \
+      data[i] = rand();                                         \
+                                                                \
+    /* Warming up the cache */                                  \
+    for (int i = 0; i < 10000; i++)                             \
+      FUN_CALL;                                                 \
+                                                                \
+    /* The actual mesure */                                     \
+    uint64_t timer = _rdtsc();                                  \
+    for (int i = 0; i < NB_LOOP; i++)                           \
+      FUN_CALL;                                                 \
+    timer = _rdtsc() - timer;                                   \
+                                                                \
+    /* Printing the result */                                   \
+    printf("%10s: %lu cycles\n", #name,timer / NB_LOOP);        \
+    FILE* FP = fopen("/dev/null","w");                          \
+    fwrite(data,BUFF_SIZE,8,FP);                                \
+  }
 
 /* For instance: DES bitslice */
 void visual_bitslice_128x64() {
@@ -140,6 +164,7 @@ void visual_bitslice_128x64() {
   for (int i = 0; i < 64; i++) print128bin(((__m128i*)data)[i]);
   puts("\n");
 }
+MAKE_SPEED_FUN(128x64,128,1000000,orthogonalize((DATATYPE*)data,64,6,0))
 
 /* For instance: AES bitslice */
 void visual_bitslice_128x128() {
@@ -162,6 +187,7 @@ void visual_bitslice_128x128() {
   for (int i = 0; i < 128; i++) print128bin(data[i]);
   puts("\n");
 }
+MAKE_SPEED_FUN(128x128,256,1000000,orthogonalize((__m128i*)data,128,7,0))
 
 /* For instance: AES n-slice */
 void visual_nslice_8x128() {
@@ -179,12 +205,11 @@ void visual_nslice_8x128() {
 
   for (int i = 0; i < 8; i++) print128bin(data[i]);
   puts("\n");
-  
 }
+MAKE_SPEED_FUN(8x128,16,20000000,orthogonalize((__m128i*)data,8,3,0))
 
 /* For instance: AES n-slice */
-#define PRINTS 0
-void visual_nslice_8x64() {
+void visual_nslice_8x64_heavy() {
   unsigned long data_int[16];
   for (int i = 0; i < 8; i++) {
     data_int[i] = i == 0 || i == 7 ? 0x1032547698BADCFE : 0;
@@ -221,6 +246,102 @@ void visual_nslice_8x64() {
     
   puts("");
 }
+#define nslice_8x64() {                                                 \
+    __m128i* dataSSE = (__m128i*)data;                                  \
+    for (int i = 4; i < 8; i++) dataSSE[i] = ZERO;                      \
+    orthogonalize(dataSSE,8,3,0);                                       \
+    __m128i tmp[8];                                                     \
+    for (int i = 0; i < 8; i++)                                         \
+      tmp[i] = _mm_shuffle_epi32(dataSSE[i],0b01001110);                \
+    for (int i = 0; i < 4; i++)                                         \
+      dataSSE[i] = OR(OR(AND(dataSSE[i],_mm_set_epi64x(0,-1)),          \
+                         AND(tmp[i+4],_mm_set_epi64x(-1,0))),           \
+                      OR(AND(_mm_srli_epi16(dataSSE[i+4],4),_mm_set_epi64x(-1,0)), \
+                         AND(_mm_srli_epi16(tmp[i],4),_mm_set_epi64x(0,-1)))); \
+    for (int i = 0; i < 4; i++)                                         \
+      dataSSE[i] = _mm_shuffle_epi8(dataSSE[i],_mm_set_epi8(15,13,11,9,7,5,3,1, \
+                                                            14,12,10,8,6,4,2,0)); \
+    orthogonalize(dataSSE,4,2,3);                                       \
+  }
+#define nslice_8x64_undo() {                                            \
+    __m128i* dataSSE = (__m128i*)data;                                  \
+    for (int i = 4; i < 8; i++) dataSSE[i] = ZERO;                      \
+    orthogonalize(dataSSE,4,2,3);                                       \
+    for (int i = 0; i < 4; i++)                                         \
+      dataSSE[i] = _mm_shuffle_epi8(dataSSE[i],_mm_set_epi8(15,7,14,6,13,5,12,4, \
+                                                            11,3,10,2,9,1,8,0)); \
+    __m128i tmp[4];                                                     \
+    for (int i = 0; i < 4; i++)                                         \
+      tmp[i] = _mm_shuffle_epi32(dataSSE[i],0b01001110);                \
+    for (int i = 0; i < 4; i++) {                                       \
+      dataSSE[i+4] = OR(AND(tmp[i],_mm_set_epi64x(0,-1)),               \
+                        AND(_mm_slli_epi16(dataSSE[i],4),_mm_set_epi64x(-1,0))); \
+      dataSSE[i]   = OR(AND(dataSSE[i],_mm_set_epi64x(0,-1)),           \
+                        AND(_mm_slli_epi16(tmp[i],4),_mm_set_epi64x(-1,0))); \
+    }                                                                   \
+    orthogonalize(dataSSE,8,3,0);                                       \
+  }
+
+void visual_nslice_8x64_heavy_undo() {
+  unsigned long data_int[16];
+  for (int i = 0; i < 8; i++) {
+    data_int[i] = i == 0 || i == 7 ? 0x1032547698BADCFE : 0;
+  }
+  
+  __m128i* data = (__m128i*) data_int;
+  for (int i = 0; i < 4; i++) print128binSPC8(data[i]); puts("");
+  
+  nslice_8x64();
+  puts("Starting point:");for (int i = 0; i < 4; i++) print128binSPC8(data[i]); puts("");
+  
+  orthogonalize(data,4,2,3);
+  puts("Finale transpose:"); for (int i = 0; i < 4; i++) print128binSPC8(data[i]); puts("");
+    
+  for (int i = 0; i < 4; i++)
+    data[i] = _mm_shuffle_epi8(data[i],_mm_set_epi8(15,7,14,6,13,5,12,4,11,3,10,2,9,1,8,0));
+  puts("Shuffled (mixed):"); for (int i = 0; i < 4; i++) print128binSPC8(data[i]); puts("");
+
+  
+  __m128i tmp[4];  
+  for (int i = 0; i < 4; i++) tmp[i] = _mm_shuffle_epi32(data[i],0b01001110);
+  puts("Shuffled (>>> 64):"); for (int i = 0; i < 8; i++) print128binSPC8(tmp[i]); puts("");
+
+  for (int i = 0; i < 4; i++) {
+    data[i+4] = OR(AND(tmp[i],_mm_set_epi64x(0,-1)),
+                   AND(_mm_slli_epi16(data[i],4),_mm_set_epi64x(-1,0)));
+    data[i]   = OR(AND(data[i],_mm_set_epi64x(0,-1)),
+                   AND(_mm_slli_epi16(tmp[i],4),_mm_set_epi64x(-1,0)));
+  }
+  puts("Combined (|):"); for (int i = 0; i < 8; i++) print128binSPC8(data[i]); puts("");
+  
+
+  orthogonalize(data,8,3,0);
+  puts("Orthogonalized:"); for (int i = 0; i < 8; i++) print128binSPC8(data[i]); puts("");
+
+  puts("");
+}
+void visual_nslice_8x64_light() {
+  unsigned long data_int[16];
+  for (int i = 0; i < 8; i++) {
+    data_int[i] = i == 0 ? 0xFFFFFFFFFFFFFFFF : i == 1 ? 0 :
+      i == 2 ? 0x3F3F3F3F3F3F3F3F : i == 3 ? 0x1F1F1F1F1F1F1F1F :
+      i == 4 ? 0x0F0F0F0F0F0F0F0F : i == 5 ? 0x0707070707070707 :
+      i == 6 ? 0x0303030303030303 : i == 7 ? 0x0101010101010101 : 0x7F7F7F7F7F7F7F7F;
+  }
+  __m128i* data = (__m128i*) data_int;
+
+  for (int i = 0; i < 4; i++) print128binSPC8(data[i]); puts("");
+
+  nslice_8x64();
+
+  nslice_8x64_undo();
+
+  for (int i = 0; i < 4; i++) print128binSPC8(data[i]); puts("");
+  
+  puts("");
+}
+MAKE_SPEED_FUN(8x64,16,20000000,nslice_8x64())
+MAKE_SPEED_FUN(8x64_undo,16,20000000,nslice_8x64_undo())
 
 /* For instance: Serpent vectorized */
 void visual_vector_4x128() {
@@ -239,8 +360,9 @@ void visual_vector_4x128() {
   puts("\n");
   
 }
+MAKE_SPEED_FUN(4x128,8,500000000,orthogonalize((__m128i*)data,4,2,5))
 
-/* For instance: Serpent vectorized */
+/* For instance: Chacha vectorized */
 void visual_vector_16x128() {
 
   __m128i data[16];
@@ -269,6 +391,7 @@ void visual_vector_16x128() {
   puts("\n");
   
 }
+MAKE_SPEED_FUN(16x128,32,100000000,orthogonalize((__m128i*)data,16,4,5))
 
 #define TRANSPOSE4(x0, x1, x2, x3) {                    \
     __m128i xmm01 = x0;                                 \
@@ -326,16 +449,29 @@ void visual_vector_8x64() {
   for (int i = 0; i < 4; i++) print128hex(data[i]); puts("\n");
   
 }
+MAKE_SPEED_FUN(8x64slow,8,500000000,orthogonalize((__m128i*)data,4,2,4))
+MAKE_SPEED_FUN(8x64fast,8,250000000,TRANSPOSE4(((__m128i*)data)[0],((__m128i*)data)[1],\
+                                              ((__m128i*)data)[2],((__m128i*)data)[3]))
 
 int main() {
-  //test_shift();
   /* visual_bitslice_128x64(); */
   /* visual_bitslice_128x128(); */
   /* visual_nslice_8x128(); */
   /* visual_vector_4x128(); */
   /* visual_vector_16x128(); */
   /* visual_vector_8x64(); */
-  visual_nslice_8x64();
+  /* visual_nslice_8x64_heavy(); */
+  /* visual_nslice_8x64_heavy_undo(); */
+  /* visual_nslice_8x64_light(); */
+
+  speed_128x64();
+  speed_128x128();
+  speed_8x128();
+  speed_8x64();
+  speed_8x64_undo();
+  speed_4x128();
+  speed_8x64slow();
+  speed_8x64fast();
   
   return 0;
   
