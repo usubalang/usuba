@@ -564,12 +564,18 @@
 
 #else /* SUBBYTES_ITERATIVE_IMPROVEMENT */ /* Based on Käsper's paper (SSSE2 => AVX) */
 
+#ifdef NO_SBOX
 #define subbytes(b0, b1, b2, b3, b4, b5, b6, b7, \
 		 t0, t1, t2, t3, s0, s1, s2, s3) \
+    nop                                               ;
+#else
+#define subbytes(b0, b1, b2, b3, b4, b5, b6, b7, \
+		 t0, t1, t2, t3, s0, s1, s2, s3) \    
 	InBasisChange(b0, b1, b2, b3, b4, b5, b6, b7, t0); \
 	Inv_GF256(b6, t0, b0, b3, b7, b1, b4, b2, b5, t1, t2, t3, s0, s1, s2, s3); \
 	OutBasisChange(b7, b1, b4, b2, b6, t0, b0, b3, b5, t1, t2, t3, s0, s1, s2, s3);
-
+#endif
+    
 #define OutBasisChange(b7, b1, b4, b2, b6, b5, b0, b3, \
 		       t0, t1, t2, t3, t4, t5, t6, t7) \
 	vpxor    b7, b0, t0;    \
@@ -813,6 +819,11 @@ aes_avx_enc_blk8:
 		 %xmm8, %xmm9);
 
 .Lenc_loop:
+#ifdef _MCA
+    #APP
+    # LLVM-MCA-BEGIN aeskivi
+    #NO_APP
+#endif
 	addroundkey(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
 		    %r8);
 	addq	$(8*16), %r8;
@@ -825,6 +836,11 @@ aes_avx_enc_blk8:
 	mixcolumns(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
 		   %xmm8, %xmm9, %xmm10, %xmm11,
 		   %xmm12, %xmm13, %xmm14, %xmm15);
+#ifdef _MCA
+    #APP
+    # LLVM-MCA-END
+    #NO_APP
+#endif
 
 	decl	%eax;
 	jnz	.Lenc_loop;
@@ -846,63 +862,6 @@ aes_avx_enc_blk8:
 
 	ret;
 
-.align 8
-.global aes_avx_dec_blk8
-.type   aes_avx_dec_blk8,@function;
-
-aes_avx_dec_blk8:
-	/* input:
-	 *	%rdi: ctx, CTX
-	 *	%xmm0-%xmm7: eight input/output blocks
-	 */
-
-	movl	nr(CTX), %eax;
-	movl	%eax, %r8d;
-	decl	%eax;
-	shll	$7, %r8d;
-	leaq	bs_keysched(CTX,%r8,1), %r8;
-
-	bitslice(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
-		 %xmm8, %xmm9);
-
-	addroundkey(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
-		    %r8);
-	subq	$(8*16), %r8;
-
-	subbytes_inv(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
-		     %xmm8, %xmm9, %xmm10, %xmm11,
-		     %xmm12, %xmm13, %xmm14, %xmm15);
-
-	shiftrow_inv(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
-		     %xmm8);
-
-	addroundkey(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
-		    %r8);
-	subq	$(8*16), %r8;
-
-.Ldec_loop:
-	mixcolumns_inv(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
-		       %xmm8, %xmm9, %xmm10, %xmm11,
-		       %xmm12, %xmm13, %xmm14, %xmm15);
-
-	subbytes_inv(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
-		     %xmm8, %xmm9, %xmm10, %xmm11,
-		     %xmm12, %xmm13, %xmm14, %xmm15);
-
-	shiftrow_inv(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
-		     %xmm8);
-
-	addroundkey(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
-		    %r8);
-	subq	$(8*16), %r8;
-
-	decl	%eax;
-	jnz	.Ldec_loop;
-
-	bitslice(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
-		 %xmm8, %xmm9);
-
-	ret;
 
 #define load_8way(src, x0, x1, x2, x3, x4, x5, x6, x7) \
 	vmovdqu (0*16)(src), x0; \
