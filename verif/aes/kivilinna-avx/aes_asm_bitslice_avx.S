@@ -566,11 +566,10 @@
 
 #ifdef NO_SBOX
 #define subbytes(b0, b1, b2, b3, b4, b5, b6, b7, \
-		 t0, t1, t2, t3, s0, s1, s2, s3) \
-    nop                                               ;
+		 t0, t1, t2, t3, s0, s1, s2, s3)
 #else
 #define subbytes(b0, b1, b2, b3, b4, b5, b6, b7, \
-		 t0, t1, t2, t3, s0, s1, s2, s3) \    
+		 t0, t1, t2, t3, s0, s1, s2, s3) \
 	InBasisChange(b0, b1, b2, b3, b4, b5, b6, b7, t0); \
 	Inv_GF256(b6, t0, b0, b3, b7, b1, b4, b2, b5, t1, t2, t3, s0, s1, s2, s3); \
 	OutBasisChange(b7, b1, b4, b2, b6, t0, b0, b3, b5, t1, t2, t3, s0, s1, s2, s3);
@@ -824,6 +823,14 @@ aes_avx_enc_blk8:
     # LLVM-MCA-BEGIN aeskivi
     #NO_APP
 #endif
+#ifdef _IACA
+    #APP
+	movl	$111, %ebx
+	.byte	100
+	.byte	103
+	.byte	144
+	#NO_APP
+#endif
 	addroundkey(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
 		    %r8);
 	addq	$(8*16), %r8;
@@ -836,15 +843,22 @@ aes_avx_enc_blk8:
 	mixcolumns(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
 		   %xmm8, %xmm9, %xmm10, %xmm11,
 		   %xmm12, %xmm13, %xmm14, %xmm15);
+	decl	%eax;
+	jnz	.Lenc_loop;
 #ifdef _MCA
     #APP
     # LLVM-MCA-END
     #NO_APP
 #endif
-
-	decl	%eax;
-	jnz	.Lenc_loop;
-
+#ifdef _IACA
+	#APP
+	movl	$222, %ebx
+	.byte	100
+	.byte	103
+	.byte	144
+	#NO_APP
+#endif
+    
 	addroundkey(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
 		    %r8);
 	addq	$(8*16), %r8;

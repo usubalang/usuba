@@ -11,6 +11,11 @@
 #ifndef BITS_PER_REG
 #define BITS_PER_REG 128
 #endif
+
+#ifdef _IACA
+#include "iacaMarks.h"
+#endif
+
 /* including the architecture specific .h */
 #include "SSE.h"
 #ifndef SBOX
@@ -655,8 +660,11 @@ void AES__ (/*inputs*/ DATATYPE plain__[8],DATATYPE key__[11][8], /*outputs*/ DA
   tmp__[7] = XOR(plain__[7],key__[0][7]);
   for (int i = 1; i <= 9; i++) {
 #ifdef _MCA
-    __asm volatile("# LLVM-MCA-BEGIN aes-usuba");
+    __asm __volatile__("# LLVM-MCA-BEGIN aes-usuba");
 #endif
+#ifdef _IACA
+    IACA_START
+#endif      
     SubBytes__(tmp__[0],tmp__[1],tmp__[2],tmp__[3],tmp__[4],tmp__[5],tmp__[6],tmp__[7],&_tmp66_[0],&_tmp66_[1],&_tmp66_[2],&_tmp66_[3],&_tmp66_[4],&_tmp66_[5],&_tmp66_[6],&_tmp66_[7]);
     for (int i1 = 0; i1 <= 7; i1++) {
       _tmp67_[i1] = PERMUT_16(_tmp66_[i1],0,1,2,3,5,6,7,4,10,11,8,9,15,12,13,14);
@@ -745,6 +753,9 @@ void AES__ (/*inputs*/ DATATYPE plain__[8],DATATYPE key__[11][8], /*outputs*/ DA
   }
 #ifdef _MCA
     __asm volatile("# LLVM-MCA-END");
+#endif
+#ifdef _IACA
+    IACA_END
 #endif
   SubBytes__(tmp__[0],tmp__[1],tmp__[2],tmp__[3],tmp__[4],tmp__[5],tmp__[6],tmp__[7],&_tmp69_[0],&_tmp69_[1],&_tmp69_[2],&_tmp69_[3],&_tmp69_[4],&_tmp69_[5],&_tmp69_[6],&_tmp69_[7]);
   for (int i2 = 0; i2 <= 7; i2++) {
@@ -851,7 +862,10 @@ void AES__ (/*inputs*/ DATATYPE plain__[8],DATATYPE key__[11][8], /*outputs*/ DA
   tmp__[7] = XOR(plain__[7],key__[0][7]);
   for (int i = 1; i <= 9; i++) {
 #ifdef _MCA
-    __asm volatile("# LLVM-MCA-BEGIN aes-usuba");
+    __asm __volatile__("# LLVM-MCA-BEGIN aes-usuba");
+#endif
+#ifdef _IACA
+    IACA_START
 #endif
     SubBytes__(tmp__[0],tmp__[1],tmp__[2],tmp__[3],tmp__[4],tmp__[5],tmp__[6],tmp__[7],&_tmp66_[0],&_tmp66_[1],&_tmp66_[2],&_tmp66_[3],&_tmp66_[4],&_tmp66_[5],&_tmp66_[6],&_tmp66_[7]);
     for (int i1 = 0; i1 <= 7; i1++) {
@@ -941,6 +955,9 @@ void AES__ (/*inputs*/ DATATYPE plain__[8],DATATYPE key__[11][8], /*outputs*/ DA
   }
 #ifdef _MCA
     __asm volatile("# LLVM-MCA-END");
+#endif
+#ifdef _IACA
+    IACA_END
 #endif
   SubBytes__(tmp__[0],tmp__[1],tmp__[2],tmp__[3],tmp__[4],tmp__[5],tmp__[6],tmp__[7],&_tmp69_[0],&_tmp69_[1],&_tmp69_[2],&_tmp69_[3],&_tmp69_[4],&_tmp69_[5],&_tmp69_[6],&_tmp69_[7]);
   for (int i2 = 0; i2 <= 7; i2++) {
