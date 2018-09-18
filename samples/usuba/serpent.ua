@@ -33,7 +33,7 @@ let
     out = (x0[3],x1[2],x2[3],x3[2])
 tel
 
-node Serpent (plaintext:u32x4, keys:u32x4[33]) returns (ciphertext:u32x4)
+node Serpent (plaintext:u32x4, keys:const u32x4[33]) returns (ciphertext:u32x4)
 vars
     tmp : u32x4[32]
 let

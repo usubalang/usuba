@@ -1,4 +1,4 @@
-_no_inline table SubBytes (input:u16x8) returns (output:u16x8) {
+_no_inline table SubBytes (input:u1x8) returns (output:u1x8) {
     99, 124, 119, 123, 242, 107, 111, 197, 48, 1, 103, 43, 254, 215, 171, 118,
     202, 130, 201, 125, 250, 89, 71, 240, 173, 212, 162, 175, 156, 164, 114, 192,
     183, 253, 147, 38, 54, 63, 247, 204, 52, 165, 229, 241, 113, 216, 49, 21,
@@ -20,23 +20,23 @@ _no_inline table SubBytes (input:u16x8) returns (output:u16x8) {
 node ShiftRows (inputSR:u16x8) returns (out:u16x8)
 let
     forall i in [0,7] {
-        out[i] = Shuffle(inputSR[i],[ 0,  1,  2,  3,
-                                      5,  6,  7,  4,
-                                     10, 11,  8,  9,
-                                     15, 12, 13, 14] )
+        out[i] = Shuffle(inputSR[i],[  0,  5, 10, 15,
+                                       4,  9, 14,  3,
+                                       8, 13,  2,  7,
+                                      12,  1,  6, 11 ])
      }
 tel
 
 node RL32 (input:u16x1) returns (out:u16x1)
 let
-     out = Shuffle(input,[1,2,3,0])
-     #out = input{1,2,3,0}
+     out = Shuffle(input,[ 1,  2,  3,  0,  5,  6,  7,  4,
+                           9, 10, 11,  8, 13, 14, 15, 12 ])
 tel
 
 node RL64 (input:u16x1) returns (out:u16x1)
 let
-     out = Shuffle(input,[2,3,0,1])
-     #out = input{2,3,0,1}
+     out = Shuffle(input,[  2,  3,  0,  1,  6,  7,  4,  5,
+                           10, 11,  8,  9, 14, 15, 12, 13 ])
 tel
 
 # Note: the 7-x are due to the fact that Kasper & Schwabe don't index their array
