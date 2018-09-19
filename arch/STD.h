@@ -42,8 +42,7 @@
 #ifndef DATATYPE
 #if BITS_PER_REG == 16
 #define DATATYPE unsigned short
-#else
-#if BITS_PER_REG == 32
+#elif BITS_PER_REG == 32
 #define DATATYPE unsigned int
 #else
 #define DATATYPE uint64_t
