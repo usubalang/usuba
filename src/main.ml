@@ -56,11 +56,8 @@ let bits_in_arch = function
   | AltiVec  -> 128
 
 let gen_output_filename (file_in: string) : string =
-  let full_name = match (String.split_on_char '.' file_in) with
-    | []   -> file_in
-    | x::_ ->  x in
-  let path = String.split_on_char '/' full_name in
-  let out_name = List.nth path (List.length path - 1) in
+  let full_name = List.hd (String.split_on_char '.' file_in) in
+  let out_name = last (String.split_on_char '/' full_name) in
   out_name ^ ".c"
                
 let print_c (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
@@ -71,7 +68,7 @@ let print_c (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
 
   let normalized = Normalize.compile prog conf in
 
-  let c_prog = Usuba_to_c.prog_to_c normalized conf in
+  let c_prog = Usuba_to_c.prog_to_c prog normalized conf file_in in
   
   fprintf out "%s" c_prog;
   close_out out
