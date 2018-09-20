@@ -1,0 +1,145 @@
+
+/*
+ - vectorization (no interleaving)
+ - interleaving at the round level:
+    QR(0,4,8,12)  & QR(1,5,9,13)  computed at the same time,
+    QR(2,6,10,14) & QR(3,7,11,15) computed at the same time,
+    ...
+*/
+    
+    
+chacha_blocks_avx2_mainloop1:
+vpaddd %ymm0, %ymm4, %ymm0      ;   x0  += x4
+vpaddd %ymm1, %ymm5, %ymm1      ;   x1  += x5
+vpxor %ymm12, %ymm0, %ymm12     ;   x12 ^= x0
+vpxor %ymm13, %ymm1, %ymm13     ;   x13 ^= x1
+vpaddd %ymm2, %ymm6, %ymm2      ;   x2  += x5
+vpaddd %ymm3, %ymm7, %ymm3      ;   x3  += x7
+vpxor %ymm14, %ymm2, %ymm14     ;   x14 ^= x2
+vpxor %ymm15, %ymm3, %ymm15     ;   x15 ^= x3
+vpshufb 448(%rsp), %ymm12, %ymm12 ; 
+vpshufb 448(%rsp), %ymm13, %ymm13
+vpaddd %ymm8, %ymm12, %ymm8
+vpaddd %ymm9, %ymm13, %ymm9
+vpshufb 448(%rsp), %ymm14, %ymm14
+vpshufb 448(%rsp), %ymm15, %ymm15
+vpaddd %ymm10, %ymm14, %ymm10
+vpaddd %ymm11, %ymm15, %ymm11
+vmovdqa %ymm12, 96(%rsp)
+vpxor %ymm4, %ymm8, %ymm4
+vpxor %ymm5, %ymm9, %ymm5
+vpslld $ 12, %ymm4, %ymm12
+vpsrld $20, %ymm4, %ymm4
+vpxor %ymm4, %ymm12, %ymm4
+vpslld $ 12, %ymm5, %ymm12
+vpsrld $20, %ymm5, %ymm5
+vpxor %ymm5, %ymm12, %ymm5
+vpxor %ymm6, %ymm10, %ymm6
+vpxor %ymm7, %ymm11, %ymm7
+vpslld $ 12, %ymm6, %ymm12
+vpsrld $20, %ymm6, %ymm6
+vpxor %ymm6, %ymm12, %ymm6
+vpslld $ 12, %ymm7, %ymm12
+vpsrld $20, %ymm7, %ymm7
+vpxor %ymm7, %ymm12, %ymm7
+vpaddd %ymm0, %ymm4, %ymm0
+vpaddd %ymm1, %ymm5, %ymm1
+vpxor 96(%rsp), %ymm0, %ymm12
+vpxor %ymm13, %ymm1, %ymm13
+vpaddd %ymm2, %ymm6, %ymm2
+vpaddd %ymm3, %ymm7, %ymm3
+vpxor %ymm14, %ymm2, %ymm14
+vpxor %ymm15, %ymm3, %ymm15
+vpshufb 480(%rsp), %ymm12, %ymm12
+vpshufb 480(%rsp), %ymm13, %ymm13
+vpaddd %ymm8, %ymm12, %ymm8
+vpaddd %ymm9, %ymm13, %ymm9
+vpshufb 480(%rsp), %ymm14, %ymm14
+vpshufb 480(%rsp), %ymm15, %ymm15
+vpaddd %ymm10, %ymm14, %ymm10
+vpaddd %ymm11, %ymm15, %ymm11
+vmovdqa %ymm12, 96(%rsp)
+vpxor %ymm4, %ymm8, %ymm4
+vpxor %ymm5, %ymm9, %ymm5
+vpslld $ 7, %ymm4, %ymm12
+vpsrld $25, %ymm4, %ymm4
+vpxor %ymm4, %ymm12, %ymm4
+vpslld $ 7, %ymm5, %ymm12
+vpsrld $25, %ymm5, %ymm5
+vpxor %ymm5, %ymm12, %ymm5
+vpxor %ymm6, %ymm10, %ymm6
+vpxor %ymm7, %ymm11, %ymm7
+vpslld $ 7, %ymm6, %ymm12
+vpsrld $25, %ymm6, %ymm6
+vpxor %ymm6, %ymm12, %ymm6
+vpslld $ 7, %ymm7, %ymm12
+vpsrld $25, %ymm7, %ymm7
+vpxor %ymm7, %ymm12, %ymm7
+vpaddd %ymm0, %ymm5, %ymm0
+vpaddd %ymm1, %ymm6, %ymm1
+vpxor %ymm15, %ymm0, %ymm15
+vpxor 96(%rsp), %ymm1, %ymm12
+vpaddd %ymm2, %ymm7, %ymm2
+vpaddd %ymm3, %ymm4, %ymm3
+vpxor %ymm13, %ymm2, %ymm13
+vpxor %ymm14, %ymm3, %ymm14
+vpshufb 448(%rsp), %ymm15, %ymm15
+vpshufb 448(%rsp), %ymm12, %ymm12
+vpaddd %ymm10, %ymm15, %ymm10
+vpaddd %ymm11, %ymm12, %ymm11
+vpshufb 448(%rsp), %ymm13, %ymm13
+vpshufb 448(%rsp), %ymm14, %ymm14
+vpaddd %ymm8, %ymm13, %ymm8
+vpaddd %ymm9, %ymm14, %ymm9
+vmovdqa %ymm15, 96(%rsp)
+vpxor %ymm5, %ymm10, %ymm5
+vpxor %ymm6, %ymm11, %ymm6
+vpslld $ 12, %ymm5, %ymm15
+vpsrld $20, %ymm5, %ymm5
+vpxor %ymm5, %ymm15, %ymm5
+vpslld $ 12, %ymm6, %ymm15
+vpsrld $20, %ymm6, %ymm6
+vpxor %ymm6, %ymm15, %ymm6
+vpxor %ymm7, %ymm8, %ymm7
+vpxor %ymm4, %ymm9, %ymm4
+vpslld $ 12, %ymm7, %ymm15
+vpsrld $20, %ymm7, %ymm7
+vpxor %ymm7, %ymm15, %ymm7
+vpslld $ 12, %ymm4, %ymm15
+vpsrld $20, %ymm4, %ymm4
+vpxor %ymm4, %ymm15, %ymm4
+vpaddd %ymm0, %ymm5, %ymm0
+vpaddd %ymm1, %ymm6, %ymm1
+vpxor 96(%rsp), %ymm0, %ymm15
+vpxor %ymm12, %ymm1, %ymm12
+vpaddd %ymm2, %ymm7, %ymm2
+vpaddd %ymm3, %ymm4, %ymm3
+vpxor %ymm13, %ymm2, %ymm13
+vpxor %ymm14, %ymm3, %ymm14
+vpshufb 480(%rsp), %ymm15, %ymm15
+vpshufb 480(%rsp), %ymm12, %ymm12
+vpaddd %ymm10, %ymm15, %ymm10
+vpaddd %ymm11, %ymm12, %ymm11
+vpshufb 480(%rsp), %ymm13, %ymm13
+vpshufb 480(%rsp), %ymm14, %ymm14
+vpaddd %ymm8, %ymm13, %ymm8
+vpaddd %ymm9, %ymm14, %ymm9
+vmovdqa %ymm15, 96(%rsp)
+vpxor %ymm5, %ymm10, %ymm5
+vpxor %ymm6, %ymm11, %ymm6
+vpslld $ 7, %ymm5, %ymm15
+vpsrld $25, %ymm5, %ymm5
+vpxor %ymm5, %ymm15, %ymm5
+vpslld $ 7, %ymm6, %ymm15
+vpsrld $25, %ymm6, %ymm6
+vpxor %ymm6, %ymm15, %ymm6
+vpxor %ymm7, %ymm8, %ymm7
+vpxor %ymm4, %ymm9, %ymm4
+vpslld $ 7, %ymm7, %ymm15
+vpsrld $25, %ymm7, %ymm7
+vpxor %ymm7, %ymm15, %ymm7
+vpslld $ 7, %ymm4, %ymm15
+vpsrld $25, %ymm4, %ymm4
+vpxor %ymm4, %ymm15, %ymm4
+vmovdqa 96(%rsp), %ymm15
+subq $2, %rax
