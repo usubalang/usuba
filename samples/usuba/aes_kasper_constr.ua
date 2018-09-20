@@ -202,10 +202,7 @@ let
 	(o0,o1,o2,o3,o4,o5,o6,o7) = Mul_GF16_2(x0, x1, x2, x3, x4, x5, x6, x7, t38, t49, t42, t46)
 tel
 
-# _no_inline node SubBytes (b:u1x8) returns (o:u1x8)
-# let
-#     o = OutBasisChange(Inv_GF256(InBasisChange(b[7,6,5,4,3,2,1,0])))
-# tel
+
 _no_inline node SubBytes (b7:u1x1,b6:u1x1,b5:u1x1,b4:u1x1,b3:u1x1,b2:u1x1,b1:u1x1,b0:u1x1)
            returns (o7:u1x1,o6:u1x1,o5:u1x1,o4:u1x1,o3:u1x1,o2:u1x1,o1:u1x1,o0:u1x1)
 let

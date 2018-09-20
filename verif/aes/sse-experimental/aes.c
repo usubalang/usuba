@@ -774,6 +774,157 @@ void AES__ (/*inputs*/ DATATYPE plain__[8],DATATYPE key__[11][8], /*outputs*/ DA
  
 
 #else
+#ifdef KEYXOR_TOPLOOP
+
+/* main function */
+void AES__ (/*inputs*/ DATATYPE plain__[8],DATATYPE key__[11][8], /*outputs*/ DATATYPE cipher__[8]) {
+  
+  // Variables declaration
+  DATATYPE MixColumn___1__tmp12_;
+  DATATYPE MixColumn___1__tmp13_;
+  DATATYPE MixColumn___1__tmp14_;
+  DATATYPE MixColumn___1__tmp16_;
+  DATATYPE MixColumn___1__tmp17_;
+  DATATYPE MixColumn___1__tmp1_;
+  DATATYPE MixColumn___1__tmp20_;
+  DATATYPE MixColumn___1__tmp21_;
+  DATATYPE MixColumn___1__tmp23_;
+  DATATYPE MixColumn___1__tmp24_;
+  DATATYPE MixColumn___1__tmp29_;
+  DATATYPE MixColumn___1__tmp2_;
+  DATATYPE MixColumn___1__tmp30_;
+  DATATYPE MixColumn___1__tmp31_;
+  DATATYPE MixColumn___1__tmp33_;
+  DATATYPE MixColumn___1__tmp34_;
+  DATATYPE MixColumn___1__tmp39_;
+  DATATYPE MixColumn___1__tmp3_;
+  DATATYPE MixColumn___1__tmp40_;
+  DATATYPE MixColumn___1__tmp41_;
+  DATATYPE MixColumn___1__tmp43_;
+  DATATYPE MixColumn___1__tmp44_;
+  DATATYPE MixColumn___1__tmp47_;
+  DATATYPE MixColumn___1__tmp48_;
+  DATATYPE MixColumn___1__tmp4_;
+  DATATYPE MixColumn___1__tmp50_;
+  DATATYPE MixColumn___1__tmp51_;
+  DATATYPE MixColumn___1__tmp54_;
+  DATATYPE MixColumn___1__tmp55_;
+  DATATYPE MixColumn___1__tmp57_;
+  DATATYPE MixColumn___1__tmp58_;
+  DATATYPE MixColumn___1__tmp62_;
+  DATATYPE MixColumn___1__tmp65_;
+  DATATYPE MixColumn___1__tmp6_;
+  DATATYPE MixColumn___1__tmp7_;
+  DATATYPE _tmp66_[8];
+  DATATYPE _tmp67_[8];
+  DATATYPE _tmp68_[8];
+  DATATYPE _tmp69_[8];
+  DATATYPE _tmp70_[8];
+  DATATYPE _tmp71_[8];
+  DATATYPE tmp__[8];
+
+
+  // Instructions (body)
+  tmp__[0] = plain__[0];
+  tmp__[1] = plain__[1];
+  tmp__[2] = plain__[2];
+  tmp__[3] = plain__[3];
+  tmp__[4] = plain__[4];
+  tmp__[5] = plain__[5];
+  tmp__[6] = plain__[6];
+  tmp__[7] = plain__[7];
+  for (int i = 1; i <= 9; i++) {
+#ifdef _MCA
+    __asm __volatile__("# LLVM-MCA-BEGIN aes-usuba");
+#endif
+#ifdef _IACA
+    IACA_START
+#endif
+    _tmp66_[0] = XOR(tmp__[0],key__[(i - 1)][0]);
+    _tmp66_[1] = XOR(tmp__[1],key__[(i - 1)][1]);
+    _tmp66_[2] = XOR(tmp__[2],key__[(i - 1)][2]);
+    _tmp66_[3] = XOR(tmp__[3],key__[(i - 1)][3]);
+    _tmp66_[4] = XOR(tmp__[4],key__[(i - 1)][4]);
+    _tmp66_[5] = XOR(tmp__[5],key__[(i - 1)][5]);
+    _tmp66_[6] = XOR(tmp__[6],key__[(i - 1)][6]);
+    _tmp66_[7] = XOR(tmp__[7],key__[(i - 1)][7]);
+    SubBytes__(_tmp66_[0],_tmp66_[1],_tmp66_[2],_tmp66_[3],_tmp66_[4],_tmp66_[5],_tmp66_[6],_tmp66_[7],&_tmp67_[0],&_tmp67_[1],&_tmp67_[2],&_tmp67_[3],&_tmp67_[4],&_tmp67_[5],&_tmp67_[6],&_tmp67_[7]);
+    for (int i1 = 0; i1 <= 7; i1++) {
+      _tmp68_[i1] = PERMUT_16(_tmp67_[i1],0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11);
+    }
+    MixColumn___1__tmp1_ = PERMUT_16(_tmp68_[0],1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);
+    MixColumn___1__tmp2_ = XOR(_tmp68_[0],MixColumn___1__tmp1_);
+    MixColumn___1__tmp3_ = PERMUT_16(_tmp68_[7],1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);
+    MixColumn___1__tmp4_ = XOR(MixColumn___1__tmp2_,MixColumn___1__tmp3_);
+    MixColumn___1__tmp6_ = XOR(_tmp68_[7],MixColumn___1__tmp3_);
+    MixColumn___1__tmp7_ = PERMUT_16(MixColumn___1__tmp6_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13);
+    tmp__[7] = XOR(MixColumn___1__tmp4_,MixColumn___1__tmp7_);
+    MixColumn___1__tmp12_ = XOR(MixColumn___1__tmp6_,MixColumn___1__tmp2_);
+    MixColumn___1__tmp13_ = PERMUT_16(_tmp68_[6],1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);
+    MixColumn___1__tmp14_ = XOR(MixColumn___1__tmp12_,MixColumn___1__tmp13_);
+    MixColumn___1__tmp16_ = XOR(_tmp68_[6],MixColumn___1__tmp13_);
+    MixColumn___1__tmp17_ = PERMUT_16(MixColumn___1__tmp16_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13);
+    tmp__[6] = XOR(MixColumn___1__tmp14_,MixColumn___1__tmp17_);
+    MixColumn___1__tmp20_ = PERMUT_16(_tmp68_[5],1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);
+    MixColumn___1__tmp21_ = XOR(MixColumn___1__tmp16_,MixColumn___1__tmp20_);
+    MixColumn___1__tmp23_ = XOR(_tmp68_[5],MixColumn___1__tmp20_);
+    MixColumn___1__tmp24_ = PERMUT_16(MixColumn___1__tmp23_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13);
+    tmp__[5] = XOR(MixColumn___1__tmp21_,MixColumn___1__tmp24_);
+    MixColumn___1__tmp29_ = XOR(MixColumn___1__tmp23_,MixColumn___1__tmp2_);
+    MixColumn___1__tmp30_ = PERMUT_16(_tmp68_[4],1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);
+    MixColumn___1__tmp31_ = XOR(MixColumn___1__tmp29_,MixColumn___1__tmp30_);
+    MixColumn___1__tmp33_ = XOR(_tmp68_[4],MixColumn___1__tmp30_);
+    MixColumn___1__tmp34_ = PERMUT_16(MixColumn___1__tmp33_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13);
+    tmp__[4] = XOR(MixColumn___1__tmp31_,MixColumn___1__tmp34_);
+    MixColumn___1__tmp39_ = XOR(MixColumn___1__tmp33_,MixColumn___1__tmp2_);
+    MixColumn___1__tmp40_ = PERMUT_16(_tmp68_[3],1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);
+    MixColumn___1__tmp41_ = XOR(MixColumn___1__tmp39_,MixColumn___1__tmp40_);
+    MixColumn___1__tmp43_ = XOR(_tmp68_[3],MixColumn___1__tmp40_);
+    MixColumn___1__tmp44_ = PERMUT_16(MixColumn___1__tmp43_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13);
+    tmp__[3] = XOR(MixColumn___1__tmp41_,MixColumn___1__tmp44_);
+    MixColumn___1__tmp47_ = PERMUT_16(_tmp68_[2],1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);
+    MixColumn___1__tmp48_ = XOR(MixColumn___1__tmp43_,MixColumn___1__tmp47_);
+    MixColumn___1__tmp50_ = XOR(_tmp68_[2],MixColumn___1__tmp47_);
+    MixColumn___1__tmp51_ = PERMUT_16(MixColumn___1__tmp50_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13);
+    tmp__[2] = XOR(MixColumn___1__tmp48_,MixColumn___1__tmp51_);
+    MixColumn___1__tmp54_ = PERMUT_16(_tmp68_[1],1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);
+    MixColumn___1__tmp55_ = XOR(MixColumn___1__tmp50_,MixColumn___1__tmp54_);
+    MixColumn___1__tmp57_ = XOR(_tmp68_[1],MixColumn___1__tmp54_);
+    MixColumn___1__tmp58_ = PERMUT_16(MixColumn___1__tmp57_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13);
+    tmp__[1] = XOR(MixColumn___1__tmp55_,MixColumn___1__tmp58_);
+    MixColumn___1__tmp62_ = XOR(MixColumn___1__tmp57_,MixColumn___1__tmp1_);
+    MixColumn___1__tmp65_ = PERMUT_16(MixColumn___1__tmp2_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13);
+    tmp__[0] = XOR(MixColumn___1__tmp62_,MixColumn___1__tmp65_);
+  }
+#ifdef _MCA
+    __asm volatile("# LLVM-MCA-END");
+#endif
+#ifdef _IACA
+    IACA_END
+#endif
+  _tmp69_[0] = XOR(tmp__[0],key__[9][0]);
+  _tmp69_[1] = XOR(tmp__[1],key__[9][1]);
+  _tmp69_[2] = XOR(tmp__[2],key__[9][2]);
+  _tmp69_[3] = XOR(tmp__[3],key__[9][3]);
+  _tmp69_[4] = XOR(tmp__[4],key__[9][4]);
+  _tmp69_[5] = XOR(tmp__[5],key__[9][5]);
+  _tmp69_[6] = XOR(tmp__[6],key__[9][6]);
+  _tmp69_[7] = XOR(tmp__[7],key__[9][7]);
+  SubBytes__(_tmp69_[0],_tmp69_[1],_tmp69_[2],_tmp69_[3],_tmp69_[4],_tmp69_[5],_tmp69_[6],_tmp69_[7],&_tmp70_[0],&_tmp70_[1],&_tmp70_[2],&_tmp70_[3],&_tmp70_[4],&_tmp70_[5],&_tmp70_[6],&_tmp70_[7]);
+  for (int i2 = 0; i2 <= 7; i2++) {
+    _tmp71_[i2] = PERMUT_16(_tmp70_[i2],0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11);
+  }
+  cipher__[0] = XOR(_tmp71_[0],key__[10][0]);
+  cipher__[1] = XOR(_tmp71_[1],key__[10][1]);
+  cipher__[2] = XOR(_tmp71_[2],key__[10][2]);
+  cipher__[3] = XOR(_tmp71_[3],key__[10][3]);
+  cipher__[4] = XOR(_tmp71_[4],key__[10][4]);
+  cipher__[5] = XOR(_tmp71_[5],key__[10][5]);
+  cipher__[6] = XOR(_tmp71_[6],key__[10][6]);
+  cipher__[7] = XOR(_tmp71_[7],key__[10][7]);
+
+}
+#else
 /* main function */
 void AES__ (/*inputs*/ DATATYPE plain__[8],DATATYPE key__[11][8], /*outputs*/ DATATYPE cipher__[8]) {
   
@@ -973,5 +1124,5 @@ void AES__ (/*inputs*/ DATATYPE plain__[8],DATATYPE key__[11][8], /*outputs*/ DA
   cipher__[7] = XOR(_tmp70_[7],key__[10][7]);
 
 }
- 
+#endif
 #endif
