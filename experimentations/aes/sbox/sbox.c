@@ -134,6 +134,8 @@ void speed() {
 }
 
 int main() {
-  //verif();
+  #ifdef VERIF
+  verif();
+  #endif
   speed();
 }
