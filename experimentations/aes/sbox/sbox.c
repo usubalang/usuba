@@ -40,7 +40,7 @@ void sbox();
 DATATYPE v0, v1, v2, v3, v4, v5, v6, v7;
 
 
-#ifdef STD
+#if defined(VERIF) && defined(STD)
 #define D DATATYPE
 #define FOR(x) for (D x = 0; x <= 1; x++)
 #define INIT(n0,n1,n2,n3,n4,n5,n6,n7) v##n0 = a; v##n1 = b; v##n2 = c; v##n3 = d; \
