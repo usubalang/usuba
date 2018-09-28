@@ -147,31 +147,11 @@
 
 sbox:
 	/* input:
-	 *	none
+	 *	xmm0-7: 8 input/output registers
 	*/
-
-    vmovdqa v0(%rip), %xmm0
-    vmovdqa v1(%rip), %xmm1
-    vmovdqa v2(%rip), %xmm2
-    vmovdqa v3(%rip), %xmm3
-    vmovdqa v4(%rip), %xmm4
-    vmovdqa v5(%rip), %xmm5
-    vmovdqa v6(%rip), %xmm6
-    vmovdqa v7(%rip), %xmm7
-    
 
 	_subbytes(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
 		 %xmm8, %xmm9, %xmm10, %xmm11, %xmm12, %xmm13, %xmm14, %xmm15);
-
-
-    vmovdqa %xmm0, v0(%rip)
-    vmovdqa %xmm1, v1(%rip)
-    vmovdqa %xmm2, v2(%rip)
-    vmovdqa %xmm3, v3(%rip)
-    vmovdqa %xmm4, v4(%rip)
-    vmovdqa %xmm5, v5(%rip)
-    vmovdqa %xmm6, v6(%rip)
-    vmovdqa %xmm7, v7(%rip)
     
     
 	ret;

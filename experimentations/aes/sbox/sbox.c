@@ -37,7 +37,24 @@ void sbox();
 
 
 
-DATATYPE v0, v1, v2, v3, v4, v5, v6, v7;
+#ifdef USUBA
+#include "usuba_base.c"
+#elif defined(KIVI)
+void sbox(__m128i,__m128i,__m128i,__m128i,__m128i,__m128i,__m128i,__m128i);
+#else
+#error You need to defined USUBA or KIVI
+#endif
+
+/* register DATATYPE* v0 asm ("r14"); */
+/* register DATATYPE* v1 asm ("r15"); */
+/* register DATATYPE* v2 asm ("r8"); */
+/* register DATATYPE* v3 asm ("r9"); */
+/* register DATATYPE* v4 asm ("r10"); */
+/* register DATATYPE* v5 asm ("r11"); */
+/* register DATATYPE* v6 asm ("r12"); */
+/* register DATATYPE* v7 asm ("r13"); */
+/* DATATYPE v1, v2, v3, v4, v5, v6, v7; */
+
 
 
 #if defined(VERIF) && defined(STD)
@@ -109,21 +126,43 @@ void verif() {
 #define verif() printf("Verif not implemeted for this arch.\n");
 #endif
 
-// Set SBOX to "usuba" or "kivi" (or anything else you define yourself)
+
 #define NB_LOOP 100000000
 void speed() {
+#ifdef STD
+  DATATYPE v0 = rand(), v1 = rand(), v2 = rand(), v3 = rand(),
+    v4 = rand(), v5 = rand(), v6 = rand(), v7 = rand();
+#elif defined(SSE)
+  DATATYPE v0 = _mm_set_epi64x(rand(),rand()),
+    v1 = _mm_set_epi64x(rand(),rand()),
+    v2 = _mm_set_epi64x(rand(),rand()),
+    v3 = _mm_set_epi64x(rand(),rand()),
+    v4 = _mm_set_epi64x(rand(),rand()),
+    v5 = _mm_set_epi64x(rand(),rand()),
+    v6 = _mm_set_epi64x(rand(),rand()),
+    v7 = _mm_set_epi64x(rand(),rand());
+#elif defined(AVX)
+  DATATYPE v0 = _mm256_set_epi64x(rand(),rand(),rand(),rand()),
+    v1 = _mm256_set_epi64x(rand(),rand(),rand(),rand()),
+    v2 = _mm256_set_epi64x(rand(),rand(),rand(),rand()),
+    v3 = _mm256_set_epi64x(rand(),rand(),rand(),rand()),
+    v4 = _mm256_set_epi64x(rand(),rand(),rand(),rand()),
+    v5 = _mm256_set_epi64x(rand(),rand(),rand(),rand()),
+    v6 = _mm256_set_epi64x(rand(),rand(),rand(),rand()),
+    v7 = _mm256_set_epi64x(rand(),rand(),rand(),rand());
+#endif
   for (int i = 0; i < 10000; i++) {
 #ifdef _MCA
     __asm __volatile__("# LLVM-MCA-BEGIN sbox");
 #endif
-    sbox();
+    sbox(v0,v1,v2,v3,v4,v5,v6,v7);
 #ifdef _MCA
     __asm __volatile__("# LLVM-MCA-END");
 #endif
   }
   uint64_t timer = _rdtsc();
   for (int i = 0; i < NB_LOOP; i++) {
-    sbox();
+    sbox(v0,v1,v2,v3,v4,v5,v6,v7);
   }
   timer = _rdtsc() - timer;
 
@@ -132,6 +171,8 @@ void speed() {
   FILE* fp = fopen("/dev/null","w");
   print();
 }
+
+
 
 int main() {
   #ifdef VERIF
