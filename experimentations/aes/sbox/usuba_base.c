@@ -1,5 +1,22 @@
 
-#define sbox(v0,v1,v2,v3,v4,v5,v6,v7) {         \
+#define usuba(v0,v1,v2,v3,v4,v5,v6,v7) {        \
+    ShiftRows(v0,v1,v2,v3,v4,v5,v6,v7);         \
+    SubBytes(v0,v1,v2,v3,v4,v5,v6,v7);          \
+    MixColumn(v0,v1,v2,v3,v4,v5,v6,v7);         \
+  }
+
+#define ShiftRows(v0,v1,v2,v3,v4,v5,v6,v7) {                    \
+    v0 = PERMUT_16(v0,0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11);   \
+    v1 = PERMUT_16(v1,0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11);   \
+    v2 = PERMUT_16(v2,0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11);   \
+    v3 = PERMUT_16(v3,0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11);   \
+    v4 = PERMUT_16(v4,0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11);   \
+    v5 = PERMUT_16(v5,0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11);   \
+    v6 = PERMUT_16(v6,0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11);   \
+    v7 = PERMUT_16(v7,0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11);   \
+  }
+
+#define SubBytes(v0,v1,v2,v3,v4,v5,v6,v7) {     \
                                                 \
     DATATYPE _tmp1_;                            \
     DATATYPE _tmp2_;                            \
@@ -229,4 +246,91 @@
     _tmp4_ = XOR(tc26,z17);                     \
     v2 = _tmp4_;                                \
     v5 = XOR(tc21,tc17);                        \
+  }
+
+
+
+#define MixColumn(v0,v1,v2,v3,v4,v5,v6,v7) {                            \
+                                                                        \
+    DATATYPE _tmp14_;                                                   \
+    DATATYPE _tmp15_;                                                   \
+    DATATYPE _tmp16_;                                                   \
+    DATATYPE _tmp18_;                                                   \
+    DATATYPE _tmp19_;                                                   \
+    DATATYPE _tmp22_;                                                   \
+    DATATYPE _tmp23_;                                                   \
+    DATATYPE _tmp25_;                                                   \
+    DATATYPE _tmp26_;                                                   \
+    DATATYPE _tmp31_;                                                   \
+    DATATYPE _tmp32_;                                                   \
+    DATATYPE _tmp33_;                                                   \
+    DATATYPE _tmp35_;                                                   \
+    DATATYPE _tmp36_;                                                   \
+    DATATYPE _tmp3_;                                                    \
+    DATATYPE _tmp41_;                                                   \
+    DATATYPE _tmp42_;                                                   \
+    DATATYPE _tmp43_;                                                   \
+    DATATYPE _tmp45_;                                                   \
+    DATATYPE _tmp46_;                                                   \
+    DATATYPE _tmp49_;                                                   \
+    DATATYPE _tmp4_;                                                    \
+    DATATYPE _tmp50_;                                                   \
+    DATATYPE _tmp52_;                                                   \
+    DATATYPE _tmp53_;                                                   \
+    DATATYPE _tmp56_;                                                   \
+    DATATYPE _tmp57_;                                                   \
+    DATATYPE _tmp59_;                                                   \
+    DATATYPE _tmp5_;                                                    \
+    DATATYPE _tmp60_;                                                   \
+    DATATYPE _tmp64_;                                                   \
+    DATATYPE _tmp67_;                                                   \
+    DATATYPE _tmp6_;                                                    \
+    DATATYPE _tmp8_;                                                    \
+    DATATYPE _tmp9_;                                                    \
+                                                                        \
+                                                                        \
+    _tmp3_ = PERMUT_16( v0,1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);      \
+    _tmp5_ = PERMUT_16( v7,1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);      \
+    _tmp15_ = PERMUT_16(v6,1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);      \
+    _tmp22_ = PERMUT_16(v5,1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);      \
+    _tmp32_ = PERMUT_16(v4,1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);      \
+    _tmp42_ = PERMUT_16(v3,1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);      \
+    _tmp49_ = PERMUT_16(v2,1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);      \
+    _tmp56_ = PERMUT_16(v1,1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12);      \
+    _tmp4_ = XOR(v0,_tmp3_);                                            \
+    _tmp8_ = XOR(v7,_tmp5_);                                            \
+    _tmp18_ = XOR(v6,_tmp15_);                                          \
+    _tmp25_ = XOR(v5,_tmp22_);                                          \
+    _tmp35_ = XOR(v4,_tmp32_);                                          \
+    _tmp45_ = XOR(v3,_tmp42_);                                          \
+    _tmp52_ = XOR(v2,_tmp49_);                                          \
+    _tmp59_ = XOR(v1,_tmp56_);                                          \
+    _tmp67_ = PERMUT_16(_tmp4_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13);  \
+    _tmp6_ = XOR(_tmp4_,_tmp5_);                                        \
+    _tmp9_ = PERMUT_16(_tmp8_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13);   \
+    _tmp14_ = XOR(_tmp8_,_tmp4_);                                       \
+    _tmp19_ = PERMUT_16(_tmp18_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13); \
+    _tmp23_ = XOR(_tmp18_,_tmp22_);                                     \
+    _tmp26_ = PERMUT_16(_tmp25_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13); \
+    _tmp31_ = XOR(_tmp25_,_tmp4_);                                      \
+    _tmp36_ = PERMUT_16(_tmp35_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13); \
+    _tmp41_ = XOR(_tmp35_,_tmp4_);                                      \
+    _tmp46_ = PERMUT_16(_tmp45_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13); \
+    _tmp50_ = XOR(_tmp45_,_tmp49_);                                     \
+    _tmp53_ = PERMUT_16(_tmp52_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13); \
+    _tmp57_ = XOR(_tmp52_,_tmp56_);                                     \
+    _tmp60_ = PERMUT_16(_tmp59_,2,3,0,1,6,7,4,5,10,11,8,9,14,15,12,13); \
+    _tmp64_ = XOR(_tmp59_,_tmp3_);                                      \
+    v7 = XOR(_tmp6_,_tmp9_);                                            \
+    _tmp16_ = XOR(_tmp14_,_tmp15_);                                     \
+    v5 = XOR(_tmp23_,_tmp26_);                                          \
+    _tmp33_ = XOR(_tmp31_,_tmp32_);                                     \
+    _tmp43_ = XOR(_tmp41_,_tmp42_);                                     \
+    v2 = XOR(_tmp50_,_tmp53_);                                          \
+    v1 = XOR(_tmp57_,_tmp60_);                                          \
+    v0 = XOR(_tmp64_,_tmp67_);                                          \
+    v6 = XOR(_tmp16_,_tmp19_);                                          \
+    v4 = XOR(_tmp33_,_tmp36_);                                          \
+    v3 = XOR(_tmp43_,_tmp46_);                                          \
+                                                                        \
   }

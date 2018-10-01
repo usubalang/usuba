@@ -1,153 +1,46 @@
 
-#define NO_RUNTIME
-#ifdef STD
-#include "STD.h"
-#elif defined(SSE)
-#include "SSE.h"
-#elif defined(AVX)
-#include "AVX.h"
-#else
-#error No architecture specified
-#endif
+#define kivi(v0,v1,v2,v3,v4,v5,v6,v7) {         \
+    /* subbytes(v0,v1,v2,v3,v4,v5,v6,v7); */          \
+    /* shiftrows(v0,v1,v2,v3,v4,v5,v6,v7); */         \
+    /* shiftrows_subbytes(v0,v1,v2,v3,v4,v5,v6,v7); */      \
+    shiftrows_subbytes_mixcolumn(v0,v1,v2,v3,v4,v5,v6,v7);  \
+  }
 
-extern DATATYPE v0, v1, v2, v3, v4, v5, v6, v7;
+   
+uint64_t Lshiftrow_shuf[2]   = { 0x030e09040f0a0500, 0x0b06010c07020d08 };
+uint64_t Lror_byte_1_shuf[2] = { 0x0407060500030201, 0x0c0f0e0d080b0a09 };
+uint64_t Lror_byte_2_shuf[2] = { 0x0504070601000302, 0x0d0c0f0e09080b0a };
 
-void sbox(){
-  DATATYPE xmm8, xmm9, xmm10, xmm11, xmm12, xmm13, xmm14, xmm15;
-  v5 = XOR(v6,v5);
-  v2 = XOR(v1,v2);
-  xmm8 = XOR(v0,v5);
-  v6 = XOR(v2,v6);
-  v3 = XOR(v0,v3);
-  v6 = XOR(v3,v6);
-  v3 = XOR(v7,v3);
-  v7 = XOR(xmm8,v7);
-  v3 = XOR(v4,v3);
-  v4 = XOR(xmm8,v4);
-  v3 = XOR(v1,v3);
-  v2 = XOR(v7,v2);
-  v1 = XOR(xmm8,v1);
-  xmm11 = XOR(v7,v4);
-  xmm10 = XOR(v1,v2);
-  xmm9 = XOR(xmm8,v3);
-  xmm13 = XOR(v2,v4);
-  xmm12 = XOR(v6,v0);
-  xmm15 = XOR(xmm11,xmm10);
-  v5 = AND(xmm10,xmm9);
-  xmm10 = OR(xmm9,xmm10);
-  xmm14 = AND(xmm11,xmm12);
-  xmm11 = OR(xmm12,xmm11);
-  xmm12 = XOR(xmm9,xmm12);
-  xmm15 = AND(xmm12,xmm15);
-  xmm12 = XOR(v3,v0);
-  xmm13 = AND(xmm12,xmm13);
-  xmm11 = XOR(xmm13,xmm11);
-  xmm10 = XOR(xmm13,xmm10);
-  xmm13 = XOR(v7,v1);
-  xmm12 = XOR(xmm8,v6);
-  xmm9 = OR(xmm13,xmm12);
-  xmm13 = AND(xmm12,xmm13);
-  v5 = XOR(xmm13,v5);
-  xmm11 = XOR(xmm15,xmm11);
-  xmm10 = XOR(xmm14,xmm10);
-  xmm9 = XOR(xmm15,xmm9);
-  v5 = XOR(xmm14,v5);
-  xmm9 = XOR(xmm14,xmm9);
-  xmm12 = AND(v2,v3);
-  xmm13 = AND(v4,v0);
-  xmm14 = AND(v1,xmm8);
-  xmm15 = OR(v7,v6);
-  xmm11 = XOR(xmm12,xmm11);
-  xmm10 = XOR(xmm13,xmm10);
-  xmm9 = XOR(xmm14,xmm9);
-  v5 = XOR(xmm15,v5);
-  xmm12 = XOR(xmm11,xmm10);
-  xmm11 = AND(xmm9,xmm11);
-  xmm14 = XOR(v5,xmm11);
-  xmm15 = AND(xmm12,xmm14);
-  xmm15 = XOR(xmm10,xmm15);
-  xmm13 = XOR(xmm9,v5);
-  xmm11 = XOR(xmm10,xmm11);
-  xmm13 = AND(xmm11,xmm13);
-  xmm13 = XOR(v5,xmm13);
-  xmm9 = XOR(xmm13,xmm9);
-  xmm10 = XOR(xmm14,xmm13);
-  xmm10 = AND(v5,xmm10);
-  xmm9 = XOR(xmm10,xmm9);
-  xmm14 = XOR(xmm10,xmm14);
-  xmm14 = AND(xmm15,xmm14);
-  xmm14 = XOR(xmm12,xmm14);
-  xmm10 = XOR(xmm15,xmm14);
-  xmm10 = AND(v6,xmm10);
-  xmm12 = XOR(v6,xmm8);
-  xmm12 = AND(xmm14,xmm12);
-  v5 = AND(xmm8,xmm15);
-  xmm12 = XOR(v5,xmm12);
-  v5 = XOR(xmm10,v5);
-  v6 = XOR(v0,v6);
-  xmm8 = XOR(v3,xmm8);
-  xmm15 = XOR(xmm13,xmm15);
-  xmm14 = XOR(xmm9,xmm14);
-  xmm11 = XOR(xmm15,xmm14);
-  xmm11 = AND(v6,xmm11);
-  v6 = XOR(xmm8,v6);
-  v6 = AND(xmm14,v6);
-  xmm8 = AND(xmm15,xmm8);
-  xmm8 = XOR(v6,xmm8);
-  v6 = XOR(xmm11,v6);
-  xmm10 = XOR(xmm13,xmm9);
-  xmm10 = AND(v0,xmm10);
-  v0 = XOR(v0,v3);
-  v0 = AND(xmm9,v0);
-  v3 = AND(v3,xmm13);
-  v0 = XOR(v3,v0);
-  v3 = XOR(xmm10,v3);
-  v0 = XOR(v6,v0);
-  v6 = XOR(xmm12,v6);
-  v3 = XOR(xmm8,v3);
-  xmm8 = XOR(v5,xmm8);
-  xmm12 = XOR(v7,v4);
-  v5 = XOR(v1,v2);
-  xmm11 = XOR(xmm15,xmm14);
-  xmm11 = AND(xmm12,xmm11);
-  xmm12 = XOR(v5,xmm12);
-  xmm12 = AND(xmm14,xmm12);
-  v5 = AND(xmm15,v5);
-  v5 = XOR(xmm12,v5);
-  xmm12 = XOR(xmm11,xmm12);
-  xmm10 = XOR(xmm13,xmm9);
-  xmm10 = AND(v4,xmm10);
-  v4 = XOR(v4,v2);
-  v4 = AND(xmm9,v4);
-  v2 = AND(v2,xmm13);
-  v4 = XOR(v2,v4);
-  v2 = XOR(xmm10,v2);
-  xmm15 = XOR(xmm13,xmm15);
-  xmm14 = XOR(xmm9,xmm14);
-  xmm11 = XOR(xmm15,xmm14);
-  xmm11 = AND(v7,xmm11);
-  v7 = XOR(v7,v1);
-  v7 = AND(xmm14,v7);
-  v1 = AND(v1,xmm15);
-  v7 = XOR(v1,v7);
-  v1 = XOR(xmm11,v1);
-  v7 = XOR(xmm12,v7);
-  v4 = XOR(xmm12,v4);
-  v1 = XOR(v5,v1);
-  v2 = XOR(v5,v2);
-  v5 = XOR(v7,v0);
-  xmm9 = XOR(v1,v6);
-  xmm10 = XOR(v4,v5);
-  xmm12 = XOR(v6,v0);
-  v0 = XOR(v0,xmm9);
-  v1 = XOR(xmm8,xmm9);
-  v7 = XOR(xmm8,v2);
-  v6 = XOR(v2,v3);
-  v2 = XOR(xmm10,v7);
-  v4 = XOR(v3,v7);
-  v3 = XOR(xmm12,v4);
-  v0 = NOT(v0);
-  v1 = NOT(v1);
-  v5 = NOT(v5);
-  v6 = NOT(v6);
-}
+#define shiftrows_subbytes_mixcolumn(v7,v6,v5,v4,v3,v2,v1,v0)           \
+  __asm__ (                                                             \
+                                                                        \
+           "vmovdqa %8, %%xmm8; vpshufb %%xmm8, %0, %0; vpshufb %%xmm8, %1, %1; vpshufb %%xmm8, %2, %2; vpshufb %%xmm8, %3, %3; vpshufb %%xmm8, %4, %4; vpshufb %%xmm8, %5, %5; vpshufb %%xmm8, %6, %6; vpshufb %%xmm8, %7, %7;" \
+                                                                        \
+           "vpxor %6, %5, %5; vpxor %1, %2, %2; vpxor %0, %5, %%xmm8; vpxor %2, %6, %6; vpxor %0, %3, %3; vpxor %3, %6, %6; vpxor %7, %3, %3; vpxor %%xmm8, %7, %7; vpxor %4, %3, %3; vpxor %%xmm8, %4, %4; vpxor %1, %3, %3; vpxor %7, %2, %2; vpxor %%xmm8, %1, %1;; vpxor %7, %4, %%xmm11; vpxor %1, %2, %%xmm10; vpxor %%xmm8, %3, %%xmm9; vpxor %2, %4, %%xmm13; vpxor %6, %0, %%xmm12; vpxor %%xmm11, %%xmm10, %%xmm15; vpand %%xmm10, %%xmm9, %5; vpor %%xmm9, %%xmm10, %%xmm10; vpand %%xmm11, %%xmm12, %%xmm14; vpor %%xmm12, %%xmm11, %%xmm11; vpxor %%xmm9, %%xmm12, %%xmm12; vpand %%xmm12, %%xmm15, %%xmm15; vpxor %3, %0, %%xmm12; vpand %%xmm12, %%xmm13, %%xmm13; vpxor %%xmm13, %%xmm11, %%xmm11; vpxor %%xmm13, %%xmm10, %%xmm10; vpxor %7, %1, %%xmm13; vpxor %%xmm8, %6, %%xmm12; vpor %%xmm13, %%xmm12, %%xmm9; vpand %%xmm12, %%xmm13, %%xmm13; vpxor %%xmm13, %5, %5; vpxor %%xmm15, %%xmm11, %%xmm11; vpxor %%xmm14, %%xmm10, %%xmm10; vpxor %%xmm15, %%xmm9, %%xmm9; vpxor %%xmm14, %5, %5; vpxor %%xmm14, %%xmm9, %%xmm9; vpand %2, %3, %%xmm12; vpand %4, %0, %%xmm13; vpand %1, %%xmm8, %%xmm14; vpor %7, %6, %%xmm15; vpxor %%xmm12, %%xmm11, %%xmm11; vpxor %%xmm13, %%xmm10, %%xmm10; vpxor %%xmm14, %%xmm9, %%xmm9; vpxor %%xmm15, %5, %5; vpxor %%xmm11, %%xmm10, %%xmm12; vpand %%xmm9, %%xmm11, %%xmm11; vpxor %5, %%xmm11, %%xmm14; vpand %%xmm12, %%xmm14, %%xmm15; vpxor %%xmm10, %%xmm15, %%xmm15; vpxor %%xmm9, %5, %%xmm13; vpxor %%xmm10, %%xmm11, %%xmm11; vpand %%xmm11, %%xmm13, %%xmm13; vpxor %5, %%xmm13, %%xmm13; vpxor %%xmm13, %%xmm9, %%xmm9; vpxor %%xmm14, %%xmm13, %%xmm10; vpand %5, %%xmm10, %%xmm10; vpxor %%xmm10, %%xmm9, %%xmm9; vpxor %%xmm10, %%xmm14, %%xmm14; vpand %%xmm15, %%xmm14, %%xmm14; vpxor %%xmm12, %%xmm14, %%xmm14; vpxor %%xmm15, %%xmm14, %%xmm10; vpand %6, %%xmm10, %%xmm10; vpxor %6, %%xmm8, %%xmm12; vpand %%xmm14, %%xmm12, %%xmm12; vpand %%xmm8, %%xmm15, %5; vpxor %5, %%xmm12, %%xmm12; vpxor %%xmm10, %5, %5;; vpxor %0, %6, %6; vpxor %3, %%xmm8, %%xmm8; vpxor %%xmm13, %%xmm15, %%xmm15; vpxor %%xmm9, %%xmm14, %%xmm14; vpxor %%xmm15, %%xmm14, %%xmm11; vpand %6, %%xmm11, %%xmm11; vpxor %%xmm8, %6, %6; vpand %%xmm14, %6, %6; vpand %%xmm15, %%xmm8, %%xmm8; vpxor %6, %%xmm8, %%xmm8; vpxor %%xmm11, %6, %6;; vpxor %%xmm13, %%xmm9, %%xmm10; vpand %0, %%xmm10, %%xmm10; vpxor %0, %3, %0; vpand %%xmm9, %0, %0; vpand %3, %%xmm13, %3; vpxor %3, %0, %0; vpxor %%xmm10, %3, %3;; vpxor %6, %0, %0; vpxor %%xmm12, %6, %6; vpxor %%xmm8, %3, %3; vpxor %5, %%xmm8, %%xmm8; vpxor %7, %4, %%xmm12; vpxor %1, %2, %5; vpxor %%xmm15, %%xmm14, %%xmm11; vpand %%xmm12, %%xmm11, %%xmm11; vpxor %5, %%xmm12, %%xmm12; vpand %%xmm14, %%xmm12, %%xmm12; vpand %%xmm15, %5, %5; vpxor %%xmm12, %5, %5; vpxor %%xmm11, %%xmm12, %%xmm12;; vpxor %%xmm13, %%xmm9, %%xmm10; vpand %4, %%xmm10, %%xmm10; vpxor %4, %2, %4; vpand %%xmm9, %4, %4; vpand %2, %%xmm13, %2; vpxor %2, %4, %4; vpxor %%xmm10, %2, %2;; vpxor %%xmm13, %%xmm15, %%xmm15; vpxor %%xmm9, %%xmm14, %%xmm14; vpxor %%xmm15, %%xmm14, %%xmm11; vpand %7, %%xmm11, %%xmm11; vpxor %7, %1, %7; vpand %%xmm14, %7, %7; vpand %1, %%xmm15, %1; vpxor %1, %7, %7; vpxor %%xmm11, %1, %1;; vpxor %%xmm12, %7, %7; vpxor %%xmm12, %4, %4; vpxor %5, %1, %1; vpxor %5, %2, %2;;; vpxor %7, %0, %5; vpxor %1, %6, %%xmm9; vpxor %4, %5, %%xmm10; vpxor %6, %0, %%xmm12; vpxor %0, %%xmm9, %0; vpxor %%xmm8, %%xmm9, %1; vpxor %%xmm8, %2, %7; vpxor %2, %3, %6; vpxor %%xmm10, %7, %2; vpxor %3, %7, %4; vpxor %%xmm12, %4, %3;" \
+                                                                        \
+           "vmovdqa Lror_byte_1_shuf, %%xmm14; vmovdqa Lror_byte_2_shuf, %%xmm15; vpshufb %%xmm14, %0, %%xmm8; vpxor %0, %%xmm8, %0; vpshufb %%xmm14, %1, %%xmm9; vpxor %1, %%xmm9, %1; vpshufb %%xmm14, %2, %%xmm10; vpxor %2, %%xmm10, %2; vpshufb %%xmm14, %3, %%xmm11; vpxor %3, %%xmm11, %3; vpxor %0, %%xmm9, %%xmm9; vpshufb %%xmm15, %0, %0; vpxor %1, %%xmm10, %%xmm10; vpshufb %%xmm15, %1, %1; vpxor %2, %%xmm11, %%xmm11; vpshufb %%xmm15, %2, %2; vpxor %2, %%xmm10, %2; vpshufb %%xmm14, %7, %%xmm10; vpxor %7, %%xmm10, %7; vpshufb %%xmm14, %4, %%xmm12; vpxor %4, %%xmm12, %4; vpshufb %%xmm14, %5, %%xmm13; vpxor %5, %%xmm13, %5; vpshufb %%xmm14, %6, %%xmm14; vpxor %6, %%xmm14, %6; vpxor %3, %%xmm12, %%xmm12; vpshufb %%xmm15, %3, %3; vpxor %4, %%xmm13, %%xmm13; vpshufb %%xmm15, %4, %4; vpxor %5, %%xmm14, %%xmm14; vpshufb %%xmm15, %5, %5; vpxor %5, %%xmm13, %5; vpxor %6, %%xmm10, %%xmm10; vpshufb %%xmm15, %6, %6; vpxor %6, %%xmm14, %6; vpxor %7, %%xmm8, %%xmm8; vpxor %0, %%xmm8, %0; vpxor %7, %%xmm9, %%xmm9; vpxor %1, %%xmm9, %1; vpxor %7, %%xmm11, %%xmm11; vpxor %3, %%xmm11, %3; vpxor %7, %%xmm12, %%xmm12; vpxor %4, %%xmm12, %4; vpshufb %%xmm15, %7, %7; vpxor %7, %%xmm10, %7;" \
+           :                                                            \
+                                                                        \
+           "+x" (v0), "+x" (v1), "+x" (v2), "+x" (v3), "+x" (v4), "+x" (v5), "+x" (v6), "+x" (v7) : \
+                                                                        "m" (Lshiftrow_shuf), "m" (Lror_byte_1_shuf), "m" (Lror_byte_2_shuf) : \
+           "xmm8", "xmm9", "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15");
+
+
+#define shiftrows_subbytes(v7,v6,v5,v4,v3,v2,v1,v0)                     \
+  __asm__ (                                                             \
+                                                                        \
+           "vmovdqa %8, %%xmm8; vpshufb %%xmm8, %0, %0; vpshufb %%xmm8, %1, %1; vpshufb %%xmm8, %2, %2; vpshufb %%xmm8, %3, %3; vpshufb %%xmm8, %4, %4; vpshufb %%xmm8, %5, %5; vpshufb %%xmm8, %6, %6; vpshufb %%xmm8, %7, %7;" \
+                                                                        \
+           "vpxor %6, %5, %5; vpxor %1, %2, %2; vpxor %0, %5, %%xmm8; vpxor %2, %6, %6; vpxor %0, %3, %3; vpxor %3, %6, %6; vpxor %7, %3, %3; vpxor %%xmm8, %7, %7; vpxor %4, %3, %3; vpxor %%xmm8, %4, %4; vpxor %1, %3, %3; vpxor %7, %2, %2; vpxor %%xmm8, %1, %1;; vpxor %7, %4, %%xmm11; vpxor %1, %2, %%xmm10; vpxor %%xmm8, %3, %%xmm9; vpxor %2, %4, %%xmm13; vpxor %6, %0, %%xmm12; vpxor %%xmm11, %%xmm10, %%xmm15; vpand %%xmm10, %%xmm9, %5; vpor %%xmm9, %%xmm10, %%xmm10; vpand %%xmm11, %%xmm12, %%xmm14; vpor %%xmm12, %%xmm11, %%xmm11; vpxor %%xmm9, %%xmm12, %%xmm12; vpand %%xmm12, %%xmm15, %%xmm15; vpxor %3, %0, %%xmm12; vpand %%xmm12, %%xmm13, %%xmm13; vpxor %%xmm13, %%xmm11, %%xmm11; vpxor %%xmm13, %%xmm10, %%xmm10; vpxor %7, %1, %%xmm13; vpxor %%xmm8, %6, %%xmm12; vpor %%xmm13, %%xmm12, %%xmm9; vpand %%xmm12, %%xmm13, %%xmm13; vpxor %%xmm13, %5, %5; vpxor %%xmm15, %%xmm11, %%xmm11; vpxor %%xmm14, %%xmm10, %%xmm10; vpxor %%xmm15, %%xmm9, %%xmm9; vpxor %%xmm14, %5, %5; vpxor %%xmm14, %%xmm9, %%xmm9; vpand %2, %3, %%xmm12; vpand %4, %0, %%xmm13; vpand %1, %%xmm8, %%xmm14; vpor %7, %6, %%xmm15; vpxor %%xmm12, %%xmm11, %%xmm11; vpxor %%xmm13, %%xmm10, %%xmm10; vpxor %%xmm14, %%xmm9, %%xmm9; vpxor %%xmm15, %5, %5; vpxor %%xmm11, %%xmm10, %%xmm12; vpand %%xmm9, %%xmm11, %%xmm11; vpxor %5, %%xmm11, %%xmm14; vpand %%xmm12, %%xmm14, %%xmm15; vpxor %%xmm10, %%xmm15, %%xmm15; vpxor %%xmm9, %5, %%xmm13; vpxor %%xmm10, %%xmm11, %%xmm11; vpand %%xmm11, %%xmm13, %%xmm13; vpxor %5, %%xmm13, %%xmm13; vpxor %%xmm13, %%xmm9, %%xmm9; vpxor %%xmm14, %%xmm13, %%xmm10; vpand %5, %%xmm10, %%xmm10; vpxor %%xmm10, %%xmm9, %%xmm9; vpxor %%xmm10, %%xmm14, %%xmm14; vpand %%xmm15, %%xmm14, %%xmm14; vpxor %%xmm12, %%xmm14, %%xmm14; vpxor %%xmm15, %%xmm14, %%xmm10; vpand %6, %%xmm10, %%xmm10; vpxor %6, %%xmm8, %%xmm12; vpand %%xmm14, %%xmm12, %%xmm12; vpand %%xmm8, %%xmm15, %5; vpxor %5, %%xmm12, %%xmm12; vpxor %%xmm10, %5, %5;; vpxor %0, %6, %6; vpxor %3, %%xmm8, %%xmm8; vpxor %%xmm13, %%xmm15, %%xmm15; vpxor %%xmm9, %%xmm14, %%xmm14; vpxor %%xmm15, %%xmm14, %%xmm11; vpand %6, %%xmm11, %%xmm11; vpxor %%xmm8, %6, %6; vpand %%xmm14, %6, %6; vpand %%xmm15, %%xmm8, %%xmm8; vpxor %6, %%xmm8, %%xmm8; vpxor %%xmm11, %6, %6;; vpxor %%xmm13, %%xmm9, %%xmm10; vpand %0, %%xmm10, %%xmm10; vpxor %0, %3, %0; vpand %%xmm9, %0, %0; vpand %3, %%xmm13, %3; vpxor %3, %0, %0; vpxor %%xmm10, %3, %3;; vpxor %6, %0, %0; vpxor %%xmm12, %6, %6; vpxor %%xmm8, %3, %3; vpxor %5, %%xmm8, %%xmm8; vpxor %7, %4, %%xmm12; vpxor %1, %2, %5; vpxor %%xmm15, %%xmm14, %%xmm11; vpand %%xmm12, %%xmm11, %%xmm11; vpxor %5, %%xmm12, %%xmm12; vpand %%xmm14, %%xmm12, %%xmm12; vpand %%xmm15, %5, %5; vpxor %%xmm12, %5, %5; vpxor %%xmm11, %%xmm12, %%xmm12;; vpxor %%xmm13, %%xmm9, %%xmm10; vpand %4, %%xmm10, %%xmm10; vpxor %4, %2, %4; vpand %%xmm9, %4, %4; vpand %2, %%xmm13, %2; vpxor %2, %4, %4; vpxor %%xmm10, %2, %2;; vpxor %%xmm13, %%xmm15, %%xmm15; vpxor %%xmm9, %%xmm14, %%xmm14; vpxor %%xmm15, %%xmm14, %%xmm11; vpand %7, %%xmm11, %%xmm11; vpxor %7, %1, %7; vpand %%xmm14, %7, %7; vpand %1, %%xmm15, %1; vpxor %1, %7, %7; vpxor %%xmm11, %1, %1;; vpxor %%xmm12, %7, %7; vpxor %%xmm12, %4, %4; vpxor %5, %1, %1; vpxor %5, %2, %2;;; vpxor %7, %0, %5; vpxor %1, %6, %%xmm9; vpxor %4, %5, %%xmm10; vpxor %6, %0, %%xmm12; vpxor %0, %%xmm9, %0; vpxor %%xmm8, %%xmm9, %1; vpxor %%xmm8, %2, %7; vpxor %2, %3, %6; vpxor %%xmm10, %7, %2; vpxor %3, %7, %4; vpxor %%xmm12, %4, %3;" \
+                                                                        \
+           :                                                            \
+                                                                        \
+           "+x" (v0), "+x" (v1), "+x" (v2), "+x" (v3), "+x" (v4), "+x" (v5), "+x" (v6), "+x" (v7) : \
+           "m" (Lshiftrow_shuf) :                                       \
+           "xmm8", "xmm9", "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15");
+
+#define shiftrows(v7,v6,v5,v4,v3,v2,v1,v0)                              \
+  __asm__ ("vmovdqa %8, %%xmm8; vpshufb %%xmm8, %0, %0; vpshufb %%xmm8, %1, %1; vpshufb %%xmm8, %2, %2; vpshufb %%xmm8, %3, %3; vpshufb %%xmm8, %4, %4; vpshufb %%xmm8, %5, %5; vpshufb %%xmm8, %6, %6; vpshufb %%xmm8, %7, %7;" : "+x" (v0), "+x" (v1), "+x" (v2), "+x" (v3), "+x" (v4), "+x" (v5), "+x" (v6), "+x" (v7) : "m" (Lshiftrow_shuf) : "xmm8" );
+
+#define subbytes(v7,v6,v5,v4,v3,v2,v1,v0)                               \
+  __asm__ ("vpxor %6, %5, %5; vpxor %1, %2, %2; vpxor %0, %5, %%xmm8; vpxor %2, %6, %6; vpxor %0, %3, %3; vpxor %3, %6, %6; vpxor %7, %3, %3; vpxor %%xmm8, %7, %7; vpxor %4, %3, %3; vpxor %%xmm8, %4, %4; vpxor %1, %3, %3; vpxor %7, %2, %2; vpxor %%xmm8, %1, %1;; vpxor %7, %4, %%xmm11; vpxor %1, %2, %%xmm10; vpxor %%xmm8, %3, %%xmm9; vpxor %2, %4, %%xmm13; vpxor %6, %0, %%xmm12; vpxor %%xmm11, %%xmm10, %%xmm15; vpand %%xmm10, %%xmm9, %5; vpor %%xmm9, %%xmm10, %%xmm10; vpand %%xmm11, %%xmm12, %%xmm14; vpor %%xmm12, %%xmm11, %%xmm11; vpxor %%xmm9, %%xmm12, %%xmm12; vpand %%xmm12, %%xmm15, %%xmm15; vpxor %3, %0, %%xmm12; vpand %%xmm12, %%xmm13, %%xmm13; vpxor %%xmm13, %%xmm11, %%xmm11; vpxor %%xmm13, %%xmm10, %%xmm10; vpxor %7, %1, %%xmm13; vpxor %%xmm8, %6, %%xmm12; vpor %%xmm13, %%xmm12, %%xmm9; vpand %%xmm12, %%xmm13, %%xmm13; vpxor %%xmm13, %5, %5; vpxor %%xmm15, %%xmm11, %%xmm11; vpxor %%xmm14, %%xmm10, %%xmm10; vpxor %%xmm15, %%xmm9, %%xmm9; vpxor %%xmm14, %5, %5; vpxor %%xmm14, %%xmm9, %%xmm9; vpand %2, %3, %%xmm12; vpand %4, %0, %%xmm13; vpand %1, %%xmm8, %%xmm14; vpor %7, %6, %%xmm15; vpxor %%xmm12, %%xmm11, %%xmm11; vpxor %%xmm13, %%xmm10, %%xmm10; vpxor %%xmm14, %%xmm9, %%xmm9; vpxor %%xmm15, %5, %5; vpxor %%xmm11, %%xmm10, %%xmm12; vpand %%xmm9, %%xmm11, %%xmm11; vpxor %5, %%xmm11, %%xmm14; vpand %%xmm12, %%xmm14, %%xmm15; vpxor %%xmm10, %%xmm15, %%xmm15; vpxor %%xmm9, %5, %%xmm13; vpxor %%xmm10, %%xmm11, %%xmm11; vpand %%xmm11, %%xmm13, %%xmm13; vpxor %5, %%xmm13, %%xmm13; vpxor %%xmm13, %%xmm9, %%xmm9; vpxor %%xmm14, %%xmm13, %%xmm10; vpand %5, %%xmm10, %%xmm10; vpxor %%xmm10, %%xmm9, %%xmm9; vpxor %%xmm10, %%xmm14, %%xmm14; vpand %%xmm15, %%xmm14, %%xmm14; vpxor %%xmm12, %%xmm14, %%xmm14; vpxor %%xmm15, %%xmm14, %%xmm10; vpand %6, %%xmm10, %%xmm10; vpxor %6, %%xmm8, %%xmm12; vpand %%xmm14, %%xmm12, %%xmm12; vpand %%xmm8, %%xmm15, %5; vpxor %5, %%xmm12, %%xmm12; vpxor %%xmm10, %5, %5;; vpxor %0, %6, %6; vpxor %3, %%xmm8, %%xmm8; vpxor %%xmm13, %%xmm15, %%xmm15; vpxor %%xmm9, %%xmm14, %%xmm14; vpxor %%xmm15, %%xmm14, %%xmm11; vpand %6, %%xmm11, %%xmm11; vpxor %%xmm8, %6, %6; vpand %%xmm14, %6, %6; vpand %%xmm15, %%xmm8, %%xmm8; vpxor %6, %%xmm8, %%xmm8; vpxor %%xmm11, %6, %6;; vpxor %%xmm13, %%xmm9, %%xmm10; vpand %0, %%xmm10, %%xmm10; vpxor %0, %3, %0; vpand %%xmm9, %0, %0; vpand %3, %%xmm13, %3; vpxor %3, %0, %0; vpxor %%xmm10, %3, %3;; vpxor %6, %0, %0; vpxor %%xmm12, %6, %6; vpxor %%xmm8, %3, %3; vpxor %5, %%xmm8, %%xmm8; vpxor %7, %4, %%xmm12; vpxor %1, %2, %5; vpxor %%xmm15, %%xmm14, %%xmm11; vpand %%xmm12, %%xmm11, %%xmm11; vpxor %5, %%xmm12, %%xmm12; vpand %%xmm14, %%xmm12, %%xmm12; vpand %%xmm15, %5, %5; vpxor %%xmm12, %5, %5; vpxor %%xmm11, %%xmm12, %%xmm12;; vpxor %%xmm13, %%xmm9, %%xmm10; vpand %4, %%xmm10, %%xmm10; vpxor %4, %2, %4; vpand %%xmm9, %4, %4; vpand %2, %%xmm13, %2; vpxor %2, %4, %4; vpxor %%xmm10, %2, %2;; vpxor %%xmm13, %%xmm15, %%xmm15; vpxor %%xmm9, %%xmm14, %%xmm14; vpxor %%xmm15, %%xmm14, %%xmm11; vpand %7, %%xmm11, %%xmm11; vpxor %7, %1, %7; vpand %%xmm14, %7, %7; vpand %1, %%xmm15, %1; vpxor %1, %7, %7; vpxor %%xmm11, %1, %1;; vpxor %%xmm12, %7, %7; vpxor %%xmm12, %4, %4; vpxor %5, %1, %1; vpxor %5, %2, %2;;; vpxor %7, %0, %5; vpxor %1, %6, %%xmm9; vpxor %4, %5, %%xmm10; vpxor %6, %0, %%xmm12; vpxor %0, %%xmm9, %0; vpxor %%xmm8, %%xmm9, %1; vpxor %%xmm8, %2, %7; vpxor %2, %3, %6; vpxor %%xmm10, %7, %2; vpxor %3, %7, %4; vpxor %%xmm12, %4, %3;" : "+x" (v0), "+x" (v1), "+x" (v2), "+x" (v3), "+x" (v4), "+x" (v5), "+x" (v6), "+x" (v7) :: "xmm8", "xmm9", "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15");
