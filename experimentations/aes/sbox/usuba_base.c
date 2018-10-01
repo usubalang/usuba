@@ -216,17 +216,17 @@
     tc17 = XOR(z14,tc10);                       \
     tc18 = XOR(tc13,tc14);                      \
     _tmp1_ = XOR(z12,tc18);                     \
-    v7 = NOT(_tmp1_);                           \
+    v7 = _tmp1_;                                \
     tc20 = XOR(z15,tc16);                       \
     tc21 = XOR(tc2,z11);                        \
     v0 = XOR(tc3,tc16);                         \
     _tmp2_ = XOR(tc10,tc18);                    \
-    v6 = NOT(_tmp2_);                           \
+    v6 = _tmp2_;                                \
     v4 = XOR(tc14,v3);                          \
     _tmp3_ = XOR(v3,tc16);                      \
-    v1 = NOT(_tmp3_);                           \
+    v1 = _tmp3_;                                \
     tc26 = XOR(tc17,tc20);                      \
     _tmp4_ = XOR(tc26,z17);                     \
-    v2 = NOT(_tmp4_);                           \
+    v2 = _tmp4_;                                \
     v5 = XOR(tc21,tc17);                        \
   }

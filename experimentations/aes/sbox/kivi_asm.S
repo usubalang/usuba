@@ -149,9 +149,17 @@ sbox:
 	/* input:
 	 *	xmm0-7: 8 input/output registers
 	*/
-
+#ifdef _MCA    
+	#APP
+	# LLVM-MCA-BEGIN sbox
+	#NO_APP
+#endif    
 	_subbytes(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
 		 %xmm8, %xmm9, %xmm10, %xmm11, %xmm12, %xmm13, %xmm14, %xmm15);
-    
+#ifdef _MCA
+	#APP
+	# LLVM-MCA-END
+	#NO_APP
+#endif
     
 	ret;

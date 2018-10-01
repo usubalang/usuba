@@ -40,7 +40,8 @@ void sbox();
 #ifdef USUBA
 #include "usuba_base.c"
 #elif defined(KIVI)
-void sbox(__m128i,__m128i,__m128i,__m128i,__m128i,__m128i,__m128i,__m128i);
+#define sbox(v7,v6,v5,v4,v3,v2,v1,v0)                                     \
+__asm__ ("vpxor %6, %5, %5; vpxor %1, %2, %2; vpxor %0, %5, %%xmm8; vpxor %2, %6, %6; vpxor %0, %3, %3; vpxor %3, %6, %6; vpxor %7, %3, %3; vpxor %%xmm8, %7, %7; vpxor %4, %3, %3; vpxor %%xmm8, %4, %4; vpxor %1, %3, %3; vpxor %7, %2, %2; vpxor %%xmm8, %1, %1;; vpxor %7, %4, %%xmm11; vpxor %1, %2, %%xmm10; vpxor %%xmm8, %3, %%xmm9; vpxor %2, %4, %%xmm13; vpxor %6, %0, %%xmm12; vpxor %%xmm11, %%xmm10, %%xmm15; vpand %%xmm10, %%xmm9, %5; vpor %%xmm9, %%xmm10, %%xmm10; vpand %%xmm11, %%xmm12, %%xmm14; vpor %%xmm12, %%xmm11, %%xmm11; vpxor %%xmm9, %%xmm12, %%xmm12; vpand %%xmm12, %%xmm15, %%xmm15; vpxor %3, %0, %%xmm12; vpand %%xmm12, %%xmm13, %%xmm13; vpxor %%xmm13, %%xmm11, %%xmm11; vpxor %%xmm13, %%xmm10, %%xmm10; vpxor %7, %1, %%xmm13; vpxor %%xmm8, %6, %%xmm12; vpor %%xmm13, %%xmm12, %%xmm9; vpand %%xmm12, %%xmm13, %%xmm13; vpxor %%xmm13, %5, %5; vpxor %%xmm15, %%xmm11, %%xmm11; vpxor %%xmm14, %%xmm10, %%xmm10; vpxor %%xmm15, %%xmm9, %%xmm9; vpxor %%xmm14, %5, %5; vpxor %%xmm14, %%xmm9, %%xmm9; vpand %2, %3, %%xmm12; vpand %4, %0, %%xmm13; vpand %1, %%xmm8, %%xmm14; vpor %7, %6, %%xmm15; vpxor %%xmm12, %%xmm11, %%xmm11; vpxor %%xmm13, %%xmm10, %%xmm10; vpxor %%xmm14, %%xmm9, %%xmm9; vpxor %%xmm15, %5, %5; vpxor %%xmm11, %%xmm10, %%xmm12; vpand %%xmm9, %%xmm11, %%xmm11; vpxor %5, %%xmm11, %%xmm14; vpand %%xmm12, %%xmm14, %%xmm15; vpxor %%xmm10, %%xmm15, %%xmm15; vpxor %%xmm9, %5, %%xmm13; vpxor %%xmm10, %%xmm11, %%xmm11; vpand %%xmm11, %%xmm13, %%xmm13; vpxor %5, %%xmm13, %%xmm13; vpxor %%xmm13, %%xmm9, %%xmm9; vpxor %%xmm14, %%xmm13, %%xmm10; vpand %5, %%xmm10, %%xmm10; vpxor %%xmm10, %%xmm9, %%xmm9; vpxor %%xmm10, %%xmm14, %%xmm14; vpand %%xmm15, %%xmm14, %%xmm14; vpxor %%xmm12, %%xmm14, %%xmm14; vpxor %%xmm15, %%xmm14, %%xmm10; vpand %6, %%xmm10, %%xmm10; vpxor %6, %%xmm8, %%xmm12; vpand %%xmm14, %%xmm12, %%xmm12; vpand %%xmm8, %%xmm15, %5; vpxor %5, %%xmm12, %%xmm12; vpxor %%xmm10, %5, %5;; vpxor %0, %6, %6; vpxor %3, %%xmm8, %%xmm8; vpxor %%xmm13, %%xmm15, %%xmm15; vpxor %%xmm9, %%xmm14, %%xmm14; vpxor %%xmm15, %%xmm14, %%xmm11; vpand %6, %%xmm11, %%xmm11; vpxor %%xmm8, %6, %6; vpand %%xmm14, %6, %6; vpand %%xmm15, %%xmm8, %%xmm8; vpxor %6, %%xmm8, %%xmm8; vpxor %%xmm11, %6, %6;; vpxor %%xmm13, %%xmm9, %%xmm10; vpand %0, %%xmm10, %%xmm10; vpxor %0, %3, %0; vpand %%xmm9, %0, %0; vpand %3, %%xmm13, %3; vpxor %3, %0, %0; vpxor %%xmm10, %3, %3;; vpxor %6, %0, %0; vpxor %%xmm12, %6, %6; vpxor %%xmm8, %3, %3; vpxor %5, %%xmm8, %%xmm8; vpxor %7, %4, %%xmm12; vpxor %1, %2, %5; vpxor %%xmm15, %%xmm14, %%xmm11; vpand %%xmm12, %%xmm11, %%xmm11; vpxor %5, %%xmm12, %%xmm12; vpand %%xmm14, %%xmm12, %%xmm12; vpand %%xmm15, %5, %5; vpxor %%xmm12, %5, %5; vpxor %%xmm11, %%xmm12, %%xmm12;; vpxor %%xmm13, %%xmm9, %%xmm10; vpand %4, %%xmm10, %%xmm10; vpxor %4, %2, %4; vpand %%xmm9, %4, %4; vpand %2, %%xmm13, %2; vpxor %2, %4, %4; vpxor %%xmm10, %2, %2;; vpxor %%xmm13, %%xmm15, %%xmm15; vpxor %%xmm9, %%xmm14, %%xmm14; vpxor %%xmm15, %%xmm14, %%xmm11; vpand %7, %%xmm11, %%xmm11; vpxor %7, %1, %7; vpand %%xmm14, %7, %7; vpand %1, %%xmm15, %1; vpxor %1, %7, %7; vpxor %%xmm11, %1, %1;; vpxor %%xmm12, %7, %7; vpxor %%xmm12, %4, %4; vpxor %5, %1, %1; vpxor %5, %2, %2;;; vpxor %7, %0, %5; vpxor %1, %6, %%xmm9; vpxor %4, %5, %%xmm10; vpxor %6, %0, %%xmm12; vpxor %0, %%xmm9, %0; vpxor %%xmm8, %%xmm9, %1; vpxor %%xmm8, %2, %7; vpxor %2, %3, %6; vpxor %%xmm10, %7, %2; vpxor %3, %7, %4; vpxor %%xmm12, %4, %3;" : "+x" (v0), "+x" (v1), "+x" (v2), "+x" (v3), "+x" (v4), "+x" (v5), "+x" (v6), "+x" (v7) :: "xmm8", "xmm9", "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15");
 #else
 #error You need to defined USUBA or KIVI
 #endif
@@ -57,19 +58,21 @@ void sbox(__m128i,__m128i,__m128i,__m128i,__m128i,__m128i,__m128i,__m128i);
 
 
 
-#if defined(VERIF) && defined(STD)
+#if defined(VERIF)
 #define D DATATYPE
-#define FOR(x) for (D x = 0; x <= 1; x++)
+#define FOR(x) for (x = ZERO, i_##x = 0; i_##x <= 1; i_##x++, x = ONES)
 #define INIT(n0,n1,n2,n3,n4,n5,n6,n7) v##n0 = a; v##n1 = b; v##n2 = c; v##n3 = d; \
                                       v##n4 = e; v##n5 = f; v##n6 = g; v##n7 = h;
 #define INIT_DIRECT() INIT(0,1,2,3,4,5,6,7)
 #define INIT_INV()    INIT(7,6,5,4,3,2,1,0)
+#define BIT0(x) (*((int*)&x)&1)
 #define BITS_TO_INT8_DIRECT(a,b,c,d,e,f,g,h)                            \
-  ((h&1) | ((g&1)<<1) | ((f&1)<<2) | ((e&1)<<3)                         \
-   | ((d&1)<<4) | ((c&1)<<5) | ((b&1)<<6) | ((a&1)<<7))
+  ((BIT0(h)&1) | ((BIT0(g)&1)<<1) | ((BIT0(f)&1)<<2) | ((BIT0(e)&1)<<3) \
+   | ((BIT0(d)&1)<<4) | ((BIT0(c)&1)<<5) | ((BIT0(b)&1)<<6) | ((BIT0(a)&1)<<7))
 #define BITS_TO_INT8_INV(a,b,c,d,e,f,g,h)                               \
-  ((a&1) | ((b&1)<<1) | ((c&1)<<2) | ((d&1)<<3)                         \
-   | ((e&1)<<4) | ((f&1)<<5) | ((g&1)<<6) | ((h&1)<<7))
+  ((BIT0(a)&1) | ((BIT0(b)&1)<<1) | ((BIT0(c)&1)<<2) | ((BIT0(d)&1)<<3) \
+   | ((BIT0(e)&1)<<4) | ((BIT0(f)&1)<<5) | ((BIT0(g)&1)<<6) | ((BIT0(h)&1)<<7))
+
 
 int aes_table[] = {
   99,  124, 119, 123, 242, 107, 111, 197, 48,  1,   103, 43,  254, 215, 171, 118,
@@ -93,77 +96,59 @@ int aes_table[] = {
 
 void verif() {
   int nbErr = 0;
+  DATATYPE a, b, c, d, e, f, g, h,
+    v0, v1, v2, v3, v4, v5, v6, v7;
+  int i_a, i_b, i_c, i_d, i_e, i_f, i_g, i_h;
   FOR(a) FOR(b) FOR(c) FOR(d)
     FOR(e) FOR(f) FOR(g) FOR(h) {
     #ifdef INV
     INIT_INV();
-    sbox();
+    sbox(v0,v1,v2,v3,v4,v5,v6,v7);
     int in  = BITS_TO_INT8_DIRECT(a,b,c,d,e,f,g,h);
     int out = BITS_TO_INT8_INV(v0,v1,v2,v3,v4,v5,v6,v7);
     #else
     INIT_DIRECT();
-    sbox();
+    sbox(v0,v1,v2,v3,v4,v5,v6,v7);
+    v1 = NOT(v1); v2 = NOT(v2); v6 = NOT(v6); v7 = NOT(v7);
     int in  = BITS_TO_INT8_DIRECT(a,b,c,d,e,f,g,h);
     int out = BITS_TO_INT8_DIRECT(v0,v1,v2,v3,v4,v5,v6,v7);
     #endif
     
     if ( aes_table[in] != out ) {
-      fprintf(stderr, "Error: %ld%ld%ld%ld%ld%ld%ld%ld => %ld%ld%ld%ld%ld%ld%ld%ld"
+      fprintf(stderr, "Error: %d%d%d%d%d%d%d%d => %d%d%d%d%d%d%d%d"
                       "(expected %d)\n",
-              a,b,c,d,e,f,g,h,
-              v0&1,v1&1,v2&1,v3&1,v4&1,v5&1,v6&1,v7&1,
+              BIT0(a),BIT0(b),BIT0(c),BIT0(d),BIT0(e),BIT0(f),BIT0(g),BIT0(h),
+              BIT0(v0),BIT0(v1),BIT0(v2),BIT0(v3),BIT0(v4),BIT0(v5),BIT0(v6),BIT0(v7),
               aes_table[in]);
       nbErr++;
     }
   }
   if (nbErr) {
-    printf("Verif completed. %d error%s found.", nbErr,nbErr>1?"s":"");
+    printf("Verif completed. %d error%s found.\n", nbErr,nbErr>1?"s":"");
   } else {
     printf("Verif completed. No errors.\n");
   }
 }
-#else
-#define verif() printf("Verif not implemeted for this arch.\n");
 #endif
 
 
 #define NB_LOOP 100000000
 void speed() {
-#ifdef STD
-  DATATYPE v0 = rand(), v1 = rand(), v2 = rand(), v3 = rand(),
-    v4 = rand(), v5 = rand(), v6 = rand(), v7 = rand();
-#elif defined(SSE)
-  DATATYPE v0 = _mm_set_epi64x(rand(),rand()),
-    v1 = _mm_set_epi64x(rand(),rand()),
-    v2 = _mm_set_epi64x(rand(),rand()),
-    v3 = _mm_set_epi64x(rand(),rand()),
-    v4 = _mm_set_epi64x(rand(),rand()),
-    v5 = _mm_set_epi64x(rand(),rand()),
-    v6 = _mm_set_epi64x(rand(),rand()),
-    v7 = _mm_set_epi64x(rand(),rand());
-#elif defined(AVX)
-  DATATYPE v0 = _mm256_set_epi64x(rand(),rand(),rand(),rand()),
-    v1 = _mm256_set_epi64x(rand(),rand(),rand(),rand()),
-    v2 = _mm256_set_epi64x(rand(),rand(),rand(),rand()),
-    v3 = _mm256_set_epi64x(rand(),rand(),rand(),rand()),
-    v4 = _mm256_set_epi64x(rand(),rand(),rand(),rand()),
-    v5 = _mm256_set_epi64x(rand(),rand(),rand(),rand()),
-    v6 = _mm256_set_epi64x(rand(),rand(),rand(),rand()),
-    v7 = _mm256_set_epi64x(rand(),rand(),rand(),rand());
-#endif
+  DATATYPE v0 = ONES, v1 = ONES, v2 = ONES, v3 = ONES,
+    v4 = ONES, v5 = ONES, v6 = ONES, v7 = ONES;
   for (int i = 0; i < 10000; i++) {
+    sbox(v0,v1,v2,v3,v4,v5,v6,v7);
+  }
+  uint64_t timer = _rdtsc();
+  for (int i = 0; i < NB_LOOP; i++) {
 #ifdef _MCA
     __asm __volatile__("# LLVM-MCA-BEGIN sbox");
 #endif
     sbox(v0,v1,v2,v3,v4,v5,v6,v7);
+  }
 #ifdef _MCA
     __asm __volatile__("# LLVM-MCA-END");
 #endif
-  }
-  uint64_t timer = _rdtsc();
-  for (int i = 0; i < NB_LOOP; i++) {
-    sbox(v0,v1,v2,v3,v4,v5,v6,v7);
-  }
   timer = _rdtsc() - timer;
 
   printf("%.2f cycle/byte\n",(double)timer/NB_LOOP);
