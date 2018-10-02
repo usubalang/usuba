@@ -1,7 +1,7 @@
 
 #define usuba(v0,v1,v2,v3,v4,v5,v6,v7) {        \
     ShiftRows(v0,v1,v2,v3,v4,v5,v6,v7);         \
-    SubBytes(v0,v1,v2,v3,v4,v5,v6,v7);          \
+    SubBytesAlt(v0,v1,v2,v3,v4,v5,v6,v7);       \
     MixColumn(v0,v1,v2,v3,v4,v5,v6,v7);         \
   }
 
@@ -247,6 +247,263 @@
     v2 = _tmp4_;                                \
     v5 = XOR(tc21,tc17);                        \
   }
+
+
+#define SubBytesAlt(v7,v6,v5,v4,v3,v2,v1,v0) {                            \
+                                                                        \
+    DATATYPE InBasisChange___1_t0__;                                    \
+    DATATYPE InBasisChange___1_t1__;                                    \
+    DATATYPE InBasisChange___1_t10__;                                   \
+    DATATYPE InBasisChange___1_t11__;                                   \
+    DATATYPE InBasisChange___1_t12__;                                   \
+    DATATYPE InBasisChange___1_t2__;                                    \
+    DATATYPE InBasisChange___1_t3__;                                    \
+    DATATYPE InBasisChange___1_t4__;                                    \
+    DATATYPE InBasisChange___1_t5__;                                    \
+    DATATYPE InBasisChange___1_t6__;                                    \
+    DATATYPE InBasisChange___1_t7__;                                    \
+    DATATYPE InBasisChange___1_t8__;                                    \
+    DATATYPE InBasisChange___1_t9__;                                    \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t0__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t1__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t3__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t4__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t5__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t6__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t0__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t1__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t3__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t4__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t5__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t6__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t1__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t3__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t4__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t5__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t6__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t0__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t1__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t3__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t4__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t5__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t6__;             \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t0__;           \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t1__;           \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t3__;           \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t4__;           \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t5__;           \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t6__;           \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t1__;           \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t3__;           \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t4__;           \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t5__;           \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t6__;           \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_t10__;                        \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_t11__;                        \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_t12__;                        \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_t13__;                        \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_t20__;                        \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_t21__;                        \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_t24__;                        \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_t25__;                        \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_t26__;                        \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_t27__;                        \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_t4__;                         \
+    DATATYPE Inv_GF256___1_Mul_GF16_2___1_t5__;                         \
+    DATATYPE Inv_GF256___1_t0__;                                        \
+    DATATYPE Inv_GF256___1_t1__;                                        \
+    DATATYPE Inv_GF256___1_t10__;                                       \
+    DATATYPE Inv_GF256___1_t11__;                                       \
+    DATATYPE Inv_GF256___1_t12__;                                       \
+    DATATYPE Inv_GF256___1_t13__;                                       \
+    DATATYPE Inv_GF256___1_t14__;                                       \
+    DATATYPE Inv_GF256___1_t15__;                                       \
+    DATATYPE Inv_GF256___1_t16__;                                       \
+    DATATYPE Inv_GF256___1_t17__;                                       \
+    DATATYPE Inv_GF256___1_t18__;                                       \
+    DATATYPE Inv_GF256___1_t19__;                                       \
+    DATATYPE Inv_GF256___1_t2__;                                        \
+    DATATYPE Inv_GF256___1_t20__;                                       \
+    DATATYPE Inv_GF256___1_t21__;                                       \
+    DATATYPE Inv_GF256___1_t22__;                                       \
+    DATATYPE Inv_GF256___1_t23__;                                       \
+    DATATYPE Inv_GF256___1_t24__;                                       \
+    DATATYPE Inv_GF256___1_t25__;                                       \
+    DATATYPE Inv_GF256___1_t26__;                                       \
+    DATATYPE Inv_GF256___1_t27__;                                       \
+    DATATYPE Inv_GF256___1_t28__;                                       \
+    DATATYPE Inv_GF256___1_t29__;                                       \
+    DATATYPE Inv_GF256___1_t3__;                                        \
+    DATATYPE Inv_GF256___1_t30__;                                       \
+    DATATYPE Inv_GF256___1_t31__;                                       \
+    DATATYPE Inv_GF256___1_t32__;                                       \
+    DATATYPE Inv_GF256___1_t33__;                                       \
+    DATATYPE Inv_GF256___1_t34__;                                       \
+    DATATYPE Inv_GF256___1_t35__;                                       \
+    DATATYPE Inv_GF256___1_t36__;                                       \
+    DATATYPE Inv_GF256___1_t37__;                                       \
+    DATATYPE Inv_GF256___1_t38__;                                       \
+    DATATYPE Inv_GF256___1_t39__;                                       \
+    DATATYPE Inv_GF256___1_t4__;                                        \
+    DATATYPE Inv_GF256___1_t40__;                                       \
+    DATATYPE Inv_GF256___1_t41__;                                       \
+    DATATYPE Inv_GF256___1_t42__;                                       \
+    DATATYPE Inv_GF256___1_t43__;                                       \
+    DATATYPE Inv_GF256___1_t44__;                                       \
+    DATATYPE Inv_GF256___1_t45__;                                       \
+    DATATYPE Inv_GF256___1_t46__;                                       \
+    DATATYPE Inv_GF256___1_t47__;                                       \
+    DATATYPE Inv_GF256___1_t48__;                                       \
+    DATATYPE Inv_GF256___1_t49__;                                       \
+    DATATYPE Inv_GF256___1_t5__;                                        \
+    DATATYPE Inv_GF256___1_t6__;                                        \
+    DATATYPE Inv_GF256___1_t7__;                                        \
+    DATATYPE Inv_GF256___1_t8__;                                        \
+    DATATYPE Inv_GF256___1_t9__;                                        \
+    DATATYPE OutBasisChange___1_t0__;                                   \
+    DATATYPE OutBasisChange___1_t1__;                                   \
+    DATATYPE OutBasisChange___1_t10__;                                  \
+    DATATYPE OutBasisChange___1_t2__;                                   \
+    DATATYPE OutBasisChange___1_t3__;                                   \
+    DATATYPE OutBasisChange___1_t4__;                                   \
+    DATATYPE OutBasisChange___1_t5__;                                   \
+    DATATYPE OutBasisChange___1_t6__;                                   \
+    DATATYPE OutBasisChange___1_t7__;                                   \
+    DATATYPE OutBasisChange___1_t8__;                                   \
+    DATATYPE OutBasisChange___1_t9__;                                   \
+                                                                        \
+                                                                        \
+    InBasisChange___1_t0__ = XOR(v6,v5);                                \
+    InBasisChange___1_t1__ = XOR(v1,v2);                                \
+    InBasisChange___1_t2__ = XOR(v0,InBasisChange___1_t0__);            \
+    InBasisChange___1_t3__ = XOR(InBasisChange___1_t1__,v6);            \
+    InBasisChange___1_t4__ = XOR(v0,v3);                                \
+    InBasisChange___1_t5__ = XOR(InBasisChange___1_t4__,InBasisChange___1_t3__); \
+    InBasisChange___1_t6__ = XOR(v7,InBasisChange___1_t4__);            \
+    InBasisChange___1_t7__ = XOR(InBasisChange___1_t2__,v7);            \
+    InBasisChange___1_t8__ = XOR(v4,InBasisChange___1_t6__);            \
+    InBasisChange___1_t9__ = XOR(InBasisChange___1_t2__,v4);            \
+    InBasisChange___1_t10__ = XOR(v1,InBasisChange___1_t8__);           \
+    InBasisChange___1_t11__ = XOR(InBasisChange___1_t7__,InBasisChange___1_t1__); \
+    InBasisChange___1_t12__ = XOR(InBasisChange___1_t2__,v1);           \
+    Inv_GF256___1_t0__ = XOR(InBasisChange___1_t7__,InBasisChange___1_t9__); \
+    Inv_GF256___1_t1__ = XOR(InBasisChange___1_t12__,InBasisChange___1_t11__); \
+    Inv_GF256___1_t2__ = XOR(InBasisChange___1_t2__,InBasisChange___1_t10__); \
+    Inv_GF256___1_t3__ = XOR(InBasisChange___1_t11__,InBasisChange___1_t9__); \
+    Inv_GF256___1_t4__ = XOR(InBasisChange___1_t5__,v0);                \
+    Inv_GF256___1_t5__ = XOR(Inv_GF256___1_t0__,Inv_GF256___1_t1__);    \
+    Inv_GF256___1_t6__ = AND(Inv_GF256___1_t1__,Inv_GF256___1_t2__);    \
+    Inv_GF256___1_t7__ = OR(Inv_GF256___1_t2__,Inv_GF256___1_t1__);     \
+    Inv_GF256___1_t8__ = AND(Inv_GF256___1_t0__,Inv_GF256___1_t4__);    \
+    Inv_GF256___1_t9__ = OR(Inv_GF256___1_t4__,Inv_GF256___1_t0__);     \
+    Inv_GF256___1_t10__ = XOR(Inv_GF256___1_t2__,Inv_GF256___1_t4__);   \
+    Inv_GF256___1_t11__ = AND(Inv_GF256___1_t10__,Inv_GF256___1_t5__);  \
+    Inv_GF256___1_t12__ = XOR(InBasisChange___1_t10__,v0);              \
+    Inv_GF256___1_t13__ = AND(Inv_GF256___1_t12__,Inv_GF256___1_t3__);  \
+    Inv_GF256___1_t14__ = XOR(Inv_GF256___1_t13__,Inv_GF256___1_t9__);  \
+    Inv_GF256___1_t15__ = XOR(Inv_GF256___1_t13__,Inv_GF256___1_t7__);  \
+    Inv_GF256___1_t16__ = XOR(InBasisChange___1_t7__,InBasisChange___1_t12__); \
+    Inv_GF256___1_t17__ = XOR(InBasisChange___1_t2__,InBasisChange___1_t5__); \
+    Inv_GF256___1_t18__ = OR(Inv_GF256___1_t16__,Inv_GF256___1_t17__);  \
+    Inv_GF256___1_t19__ = AND(Inv_GF256___1_t17__,Inv_GF256___1_t16__); \
+    Inv_GF256___1_t20__ = XOR(Inv_GF256___1_t19__,Inv_GF256___1_t6__);  \
+    Inv_GF256___1_t21__ = XOR(Inv_GF256___1_t11__,Inv_GF256___1_t14__); \
+    Inv_GF256___1_t22__ = XOR(Inv_GF256___1_t8__,Inv_GF256___1_t15__);  \
+    Inv_GF256___1_t23__ = XOR(Inv_GF256___1_t11__,Inv_GF256___1_t18__); \
+    Inv_GF256___1_t24__ = XOR(Inv_GF256___1_t8__,Inv_GF256___1_t20__);  \
+    Inv_GF256___1_t25__ = XOR(Inv_GF256___1_t8__,Inv_GF256___1_t23__);  \
+    Inv_GF256___1_t26__ = AND(InBasisChange___1_t11__,InBasisChange___1_t10__); \
+    Inv_GF256___1_t27__ = AND(InBasisChange___1_t9__,v0);               \
+    Inv_GF256___1_t28__ = AND(InBasisChange___1_t12__,InBasisChange___1_t2__); \
+    Inv_GF256___1_t29__ = OR(InBasisChange___1_t7__,InBasisChange___1_t5__); \
+    Inv_GF256___1_t30__ = XOR(Inv_GF256___1_t26__,Inv_GF256___1_t21__); \
+    Inv_GF256___1_t31__ = XOR(Inv_GF256___1_t27__,Inv_GF256___1_t22__); \
+    Inv_GF256___1_t32__ = XOR(Inv_GF256___1_t28__,Inv_GF256___1_t25__); \
+    Inv_GF256___1_t33__ = XOR(Inv_GF256___1_t29__,Inv_GF256___1_t24__); \
+    Inv_GF256___1_t34__ = XOR(Inv_GF256___1_t30__,Inv_GF256___1_t31__); \
+    Inv_GF256___1_t35__ = AND(Inv_GF256___1_t32__,Inv_GF256___1_t30__); \
+    Inv_GF256___1_t36__ = XOR(Inv_GF256___1_t33__,Inv_GF256___1_t35__); \
+    Inv_GF256___1_t37__ = AND(Inv_GF256___1_t34__,Inv_GF256___1_t36__); \
+    Inv_GF256___1_t38__ = XOR(Inv_GF256___1_t31__,Inv_GF256___1_t37__); \
+    Inv_GF256___1_t39__ = XOR(Inv_GF256___1_t32__,Inv_GF256___1_t33__); \
+    Inv_GF256___1_t40__ = XOR(Inv_GF256___1_t31__,Inv_GF256___1_t35__); \
+    Inv_GF256___1_t41__ = AND(Inv_GF256___1_t40__,Inv_GF256___1_t39__); \
+    Inv_GF256___1_t42__ = XOR(Inv_GF256___1_t33__,Inv_GF256___1_t41__); \
+    Inv_GF256___1_t43__ = XOR(Inv_GF256___1_t42__,Inv_GF256___1_t32__); \
+    Inv_GF256___1_t44__ = XOR(Inv_GF256___1_t36__,Inv_GF256___1_t42__); \
+    Inv_GF256___1_t45__ = AND(Inv_GF256___1_t33__,Inv_GF256___1_t44__); \
+    Inv_GF256___1_t46__ = XOR(Inv_GF256___1_t45__,Inv_GF256___1_t43__); \
+    Inv_GF256___1_t47__ = XOR(Inv_GF256___1_t45__,Inv_GF256___1_t36__); \
+    Inv_GF256___1_t48__ = AND(Inv_GF256___1_t38__,Inv_GF256___1_t47__); \
+    Inv_GF256___1_t49__ = XOR(Inv_GF256___1_t34__,Inv_GF256___1_t48__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t0__ = XOR(Inv_GF256___1_t38__,Inv_GF256___1_t49__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t1__ = AND(InBasisChange___1_t5__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t0__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t3__ = AND(Inv_GF256___1_t49__,Inv_GF256___1_t17__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t4__ = AND(InBasisChange___1_t2__,Inv_GF256___1_t38__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t5__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t4__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t3__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t6__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t1__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t4__); \
+    Inv_GF256___1_Mul_GF16_2___1_t4__ = XOR(Inv_GF256___1_t42__,Inv_GF256___1_t38__); \
+    Inv_GF256___1_Mul_GF16_2___1_t5__ = XOR(Inv_GF256___1_t46__,Inv_GF256___1_t49__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t0__ = XOR(Inv_GF256___1_Mul_GF16_2___1_t4__,Inv_GF256___1_Mul_GF16_2___1_t5__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t1__ = AND(Inv_GF256___1_t4__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t0__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t3__ = AND(Inv_GF256___1_Mul_GF16_2___1_t5__,Inv_GF256___1_t10__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t4__ = AND(Inv_GF256___1_Mul_GF16_2___1_t4__,Inv_GF256___1_t2__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t5__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t3__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t4__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t6__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t1__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t3__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t0__ = XOR(Inv_GF256___1_t42__,Inv_GF256___1_t46__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t1__ = AND(v0,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t0__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t3__ = AND(Inv_GF256___1_t46__,Inv_GF256___1_t12__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t4__ = AND(InBasisChange___1_t10__,Inv_GF256___1_t42__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t5__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t4__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t3__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t6__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t1__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t4__); \
+    Inv_GF256___1_Mul_GF16_2___1_t10__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t6__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t5__); \
+    Inv_GF256___1_Mul_GF16_2___1_t11__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t5__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t6__); \
+    Inv_GF256___1_Mul_GF16_2___1_t12__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t5__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t6__); \
+    Inv_GF256___1_Mul_GF16_2___1_t13__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___1_t6__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t5__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t1__ = AND(Inv_GF256___1_t0__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___1_t0__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t3__ = AND(Inv_GF256___1_Mul_GF16_2___1_t5__,Inv_GF256___1_t5__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t4__ = AND(Inv_GF256___1_Mul_GF16_2___1_t4__,Inv_GF256___1_t1__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t5__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t3__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t4__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t6__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t1__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t3__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t1__ = AND(InBasisChange___1_t9__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___2_t0__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t3__ = AND(Inv_GF256___1_t46__,Inv_GF256___1_t3__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t4__ = AND(InBasisChange___1_t11__,Inv_GF256___1_t42__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t5__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t4__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t3__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t6__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t1__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t4__); \
+    Inv_GF256___1_Mul_GF16_2___1_t20__ = XOR(Inv_GF256___1_t42__,Inv_GF256___1_Mul_GF16_2___1_t4__); \
+    Inv_GF256___1_Mul_GF16_2___1_t21__ = XOR(Inv_GF256___1_t46__,Inv_GF256___1_Mul_GF16_2___1_t5__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t0__ = XOR(Inv_GF256___1_Mul_GF16_2___1_t20__,Inv_GF256___1_Mul_GF16_2___1_t21__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t1__ = AND(InBasisChange___1_t7__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t0__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t3__ = AND(Inv_GF256___1_Mul_GF16_2___1_t21__,Inv_GF256___1_t16__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t4__ = AND(InBasisChange___1_t12__,Inv_GF256___1_Mul_GF16_2___1_t20__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t5__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t4__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t3__); \
+    Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t6__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t1__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t4__); \
+    Inv_GF256___1_Mul_GF16_2___1_t24__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t6__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t5__); \
+    Inv_GF256___1_Mul_GF16_2___1_t25__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t6__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t5__); \
+    Inv_GF256___1_Mul_GF16_2___1_t26__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t5__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___4_t6__); \
+    Inv_GF256___1_Mul_GF16_2___1_t27__ = XOR(Inv_GF256___1_Mul_GF16_2___1_Mul_GF4_N___2_t5__,Inv_GF256___1_Mul_GF16_2___1_Mul_GF4___3_t6__); \
+    OutBasisChange___1_t0__ = XOR(Inv_GF256___1_Mul_GF16_2___1_t24__,Inv_GF256___1_Mul_GF16_2___1_t10__); \
+    OutBasisChange___1_t1__ = XOR(Inv_GF256___1_Mul_GF16_2___1_t26__,Inv_GF256___1_Mul_GF16_2___1_t11__); \
+    OutBasisChange___1_t2__ = XOR(Inv_GF256___1_Mul_GF16_2___1_t25__,OutBasisChange___1_t0__); \
+    OutBasisChange___1_t3__ = XOR(Inv_GF256___1_Mul_GF16_2___1_t11__,Inv_GF256___1_Mul_GF16_2___1_t10__); \
+    OutBasisChange___1_t4__ = XOR(Inv_GF256___1_Mul_GF16_2___1_t10__,OutBasisChange___1_t1__); \
+    OutBasisChange___1_t5__ = XOR(Inv_GF256___1_Mul_GF16_2___1_t13__,OutBasisChange___1_t1__); \
+    OutBasisChange___1_t6__ = XOR(Inv_GF256___1_Mul_GF16_2___1_t13__,Inv_GF256___1_Mul_GF16_2___1_t27__); \
+    OutBasisChange___1_t7__ = XOR(Inv_GF256___1_Mul_GF16_2___1_t27__,Inv_GF256___1_Mul_GF16_2___1_t12__); \
+    OutBasisChange___1_t8__ = XOR(OutBasisChange___1_t2__,OutBasisChange___1_t6__); \
+    OutBasisChange___1_t9__ = XOR(Inv_GF256___1_Mul_GF16_2___1_t12__,OutBasisChange___1_t6__); \
+    OutBasisChange___1_t10__ = XOR(OutBasisChange___1_t3__,OutBasisChange___1_t9__); \
+    v0 = OutBasisChange___1_t4__;                                       \
+    v1 = OutBasisChange___1_t5__;                                       \
+    v2 = OutBasisChange___1_t8__;                                       \
+    v3 = OutBasisChange___1_t10__;                                      \
+    v4 = OutBasisChange___1_t9__;                                       \
+    v5 = OutBasisChange___1_t0__;                                       \
+    v6 = OutBasisChange___1_t7__;                                       \
+    v7 = OutBasisChange___1_t6__;                                       \
+                                                                        \
+  }
+
 
 
 

@@ -40,8 +40,9 @@ void sbox();
 
 
 
-#include "usuba_base.c"
-
+//#include "usuba_base.c"
+//#include "usuba_fun.c"
+#include "usuba_fun_inline.c"
 #include "kivi_c.c"
 
 
