@@ -4,7 +4,30 @@
 #include <x86intrin.h>
 #include <stdint.h>
 
-void sbox();
+
+/* macro conversion */
+#ifdef kivi
+#define KIVI
+#undef kivi
+#endif
+#ifdef ua_macro
+#define UA_MACRO
+#define USUBA
+#endif
+#ifdef ua_fun
+#define UA_FUN
+#define USUBA
+#endif
+#ifdef ua_fun_inline
+#define UA_FUN_INLINE
+#define USUBA
+#endif
+
+// default to UA_MACRO
+#ifndef USUBA
+#define UA_MACRO
+#endif
+
 
 #define NO_RUNTIME
 #ifdef STD
@@ -41,19 +64,18 @@ void sbox();
 
 
 #ifdef UA_MACRO
-#include "usuba_macro.c"
+#include "ua_macro.c"
 #elif defined(UA_FUN)
-#include "usuba_fun.c"
+#include "ua_fun.c"
 #elif defined(UA_FUN_INLINE)
-#include "usuba_fun_inline.c"
+#include "ua_fun_inline.c"
 #else
 #error Please define one of {UA_MACRO,UA_FUN,UA_FUN_INLINE}
 #endif
-#include "kivi_c.c"
+#include "kivi.c"
 
 
 
-#if defined(VERIF)
 #define FOR(x) for (x = ZERO, i_##x = 0; i_##x <= 1; i_##x++, x = ONES)
 #define BIT0(x) (*((int*)&x)&1)
 
@@ -100,7 +122,9 @@ void verif_base() {
   if (nbErr) {
     printf("Verif (base) completed. %d error%s found.\n", nbErr,nbErr>1?"s":"");
   } else {
+    #ifdef VERIF
     printf("Verif (base) completed. No errors.\n");
+    #endif
   }
 }
 
@@ -147,12 +171,12 @@ void verif_rand() {
   if (nbErr) {
     printf("Verif (rand) completed. %d error%s found.\n", nbErr,nbErr>1?"s":"");
   } else {
+    #ifdef VERIF
     printf("Verif (rand) completed. No errors.\n");
+    #endif
   }
 }
 
-
-#endif
 
 #ifdef USUBA
 #define test_fun usuba
@@ -190,9 +214,8 @@ void speed() {
 
 
 int main() {
-  #ifdef VERIF
   verif_base();
   verif_rand();
-  #endif
+  
   speed();
 }
