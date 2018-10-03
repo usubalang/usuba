@@ -141,7 +141,9 @@ let rec expand_deq env_fun env_var (deq:deq) : deq =
   | Norec(lhs,Fun(id,args)) ->
      if contains id.name "rand" then deq
      else
-       let f = Hashtbl.find env_fun id in
+       let f = try Hashtbl.find env_fun id
+               with Not_found -> Printf.fprintf stderr "Not_found(%s).\n" id.name;
+                                 raise Not_found in
        let _,args = unzip (match_args env_fun env_var f f.p_in args) in
        let _,ret  = unzip (match_ret  env_fun env_var f f.p_out lhs) in
        Norec(List.rev ret,Fun(id,List.rev args))

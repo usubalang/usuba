@@ -116,3 +116,6 @@ let int_to_boollist (n : int) (size: int) : bool list =
     if i = 0 then List.rev l
     else aux (i-1) (((n lsr (i-1)) land 1 = 1) :: l) in
   aux size []
+
+(* Returns the max of a *non-empty* list *)
+let max_l l = List.fold_left max (List.hd l) l

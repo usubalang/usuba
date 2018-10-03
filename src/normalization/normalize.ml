@@ -104,6 +104,7 @@ let compile (prog:prog) (conf:config) : prog =
   print "INPUT:" prog conf;
 
   let normalized = norm_prog true prog conf in
+  (* Get_live_var.get_live_var normalized; *)
 
   if conf.fd || conf.ti > 1 then
     specialize normalized conf

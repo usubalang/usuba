@@ -362,7 +362,7 @@ module Low_pressure_sched = struct
      Could be 1 on ARM/PowerPC. *)
   let parallel_arch (arch:arch) : int =
     match arch with
-    | _ -> 4
+    | _ -> 15
 
   let schedule (prog:prog) (conf:config): prog =
     let parallel_lvl = parallel_arch conf.archi in
