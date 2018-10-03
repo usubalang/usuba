@@ -40,9 +40,15 @@ void sbox();
 
 
 
-//#include "usuba_base.c"
-//#include "usuba_fun.c"
+#ifdef UA_MACRO
+#include "usuba_macro.c"
+#elif defined(UA_FUN)
+#include "usuba_fun.c"
+#elif defined(UA_FUN_INLINE)
 #include "usuba_fun_inline.c"
+#else
+#error Please define one of {UA_MACRO,UA_FUN,UA_FUN_INLINE}
+#endif
 #include "kivi_c.c"
 
 
