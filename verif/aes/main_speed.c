@@ -10,11 +10,11 @@
 //#include "t/crypto_stream.h"
 
 #ifndef NB_LOOP
-#define NB_LOOP 100000
+#define NB_LOOP 25000
 #endif
 
 #ifndef BUFF_SIZE
-#define BUFF_SIZE 4096
+#define BUFF_SIZE (4096*8)
 #endif
 
 int main() {
@@ -26,13 +26,15 @@ int main() {
 
   unsigned char* input = aligned_alloc(32, BUFF_SIZE);
 
-  for (int i = 0; i < 10000; i++) {
+  for (int i = 0; i < 5000; i++) {
     crypto_stream_xor(input,input,BUFF_SIZE,iv,key);
+    //crypto_stream(input,BUFF_SIZE,iv,key);
   }
   
   uint64_t timer = _rdtsc();
   for (int i = 0; i < NB_LOOP; i++) {
     crypto_stream_xor(input,input,BUFF_SIZE,iv,key);
+    //crypto_stream(input,BUFF_SIZE,iv,key);
   }
   timer = _rdtsc() - timer;
 
