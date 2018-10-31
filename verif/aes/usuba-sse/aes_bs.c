@@ -41,14 +41,6 @@ static inline void orthogonalize(__m128i data[8]) {
       }
     }
   }
-
-#ifdef UA_LAYOUT
-  for (i = 0; i < 8; i++)
-    data[i] =  _mm_shuffle_epi8(data[i],_mm_set_epi8(15,11,7,3,
-                                                     14,10,6,2,
-                                                     13,9,5,1,
-                                                     12,8,4,0));
-#endif
 }
 
 #define swapmove(a, b, n, m, t)                 \
@@ -81,11 +73,9 @@ static inline void orthogonalize(__m128i data[8]) {
     swapmove(x4, x0, 4, t0, t1);                    \
   }
 
-
-static inline void aes_bs(DATATYPE plain[8],DATATYPE key[11][8], DATATYPE cipher[8]) {
+void aes_bs(DATATYPE plain[8],DATATYPE key[11][8], DATATYPE cipher[8]) {
   
   bitslice(plain[7],plain[6],plain[5],plain[4],plain[3],plain[2],plain[1],plain[0]);
   AES__(plain,key,cipher);
-  //for (int i = 0; i < 8; i++) cipher[i] = plain[i];
   bitslice(cipher[7],cipher[6],cipher[5],cipher[4],cipher[3],cipher[2],cipher[1],cipher[0]);
 }

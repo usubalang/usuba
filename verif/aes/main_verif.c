@@ -1,12 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <x86intrin.h>
 
 #include "stream.h"
 
-//#include "t/crypto_stream_aes128ctr.h"
-//#include "t/crypto_stream.h"
 
+
+#include <x86intrin.h>
+static void print128hex(__m128i toPrint) {
+  char * bytearray = (char *) &toPrint;
+  for(int i = 0; i < 16; i++) printf("%02hhx", bytearray[i]);
+  printf("\n");
+}
 
 int main() {
   
