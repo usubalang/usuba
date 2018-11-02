@@ -13,4 +13,4 @@ clang -D KIVI -Wall -Wextra -I . -O3 -march=native -I ../../arch -o main_verif m
 `KIVI` : Kivi round, inside a C loop, fixed by hand (return values on xmm0-7). (see [kivi.s](verif/aes/usuba-kivi-mix/kivi.s))  
 
 
-The base for `usuba.s` and `kivi.s` was generated with `clang -O3 -march=native -I ../../arch -D MACRO -S sse-experimental/aes.c` (`s/MACRO/KIVI/` for `kivi.s`).
+The base for `usuba.s` and `kivi.s` was generated with `clang -O3 -march=native -I ../../arch -D EXPANDED -D MACRO -S sse-experimental/aes.c` (`s/MACRO/KIVI/` for `kivi.s`).
