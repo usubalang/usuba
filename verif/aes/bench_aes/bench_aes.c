@@ -10,18 +10,60 @@
 #endif
 
 
+#ifdef UA_MACRO
+#define USUBA
+#define MACRO
+#elif defined(UA_KIVI)
+#define USUBA
+#define KIVI
+#elif !defined(FULL_KIVI)
+#error Please define UA_MACRO, UA_KIVI or FULL_KIVI
+#endif
+
+
 #ifdef USUBA
 #include "aes.c"
-#if !defined(EXPANDED)
-#define fun() AES__(input,key,input)
+
+#ifdef INDIRECT
+#ifdef EXPANDED
+void __attribute__ ((noinline))
+    tmp(__m128i key[11][8], __m128i v0, __m128i v1, __m128i v2, __m128i v3,
+        __m128i v4, __m128i v5, __m128i v6, __m128i v7, __m128i* input) {
+  AES__(key,v0,v1,v2,v3,v4,v5,v6,v7,input);
+}
+#define fun() tmp(key,input[0],input[1],input[2],input[3],\
+                  input[4],input[5],input[6],input[7], input);
 #else
-#define fun() AES__(key,input[0],input[1],input[2],input[3],input[4],input[5],input[6],input[7],input)
-#endif
-#endif
+void __attribute__ ((noinline))
+tmp(__m128i input[8], __m128i key[11][8], __m128i output[8]) {
+  AES__(input, key, output);
+}
+#define fun() tmp(input,key,input)
+#endif // #ifdef EXPANDED
+
+#elif defined(EXPANDED)
+#define fun() AES__(key,input[0],input[1],input[2],input[3],\
+                    input[4],input[5],input[6],input[7],input)
+
+#else
+#define fun() AES__(input,key,input)
+
+#endif // #ifdef INDIRECT
+
+#endif // #ifdef USUBA
 
 #ifdef FULL_KIVI
 void AES__(__m128i*,__m128i,__m128i,__m128i,__m128i,__m128i,__m128i,__m128i,__m128i);
-#define fun() AES__((__m128i*)key,input[0],input[1],input[2],input[3],input[4],input[5],input[6],input[7]);
+void __attribute__ ((noinline)) tmp(__m128i* key, __m128i v0, __m128i v1, __m128i v2, __m128i v3,
+         __m128i v4, __m128i v5, __m128i v6, __m128i v7, __m128i* input) {
+  __asm__("callq AES__;"
+          : "+x" (v0), "+x" (v1), "+x" (v2), "+x" (v3), "+x" (v4), "+x" (v5), "+x" (v6), "+x" (v7)
+          : "m" (key)
+          : "eax", "r8", "xmm8", "xmm9", "xmm10", "xmm11", "xmm12", "xmm13", "xmm14", "xmm15");
+  input[0] = v0; input[1] = v1; input[2] = v2; input[3] = v3;
+  input[4] = v4; input[5] = v5; input[6] = v6; input[7] = v7;
+}
+#define fun() tmp((__m128i*)key,input[0],input[1],input[2],input[3],input[4],input[5],input[6],input[7], input);
 #endif
 
 #ifndef PRINT128HEX
@@ -42,6 +84,8 @@ void print(__m128i toPrint) {
 
 int main() {
 
+  srand(1);
+
   __m128i input[8];
   for (int i = 0; i < 8; i++)
     input[i] = _mm_set_epi64x(rand(),rand());
@@ -53,6 +97,7 @@ int main() {
 
   for (int i = 0; i < 10000; i++)
     fun();
+  //printf("%016lx %016lx\n",((uint64_t*)input)[0],((uint64_t*)input)[1]);
 
   uint64_t timer = _rdtsc();
   for (int i = 0; i < NB_LOOP; i++)
