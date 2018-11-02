@@ -1,13 +1,13 @@
 
 Compile and run with `./compile.pl`
 
-`UA_MACRO`: usuba code with macros ([here](verif/aes/bench_aes/aes.c#L373))
-`UA_KIVI`: kivi round with Usuba glue ([here](verif/aes/bench_aes/aes.c#L488))
-`full_kivi` : copy-past (almost) AES from Kivilinna's code
+`UA_MACRO`: usuba code with macros ([here](verif/aes/bench_aes/aes.c#L373))  
+`UA_KIVI`: kivi round with Usuba glue ([here](verif/aes/bench_aes/aes.c#L488))  
+`full_kivi` : copy-past (almost) AES from Kivilinna's code  
 
-`EXPANDED`: takes 8 parameters instead of 1 for the input (to be compatible with Kivi runtime).
-`INDIRECT`: calls an intermediate function to suffer the same penalty as Kivilinna 
-`DIRECT`: not `INDIRECT` (ie, standard, but I needed to name it)
+`EXPANDED`: takes 8 parameters instead of 1 for the input (to be compatible with Kivi runtime).  
+`INDIRECT`: calls an intermediate function to suffer the same penalty as Kivilinna.  
+`DIRECT`: not `INDIRECT` (ie, standard, but I needed to name it).  
 
 Initial results:
 ```
