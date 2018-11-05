@@ -16,6 +16,7 @@ no warnings qw( numeric );
 use v5.14;
 
 my $NB_LOOP = 2;
+my $CC      = 'gcc';
 $| = 1;
 
 my $compile = !@ARGV || "@ARGV" =~ /-c/;
@@ -28,14 +29,15 @@ my @binaries;
 print "Compiling..." if $compile;
 
 # Compiling with Kivilinna implem
-system "clang -O3 -march=native -I ../../../arch -D FULL_KIVI -o full_kivi bench_aes.c kivi_orig.S" if $compile;
-push @binaries, 'full_kivi';
+system "$CC -O3 -march=native -I ../../../arch -D FULL_KIVI -D DIRECT -o full_kivi_DIRECT bench_aes.c kivi_orig.S" if $compile;
+system "$CC -O3 -march=native -I ../../../arch -D FULL_KIVI -D INDIRECT -o full_kivi_INDIRECT bench_aes.c kivi_orig.S" if $compile;
+push @binaries, 'full_kivi_INDIRECT', 'full_kivi_DIRECT';
 
 # Compile with Usuba implem (KIVI is a single KIVI round inside C code written by me)
 for my $implem (qw( KIVI MACRO )) {
     for my $direct (qw( DIRECT INDIRECT )) {
         for my $expanded (qw( EXPANDED NOEXP )) {
-            system "clang -O3 -march=native -I ../../../arch -D UA_$implem -D $direct -D $expanded -o ua_${implem}_${direct}_${expanded} bench_aes.c" if $compile;
+            system "$CC -O3 -march=native -I ../../../arch -D UA_$implem -D $direct -D $expanded -o ua_${implem}_${direct}_${expanded} bench_aes.c" if $compile;
             push @binaries, "ua_${implem}_${direct}_${expanded}";
         }
     }
