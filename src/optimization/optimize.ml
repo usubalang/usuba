@@ -56,9 +56,12 @@ let print title body conf =
       
 let opt_prog (prog: Usuba_AST.prog) (conf:config) : Usuba_AST.prog =
 
+  (* Interleaving *)
+  let interleaved = if conf.interleave > 0 then Interleave.interleave prog conf else prog in
+  
   (* CSE - CP *)
   (* CSE - CP is already done in the normalization *)
-  let optimized = if conf.cse_cp then CSE_CF_CP.opt_prog prog conf else prog in
+  let optimized = if conf.cse_cp then CSE_CF_CP.opt_prog interleaved conf else interleaved in
   print "CSE-CP:" optimized conf;
 
   (* if conf.scheduling then Pre_schedule.schedule cleaned else cleaned *)

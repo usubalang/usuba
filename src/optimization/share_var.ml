@@ -278,6 +278,7 @@ let share_def (def:def) : def =
 let share_prog (prog:prog) : prog =
   (* { nodes = List.map share_def prog.nodes } *)
   let prog = Linearize_arrays.linearize_arrays prog in
-  (* { nodes = apply_last prog.nodes share_def } *)
-  (* Printf.fprintf stderr "Share_var disabled.\n"; *)
-  prog
+  if true then
+    { nodes = apply_last prog.nodes share_def }
+  else
+    prog
