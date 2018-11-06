@@ -3,6 +3,8 @@ open Utils
 open Usuba_AST
 open Usuba_print
 
+(* Clean.clean_vars_decl removes unused variables from variable declarations of nodes 
+   (unused variables will likely be variables that have been optimized out) *)
 module Clean = struct
 
   let rec clean_var env (var:var) : unit =
@@ -63,7 +65,7 @@ let opt_prog (prog: Usuba_AST.prog) (conf:config) : Usuba_AST.prog =
   (* CSE - CP is already done in the normalization *)
   let optimized = if conf.cse_cp then CSE_CF_CP.opt_prog interleaved conf else interleaved in
   print "CSE-CP:" optimized conf;
-
+  
   (* if conf.scheduling then Pre_schedule.schedule cleaned else cleaned *)
   let scheduled =  if conf.scheduling then Scheduler.schedule optimized conf else optimized in
   print "SCHEDULED:" scheduled conf;
