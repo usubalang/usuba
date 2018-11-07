@@ -14,7 +14,7 @@ sub error {
     exit $?;
 }
 
-my $temp_dir = "tmp_aes";
+my $temp_dir = "tmp_aes_kasper";
 
 say "############################### AES Kasper ############################";
 
@@ -35,7 +35,7 @@ mkdir $temp_dir;
 
 # Compiling Usuba AES.
 say "Compiling AES from Usuba to C...";
-error if system "./usubac -o $temp_dir/aes.c -arch sse -no-runtime samples/usuba/aes_kasper.ua" ;
+error if system "./usubac -o $temp_dir/aes.c -arch sse -no-runtime -no-share samples/usuba/aes_kasper.ua" ;
 {
     local $^I = "";
     local @ARGV = "$temp_dir/aes.c";
