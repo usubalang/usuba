@@ -37,10 +37,14 @@
 
 #define ADD(a,b,c) ((a) + (b))
 
+#define ROTATE_MASK(x) (x == 64 ? -1ULL : x == 32 ? (int)-1 : x == 16 ? 0xFFFF : \
+    ({ fprintf(stderr,"Not implemented rotate [uint%d_t]. Exiting.\n",x); \
+      exit(1); 1; }))
+
 #define L_SHIFT(a,b,c) ((a) << (b))
 #define R_SHIFT(a,b,c) ((a) >> (b))
-#define L_ROTATE(a,b,c) ((a << b) | (a >> (c-b)))
-#define R_ROTATE(a,b,c) ((a >> b) | (a << (c-b)))
+#define L_ROTATE(a,b,c) ((a << b) | ((a&ROTATE_MASK(c)) >> (c-b)))
+#define R_ROTATE(a,b,c) (((a&ROTATE_MASK(c)) >> b) | (a << (c-b)))
 
 #define LIFT_8(x)  (x)
 #define LIFT_16(x) (x)
