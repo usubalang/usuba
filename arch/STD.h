@@ -42,6 +42,10 @@
 #define L_ROTATE(a,b,c) ((a << b) | (a >> (c-b)))
 #define R_ROTATE(a,b,c) ((a >> b) | (a << (c-b)))
 
+#define LIFT_8(x)  (x)
+#define LIFT_16(x) (x)
+#define LIFT_32(x) (x)
+#define LIFT_64(x) (x)
 
 #ifndef DATATYPE
 #if BITS_PER_REG == 16
