@@ -21,6 +21,10 @@
 #define LOG2_BITS_PER_REG 6
 #endif
 
+/* Defining 0 and 1 */
+#define ZERO 0
+#define ONES -1
+
 /* Defining macros */
 #define REG_SIZE BITS_PER_REG
 #define CHUNK_SIZE 64

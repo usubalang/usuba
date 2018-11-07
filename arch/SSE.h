@@ -62,6 +62,12 @@
   _mm_shuffle_epi8(a,_mm_set_epi8(x16,x15,x14,x13,x12,x11,x10,x9,x8,x7,x6,x5,x4,x3,x2,x1))
 #define PERMUT_4(a,x1,x2,x3,x4) _mm_shuffle_epi32(a,(x4<<6)|(x3<<4)|(x2<<2)|x1)
 
+#define LIFT_8(x)  _mm_set1_epi8(x)
+#define LIFT_16(x) _mm_set1_epi16(x)
+#define LIFT_32(x) _mm_set1_epi32(x)
+#define LIFT_64(x) _mm_set1_epi64x(x)
+
+
 #define ORTHOGONALIZE(in,out) orthogonalize(in,out)
 #define UNORTHOGONALIZE(in,out) unorthogonalize(in,out)
 

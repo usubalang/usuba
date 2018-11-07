@@ -57,6 +57,11 @@
     OR(R_SHIFT(a,b,c),L_SHIFT(a,c-b,c))
 
 
+#define LIFT_8(x)  _mm256_set1_epi8(x)
+#define LIFT_16(x) _mm256_set1_epi16(x)
+#define LIFT_32(x) _mm256_set1_epi32(x)
+#define LIFT_64(x) _mm256_set1_epi64x(x)
+
 #define DATATYPE __m256i
 
 #define SET_ALL_ONE()  ONES
