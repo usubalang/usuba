@@ -34,7 +34,7 @@ let output      = ref ""
 let fd          = ref false
 let ti          = ref 1
 let fdti        = ref ""
-
+let lazylift    = ref false
 
 let str_to_arch = function
   | "std"     -> Std
@@ -110,6 +110,7 @@ let main () =
       "-fd", Arg.Set fd, "Generate complementary redudant code";
       "-ti", Arg.Set_int ti, "Set the number of shares to use for Threshold Implemenation (1, 2, 4, 8)";
       "-fdti",Arg.Set_string fdti, "Specify the order of ti and fd (tifd or fdti)";
+      "-lf", Arg.Set lazylift, "Enable lazy lifting";
       "-o", Arg.Set_string output, "Set the output filename";
     ] in
   let usage_msg = "Usage: usuba [switches] [files]" in
@@ -145,6 +146,7 @@ let main () =
                  fd           = !fd;
                  ti           = !ti;
                  fdti         = !fdti;
+                 lazylift     = !lazylift;
                } in
 
     if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then

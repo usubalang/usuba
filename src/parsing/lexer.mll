@@ -37,6 +37,7 @@ let _ =
      "_interleave", TOK_INTERLEAVE;
      "_no_opt", TOK_NOOPT;
      "const", TOK_CONST;
+     "lazyLift", TOK_LAZYLIFT;
     ]
 
 let next_line lexbuf =

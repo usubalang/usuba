@@ -64,7 +64,7 @@ Inductive deq :=
   | Norec (vs: list var)(e: expr)
   | Rec (x: ident)(ae1 ae2: arith_expr)(dl: list deq) (opts:list stmt_opt).
 
-Inductive var_d_opt := Pconst | P_tmp.
+Inductive var_d_opt := Pconst | PlazyLift.
 
 Record var_d := {
   vid   : ident;
@@ -134,6 +134,7 @@ Record config := {
   fd           : bool;
   ti           : N;
   fdti         : string;
+  lazylift     : bool;
 }.
 
 Set Extraction KeepSingleton.

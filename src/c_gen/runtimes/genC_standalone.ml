@@ -15,6 +15,7 @@ Printf.sprintf
    See https://github.com/DadaIsCrazy/usuba.
    From the file \"%s\" (included below). */
 
+#include <stdint.h>
 
 /* Do NOT change the order of those define/include */
 %s

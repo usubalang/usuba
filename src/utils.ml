@@ -39,6 +39,7 @@ let default_conf : config =
     fd           = false;
     ti           = 1;
     fdti         = "";
+    lazylift     = false;
   }
     
 let make_env () = Hashtbl.create 100
@@ -360,6 +361,12 @@ let is_perm (def:def) : bool =
   match def.node with
   | Perm _ -> true
   | _ -> false
+
+let is_const (var:var_d) : bool =
+  List.mem Pconst var.vopts
+           
+let is_lazyLift (var:var_d) : bool =
+  List.mem PlazyLift var.vopts
 
 let default_bits_per_reg (arch:arch) : int =
   match arch with

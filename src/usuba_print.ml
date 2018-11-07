@@ -136,7 +136,7 @@ let rec clock_to_str ck =
 let var_d_opt_to_str (vopt:var_d_opt) =
   match vopt with
   | Pconst -> "const"
-  | P_tmp  -> assert false
+  | PlazyLift  -> "lazyLift"
 let var_d_opt_to_str_l = lift_space var_d_opt_to_str
                                                    
 let vd_to_str (vd:var_d) =

@@ -40,6 +40,7 @@
 %token TOK_INTERLEAVE
 %token TOK_NOOPT
 %token TOK_CONST
+%token TOK_LAZYLIFT
        
 %token TOK_LPAREN
 %token TOK_RPAREN
@@ -199,6 +200,7 @@ deqs:
 
 opt_var_d:
   TOK_CONST { Pconst }
+  | TOK_LAZYLIFT { PlazyLift }
 
 var_d:
   x=TOK_id TOK_COLON attr=list(opt_var_d) t=typ ck=pclock
