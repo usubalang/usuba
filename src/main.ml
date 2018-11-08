@@ -36,6 +36,9 @@ let ti          = ref 1
 let fdti        = ref ""
 let lazylift    = ref false
 
+let slicing_type = ref B
+let slicing_set  = ref false
+
 let str_to_arch = function
   | "std"     -> Std
   | "mmx"     -> MMX
@@ -112,6 +115,9 @@ let main () =
       "-fdti",Arg.Set_string fdti, "Specify the order of ti and fd (tifd or fdti)";
       "-lf", Arg.Set lazylift, "Enable lazy lifting";
       "-o", Arg.Set_string output, "Set the output filename";
+      "-H", Arg.Unit (fun () -> slicing_set := true; slicing_type := H), "Horizontal slicing.";
+      "-V", Arg.Unit (fun () -> slicing_set := true; slicing_type := V), "Vertical slicing.";
+      "-B", Arg.Unit (fun () -> slicing_set := true; slicing_type := B), "Bit slicing.";
     ] in
   let usage_msg = "Usage: usuba [switches] [files]" in
   
@@ -147,6 +153,8 @@ let main () =
                  ti           = !ti;
                  fdti         = !fdti;
                  lazylift     = !lazylift;
+                 slicing_set  = !slicing_set;
+                 slicing_type = !slicing_type;
                } in
 
     if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then

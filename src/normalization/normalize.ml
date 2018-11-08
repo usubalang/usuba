@@ -42,6 +42,7 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
     prog |>
       (run_pass "Rename" rename)                                         |>
       (run_pass "Expand_multiples" Expand_multiples.expand_multiples)    |>
+      (run_pass "Slice" Slice.slice)                                     |>
       (run_pass "Convert_tables" Convert_tables.convert_tables)          |>
       (run_pass "Expand_array" Expand_array.expand_array)                |>
       (run_pass "Remove_sync" Remove_sync.remove_sync)                   |>

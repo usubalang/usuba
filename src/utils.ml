@@ -40,6 +40,8 @@ let default_conf : config =
     ti           = 1;
     fdti         = "";
     lazylift     = false;
+    slicing_set  = false;
+    slicing_type = B;
   }
     
 let make_env () = Hashtbl.create 100

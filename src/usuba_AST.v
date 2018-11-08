@@ -105,6 +105,8 @@ Inductive arch :=
   | Neon
   | AltiVec.
 
+Inductive slicing := H | V | B.
+
 (* The compiler's configuration *)
 Record config := {
   block_size   : N;
@@ -135,6 +137,8 @@ Record config := {
   ti           : N;
   fdti         : string;
   lazylift     : bool;
+  slicing_set  : bool;
+  slicing_type : slicing;
 }.
 
 Set Extraction KeepSingleton.
