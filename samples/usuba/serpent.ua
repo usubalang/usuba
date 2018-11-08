@@ -12,25 +12,19 @@ _no_inline table[] sbox (input:u32x4) returns (out:u32x4) [
 ]
 
 
-_no_inline node transform (input:u32x4) returns (out:u32x4)
-vars
-    x0:u32x1[4],
-    x1:u32x1[3],
-    x2:u32x1[4],
-    x3:u32x1[3]
+_no_inline node transform (x:u32x4) returns (out:u32x4)
 let
-    (x0[0],x1[0],x2[0],x3[0]) = input;
-    x0[1] = x0[0] <<< 13;
-    x2[1] = x2[0] <<< 3;
-    x1[1] = x1[0] ^ x0[1] ^ x2[1];
-    x3[1] = x3[0] ^ x2[1] ^ (x0[1] << 3);
-    x1[2] = x1[1] <<< 1;
-    x3[2] = x3[1] <<< 7;
-    x0[2] = x0[1] ^ x1[2] ^ x3[2];
-    x2[2] = x2[1] ^ x3[2] ^ (x1[2] << 7);
-    x0[3] = x0[2] <<< 5;
-    x2[3] = x2[2] <<< 22;
-    out = (x0[3],x1[2],x2[3],x3[2])
+    x[0] := x[0] <<< 13;
+    x[2] := x[2] <<< 3;
+    x[1] := x[1] ^ x[0] ^ x[2];
+    x[3] := x[3] ^ x[2] ^ (x[0] << 3);
+    x[1] := x[1] <<< 1;
+    x[3] := x[3] <<< 7;
+    x[0] := x[0] ^ x[1] ^ x[3];
+    x[2] := x[2] ^ x[3] ^ (x[1] << 7);
+    x[0] := x[0] <<< 5;
+    x[2] := x[2] <<< 22;
+    out = x
 tel
 
 node Serpent (plaintext:u32x4, keys:const u32x4[33]) returns (ciphertext:u32x4)
