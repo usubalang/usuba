@@ -19,11 +19,11 @@ let schedule_deqs (def:def) (deqs:deq list) : deq list =
     try ignore(Hashtbl.find sched instr)
     with Not_found ->
          match instr with
-         | Eqn(lhs,e) -> 
+         | Eqn(lhs,e,sync) -> 
             if List.for_all (fun x -> try Hashtbl.find ready x
                                       with Not_found -> false)
                             (get_used_vars e) then
-              ( body := Eqn(lhs,e) :: !body;
+              ( body := Eqn(lhs,e,sync) :: !body;
                 Hashtbl.add sched instr true;
                 List.iter (fun x -> Hashtbl.add ready x true) lhs;
                 List.iter (fun x ->

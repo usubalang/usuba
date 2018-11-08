@@ -61,7 +61,7 @@ Inductive expr :=
 Inductive stmt_opt := Unroll | No_unroll.
 
 Inductive deq :=
-  | Eqn (vs: list var)(e: expr)
+  | Eqn (vs: list var)(e: expr)(sync:bool)
   | Loop (x: ident)(ae1 ae2: arith_expr)(dl: list deq) (opts:list stmt_opt).
 
 Inductive var_d_opt := Pconst | PlazyLift.

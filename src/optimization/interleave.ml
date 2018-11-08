@@ -49,8 +49,8 @@ module Dup3 = struct
   let rec interleave_deqs (deqs:deq list) : deq list =
     flat_map (fun d ->
               match d with
-              | Eqn(lhs,e) -> [ d ; Eqn(List.map dup_var lhs,dup_expr e);
-                                  Eqn(List.map dup3_var lhs,dup3_expr e) ]
+              | Eqn(lhs,e,sync) -> [ d ; Eqn(List.map dup_var lhs,dup_expr e,sync);
+                                     Eqn(List.map dup3_var lhs,dup3_expr e,sync) ]
               | Loop(i,ei,ef,l,opts) -> [ Loop(i,ei,ef,interleave_deqs l,opts) ]) deqs
 
   let dup_p (p:p) : p =
@@ -104,7 +104,7 @@ module Dup2 = struct
   let rec interleave_deqs (deqs:deq list) : deq list =
     flat_map (fun d ->
               match d with
-              | Eqn(lhs,e) -> [ d ; Eqn(List.map dup_var lhs,dup_expr e) ]
+              | Eqn(lhs,e,sync) -> [ d ; Eqn(List.map dup_var lhs,dup_expr e,sync) ]
               | Loop(i,ei,ef,l,opts) -> [ Loop(i,ei,ef,interleave_deqs l,opts) ]) deqs
 
   let dup_p (p:p) : p =
@@ -163,11 +163,11 @@ module Dup2_nofunc = struct
   let rec interleave_deqs (deqs:deq list) : deq list =
     flat_map (fun d ->
               match d with
-              | Eqn(lhs,e) ->
+              | Eqn(lhs,e,sync) ->
                  begin match e with
                        | Fun(f,l) -> [ Eqn(flat_map dup_var lhs,
-                                             Fun(f,flat_map dup_expr l)) ]
-                       | _ -> [ d ; Eqn(List.map make_2nd_var lhs,make_2nd_expr e) ]
+                                           Fun(f,flat_map dup_expr l), sync) ]
+                       | _ -> [ d ; Eqn(List.map make_2nd_var lhs,make_2nd_expr e,sync) ]
                  end
               | Loop(i,ei,ef,l,opts) -> [ Loop(i,ei,ef,interleave_deqs l,opts) ]) deqs
 
@@ -275,14 +275,14 @@ module Dup2_nofunc_param = struct
   let rec interleave_deqs env_var (g:int) (deqs:deq list) : deq list =
     map_n g (fun d ->
              match d with
-             | Eqn(lhs,e) ->
+             | Eqn(lhs,e,sync) ->
                 begin match e with
                       | Fun(f,l) -> ( None,
                                       Some (Eqn(flat_map (dup_var env_var) lhs,
-                                                  Fun(f,flat_map (dup_expr env_var) l))))
+                                                  Fun(f,flat_map (dup_expr env_var) l), sync)))
                       | _ -> ( Some d,
                                Some(Eqn(List.map (make_2nd_var env_var) lhs,
-                                          make_2nd_expr env_var e)) )
+                                        make_2nd_expr env_var e, sync)) )
                 end
              | Loop(i,ei,ef,l,opts) ->
                 ( None,

@@ -98,7 +98,7 @@ let build_deps (deqs: deq list) =
   let defs      = Hashtbl.create 500 in
 
   List.iter (function
-              | Eqn(l,e) -> List.iter (fun x -> 
+              | Eqn(l,e,_) -> List.iter (fun x -> 
                                          List.iter (fun y ->
                                                     update_hoh deps_up x y;
                                                     update_hoh deps_down y x
@@ -120,17 +120,17 @@ let schedule_deqs (deqs:deq list) (def:def): deq list =
   List.iter (fun vd -> Hashtbl.add sched_vars (Var vd.vid) true) def.p_in;
   
   List.iter (function
-              | Eqn(l,e) -> schedule_asgn ready is_sched sched_vars schedule deps_down defs l e
+              | Eqn(l,e,_) -> schedule_asgn ready is_sched sched_vars schedule deps_down defs l e
               | _ -> raise (Error "Invalid Loop")) deqs;
 
   List.iter (function
-              | Eqn(l,e) -> ( match Hashtbl.find_opt is_sched (l,e) with
+              | Eqn(l,e,_) -> ( match Hashtbl.find_opt is_sched (l,e) with
                                 | Some _ -> ()
                                 | None   -> schedule := (l,e) :: !schedule;
                                             Hashtbl.add is_sched (l,e) true)
               | _ -> raise (Error "Invalid Loop")) deqs;
 
-  List.rev_map (fun (x,y) -> Eqn(x,y)) !schedule
+  List.rev_map (fun (x,y) -> Eqn(x,y,false)) !schedule
        
 let schedule_node (def:def) : def =
   if is_noopt def then def else

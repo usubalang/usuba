@@ -60,7 +60,7 @@ let rec shift_expr (e:expr) : expr =
                
 let rec shift_deq (deq:deq) : deq =
   match deq with
-  | Eqn(p,e) -> Eqn(p,shift_expr e)
+  | Eqn(p,e,sync) -> Eqn(p,shift_expr e,sync)
   | Loop(id,ei,ef,d,opts) -> Loop(id,ei,ef,List.map shift_deq d,opts)
                              
                             

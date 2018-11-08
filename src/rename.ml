@@ -65,7 +65,7 @@ let rec rename_pat pat =
            
 let rec rename_deq deqs =
     List.map (function
-               | Eqn(pat,expr) -> Eqn(rename_pat pat,rename_expr expr)
+               | Eqn(pat,expr,sync) -> Eqn(rename_pat pat,rename_expr expr,sync)
                | Loop(id,ei,ef,d,opts) -> Loop(id,ei,ef,rename_deq d,opts)) deqs
              
 let rec rename_p (p:p) =

@@ -60,8 +60,8 @@ module Linearize_arrays = struct
     
   let rec linearize to_linearize (deqs:deq list) : deq list =
     List.map (function
-               | Eqn(v,e) -> Eqn(List.map (replace_var to_linearize) v,
-                                     replace_expr to_linearize e)
+               | Eqn(v,e,sync) -> Eqn(List.map (replace_var to_linearize) v,
+                                      replace_expr to_linearize e, sync)
                | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,linearize to_linearize dl,opts)) deqs
               
   let rec try_linear ?(env_it=Hashtbl.create 10)
@@ -71,7 +71,7 @@ module Linearize_arrays = struct
     
     List.iter (
         function
-        | Eqn(lhs,e) ->
+        | Eqn(lhs,e,_) ->
            List.iter (
                fun v ->
                match v with
@@ -185,7 +185,7 @@ let rec get_last_used
   
   List.iter (fun d ->
              match d with
-             | Eqn(_,e) ->
+             | Eqn(_,e,_) ->
                 incr cpt;
                 List.iter (update_used env_var env_it last_used)
                           (get_used_vars e)
@@ -222,7 +222,7 @@ let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) : deq list =
     List.map (
         fun deq ->
         match deq with
-        | Eqn(lhs,e) ->
+        | Eqn(lhs,e,sync) ->
            let e = replace_expr env_replace e in
            let lhs = List.map (replace_var env_replace) lhs in
            incr cpt;
@@ -255,7 +255,7 @@ let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) : deq list =
                                               raise Not_found);
                             v'
                        | None -> v
-                   ) lhs, e)
+                   ) lhs, e, sync)
         | Loop(i,ei,ef,dl,opts) -> 
            let r = Loop(i,ei,ef,do_it ~cpt_start:!cpt dl,opts) in
            cpt := !cpt + (List.length dl);

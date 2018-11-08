@@ -29,7 +29,7 @@ let remove_left env_var live lhs =
 let live_deq env_var live (deq:deq) : int =
   let nb_live = Hashtbl.length live in
   (match deq with
-   | Eqn(lhs,rhs) -> add_right env_var live rhs;
+   | Eqn(lhs,rhs,_) -> add_right env_var live rhs;
                        remove_left env_var live lhs
    | Loop _ -> raise (Not_implemented "live_deq(Loop ...)"));
   (* Printf.printf "[%3d -> %3d]  %s\n" nb_live (Hashtbl.length live) (Usuba_print.deq_to_str deq); *)

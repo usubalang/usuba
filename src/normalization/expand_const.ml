@@ -93,13 +93,13 @@ and expand_expr env (size:int) (e:expr) : expr =
                          
 let expand_deqs env (deq:deq) : deq =
   match deq with
-  | Eqn(p,e) ->
+  | Eqn(p,e,sync) ->
      if contains_const e then
        let size =
          List.fold_left (+) 0 (List.map (function
                                           | Var v -> get_var_size env v
                                           | _ -> raise (Error "Invalid var")) p) in
-       Eqn(p,expand_expr env size e)
+       Eqn(p,expand_expr env size e,sync)
      else
        deq
   | _ -> deq

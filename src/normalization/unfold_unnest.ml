@@ -118,7 +118,7 @@ let rec remove_call env_var env_fun e : deq list * expr =
     let new_var = gen_tmp env_var typ in
     new_vars := (make_var_d new_var typ Defclock []) :: !new_vars;
 
-    deq @ [Eqn([Var new_var],e')], ExpVar (Var new_var)
+    deq @ [Eqn([Var new_var],e',false)], ExpVar (Var new_var)
 
 and remove_calls env_var env_fun l : deq list * expr list =
   let pre_deqs = ref [] in
@@ -138,7 +138,7 @@ and remove_calls env_var env_fun l : deq list * expr list =
                           else List.hd expr_typ_l in
                 let new_var = gen_tmp env_var typ in
                 new_vars := (make_var_d new_var typ Defclock []) :: !new_vars;
-                pre_deqs := !pre_deqs @ [(Eqn([Var new_var],e'))];
+                pre_deqs := !pre_deqs @ [(Eqn([Var new_var],e',false))];
                 
                 [ExpVar (Var new_var)])
              l in
@@ -190,9 +190,9 @@ and norm_expr env_var env_fun (e: expr) : deq list * expr =
 let rec norm_deq env_var env_fun (body: deq list) : deq list =
   flat_map
     (function
-      | Eqn (p,e) ->
+      | Eqn (p,e,sync) ->
          let (expr_l, e') = norm_expr env_var env_fun e in
-         expr_l @ [Eqn(p,e')]
+         expr_l @ [Eqn(p,e',sync)]
       | Loop(x,ei,ef,dl,opts) ->
          [ Loop(x,ei,ef,norm_deq env_var env_fun dl,opts) ]) body
     

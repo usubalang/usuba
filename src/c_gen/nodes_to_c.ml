@@ -133,10 +133,10 @@ let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
   join "\n"
        (List.map
           (fun deq -> match deq with
-            | Eqn([v],Fun(f,[])) when f.name = "rand" ->
+            | Eqn([v],Fun(f,[]),_) when f.name = "rand" ->
                sprintf "%s%s = rand();" tabs (var_to_c lift_env env v)
-            | Eqn(p,Fun(f,l)) -> fun_call_to_c lift_env conf env env_var ~tabs:tabs p f l
-            | Eqn([v],e) ->
+            | Eqn(p,Fun(f,l),_) -> fun_call_to_c lift_env conf env env_var ~tabs:tabs p f l
+            | Eqn([v],e,_) ->
                sprintf "%s%s = %s;" tabs (var_to_c lift_env env v)
                        (expr_to_c lift_env conf env env_var e)
             | Loop(i,ei,ef,l,_) ->

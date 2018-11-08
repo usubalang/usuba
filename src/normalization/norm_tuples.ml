@@ -21,7 +21,7 @@ module Simplify_tuples = struct
 
   let rec simpl_deqs (deq:deq list) : deq list =
     List.map (function
-               | Eqn(p,e) -> Eqn(p,simpl_tuple e)
+               | Eqn(p,e,sync) -> Eqn(p,simpl_tuple e,sync)
                | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,simpl_deqs dl,opts)) deq
              
   let simpl_tuples_def (def: def) : def =
@@ -40,16 +40,16 @@ end
 
 (* Split tuples into atomic operations, if possible *)
 module Split_tuples = struct
-  let real_split_tuple env (p: var list) (l: expr list) : deq list =
-    List.map2 (fun l r -> Eqn([l],r)) (flat_map (expand_var env) p)
+  let real_split_tuple env (p: var list) (l: expr list) (sync:bool) : deq list =
+    List.map2 (fun l r -> Eqn([l],r,sync)) (flat_map (expand_var env) p)
               (flat_map (Unfold_unnest.expand_expr env) l)
                
   let rec split_tuples_deq env (body: deq list) : deq list =
     flat_map
       (fun x -> match x with
-                | Eqn (p,e) -> (match e with
-                                  | Tuple l -> real_split_tuple env p l
-                                  | _ -> [ x ])
+                | Eqn (p,e,sync) -> (match e with
+                                     | Tuple l -> real_split_tuple env p l sync
+                                     | _ -> [ x ])
                 | Loop(i,ei,ef,dl,opts) -> [ Loop(i,ei,ef,split_tuples_deq env dl,opts) ]) body
 
   let split_tuples_def (def: def) : def =
@@ -86,7 +86,7 @@ module Flatten_tuples = struct
   
   let rec flatten_tuples_deq (body:deq list) : deq list =
     List.map (function
-               | Eqn(p,e) -> Eqn(p,flatten_tuples_expr e)
+               | Eqn(p,e,sync) -> Eqn(p,flatten_tuples_expr e,sync)
                | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,flatten_tuples_deq dl,opts)) body
   
   let flatten_tuples_def (def:def) : def =

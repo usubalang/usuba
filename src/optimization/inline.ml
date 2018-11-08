@@ -126,8 +126,8 @@ let rec update_vars (it_env:(var,var) Hashtbl.t)
                     (expr_env: (var,expr) Hashtbl.t)
                     (body:deq list) : deq list =
   List.map (function
-      | Eqn(lhs,e) -> Eqn( List.map (update_var_to_var it_env var_env) lhs,
-                               update_expr it_env var_env expr_env e )
+      | Eqn(lhs,e,sync) -> Eqn( List.map (update_var_to_var it_env var_env) lhs,
+                                update_expr it_env var_env expr_env e, sync )
       | Loop(i,ei,ef,dl,opts) ->
          let i' = gen_iterator i in
          Hashtbl.add it_env (Var i) (Var i');
@@ -183,7 +183,7 @@ let rec inline_in_node (deqs:deq list) (to_inl:def) : p * deq list =
        why maps returns a (p * deq list) list. *)
       ( List.map (
             fun eqn -> match eqn with
-                       | Eqn(lhs,Fun(f,l)) when f.name = f_inl ->
+                       | Eqn(lhs,Fun(f,l),_) when f.name = f_inl ->
                           incr cpt;
                           inline_call to_inl l lhs !cpt
                        | Eqn _ -> [], [eqn]
@@ -214,7 +214,7 @@ let do_inline (prog:prog) (to_inline:def) : prog =
 let is_call_free env (def:def) : bool =
   let rec deq_call_free (deq:deq) : bool =
     match deq with
-    | Eqn(_,Fun(f,_)) -> is_noinline (Hashtbl.find env f.name)
+    | Eqn(_,Fun(f,_),_) -> is_noinline (Hashtbl.find env f.name)
                            || is_perm (Hashtbl.find env f.name)
     | Eqn _ -> true
     | Loop(_,_,_,dl,_) -> List.for_all deq_call_free dl in

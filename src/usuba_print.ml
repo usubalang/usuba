@@ -153,7 +153,8 @@ let optstmt_to_str = function
   | No_unroll -> "_no_unroll"
                    
 let rec deq_to_str = function
-  | Eqn(pat,e) -> sprintf "%s = %s" (pat_to_str pat) (expr_to_str e)
+  | Eqn(pat,e,sync) -> sprintf "%s %s= %s" (pat_to_str pat) (if sync then ":" else "")
+                                (expr_to_str e)
   | Loop(id,ei,ef,d,opts) ->
      sprintf "%s forall %s in [%s,%s] {\n    %s\n  }"
              (join " " (List.map optstmt_to_str opts))
@@ -162,7 +163,8 @@ let rec deq_to_str = function
 let deq_to_str_l = lift_comma deq_to_str
                                                                                  
 let rec deq_to_str_types = function
-  | Eqn(pat,e) -> sprintf "%s = %s" (pat_to_str_types pat) (expr_to_str_types e)
+  | Eqn(pat,e,sync) -> sprintf "%s %s= %s" (pat_to_str_types pat) (if sync then ":" else "")
+                               (expr_to_str_types e)
   | Loop(id,ei,ef,d,opts) ->
      sprintf "%s forall %s in [%s,%s] {\n    %s\n  }"
              (join " " (List.map optstmt_to_str opts))

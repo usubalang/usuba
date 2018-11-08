@@ -35,15 +35,15 @@ let rec fd_expr (e:expr) : expr =
   
 let rec fd_deqs (deqs:deq list) : deq list =
   flat_map (function
-             | Eqn(vars,e) ->
+             | Eqn(vars,e,sync) ->
                 (match e with
                  | Fun(f,[]) when f.name = "rand" ->
-                    [ Eqn(vars,e);
-                      Eqn(List.map dup_var vars, ExpVar (List.hd vars)) ]
+                    [ Eqn(vars,e,sync);
+                      Eqn(List.map dup_var vars, ExpVar (List.hd vars), sync) ]
                  | Fun(f,l) -> [ Eqn(vars @ (List.map dup_var vars),
-                                       Fun(f,flat_map (fun x -> [ x ; fd_expr x]) l)) ] 
-                 | _ -> [ Eqn(vars,e) ; Eqn(List.map dup_var vars,
-                                                fd_expr e) ])
+                                       Fun(f,flat_map (fun x -> [ x ; fd_expr x]) l), sync) ] 
+                 | _ -> [ Eqn(vars,e,sync) ; Eqn(List.map dup_var vars,
+                                                 fd_expr e, sync) ])
       | Loop(i,ei,ef,dl,opts) -> [ Loop(i,ei,ef,fd_deqs dl,opts) ] ) deqs
   
 let dup_p (p:p) : p =

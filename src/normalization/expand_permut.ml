@@ -39,7 +39,7 @@ let rec apply_perm_e env_fun env_var (e:expr) : expr =
             
 let apply_perm env_fun env_var (deqs: deq list) : deq list =
   List.map (fun x -> match x with
-                     | Eqn(p,e) -> Eqn(p,apply_perm_e env_fun env_var e)
+                     | Eqn(p,e,sync) -> Eqn(p,apply_perm_e env_fun env_var e,sync)
                      | _ -> x) deqs
             
 let rec rewrite_defs (l: def list) : def list =

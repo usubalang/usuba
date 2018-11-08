@@ -179,9 +179,12 @@ pat:
   | TOK_LPAREN l=separated_nonempty_list(TOK_COMMA,var) TOK_RPAREN   { l }
 
 norec_deq:
-  | p=pat TOK_EQUAL e=exp              { Eqn( p, e ) }
-  | p=pat op=log_op TOK_EQUAL e=exp    { Eqn( p, Log(op,left_to_right p,e)) }
-  | p=pat op=arith_op TOK_EQUAL e=exp  { Eqn( p, Arith(op,left_to_right p,e)) }
+  | p=pat TOK_EQUAL e=exp              { Eqn( p, e, false ) }
+  | p=pat op=log_op TOK_EQUAL e=exp    { Eqn( p, Log(op,left_to_right p,e), false) }
+  | p=pat op=arith_op TOK_EQUAL e=exp  { Eqn( p, Arith(op,left_to_right p,e), false) }
+  | p=pat TOK_COLON TOK_EQUAL e=exp              { Eqn( p, e, true) }
+  | p=pat op=log_op TOK_COLON TOK_EQUAL e=exp    { Eqn( p, Log(op,left_to_right p,e), true) }
+  | p=pat op=arith_op TOK_COLON TOK_EQUAL e=exp  { Eqn( p, Arith(op,left_to_right p,e), true) }
 
 opt_stmt:
    | TOK_UNROLL   { Unroll    }

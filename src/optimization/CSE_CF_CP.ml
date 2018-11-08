@@ -101,16 +101,16 @@ let rec update_opt_out opt_out_vars (v:var) : unit =
   | Index(v,_) -> update_opt_out opt_out_vars v
   | _ -> ()
            
-let opt_deq ret_env env_expr env_var opt_out_vars (p:var) (e:expr) : deq list =
+let opt_deq ret_env env_expr env_var opt_out_vars (p:var) (e:expr) (sync:bool) : deq list =
   let e = opt_expr env_expr env_var opt_out_vars e in
   match e with
   | ExpVar v -> (match env_fetch_opt ret_env (get_var_base p) with
-                 | Some _ -> [ Eqn([p],e) ]
+                 | Some _ -> [ Eqn([p],e,sync) ]
                  | None -> env_update env_expr (ExpVar p) (ExpVar v);
                            update_opt_out opt_out_vars p;
                            [])
   | _        -> env_update env_expr e (ExpVar p);
-                [ Eqn([p],e) ]
+                [ Eqn([p],e,sync) ]
 
 (* To be called before a Loop: it adds the assignments that have been optimized
    out but will be needed insigned the Loop.
@@ -140,7 +140,7 @@ let rec commit_asgns ?(env_it=(Hashtbl.create 10))
     let v = compute_index env_it v in
     match Hashtbl.find_opt env_expr (ExpVar v) with
     | Some e -> env_remove env_expr (ExpVar v);
-                [ Eqn([v],e) ]
+                [ Eqn([v],e, false) ]
     | None -> match get_var_type env_var v with
               | Bool | Int(_,1) -> []
               | _ -> flat_map (find_usage env_it env_expr env_var)
@@ -153,7 +153,7 @@ let rec commit_asgns ?(env_it=(Hashtbl.create 10))
                      (deq:deq)
           : deq list =
     match deq with
-    | Eqn(l,e) -> flat_map (find_usage env_it env_expr env_var) (get_used_vars e)
+    | Eqn(l,e,_) -> flat_map (find_usage env_it env_expr env_var) (get_used_vars e)
     | Loop(i,ei,ef,dl,_) -> commit_asgns ~env_it:env_it env_expr env_var (i,ei,ef,dl) in
 
   
@@ -183,9 +183,9 @@ let rec opt_deqs env_var (deqs:deq list) (out:p) : deq list =
   flat_map
     (function
       (* A simple assignment *)
-      | Eqn([v],e) -> opt_deq ret_env env_expr env_var opt_out_vars v e
+      | Eqn([v],e,sync) -> opt_deq ret_env env_expr env_var opt_out_vars v e sync
       (* A function call (it's the only way to have a list as lhs *)
-      | Eqn(l,e) -> [ Eqn(l,opt_expr env_expr env_var opt_out_vars e) ]
+      | Eqn(l,e,sync) -> [ Eqn(l,opt_expr env_expr env_var opt_out_vars e,sync) ]
       (* A loop *)
       | Loop(i,ei,ef,dl,opts) ->
          (commit_asgns env_expr env_var (i,ei,ef,dl)) @

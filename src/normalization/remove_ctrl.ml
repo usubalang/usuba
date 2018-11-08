@@ -34,7 +34,7 @@ let rec clean_expr (e:expr) : expr =
        
 let rec clean_deq (deq:deq) : deq = 
   match deq with
-  | Eqn(lhs,e) -> Eqn(lhs,clean_expr e)
+  | Eqn(lhs,e,sync) -> Eqn(lhs,clean_expr e,sync)
   | Loop(x,ei,ef,dl,opts) -> Loop(x,ei,ef,List.map clean_deq dl,opts)
   
 let clean_def (def:def) : def =
