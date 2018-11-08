@@ -269,6 +269,10 @@ let rec get_var_base (v:var) : var =
   | Var _ -> v
   | Index(v,_) | Slice(v,_) | Range(v,_,_) -> get_var_base v
 
+let rec get_base_name (v:var) : ident =
+  match v with
+  | Var x -> x
+  | Index(v,_) | Slice(v,_) | Range(v,_,_) -> get_base_name v
                                                            
 let rec get_base_type (typ:typ) : typ =
   match typ with
