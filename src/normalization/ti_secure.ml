@@ -24,8 +24,8 @@ let rec trip_expr (e:expr) : expr =
                 
 let rec trip_deqs (deqs:deq list) : deq list =
   List.map (function
-             | Norec(vars,e) -> Norec(vars,trip_expr e)
-             | Rec(i,ei,ef,dl,opts) -> Rec(i,ei,ef,trip_deqs dl,opts) ) deqs
+             | Eqn(vars,e) -> Eqn(vars,trip_expr e)
+             | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,trip_deqs dl,opts) ) deqs
 
 let rec trip_typ (t:typ) : typ =
   match t with

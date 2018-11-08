@@ -60,9 +60,9 @@ module Linearize_arrays = struct
     
   let rec linearize to_linearize (deqs:deq list) : deq list =
     List.map (function
-               | Norec(v,e) -> Norec(List.map (replace_var to_linearize) v,
+               | Eqn(v,e) -> Eqn(List.map (replace_var to_linearize) v,
                                      replace_expr to_linearize e)
-               | Rec(i,ei,ef,dl,opts) -> Rec(i,ei,ef,linearize to_linearize dl,opts)) deqs
+               | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,linearize to_linearize dl,opts)) deqs
               
   let rec try_linear ?(env_it=Hashtbl.create 10)
                      ?(idx=ref (-1))
@@ -71,7 +71,7 @@ module Linearize_arrays = struct
     
     List.iter (
         function
-        | Norec(lhs,e) ->
+        | Eqn(lhs,e) ->
            List.iter (
                fun v ->
                match v with
@@ -91,7 +91,7 @@ module Linearize_arrays = struct
                                     raise Keep_it
                                | _ -> ()) lhs;
            idx := !new_idx
-        | Rec(x,ei,ef,dl,_) ->
+        | Loop(x,ei,ef,dl,_) ->
            let ei = eval_arith env_it ei in
            let ef = eval_arith env_it ef in
            List.iter (fun i -> Hashtbl.add env_it x i;
@@ -185,11 +185,11 @@ let rec get_last_used
   
   List.iter (fun d ->
              match d with
-             | Norec(_,e) ->
+             | Eqn(_,e) ->
                 incr cpt;
                 List.iter (update_used env_var env_it last_used)
                           (get_used_vars e)
-             | Rec(x,ei,ef,dl,_) ->
+             | Loop(x,ei,ef,dl,_) ->
                 let ei = eval_arith env_it ei in
                 let ef = eval_arith env_it ef in
                 List.iter (fun i -> Hashtbl.add env_it x i;
@@ -222,7 +222,7 @@ let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) : deq list =
     List.map (
         fun deq ->
         match deq with
-        | Norec(lhs,e) ->
+        | Eqn(lhs,e) ->
            let e = replace_expr env_replace e in
            let lhs = List.map (replace_var env_replace) lhs in
            incr cpt;
@@ -235,7 +235,7 @@ let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) : deq list =
                                     | None -> false)
                          (get_used_vars e) in
            let used = Hashtbl.create 10 in
-           Norec(List.map
+           Eqn(List.map
                    (fun v ->
                     match Hashtbl.find_opt env_out (get_var_base v) with
                     | Some _ -> v
@@ -256,8 +256,8 @@ let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) : deq list =
                             v'
                        | None -> v
                    ) lhs, e)
-        | Rec(i,ei,ef,dl,opts) -> 
-           let r = Rec(i,ei,ef,do_it ~cpt_start:!cpt dl,opts) in
+        | Loop(i,ei,ef,dl,opts) -> 
+           let r = Loop(i,ei,ef,do_it ~cpt_start:!cpt dl,opts) in
            cpt := !cpt + (List.length dl);
            r
       ) deqs

@@ -179,9 +179,9 @@ pat:
   | TOK_LPAREN l=separated_nonempty_list(TOK_COMMA,var) TOK_RPAREN   { l }
 
 norec_deq:
-  | p=pat TOK_EQUAL e=exp              { Norec( p, e ) }
-  | p=pat op=log_op TOK_EQUAL e=exp    { Norec( p, Log(op,left_to_right p,e)) }
-  | p=pat op=arith_op TOK_EQUAL e=exp  { Norec( p, Arith(op,left_to_right p,e)) }
+  | p=pat TOK_EQUAL e=exp              { Eqn( p, e ) }
+  | p=pat op=log_op TOK_EQUAL e=exp    { Eqn( p, Log(op,left_to_right p,e)) }
+  | p=pat op=arith_op TOK_EQUAL e=exp  { Eqn( p, Arith(op,left_to_right p,e)) }
 
 opt_stmt:
    | TOK_UNROLL   { Unroll    }
@@ -190,7 +190,7 @@ opt_stmt:
 deq_forall:
  | opts=list(opt_stmt) TOK_FORALL i=TOK_id TOK_IN TOK_LBRACKET startr=arith_exp
    TOK_COMMA endr=arith_exp TOK_RBRACKET TOK_LCURLY d=deqs TOK_RCURLY
-    { Rec(i, startr, endr, d, opts) }
+    { Loop(i, startr, endr, d, opts) }
 
 deqs:
   | d=deq_forall ds=deqs { d :: ds }

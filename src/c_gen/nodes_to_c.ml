@@ -133,13 +133,13 @@ let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
   join "\n"
        (List.map
           (fun deq -> match deq with
-            | Norec([v],Fun(f,[])) when f.name = "rand" ->
+            | Eqn([v],Fun(f,[])) when f.name = "rand" ->
                sprintf "%s%s = rand();" tabs (var_to_c lift_env env v)
-            | Norec(p,Fun(f,l)) -> fun_call_to_c lift_env conf env env_var ~tabs:tabs p f l
-            | Norec([v],e) ->
+            | Eqn(p,Fun(f,l)) -> fun_call_to_c lift_env conf env env_var ~tabs:tabs p f l
+            | Eqn([v],e) ->
                sprintf "%s%s = %s;" tabs (var_to_c lift_env env v)
                        (expr_to_c lift_env conf env env_var e)
-            | Rec(i,ei,ef,l,_) ->
+            | Loop(i,ei,ef,l,_) ->
                sprintf "%sfor (int %s = %s; %s <= %s; %s++) {\n%s\n%s}"
                        tabs
                        (rename i.name) (aexpr_to_c ei)

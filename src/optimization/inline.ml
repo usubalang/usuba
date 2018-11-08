@@ -126,12 +126,12 @@ let rec update_vars (it_env:(var,var) Hashtbl.t)
                     (expr_env: (var,expr) Hashtbl.t)
                     (body:deq list) : deq list =
   List.map (function
-      | Norec(lhs,e) -> Norec( List.map (update_var_to_var it_env var_env) lhs,
+      | Eqn(lhs,e) -> Eqn( List.map (update_var_to_var it_env var_env) lhs,
                                update_expr it_env var_env expr_env e )
-      | Rec(i,ei,ef,dl,opts) ->
+      | Loop(i,ei,ef,dl,opts) ->
          let i' = gen_iterator i in
          Hashtbl.add it_env (Var i) (Var i');
-         let updated = Rec(i',ei,ef,update_vars it_env var_env expr_env dl,opts) in
+         let updated = Loop(i',ei,ef,update_vars it_env var_env expr_env dl,opts) in
          Hashtbl.remove it_env (Var i);
          updated
            ) body
@@ -183,13 +183,13 @@ let rec inline_in_node (deqs:deq list) (to_inl:def) : p * deq list =
        why maps returns a (p * deq list) list. *)
       ( List.map (
             fun eqn -> match eqn with
-                       | Norec(lhs,Fun(f,l)) when f.name = f_inl ->
+                       | Eqn(lhs,Fun(f,l)) when f.name = f_inl ->
                           incr cpt;
                           inline_call to_inl l lhs !cpt
-                       | Norec _ -> [], [eqn]
-                       | Rec(i,ei,ef,dl,opts) ->
+                       | Eqn _ -> [], [eqn]
+                       | Loop(i,ei,ef,dl,opts) ->
                           let (vars, deqs) = inline_in_node dl to_inl in
-                          vars, [ Rec(i,ei,ef,deqs,opts) ]
+                          vars, [ Loop(i,ei,ef,deqs,opts) ]
           ) deqs ) in
   List.flatten vars, List.flatten deqs
     
@@ -214,10 +214,10 @@ let do_inline (prog:prog) (to_inline:def) : prog =
 let is_call_free env (def:def) : bool =
   let rec deq_call_free (deq:deq) : bool =
     match deq with
-    | Norec(_,Fun(f,_)) -> is_noinline (Hashtbl.find env f.name)
+    | Eqn(_,Fun(f,_)) -> is_noinline (Hashtbl.find env f.name)
                            || is_perm (Hashtbl.find env f.name)
-    | Norec _ -> true
-    | Rec(_,_,_,dl,_) -> List.for_all deq_call_free dl in
+    | Eqn _ -> true
+    | Loop(_,_,_,dl,_) -> List.for_all deq_call_free dl in
   match def.node with
   | Single(_,body) ->
      List.for_all deq_call_free body

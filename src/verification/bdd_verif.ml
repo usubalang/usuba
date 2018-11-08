@@ -39,7 +39,7 @@ let deqs_to_bdd (node1:def) (deqs1:deq list) (node2:def) (deqs2:deq list) =
   let build_bdd deqs env =
     List.iter (fun deq ->
                match deq with
-               | Norec([Var id],e) -> env_add env id (expr_to_bdd env man e)
+               | Eqn([Var id],e) -> env_add env id (expr_to_bdd env man e)
                | _ -> Printf.printf
                         "Invalid expr: %s\n"
                         (Usuba_print.deq_to_str deq)) deqs in

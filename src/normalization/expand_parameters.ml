@@ -58,9 +58,9 @@ let rec propagate_expr env_var (e:expr) : expr =
                 
 let rec propagate_deqs env_var (deqs:deq list) : deq list =
   List.map (function
-             | Norec(l,e) -> Norec(flat_map (propagate_var env_var) l,
+             | Eqn(l,e) -> Eqn(flat_map (propagate_var env_var) l,
                                    propagate_expr env_var e)
-             | Rec(i,ei,ef,dl,opts) -> Rec(i,ei,ef,propagate_deqs env_var dl,opts)) deqs
+             | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,propagate_deqs env_var dl,opts)) deqs
 
 let replace l e e' = flat_map (fun x -> if x = e then e' else [x]) l
            
@@ -138,7 +138,7 @@ let unzip l =
                  
 let rec expand_deq env_fun env_var (deq:deq) : deq =
   match deq with
-  | Norec(lhs,Fun(id,args)) ->
+  | Eqn(lhs,Fun(id,args)) ->
      if contains id.name "rand" then deq
      else
        let f = try Hashtbl.find env_fun id
@@ -146,8 +146,8 @@ let rec expand_deq env_fun env_var (deq:deq) : deq =
                                  raise Not_found in
        let _,args = unzip (match_args env_fun env_var f f.p_in args) in
        let _,ret  = unzip (match_ret  env_fun env_var f f.p_out lhs) in
-       Norec(List.rev ret,Fun(id,List.rev args))
-  | Rec(i,ei,ef,dl,opts) -> Rec(i,ei,ef,List.map (expand_deq env_fun env_var) dl,opts)
+       Eqn(List.rev ret,Fun(id,List.rev args))
+  | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,List.map (expand_deq env_fun env_var) dl,opts)
   | _ -> deq
 
                                               

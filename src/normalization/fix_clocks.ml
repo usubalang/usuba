@@ -28,9 +28,9 @@ let rec get_ck_name (ck:clock) : expr list =
                                      
 let rec fix_deq env (deq:deq) : deq =
   match deq with
-  | Norec(lhs,e) -> let ck = get_ck_name (get_var_clock env (List.hd lhs)) in
-                    Norec(lhs,List.fold_left (fun x y -> Log(And,x,y)) e ck)
-  | Rec(i,ei,ef,dl,opts) -> Rec(i,ei,ef,List.map (fix_deq env) dl,opts)
+  | Eqn(lhs,e) -> let ck = get_ck_name (get_var_clock env (List.hd lhs)) in
+                    Eqn(lhs,List.fold_left (fun x y -> Log(And,x,y)) e ck)
+  | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,List.map (fix_deq env) dl,opts)
 
     
 let fix_def (def:def) : def =

@@ -52,10 +52,16 @@ let new_vars : p ref = ref []
                    
 let gen_tmp =
   let cpt = ref 0 in
-  fun env_var typ ->
+  fun env_var size typ ->
     incr cpt;
     let var = fresh_ident ("_tmp" ^ (string_of_int !cpt) ^ "_") in
-    env_add env_var var typ;
+    if !no_arr then
+      List.iter (fun x -> env_add env_var x typ) (expand_intn var size)
+    else
+      if size > 1 then
+        env_add env_var var (Array(typ,Const_e size))
+      else
+        env_add env_var var typ;
     var
                              
 (* Note that when this function is called, Var have already been normalized *)
@@ -111,14 +117,26 @@ let rec remove_call env_var env_fun e : deq list * expr =
   if is_primitive e' then
     deq, e'
   else
-    let expr_typ_l = get_expr_type env_fun env_var e' in
-    let typ = if List.length expr_typ_l > 1
-              then Array(reduce_same_list expr_typ_l,Const_e (List.length expr_typ_l))
-              else List.hd expr_typ_l in
-    let new_var = gen_tmp env_var typ in
-    new_vars := (make_var_d new_var typ Defclock []) :: !new_vars;
+    let expr_typ = get_expr_type env_fun env_var e' in
+    let size = get_expr_size env_var env_fun e' in
+    let typ = reduce_same_list expr_typ in
+    let new_var = gen_tmp env_var size typ in
+    Printf.fprintf stderr "New var 1: %s {[ %s[%d] ]}  -> %s\n" (Usuba_print.expr_to_str e')
+                   (Usuba_print.typ_to_str typ) size new_var.name;
+    let tmp  = if !no_arr then List.map (fun x -> Var x) (expand_intn new_var size)
+               else [Var new_var] in
+    if !no_arr then
+      new_vars := !new_vars @ (List.map (function
+                                          | Var id -> make_var_d id typ Defclock []
+                                          | _ -> assert false) tmp)
+    else
+      if size > 1 then
+        new_vars := !new_vars @ [ make_var_d new_var (Array(typ,Const_e size)) Defclock [] ]
+      else
+        new_vars := !new_vars @ [ make_var_d new_var typ Defclock [] ];
+    let left = tmp in
 
-    deq @ [Eqn([Var new_var],e')], ExpVar (Var new_var)
+    deq @ [Norec(left,e')], Tuple (List.map (fun x -> ExpVar x) tmp)
 
 and remove_calls env_var env_fun l : deq list * expr list =
   let pre_deqs = ref [] in
@@ -131,21 +149,34 @@ and remove_calls env_var env_fun l : deq list * expr list =
               if is_primitive e' then
                 [ e' ]
               else
-                let expr_typ_l = get_expr_type env_fun env_var e' in
-                let typ = if List.length expr_typ_l > 1
-                          then Array(reduce_same_list expr_typ_l,
-                                     Const_e (List.length expr_typ_l))
-                          else List.hd expr_typ_l in
-                let new_var = gen_tmp env_var typ in
-                new_vars := (make_var_d new_var typ Defclock []) :: !new_vars;
-                pre_deqs := !pre_deqs @ [(Eqn([Var new_var],e'))];
+                let size = get_expr_size env_var env_fun e' in
+                let typ = reduce_same_list (get_expr_type env_fun env_var e') in
+                let new_var = gen_tmp env_var size typ in
+    Printf.fprintf stderr "New var 2: %s {[ %s[%d] ]}  -> %s\n" (Usuba_print.expr_to_str e')
+                   (Usuba_print.typ_to_str typ) size new_var.name;
+                let tmp  = if !no_arr then List.map (fun x -> Var x) (expand_intn new_var size)
+                           else [Var new_var] in
+                if !no_arr then
+                  new_vars := !new_vars @ (List.map (function
+                                                      | Var id -> make_var_d id typ Defclock []
+                                                      | _ -> assert false) tmp)
+                else
+                  if size > 1 then
+                    new_vars := !new_vars @
+                                  [ make_var_d new_var (Array(typ,Const_e size)) Defclock [] ]
+                  else
+                    new_vars := !new_vars @
+                                  [ make_var_d new_var typ Defclock [] ];
+                let left = tmp in
+                pre_deqs := !pre_deqs @ [Norec(left,e')];
                 
-                [ExpVar (Var new_var)])
+                List.map (fun x -> ExpVar x) tmp)
              l in
   !pre_deqs, flatten_expr (List.flatten l')
     
 
 and norm_expr env_var env_fun (e: expr) : deq list * expr =
+  Printf.fprintf stderr "norm_expr: %s\n" (Usuba_print.expr_to_str e);
   match e with
   | Const _ | ExpVar _ | Shuffle _-> [], e
   | Tuple (l) ->
@@ -160,6 +191,13 @@ and norm_expr env_var env_fun (e: expr) : deq list * expr =
      deqs1 @ deqs2,
      ( match x1', x2' with
        | Tuple l1,Tuple l2 ->
+          Printf.fprintf stderr "%s  ==>  %s ||| %s\n"
+                         (Usuba_print.expr_to_str e)
+                         (Usuba_print.expr_to_str (Tuple l1))
+                         (Usuba_print.expr_to_str (Tuple l2));
+          Printf.fprintf stderr "expands to: [%s] --- [%s]\n"
+                         (Usuba_print.expr_to_str_l (flat_map (expand_expr env_var) l1))
+                         (Usuba_print.expr_to_str_l (flat_map (expand_expr env_var) l2));
           Tuple (List.map2 (fun x y -> Log(op,x,y))
                            (flat_map (expand_expr env_var) l1)
                            (flat_map (expand_expr env_var) l2))
@@ -190,13 +228,16 @@ and norm_expr env_var env_fun (e: expr) : deq list * expr =
 let rec norm_deq env_var env_fun (body: deq list) : deq list =
   flat_map
     (function
-      | Eqn (p,e) ->
+      | Norec (p,e) ->
+         Printf.fprintf stderr "norm_deq: %s.\n" (Usuba_print.deq_to_str (Norec(p,e)));
          let (expr_l, e') = norm_expr env_var env_fun e in
-         expr_l @ [Eqn(p,e')]
-      | Loop(x,ei,ef,dl,opts) ->
-         [ Loop(x,ei,ef,norm_deq env_var env_fun dl,opts) ]) body
+         expr_l @ [Norec(p,e')]
+      | Rec(x,ei,ef,dl,opts) ->
+         Printf.fprintf stderr "norm_deq rec.\n";
+         [ Rec(x,ei,ef,norm_deq env_var env_fun dl,opts) ]) body
     
 let norm_def env_fun (def: def) : def =
+  Printf.fprintf stderr "Norming: %s.\n" def.id.name;
   match def.node with
   | Single(p_var,body) ->
      let env_var = build_env_var def.p_in def.p_out p_var in

@@ -34,8 +34,8 @@ let rec clean_expr (e:expr) : expr =
        
 let rec clean_deq (deq:deq) : deq = 
   match deq with
-  | Norec(lhs,e) -> Norec(lhs,clean_expr e)
-  | Rec(x,ei,ef,dl,opts) -> Rec(x,ei,ef,List.map clean_deq dl,opts)
+  | Eqn(lhs,e) -> Eqn(lhs,clean_expr e)
+  | Loop(x,ei,ef,dl,opts) -> Loop(x,ei,ef,List.map clean_deq dl,opts)
   
 let clean_def (def:def) : def =
   match def.node with

@@ -29,9 +29,9 @@ module Clean = struct
   let clean_in_deqs (vars:p) (deqs:deq list) : p =
     let env = Hashtbl.create 100 in
     let rec aux = function
-      | Norec(l,e) -> List.iter (clean_var env) l;
+      | Eqn(l,e) -> List.iter (clean_var env) l;
                       clean_expr env e
-      | Rec(_,_,_,d,_) -> List.iter aux d in
+      | Loop(_,_,_,d,_) -> List.iter aux d in
     List.iter aux deqs;
     List.sort_uniq (fun a b -> compare a b)
                    ( List.filter (fun vd -> match Hashtbl.find_opt env vd.vid with

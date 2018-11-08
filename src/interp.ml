@@ -46,8 +46,8 @@ module Usuba0 = struct
       match f.node with
       | Single(_,deqs) -> List.iter
                             (function
-                              | Norec(vars,e) -> interp_asgn env_fun env_var vars e
-                              | _ -> raise (Error "Invalid 'Rec'")) deqs
+                              | Eqn(vars,e) -> interp_asgn env_fun env_var vars e
+                              | _ -> raise (Error "Invalid 'Loop'")) deqs
       | _ -> raise (Error ("Invalid node: " ^ (Usuba_print.def_to_str f)))
     end;
     (* returning the values of the output variables *)

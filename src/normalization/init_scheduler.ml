@@ -19,11 +19,11 @@ let schedule_deqs (def:def) (deqs:deq list) : deq list =
     try ignore(Hashtbl.find sched instr)
     with Not_found ->
          match instr with
-         | Norec(lhs,e) -> 
+         | Eqn(lhs,e) -> 
             if List.for_all (fun x -> try Hashtbl.find ready x
                                       with Not_found -> false)
                             (get_used_vars e) then
-              ( body := Norec(lhs,e) :: !body;
+              ( body := Eqn(lhs,e) :: !body;
                 Hashtbl.add sched instr true;
                 List.iter (fun x -> Hashtbl.add ready x true) lhs;
                 List.iter (fun x ->
@@ -31,7 +31,7 @@ let schedule_deqs (def:def) (deqs:deq list) : deq list =
                            with Not_found -> ()) lhs )
             else
               List.iter (fun x -> Hashtbl.add to_sched x instr) (get_used_vars e)
-         | Rec _ -> raise (Error "Invalid rec")
+         | Loop _ -> raise (Error "Invalid rec")
   in
   List.iter sched_it deqs;
   if List.length !body <> List.length deqs then
@@ -53,7 +53,7 @@ let schedule_def (def:def) : def =
                | Single(vars,body) -> Single(vars,schedule_deqs def body)
                | _ -> def.node }
 
-(* Must be called once arrays (and thus Rec) have been removed. *)
+(* Must be called once arrays (and thus Loop) have been removed. *)
 let schedule_prog (prog:prog) (conf:config): prog =
   (* Printf.fprintf stderr "Scheduler (simple) disabled.\n"; *)
   prog

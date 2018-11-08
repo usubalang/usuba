@@ -133,14 +133,14 @@ and expand_deqs env_var env_keep ?(env=make_env ()) (force:int) (deqs:deq list) 
   flat_map
     (fun deq -> 
      match deq with
-     | Norec(lhs,e) -> [ Norec(expand_vars env_var env_keep env force lhs,
+     | Eqn(lhs,e) -> [ Eqn(expand_vars env_var env_keep env force lhs,
                                expand_expr env_var env_keep env force e) ]
-     | Rec(x,ei,ef,deqs,opts) ->
+     | Loop(x,ei,ef,deqs,opts) ->
         if List.mem Unroll opts || (force = 1) then
           do_unroll env_var env_keep env force x ei ef deqs
         else
           try
-            [ Rec(x,ei,ef,expand_deqs env_var env_keep ~env:env force deqs,opts) ]
+            [ Loop(x,ei,ef,expand_deqs env_var env_keep ~env:env force deqs,opts) ]
           with Need_unroll -> do_unroll env_var env_keep env force x ei ef deqs)
     deqs
     

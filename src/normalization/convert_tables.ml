@@ -48,7 +48,7 @@ let rewrite_table (id:ident) (p_in:p) (p_out:p)
     for j = 1 to List.length l do
       let var = tmp_var i 0 (j-1) in
       vars := (simple_var_d var) :: !vars;
-      body := Norec ([Var var],Const bits.(j-1)) :: !body
+      body := Eqn ([Var var],Const bits.(j-1)) :: !body
     done;
 
     (* for each depth *)
@@ -61,7 +61,7 @@ let rewrite_table (id:ident) (p_in:p) (p_out:p)
         vars := (simple_var_d var_l) ::
                   (simple_var_d var_r1) ::
                     (simple_var_d var_r2) :: !vars;
-        body := Norec ([Var var_l],
+        body := Eqn ([Var var_l],
                        mux (ExpVar exp_p_in.(size_in-j)) var_r1 var_r2)
                 :: !body
       done
@@ -70,7 +70,7 @@ let rewrite_table (id:ident) (p_in:p) (p_out:p)
     (* set output *)
     let var = tmp_var i size_in 0 in
     vars := (simple_var_d var) :: !vars;
-    body := Norec ([exp_p_out.(i-1)], ExpVar(Var var)) :: !body
+    body := Eqn ([exp_p_out.(i-1)], ExpVar(Var var)) :: !body
       
   done;
   { id = id; p_in = p_in; p_out = p_out; opt = opt;

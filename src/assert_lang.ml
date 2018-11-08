@@ -47,7 +47,7 @@ module Usuba_norm = struct
     | Single(vars,body) ->
        check_p def.p_in && check_p def.p_out && check_p vars
        && List.for_all (function
-                         | Norec(p,e) -> List.for_all check_var p && check_expr e
+                         | Eqn(p,e) -> List.for_all check_var p && check_expr e
                                          && check_pat_e p e
                          | _ -> false) body
     | _ -> false
