@@ -120,7 +120,7 @@ for my $cipher (@ciphers) {
 open my $FP_OUT, '>', 'results/unrolling.tex';
 printf $FP_OUT
 "\\centering
-  \\begin{tabular}{|l K{3cm}|K{3cm}|K{3cm}}|}
+  \\begin{tabular}{|l K{3cm}|K{3cm}|K{3cm}|}
     \\hline
     \\textbf{cipher} & \\textbf{speedup} & \\textbf{code size (B)}\\\\
     \\hline
@@ -128,7 +128,7 @@ printf $FP_OUT
     \\hline
     AES (H-slice) & +%02.02f\\%% & %s%.01f\\%% \\\\
     \\hline
-\\end{tabular}}",
+\\end{tabular}",
     $formatted{chacha20}->{speedup}, $formatted{chacha20}->{sign}, $formatted{chacha20}->{size},
     $formatted{aes_kasper}->{speedup}, $formatted{aes_kasper}->{sign}, $formatted{aes_kasper}->{size};
     
