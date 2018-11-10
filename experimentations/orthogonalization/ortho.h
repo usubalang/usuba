@@ -1,7 +1,7 @@
 #pragma once
 
 #define NO_RUNTIME
-#include "../../arch/SSE.h"
+#include "SSE.h"
 
 #define SET1_EPI64(x)         _mm_set1_epi64x(x)
 #define SET_EPI64_2(a,b)      _mm_set_epi64x(a,b)
@@ -46,30 +46,16 @@ void print128hex(__m128i toPrint) {
 #pragma push_macro("L_SHIFT")
 #pragma push_macro("R_SHIFT")
 
-#define _mm_slli_epi128(a,b) ZERO
-#define _L_SHIFT(a,b,c) (c <= 64 ? _mm_slli_epi##c(a,b) :               \
-                         b == 8  ? _mm_srli_si128(a, 1) :               \
-                         b == 16 ? _mm_srli_si128(a, 2) :               \
-                         b == 32 ? _mm_srli_si128(a, 4) :               \
-                         b == 64 ? _mm_srli_si128(a, 8) :               \
-                         ({ fprintf(stderr, "Not implemented L_SHIFT(x,%d,%d).\n", (int)b, c); \
-                           exit(EXIT_FAILURE);                          \
-                           ZERO; }))
-#define L_SHIFT(a,b,c) _L_SHIFT(a,b,c)
+#define _L_SHIFT_SMALL(a,b,c) _mm_slli_epi##c(a,b)
+#define L_SHIFT_SMALL(a,b,c) _L_SHIFT_SMALL(a,b,c)
+#define _L_SHIFT_x8(a,b,c) _mm_srli_si##c(a, 8)
+#define L_SHIFT_x8(a,b,c) _L_SHIFT_x8(a,b,c)
+#define _R_SHIFT_SMALL(a,b,c) _mm_srli_epi##c(a,b)
+#define R_SHIFT_SMALL(a,b,c) _R_SHIFT_SMALL(a,b,c)
+#define _R_SHIFT_x8(a,b,c)  _mm_slli_si##c(a, 8)
+#define R_SHIFT_x8(a,b,c) _R_SHIFT_x8(a,b,c)
 
-#define _mm_srli_epi128(a,b) ZERO
-#define _R_SHIFT(a,b,c)  (c <= 64 ? _mm_srli_epi##c(a,b) :              \
-                          b == 8  ? _mm_slli_si128(a, 1) :              \
-                          b == 16 ? _mm_slli_si128(a, 2) :              \
-                          b == 32 ? _mm_slli_si128(a, 4) :              \
-                          b == 64 ? _mm_slli_si128(a, 8) :              \
-                         ({ fprintf(stderr, "Not implemented R_SHIFT(x,%d,%d).\n", (int)b, c); \
-                           exit(EXIT_FAILURE);                          \
-                           ZERO; }))
-#define R_SHIFT(a,b,c) _R_SHIFT(a,b,c)
-
-
-inline void orthogonalize(DATATYPE data[], int M, int LOG2_M, int LOG2_A) {
+static inline void orthogonalize(DATATYPE data[], int M, int LOG2_M, int LOG2_A) {
   DATATYPE mask_l[] = {
     SET1_EPI64(0xaaaaaaaaaaaaaaaaUL),
     SET1_EPI64(0xccccccccccccccccUL),
@@ -102,12 +88,16 @@ inline void orthogonalize(DATATYPE data[], int M, int LOG2_M, int LOG2_A) {
         DATATYPE v = AND(data[j + k], mask_r[LOG2_A+i]);
         DATATYPE x = AND(data[j + n + k], mask_l[LOG2_A+i]);
         DATATYPE y = AND(data[j + n + k], mask_r[LOG2_A+i]);
-        if ((i+LOG2_A) < 3) {
-          data[j + k] = OR(u, R_SHIFT(x,(1UL << (i+LOG2_A)),64));
-          data[j + n + k] =OR(L_SHIFT(v,(1UL << (i+LOG2_A)),64), y);
+        if ((i+LOG2_A) <= 2) {
+          data[j + k] =     OR(u, R_SHIFT_SMALL(x,(1UL << (i+LOG2_A)),64));
+          data[j + n + k] = OR(L_SHIFT_SMALL(v,(1UL << (i+LOG2_A)),64), y);
+        }
+        else if ((i+LOG2_A) <= 5) {
+          data[j + k] = OR(u, L_SHIFT(x,(1UL << (i+LOG2_A)),64));
+          data[j + n + k] =OR(R_SHIFT(v,(1UL << (i+LOG2_A)),64), y);
         } else {
-          data[j + k] = OR(u, R_SHIFT(x,(1UL << (i+LOG2_A)),BITS_PER_REG));
-          data[j + n + k] =OR(L_SHIFT(v,(1UL << (i+LOG2_A)),BITS_PER_REG), y);
+          data[j + k] = OR(u, R_SHIFT_x8(x,i+LOG2_A,BITS_PER_REG));
+          data[j + n + k] =OR(L_SHIFT_x8(v,i+LOG2_A,BITS_PER_REG), y);
         }
       }
     }

@@ -22,8 +22,6 @@
 /* How many blocks can be processed at once. */
 #define PARALLEL_FACTOR 16
 
-/* This macro should define a variable 'key' of whatever type.         */
-/* It should only rely on the variable 'k' (of type unsigned char*).   */
 #define key_schedule()                                                  \
   __m256i key[11][8];                                                   \
   {                                                                     \
@@ -34,50 +32,40 @@
       for (j = 0; j < 8; j++)                                           \
         key[i][j] = _mm256_loadu2_m128i((__m128i*)&sched_key[i*16],     \
                                         (__m128i*)&sched_key[i*16]);    \
-      orthogonalize(key[i]);                                            \
+      bitslice(key[i][7],key[i][6],key[i][5],key[i][4],key[i][3], key[i][2],key[i][1],key[i][0]); \
     }                                                                   \
   }                                                             
 
-/* This macro should define the variable 'input', 'out_buff' and 
-   'nb_blocks'.
-   input should be initialized with the counter's values.
-   out_buff will be passed to 'encrypt' to be used as output.
-   nb_blocks is the number of blocks being actually processed.
-   The counter is in 'counter', and the length is in 'signed_len',
-   which should be updated by this macro. */
+
 #define load_input()                                                    \
   __m256i input[8], out_buff[8];                                        \
+  signed_len -= BLOCK_SIZE * PARALLEL_FACTOR;                           \
   int nb_blocks = 0;                                                    \
-  for (; (signed_len > 0) && (nb_blocks < PARALLEL_FACTOR);             \
-       /* Note the two *2 in the following line */                      \
-       signed_len -= BLOCK_SIZE*2, nb_blocks += 2) {                    \
-    __m128i low_part, high_part;                                        \
-    memcpy(&low_part,counter,16);                                       \
-    incr_counter(counter);                                              \
-    memcpy(&high_part,counter,16);                                      \
-    incr_counter(counter);                                              \
-    input[nb_blocks/2] = _mm256_loadu2_m128i(&high_part,&low_part);     \
+  if (counter[1] > (0xffffffffffffffff-16)) {                           \
+    for ( ; nb_blocks < PARALLEL_FACTOR; nb_blocks += 2) {              \
+      __m128i low_part, high_part;                                      \
+      memcpy(&low_part,counter,16);                                     \
+      incr_counter(counter);                                            \
+      memcpy(&high_part,counter,16);                                    \
+      incr_counter(counter);                                            \
+      input[nb_blocks/2] = _mm256_loadu2_m128i(&high_part,&low_part);   \
+    }                                                                   \
+  } else {                                                              \
+    for (; nb_blocks < PARALLEL_FACTOR; nb_blocks += 2) {               \
+      __m128i low_part, high_part;                                      \
+      memcpy(&low_part,counter,16);                                     \
+      ++counter[1];                                                     \
+      memcpy(&high_part,counter,16);                                    \
+      ++counter[1];                                                     \
+      input[nb_blocks/2] = _mm256_loadu2_m128i(&high_part,&low_part);   \
+    }                                                                   \
   }
 
 
-
-  /*   __m128i low_part  = _mm_load_si128((__m128i*) counter);             \ */
-  /*   incr_counter(counter);                                              \ */
-  /*   __m128i high_part = _mm_load_si128((__m128i*) counter);             \ */
-  /*   incr_counter(counter);                                              \ */
-  /*   input[nb_blocks/2] = _mm256_loadu2_m128i(&high_part,&low_part);     \ */
-  /* }           */                                                      
-
-/* This macro should just call the encryption function, with the parameters
-   input, key and out_buff */
 #define encrypt() aes_bs(input, key, out_buff)
 
 
-/* ******************************************************************* */
-/* This part should be independent of the ciphers => do not modify it. */
-/*                                                                     */
-/* ******************************************************************* */
-void incr_counter(unsigned long c[2]) {
+static void incr_counter(unsigned long c[2]) {
   if (++c[1] == 0) ++c[0];
 }
 

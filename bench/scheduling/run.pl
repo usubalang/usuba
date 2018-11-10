@@ -25,7 +25,7 @@ use File::Copy;
 use FindBin;
 
 
-my $NB_LOOP = 2;
+my $NB_LOOP = 20;
 my $CC      = 'clang';
 my $CFLAGS  = '-O3 -march=native';
 my $HEADERS = '-I ../../arch';

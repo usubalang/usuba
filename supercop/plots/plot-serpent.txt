@@ -32,17 +32,17 @@ plot                                                                          \
        using 0:2:xtic(1)  with boxes fs pattern 6 lt 1 title 'Usuba',         \
       'data-serpent.dat' every  1:1:1:0:1:0                                       \
        using ($0+1):2:xtic(1)  with boxes fs pattern 1 lt 2 title 'Non-Usuba',         \
-      'data-serpent.dat' every  1:1:2:0:5:0                                       \
+      'data-serpent.dat' every  1:1:2:0:3:0                                       \
        using ($0+2):2:xtic(1) with boxes fs pattern 6 lt 1 title '', \
+      'data-serpent.dat' every  1:1:4:0:4:0                                       \
+       using ($0+4):2:xtic(1) with boxes fs pattern 1 lt 2 title '', \
+      'data-serpent.dat' every  1:1:5:0:5:0                                       \
+       using ($0+5):2:xtic(1)  with boxes fs pattern 6 lt 1 title '',         \
       'data-serpent.dat' every  1:1:6:0:6:0                                       \
        using ($0+6):2:xtic(1) with boxes fs pattern 1 lt 2 title '', \
       'data-serpent.dat' every  1:1:7:0:7:0                                       \
        using ($0+7):2:xtic(1)  with boxes fs pattern 6 lt 1 title '',         \
       'data-serpent.dat' every  1:1:8:0:8:0                                       \
-       using ($0+8):2:xtic(1) with boxes fs pattern 1 lt 2 title '', \
-      'data-serpent.dat' every  1:1:9:0:10:0                                       \
-       using ($0+9):2:xtic(1)  with boxes fs pattern 6 lt 1 title '',         \
-      'data-serpent.dat' every  1:1:11:0:11:0                                       \
-       using ($0+11):2:xtic(1)  with boxes fs pattern 1 lt 2 title '',         \
+       using ($0+8):2:xtic(1)  with boxes fs pattern 1 lt 2 title '',         \
        '' using 0:($2+1):2 with labels title ''
 

@@ -11,7 +11,7 @@
 #include "STD.h"
 
 /* auxiliary functions */
-void sbox__0__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
+static inline __attribute__((always_inline)) void sbox__0__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
   
   // Variables declaration
   DATATYPE r4;
@@ -43,7 +43,7 @@ void sbox__0__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*ou
 
 }
 
-void sbox__1__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
+static inline __attribute__((always_inline)) void sbox__1__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
   
   // Variables declaration
   DATATYPE r4;
@@ -75,7 +75,7 @@ void sbox__1__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*ou
 
 }
 
-void sbox__2__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
+static inline __attribute__((always_inline)) void sbox__2__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
   
   // Variables declaration
   DATATYPE r4;
@@ -105,7 +105,7 @@ void sbox__2__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*ou
 
 }
 
-void sbox__3__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
+static inline __attribute__((always_inline)) void sbox__3__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
   
   // Variables declaration
   DATATYPE r4;
@@ -138,7 +138,7 @@ void sbox__3__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*ou
 
 }
 
-void sbox__4__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
+static inline __attribute__((always_inline)) void sbox__4__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
   
   // Variables declaration
   DATATYPE r4;
@@ -172,7 +172,7 @@ void sbox__4__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*ou
 
 }
 
-void sbox__5__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
+static inline __attribute__((always_inline)) void sbox__5__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
   
   // Variables declaration
   DATATYPE r4;
@@ -205,7 +205,7 @@ void sbox__5__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*ou
 
 }
 
-void sbox__6__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
+static inline __attribute__((always_inline)) void sbox__6__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
   
   // Variables declaration
   DATATYPE r4;
@@ -237,7 +237,7 @@ void sbox__6__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*ou
 
 }
 
-void sbox__7__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
+static inline __attribute__((always_inline)) void sbox__7__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*outputs*/ DATATYPE* r5,DATATYPE* r6,DATATYPE* r7,DATATYPE* r8) {
   
   // Variables declaration
   DATATYPE r4;
@@ -271,7 +271,7 @@ void sbox__7__ (/*inputs*/ DATATYPE r0,DATATYPE r1,DATATYPE r2,DATATYPE r3, /*ou
 
 }
 
-void transform__ (/*inputs*/ DATATYPE input__[4], /*outputs*/ DATATYPE out__[4]) {
+static inline __attribute__((always_inline)) void transform__ (/*inputs*/ DATATYPE input__[4], /*outputs*/ DATATYPE out__[4]) {
   
   // Variables declaration
   DATATYPE _tmp1_;
@@ -311,7 +311,7 @@ void transform__ (/*inputs*/ DATATYPE input__[4], /*outputs*/ DATATYPE out__[4])
 }
 
 /* main function */
-void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE keys__[33][4], /*outputs*/ DATATYPE ciphertext__[4]) {
+static inline __attribute__((always_inline)) void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE keys__[33][4], /*outputs*/ DATATYPE ciphertext__[4]) {
   
   // Variables declaration
   DATATYPE _tmp11_[4];

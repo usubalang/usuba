@@ -22,46 +22,41 @@
 /* How many blocks can be processed at once. */
 #define PARALLEL_FACTOR 8
 
-/* This macro should define a variable 'key' of whatever type.         */
-/* It should only rely on the variable 'k' (of type unsigned char*).   */
-#define key_schedule()                                          \
-  __m128i key[11][8];                                           \
-  {                                                             \
-    unsigned char* sched_key = key_sched(k);                    \
-    int i;                                                      \
-    for (i = 0; i < 11; i++) {                                  \
-      int j;                                                    \
-      for (j = 0; j < 8; j++)                                   \
-        key[i][j] = _mm_load_si128((__m128i*)&sched_key[i*16]); \
-      orthogonalize(key[i]);                                    \
-    }                                                           \
-  }                                                             
-
-/* This macro should define the variable 'input', 'out_buff' and 
-   'nb_blocks'.
-   input should be initialized with the counter's values.
-   out_buff will be passed to 'encrypt' to be used as output.
-   nb_blocks is the number of blocks being actually processed.
-   The counter is in 'counter', and the length is in 'signed_len',
-   which should be updated by this macro. */
-#define load_input()                                        \
-  __m128i input[8], out_buff[8];                            \
-  int nb_blocks = 0;                                        \
-  for (; (signed_len > 0) && (nb_blocks < PARALLEL_FACTOR); \
-       signed_len -= BLOCK_SIZE, nb_blocks++) {             \
-    memcpy(&input[nb_blocks],counter,16) ;                  \
-    incr_counter(counter);                                  \
+#define key_schedule()                                                  \
+  __m128i key[11][8];                                                   \
+  {                                                                     \
+    unsigned char* sched_key = key_sched(k);                            \
+    int i;                                                              \
+    for (i = 0; i < 11; i++) {                                          \
+      int j;                                                            \
+      for (j = 0; j < 8; j++) {                                         \
+        key[i][j] = _mm_load_si128((__m128i*)&sched_key[i*16]);         \
+      }                                                                 \
+      bitslice(key[i][7],key[i][6],key[i][5],key[i][4],key[i][3], key[i][2],key[i][1],key[i][0]);  \
+    }                                                                   \
   }
 
-/* This macro should just call the encryption function, with the parameters
-   input, key and out_buff */
+
+#define load_input()                                                    \
+  __m128i input[8], out_buff[8];                                        \
+  int nb_blocks =  0;                                                   \
+  signed_len -= BLOCK_SIZE * PARALLEL_FACTOR;                            \
+  if (counter[1] > (0xffffffffffffffff-8)) {                            \
+    for (; nb_blocks < PARALLEL_FACTOR; nb_blocks++) {                  \
+      input[nb_blocks] = _mm_shuffle_epi8(*((__m128i*)counter),_mm_set_epi8(8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7)); \
+      incr_counter(counter);                                            \
+    }                                                                   \
+  }                                                                     \
+  else {                                                                \
+    for (; nb_blocks < PARALLEL_FACTOR; nb_blocks++) {                  \
+      input[nb_blocks] = _mm_shuffle_epi8(*((__m128i*)counter),_mm_set_epi8(8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7)); \
+      ++counter[1];                                                     \
+    }                                                                   \
+  }
+      
+
 #define encrypt() aes_bs(input, key, out_buff);
 
-
-/* ******************************************************************* */
-/* This part should be independent of the ciphers => do not modify it. */
-/*                                                                     */
-/* ******************************************************************* */
 
 static void incr_counter(unsigned long c[2]) {
   if (++c[1] == 0) ++c[0];
@@ -75,6 +70,7 @@ static void incr_counter(unsigned long c[2]) {
     in += sizeof(type);                                             \
   }
 
+
 int crypto_stream_xor( unsigned char *out,
                        const unsigned char *in,
                        unsigned long long inlen,
@@ -86,13 +82,13 @@ int crypto_stream_xor( unsigned char *out,
   
   /* Key schedule */
   key_schedule();
-  
+
   /* Copying the counter */
   unsigned long counter[2] __attribute__ ((aligned (32)));
   memcpy(counter, n, 16);
   counter[0] = __builtin_bswap64(counter[0]);
   counter[1] = __builtin_bswap64(counter[1]);
-
+  
   /* Encrypting the input... */
   while (signed_len > 0) {
     /* Loading the input (from the counter) */

@@ -1,9 +1,0 @@
-To check an implementation is correct:
-    clang -DSBOX=4 -O3 -march=native -I ../../arch -o main_verif main_verif.c sse/{stream.c,sbox.S,sbox_ua.s} && head -c 8M </dev/urandom > input.txt && ./aes_ctr.pl && ./main_verif && diff out_c.txt out_pl.txt && echo "Ok." && rm input.txt out_c.txt out_pl.txt
-(replace "-DSBOX=4" as needed (see the begining of sse/aes.c), and replace "sse/..." as needed)
-
-To compile the speed benchmark:
-    clang -DSBOX=3 -O3 -march=native -I ../../arch -o speed main_speed.c sse/{stream.c,sbox.S,sbox_ua.s}
-Or for instance:
-    clang -O3 -march=native -I ../../arch -o speed main_speed.c kivilinna-avx/{aes_asm_bitslice_avx.S,aes.c,stream.c}
-    

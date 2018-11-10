@@ -72,7 +72,7 @@ void print128hex(__m128i toPrint) {
 #define R_SHIFT(a,b,c) _R_SHIFT(a,b,c)
 
 
-inline void orthogonalize(DATATYPE data[], int M, int LOG2_M, int LOG2_A) {
+static inline void orthogonalize(DATATYPE data[], int M, int LOG2_M, int LOG2_A) {
   DATATYPE mask_l[] = {
     SET1_EPI64(0xaaaaaaaaaaaaaaaaUL),
     SET1_EPI64(0xccccccccccccccccUL),
@@ -188,6 +188,56 @@ void visual_bitslice_128x128() {
   puts("\n");
 }
 MAKE_SPEED_FUN(128x128,256,1000000,orthogonalize((__m128i*)data,128,7,0))
+
+
+#define swapmove(a, b, n, m, t)                 \
+  t = _mm_srli_epi32(b,n);                      \
+  t = _mm_xor_si128(t,a);                       \
+  t = _mm_and_si128(t,m);                       \
+  a = _mm_xor_si128(a,t);                       \
+  t = _mm_slli_epi32(t,n);                      \
+  b = _mm_xor_si128(b,t);
+
+#define bitslice(x0, x1, x2, x3, x4, x5, x6, x7)    \
+  {                                                 \
+    __m128i t0, t1;                                 \
+    t0 = _mm_set1_epi32(0x55555555);                \
+    swapmove(x7, x6, 1, t0, t1);                    \
+    swapmove(x5, x4, 1, t0, t1);                    \
+    swapmove(x3, x2, 1, t0, t1);                    \
+    swapmove(x1, x0, 1, t0, t1);                    \
+                                                    \
+    t0 = _mm_set1_epi32(0x33333333);                \
+    swapmove(x7, x5, 2, t0, t1);                    \
+    swapmove(x6, x4, 2, t0, t1);                    \
+    swapmove(x3, x1, 2, t0, t1);                    \
+    swapmove(x2, x0, 2, t0, t1);                    \
+                                                    \
+    t0 = _mm_set1_epi32(0x0f0f0f0f);                \
+    swapmove(x7, x3, 4, t0, t1);                    \
+    swapmove(x6, x2, 4, t0, t1);                    \
+    swapmove(x5, x1, 4, t0, t1);                    \
+    swapmove(x4, x0, 4, t0, t1);                    \
+  }
+
+/* For instance: AES n-slice */
+void visual_nslice_8x128_v2() {
+  __m128i data[8];
+  for (int i = 0; i < 8; i++) {
+    data[i] = _mm_set1_epi8(i == 0 ? 0xFF : i == 1 ? 0x7F : i == 2 ? 0x3F :
+                            i == 3 ? 0x1F : i == 4 ? 0x0F : i == 5 ? 0x07 :
+                            i == 6 ? 0x03 : i == 7 ? 0x01 : 0);
+  }
+
+  for (int i = 0; i < 8; i++) print128bin(data[i]);
+
+  //bitslice(data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
+  bitslice(data[7],data[6],data[5],data[4],data[3],data[2],data[1],data[0]);
+  puts("");
+
+  for (int i = 0; i < 8; i++) print128bin(data[i]);
+  puts("\n");
+}
 
 /* For instance: AES n-slice */
 void visual_nslice_8x128() {
@@ -457,6 +507,8 @@ int main() {
   /* visual_bitslice_128x64(); */
   /* visual_bitslice_128x128(); */
   /* visual_nslice_8x128(); */
+  /* puts("\n************************************************************\n"); */
+  /* visual_nslice_8x128_v2(); */
   /* visual_vector_4x128(); */
   /* visual_vector_16x128(); */
   /* visual_vector_8x64(); */
