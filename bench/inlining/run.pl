@@ -117,21 +117,19 @@ for my $cipher (@ciphers) {
 open my $FP_OUT, '>', 'results/inlining.tex';
 printf $FP_OUT
 "\\centering
-  \\begin{tabular}{|l K{2cm}|K{1.5cm}|K{2cm}|K{2cm}|}
+  \\begin{tabular}{|l K{3cm}|K{3cm}|K{3cm}}|}
     \\hline
-    & \\textbf{cipher} & \\textbf{speedup} & \\textbf{code size (B)}\\\\
+    \\textbf{cipher} & \\textbf{speedup} & \\textbf{code size (B)}\\\\
     \\hline
-    des & +%02.01f%% & %s%.01f%% \\\\
+    DES & +%02.01f\\%% & %s%.01f\\%% \\\\
     \\hline
-    chacha20 & +%02.02f%% & %s%.01f%% \\\\
+    Chacha20 & +%02.02f\\%% & %s%.01f\\%% \\\\
     \\hline
-    aes (bitslice) & +%02.02f%% & %s%.01f%% \\\\
+    AES (bitslice) & +%02.02f\\%% & %s%.01f\\%% \\\\
     \\hline
-    aes (H-slice) & +%02.02f%% & %s%.01f%% \\\\
+    AES (H-slice) & +%02.02f\\%% & %s%.01f\\%% \\\\
     \\hline
-    \\end{tabular}
-  \\caption{Inlining}
-  \\label{tbl:perf-inlining}",
+\\end{tabular}}",
     $formatted{des}->{speedup}, $formatted{des}->{sign}, $formatted{des}->{size},
     $formatted{chacha20}->{speedup}, $formatted{chacha20}->{sign}, $formatted{chacha20}->{size},
     $formatted{aes}->{speedup}, $formatted{aes}->{sign}, $formatted{aes}->{size},
