@@ -71,7 +71,7 @@ let rec clock_expr env (e:expr) : clock * bool =
                
 let rec check_deq env (deq:deq) : bool =
   match deq with
-  | Eqn(lhs,e) -> let l = List.map (get_clock env) lhs in
+  | Eqn(lhs,e,_) -> let l = List.map (get_clock env) lhs in
                     let (ck,is_ok) = clock_expr env e in
                     is_ok && List.for_all (fun x -> x = ck) l
   | Loop(_,_,_,l,_) -> List.for_all (check_deq env) l
