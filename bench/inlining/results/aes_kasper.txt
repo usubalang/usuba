@@ -1,2 +1,2 @@
-aes_kasper-noinline 7.60
-aes_kasper-inline 8.09
+aes_kasper-inline 6.18 25656
+aes_kasper-noinline 6.34 25832

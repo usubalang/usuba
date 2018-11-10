@@ -1,2 +1,2 @@
-serpent-inline 16.79
-serpent-noinline 17.95
+serpent-noinline 12.82 29840
+serpent-inline 13.37 25432

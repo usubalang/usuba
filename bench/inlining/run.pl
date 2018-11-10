@@ -22,7 +22,7 @@ use File::Copy;
 use FindBin;
 
 
-my $NB_LOOP = 1;
+my $NB_LOOP = 20;
 my $CC      = 'clang';
 my $CFLAGS  = '-O3 -march=native';
 my $HEADERS = '-I ../../arch';
@@ -31,7 +31,7 @@ $| = 1;
 
 my %ciphers = (
     des        => 1,
-    serpent    => 1,
+    serpent    => 0, # Not good with inlining (scheduling actually)
     aes        => 1,
     aes_kasper => 1,
     chacha20   => 1
@@ -51,14 +51,14 @@ if ($gen) {
     print "Compiling Usuba sources...";
     chdir "$FindBin::Bin/../..";
 
-    my $ua_args = "-arch sse -no-arr -sched-n 5";
+    my $ua_args = "-arch sse -no-arr -sched-n 15";
     for my $cipher (@ciphers) {
         my $source  = "samples/usuba/$cipher.ua";
         if ($cipher eq 'aes_kasper') {
             $source = "samples/usuba/aes_kasper_shufb.ua";
         }
-        system "./usubac $ua_args -no-inline  -o $pwd/$cipher/inline.c $source";
-        system "./usubac $ua_args -inline-all -o $pwd/$cipher/noinline.c $source";
+        system "./usubac $ua_args -no-inline  -o $pwd/$cipher/noinline.c $source";
+        system "./usubac $ua_args -inline-all -o $pwd/$cipher/inline.c   $source";
     }
     say " done.";
 }
@@ -75,6 +75,7 @@ if ($compile) {
 
 exit unless $run;
 
+my %formatted;
 for my $cipher (@ciphers) {
     
     my %res;
@@ -94,10 +95,45 @@ for my $cipher (@ciphers) {
     open my $FP_OUT, '>', "results/$cipher.txt";
     say "Results $cipher:";
     for my $bin (sort { $res{$a}->{total} <=> $res{$b}->{total} } keys %res) {
+        my $size = -s $bin;
         my $name = $bin =~ s{bin/}{}r;
-        printf "%13s : %03.02f  [ %s ]\n", $name, $res{$bin}->{total} / $NB_LOOP,
+        printf "%13s : %03.02f  [ %s ]  {$size bytes}\n", $name, $res{$bin}->{total} / $NB_LOOP,
             (join ", ", @{$res{$bin}->{details}});
-        printf $FP_OUT "%s %.02f\n", $name, $res{$bin}->{total} / $NB_LOOP;
+        printf $FP_OUT "%s %.02f $size\n", $name, $res{$bin}->{total} / $NB_LOOP;
     }
     say "";
+
+    my $bin_inline   = "bin/$cipher-inline";
+    my $bin_noinline = "bin/$cipher-noinline";
+    my $speedup      = ($res{$bin_noinline}->{total} - $res{$bin_inline}->{total})
+        / $res{$bin_noinline}->{total} * 100;
+    my $size  = ((-s $bin_inline) - (-s $bin_noinline)) / (-s $bin_inline) * 100;
+    $formatted{$cipher}->{speedup} = $speedup;
+    $formatted{$cipher}->{size}    = $size;
+    $formatted{$cipher}->{sign}    = $size >= 0 ? "+" : "";
 }
+
+
+open my $FP_OUT, '>', 'results/inlining.tex';
+printf $FP_OUT
+"\\centering
+  \\begin{tabular}{|l K{2cm}|K{1.5cm}|K{2cm}|K{2cm}|}
+    \\hline
+    & \\textbf{cipher} & \\textbf{speedup} & \\textbf{code size (B)}\\\\
+    \\hline
+    des & +%02.01f%% & %s%.01f%% \\\\
+    \\hline
+    chacha20 & +%02.02f%% & %s%.01f%% \\\\
+    \\hline
+    aes (bitslice) & +%02.02f%% & %s%.01f%% \\\\
+    \\hline
+    aes (H-slice) & +%02.02f%% & %s%.01f%% \\\\
+    \\hline
+    \\end{tabular}
+  \\caption{Inlining}
+  \\label{tbl:perf-inlining}",
+    $formatted{des}->{speedup}, $formatted{des}->{sign}, $formatted{des}->{size},
+    $formatted{chacha20}->{speedup}, $formatted{chacha20}->{sign}, $formatted{chacha20}->{size},
+    $formatted{aes}->{speedup}, $formatted{aes}->{sign}, $formatted{aes}->{size},
+    $formatted{aes_kasper}->{speedup}, $formatted{aes_kasper}->{sign}, $formatted{aes_kasper}->{size};
+    

@@ -1,0 +1,16 @@
+\centering
+  \begin{tabular}{|l K{2cm}|K{1.5cm}|K{2cm}|K{2cm}|}
+    \hline
+    & \textbf{cipher} & \textbf{speedup} & \textbf{code size (B)}\\
+    \hline
+    des & +45.9% & -35.5% \\
+    \hline
+    chacha20 & +9.20% & -20.3% \\
+    \hline
+    aes (bitslice) & +26.42% & +19.8% \\
+    \hline
+    aes (V-slice) & +2.66% & -0.7% \\
+    \hline
+    \end{tabular}
+  \caption{Inlining}
+  \label{tbl:perf-inlining}
