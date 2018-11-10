@@ -1,0 +1,2 @@
+chacha20-noinline 2.94
+chacha20-inline 3.05
