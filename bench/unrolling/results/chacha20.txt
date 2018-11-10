@@ -1,0 +1,2 @@
+chacha20-unroll 2.18 21112
+chacha20-nounroll 2.53 17016

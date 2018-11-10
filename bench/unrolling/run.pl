@@ -22,7 +22,7 @@ use File::Copy;
 use FindBin;
 
 
-my $NB_LOOP = 1;
+my $NB_LOOP = 20;
 my $CC      = 'clang';
 my $CFLAGS  = '-O3 -march=native';
 my $HEADERS = '-I ../../arch';
@@ -66,6 +66,7 @@ if ($gen) {
 if ($compile) {
     print "Compiling C sources...";
     chdir "$FindBin::Bin";
+    make_path "bin" unless -d "bin";
     for my $cipher (@ciphers) {
         system "$CC $CFLAGS $HEADERS main_speed.c $cipher/stream.c $cipher/unroll.c -o bin/$cipher-unroll";
         system "$CC $CFLAGS $HEADERS main_speed.c $cipher/stream.c $cipher/nounroll.c -o bin/$cipher-nounroll";
@@ -74,6 +75,8 @@ if ($compile) {
 }
 
 exit unless $run;
+
+make_path "results" unless -d "results";
 
 my %formatted;
 for my $cipher (@ciphers) {
