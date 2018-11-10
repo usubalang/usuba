@@ -121,6 +121,7 @@ Record config := {
   inline_all   : bool;
   cse_cp       : bool;
   scheduling   : bool;
+  schedule_n   : N;
   share_var    : bool;
   precal_tbl   : bool;
   archi        : arch;

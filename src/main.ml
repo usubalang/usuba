@@ -17,6 +17,7 @@ let inlining     = ref true
 let inline_all   = ref false
 let cse_cp       = ref true
 let scheduling   = ref true
+let schedule_n   = ref 10
 let share_var    = ref true
 let precal_tbl   = ref true
 let no_arr       = ref false
@@ -96,6 +97,7 @@ let main () =
       "-inline-all", Arg.Set inline_all, "Force inlining of every node";
       "-no-CSE-CP", Arg.Clear cse_cp, "Deactive CSE and CP opti";
       "-no-sched", Arg.Clear scheduling, "Deactivate scheduling opti";
+      "-sched-n", Arg.Int (fun n -> schedule_n := n), "Set scheduling param";
       "-no-share", Arg.Clear share_var, "Deactivate variable sharing";
       "-no-precalc-tbl", Arg.Clear precal_tbl, "Don't use pre-computed tables";
       "-no-arr", Arg.Set no_arr, "Don't keep any array";
@@ -137,6 +139,7 @@ let main () =
                  inline_all   = !inline_all;
                  cse_cp       = !cse_cp;
                  scheduling   = !scheduling;
+                 schedule_n   = !schedule_n;
                  share_var    = !share_var;
                  precal_tbl   = !precal_tbl;
                  archi        = !arch;

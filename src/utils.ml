@@ -24,6 +24,7 @@ let default_conf : config =
     inline_all   = false;
     cse_cp       = true;
     scheduling   = true;
+    schedule_n   = 10;
     share_var    = true;
     precal_tbl   = true;
     runtime      = true;
