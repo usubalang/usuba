@@ -15,6 +15,8 @@ sub error {
     exit $?;
 }
 
+exit 0;
+
 my $temp_dir = "tmp_ti";
 
 say "########################## Threshold Implementation (TI) #######################";

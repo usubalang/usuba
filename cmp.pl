@@ -1,45 +1,27 @@
 #!/usr/bin/perl
 
-$tot = 30;
-for ( 0 .. $tot ) {
+use strict;
+use warnings;
+use List::Util qw(sum);
+
+my $tot = 30;
+if ($ARGV[0] =~ /^\d+$/) {
+    $tot = shift @ARGV;
+}
+my $signif = int($tot / 2);
+
+my %times;
+
+for ( 1 .. $tot ) {
     for (@ARGV) {
-        $time{$_} += `./$_`;
+        push @{$times{$_}}, `./$_` =~ s/ .*$//r;
     }
 }
 
-for (sort { $time{$a} <=> $time{$b} } keys %time) {
-    printf "$_ => %.3f\n",$time{$_}/$tot
+for (@ARGV) {
+    $times{$_} = sum ((sort { $a <=> $b } @{$times{$_}})[1 .. $signif])
 }
 
-
-for ( 0 .. $tot ) {
-    for (reverse @ARGV) {
-        $time{$_} += `./$_`;
-    }
-}
-
-for (sort { $time{$a} <=> $time{$b} } keys %time) {
-    printf "$_ => %.3f\n",$time{$_}/($tot*2)
-}
-
-__END__
-
-for ( 0 .. $tot ) {
-    for (@ARGV) {
-        $time{$_} += `./$_`;
-    }
-}
-
-for (sort { $time{$a} <=> $time{$b} } keys %time) {
-    printf "$_ => %.3f\n",$time{$_}/($tot*3)
-}
-
-for ( 0 .. $tot ) {
-    for (reverse @ARGV) {
-        $time{$_} += `./$_`;
-    }
-}
-
-for (sort { $time{$a} <=> $time{$b} } keys %time) {
-    printf "$_ => %.3f\n",$time{$_}/($tot*4)
+for (sort { $times{$a} <=> $times{$b} } keys %times) {
+    printf "$_ => %.3f\n",$times{$_}/$signif
 }
