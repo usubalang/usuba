@@ -9,9 +9,6 @@ To generate the C files from Usuba, `./compile.pl -g`. (not by default)
 To compile only, `./compile.pl -c`.
 To run only, `./compile.pl -r`
 
-Note that for Serpent and AES, you might have to manually modify the Sbox files
-the Usuba uses. (Via index_sbox.ml or by modifying the files directly)
-
 =cut
     
 use strict;
@@ -33,14 +30,13 @@ $| = 1;
 
 
 my %ciphers = (
+    des        => 1,
     serpent    => 0,
-    aes_kasper => 1,
-    chacha20   => 1,
-    aes        => 0,
-    des        => 0
+    aes        => 1,
+    aes_kasper => 0,
+    chacha20   => 0
     );
 my @ciphers = grep { $ciphers{$_} } keys %ciphers;
-my $max_sched = 20;
 
 
 my $gen     = "@ARGV" =~ /-g/;
@@ -55,45 +51,42 @@ if ($gen) {
     print "Compiling Usuba sources...";
     chdir "$FindBin::Bin/../..";
 
-    my $ua_args = "-arch sse -inline-all -no-arr";
+    my $ua_args = "-arch sse -no-share -no-arr -sched-n 0";
     for my $cipher (@ciphers) {
         my $source  = "samples/usuba/$cipher.ua";
         if ($cipher eq 'aes_kasper') {
             $source = "samples/usuba/aes_kasper_shufb.ua";
         }
-        system "./usubac $ua_args -no-sched -o $pwd/$cipher/sched_0.c $source";
-        for my $n (1 .. $max_sched) {
-            system "./usubac $ua_args -sched-n $n -o $pwd/$cipher/sched_$n.c $source";
-        }
+        system "./usubac $ua_args -no-sched -o $pwd/$cipher/nosched.c $source";
+        system "./usubac $ua_args           -o $pwd/$cipher/sched.c   $source";
     }
     say " done.";
 }
-
 
 if ($compile) {
     print "Compiling C sources...";
     chdir "$FindBin::Bin";
+    make_path "bin" unless -d "bin";
     for my $cipher (@ciphers) {
-        for my $n (0 .. $max_sched) {
-            system "$CC $CFLAGS $HEADERS main_speed.c $cipher/stream.c $cipher/sched_$n.c -o bin/$cipher-$n";
-        }
+        system "$CC $CFLAGS $HEADERS main_speed.c $cipher/stream.c $cipher/sched.c -o bin/$cipher-sched";
+        system "$CC $CFLAGS $HEADERS main_speed.c $cipher/stream.c $cipher/nosched.c -o bin/$cipher-nosched";
     }
-
-
     say " done.";
 }
 
-
 exit unless $run;
 
+make_path "results" unless -d "results";
+
+my %formatted;
 for my $cipher (@ciphers) {
     
     my %res;
     for ( 1 .. $NB_LOOP ) {
         print "\rRunning benchs $cipher... $_/$NB_LOOP";
-        
-        for my $n (0 .. $max_sched) {
-            my $bin = "bin/$cipher-$n";
+
+        for my $sched (qw(nosched sched)) {
+            my $bin = "bin/$cipher-$sched";
             my $cycles = sprintf "%03.02f", `./$bin`; 
             push @{ $res{$bin}->{details} }, $cycles;
             $res{$bin}->{total} += $cycles;
@@ -105,10 +98,36 @@ for my $cipher (@ciphers) {
     open my $FP_OUT, '>', "results/$cipher.txt";
     say "Results $cipher:";
     for my $bin (sort { $res{$a}->{total} <=> $res{$b}->{total} } keys %res) {
+        my $size = -s $bin;
         my $name = $bin =~ s{bin/}{}r;
-        printf "%13s : %03.02f  [ %s ]\n", $name, $res{$bin}->{total} / $NB_LOOP,
+        printf "%13s : %03.02f  [ %s ]  {$size bytes}\n", $name, $res{$bin}->{total} / $NB_LOOP,
             (join ", ", @{$res{$bin}->{details}});
-        printf $FP_OUT "%s %.02f\n", $name, $res{$bin}->{total} / $NB_LOOP;
+        printf $FP_OUT "%s %.02f $size\n", $name, $res{$bin}->{total} / $NB_LOOP;
     }
     say "";
+
+    my $bin_sched   = "bin/$cipher-sched";
+    my $bin_nosched = "bin/$cipher-nosched";
+    my $speedup      = ($res{$bin_nosched}->{total} - $res{$bin_sched}->{total})
+        / $res{$bin_nosched}->{total} * 100;
+    my $size  = ((-s $bin_sched) - (-s $bin_nosched)) / (-s $bin_sched) * 100;
+    $formatted{$cipher}->{speedup} = $speedup;
+    $formatted{$cipher}->{size}    = $size;
+    $formatted{$cipher}->{sign}    = $size >= 0 ? "+" : "";
 }
+
+
+open my $FP_OUT, '>', 'results/scheduling-bs.tex';
+printf $FP_OUT
+"\\begin{tabular}{|l K{3cm}|K{3cm}|K{3cm}|}
+  \\hline
+  \\textbf{cipher} & \\textbf{speedup} & \\textbf{code size (B)}\\\\
+  \\hline
+  DES & +%02.02f\\%% & %s%.01f\\%% \\\\
+  \\hline
+  AES (H-slice) & +%02.02f\\%% & %s%.01f\\%% \\\\
+  \\hline
+\\end{tabular}",
+    $formatted{des}->{speedup}, $formatted{des}->{sign}, $formatted{des}->{size},
+    $formatted{aes}->{speedup}, $formatted{aes}->{sign}, $formatted{aes}->{size};
+    
