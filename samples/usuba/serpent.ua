@@ -12,7 +12,7 @@ _no_inline table[] sbox (input:u32x4) returns (out:u32x4) [
 ]
 
 
-node transform (x:u32x4) returns (out:u32x4)
+_no_inline node transform (x:u32x4) returns (out:u32x4)
 let
     x[0] := x[0] <<< 13;
     x[2] := x[2] <<< 3;
