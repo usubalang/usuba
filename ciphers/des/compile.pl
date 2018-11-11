@@ -18,7 +18,7 @@ use v5.14;
 
 use FindBin;
 
-my $NB_LOOP = 2;
+my $NB_LOOP = 20;
 my $CC      = 'clang';
 my $CFLAGS  = '-O3 -march=native';
 my $HEADERS = '-I ../../arch';
@@ -36,7 +36,7 @@ if ($gen) {
     print "Compiling Usuba sources...";
     chdir "$FindBin::Bin/../..";
     for my $arch (qw( std sse avx )) {
-        system "./usubac -arch $arch -no-arr -o ciphers/des/$arch/des.c samples/usuba/des.ua";
+        system "./usubac -arch $arch -no-arr -sched-n 0 -o ciphers/des/$arch/des.c samples/usuba/des.ua";
     }
     chdir "$FindBin::Bin";
     say " done.";
@@ -73,8 +73,10 @@ for ( 1 .. $NB_LOOP ) {
 }
 say "\rRunning benchs... done.     ";
 
+open my $FP_OUT, '>', 'results.txt';
 say "Results:";
 for my $bin (sort { $res{$a}->{total} <=> $res{$b}->{total} } @binaries) {
     printf "%8s : %03.02f  [ %s ]\n", $bin, $res{$bin}->{total} / $NB_LOOP,
         (join ", ", @{$res{$bin}->{details}});
+    printf $FP_OUT "%8s %03.02f\n", $bin, $res{$bin}->{total} / $NB_LOOP;
 }
