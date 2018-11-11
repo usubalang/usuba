@@ -1,11 +1,12 @@
-table SubColumn_single (input:u1x4) returns (out:u1x4) {
+_no_inline table SubColumn_single (input:u1x4) returns (out:u1x4) {
     6, 5, 12, 10, 1, 14, 7, 9, 11, 0, 3, 13, 8, 15, 4, 2
 }
 
 node SubColumn (input:u1x64) returns (out:u1x64)
 let
      forall i in  [0,15] {
-         out[i*4 .. i*4+3] = SubColumn_single(input[i*4 .. i*4+3])
+         out[i,i+16,i+32,i+48] =
+            SubColumn_single(input[i,i+16,i+32,i+48])
      }
 tel
 
