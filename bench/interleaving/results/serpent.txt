@@ -1,2 +1,2 @@
-serpent-inter 12.10 41960
-serpent 15.07 29672
+serpent-inter 9.94 42000
+serpent 12.72 29712
