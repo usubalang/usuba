@@ -52,6 +52,7 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
       (run_pass "Init_scheduler" Init_scheduler.schedule_prog)           |>
       (run_pass "Pre_schedule" sched_fun)                                |>
       (run_pass "Inline" Inline.inline)                                  |>
+      (run_pass "Pre_schedule 2" sched_fun)                                |>
       (run_pass "Norm_bitslice 2" Norm_bitslice.norm_prog) in
 
   let optimized   = run_pass "Optimize" Optimize.opt_prog normalized in
