@@ -17,6 +17,9 @@
 #include "key_sched.c"
 #include "serpent.c"
 
+#define unlikely(x)	(!__builtin_expect(!(x),1))
+#define likely(x)	(__builtin_expect(!!(x),1))
+
 /* The size of the block, in bytes. */
 #define BLOCK_SIZE 16
 
@@ -35,26 +38,27 @@
         key[i][j] = _mm_set1_epi32(key_std[i][j]);  \
   }
 
-/* This macro should define the variable 'input', 'out_buff' and 
-   'nb_blocks'.
-   input should be initialized with the counter's values.
-   out_buff will be passed to 'encrypt' to be used as output.
-   nb_blocks is the number of blocks being actually processed.
-   The counter is in 'counter', and the length is in 'signed_len',
-   which should be updated by this macro. */
-#define load_input()                            \
-  unsigned long input[PARALLEL_FACTOR*4];       \
-  int nb_blocks = PARALLEL_FACTOR;              \
-  for (int i = 0; i < 4; i++) {                 \
-    memcpy(&input[i*2],counter,16);             \
-    incr_counter(counter);                      \
-  }                                             \
-  for (int i = 0; i < 4; i++) {                 \
-    memcpy(&input[8+i*2],counter,16);           \
-    incr_counter(counter);                      \
-  }                                             \
-  signed_len -= BLOCK_SIZE*PARALLEL_FACTOR;     \
-
+#define load_input()                                                \
+  __m128i input[8];                                                 \
+  signed_len -= BLOCK_SIZE * PARALLEL_FACTOR;                       \
+  if (likely(((uint64_t*)&counter)[1] <= (0xffffffffffffffff-8))) { \
+    for (int i = 0; i < PARALLEL_FACTOR; i++) {                     \
+      input[i] = _mm_shuffle_epi8(counter,_mm_set_epi8(8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7)); \
+      counter = _mm_sub_epi64(counter,_mm_slli_si128(ONES,8));      \
+    }                                                               \
+  } else {                                                          \
+    for (int i = 0; i < PARALLEL_FACTOR; i++) {                     \
+      input[i] = _mm_shuffle_epi8(counter,_mm_set_epi8(8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7)); \
+      incr_128(counter);                                            \
+    }                                                               \
+  }
+#define incr_128(c) {                                   \
+    __m128i minus_one = _mm_slli_si128(ONES,8);         \
+    __m128i overflow = _mm_cmpeq_epi64(c, minus_one);   \
+    c = _mm_sub_epi64(c,minus_one);                     \
+    overflow = _mm_srli_si128(overflow,8);              \
+    c = _mm_sub_epi64(c,overflow);                      \
+  }
 
 #define TRANSPOSE4(row0, row1, row2, row3)                  \
   do {                                                      \
@@ -73,19 +77,17 @@
 /* Serpent-specific macro */
 #define serpent_bs()                                                    \
   DATATYPE *plain = (DATATYPE*) input;                                  \
-  for (int i = 0; i < 8; i++)                                           \
-    plain[i] = _mm_shuffle_epi8(plain[i],_mm_set_epi8(8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7)); \
                                                                         \
   TRANSPOSE4(plain[0],plain[1],plain[2],plain[3]);                      \
   TRANSPOSE4(plain[4],plain[5],plain[6],plain[7]);                      \
                                                                         \
   DATATYPE cipher[8];                                                   \
-  Serpent__(plain,&plain[4],key,key,cipher,&cipher[4]);                 \
+  Serpent__(plain,&plain[4],key,cipher,&cipher[4]);                     \
                                                                         \
                                                                         \
   TRANSPOSE4(cipher[0],cipher[1],cipher[2],cipher[3]);                  \
   TRANSPOSE4(cipher[4],cipher[5],cipher[6],cipher[7]);                  \
-  unsigned int *out_buff = (unsigned int*) cipher;
+  DATATYPE *out_buff = cipher;
 
    
 /* This macro should just call the encryption function, with the parameters
@@ -97,10 +99,6 @@
 /* This part should be independent of the ciphers => do not modify it. */
 /*                                                                     */
 /* ******************************************************************* */
-
-static void incr_counter(unsigned long c[2]) {
-  if (++c[1] == 0) ++c[0];
-}
 
 #define end_xor(type)                                                   \
   for ( ; encrypted >= sizeof(type); encrypted -= sizeof(type) ) {      \
@@ -122,33 +120,44 @@ int crypto_stream_xor( unsigned char *out,
   /* Key schedule */
   key_schedule();
   
-  /* Copying the counter */
-  unsigned long counter[2] __attribute__ ((aligned (32)));
-  memcpy(counter, n, 16);
-  counter[0] = __builtin_bswap64(counter[0]);
-  counter[1] = __builtin_bswap64(counter[1]);
+  __m128i counter = _mm_load_si128((__m128i*)n);
+  counter = _mm_shuffle_epi8(counter,_mm_set_epi8(8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7));
 
   /* Encrypting the input... */
-  while (signed_len > 0) {
+  while (signed_len >= PARALLEL_FACTOR * BLOCK_SIZE) {
+    /* Loading the input (from the counter) */
+    load_input();
+    /* Encrypting it */    
+    encrypt();
+    /* Xoring the ciphertext with the input to produce the output */
+
+    if (in) {
+      for (int i = 0; i < 8; i++)
+        ((__m128i*)out)[i] = _mm_xor_si128(out_buff[i],((__m128i*)in)[i]);
+      in += PARALLEL_FACTOR * BLOCK_SIZE;
+    } else {
+      memcpy(out, out_buff, PARALLEL_FACTOR * BLOCK_SIZE);
+    }
+    out += PARALLEL_FACTOR * BLOCK_SIZE;
+    
+  }
+  while (unlikely(signed_len > 0)) {
     /* Loading the input (from the counter) */
     load_input();
     /* Encrypting it */    
     encrypt();
     /* Xoring the ciphertext with the input to produce the output */
     
+    int nb_blocks = PARALLEL_FACTOR;
     unsigned char* out_buff_char = (unsigned char*) out_buff;
     unsigned long encrypted = nb_blocks * BLOCK_SIZE + (signed_len < 0 ? signed_len : 0);
     
     if (in) {
-      end_xor(__m128i);      
-      end_xor(unsigned long);
-      end_xor(unsigned int);
       end_xor(unsigned char);
     } else {
       memcpy(out, out_buff_char, encrypted);
       out += encrypted;
     }
-    
   }
 
   return 0;

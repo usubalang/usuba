@@ -670,7 +670,7 @@ void transform__ (/*inputs*/ DATATYPE input__[4],DATATYPE input____2[4], /*outpu
 
 /* main function */
 void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],
-                DATATYPE keys__[33][4], DATATYPE keys__2[33][4],
+                DATATYPE keys__[33][4], 
                 /*outputs*/ DATATYPE ciphertext__[4],DATATYPE ciphertext____2[4]) {
   
   // Variables declaration

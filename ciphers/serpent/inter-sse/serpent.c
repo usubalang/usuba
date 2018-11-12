@@ -544,7 +544,7 @@ void print128hex(__m128i toPrint) {
 
 /* main function */
 void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],
-                DATATYPE keys__[33][4],DATATYPE keys____2[33][4],
+                DATATYPE keys__[33][4],
                 /*outputs*/ DATATYPE ciphertext__[4],DATATYPE ciphertext____2[4]) {
 
   
