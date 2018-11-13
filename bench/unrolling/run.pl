@@ -51,14 +51,14 @@ if ($gen) {
     print "Compiling Usuba sources...";
     chdir "$FindBin::Bin/../..";
 
-    my $ua_args = "-arch sse -sched-n 15 -no-share -inline-all";
+    my $ua_args = "-arch sse -sched-n 15 -no-share";
     for my $cipher (@ciphers) {
         my $source  = "samples/usuba/$cipher.ua";
         if ($cipher eq 'aes_kasper') {
             $source = "samples/usuba/aes_kasper_shufb.ua";
         }
         system "./usubac $ua_args         -o $pwd/$cipher/nounroll.c $source";
-        system "./usubac $ua_args -no-arr -o $pwd/$cipher/unroll.c   $source";
+        system "./usubac $ua_args -no-arr -inline-all -o $pwd/$cipher/unroll.c   $source";
     }
     say " done.";
 }
@@ -68,8 +68,8 @@ if ($compile) {
     chdir "$FindBin::Bin";
     make_path "bin" unless -d "bin";
     for my $cipher (@ciphers) {
-        system "$CC $CFLAGS $HEADERS main_speed.c $cipher/stream.c $cipher/unroll.c -o bin/$cipher-unroll";
-        system "$CC $CFLAGS $HEADERS main_speed.c $cipher/stream.c $cipher/nounroll.c -o bin/$cipher-nounroll";
+        system "$CC $CFLAGS $HEADERS -D $cipher main_speed.c $cipher/stream.c $cipher/unroll.c -o bin/$cipher-unroll";
+        system "$CC $CFLAGS $HEADERS -D $cipher main_speed.c $cipher/stream.c $cipher/nounroll.c -o bin/$cipher-nounroll";
     }
     say " done.";
 }
@@ -119,16 +119,11 @@ for my $cipher (@ciphers) {
 
 open my $FP_OUT, '>', 'results/unrolling.tex';
 printf $FP_OUT
-"\\centering
-  \\begin{tabular}{|l K{3cm}|K{3cm}|K{3cm}|}
-    \\hline
-    \\textbf{cipher} & \\textbf{speedup} & \\textbf{code size (B)}\\\\
-    \\hline
-    Chacha20 & +%02.02f\\%% & %s%.01f\\%% \\\\
-    \\hline
-    AES (H-slice) & +%02.02f\\%% & %s%.01f\\%% \\\\
-    \\hline
-\\end{tabular}",
-    $formatted{chacha20}->{speedup}, $formatted{chacha20}->{sign}, $formatted{chacha20}->{size},
-    $formatted{aes_kasper}->{speedup}, $formatted{aes_kasper}->{sign}, $formatted{aes_kasper}->{size};
-    
+"
+\\newcommand{\\UnrollingChachaSpeedup}{%.2f}
+\\newcommand{\\UnrollingChachaCode}{%.2f}
+\\newcommand{\\UnrollingHAESSpeedup}{%.2f}
+\\newcommand{\\UnrollingHAESCode}{%.2f}
+",
+    $formatted{chacha20}->{speedup}, $formatted{chacha20}->{size},
+    $formatted{aes_kasper}->{speedup}, $formatted{aes_kasper}->{size};

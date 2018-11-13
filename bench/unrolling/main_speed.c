@@ -8,7 +8,11 @@
 
 
 #ifndef NB_LOOP
+#ifdef chacha20
+#define NB_LOOP 500000
+#else
 #define NB_LOOP 100000
+#endif
 #endif
 
 #ifndef BUFF_SIZE
