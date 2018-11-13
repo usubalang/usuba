@@ -36,14 +36,14 @@ unsigned char rcon[11] = {
     0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36
 };
 
-void rotate(unsigned char* in) {
+static void rotate(unsigned char* in) {
   unsigned char tmp = in[0];
   for (int i = 0; i < 3; i++)
     in[i] = in[i+1];
   in[3] = tmp;
 }
 
-void sched_core(unsigned char* in, unsigned int i) {
+static void sched_core(unsigned char* in, unsigned int i) {
   rotate(in);
   for (int i = 0; i < 4; i++)
     in[i] = sbox[in[i]];
@@ -77,4 +77,94 @@ unsigned char* key_sched (const unsigned char in[16]) {
   }
 
   return key;
+}
+
+
+
+#define NO_RUNTIME
+#include "SSE.h"
+
+#ifdef REV_SLICE
+#define swapmove(a, b, n, m, t)                 \
+  t = _mm_slli_epi32(b,n);                      \
+  t = _mm_xor_si128(t,a);                       \
+  t = _mm_and_si128(t,m);                       \
+  a = _mm_xor_si128(a,t);                       \
+  t = _mm_srli_epi32(t,n);                      \
+  b = _mm_xor_si128(b,t);
+
+#define bitslice(x0, x1, x2, x3, x4, x5, x6, x7)    \
+  {                                                 \
+    __m128i t0, t1;                                 \
+    t0 = _mm_set1_epi32(/*0x55555555*/0xaaaaaaaa);  \
+    swapmove(x7, x6, 1, t0, t1);                    \
+    swapmove(x5, x4, 1, t0, t1);                    \
+    swapmove(x3, x2, 1, t0, t1);                    \
+    swapmove(x1, x0, 1, t0, t1);                    \
+                                                    \
+    t0 = _mm_set1_epi32(/*0x33333333*/0xcccccccc);  \
+    swapmove(x7, x5, 2, t0, t1);                    \
+    swapmove(x6, x4, 2, t0, t1);                    \
+    swapmove(x3, x1, 2, t0, t1);                    \
+    swapmove(x2, x0, 2, t0, t1);                    \
+                                                    \
+    t0 = _mm_set1_epi32(/*0x0f0f0f0f*/0xf0f0f0f0);  \
+    swapmove(x7, x3, 4, t0, t1);                    \
+    swapmove(x6, x2, 4, t0, t1);                    \
+    swapmove(x5, x1, 4, t0, t1);                    \
+    swapmove(x4, x0, 4, t0, t1);                    \
+  }
+#else
+#define swapmove(a, b, n, m, t)                 \
+  t = _mm_srli_epi32(b,n);                      \
+  t = _mm_xor_si128(t,a);                       \
+  t = _mm_and_si128(t,m);                       \
+  a = _mm_xor_si128(a,t);                       \
+  t = _mm_slli_epi32(t,n);                      \
+  b = _mm_xor_si128(b,t);
+
+#define bitslice(x0, x1, x2, x3, x4, x5, x6, x7)    \
+  {                                                 \
+    __m128i t0, t1;                                 \
+    t0 = _mm_set1_epi32(0x55555555);  \
+    swapmove(x7, x6, 1, t0, t1);                    \
+    swapmove(x5, x4, 1, t0, t1);                    \
+    swapmove(x3, x2, 1, t0, t1);                    \
+    swapmove(x1, x0, 1, t0, t1);                    \
+                                                    \
+    t0 = _mm_set1_epi32(0x33333333);  \
+    swapmove(x7, x5, 2, t0, t1);                    \
+    swapmove(x6, x4, 2, t0, t1);                    \
+    swapmove(x3, x1, 2, t0, t1);                    \
+    swapmove(x2, x0, 2, t0, t1);                    \
+                                                    \
+    t0 = _mm_set1_epi32(0x0f0f0f0f);  \
+    swapmove(x7, x3, 4, t0, t1);                    \
+    swapmove(x6, x2, 4, t0, t1);                    \
+    swapmove(x5, x1, 4, t0, t1);                    \
+    swapmove(x4, x0, 4, t0, t1);                    \
+  }
+#endif
+
+void key_sched_128 (const unsigned char in[16], __m128i key[11][8]) {
+  unsigned char* sched_key = key_sched(in);
+  for (int i = 0; i < 11; i++) {
+    for (int j = 0; j < 8; j++) {
+      key[i][j] = _mm_load_si128((__m128i*)&sched_key[i*16]);
+    }
+    bitslice(key[i][7],key[i][6],key[i][5],key[i][4],key[i][3], key[i][2],key[i][1],key[i][0]);
+    if ((SBOX == 0 || SBOX == 1 || SBOX == 3 || SBOX == 5) && i > 0) {
+#ifdef REV_SLICE
+      key[i][0] = _mm_xor_si128(key[i][0],_mm_set1_epi32(-1));
+      key[i][1] = _mm_xor_si128(key[i][1],_mm_set1_epi32(-1));
+      key[i][5] = _mm_xor_si128(key[i][5],_mm_set1_epi32(-1));
+      key[i][6] = _mm_xor_si128(key[i][6],_mm_set1_epi32(-1));
+#else
+      key[i][1] = _mm_xor_si128(key[i][1],_mm_set1_epi32(-1));
+      key[i][2] = _mm_xor_si128(key[i][2],_mm_set1_epi32(-1));
+      key[i][6] = _mm_xor_si128(key[i][6],_mm_set1_epi32(-1));
+      key[i][7] = _mm_xor_si128(key[i][7],_mm_set1_epi32(-1));
+#endif
+    }
+  }
 }
