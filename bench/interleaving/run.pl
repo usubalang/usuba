@@ -129,15 +129,13 @@ for my $cipher (@ciphers) {
 
 open my $FP_OUT, '>', 'results/interleaving.tex';
 printf $FP_OUT
-"\\begin{tabular}{|l K{3cm}|K{3cm}|K{3cm}|}
-  \\hline
-  \\textbf{cipher} & \\textbf{speedup} & \\textbf{code size (B)}\\\\
-  \\hline
-  Serpent & +%02.02f\\%% & %s%.01f\\%% \\\\
-  \\hline
-  Rectangle & +%02.02f\\%% & %s%.01f\\%% \\\\
-  \\hline
-\\end{tabular}",
+"
+\\newcommand{\\InterleavingSerpentSpeedup}{%.02f}
+\\newcommand{\\InterleavingSerpentCode}{%.02f}
+
+\\newcommand{\\InterleavingRectangleSpeedup}{%.02f}
+\\newcommand{\\InterleavingRectangleCode}{%.02f}
+",
     $formatted{serpent}->{speedup}, $formatted{serpent}->{sign}, $formatted{serpent}->{size},
     $formatted{rectangle}->{speedup}, $formatted{rectangle}->{sign}, $formatted{rectangle}->{size};
     
