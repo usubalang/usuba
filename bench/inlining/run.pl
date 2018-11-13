@@ -146,16 +146,11 @@ close $FP_OUT;
 
 open $FP_OUT, '>', 'results/inlining-nosched.tex';
 printf $FP_OUT
-"\\centering
-  \\begin{tabular}{|l K{3cm}|K{3cm}|K{3cm}|}
-    \\hline
-    \\textbf{cipher} & \\textbf{speedup} & \\textbf{code size (B)}\\\\
-    \\hline
-    DES & +%02.01f\\%% & %s%.01f\\%% \\\\
-    \\hline
-    AES (bitslice) & +%02.02f\\%% & %s%.01f\\%% \\\\
-    \\hline
-\\end{tabular}",
+"
+\\newcommand{\\InliningNoschedDESSpeedup}{%.2f}
+\\newcommand{\\InliningNoschedDESCode}{%.2f}
+\\newcommand{\\InliningNoschedAESSpeedup}{%.2f}
+\\newcommand{\\InliningNoschedAESCode}{%.2f}",
     $formatted{nosched}->{des}->{speedup}, $formatted{nosched}->{des}->{sign}, $formatted{nosched}->{des}->{size},
     $formatted{nosched}->{aes}->{speedup}, $formatted{nosched}->{aes}->{sign}, $formatted{nosched}->{aes}->{size};
     
