@@ -157,26 +157,29 @@ let rec get_last_used
           ?(env_it=Hashtbl.create 100)
           (last_used:(var,int) Hashtbl.t)
           ?(cpt_start=0)
-          (deqs: deq list) : unit =
+          (deqs: deq list)
+          (no_arr:bool) : unit =
 
   let cpt = ref cpt_start in
 
   let rec update_used_bellow env_it last_used (v:var) : unit =
     let v = simpl_var env_it v in
-    Hashtbl.replace last_used v !cpt;    
-    match v with
-    | Var _ -> ()
-    | Index(v',_) -> update_used_bellow env_it last_used v'
-    | _ -> assert false in
+    Hashtbl.replace last_used v !cpt;
+    if not no_arr then
+      match v with
+      | Var _ -> ()
+      | Index(v',_) -> update_used_bellow env_it last_used v'
+      | _ -> assert false in
 
   let rec update_used_above env_var env_it last_used (v:var) : unit =
     let v = simpl_var env_it v in
     Hashtbl.replace last_used v !cpt;
-    match get_var_type env_var v with
-    | Bool | Int(_,1) -> ()
-    | Int _ | Array _ -> List.iter (update_used_above env_var env_it last_used)
-                                   (expand_var_partial env_var v)
-    | _ -> assert false in
+    if not no_arr then
+      match get_var_type env_var v with
+      | Bool | Int(_,1) -> ()
+      | Int _ | Array _ -> List.iter (update_used_above env_var env_it last_used)
+                                     (expand_var_partial env_var v)
+      | _ -> assert false in
   
   let update_used env_var env_it last_used (v:var) : unit =
     update_used_bellow env_it last_used v;
@@ -195,19 +198,19 @@ let rec get_last_used
                 List.iter (fun i -> Hashtbl.add env_it x i;
                                     get_last_used env_var ~env_it:env_it
                                                   ~cpt_start:!cpt
-                                                  last_used dl;
+                                                  last_used dl no_arr;
                                     Hashtbl.remove env_it x)
                           (gen_list_bounds ei ef);
                 cpt := !cpt + (List.length dl)
             ) deqs
              
-let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) : deq list =
+let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) (no_arr:bool) : deq list =
 
   (* variables and their types *)
   let env_var = build_env_var p_in p_out vars in
   (* last line at which a variable is used *)
   let last_used = Hashtbl.create 1000 in
-  get_last_used env_var last_used deqs;
+  get_last_used env_var last_used deqs no_arr;
   (* The inputs (that shouldn't be overused I think) *)
   let env_in = Hashtbl.create 100 in
   List.iter (fun vd -> Hashtbl.replace env_in (Var vd.vid) true) p_in;
@@ -268,17 +271,16 @@ let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) : deq list =
            
   
       
-let share_def (def:def) : def =
+let share_def (def:def) (no_arr:bool) : def =
   match def.node with
   | Single(vars,body) ->
-     let body = share_deqs def.p_in def.p_out vars body in
+     let body = share_deqs def.p_in def.p_out vars body no_arr in
      { def with node = Single(vars,body) }
   | _ -> def
            
-let share_prog (prog:prog) : prog =
-  (* { nodes = List.map share_def prog.nodes } *)
+let share_prog (prog:prog) (conf:config) : prog =
   let prog = Linearize_arrays.linearize_arrays prog in
   if true then
-    { nodes = apply_last prog.nodes share_def }
+    { nodes = apply_last prog.nodes (fun x -> share_def x conf.no_arr) }
   else
     prog
