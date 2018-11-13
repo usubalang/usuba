@@ -22,7 +22,7 @@ use File::Copy;
 use FindBin;
 
 
-my $NB_LOOP = 2;
+my $NB_LOOP = 20;
 my $CC      = 'clang';
 my $CFLAGS  = '-O3 -march=native';
 my $HEADERS = '-I ../../arch';
@@ -119,15 +119,11 @@ for my $cipher (@ciphers) {
 
 open my $FP_OUT, '>', 'results/scheduling-bs.tex';
 printf $FP_OUT
-"\\begin{tabular}{|l K{3cm}|K{3cm}|K{3cm}|}
-  \\hline
-  \\textbf{cipher} & \\textbf{speedup} & \\textbf{code size (B)}\\\\
-  \\hline
-  DES & +%02.02f\\%% & %s%.01f\\%% \\\\
-  \\hline
-  AES (H-slice) & +%02.02f\\%% & %s%.01f\\%% \\\\
-  \\hline
-\\end{tabular}",
+"\\newcommand{\\SchedulingBitsliceDESSpeedup}{%.2f}
+\\newcommand{\\SchedulingBitsliceDESCode}{%.2f}
+\\newcommand{\\SchedulingBitsliceAESSpeedup}{%.2f}
+\\newcommand{\\SchedulingBitsliceAESCode}{%.2f}
+",
     $formatted{des}->{speedup}, $formatted{des}->{sign}, $formatted{des}->{size},
     $formatted{aes}->{speedup}, $formatted{aes}->{sign}, $formatted{aes}->{size};
     
