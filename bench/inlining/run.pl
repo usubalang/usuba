@@ -129,9 +129,16 @@ printf $FP_OUT
 \\newcommand{\\InliningSchedulingDESCode}{%.2f}
 \\newcommand{\\InliningSchedulingAESSpeedup}{%.2f}
 \\newcommand{\\InliningSchedulingAESCode}{%.2f}
+\\newcommand{\\InliningSchedulingChachaSpeedup}{%.2f}
+\\newcommand{\\InliningSchedulingChachaCode}{%.2f}
+\\newcommand{\\InliningSchedulingHAESSpeedup}{%.2f}
+\\newcommand{\\InliningSchedulingHAESCode}{%.2f}
 ",
     $formatted{sched}->{des}->{speedup}, $formatted{sched}->{des}->{size},
-    $formatted{sched}->{aes}->{speedup}, $formatted{sched}->{aes}->{size};
+    $formatted{sched}->{aes}->{speedup}, $formatted{sched}->{aes}->{size},
+    $formatted{sched}->{chacha20}->{speedup}, $formatted{sched}->{chacha20}->{size}
+    $formatted{sched}->{aes_kasper}->{speedup}, $formatted{sched}->{aes_kasper}->{size}
+;
 close $FP_OUT;
 
 open $FP_OUT, '>', 'results/inlining-nosched.tex';
