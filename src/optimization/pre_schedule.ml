@@ -116,8 +116,14 @@ let schedule_deqs (deqs:deq list) (def:def): deq list =
   let is_sched = Hashtbl.create 500 in
   let sched_vars = Hashtbl.create 500 in
   let schedule = ref [] in
-
-  List.iter (fun vd -> Hashtbl.add sched_vars (Var vd.vid) true) def.p_in;
+   
+  let env_var = build_env_var def.p_in [] [] in
+  let rec init_sched_vars (v:var) : unit =
+    Hashtbl.add sched_vars v true;
+    match expand_var_partial env_var v with
+    | [ x ] when x = v -> ()
+    | l -> List.iter init_sched_vars l in
+  List.iter (fun vd -> init_sched_vars (Var vd.vid)) def.p_in;
   
   List.iter (function
               | Eqn(l,e,_) -> schedule_asgn ready is_sched sched_vars schedule deps_down defs l e
