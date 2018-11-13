@@ -124,24 +124,14 @@ for my $sched (@scheds) {
 
 open my $FP_OUT, '>', 'results/inlining-sched.tex';
 printf $FP_OUT
-"\\centering
-  \\begin{tabular}{|l K{3cm}|K{3cm}|K{3cm}|}
-    \\hline
-    \\textbf{cipher} & \\textbf{speedup} & \\textbf{code size (B)}\\\\
-    \\hline
-    DES & +%02.01f\\%% & %s%.01f\\%% \\\\
-    \\hline
-    Chacha20 & +%02.02f\\%% & %s%.01f\\%% \\\\
-    \\hline
-    AES (bitslice) & +%02.02f\\%% & %s%.01f\\%% \\\\
-    \\hline
-    AES (H-slice) & +%02.02f\\%% & %s%.01f\\%% \\\\
-    \\hline
-\\end{tabular}",
+"
+\\newcommand{\\InliningSchedulingDESSpeedup}{%.2f}
+\\newcommand{\\InliningSchedulingDESCode}{%.2f}
+\\newcommand{\\InliningSchedulingAESSpeedup}{%.2f}
+\\newcommand{\\InliningSchedulingAESCode}{%.2f}
+",
     $formatted{sched}->{des}->{speedup}, $formatted{sched}->{des}->{sign}, $formatted{sched}->{des}->{size},
-    $formatted{sched}->{chacha20}->{speedup}, $formatted{sched}->{chacha20}->{sign}, $formatted{sched}->{chacha20}->{size},
-    $formatted{sched}->{aes}->{speedup}, $formatted{sched}->{aes}->{sign}, $formatted{sched}->{aes}->{size},
-    $formatted{sched}->{aes_kasper}->{speedup}, $formatted{sched}->{aes_kasper}->{sign}, $formatted{sched}->{aes_kasper}->{size};
+    $formatted{sched}->{aes}->{speedup}, $formatted{sched}->{aes}->{sign}, $formatted{sched}->{aes}->{size};
 close $FP_OUT;
 
 open $FP_OUT, '>', 'results/inlining-nosched.tex';
