@@ -1,0 +1,2 @@
+chacha20-inline-nosched 2.57 21120
+chacha20-noinline-nosched 2.58 25408

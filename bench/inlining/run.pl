@@ -31,10 +31,11 @@ $| = 1;
 
 my %ciphers = (
     des        => 1,
-    serpent    => 0, # Not good with inlining (scheduling actually)
+    serpent    => 1, # Not good with inlining (scheduling actually)
     aes        => 1,
     aes_kasper => 1,
-    chacha20   => 1
+    chacha20   => 1,
+    rectangle  => 1
     );
 my @ciphers = grep { $ciphers{$_} } keys %ciphers;
 my @scheds  = qw(nosched sched);
@@ -52,13 +53,17 @@ if ($gen) {
     chdir "$FindBin::Bin/../..";
 
     for my $sched (@scheds) {
-        my $sched_opt   = $sched eq 'nosched' ? '-no-sched' : '-sched-n 5';
+        my $sched_opt   = $sched eq 'nosched' ? '-no-sched' : '-sched-n 10';
         my $ua_args = "-arch sse -no-arr -no-share $sched_opt";
         for my $cipher (@ciphers) {
             my $source  = "samples/usuba/$cipher.ua";
-            my $sched_flag = $cipher eq 'des' || $cipher eq 'aes' ? '' : '-inline-all';
+            my $sched_flag = $cipher eq 'des' || $cipher eq 'aes' 
+                || $cipher eq 'rectangle' ? '' : '-inline-all';
             if ($cipher eq 'aes_kasper') {
                 $source = "samples/usuba/aes_kasper_shufb.ua";
+            }
+            if ($cipher eq 'rectangle') {
+                $source = "samples/usuba/rectangle_vector.ua";
             }
             system "./usubac $ua_args -no-inline  -o $pwd/$cipher/noinline-$sched.c $source";
             system "./usubac $ua_args $sched_flag -o $pwd/$cipher/inline-$sched.c   $source";
@@ -120,7 +125,7 @@ for my $sched (@scheds) {
         $formatted{$sched}->{$cipher}->{sign}    = $size >= 0 ? "+" : "";
     }
 }
-
+exit(1);
 
 open my $FP_OUT, '>', 'results/inlining-sched.tex';
 printf $FP_OUT
@@ -136,9 +141,8 @@ printf $FP_OUT
 ",
     $formatted{sched}->{des}->{speedup}, $formatted{sched}->{des}->{size},
     $formatted{sched}->{aes}->{speedup}, $formatted{sched}->{aes}->{size},
-    $formatted{sched}->{chacha20}->{speedup}, $formatted{sched}->{chacha20}->{size}
-    $formatted{sched}->{aes_kasper}->{speedup}, $formatted{sched}->{aes_kasper}->{size}
-;
+    $formatted{sched}->{chacha20}->{speedup}, $formatted{sched}->{chacha20}->{size},
+    $formatted{sched}->{aes_kasper}->{speedup}, $formatted{sched}->{aes_kasper}->{size};
 close $FP_OUT;
 
 open $FP_OUT, '>', 'results/inlining-nosched.tex';
