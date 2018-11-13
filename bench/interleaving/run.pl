@@ -136,6 +136,6 @@ printf $FP_OUT
 \\newcommand{\\InterleavingRectangleSpeedup}{%.02f}
 \\newcommand{\\InterleavingRectangleCode}{%.02f}
 ",
-    $formatted{serpent}->{speedup}, $formatted{serpent}->{sign}, $formatted{serpent}->{size},
-    $formatted{rectangle}->{speedup}, $formatted{rectangle}->{sign}, $formatted{rectangle}->{size};
+    $formatted{serpent}->{speedup}, $formatted{serpent}->{size},
+    $formatted{rectangle}->{speedup}, $formatted{rectangle}->{size};
     

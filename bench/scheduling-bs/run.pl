@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+>#!/usr/bin/perl
 
 =usage
     
@@ -124,6 +124,6 @@ printf $FP_OUT
 \\newcommand{\\SchedulingBitsliceAESSpeedup}{%.2f}
 \\newcommand{\\SchedulingBitsliceAESCode}{%.2f}
 ",
-    $formatted{des}->{speedup}, $formatted{des}->{sign}, $formatted{des}->{size},
-    $formatted{aes}->{speedup}, $formatted{aes}->{sign}, $formatted{aes}->{size};
+    $formatted{des}->{speedup}, $formatted{des}->{size},
+    $formatted{aes}->{speedup}, $formatted{aes}->{size};
     
