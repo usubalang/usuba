@@ -1,2 +1,0 @@
- bin/avx 2.84
- bin/sse 5.52
