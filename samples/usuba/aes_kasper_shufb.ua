@@ -19,7 +19,7 @@ _no_inline table SubBytes (input:u1x8) returns (output:u1x8) {
 
 node ShiftRows (inputSR:u16x8) returns (out:u16x8)
 let
-    forall i in [0,7] {
+    _unroll forall i in [0,7] {
         out[i] = Shuffle(inputSR[i],[  0,  5, 10, 15,
                                        4,  9, 14,  3,
                                        8, 13,  2,  7,
