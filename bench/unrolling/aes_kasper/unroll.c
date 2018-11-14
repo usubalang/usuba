@@ -3484,7 +3484,7 @@ _no_inline table SubBytes(input :  u1x8 :: base)
 vars
 
 let
-   forall i in [0,7] {
+  _unroll forall i in [0,7] {
     (out[i]) = Shuffle(inputSR[i],[0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11])
   }
 tel

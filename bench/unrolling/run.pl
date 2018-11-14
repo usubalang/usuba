@@ -34,7 +34,9 @@ my %ciphers = (
     serpent    => 0,
     aes        => 0,
     aes_kasper => 1,
-    chacha20   => 1
+    chacha20   => 1,
+    rectangle_vector  => 1,
+    rectangle_nslice  => 1
     );
 my @ciphers = grep { $ciphers{$_} } keys %ciphers;
 
@@ -51,14 +53,14 @@ if ($gen) {
     print "Compiling Usuba sources...";
     chdir "$FindBin::Bin/../..";
 
-    my $ua_args = "-arch sse -sched-n 15 -no-share";
+    my $ua_args = "-arch sse -sched-n 15 -inline-all -no-share";
     for my $cipher (@ciphers) {
         my $source  = "samples/usuba/$cipher.ua";
         if ($cipher eq 'aes_kasper') {
             $source = "samples/usuba/aes_kasper_shufb.ua";
         }
         system "./usubac $ua_args         -o $pwd/$cipher/nounroll.c $source";
-        system "./usubac $ua_args -no-arr -inline-all -o $pwd/$cipher/unroll.c   $source";
+        system "./usubac $ua_args -no-arr -o $pwd/$cipher/unroll.c   $source";
     }
     say " done.";
 }
@@ -116,14 +118,18 @@ for my $cipher (@ciphers) {
     $formatted{$cipher}->{sign}    = $size >= 0 ? "+" : "";
 }
 
-
 open my $FP_OUT, '>', 'results/unrolling.tex';
 printf $FP_OUT
-"
-\\newcommand{\\UnrollingChachaSpeedup}{%.2f}
+"\\newcommand{\\UnrollingChachaSpeedup}{%.2f}
 \\newcommand{\\UnrollingChachaCode}{%.2f}
 \\newcommand{\\UnrollingHAESSpeedup}{%.2f}
 \\newcommand{\\UnrollingHAESCode}{%.2f}
+\\newcommand{\\UnrollingHRectangleSpeedup}{%.2f}
+\\newcommand{\\UnrollingHRectangleSCode}{%.2f}
+\\newcommand{\\UnrollingVRectangleSpeedup}{%.2f}
+\\newcommand{\\UnrollingVRectangleSCode}{%.2f}
 ",
     $formatted{chacha20}->{speedup}, $formatted{chacha20}->{size},
-    $formatted{aes_kasper}->{speedup}, $formatted{aes_kasper}->{size};
+    $formatted{aes_kasper}->{speedup}, $formatted{aes_kasper}->{size},
+    $formatted{rectangle_nslice}->{speedup}, $formatted{rectangle_nslice}->{size},
+    $formatted{rectangle_vector}->{speedup}, $formatted{rectangle_vector}->{size};
