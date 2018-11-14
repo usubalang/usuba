@@ -325,8 +325,13 @@ module Low_pressure_sched = struct
     let next = List.nth !deqs next_i in
     deqs := remove_nth !deqs next_i;
     next
+
+  let rec inner_sched env_var (parallel_lvl:int) (deq:deq) : deq =
+    match deq with
+    | Eqn _ -> deq
+    | Loop(x,ei,ef,dl,opts) -> Loop(x,ei,ef,schedule_deqs env_var parallel_lvl dl,opts)
                  
-  let rec schedule_deqs env_var (parallel_lvl:int) (deqs: deq list) : deq list =
+  and schedule_deqs env_var (parallel_lvl:int) (deqs: deq list) : deq list =
     let scheduling = ref [ List.hd deqs ] in
     let todo       = ref (List.tl deqs) in
 
@@ -337,11 +342,11 @@ module Low_pressure_sched = struct
         try
           let prev_deqs = flat_map (get_def_vars env_var) (get_first_n !scheduling num_prev) in
           let next = get_instr_no_dep env_var (ref prev_deqs) (ref []) todo in
-          scheduling := next :: !scheduling;
+          scheduling := (inner_sched env_var parallel_lvl next) :: !scheduling;
           raise Found
         with Not_found -> ()
       done;
-      scheduling := (List.hd !todo) :: !scheduling;
+      scheduling := (inner_sched env_var parallel_lvl (List.hd !todo)) :: !scheduling;
       todo := List.tl !todo;
       with Found -> ()
     done;
