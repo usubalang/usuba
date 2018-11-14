@@ -42,7 +42,6 @@
 
 #define load_input()                                                    \
   __m128i input[128], out_buff[128];                                        \
-  int nb_blocks = PARALLEL_FACTOR;                                      \
   signed_len -= BLOCK_SIZE * PARALLEL_FACTOR;                           \
   if (likely(((uint64_t*)&counter)[1] <= (0xffffffffffffffff-PARALLEL_FACTOR))) { \
     for (int i = 0; i < PARALLEL_FACTOR; i++) {                         \
@@ -86,7 +85,6 @@
   }
 
 
-
 int crypto_stream_xor( unsigned char *out,
                        const unsigned char *in,
                        unsigned long long inlen,
@@ -96,30 +94,36 @@ int crypto_stream_xor( unsigned char *out,
 {
   long long signed_len = inlen;  
   
-  /* Key schedule */
   key_schedule();
-  
-  /* Copying the counter */
+
   __m128i counter = _mm_load_si128((__m128i*)n);
   counter = _mm_shuffle_epi8(counter,_mm_set_epi8(8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7));
 
   
-  /* Encrypting the input... */
-  while (signed_len > 0) {
-    /* Loading the input (from the counter) */
+  while (signed_len >= PARALLEL_FACTOR * BLOCK_SIZE) {
     load_input();
-    /* Encrypting it */    
     encrypt();
-    /* Xoring the ciphertext with the input to produce the output */
-        
+
+    if (in) {
+      for (int i = 0; i < 128; i++)
+        ((__m128i*)out)[i] = _mm_xor_si128(out_buff[i],((__m128i*)in)[i]);
+      in += PARALLEL_FACTOR * BLOCK_SIZE;
+    } else {
+      memcpy(out, out_buff, PARALLEL_FACTOR * BLOCK_SIZE);
+    }
+    out += PARALLEL_FACTOR * BLOCK_SIZE;
+  }
+
+  while (unlikely(signed_len > 0)) {
+    load_input();
+    encrypt();
+    
+    int nb_blocks =  PARALLEL_FACTOR;                           \
     unsigned char* out_buff_char = (unsigned char*) out_buff;
     unsigned long encrypted = nb_blocks * BLOCK_SIZE + (signed_len < 0 ? signed_len : 0);
 
-    
-    if (in) {    
+    if (in) {
       end_xor(__m128i);
-      end_xor(unsigned long);
-      end_xor(unsigned int);
       end_xor(unsigned char);
     } else {
       memcpy(out, out_buff_char, encrypted);
