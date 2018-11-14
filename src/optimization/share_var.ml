@@ -280,7 +280,7 @@ let share_def (def:def) (no_arr:bool) : def =
            
 let share_prog (prog:prog) (conf:config) : prog =
   let prog = Linearize_arrays.linearize_arrays prog in
-  if true then
+  if conf.share_var then
     { nodes = apply_last prog.nodes (fun x -> share_def x conf.no_arr) }
   else
     prog
