@@ -1,3 +1,0 @@
- bin/avx 1.13
- bin/sse 2.23
- bin/std 6.29

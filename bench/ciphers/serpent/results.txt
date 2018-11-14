@@ -1,3 +1,0 @@
- bin/avx 4.87
- bin/sse 9.45
- bin/std 26.76
