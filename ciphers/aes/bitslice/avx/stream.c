@@ -45,16 +45,32 @@
    The counter is in 'counter', and the length is in 'signed_len',
    which should be updated by this macro. */
 #define load_input()                                                    \
-  DATATYPE input[256],out_buff[256];                                    \
+  __m256i input[256], out_buff[256];                                    \
+  signed_len -= BLOCK_SIZE * PARALLEL_FACTOR;                           \
   int nb_blocks = 0;                                                    \
-  for (; (signed_len > 0) && (nb_blocks < PARALLEL_FACTOR);             \
-       signed_len -= BLOCK_SIZE*2, nb_blocks += 2) {                    \
-    __m128i c1 = _mm_load_si128((__m128i*)counter);                     \
-    incr_counter(counter);                                              \
-    __m128i c2 = _mm_load_si128((__m128i*)counter);                     \
-    incr_counter(counter);                                              \
-    input[nb_blocks/2] = _mm256_loadu2_m128i(&c2,&c1) ;                 \
+  if (counter[1] > (0xffffffffffffffff-16)) {                           \
+    for ( ; nb_blocks < PARALLEL_FACTOR; nb_blocks += 2) {              \
+      __m128i low_part, high_part;                                      \
+      memcpy(&low_part,counter,16);                                     \
+      incr_counter(counter);                                            \
+      memcpy(&high_part,counter,16);                                    \
+      incr_counter(counter);                                            \
+      input[nb_blocks/2] = _mm256_loadu2_m128i(&high_part,&low_part);   \
+    }                                                                   \
+  } else {                                                              \
+    for (; nb_blocks < PARALLEL_FACTOR; nb_blocks += 2) {               \
+      __m128i low_part, high_part;                                      \
+      memcpy(&low_part,counter,16);                                     \
+      ++counter[1];                                                     \
+      memcpy(&high_part,counter,16);                                    \
+      ++counter[1];                                                     \
+      input[nb_blocks/2] = _mm256_loadu2_m128i(&high_part,&low_part);   \
+    }                                                                   \
   }
+static void incr_counter(unsigned long c[2]) {
+  if (++c[1] == 0) ++c[0];
+}
+
 
 /* This macro should just call the encryption function, with the parameters
    input, key and out_buff */
@@ -65,10 +81,6 @@
 /* This part should be independent of the ciphers => do not modify it. */
 /*                                                                     */
 /* ******************************************************************* */
-static void incr_counter(unsigned char c[16]) {
-  for (int i = 15; i > 0; i--)
-    if (++c[i]) break;
-}
 
 
 #define end_xor(type)                                               \
@@ -94,9 +106,12 @@ int crypto_stream_xor( unsigned char *out,
   key_schedule();
   
   /* Copying the counter */
-  unsigned char counter[16] __attribute__ ((aligned (32)));
+  unsigned long counter[2] __attribute__ ((aligned (32)));
   memcpy(counter, n, 16);
+  counter[0] = __builtin_bswap64(counter[0]);
+  counter[1] = __builtin_bswap64(counter[1]);
 
+  
   /* Encrypting the input... */
   while (signed_len > 0) {
     /* Loading the input (from the counter) */
