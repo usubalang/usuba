@@ -15,6 +15,10 @@
 #define AVX512
 #endif
 
+#ifndef BITS_PER_REG
+#define BITS_PER_REG 512
+#endif
+
 /* Defining 0 and 1 */
 #define ZERO _mm512_setzero_si512()
 #define ONES _mm512_set1_epi32(-1)
@@ -29,10 +33,55 @@
 #define ANDN(a,b) _mm512_andnot_si512(a,b)
 #define NOT(a)    _mm512_xor_si512(ONES,a)
 
+#define ADD(a,b,c) _mm512_add_epi##c(a,b)
+
+#define L_SHIFT(a,b,c)  _mm512_slli_epi##c(a,b)
+#define R_SHIFT(a,b,c)  _mm512_srli_epi##c(a,b)
+
+#define L_ROTATE(a,b,c)                                                 \
+  b == 8 && c == 32 ?                                                   \
+    _mm512_shuffle_epi8(a,_mm512_set_epi8(14,13,12,15,10,9,8,11,6,5,4,7,2,1,0,3, \
+                                          14,13,12,15,10,9,8,11,6,5,4,7,2,1,0,3, \
+                                          14,13,12,15,10,9,8,11,6,5,4,7,2,1,0,3, \
+                                          14,13,12,15,10,9,8,11,6,5,4,7,2,1,0,3)) : \
+    b == 16 && c == 32 ?                                                \
+    _mm512_shuffle_epi8(a,_mm512_set_epi8(13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2, \
+                                          13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2, \
+                                          13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2, \
+                                          13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2)) : \
+    OR(L_SHIFT(a,b,c),R_SHIFT(a,c-b,c))
+  
+#define R_ROTATE(a,b,c)                                                 \
+  b == 8 && c == 32 ?                                                   \
+    _mm512_shuffle_epi8(a,_mm512_set_epi8(12,15,14,13,8,11,10,9,4,7,6,5,0,3,2,1, \
+                                          12,15,14,13,8,11,10,9,4,7,6,5,0,3,2,1, \
+                                          12,15,14,13,8,11,10,9,4,7,6,5,0,3,2,1, \
+                                          12,15,14,13,8,11,10,9,4,7,6,5,0,3,2,1)) : \
+    b == 16 && c == 32 ?                                                \
+    _mm512_shuffle_epi8(a,_mm512_set_epi8(13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2, \
+                                          13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2, \
+                                          13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2, \
+                                          13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2)) : \
+    OR(R_SHIFT(a,b,c),L_SHIFT(a,c-b,c))
+
+
+#define LIFT_8(x)  _mm512_set1_epi8(x)
+#define LIFT_16(x) _mm512_set1_epi16(x)
+#define LIFT_32(x) _mm512_set1_epi32(x)
+#define LIFT_64(x) _mm512_set1_epi64(x)
+
 #define DATATYPE __m512i
 
 #define SET_ALL_ONE()  ONES
 #define SET_ALL_ZERO() ZERO
+
+/* Note: this is somewhat wrong I think */
+#define PERMUT_16(a,x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16) \
+  _mm512_shuffle_epi8(a,_mm512_set_epi8(x16,x15,x14,x13,x12,x11,x10,x9,x8,x7,x6,x5,x4,x3,x2,x1,\
+                                        x16,x15,x14,x13,x12,x11,x10,x9,x8,x7,x6,x5,x4,x3,x2,x1,\
+                                        x16,x15,x14,x13,x12,x11,x10,x9,x8,x7,x6,x5,x4,x3,x2,x1,\
+                                        x16,x15,x14,x13,x12,x11,x10,x9,x8,x7,x6,x5,x4,x3,x2,x1))
+#define PERMUT_4(a,x1,x2,x3,x4) _mm512_shuffle_epi32(a,(x4<<6)|(x3<<4)|(x2<<2)|x1)
 
 #define ORTHOGONALIZE(in,out) orthogonalize(in,out)
 #define UNORTHOGONALIZE(in,out) unorthogonalize(in,out)
