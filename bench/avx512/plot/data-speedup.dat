@@ -1,0 +1,9 @@
+archi                              "GP 64-bits"   SSE     AVX     AVX2    AVX512
+"Rectangle    \n        (bitslice)"         0.62        1      1.12    2.23     4.92
+"   AES    \n        (hslice)"                 0          1      1.08    2.08     4.75
+"Rectangle    \n       (hslice)  "         0          1      1.02    1.92     4.22
+"Rectangle     \n      (vslice)  "        0.16        1      1.00    2.51     4.17
+"Serpent      \n     (vslice) "            0.48        1      1.08    1.98     3.63
+"Chacha20       \n     (vslice)  "         0.38        1      1.00    2.00     3.06
+"  DES    \n        (bitslice)"            0.64        1      1.15    2.19     2.44
+"  AES    \n        (bitslice)"            0.56        1      1.12    1.91     2.69
