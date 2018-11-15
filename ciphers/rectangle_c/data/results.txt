@@ -1,0 +1,11 @@
+avx2-vslice-inter 1.97 0.20
+avx2-bitslice 3.01 0.71
+avx2-hslice 3.71 1.72
+avx-vslice-inter 3.91 0.38
+avx-bitslice 5.61 1.43
+sse-vslice-inter 6.27 0.39
+sse-bitslice 6.52 2.04
+avx-hslice 7.34 3.35
+sse-hslice 9.25 4.11
+std-bitslice 10.69 3.31
+std-vslice-inter 25.68 0.00

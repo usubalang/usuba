@@ -1,7 +1,3 @@
-/** @file main.cpp
- * @brief 本文件是主函数的定义，调用测试正确性的函数和测试速度的函数进行测试。
- */
-
 #include <x86intrin.h>
 #include <time.h>
 #include <stdlib.h>
@@ -71,10 +67,9 @@ void speed() {
   
 }
 
-int main()
-{
-  verif();
+int main() {
+  //verif();
   speed();
 
-	return 0;
+  return 0;
 }

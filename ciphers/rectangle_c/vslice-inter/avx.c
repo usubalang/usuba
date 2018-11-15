@@ -62,7 +62,7 @@ void SubColumn__ (/*inputs*/ DATATYPE a0,DATATYPE a0__2,DATATYPE a1,DATATYPE a1_
 }
 
 /* main function */
-void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t key__[26][4], /*outputs*/ DATATYPE cipher__[4],DATATYPE cipher____2[4]) {
+void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],DATATYPE key__[26][4], /*outputs*/ DATATYPE cipher__[4],DATATYPE cipher____2[4]) {
   
   // Variables declaration
   DATATYPE _tmp1_[4];
@@ -80,14 +80,14 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   tmp____2[2] = plain____2[2];
   tmp____2[3] = plain____2[3];
   for (int i = 0; i <= 24; i++) {
-    _tmp1_[0] = XOR(tmp__[0],LIFT_16(key__[i][0]));
-    _tmp1_[1] = XOR(tmp__[1],LIFT_16(key__[i][1]));
-    _tmp1_[2] = XOR(tmp__[2],LIFT_16(key__[i][2]));
-    _tmp1_[3] = XOR(tmp__[3],LIFT_16(key__[i][3]));
-    _tmp1___2[0] = XOR(tmp____2[0],LIFT_16(key__[i][0]));
-    _tmp1___2[1] = XOR(tmp____2[1],LIFT_16(key__[i][1]));
-    _tmp1___2[2] = XOR(tmp____2[2],LIFT_16(key__[i][2]));
-    _tmp1___2[3] = XOR(tmp____2[3],LIFT_16(key__[i][3]));
+    _tmp1_[0] = XOR(tmp__[0],key__[i][0]);
+    _tmp1_[1] = XOR(tmp__[1],key__[i][1]);
+    _tmp1_[2] = XOR(tmp__[2],key__[i][2]);
+    _tmp1_[3] = XOR(tmp__[3],key__[i][3]);
+    _tmp1___2[0] = XOR(tmp____2[0],key__[i][0]);
+    _tmp1___2[1] = XOR(tmp____2[1],key__[i][1]);
+    _tmp1___2[2] = XOR(tmp____2[2],key__[i][2]);
+    _tmp1___2[3] = XOR(tmp____2[3],key__[i][3]);
     SubColumn__(_tmp1_[0],_tmp1___2[0],_tmp1_[1],_tmp1___2[1],_tmp1_[2],_tmp1___2[2],_tmp1_[3],_tmp1___2[3],&_tmp1_[0],&_tmp1___2[0],&_tmp1_[1],&_tmp1___2[1],&_tmp1_[2],&_tmp1___2[2],&_tmp1_[3],&_tmp1___2[3]);
     tmp__[0] = _tmp1_[0];
     tmp__[1] = L_ROTATE(_tmp1_[1],1,16);
@@ -98,14 +98,14 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
     tmp____2[2] = L_ROTATE(_tmp1___2[2],12,16);
     tmp____2[3] = L_ROTATE(_tmp1___2[3],13,16);
   }
-  cipher__[0] = XOR(tmp__[0],LIFT_16(key__[25][0]));
-  cipher__[1] = XOR(tmp__[1],LIFT_16(key__[25][1]));
-  cipher__[2] = XOR(tmp__[2],LIFT_16(key__[25][2]));
-  cipher__[3] = XOR(tmp__[3],LIFT_16(key__[25][3]));
-  cipher____2[0] = XOR(tmp____2[0],LIFT_16(key__[25][0]));
-  cipher____2[1] = XOR(tmp____2[1],LIFT_16(key__[25][1]));
-  cipher____2[2] = XOR(tmp____2[2],LIFT_16(key__[25][2]));
-  cipher____2[3] = XOR(tmp____2[3],LIFT_16(key__[25][3]));
+  cipher__[0] = XOR(tmp__[0],key__[25][0]);
+  cipher__[1] = XOR(tmp__[1],key__[25][1]);
+  cipher__[2] = XOR(tmp__[2],key__[25][2]);
+  cipher__[3] = XOR(tmp__[3],key__[25][3]);
+  cipher____2[0] = XOR(tmp____2[0],key__[25][0]);
+  cipher____2[1] = XOR(tmp____2[1],key__[25][1]);
+  cipher____2[2] = XOR(tmp____2[2],key__[25][2]);
+  cipher____2[3] = XOR(tmp____2[3],key__[25][3]);
 
 }
 

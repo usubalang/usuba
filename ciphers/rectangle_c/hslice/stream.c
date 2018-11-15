@@ -6,6 +6,22 @@
 
 #include "rectangle.h"
 
+#ifdef std
+#define GP
+#endif
+
+#ifdef sse
+#define SSE
+#endif
+
+#ifdef avx
+#define AVX
+#endif
+
+#ifdef avx512
+#define AVX512
+#endif
+
 #define BLOCK_SIZE 8
 
 /* **************************** GP **********************************/
@@ -297,6 +313,155 @@ void ortho_speed ( unsigned char *out,
   }
 }
 
+/* **************************** AVX *********************************/
+#elif defined AVX512
+#define PARALLEL_FACTOR 32
+#define NO_RUNTIME
+#include "AVX512.h"
+
+#pragma push_macro("L_SHIFT")
+#pragma push_macro("R_SHIFT")
+
+#define SET1_EPI64(x)         _mm512_set1_epi64(x)
+#define SET_EPI64_2(a,b)      _mm512_set_epi64(a,b,a,b,a,b,a,b)
+#define SET_EPI64_4(a,b,c,d)  _mm512_set_epi64(a,b,c,d,a,b,c,d)
+
+/* #define _mm512_slli_epi128(a,b) ZERO */
+/* #define _mm512_slli_epi256(a,b) ZERO */
+/* #define _mm512_slli_epi512(a,b) ZERO */
+/* #define _L_SHIFT(a,b,c) (c <= 64 ? _mm512_slli_epi##c(a,b) :            \ */
+/*                          _mm512_srli_epi64(a, b)) */
+/* #define L_SHIFT(a,b,c) _L_SHIFT(a,b,c) */
+
+/* #define _mm512_srli_epi128(a,b) ZERO */
+/* #define _mm512_srli_epi256(a,b) ZERO */
+/* #define _mm512_srli_epi512(a,b) ZERO */
+/* #define _R_SHIFT(a,b,c)  (c <= 64 ? _mm512_srli_epi##c(a,b) :           \ */
+/*                           _mm512_slli_epi64(a, 1)) */
+/* #define R_SHIFT(a,b,c) _R_SHIFT(a,b,c) */
+
+
+#define L_SHIFTexp(a,b,c) L_SHIFT(a,b,c)
+#define R_SHIFTexp(a,b,c) R_SHIFT(a,b,c)
+
+
+inline void orthogonalize(DATATYPE data[], int M, int LOG2_M, int LOG2_A) {
+  DATATYPE mask_l[] = {
+    SET1_EPI64(0xaaaaaaaaaaaaaaaaUL),
+    SET1_EPI64(0xccccccccccccccccUL),
+    SET1_EPI64(0xf0f0f0f0f0f0f0f0UL),
+    SET1_EPI64(0x00ff00ff00ff00ffUL),
+    SET1_EPI64(0x0000ffff0000ffffUL),
+    SET1_EPI64(0x00000000ffffffffUL),
+    SET_EPI64_2(0x0000000000000000UL,0xffffffffffffffffUL),
+    SET_EPI64_4(0x0000000000000000UL,0x0000000000000000UL,
+                0xffffffffffffffffUL,0xffffffffffffffffUL)
+  };
+  
+  DATATYPE mask_r[] = {
+    SET1_EPI64(0x5555555555555555UL),
+    SET1_EPI64(0x3333333333333333UL),
+    SET1_EPI64(0x0f0f0f0f0f0f0f0fUL),
+    SET1_EPI64(0xff00ff00ff00ff00UL),
+    SET1_EPI64(0xffff0000ffff0000UL),
+    SET1_EPI64(0xffffffff00000000UL),
+    SET_EPI64_2(0xffffffffffffffffUL,0x0000000000000000UL),
+    SET_EPI64_4(0xffffffffffffffffUL,0xffffffffffffffffUL,
+                0x0000000000000000UL,0x0000000000000000UL)
+  };
+
+  for (int i = 0; i < LOG2_M; i++) {
+    int n = 1UL << i;
+    for (int j = 0; j < M; j += 2*n) {
+      for (int k = 0; k < n; k++) {
+        DATATYPE u = AND(data[j + k], mask_l[LOG2_A+i]);
+        DATATYPE v = AND(data[j + k], mask_r[LOG2_A+i]);
+        DATATYPE x = AND(data[j + n + k], mask_l[LOG2_A+i]);
+        DATATYPE y = AND(data[j + n + k], mask_r[LOG2_A+i]);
+        if ((i+LOG2_A) < 3) {
+          data[j + k] = OR(u, R_SHIFTexp(x,(1UL << (i+LOG2_A)),64));
+          data[j + n + k] =OR(L_SHIFTexp(v,(1UL << (i+LOG2_A)),64), y);
+        } else {
+          data[j + k] = OR(u, R_SHIFTexp(x,(1UL << (i+LOG2_A)),64));
+          data[j + n + k] =OR(L_SHIFTexp(v,(1UL << (i+LOG2_A)),64), y);
+        }
+      }
+    }
+  }
+}
+#pragma pop_macro("L_SHIFT")
+#pragma pop_macro("R_SHIFT")
+
+#define nslice_32x64(data) {                                            \
+    __m512i* dataAVX = (__m512i*)data;                                  \
+    for (int i = 4; i < 8; i++) dataAVX[i] = ZERO;                      \
+    orthogonalize(dataAVX,8,3,0);                                       \
+    __m512i tmp[8];                                                     \
+    for (int i = 0; i < 8; i++)                                         \
+      tmp[i] = _mm512_shuffle_epi32(dataAVX[i],0b01001110);             \
+    for (int i = 0; i < 4; i++)                                         \
+      dataAVX[i] =                                                      \
+        OR(OR(AND(dataAVX[i],_mm512_set_epi64(0,-1,0,-1,0,-1,0,-1)),   \
+              AND(tmp[i+4],_mm512_set_epi64(-1,0,-1,0,-1,0,-1,0))),    \
+           OR(AND(_mm512_srli_epi16(dataAVX[i+4],4),_mm512_set_epi64(-1,0,-1,0,-1,0,-1,0)), \
+              AND(_mm512_srli_epi16(tmp[i],4),_mm512_set_epi64(0,-1,0,-1,0,-1,0,-1)))); \
+    for (int i = 0; i < 4; i++)                                         \
+      dataAVX[i] = _mm512_shuffle_epi8(dataAVX[i],_mm512_set_epi8(15,13,11,9,7,5,3,1, \
+                                                                  14,12,10,8,6,4,2,0, \
+                                                                  15,13,11,9,7,5,3,1, \
+                                                                  14,12,10,8,6,4,2,0, \
+                                                                  15,13,11,9,7,5,3,1, \
+                                                                  14,12,10,8,6,4,2,0, \
+                                                                  15,13,11,9,7,5,3,1, \
+                                                                  14,12,10,8,6,4,2,0)); \
+    orthogonalize(dataAVX,4,2,3);                                       \
+  }
+#define nslice_32x64_undo(data) {                                       \
+    __m512i* dataAVX = (__m512i*)data;                                  \
+    for (int i = 4; i < 8; i++) dataAVX[i] = ZERO;                      \
+    orthogonalize(dataAVX,4,2,3);                                       \
+    for (int i = 0; i < 4; i++)                                         \
+      dataAVX[i] = _mm512_shuffle_epi8(dataAVX[i],_mm512_set_epi8(15,7,14,6,13,5,12,4, \
+                                                                  11,3,10,2,9,1,8,0, \
+                                                                  15,7,14,6,13,5,12,4, \
+                                                                  11,3,10,2,9,1,8,0, \
+                                                                  15,7,14,6,13,5,12,4, \
+                                                                  11,3,10,2,9,1,8,0, \
+                                                                  15,7,14,6,13,5,12,4, \
+                                                                  11,3,10,2,9,1,8,0)); \
+    __m512i tmp[4];                                                     \
+    for (int i = 0; i < 4; i++)                                         \
+      tmp[i] = _mm512_shuffle_epi32(dataAVX[i],0b01001110);             \
+    for (int i = 0; i < 4; i++) {                                       \
+      dataAVX[i+4] =                                                    \
+        OR(AND(tmp[i],_mm512_set_epi64(0,-1,0,-1,0,-1,0,-1)),          \
+           AND(_mm512_slli_epi16(dataAVX[i],4),_mm512_set_epi64(-1,0,-1,0,-1,0,-1,0))); \
+      dataAVX[i]   = OR(AND(dataAVX[i],_mm512_set_epi64(0,-1,0,-1,0,-1,0,-1)), \
+                        AND(_mm512_slli_epi16(tmp[i],4),_mm512_set_epi64(-1,0,-1,0,-1,0,-1,0))); \
+    }                                                                   \
+    orthogonalize(dataAVX,8,3,0);                                       \
+  }
+
+#define rectangle(in,key,out) {                 \
+    __m512i plain[8]; memcpy(plain,in,256);     \
+    __m512i cipher[8];                          \
+    nslice_32x64(plain);                        \
+    Rectangle__(plain,key,cipher);              \
+    nslice_32x64_undo(cipher);                  \
+    memcpy(out,cipher,256);                     \
+  }
+
+void ortho_speed ( unsigned char *out,
+                   unsigned char *in,
+                   unsigned long long inlen,
+                   unsigned char *k
+                   ) {
+  for (int i = 0; i < inlen; i += PARALLEL_FACTOR * BLOCK_SIZE) {
+    nslice_32x64((DATATYPE*)out);
+    nslice_32x64_undo((DATATYPE*)out);
+  }
+}
+
 #else
 #error No arch specified.
 #endif
@@ -312,27 +477,23 @@ int crypto_stream_ecb( unsigned char *out,
 
   uint16_t char_key[208];
   Key_Schedule(k,char_key);
-#ifdef GP
-#elif defined SSE
-  __m128i key[26][4];
+  
+  DATATYPE key[26][4];
   for (int i = 0; i < 26; i++) {
-    __m128i tmp[8];
+    DATATYPE tmp[8];
     for (int j = 0; j < 4; j++)
-      tmp[j] = _mm_set1_epi16(char_key[i*4+j]);
+      tmp[j] = LIFT_16(char_key[i*4+j]);
+#ifdef SSE    
     nslice_8x64(tmp);
     memcpy(key[i],tmp,64);
-  }
 #elif defined AVX
-  __m256i key[26][4];
-  for (int i = 0; i < 26; i++) {
-    __m256i tmp[8];
-    for (int j = 0; j < 4; j++)
-      tmp[j] = _mm256_set1_epi16(((unsigned short*)char_key)[i*4+j]);
     nslice_16x64(tmp);
     memcpy(key[i],tmp,128);
-  }
+#elif defined AVX512
+    nslice_32x64(tmp);
+    memcpy(key[i],tmp,256);    
 #endif
-
+  }
   
   while (inlen >= PARALLEL_FACTOR * BLOCK_SIZE) {
     rectangle(in,key,out);

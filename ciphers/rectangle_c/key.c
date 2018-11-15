@@ -77,7 +77,7 @@ uint32_t RC[ROUND_NUMBER] =
 static inline void key80(uint8_t *userKey, uint16_t *subKey)
 {
   uint16_t k0, k1, k2, k3, k4;
-  uint16_t t0, t1, t2, t3, t5, t6, t8, t9, t11;
+  uint16_t t1, t2, t3, t5, t6, t8, t9, t11;
   uint16_t e, f, g, h;
 
   key80_in(k0, k1, k2, k3, k4, userKey);

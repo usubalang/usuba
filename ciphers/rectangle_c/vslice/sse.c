@@ -24,7 +24,7 @@ void SubColumn__ (/*inputs*/ DATATYPE a0,DATATYPE a1,DATATYPE a2,DATATYPE a3, /*
   DATATYPE t6;
   DATATYPE t8;
   DATATYPE t9;
-
+  
   // Instructions (body)
   t1 = NOT(a1);
   t3 = XOR(a2,a3);
@@ -38,7 +38,6 @@ void SubColumn__ (/*inputs*/ DATATYPE a0,DATATYPE a1,DATATYPE a2,DATATYPE a3, /*
   t9 = AND(t3,t6);
   *b2 = XOR(t6,t11);
   *b3 = XOR(t8,t9);
-
 }
 
 /* main function */
@@ -48,6 +47,10 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],uint16_t key__[26][4], /*output
   DATATYPE _tmp1_[4];
   DATATYPE tmp__[4];
 
+#ifdef _MCA
+  __asm volatile("# LLVM-MCA-BEGIN rectangle_vector_sse_lazy");
+#endif
+  
   // Instructions (body)
   tmp__[0] = plain__[0];
   tmp__[1] = plain__[1];
@@ -64,10 +67,14 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],uint16_t key__[26][4], /*output
     tmp__[2] = L_ROTATE(_tmp1_[2],12,16);
     tmp__[3] = L_ROTATE(_tmp1_[3],13,16);
   }
+#ifdef _MCA
+  __asm volatile("# LLVM-MCA-END");
+#endif  
   cipher__[0] = XOR(tmp__[0],LIFT_16(key__[25][0]));
   cipher__[1] = XOR(tmp__[1],LIFT_16(key__[25][1]));
   cipher__[2] = XOR(tmp__[2],LIFT_16(key__[25][2]));
   cipher__[3] = XOR(tmp__[3],LIFT_16(key__[25][3]));
+
 
 }
 
