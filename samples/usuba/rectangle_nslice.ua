@@ -26,7 +26,7 @@ let
     out[3] = RL13(input[3])
 tel
 
-node Rectangle (plain:u16x4, key:u16x4[26]) returns (cipher:u16x4)
+node Rectangle (plain:u16x4, key:const u16x4[26]) returns (cipher:u16x4)
 vars
     tmp : u16x4[26]
 let
