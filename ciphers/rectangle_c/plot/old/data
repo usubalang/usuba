@@ -1,0 +1,30 @@
+# clustered and stacked graph example w/ bogus data
+=stackcluster;Basic Blocks;Traces;Hashtables;Stubs
+=sortbmarks
+=nogridy
+=noupperright
+legendx=right
+legendy=center
+yformat=%g%%
+xlabel=Benchmark
+ylabel=Percentage of total heap usage
+
+=table
+multimulti=Private Caches
+ammp             25.635 23.094 14.780 5.543 
+applu            25.035 27.375 14.974 4.913 
+apsi             19.012 33.135 15.210 4.346 
+art              25.118 10.322 17.892 4.129 
+equake           22.754 24.061 13.600 5.492 
+multimulti=Shared Caches
+ammp             27.863 18.913 15.536 5.404
+applu            24.501 18.657 11.689 4.720
+apsi             21.755 26.093 16.096 5.407
+art              27.188 17.741 11.981 5.069
+equake           29.172 18.688 11.851 5.926
+multimulti=Persistent Caches
+ammp             17.863 11.913 19.536 9.404
+applu            34.501 12.657 18.689 7.720
+apsi             11.755 23.093 17.096 2.407
+art              17.188 14.741 16.981 3.069
+equake           22.172 15.688 15.851 4.926
