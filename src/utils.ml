@@ -245,8 +245,11 @@ let rec get_expr_type env_fun env_var (e:expr) : typ list =
   | Log(_,e,_) -> get_expr_type env_fun env_var e
   | Shuffle(v,_) -> [ get_var_type env_var v ]
   | Arith(_,e,_) -> get_expr_type env_fun env_var e
-  | Fun(f,_) -> let def = Hashtbl.find env_fun f in
-                List.map (fun vd -> vd.vtyp) def.p_out               
+  | Fun(f,_) ->
+     if f.name = "rand" then [ Int(1,1) ]
+     else
+       let def = Hashtbl.find env_fun f in
+       List.map (fun vd -> vd.vtyp) def.p_out               
   | _ -> assert false
 
                            

@@ -131,7 +131,10 @@ and remove_calls env_var env_fun l : deq list * expr list =
               if is_primitive e' then
                 [ e' ]
               else
-                let expr_typ_l = get_expr_type env_fun env_var e' in
+                let expr_typ_l = try
+                    get_expr_type env_fun env_var e'
+                  with Not_found -> Printf.printf "Not found: %s\n" (Usuba_print.expr_to_str e');
+                                    raise Not_found in
                 let typ = if List.length expr_typ_l > 1
                           then Array(reduce_same_list expr_typ_l,
                                      Const_e (List.length expr_typ_l))
