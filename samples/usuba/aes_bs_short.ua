@@ -22,7 +22,7 @@ _no_inline table SubBytes_single (input:u8) returns (output:u8) {
 _no_inline node SubBytes (inputSB:u8[16]) returns (out:u8[16])
 vars
 let
-    _unroll forall i in [0,15] {
+    _no_unroll forall i in [0,15] {
       out[i] = SubBytes_single(inputSB[i])
     }
 tel
@@ -57,7 +57,7 @@ tel
 _no_inline node MixColumn (inp:u32[4]) returns (out:u32[4])
 vars
 let
-    _unroll forall i in [0,3] {
+    _no_unroll forall i in [0,3] {
        out[i] = MixColumn_single(inp[i])
     }
 tel
