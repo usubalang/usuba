@@ -3,6 +3,10 @@
 #include <string.h>
 #include <x86intrin.h>
 
+#if !defined(kwan) && !defined(ua)
+#error Please define kwan or ua
+#endif
+
 #ifdef std
 #define STD
 #endif
@@ -235,8 +239,9 @@ void verif() {
     }
   }
 #else  
+  DATATYPE key_cst[KEY_SIZE];
   for (int i = 0; i < 64; i++)
-    key_ortho[63-i] = (key_std >> i) & 1 ? SET_ALL_ONE() : SET_ALL_ZERO();
+    key_ortho[63-i] = key_cst[63-i] = (key_std >> i) & 1 ? SET_ALL_ONE() : SET_ALL_ZERO();
 #endif
 
   FILE* fp_in  = fopen("input.txt","rb");
@@ -258,6 +263,9 @@ void verif() {
     orthogonalize(plain_std, plain_ortho);
 
     for (int i = 0; i < CHUNK_SIZE / REG_SIZE; i++) {
+      #ifdef ua
+      memcpy(key_ortho,key_cst,KEY_SIZE * (REG_SIZE/8));
+      #endif
       des__(&plain_ortho[i*64], key_ortho, &cipher_ortho[i*64]);
     }
     
@@ -294,8 +302,9 @@ void speed() {
     }
   }
 #else  
+  DATATYPE key_cst[KEY_SIZE];
   for (int i = 0; i < 64; i++)
-    key_ortho[63-i] = (key_std >> i) & 1 ? SET_ALL_ONE() : SET_ALL_ZERO();
+    key_ortho[63-i] = key_cst[63-i] = (key_std >> i) & 1 ? SET_ALL_ONE() : SET_ALL_ZERO();
 #endif
 
   DATATYPE plain_ortho[REG_SIZE];
@@ -304,6 +313,7 @@ void speed() {
   for (int i = 0; i < CHUNK_SIZE; i++)
     plain_std[i] = rand();
 
+#ifdef KWAN
 #define RUN_DES                                                     \
   {                                                                 \
     for (int i = 0; i < CHUNK_SIZE; i++)                            \
@@ -319,8 +329,27 @@ void speed() {
                                                                     \
     for (int i = 0; i < CHUNK_SIZE; i++)                            \
       plain_std[i] = __builtin_bswap64(plain_std[i]);               \
-  }                                                                 \
-
+  }
+#else
+#define RUN_DES                                                     \
+  {                                                                 \
+    for (int i = 0; i < CHUNK_SIZE; i++)                            \
+      plain_std[i] = __builtin_bswap64(plain_std[i]);               \
+                                                                    \
+    orthogonalize(plain_std, plain_ortho);                          \
+                                                                    \
+    for (int i = 0; i < CHUNK_SIZE / REG_SIZE; i++) {               \
+      memcpy(key_ortho,key_cst,KEY_SIZE * (REG_SIZE/8));            \
+      des__(&plain_ortho[i*64], key_ortho, &cipher_ortho[i*64]);    \
+    }                                                               \
+                                                                    \
+    unorthogonalize(cipher_ortho,plain_std);                        \
+                                                                    \
+    for (int i = 0; i < CHUNK_SIZE; i++)                            \
+      plain_std[i] = __builtin_bswap64(plain_std[i]);               \
+  }
+#endif
+  
   for (int i = 0; i < 10000; i++) {
     RUN_DES;
   }
