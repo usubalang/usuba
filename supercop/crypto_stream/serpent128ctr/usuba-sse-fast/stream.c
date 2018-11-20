@@ -70,6 +70,28 @@ static inline void xor128(uint128_t *dst, const uint128_t *src1, const uint128_t
 		 : "xmm0", "memory" \
 	);})
 
+#include <emmintrin.h>
+  
+#define TRANSPOSE4(row0, row1, row2, row3)                      \
+  do {                                                          \
+    __m128 tmp3, tmp2, tmp1, tmp0;                              \
+    tmp0 = _mm_unpacklo_ps(*(__m128*)(row0), *(__m128*)(row1)); \
+    tmp2 = _mm_unpacklo_ps(*(__m128*)(row2), *(__m128*)(row3)); \
+    tmp1 = _mm_unpackhi_ps(*(__m128*)(row0), *(__m128*)(row1)); \
+    tmp3 = _mm_unpackhi_ps(*(__m128*)(row2), *(__m128*)(row3)); \
+    _mm_store_pd((double*)row0,(__m128d)_mm_movelh_ps(tmp0, tmp2)); \
+    _mm_store_pd((double*)row1,(__m128d)_mm_movehl_ps(tmp2, tmp0));      \
+    _mm_store_pd((double*)row2,(__m128d)_mm_movelh_ps(tmp1, tmp3));     \
+    _mm_store_pd((double*)row3,(__m128d)_mm_movehl_ps(tmp3, tmp1));      \
+  } while (0)
+
+#include <stdio.h>
+void print128hex(__m128i toPrint) {
+  char * bytearray = (char *) &toPrint;
+  for(int i = 0; i < 16; i++) printf("%02hhx", bytearray[i]);
+  printf("\n");
+}
+
 int crypto_stream_xor(unsigned char *out, const unsigned char *in,
 		      unsigned long long inlen, const unsigned char *n,
 		      const unsigned char *k)
@@ -80,12 +102,18 @@ int crypto_stream_xor(unsigned char *out, const unsigned char *in,
 	char ctxbuf[sizeof(CTX_TYPE) + align];
 	CTX_TYPE *ctx = PTR_ALIGN(ctxbuf, align - 1);
 	uint128_t iv;
-	uint128_t ivs[8];
+	uint128_t ivs[4];
 
 	serpent_init(ctx, k, CRYPTO_KEYBYTES);
 	bswap128(&iv, (const uint128_t *)n); /* be => le */
 
-	while (likely(inlen >= BLOCKSIZE * 8)) {
+    
+    __m128i keys[4*33];
+    for (int i = 0; i < 4 * 33; i++)
+      keys[i] = _mm_set1_epi32(ctx->expkey[i]);
+
+
+	while (likely(inlen >= BLOCKSIZE * 4)) {
 		bswap128(&ivs[0], &iv); /* le => be */
 		add128(&ivs[1], &iv, 1);
 		bswap128(&ivs[1], &ivs[1]); /* le => be */
@@ -93,32 +121,23 @@ int crypto_stream_xor(unsigned char *out, const unsigned char *in,
 		bswap128(&ivs[2], &ivs[2]); /* le => be */
 		add128(&ivs[3], &iv, 3);
 		bswap128(&ivs[3], &ivs[3]); /* le => be */
-		add128(&ivs[4], &iv, 4);
-		bswap128(&ivs[4], &ivs[4]); /* le => be */
-		add128(&ivs[5], &iv, 5);
-		bswap128(&ivs[5], &ivs[5]); /* le => be */
-		add128(&ivs[6], &iv, 6);
-		bswap128(&ivs[6], &ivs[6]); /* le => be */
-		add128(&ivs[7], &iv, 7);
-		bswap128(&ivs[7], &ivs[7]); /* le => be */
-		add128(&iv, &iv, 8);
+		add128(&iv, &iv, 4);
 
-		serpent_enc_blk8(ctx, out, (uint8_t *)ivs);
-
+        TRANSPOSE4(ivs[0].ll,ivs[1].ll,ivs[2].ll,ivs[3].ll);
+        Serpent__(ivs, keys, out);
+        TRANSPOSE4(&((uint128_t *)out)[0],&((uint128_t *)out)[1],
+                   &((uint128_t *)out)[2],&((uint128_t *)out)[3]);
+        
 		if (unlikely(in)) {
 			xor128(&((uint128_t *)out)[0], &((uint128_t *)out)[0], &((uint128_t *)in)[0]);
 			xor128(&((uint128_t *)out)[1], &((uint128_t *)out)[1], &((uint128_t *)in)[1]);
 			xor128(&((uint128_t *)out)[2], &((uint128_t *)out)[2], &((uint128_t *)in)[2]);
 			xor128(&((uint128_t *)out)[3], &((uint128_t *)out)[3], &((uint128_t *)in)[3]);
-			xor128(&((uint128_t *)out)[4], &((uint128_t *)out)[4], &((uint128_t *)in)[4]);
-			xor128(&((uint128_t *)out)[5], &((uint128_t *)out)[5], &((uint128_t *)in)[5]);
-			xor128(&((uint128_t *)out)[6], &((uint128_t *)out)[6], &((uint128_t *)in)[6]);
-			xor128(&((uint128_t *)out)[7], &((uint128_t *)out)[7], &((uint128_t *)in)[7]);
-			in += BLOCKSIZE * 8;
+			in += BLOCKSIZE * 4;
 		}
 
-		out += BLOCKSIZE * 8;
-		inlen -= BLOCKSIZE * 8;
+		out += BLOCKSIZE * 4;
+		inlen -= BLOCKSIZE * 4;
 	}
 
 	if (unlikely(inlen > 0)) {
@@ -130,12 +149,15 @@ int crypto_stream_xor(unsigned char *out, const unsigned char *in,
 			bswap128(&ivs[i], &iv); /* le => be */
 			inc128(&iv);
 		}
-		for (; i < 8; i++) {
+		for (; i < 4; i++) {
 			ivs[i].ll[0] = 0;
 			ivs[i].ll[1] = 0;
 		}
 
-		serpent_enc_blk8(ctx, (uint8_t *)ivs, (uint8_t *)ivs);
+        TRANSPOSE4(ivs[0].ll,ivs[1].ll,ivs[2].ll,ivs[3].ll);
+        Serpent__(ivs, keys, ivs);
+        TRANSPOSE4(&((uint128_t *)ivs)[0],&((uint128_t *)ivs)[1],
+                   &((uint128_t *)ivs)[2],&((uint128_t *)ivs)[3]);
 
 		if (in) {
 			for (i = 0; inlen >= BLOCKSIZE; i++) {

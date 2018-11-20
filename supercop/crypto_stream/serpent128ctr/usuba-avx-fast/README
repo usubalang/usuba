@@ -1,0 +1,10 @@
+NOTE: This directory contains code licensed under GPL (version 2). Use caution
+when using Serpent parts from this path.
+
+For non-GPL reimplementation, gather sbox presentations from paper "Speeding up
+Serpent" by Dag Arne Osvik (2000):
+	http://www.ii.uib.no/~osvik/serpent/
+	http://www.ii.uib.no/~osvik/pub/aes3.pdf
+
+
+NOTE (Darius): I didn't take the time to look what this actually means, so I'm just ignoring it for now.

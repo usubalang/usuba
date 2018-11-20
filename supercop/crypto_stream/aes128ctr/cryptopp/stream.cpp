@@ -14,7 +14,7 @@ const unsigned char *k
 	s.GenerateBlock(out, (size_t)outlen);
 	return 0;
 }
-
+ 
 int crypto_stream_xor(
 unsigned char *out,
 const unsigned char *in,

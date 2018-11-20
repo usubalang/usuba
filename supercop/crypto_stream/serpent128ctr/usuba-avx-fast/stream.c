@@ -10,11 +10,13 @@
 #include "api.h"
 #include "serpent.h"
 
+#include <immintrin.h>
+
 #define unlikely(x)	(!__builtin_expect(!(x),1))
 #define likely(x)	(__builtin_expect(!!(x),1))
 
 #define BLOCKSIZE 16
-#define PARALLEL_BLOCKS 16
+#define PARALLEL_BLOCKS 8
 
 extern void __serpent_enc_blk_16way(struct serpent_ctx *ctx, uint8_t *dst, const uint8_t *src, char xor);
 
@@ -97,6 +99,80 @@ static unsigned char bswap128const[16] = {
 	15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
 };
 
+
+
+#define TRANSPOSE4(x0, x1, x2, x3)              \
+  do {                                          \
+    __m256i t0, t1, t2;                         \
+                                                \
+    t0 = _mm256_unpacklo_epi32(x1,x0);          \
+    t2 = _mm256_unpackhi_epi32(x1,x0);          \
+    t1 = _mm256_unpacklo_epi32(x3,x2);          \
+    x3 = _mm256_unpackhi_epi32(x3,x2);          \
+                                                \
+    x0 = _mm256_unpacklo_epi64(t1,t0);          \
+    x1 = _mm256_unpackhi_epi64(t1,t0);          \
+    x2 = _mm256_unpacklo_epi64(x3,t2);          \
+    x3 = _mm256_unpackhi_epi64(x3,t2);          \
+  } while (0);
+
+
+#define TRANSPOSE4_out(x0, x1, x2, x3)          \
+  do {                                          \
+    __m256i t0, t1, t2;                         \
+                                                \
+    t0 = _mm256_unpacklo_epi32(x1,x0);          \
+    t2 = _mm256_unpackhi_epi32(x1,x0);          \
+    t1 = _mm256_unpacklo_epi32(x3,x2);          \
+    x3 = _mm256_unpackhi_epi32(x3,x2);          \
+                                                \
+    x0 = _mm256_unpackhi_epi64(x3,t2);          \
+    x1 = _mm256_unpacklo_epi64(x3,t2);          \
+    x2 = _mm256_unpackhi_epi64(t1,t0);          \
+    x3 = _mm256_unpacklo_epi64(t1,t0);          \
+  } while (0);
+
+#include <stdio.h>
+void print256hex(__m256i toPrint) {
+  char * bytearray = (char *) &toPrint;
+  for(int i = 0; i < 16; i++) printf("%02hhx", bytearray[i]);
+  printf("    ");
+  for(int i = 16; i < 32; i++) printf("%02hhx", bytearray[i]);
+  printf("\n");
+}
+
+#define TRANSPOSE4(x0, x1, x2, x3)              \
+  do {                                          \
+    __m256i t0, t1, t2;                         \
+                                                \
+    t0 = _mm256_unpacklo_epi32(x1,x0);          \
+    t2 = _mm256_unpackhi_epi32(x1,x0);          \
+    t1 = _mm256_unpacklo_epi32(x3,x2);          \
+    x3 = _mm256_unpackhi_epi32(x3,x2);          \
+                                                \
+    x0 = _mm256_unpacklo_epi64(t1,t0);          \
+    x1 = _mm256_unpackhi_epi64(t1,t0);          \
+    x2 = _mm256_unpacklo_epi64(x3,t2);          \
+    x3 = _mm256_unpackhi_epi64(x3,t2);          \
+  } while (0);
+
+
+#define TRANSPOSE4_out(x0, x1, x2, x3)          \
+  do {                                          \
+    __m256i t0, t1, t2;                         \
+                                                \
+    t0 = _mm256_unpacklo_epi32(x1,x0);          \
+    t2 = _mm256_unpackhi_epi32(x1,x0);          \
+    t1 = _mm256_unpacklo_epi32(x3,x2);          \
+    x3 = _mm256_unpackhi_epi32(x3,x2);          \
+                                                \
+    x0 = _mm256_unpackhi_epi64(x3,t2);          \
+    x1 = _mm256_unpacklo_epi64(x3,t2);          \
+    x2 = _mm256_unpackhi_epi64(t1,t0);          \
+    x3 = _mm256_unpacklo_epi64(t1,t0);          \
+  } while (0);
+
+
 int crypto_stream_xor(unsigned char *out, const unsigned char *in,
 		      unsigned long long inlen, const unsigned char *n,
 		      const unsigned char *k)
@@ -107,10 +183,14 @@ int crypto_stream_xor(unsigned char *out, const unsigned char *in,
 	char ctxbuf[sizeof(CTX_TYPE) + align];
 	CTX_TYPE *ctx = PTR_ALIGN(ctxbuf, align - 1);
 	uint128_t iv;
-	uint128_t ivs[PARALLEL_BLOCKS];
+	uint128_t ivs[PARALLEL_BLOCKS] __attribute__ ((aligned (32)));
 
 	serpent_init(ctx, k, CRYPTO_KEYBYTES);
 	bswap128(&iv, (const uint128_t *)n); /* be => le */
+    
+    __m256i keys[4*33];
+    for (int i = 0; i < 4 * 33; i++)
+      keys[i] = _mm256_set1_epi32(ctx->expkey[i]);
 
 	__asm__ volatile ("vzeroupper; \n" :::);
 
@@ -147,18 +227,6 @@ int crypto_stream_xor(unsigned char *out, const unsigned char *in,
 				"vpsubq %%ymm8, %%ymm7, %%ymm7; \n"
 				"vpshufb %%ymm1, %%ymm7, %%ymm2; \n"
 				"vmovdqu %%ymm2, 6*16(%[ivs]); \n"
-				"vpsubq %%ymm8, %%ymm7, %%ymm7; \n"
-				"vpshufb %%ymm1, %%ymm7, %%ymm2; \n"
-				"vmovdqu %%ymm2, 8*16(%[ivs]); \n"
-				"vpsubq %%ymm8, %%ymm7, %%ymm7; \n"
-				"vpshufb %%ymm1, %%ymm7, %%ymm2; \n"
-				"vmovdqu %%ymm2, 10*16(%[ivs]); \n"
-				"vpsubq %%ymm8, %%ymm7, %%ymm7; \n"
-				"vpshufb %%ymm1, %%ymm7, %%ymm2; \n"
-				"vmovdqu %%ymm2, 12*16(%[ivs]); \n"
-				"vpsubq %%ymm8, %%ymm7, %%ymm7; \n"
-				"vpshufb %%ymm1, %%ymm7, %%ymm2; \n"
-				"vmovdqu %%ymm2, 14*16(%[ivs]); \n"
 
 				"vpsubq %%xmm8, %%xmm7, %%xmm7; \n"
 				"vmovdqu %%xmm7, %[iv]; \n"
@@ -169,19 +237,24 @@ int crypto_stream_xor(unsigned char *out, const unsigned char *in,
 			);
 		}
 
-		if (unlikely(in) && unlikely(in != out)) {
-			move256(out + BLOCKSIZE * 0, in + BLOCKSIZE * 0);
-			move256(out + BLOCKSIZE * 2, in + BLOCKSIZE * 2);
-			move256(out + BLOCKSIZE * 4, in + BLOCKSIZE * 4);
-			move256(out + BLOCKSIZE * 6, in + BLOCKSIZE * 6);
-			move256(out + BLOCKSIZE * 8, in + BLOCKSIZE * 8);
-			move256(out + BLOCKSIZE * 10, in + BLOCKSIZE * 10);
-			move256(out + BLOCKSIZE * 12, in + BLOCKSIZE * 12);
-			move256(out + BLOCKSIZE * 14, in + BLOCKSIZE * 14);
-		}
+        TRANSPOSE4(((__m256i *)ivs)[0],((__m256i *)ivs)[1],
+                   ((__m256i *)ivs)[2],((__m256i *)ivs)[3]);
+        Serpent__(ivs,keys,out);
+        TRANSPOSE4_out(((__m256i *)out)[0],((__m256i *)out)[1],
+                       ((__m256i *)out)[2],((__m256i *)out)[3]);
+        for (int i = 0; i < 4; i++) 
+          ((__m256i *)out)[i] =
+            _mm256_shuffle_epi8(((__m256i *)out)[i],
+                                _mm256_set_epi8(3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12,
+                                                3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12));
 
-		__serpent_enc_blk_16way(ctx, out, (uint8_t *)ivs, in != NULL);
-
+        if (in) {
+          ((__m256i *)out)[0] = _mm256_xor_si256(((__m256i *)out)[0], ((__m256i *)in)[0]);
+          ((__m256i *)out)[1] = _mm256_xor_si256(((__m256i *)out)[1], ((__m256i *)in)[1]);
+          ((__m256i *)out)[2] = _mm256_xor_si256(((__m256i *)out)[2], ((__m256i *)in)[2]);
+          ((__m256i *)out)[3] = _mm256_xor_si256(((__m256i *)out)[3], ((__m256i *)in)[3]);
+        }
+        
 		if (unlikely(in))
 			in += BLOCKSIZE * PARALLEL_BLOCKS;
 
@@ -203,8 +276,17 @@ int crypto_stream_xor(unsigned char *out, const unsigned char *in,
 			ivs[i].ll[1] = 0;
 		}
 
-		__serpent_enc_blk_16way(ctx, (uint8_t *)ivs, (uint8_t *)ivs, 0);
-
+        TRANSPOSE4(((__m256i *)ivs)[0],((__m256i *)ivs)[1],
+                   ((__m256i *)ivs)[2],((__m256i *)ivs)[3]);
+        Serpent__(ivs,keys,ivs);
+        TRANSPOSE4_out(((__m256i *)ivs)[0],((__m256i *)ivs)[1],
+                       ((__m256i *)ivs)[2],((__m256i *)ivs)[3]);
+        for (int i = 0; i < 4; i++) 
+          ((__m256i *)ivs)[i] =
+            _mm256_shuffle_epi8(((__m256i *)ivs)[i],
+                                _mm256_set_epi8(3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12,
+                                                3,2,1,0,7,6,5,4,11,10,9,8,15,14,13,12));
+        
 		if (in) {
 			for (i = 0; inlen >= BLOCKSIZE; i += 1) {
 				xor128((uint128_t *)out, (uint128_t *)in, &ivs[i]);

@@ -13,6 +13,7 @@
 /* ******************************************************************* */
 
 /* Include your .h (or .c if you're a durty being) here. */
+#define NO_RUNTIME
 #include "SSE.h"
 #include "chacha20.c"
 
@@ -25,6 +26,8 @@
 
 unsigned int chacha_const[4] = { 0x61707865, 0x3320646e, 0x79622d32, 0x6b206574 };
 
+#define unlikely(x)	(!__builtin_expect(!(x),1))
+#define likely(x)	(__builtin_expect(!!(x),1))
 
 #define init()                                                  \
   DATATYPE state[16];                                           \
@@ -39,15 +42,21 @@ unsigned int chacha_const[4] = { 0x61707865, 0x3320646e, 0x79622d32, 0x6b206574 
 #define load_input()                                    \
   int c1_1, c1_2, c1_3, c1_4, c2_1, c2_2, c2_3, c2_4;   \
   c1_1 = c1; c2_1 = c2;                                 \
-  if (!++c1) ++c2;                                      \
-  c1_2 = c1; c2_2 = c2;                                 \
-  if (!++c1) ++c2;                                      \
-  c1_3 = c1; c2_3 = c2;                                 \
-  if (!++c1) ++c2;                                      \
-  c1_4 = c1; c2_4 = c2;                                 \
-  if (!++c1) ++c2;                                      \
-  state[12] = _mm_set_epi32(c1_1,c1_2,c1_3,c1_4);       \
-  state[13] = _mm_set_epi32(c2_1,c2_2,c2_3,c2_4);       \
+  if (likely(c1 < (0xffffffffffffffff-4))) {            \
+    state[12] = _mm_set_epi32(c1,c1+1,c1+2,c1+3);       \
+    state[13] = _mm_set1_epi32(c2);                     \
+    c1 += 4;                                            \
+  } else {                                              \
+    if (!++c1) ++c2;                                    \
+    c1_2 = c1; c2_2 = c2;                               \
+    if (!++c1) ++c2;                                    \
+    c1_3 = c1; c2_3 = c2;                               \
+    if (!++c1) ++c2;                                    \
+    c1_4 = c1; c2_4 = c2;                               \
+    if (!++c1) ++c2;                                    \
+    state[12] = _mm_set_epi32(c1_1,c1_2,c1_3,c1_4);     \
+    state[13] = _mm_set_epi32(c2_1,c2_2,c2_3,c2_4);     \
+  }                                                     \
   signed_len -= BLOCK_SIZE*PARALLEL_FACTOR;             \
   unsigned int out_state[16*PARALLEL_FACTOR];           \
   int nb_blocks = 4;                                    \

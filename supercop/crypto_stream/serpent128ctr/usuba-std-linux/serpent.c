@@ -12,7 +12,7 @@
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  */
- 
+
 #include <stdio.h>
 #include "serpent.h"
 
@@ -436,4 +436,113 @@ void serpent_init(struct serpent_ctx *ctx, const uint8_t *key, unsigned int keyl
 	S1(r1, r3, r4, r2, r0); store_and_load_keys(r0, r4, r2, r1, 8, 4);
 	S2(r0, r4, r2, r1, r3); store_and_load_keys(r3, r4, r0, r1, 4, 0);
 	S3(r3, r4, r0, r1, r2); storekeys(r1, r2, r4, r3, 0);
+}
+
+void serpent_encrypt(const struct serpent_ctx *ctx, uint8_t *dst, const uint8_t *src)
+{
+	const u32 *k = ctx->expkey;
+	const __le32 *s = (const __le32 *)src;
+	__le32	*d = (__le32 *)dst;
+	u32	r0, r1, r2, r3, r4;
+
+/*
+ * Note: The conversions between u8* and u32* might cause trouble
+ * on architectures with stricter alignment rules than x86
+ */
+
+	r0 = le32_to_cpu(s[0]);
+	r1 = le32_to_cpu(s[1]);
+	r2 = le32_to_cpu(s[2]);
+	r3 = le32_to_cpu(s[3]);
+
+					K(r0, r1, r2, r3, 0);
+	S0(r0, r1, r2, r3, r4);		LK(r2, r1, r3, r0, r4, 1);
+	S1(r2, r1, r3, r0, r4);		LK(r4, r3, r0, r2, r1, 2);
+	S2(r4, r3, r0, r2, r1);		LK(r1, r3, r4, r2, r0, 3);
+	S3(r1, r3, r4, r2, r0);		LK(r2, r0, r3, r1, r4, 4);
+	S4(r2, r0, r3, r1, r4);		LK(r0, r3, r1, r4, r2, 5);
+	S5(r0, r3, r1, r4, r2);		LK(r2, r0, r3, r4, r1, 6);
+	S6(r2, r0, r3, r4, r1);		LK(r3, r1, r0, r4, r2, 7);
+	S7(r3, r1, r0, r4, r2);		LK(r2, r0, r4, r3, r1, 8);
+	S0(r2, r0, r4, r3, r1);		LK(r4, r0, r3, r2, r1, 9);
+	S1(r4, r0, r3, r2, r1);		LK(r1, r3, r2, r4, r0, 10);
+	S2(r1, r3, r2, r4, r0);		LK(r0, r3, r1, r4, r2, 11);
+	S3(r0, r3, r1, r4, r2);		LK(r4, r2, r3, r0, r1, 12);
+	S4(r4, r2, r3, r0, r1);		LK(r2, r3, r0, r1, r4, 13);
+	S5(r2, r3, r0, r1, r4);		LK(r4, r2, r3, r1, r0, 14);
+	S6(r4, r2, r3, r1, r0);		LK(r3, r0, r2, r1, r4, 15);
+	S7(r3, r0, r2, r1, r4);		LK(r4, r2, r1, r3, r0, 16);
+	S0(r4, r2, r1, r3, r0);		LK(r1, r2, r3, r4, r0, 17);
+	S1(r1, r2, r3, r4, r0);		LK(r0, r3, r4, r1, r2, 18);
+	S2(r0, r3, r4, r1, r2);		LK(r2, r3, r0, r1, r4, 19);
+	S3(r2, r3, r0, r1, r4);		LK(r1, r4, r3, r2, r0, 20);
+	S4(r1, r4, r3, r2, r0);		LK(r4, r3, r2, r0, r1, 21);
+	S5(r4, r3, r2, r0, r1);		LK(r1, r4, r3, r0, r2, 22);
+	S6(r1, r4, r3, r0, r2);		LK(r3, r2, r4, r0, r1, 23);
+	S7(r3, r2, r4, r0, r1);		LK(r1, r4, r0, r3, r2, 24);
+	S0(r1, r4, r0, r3, r2);		LK(r0, r4, r3, r1, r2, 25);
+	S1(r0, r4, r3, r1, r2);		LK(r2, r3, r1, r0, r4, 26);
+	S2(r2, r3, r1, r0, r4);		LK(r4, r3, r2, r0, r1, 27);
+	S3(r4, r3, r2, r0, r1);		LK(r0, r1, r3, r4, r2, 28);
+	S4(r0, r1, r3, r4, r2);		LK(r1, r3, r4, r2, r0, 29);
+	S5(r1, r3, r4, r2, r0);		LK(r0, r1, r3, r2, r4, 30);
+	S6(r0, r1, r3, r2, r4);		LK(r3, r4, r1, r2, r0, 31);
+	S7(r3, r4, r1, r2, r0);		K(r0, r1, r2, r3, 32);
+
+	d[0] = cpu_to_le32(r0);
+	d[1] = cpu_to_le32(r1);
+	d[2] = cpu_to_le32(r2);
+	d[3] = cpu_to_le32(r3);
+}
+
+void serpent_decrypt(const struct serpent_ctx *ctx, uint8_t *dst, const uint8_t *src)
+{
+	const u32 *k = ctx->expkey;
+	const __le32 *s = (const __le32 *)src;
+	__le32	*d = (__le32 *)dst;
+	u32	r0, r1, r2, r3, r4;
+
+	r0 = le32_to_cpu(s[0]);
+	r1 = le32_to_cpu(s[1]);
+	r2 = le32_to_cpu(s[2]);
+	r3 = le32_to_cpu(s[3]);
+
+					K(r0, r1, r2, r3, 32);
+	SI7(r0, r1, r2, r3, r4);	KL(r1, r3, r0, r4, r2, 31);
+	SI6(r1, r3, r0, r4, r2);	KL(r0, r2, r4, r1, r3, 30);
+	SI5(r0, r2, r4, r1, r3);	KL(r2, r3, r0, r4, r1, 29);
+	SI4(r2, r3, r0, r4, r1);	KL(r2, r0, r1, r4, r3, 28);
+	SI3(r2, r0, r1, r4, r3);	KL(r1, r2, r3, r4, r0, 27);
+	SI2(r1, r2, r3, r4, r0);	KL(r2, r0, r4, r3, r1, 26);
+	SI1(r2, r0, r4, r3, r1);	KL(r1, r0, r4, r3, r2, 25);
+	SI0(r1, r0, r4, r3, r2);	KL(r4, r2, r0, r1, r3, 24);
+	SI7(r4, r2, r0, r1, r3);	KL(r2, r1, r4, r3, r0, 23);
+	SI6(r2, r1, r4, r3, r0);	KL(r4, r0, r3, r2, r1, 22);
+	SI5(r4, r0, r3, r2, r1);	KL(r0, r1, r4, r3, r2, 21);
+	SI4(r0, r1, r4, r3, r2);	KL(r0, r4, r2, r3, r1, 20);
+	SI3(r0, r4, r2, r3, r1);	KL(r2, r0, r1, r3, r4, 19);
+	SI2(r2, r0, r1, r3, r4);	KL(r0, r4, r3, r1, r2, 18);
+	SI1(r0, r4, r3, r1, r2);	KL(r2, r4, r3, r1, r0, 17);
+	SI0(r2, r4, r3, r1, r0);	KL(r3, r0, r4, r2, r1, 16);
+	SI7(r3, r0, r4, r2, r1);	KL(r0, r2, r3, r1, r4, 15);
+	SI6(r0, r2, r3, r1, r4);	KL(r3, r4, r1, r0, r2, 14);
+	SI5(r3, r4, r1, r0, r2);	KL(r4, r2, r3, r1, r0, 13);
+	SI4(r4, r2, r3, r1, r0);	KL(r4, r3, r0, r1, r2, 12);
+	SI3(r4, r3, r0, r1, r2);	KL(r0, r4, r2, r1, r3, 11);
+	SI2(r0, r4, r2, r1, r3);	KL(r4, r3, r1, r2, r0, 10);
+	SI1(r4, r3, r1, r2, r0);	KL(r0, r3, r1, r2, r4, 9);
+	SI0(r0, r3, r1, r2, r4);	KL(r1, r4, r3, r0, r2, 8);
+	SI7(r1, r4, r3, r0, r2);	KL(r4, r0, r1, r2, r3, 7);
+	SI6(r4, r0, r1, r2, r3);	KL(r1, r3, r2, r4, r0, 6);
+	SI5(r1, r3, r2, r4, r0);	KL(r3, r0, r1, r2, r4, 5);
+	SI4(r3, r0, r1, r2, r4);	KL(r3, r1, r4, r2, r0, 4);
+	SI3(r3, r1, r4, r2, r0);	KL(r4, r3, r0, r2, r1, 3);
+	SI2(r4, r3, r0, r2, r1);	KL(r3, r1, r2, r0, r4, 2);
+	SI1(r3, r1, r2, r0, r4);	KL(r4, r1, r2, r0, r3, 1);
+	SI0(r4, r1, r2, r0, r3);	K(r2, r3, r1, r4, 0);
+
+	d[0] = cpu_to_le32(r2);
+	d[1] = cpu_to_le32(r3);
+	d[2] = cpu_to_le32(r1);
+	d[3] = cpu_to_le32(r4);
 }

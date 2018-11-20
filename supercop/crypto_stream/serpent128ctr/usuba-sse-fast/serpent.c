@@ -12,7 +12,7 @@
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  */
- 
+
 #include <stdio.h>
 #include "serpent.h"
 
@@ -240,7 +240,7 @@ void serpent_init(struct serpent_ctx *ctx, const uint8_t *key, unsigned int keyl
 	u32 *k = ctx->expkey;
 	u8  *k8 = (u8 *)k;
 	u32 r0, r1, r2, r3, r4;
-	int i;
+	unsigned int i;
 
 	/* Copy key, add padding */
 

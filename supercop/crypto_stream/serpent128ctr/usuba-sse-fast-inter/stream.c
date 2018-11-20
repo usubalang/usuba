@@ -4,7 +4,7 @@
  * Public domain, 2013/03/06
  * Jussi Kivilinna
  */
- 
+  
 #include "crypto_stream.h"
 #include <stdlib.h>
 #include "api.h"
@@ -70,6 +70,28 @@ static inline void xor128(uint128_t *dst, const uint128_t *src1, const uint128_t
 		 : "xmm0", "memory" \
 	);})
 
+#include <emmintrin.h>
+  
+#define TRANSPOSE4(row0, row1, row2, row3)                      \
+  do {                                                          \
+    __m128 tmp3, tmp2, tmp1, tmp0;                              \
+    tmp0 = _mm_unpacklo_ps(*(__m128*)(row0), *(__m128*)(row1)); \
+    tmp2 = _mm_unpacklo_ps(*(__m128*)(row2), *(__m128*)(row3)); \
+    tmp1 = _mm_unpackhi_ps(*(__m128*)(row0), *(__m128*)(row1)); \
+    tmp3 = _mm_unpackhi_ps(*(__m128*)(row2), *(__m128*)(row3)); \
+    _mm_store_pd((double*)row0,(__m128d)_mm_movelh_ps(tmp0, tmp2)); \
+    _mm_store_pd((double*)row1,(__m128d)_mm_movehl_ps(tmp2, tmp0));      \
+    _mm_store_pd((double*)row2,(__m128d)_mm_movelh_ps(tmp1, tmp3));     \
+    _mm_store_pd((double*)row3,(__m128d)_mm_movehl_ps(tmp3, tmp1));      \
+  } while (0)
+
+#include <stdio.h>
+void print128hex(__m128i toPrint) {
+  char * bytearray = (char *) &toPrint;
+  for(int i = 0; i < 16; i++) printf("%02hhx", bytearray[i]);
+  printf("\n");
+}
+
 int crypto_stream_xor(unsigned char *out, const unsigned char *in,
 		      unsigned long long inlen, const unsigned char *n,
 		      const unsigned char *k)
@@ -84,6 +106,12 @@ int crypto_stream_xor(unsigned char *out, const unsigned char *in,
 
 	serpent_init(ctx, k, CRYPTO_KEYBYTES);
 	bswap128(&iv, (const uint128_t *)n); /* be => le */
+
+    
+    __m128i keys[4*33];
+    for (int i = 0; i < 4 * 33; i++)
+      keys[i] = _mm_set1_epi32(ctx->expkey[i]);
+
 
 	while (likely(inlen >= BLOCKSIZE * 8)) {
 		bswap128(&ivs[0], &iv); /* le => be */
@@ -103,7 +131,13 @@ int crypto_stream_xor(unsigned char *out, const unsigned char *in,
 		bswap128(&ivs[7], &ivs[7]); /* le => be */
 		add128(&iv, &iv, 8);
 
-		serpent_enc_blk8(ctx, out, (uint8_t *)ivs);
+        TRANSPOSE4(ivs[0].ll,ivs[1].ll,ivs[2].ll,ivs[3].ll);
+        TRANSPOSE4(ivs[4].ll,ivs[5].ll,ivs[6].ll,ivs[7].ll);
+        Serpent__(ivs, &ivs[4], keys, out, &((__m128i*)out)[4]);
+        TRANSPOSE4(&((uint128_t *)out)[0],&((uint128_t *)out)[1],
+                   &((uint128_t *)out)[2],&((uint128_t *)out)[3]);
+        TRANSPOSE4(&((uint128_t *)out)[4],&((uint128_t *)out)[5],
+                   &((uint128_t *)out)[6],&((uint128_t *)out)[7]);
 
 		if (unlikely(in)) {
 			xor128(&((uint128_t *)out)[0], &((uint128_t *)out)[0], &((uint128_t *)in)[0]);
@@ -135,7 +169,13 @@ int crypto_stream_xor(unsigned char *out, const unsigned char *in,
 			ivs[i].ll[1] = 0;
 		}
 
-		serpent_enc_blk8(ctx, (uint8_t *)ivs, (uint8_t *)ivs);
+        TRANSPOSE4(ivs[0].ll,ivs[1].ll,ivs[2].ll,ivs[3].ll);
+        TRANSPOSE4(ivs[4].ll,ivs[5].ll,ivs[6].ll,ivs[7].ll);
+        Serpent__(ivs, &ivs[4], keys, ivs, &ivs[4]);
+        TRANSPOSE4(&((uint128_t *)ivs)[0],&((uint128_t *)ivs)[1],
+                   &((uint128_t *)ivs)[2],&((uint128_t *)ivs)[3]);
+        TRANSPOSE4(&((uint128_t *)ivs)[4],&((uint128_t *)ivs)[5],
+                   &((uint128_t *)ivs)[6],&((uint128_t *)ivs)[7]);
 
 		if (in) {
 			for (i = 0; inlen >= BLOCKSIZE; i++) {

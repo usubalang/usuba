@@ -1,4 +1,4 @@
-
+ 
 # qhasm: int64 action
 
 # qhasm: int64 c
@@ -265,7 +265,7 @@ pxor  %xmm8,%xmm5
 # asm 1: psllq $1,<xmm8=int6464#9
 # asm 2: psllq $1,<xmm8=%xmm8
 psllq $1,%xmm8
-
+ 
 # qhasm:     xmm4 ^= xmm8
 # asm 1: pxor  <xmm8=int6464#9,<xmm4=int6464#5
 # asm 2: pxor  <xmm8=%xmm8,<xmm4=%xmm4

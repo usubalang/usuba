@@ -10,7 +10,7 @@
 #include "crypto_stream.h"
 #include "api.h"
 #include "aes.h"
-
+ 
 #define PARALLEL_BLOCKS 8
 #define BLOCKSIZE 16
 
