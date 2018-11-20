@@ -58,8 +58,8 @@ static void orthogonalize(__m256i data[]) {
 #define NB_LOOP 10000000
 
 int main() {
-  __m256i data[128];
-  for (int i = 0; i < 128; i++)
+  __m256i data[256];
+  for (int i = 0; i < 256; i++)
     data[i] =  _mm256_set_epi64x(rand(),rand(),rand(),rand());
 
   for (int i = 0; i < 100000; i++)

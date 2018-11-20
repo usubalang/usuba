@@ -4,7 +4,7 @@
     
     ./compile.pl [-c] [-r] [-l]
 
-To compile and run, `./compile.pl` (or `./compile.pl -c -r`).
+To collect only, `./compile.pl` (or `./compile.pl -l`).
 To generate the C files from Usuba, `./compile.pl -g`. (not by default)
 To compile only, `./compile.pl -c`.
 To run only, `./compile.pl -r`
@@ -22,10 +22,10 @@ use File::Path qw(make_path);
 
 
 my $gen     = "@ARGV" =~ /-g/;
-my $compile = !@ARGV || "@ARGV" =~ /-c/;
-my $run     = !@ARGV || "@ARGV" =~ /-r/;
+my $compile = "@ARGV" =~ /-c/;
+my $run     = "@ARGV" =~ /-r/;
 my $collect = !@ARGV || "@ARGV" =~ /-l/;
-
+@ARGV = grep { ! /-l/ } @ARGV;
 
 my %ciphers = (
     'aes-bs'    => 'BitsliceAES',
@@ -37,11 +37,11 @@ my %ciphers = (
     );    
 my @ciphers = keys %ciphers;
 
-if (! $collect) {
+if ($gen || $compile || $run) {
     for my $cipher (@ciphers) {
         say "$cipher:";
         chdir $cipher;
-        system "./compile.pl";
+        system "./compile.pl @ARGV";
         chdir "..";
     }
 }

@@ -1,2 +1,3 @@
-serpent-noinline-sched 14.10 29840
-serpent-inline-sched 14.62 25440
+serpent-noinline-sched 13.84 29840
+serpent-partinline-sched 13.86 29848
+serpent-inline-sched 14.40 25440

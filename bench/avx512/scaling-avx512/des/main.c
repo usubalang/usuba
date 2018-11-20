@@ -16,7 +16,7 @@
 #endif
 
 #ifdef avx512
-#define AVX
+#define AVX512
 #endif
 
 

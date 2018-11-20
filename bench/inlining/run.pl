@@ -65,6 +65,7 @@ if ($gen) {
             if ($cipher eq 'rectangle') {
                 $source = "samples/usuba/rectangle_vector.ua";
             }
+            system "./usubac $ua_args             -o $pwd/$cipher/partinline-$sched.c $source";
             system "./usubac $ua_args -no-inline  -o $pwd/$cipher/noinline-$sched.c $source";
             system "./usubac $ua_args $sched_flag -o $pwd/$cipher/inline-$sched.c   $source";
         }
@@ -79,6 +80,7 @@ if ($compile) {
         for my $cipher (@ciphers) {
             system "$CC $CFLAGS $HEADERS main_speed.c $cipher/stream.c $cipher/inline-$sched.c -o bin/$cipher-inline-$sched";
             system "$CC $CFLAGS $HEADERS main_speed.c $cipher/stream.c $cipher/noinline-$sched.c -o bin/$cipher-noinline-$sched";
+            system "$CC $CFLAGS $HEADERS main_speed.c $cipher/stream.c $cipher/partinline-$sched.c -o bin/$cipher-partinline-$sched";
         }
     }
     say " done.";
@@ -94,7 +96,7 @@ for my $sched (@scheds) {
         for ( 1 .. $NB_LOOP ) {
             print "\rRunning benchs $cipher... $_/$NB_LOOP";
 
-            for my $inline (qw(noinline inline)) {
+            for my $inline (qw(partinline noinline inline)) {
                 my $bin = "bin/$cipher-$inline-$sched";
                 my $cycles = sprintf "%03.02f", `./$bin`; 
                 push @{ $res{$bin}->{details} }, $cycles;
@@ -115,9 +117,10 @@ for my $sched (@scheds) {
         }
         say "";
 
-        my $bin_inline   = "bin/$cipher-inline-$sched";
-        my $bin_noinline = "bin/$cipher-noinline-$sched";
-        my $speedup      = ($res{$bin_noinline}->{total} - $res{$bin_inline}->{total})
+        my $bin_inline     = "bin/$cipher-inline-$sched";
+        my $bin_noinline   = "bin/$cipher-noinline-$sched";
+        my $bin_partinline = "bin/$cipher-noinline-$sched";
+        my $speedup        = ($res{$bin_noinline}->{total} - $res{$bin_inline}->{total})
             / $res{$bin_noinline}->{total} * 100;
         my $size  = ((-s $bin_inline) - (-s $bin_noinline)) / (-s $bin_inline) * 100;
         $formatted{$sched}->{$cipher}->{speedup} = $speedup;
@@ -125,7 +128,6 @@ for my $sched (@scheds) {
         $formatted{$sched}->{$cipher}->{sign}    = $size >= 0 ? "+" : "";
     }
 }
-exit(1);
 
 open my $FP_OUT, '>', 'results/inlining-sched.tex';
 printf $FP_OUT

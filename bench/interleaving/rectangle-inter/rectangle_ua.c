@@ -44,8 +44,6 @@ void SubColumn__ (/*inputs*/ DATATYPE a0,DATATYPE a0__2,DATATYPE a1,DATATYPE a1_
   t8 = XOR(a1,a2);
   t9 = AND(t3,t6);
   *b3 = XOR(t8,t9);
-  t11 = OR(*b0,t8);
-  *b2 = XOR(t6,t11);
   t1__2 = NOT(a1__2);
   t2__2 = AND(a0__2,t1__2);
   t3__2 = XOR(a2__2,a3__2);
@@ -56,6 +54,8 @@ void SubColumn__ (/*inputs*/ DATATYPE a0,DATATYPE a0__2,DATATYPE a1,DATATYPE a1_
   t8__2 = XOR(a1__2,a2__2);
   t9__2 = AND(t3__2,t6__2);
   *b3__2 = XOR(t8__2,t9__2);
+  t11 = OR(*b0,t8);
+  *b2 = XOR(t6,t11);
   t11__2 = OR(*b0__2,t8__2);
   *b2__2 = XOR(t6__2,t11__2);
 

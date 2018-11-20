@@ -20,15 +20,18 @@ use File::Path qw( remove_tree make_path );
 use File::Copy;
 use FindBin;
 
+my $AVX512  = 0;
 
 my $NB_LOOP = 20;
 my $CC      = 'clang';
-my $CFLAGS  = '-O3 -march=native';
+my $CFLAGS  = '-O3 -march=native -std=gnu11';
 my $HEADERS = '-I ../../arch';
+$HEADERS = 'arch' if $AVX512;
 $| = 1;
 
 
 my @arch    = qw(gp sse avx);
+push @arch, 'avx512' if $AVX512;
 my @slicing = qw(bitslice vslice hslice);
 
 

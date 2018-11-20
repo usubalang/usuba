@@ -1,2 +1,3 @@
-des-inline-nosched 7.47 90952
+des-inline-nosched 7.44 90952
+des-partinline-nosched 7.46 90960
 des-noinline-nosched 13.60 99184

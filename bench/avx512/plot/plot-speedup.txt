@@ -13,7 +13,14 @@ set style histogram cluster gap 1
 set style fill solid border rgb "black"
 #set boxwidth 1
 
-set key right top
+#set key outside
+#set key right center
+#set key width 1
+#set key maxrows 3
+set key samplen 3
+#set key font ",12"
+set key spacing 0.8
+set key at 7.6,5.3
 
 set ytics 0,1
 set grid ytics
@@ -22,6 +29,8 @@ set xtics rotate by 45 right
 set xtics center offset 0,-0.8
 set ylabel "Speedup"
 set xlabel " "
+set xtics scale 0
+set ytics scale 0.5
 
 #set key font ",14"
 #set xtics font ",14" 

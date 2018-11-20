@@ -1,2 +1,3 @@
-chacha20-inline-sched 2.36 21112
-chacha20-noinline-sched 2.61 25408
+chacha20-partinline-sched 2.35 25248
+chacha20-inline-sched 2.35 21112
+chacha20-noinline-sched 2.58 25408

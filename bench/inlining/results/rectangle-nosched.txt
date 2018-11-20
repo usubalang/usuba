@@ -1,2 +1,3 @@
-rectangle-noinline-nosched 5.51 17248
-rectangle-inline-nosched 5.51 17216
+rectangle-inline-nosched 5.49 17216
+rectangle-noinline-nosched 5.49 17248
+rectangle-partinline-nosched 5.51 17216

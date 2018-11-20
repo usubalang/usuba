@@ -62,7 +62,7 @@ if ($gen) {
             $source = "-lf samples/usuba/rectangle_vector.ua";
         }
         system "./usubac $ua_args                -o $pwd/$cipher/${cipher}_ua.c       $source";
-        system "./usubac $ua_args -interleave 30 -o $pwd/$cipher-inter/${cipher}_ua.c $source";
+        system "./usubac $ua_args -interleave 10 -o $pwd/$cipher-inter/${cipher}_ua.c $source";
     }
 
     say " done.";

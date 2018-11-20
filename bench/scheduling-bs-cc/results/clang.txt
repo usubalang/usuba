@@ -1,0 +1,4 @@
+clang-inline-post 7.06 82760
+clang-inline-nopost 7.42 86856
+clang-noinline-nopost 7.78 45936
+clang-noinline-post 7.84 45936

@@ -5,8 +5,7 @@
 #include <time.h>
 #include <stdint.h>
 
-#define RUNTIME
-#define ORTHO
+#define NO_RUNTIME
 #include "AVX512.h"
 
 #include "aes.c"
