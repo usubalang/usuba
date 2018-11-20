@@ -7,18 +7,6 @@ open Usuba_AST
 open Basic_utils
 open Utils
 open Printf
-       
-       
-(* Abstracting Hashtbl.
-   This functions should replace the ones in Utils, one day. *)
-let make_env () = Hashtbl.create 100
-let env_add env v e = Hashtbl.replace env v e
-let env_update env v e = Hashtbl.replace env v e
-let env_remove env v = Hashtbl.remove env v
-let env_fetch env v = try Hashtbl.find env v
-                      with Not_found -> raise (Error ("Not found: " ^ v.name))
-let env_fetch_opt env v = Hashtbl.find_opt env v
-
 
 let stable = ref false
 
@@ -28,7 +16,7 @@ exception Updated
 let get_vars_body = function Single(vars,body) -> vars,body | _ -> assert false
 
 let rec propagate_var env_var (v:var) : var list =
-  match env_fetch_opt env_var v with
+  match Hashtbl.find_opt env_var v with
   | Some v' -> v'
   | None -> [ v ]
 
@@ -37,7 +25,7 @@ let rec expand_expr env_var (e:expr) : expr list =
   | Const _ -> [ e ]
   | ExpVar v -> List.map (fun x -> ExpVar x) (expand_var_partial env_var v)
   | _ -> Printf.fprintf stderr "Invalid expression: %s.\n"
-                        (Usuba_print.expr_to_str e);
+                        (Usuba_print.expr_to_str_types e);
          assert false
               
 let rec propagate_expr env_var (e:expr) : expr =
@@ -53,7 +41,10 @@ let rec propagate_expr env_var (e:expr) : expr =
   (* Note that Shuffle **have** necessarily already been expanded *)
   | Shuffle(v,pat) -> Shuffle(List.hd (propagate_var env_var v),pat)
   | Arith(op,e1,e2) -> Arith(op,propagate_expr env_var e1,propagate_expr env_var e2)
-  | Fun(x,es) -> Fun(x,List.map (propagate_expr env_var) es)
+  | Fun(x,es) -> let l = List.map (propagate_expr env_var) es in
+                 (match l with
+                  | [Tuple l'] -> Fun(x,l')
+                  | _ -> Fun(x,l))
   | _ -> assert false
                 
 let rec propagate_deqs env_var (deqs:deq list) : deq list =
@@ -65,11 +56,11 @@ let rec propagate_deqs env_var (deqs:deq list) : deq list =
 let replace l e e' = flat_map (fun x -> if x = e then e' else [x]) l
            
 let expand_in_node env_fun (f:def) (id:ident) (ck:clock) (size:int) (old_typ:typ) (new_typ:typ) (in_out:bool)=
-  let env_var = make_env () in
-  env_add env_var (Var id) (List.map (fun i -> Var(fresh_suffix id (sprintf "%d'" i))) (gen_list_0_int size));
+  let env_var = Hashtbl.create 100 in
+  Hashtbl.replace env_var (Var id) (List.map (fun i -> Var(fresh_suffix id (sprintf "%d'" i))) (gen_list_0_int size));
   let new_p = List.map
                 (fun i -> let id' = fresh_suffix id (sprintf "%d'" i) in
-                          env_add env_var (Index(Var id,Const_e i)) [ Var id' ];
+                          Hashtbl.replace env_var (Index(Var id,Const_e i)) [ Var id' ];
                           make_var_d id' new_typ ck [])
                 (gen_list_0_int size) in
   let vars,body = get_vars_body f.node in
@@ -81,7 +72,7 @@ let expand_in_node env_fun (f:def) (id:ident) (ck:clock) (size:int) (old_typ:typ
     else
       { f with p_out = replace f.p_out (make_var_d id old_typ ck []) new_p;
                node = Single(vars,body); } in
-  env_add env_fun new_node.id new_node
+  Hashtbl.replace env_fun new_node.id new_node
 
 
 let expand_p env_fun (f:def) (vd:var_d) =  
@@ -156,7 +147,7 @@ let rec expand_def env_fun (def:def) : unit =
     match def.node with
     | Single(vars,body) ->
        let env_var = build_env_var def.p_in def.p_out vars in
-       env_update env_fun def.id 
+       Hashtbl.replace env_fun def.id 
                   { def with node = Single(vars,List.map (expand_deq env_fun env_var) body) }
     | _ -> assert false
   with Updated -> expand_def env_fun def
@@ -164,13 +155,13 @@ let rec expand_def env_fun (def:def) : unit =
 
 let expand_parameters (prog:prog) (conf:config) : prog =
 
-  let env_fun = make_env () in
-  List.iter (fun node -> env_add env_fun node.id node) prog.nodes;
+  let env_fun = Hashtbl.create 100 in
+  List.iter (fun node -> Hashtbl.add env_fun node.id node) prog.nodes;
 
   stable := false;
   while not !stable do
     stable := true;
-    List.iter (fun node -> expand_def env_fun (env_fetch env_fun node.id)) prog.nodes
+    List.iter (fun node -> expand_def env_fun (Hashtbl.find env_fun node.id)) prog.nodes
   done;
   
-  { nodes = List.map (fun node -> env_fetch env_fun node.id) prog.nodes }
+  { nodes = List.map (fun node -> Hashtbl.find env_fun node.id) prog.nodes }

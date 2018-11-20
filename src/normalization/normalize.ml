@@ -40,20 +40,27 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
   
   let normalized =
     prog |>
-      (run_pass "Rename" rename)                                         |>
-      (run_pass "Expand_multiples" Expand_multiples.expand_multiples)    |>
-      (run_pass "Slice" Slice.slice)                                     |>
-      (run_pass "Convert_tables" Convert_tables.convert_tables)          |>
-      (run_pass "Expand_array" Expand_array.expand_array)                |>
-      (run_pass "Remove_sync" Remove_sync.remove_sync)                   |>
-      (run_pass "Remove_ctrl" Remove_ctrl.remove_ctrl)                   |>
-      (run_pass "Norm_bitslice 1" Norm_bitslice.norm_prog)               |>
-      (run_pass "Expand_parameters" Expand_parameters.expand_parameters) |>
-      (run_pass "Init_scheduler" Init_scheduler.schedule_prog)           |>
-      (run_pass "Pre_schedule" sched_fun)                                |>
-      (run_pass "Inline" Inline.inline)                                  |>
+      (run_pass "Rename" rename)                                           |>
+      (run_pass "Expand_multiples" Expand_multiples.expand_multiples)      |>
+      (run_pass "Slice" Slice.slice)                                       |>
+      (run_pass "Convert_tables" Convert_tables.convert_tables)            |>
+      (run_pass "Expand_array" Expand_array.expand_array)                  |>
+      (run_pass "Remove_sync" Remove_sync.remove_sync)                     |>
+      (run_pass "Remove_ctrl" Remove_ctrl.remove_ctrl)                     |>
+      (run_pass "Norm_bitslice 1" Norm_bitslice.norm_prog)                 |>
+      (run_pass "Expand_parameters" Expand_parameters.expand_parameters)   |>
+      (run_pass "Fix_dim params" Fix_dim.Dir_params.fix_dim)               |>
+      (run_pass "Expand_array 2" Expand_array.expand_array)                |>
+      (run_pass "Norm_bitslice 2" Norm_bitslice.norm_prog)                 |>
+      (run_pass "Expand_parameters 2" Expand_parameters.expand_parameters) |>
+      (run_pass "Fix_dim inner" Fix_dim.Dir_inner.fix_dim)                 |>
+      (run_pass "Expand_array 3" Expand_array.expand_array)                |>
+      (run_pass "Norm_bitslice 3" Norm_bitslice.norm_prog)                 |>
+      (run_pass "Init_scheduler" Init_scheduler.schedule_prog)             |>
+      (run_pass "Pre_schedule" sched_fun)                                  |>
+      (run_pass "Inline" Inline.inline)                                    |>
       (run_pass "Pre_schedule 2" sched_fun)                                |>
-      (run_pass "Norm_bitslice 2" Norm_bitslice.norm_prog) in
+      (run_pass "Norm_bitslice 4" Norm_bitslice.norm_prog) in
 
   let optimized   = run_pass "Optimize" Optimize.opt_prog normalized in
   let clock_fixed = run_pass "Fix_clocks" Fix_clocks.fix_prog optimized in

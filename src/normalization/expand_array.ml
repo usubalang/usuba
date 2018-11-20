@@ -66,7 +66,8 @@ let rec remove_arr (v:var) : var =
        | Var id -> Var(fresh_suffix id (sprintf "%d'" i))
        | _ -> assert false
      end
-  | _ -> assert false
+  | _ -> Printf.fprintf stderr "Error: remove_arr(%s)\n" (Usuba_print.var_to_str v);
+         assert false
 (* Warning: this shadows (and calls) the definition above *)
 let remove_arr env_keep (v:var) : var =
   if need_to_keep env_keep v then v

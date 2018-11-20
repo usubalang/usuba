@@ -2,6 +2,38 @@ open Usuba_AST
 open Basic_utils
 open Utils
 
+       
+(* Removes tuples of 1 element *)
+module Remove_tuples_funcall = struct
+
+  let rec simpl_tuple (t:expr) : expr =
+    match t with
+    | Tuple l -> Tuple(List.map simpl_tuple l)
+    | Not e -> Not (simpl_tuple e)
+    | Shift(op,e,n) -> Shift(op,simpl_tuple e,n)
+    | Log(op,x,y) -> Log(op,simpl_tuple x,simpl_tuple y)
+    | Arith(op,x,y) -> Arith(op,simpl_tuple x,simpl_tuple y)
+    | Fun(f,[Tuple l]) -> Fun(f,List.map simpl_tuple l)
+    | Fun(f,l) -> Fun(f,List.map simpl_tuple l)
+    | Fun_v(f,n,l) -> Fun_v(f,n,List.map simpl_tuple l)
+    | _ -> t
+
+  let rec simpl_deqs (deq:deq list) : deq list =
+    List.map (function
+               | Eqn(p,e,sync) -> Eqn(p,simpl_tuple e,sync)
+               | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,simpl_deqs dl,opts)) deq
+             
+  let simpl_tuples_def (def: def) : def =
+    match def.node with
+    | Single(p_var,body) ->
+       { def with
+         node  = Single(p_var, simpl_deqs body) }
+    | _ -> def
+                     
+  let remove_tuples_funcall (p: prog) : prog =
+    { nodes = List.map simpl_tuples_def p.nodes }
+end
+                           
 (* Removes tuples of 1 element *)
 module Simplify_tuples = struct
 
@@ -106,6 +138,8 @@ let norm_tuples (prog:prog) (conf:config) : prog =
     Simplify_tuples.simplify_tuples |>
     Split_tuples.split_tuples |>
     Flatten_tuples.flatten_tuples |>
+    Remove_tuples_funcall.remove_tuples_funcall |>
     Simplify_tuples.simplify_tuples |>
-    Split_tuples.split_tuples
+    Split_tuples.split_tuples |>
+    Remove_tuples_funcall.remove_tuples_funcall
   

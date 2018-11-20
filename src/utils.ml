@@ -87,7 +87,9 @@ let rec simpl_arith (env:(ident,int) Hashtbl.t) (e: arith_expr) : arith_expr =
                                 | Div -> n1 / n2
                                 | Mod -> if n1 >= 0 then n1 mod n2 else n2 + (n1 mod n2))
                     | _ -> Op_e(op,x',y')
-              
+let simpl_arith_ne (e:arith_expr) : arith_expr =
+  simpl_arith (Hashtbl.create 100) e
+                               
 
 let fresh_ident (name: string): ident =
   (* XXX: glue code, not actually maintaining a freshness of uid *)
@@ -140,8 +142,10 @@ let make_var_d (id:ident) (typ:typ) (ck:clock) (opts:var_d_opt list) =
 let simple_var_d (id:ident) = make_var_d id Bool Defclock []
          
 let env_fetch env v =
-  try Hashtbl.find env v
-  with Not_found -> raise (Error (__LOC__ ^ ":Not found: " ^ v.name))
+  (* try *)
+    Hashtbl.find env v
+  (* with Not_found -> Printf.fprintf stderr "Not found: %s.\n" v.name; *)
+  (*                   assert false *)
 
 
 (* Constructs a map { fun : def } *)
