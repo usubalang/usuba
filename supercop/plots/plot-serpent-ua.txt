@@ -1,0 +1,34 @@
+set terminal pdf
+set output 'speed-serpent-ua.pdf'
+set boxwidth 0.7
+set border 3
+set tics nomirror
+
+set grid ytics
+
+set key font ",14"
+set xtics font ",14" 
+set ytics font ",14" 
+
+set xtics rotate by 45 right
+
+set xrange [-.5:*]
+set yrange [0:*]
+
+set key right
+set key samplen 2
+
+set ylabel "Cycles/Byte"
+set xlabel " "
+
+set linetype 1 lc rgb '#0000FF'
+set linetype 2 lc rgb '#FF0000'
+
+set style fill solid border rgb "black"
+
+
+plot                                                       \
+      'data-serpent-ua.dat' every  1:1:0:0:8:0             \
+       using 0:2:xtic(1)  with boxes fs pattern 6 lt 1 title '' ,    \
+       '' using 0:($2+1):2 with labels title ''
+
