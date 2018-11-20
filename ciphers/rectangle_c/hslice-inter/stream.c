@@ -152,13 +152,17 @@ inline void orthogonalize(DATATYPE data[], int M, int LOG2_M, int LOG2_A) {
     orthogonalize(dataSSE,8,3,0);                                       \
   }
 
-#define rectangle(in,key,out) {                 \
-    __m128i plain[8]; memcpy(plain,in,64);      \
-    __m128i cipher[8];                          \
-    nslice_8x64(plain);                         \
-    Rectangle__(plain,key,cipher);              \
-    nslice_8x64_undo(cipher);                   \
-    memcpy(out,cipher,64);                      \
+#define rectangle(in,key,out) {                                         \
+    __m128i plain[16]; memcpy(plain,in,64);                             \
+    memcpy(&plain[8],&((__m128i*)in)[4],64);                             \
+    __m128i cipher[16];                                                 \
+    nslice_8x64(plain);                                                 \
+    nslice_8x64(&plain[8]);                                             \
+    Rectangle__(plain,&plain[8],key,cipher,&cipher[8]);  \
+    nslice_8x64_undo(cipher);                                           \
+    nslice_8x64_undo(&cipher[8]);                                       \
+    memcpy(out,cipher,64);                                              \
+    memcpy(&((__m128i*)out)[4],&cipher[8],64);                           \
   }
 
 void ortho_speed ( unsigned char *out,
@@ -168,6 +172,8 @@ void ortho_speed ( unsigned char *out,
                    ) {
   for (int i = 0; i < inlen; i += PARALLEL_FACTOR * BLOCK_SIZE) {
     nslice_8x64((DATATYPE*)out);
+    nslice_8x64((DATATYPE*)out);
+    nslice_8x64_undo((DATATYPE*)out);
     nslice_8x64_undo((DATATYPE*)out);
   }
 }
@@ -302,13 +308,17 @@ inline void orthogonalize(DATATYPE data[], int M, int LOG2_M, int LOG2_A) {
     orthogonalize(dataAVX,8,3,0);                                       \
   }
 
-#define rectangle(in,key,out) {                 \
-    __m256i plain[8]; memcpy(plain,in,128);     \
-    __m256i cipher[8];                          \
-    nslice_16x64(plain);                        \
-    Rectangle__(plain,key,cipher);              \
-    nslice_16x64_undo(cipher);                  \
-    memcpy(out,cipher,128);                     \
+#define rectangle(in,key,out) {                             \
+    __m256i plain[16]; memcpy(plain,in,128);                \
+    memcpy(&plain[8],&((__m256i*)in)[4],128);               \
+    __m256i cipher[16];                                     \
+    nslice_16x64(plain);                                    \
+    nslice_16x64(&plain[8]);                                \
+    Rectangle__(plain,&plain[8],key,cipher,&cipher[8]);  \
+    nslice_16x64_undo(cipher);                              \
+    nslice_16x64_undo(&cipher[8]);                          \
+    memcpy(out,cipher,128);                                 \
+    memcpy(&((__m256i*)out)[4],&cipher[8],128);             \
   }
 
 void ortho_speed ( unsigned char *out,
@@ -318,9 +328,12 @@ void ortho_speed ( unsigned char *out,
                    ) {
   for (int i = 0; i < inlen; i += PARALLEL_FACTOR * BLOCK_SIZE) {
     nslice_16x64((DATATYPE*)out);
+    nslice_16x64((DATATYPE*)out);
+    nslice_16x64_undo((DATATYPE*)out);
     nslice_16x64_undo((DATATYPE*)out);
   }
 }
+
 
 /* **************************** AVX *********************************/
 #elif defined AVX512
@@ -451,13 +464,17 @@ inline void orthogonalize(DATATYPE data[], int M, int LOG2_M, int LOG2_A) {
     orthogonalize(dataAVX,8,3,0);                                       \
   }
 
-#define rectangle(in,key,out) {                 \
-    __m512i plain[8]; memcpy(plain,in,256);     \
-    __m512i cipher[8];                          \
-    nslice_32x64(plain);                        \
-    Rectangle__(plain,key,cipher);              \
-    nslice_32x64_undo(cipher);                  \
-    memcpy(out,cipher,256);                     \
+#define rectangle(in,key,out) {                             \
+    __m512i plain[16]; memcpy(plain,in,128);                \
+    memcpy(&plain[8],&((__m512i*)in)[4],128);               \
+    __m512i cipher[16];                                     \
+    nslice_32x64(plain);                                    \
+    nslice_32x64(&plain[8]);                                \
+    Rectangle__(plain,&plain[8],key,cipher,&cipher[8]);  \
+    nslice_32x64_undo(cipher);                              \
+    nslice_32x64_undo(&cipher[8]);                          \
+    memcpy(out,cipher,128);                                 \
+    memcpy(&((__m512i*)out)[4],&cipher[8],128);             \
   }
 
 void ortho_speed ( unsigned char *out,
@@ -467,6 +484,8 @@ void ortho_speed ( unsigned char *out,
                    ) {
   for (int i = 0; i < inlen; i += PARALLEL_FACTOR * BLOCK_SIZE) {
     nslice_32x64((DATATYPE*)out);
+    nslice_32x64((DATATYPE*)out);
+    nslice_32x64_undo((DATATYPE*)out);
     nslice_32x64_undo((DATATYPE*)out);
   }
 }
@@ -475,7 +494,7 @@ void ortho_speed ( unsigned char *out,
 #error No arch specified.
 #endif
 
-void Rectangle__ (DATATYPE plain__[4],DATATYPE key__[26][4], DATATYPE cipher__[4]);
+void Rectangle__ (DATATYPE plain__[4],DATATYPE plain__2[4],DATATYPE key__[26][4], DATATYPE cipher__[4], DATATYPE cipher__2[4]);
 
 int crypto_stream_ecb( unsigned char *out,
                        unsigned char *in,

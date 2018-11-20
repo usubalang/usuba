@@ -20,17 +20,17 @@ use FindBin;
 use File::Path qw(make_path);
 
 my $NB_LOOP = 1;
-my $CC      = 'clang';
+my $CC      = 'icc';
 my $CFLAGS  = '-O3 -std=gnu11';
-my $HEADERS = '-I ../../arch -I .';
+my $HEADERS = '-I arch -I .';
 $| = 1;
 
 my $compile = !@ARGV || "@ARGV" =~ /-c/;
 my $run     = !@ARGV || "@ARGV" =~ /-r/;
 
 my $cipher   = 'rectangle';
-my @archs = qw( std sse avx avx2 );
-my @slicings = qw( vslice-inter bitslice hslice  );
+my @archs = qw( std sse avx avx2 avx512 );
+my @slicings = qw( vslice-inter bitslice hslice-inter  );
 
 my @binaries;
 
@@ -60,7 +60,7 @@ for my $arch (@archs) {
         if    ($arch eq 'avx')  { $source_dir = "$slicing/sse.c" }
         elsif ($arch eq 'avx2') { $source_dir = "$slicing/avx.c" }
         
-        next if $arch eq 'std' && $slicing eq 'hslice';
+        next if $arch eq 'std' && $slicing eq 'hslice-inter';
         my $cmd = "$CC $arch_flag $CFLAGS $HEADERS -I . -D $arch main.c key.c $slicing/stream.c $source_dir -o $bin";
         system $cmd if $compile;
         push @binaries, $bin;
@@ -93,8 +93,6 @@ for my $bin (sort { $res{$a}->{total} <=> $res{$b}->{total} } @binaries) {
         $res{$bin}->{ortho} / $NB_LOOP;
 }
 close $FP_OUT;
-
-use Data::Printer;
 
 my %formatted;
 for my $bin (@binaries) {
