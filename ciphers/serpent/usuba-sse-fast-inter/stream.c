@@ -71,7 +71,7 @@ static inline void xor128(uint128_t *dst, const uint128_t *src1, const uint128_t
 	);})
 
 #include <emmintrin.h>
-  
+
 #define TRANSPOSE4(row0, row1, row2, row3)                      \
   do {                                                          \
     __m128 tmp3, tmp2, tmp1, tmp0;                              \
@@ -139,15 +139,23 @@ int crypto_stream_xor(unsigned char *out, const unsigned char *in,
         TRANSPOSE4(&((uint128_t *)out)[4],&((uint128_t *)out)[5],
                    &((uint128_t *)out)[6],&((uint128_t *)out)[7]);
 
-		if (unlikely(in)) {
-			xor128(&((uint128_t *)out)[0], &((uint128_t *)out)[0], &((uint128_t *)in)[0]);
-			xor128(&((uint128_t *)out)[1], &((uint128_t *)out)[1], &((uint128_t *)in)[1]);
-			xor128(&((uint128_t *)out)[2], &((uint128_t *)out)[2], &((uint128_t *)in)[2]);
-			xor128(&((uint128_t *)out)[3], &((uint128_t *)out)[3], &((uint128_t *)in)[3]);
-			xor128(&((uint128_t *)out)[4], &((uint128_t *)out)[4], &((uint128_t *)in)[4]);
-			xor128(&((uint128_t *)out)[5], &((uint128_t *)out)[5], &((uint128_t *)in)[5]);
-			xor128(&((uint128_t *)out)[6], &((uint128_t *)out)[6], &((uint128_t *)in)[6]);
-			xor128(&((uint128_t *)out)[7], &((uint128_t *)out)[7], &((uint128_t *)in)[7]);
+		if (in) {
+          ((__m128i*)out)[0] = _mm_xor_si128(((__m128i*)out)[0], ((__m128i*)in)[0]);
+          ((__m128i*)out)[1] = _mm_xor_si128(((__m128i*)out)[1], ((__m128i*)in)[1]);
+          ((__m128i*)out)[2] = _mm_xor_si128(((__m128i*)out)[2], ((__m128i*)in)[2]);
+          ((__m128i*)out)[3] = _mm_xor_si128(((__m128i*)out)[3], ((__m128i*)in)[3]);
+          ((__m128i*)out)[4] = _mm_xor_si128(((__m128i*)out)[4], ((__m128i*)in)[4]);
+          ((__m128i*)out)[5] = _mm_xor_si128(((__m128i*)out)[5], ((__m128i*)in)[5]);
+          ((__m128i*)out)[6] = _mm_xor_si128(((__m128i*)out)[6], ((__m128i*)in)[6]);
+          ((__m128i*)out)[7] = _mm_xor_si128(((__m128i*)out)[7], ((__m128i*)in)[7]);
+			/* xor128(&((uint128_t *)out)[0], &((uint128_t *)out)[0], &((uint128_t *)in)[0]); */
+			/* xor128(&((uint128_t *)out)[1], &((uint128_t *)out)[1], &((uint128_t *)in)[1]); */
+			/* xor128(&((uint128_t *)out)[2], &((uint128_t *)out)[2], &((uint128_t *)in)[2]); */
+			/* xor128(&((uint128_t *)out)[3], &((uint128_t *)out)[3], &((uint128_t *)in)[3]); */
+			/* xor128(&((uint128_t *)out)[4], &((uint128_t *)out)[4], &((uint128_t *)in)[4]); */
+			/* xor128(&((uint128_t *)out)[5], &((uint128_t *)out)[5], &((uint128_t *)in)[5]); */
+			/* xor128(&((uint128_t *)out)[6], &((uint128_t *)out)[6], &((uint128_t *)in)[6]); */
+			/* xor128(&((uint128_t *)out)[7], &((uint128_t *)out)[7], &((uint128_t *)in)[7]); */
 			in += BLOCKSIZE * 8;
 		}
 
