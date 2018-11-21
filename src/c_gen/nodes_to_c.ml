@@ -109,7 +109,7 @@ let rec expr_to_c (lift_env:(var,int)  Hashtbl.t)
              (aexpr_to_c ae)
              (get_expr_reg_size env_var e)
   | Fun(f,[v]) when f.name = "rand" ->
-     sprintf "%s = rand();" (expr_to_c lift_env conf env env_var v)
+     sprintf "%s = RAND();" (expr_to_c lift_env conf env env_var v)
   | _ -> raise (Error (Printf.sprintf "Wrong expr: %s" (Usuba_print.expr_to_str e)))
 
                
@@ -134,7 +134,7 @@ let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
        (List.map
           (fun deq -> match deq with
             | Eqn([v],Fun(f,[]),_) when f.name = "rand" ->
-               sprintf "%s%s = rand();" tabs (var_to_c lift_env env v)
+               sprintf "%s%s = RAND();" tabs (var_to_c lift_env env v)
             | Eqn(p,Fun(f,l),_) -> fun_call_to_c lift_env conf env env_var ~tabs:tabs p f l
             | Eqn([v],e,_) ->
                sprintf "%s%s = %s;" tabs (var_to_c lift_env env v)
