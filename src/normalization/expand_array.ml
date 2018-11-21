@@ -119,30 +119,31 @@ let rec expand_expr env_var env_keep env force (e:expr) : expr =
   | Fby _ | When _ | Merge _ -> e
 
 
-let rec do_unroll env_var env_keep env force x ei ef deqs : deq list =
+let rec do_unroll env_var env_keep env force unroll x ei ef deqs : deq list =
   try
     let ei = eval_arith env ei in
     let ef = eval_arith env ef in
     let eqs = flat_map (fun i -> env_update env x i;
-                                 expand_deqs env_var env_keep ~env:env force deqs)
+                                 expand_deqs env_var env_keep ~env:env force unroll deqs)
                        (gen_list_bounds ei ef) in
     env_remove env x;
     eqs
   with Not_found -> raise Need_unroll
 
-and expand_deqs env_var env_keep ?(env=make_env ()) (force:int) (deqs:deq list) : deq list =
+and expand_deqs env_var env_keep ?(env=make_env ())
+                (force:int) (unroll:bool) (deqs:deq list) : deq list =
   flat_map
     (fun deq -> 
      match deq with
      | Eqn(lhs,e,sync) -> [ Eqn(expand_vars env_var env_keep env force lhs,
                                 expand_expr env_var env_keep env force e, sync) ]
      | Loop(x,ei,ef,deqs,opts) ->
-        if List.mem Unroll opts || (force = 1) then
-          do_unroll env_var env_keep env force x ei ef deqs
+        if List.mem Unroll opts || (force = 1) || unroll then
+          do_unroll env_var env_keep env force unroll x ei ef deqs
         else
           try
-            [ Loop(x,ei,ef,expand_deqs env_var env_keep ~env:env force deqs,opts) ]
-          with Need_unroll -> do_unroll env_var env_keep env force x ei ef deqs)
+            [ Loop(x,ei,ef,expand_deqs env_var env_keep ~env:env force unroll deqs,opts) ]
+          with Need_unroll -> do_unroll env_var env_keep env force unroll x ei ef deqs)
     deqs
     
 (* Expands p: 
@@ -183,7 +184,7 @@ let build_env_keep (p_in:p) (p_out:p) =
   env
            
            
-let expand_def (force:int) (keep_param:bool) (def:def) : def =
+let expand_def (force:int) (unroll:bool) (keep_param:bool) (def:def) : def =
   let expand_p = if force = 1 then expand_p else (fun x -> x) in
   { def with p_in  = if keep_param then def.p_in  else expand_p def.p_in;
              p_out = if keep_param then def.p_out else expand_p def.p_out;
@@ -196,7 +197,7 @@ let expand_def (force:int) (keep_param:bool) (def:def) : def =
                                      in the other functions: is empty. *)
                         let env_keep = if keep_param then build_env_keep def.p_in def.p_out
                                        else Hashtbl.create 100 in
-                        Single(expand_p vars, expand_deqs env_var env_keep force body)
+                        Single(expand_p vars, expand_deqs env_var env_keep force unroll body)
                      | _ -> def.node }
 
 
@@ -209,6 +210,7 @@ let rec map_special_last f g l =
 
     
 let rec expand_array (prog:prog) (conf:config): prog =
-  let force = if conf.no_arr || must_expand prog then 1 else 0 in
-  { nodes = map_special_last (expand_def force false) (expand_def force conf.arr_entry) prog.nodes }
+  let force  = if conf.no_arr || must_expand prog then 1 else 0 in
+  let unroll = conf.unroll in
+  { nodes = map_special_last (expand_def force unroll false) (expand_def force unroll conf.arr_entry) prog.nodes }
 

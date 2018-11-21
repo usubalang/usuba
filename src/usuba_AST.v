@@ -133,6 +133,7 @@ Record config := {
   openmp       : N;
   no_arr       : bool;
   arr_entry    : bool;
+  unroll       : bool;
   interleave   : N;
   fd           : bool;
   ti           : N;

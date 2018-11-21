@@ -22,6 +22,7 @@ let share_var    = ref true
 let precal_tbl   = ref true
 let no_arr       = ref false
 let arr_entry    = ref true
+let unroll       = ref false
 let interleave   = ref 0
                       
 let runtime     = ref false
@@ -102,6 +103,7 @@ let main () =
       "-no-precalc-tbl", Arg.Clear precal_tbl, "Don't use pre-computed tables";
       "-no-arr", Arg.Set no_arr, "Don't keep any array";
       "-no-arr-entry", Arg.Clear arr_entry, "Don't keep any arrays in the entry point";
+      "-unroll", Arg.Set unroll, "Unroll all loops";
       "-interleave", Arg.Int (fun n -> interleave := n), "Interleave encryptions";
       "-arch", Arg.String (fun s -> arch := str_to_arch s), "Set architecture";
       "-bits-per-reg", Arg.Set_int bits_per_reg, "Set number of bits to use in the registers (with -arch std only, needs to be a multiple of 2)";
@@ -127,37 +129,38 @@ let main () =
     let prog = Parse_file.parse_file s in
     let bits_per_reg = if !bits_per_reg <> 64 then !bits_per_reg
                        else bits_in_arch !arch in
-    let conf = { block_size   = !block_size;
-                 key_size     = !key_size;
-                 warnings     = !warnings;
-                 verbose      = !verbose;
-                 verif        = !verif;
-                 type_check   = !type_check;
-                 clock_check  = !clock_check;
-                 check_tbl    = !check_tbl;
-                 inlining     = !inlining;
-                 inline_all   = !inline_all;
-                 cse_cp       = !cse_cp;
-                 scheduling   = !scheduling;
-                 schedule_n   = !schedule_n;
-                 share_var    = !share_var;
-                 precal_tbl   = !precal_tbl;
-                 archi        = !arch;
-                 bits_per_reg = bits_per_reg; (* local var! *)
-                 runtime      = !runtime;
-                 bench        = !bench || !rand_input;
-                 rand_input   = !rand_input;
-                 ortho        = !ortho;
-                 openmp       = !openmp;
-                 no_arr       = !no_arr;
-                 arr_entry    = !arr_entry;
-                 interleave   = !interleave;
-                 fd           = !fd;
-                 ti           = !ti;
-                 fdti         = !fdti;
-                 lazylift     = !lazylift;
-                 slicing_set  = !slicing_set;
-                 slicing_type = !slicing_type;
+    let conf = { block_size     =   !block_size;
+                 key_size       =   !key_size;
+                 warnings       =   !warnings;
+                 verbose        =   !verbose;
+                 verif          =   !verif;
+                 type_check     =   !type_check;
+                 clock_check    =   !clock_check;
+                 check_tbl      =   !check_tbl;
+                 inlining       =   !inlining;
+                 inline_all     =   !inline_all;
+                 cse_cp         =   !cse_cp;
+                 scheduling     =   !scheduling;
+                 schedule_n     =   !schedule_n;
+                 share_var      =   !share_var;
+                 precal_tbl     =   !precal_tbl;
+                 archi          =   !arch;
+                 bits_per_reg   =   bits_per_reg; (* local var! *)
+                 runtime        =   !runtime;
+                 bench          =   !bench || !rand_input;
+                 rand_input     =   !rand_input;
+                 ortho          =   !ortho;
+                 openmp         =   !openmp;
+                 no_arr         =   !no_arr;
+                 arr_entry      =   !arr_entry;
+                 unroll         =   !unroll;
+                 interleave     =   !interleave;
+                 fd             =   !fd;
+                 ti             =   !ti;
+                 fdti           =   !fdti;
+                 lazylift       =   !lazylift;
+                 slicing_set    =   !slicing_set;
+                 slicing_type   =   !slicing_type;
                } in
 
     if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then

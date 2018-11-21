@@ -36,6 +36,7 @@ let default_conf : config =
     openmp       = 1;
     no_arr       = false;
     arr_entry    = true;
+    unroll       = false;
     interleave   = 1;
     fd           = false;
     ti           = 1;
