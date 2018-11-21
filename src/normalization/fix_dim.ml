@@ -68,7 +68,7 @@ module Dir_params = struct
   let rec fix_deqs env_fun env_var (deqs:deq list) : deq list =
     List.map (fun deq ->
               match deq with
-              | Eqn(vs,Fun(f,l),sync) ->
+              | Eqn(vs,Fun(f,l),sync) when f.name <> "rand" ->
                  List.iteri (fun i e ->
                              let etyp = get_expr_type env_fun env_var e in
                              let fn   = Hashtbl.find env_fun f          in
@@ -186,7 +186,7 @@ module Dir_inner = struct
   let rec fix_deqs env_fun env_var (def:def) (deqs:deq list) : deq list =
     List.map (fun deq ->
               match deq with
-              | Eqn(vs,Fun(f,l),sync) ->
+              | Eqn(vs,Fun(f,l),sync) when f.name <> "rand" ->
                  List.iteri (fun i e ->
                              match e with
                              | Const _ -> ()
