@@ -19,11 +19,12 @@
 #define XORC16(a,b,c)  asm volatile("xorc16 %1, %2, %0\n\t"  : "=r" (a) : "r" (b), "r" (c) :)
 #define XNORC16(a,b,c) asm volatile("xnorc16 %1, %2, %0\n\t" : "=r" (a) : "r" (b), "r" (c) :)
 
-int lcg_rand() {
+static int lcg_rand() {
   static int state = 1;
   state = state * 1664525 + 1013904223;
   return state;
 }
+
 #define RAND() lcg_rand()
 
 #if (! defined FD) || (FD == 1)
