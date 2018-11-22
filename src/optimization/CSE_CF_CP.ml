@@ -52,7 +52,8 @@ let rec fold_expr (e:expr) : expr =
 
            
 let rec cse_expr env_expr ?(invert=true) (e:expr) : expr =
-  let e =
+  let e = fold_expr e in
+  let e = 
     fold_expr 
       (match e with
        | Log(op,x,y)    -> Log(op,   cse_expr env_expr x, cse_expr env_expr y)
@@ -109,6 +110,11 @@ let opt_deq ret_env env_expr env_var opt_out_vars (p:var) (e:expr) (sync:bool) :
                  | None -> env_update env_expr (ExpVar p) (ExpVar v);
                            update_opt_out opt_out_vars p;
                            [])
+  | Const _  -> (match env_fetch_opt ret_env (get_var_base p) with
+                 | Some _ -> [ Eqn([p],e,sync) ]
+                 | None   -> env_update env_expr (ExpVar p) e;
+                             update_opt_out opt_out_vars p;
+                             [])
   | _        -> env_update env_expr e (ExpVar p);
                 [ Eqn([p],e,sync) ]
 
