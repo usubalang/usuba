@@ -297,7 +297,7 @@ let rec var_decl_to_c conf (vd:var_d) (out:bool) : string =
       
 let c_header (arch:arch) : string =
   match arch with
-  | Std -> "STD_FDTI.h"
+  | Std -> "FAME.h"
   | MMX -> "MMX.h"
   | SSE -> "SSE.h"
   | AVX -> "AVX.h"
