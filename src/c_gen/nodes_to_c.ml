@@ -81,8 +81,8 @@ let rec expr_to_c (lift_env:(var,int)  Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t) (e:expr) : string =
   match e with
   | Const n -> ( match n with
-                 | 0 -> "SET_ALL_ONE()"
-                 | 1 -> "SET_ALL_ZERO()"
+                 | 0 -> "SET_ALL_ZERO()"
+                 | 1 -> "SET_ALL_ONE()"
                  | n -> sprintf "SET(%d,%d)" n 64 )
   | ExpVar v -> var_to_c lift_env env v
   | Not e -> sprintf "NOT(%s)" (expr_to_c lift_env conf env env_var e)
