@@ -8,7 +8,20 @@
 #define DATATYPE unsigned int
 #endif
 
+#ifdef X86
 
+#define TIBSROT_2(a,b) a = ((b << 1) & 0xAAAAAAAA) | ((b >> 1) & 0x55555555)
+#define TIBSROT_4(a,b) a = ((b << 1) & 0xEEEEEEEE) | ((b >> 3) & 0x11111111)
+
+#define ANDC8(a,b,c)   a = ( ((b) | (c)) & 0xFF00FF00) | ( ((b) & (c)) & 0x00FF00FF)
+#define XORC8(a,b,c)   a = (~((b) ^ (c)) & 0xFF00FF00) | ( ((b) ^ (c)) & 0x00FF00FF)
+#define XNORC8(a,b,c)  a = ( ((b) ^ (c)) & 0xFF00FF00) | (~((b) ^ (c)) & 0x00FF00FF)
+
+#define ANDC16(a,b,c)  a = ( ((b) | (c)) & 0xFFFF0000) | ( ((b) & (c)) & 0x0000FFFF)
+#define XORC16(a,b,c)  a = (~((b) ^ (c)) & 0xFFFF0000) | ( ((b) ^ (c)) & 0x0000FFFF)
+#define XNORC16(a,b,c) a = ( ((b) ^ (c)) & 0xFFFF0000) | (~((b) ^ (c)) & 0x0000FFFF)
+
+#else
 #define TIBSROT_2(a,b) asm volatile("tibsrot %1, 2, %0\n\t" : "=r" (a) : "r" (b) :)
 #define TIBSROT_4(a,b) asm volatile("tibsrot %1, 4, %0\n\t" : "=r" (a) : "r" (b) :)
 
@@ -18,14 +31,24 @@
 #define ANDC16(a,b,c)  asm volatile("andc16 %1, %2, %0\n\t"  : "=r" (a) : "r" (b), "r" (c) :)
 #define XORC16(a,b,c)  asm volatile("xorc16 %1, %2, %0\n\t"  : "=r" (a) : "r" (b), "r" (c) :)
 #define XNORC16(a,b,c) asm volatile("xnorc16 %1, %2, %0\n\t" : "=r" (a) : "r" (b), "r" (c) :)
+#endif
 
 static int lcg_rand() {
   static int state = 1;
   state = state * 1664525 + 1013904223;
   return state;
 }
+/* The following algorithm is attritubed by Wikipedia (https://en.wikipedia.org/wiki/Xorshift)
+   to p. 4 of Marsaglia, "Xorshift RNGs" */
+static int xorshift_rand() {
+  static int state = 1;
+  state ^= state << 13;
+  state ^= state >> 17;
+  state ^= state << 5;
+  return state;
+}
 
-#define RAND() lcg_rand()
+#define RAND() xorshift_rand()
 
 #if (! defined FD) || (FD == 1)
 
