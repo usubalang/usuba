@@ -10,27 +10,73 @@
 
 #ifdef X86
 
-#define TIBSROT_2(a,b) a = ((b << 1) & 0xAAAAAAAA) | ((b >> 1) & 0x55555555)
-#define TIBSROT_4(a,b) a = ((b << 1) & 0xEEEEEEEE) | ((b >> 3) & 0x11111111)
+#define RED(rd,y,i,a) {                                                 \
+    if (i == 0b010) {                                                   \
+      rd = (a << 16) | (a & 0xFFFF);                                    \
+      y  = (a & 0xFFFF0000) | (a >> 16);                                \
+    }                                                                   \
+    else if (i == 0b011) {                                              \
+      rd = (~a << 16) | (a & 0xFFFF);                                   \
+      y  = (~a & 0xFFFF0000) | (a >> 16);                               \
+    }                                                                   \
+    else if (i == 0b100) {                                              \
+      rd = (a & 0xFF) | ((a & 0xFF) << 8) |                             \
+        ((a & 0xFF) << 16) | ((a & 0xFF) << 24);                        \
+      y  = ((a & 0xFF00) >> 8) | (a & 0xFF00) |                         \
+        ((a & 0xFF00) << 8) | ((a & 0xFF00) << 16);                     \
+    }                                                                   \
+    else if (i == 0b101) {                                              \
+      rd = (a & 0xFF) | ((~a & 0xFF) << 8) |                            \
+        ((a & 0xFF) << 16) | ((~a & 0xFF) << 24);                       \
+      y  = ((a & 0xFF00) >> 8) | (~a & 0xFF00) |                        \
+        ((a & 0xFF00) << 8) | ((~a & 0xFF00) << 16);                    \
+    }                                                                   \
+    else if (i == 0b110) {                                              \
+      rd = ((a & 0xFF0000) >> 16) | ((a & 0xFF0000) >> 8) |             \
+        (a & 0xFF0000) | ((a & 0xFF0000) << 8);                         \
+      y  = ((a & 0xFF000000) >> 24) | ((a & 0xFF000000) >> 16) |        \
+        ((a & 0xFF000000) >> 8) | (a & 0xFF000000);                     \
+    }                                                                   \
+    else if (i == 0b111) {                                              \
+      rd = ((a & 0xFF0000) >> 16) | ((~a & 0xFF0000) >> 8) |            \
+        (a & 0xFF0000) | ((~a & 0xFF0000) << 8);                        \
+      y  = ((a & 0xFF000000) >> 24) | ((~a & 0xFF000000) >> 16) |       \
+        ((a & 0xFF000000) >> 8) | (~a & 0xFF000000);                    \
+    }                                                                   \
+    else {                                                              \
+      fprintf(stderr, "Invalid RED@%d.\n",i);                           \
+      exit(EXIT_FAILURE);                                               \
+    }                                                                   \
+  }
 
-#define ANDC8(a,b,c)   a = ( ((b) | (c)) & 0xFF00FF00) | ( ((b) & (c)) & 0x00FF00FF)
-#define XORC8(a,b,c)   a = (~((b) ^ (c)) & 0xFF00FF00) | ( ((b) ^ (c)) & 0x00FF00FF)
-#define XNORC8(a,b,c)  a = ( ((b) ^ (c)) & 0xFF00FF00) | (~((b) ^ (c)) & 0x00FF00FF)
+#define TIBSROT_2(r,a) r = ((a << 1) & 0xAAAAAAAA) | ((a >> 1) & 0x55555555)
+#define TIBSROT_4(r,a) r = ((a << 1) & 0xEEEEEEEE) | ((a >> 3) & 0x11111111)
 
-#define ANDC16(a,b,c)  a = ( ((b) | (c)) & 0xFFFF0000) | ( ((b) & (c)) & 0x0000FFFF)
-#define XORC16(a,b,c)  a = (~((b) ^ (c)) & 0xFFFF0000) | ( ((b) ^ (c)) & 0x0000FFFF)
-#define XNORC16(a,b,c) a = ( ((b) ^ (c)) & 0xFFFF0000) | (~((b) ^ (c)) & 0x0000FFFF)
+#define ANDC8(r,a,b)   r = ( ((a) | (b)) & 0xFF00FF00) | ( ((a) & (b)) & 0x00FF00FF)
+#define XORC8(r,a,b)   r = (~((a) ^ (b)) & 0xFF00FF00) | ( ((a) ^ (b)) & 0x00FF00FF)
+#define XNORC8(r,a,b)  r = ( ((a) ^ (b)) & 0xFF00FF00) | (~((a) ^ (b)) & 0x00FF00FF)
+
+#define ANDC16(r,a,b)  r = ( ((a) | (b)) & 0xFFFF0000) | ( ((a) & (b)) & 0x0000FFFF)
+#define XORC16(r,a,b)  r = (~((a) ^ (b)) & 0xFFFF0000) | ( ((a) ^ (b)) & 0x0000FFFF)
+#define XNORC16(r,a,b) r = ( ((a) ^ (b)) & 0xFFFF0000) | (~((a) ^ (b)) & 0x0000FFFF)
 
 #else
-#define TIBSROT_2(a,b) asm volatile("tibsrot %1, 2, %0\n\t" : "=r" (a) : "r" (b) :)
-#define TIBSROT_4(a,b) asm volatile("tibsrot %1, 4, %0\n\t" : "=r" (a) : "r" (b) :)
 
-#define ANDC8(a,b,c)   asm volatile("andc8 %1, %2, %0\n\t"   : "=r" (a) : "r" (b), "r" (c) :)
-#define XORC8(a,b,c)   asm volatile("xorc8 %1, %2, %0\n\t"   : "=r" (a) : "r" (b), "r" (c) :)
-#define XNORC8(a,b,c)  asm volatile("xnorc8 %1, %2, %0\n\t"  : "=r" (a) : "r" (b), "r" (c) :)
-#define ANDC16(a,b,c)  asm volatile("andc16 %1, %2, %0\n\t"  : "=r" (a) : "r" (b), "r" (c) :)
-#define XORC16(a,b,c)  asm volatile("xorc16 %1, %2, %0\n\t"  : "=r" (a) : "r" (b), "r" (c) :)
-#define XNORC16(a,b,c) asm volatile("xnorc16 %1, %2, %0\n\t" : "=r" (a) : "r" (b), "r" (c) :)
+#define RED(r,y,i,a)   {                                                \
+    DATATYPE n = i;                                                     \
+    asm volatile("red %2, %3, %0\n\t"                                   \
+                 "mov %%y, %1\n\t" : "=r" (r), "=r" (y) : "r" (a), "r" (n)); \
+  }
+
+#define TIBSROT_2(r,a) asm volatile("tibsrot %1, 2, %0\n\t" : "=r" (r) : "r" (a) :)
+#define TIBSROT_4(r,a) asm volatile("tibsrot %1, 4, %0\n\t" : "=r" (r) : "r" (a) :)
+
+#define ANDC8(r,a,b)   asm volatile("andc8 %1, %2, %0\n\t"   : "=r" (r) : "r" (a), "r" (b) :)
+#define XORC8(r,a,b)   asm volatile("xorc8 %1, %2, %0\n\t"   : "=r" (r) : "r" (a), "r" (b) :)
+#define XNORC8(r,a,b)  asm volatile("xnorc8 %1, %2, %0\n\t"  : "=r" (r) : "r" (a), "r" (b) :)
+#define ANDC16(r,a,b)  asm volatile("andc16 %1, %2, %0\n\t"  : "=r" (r) : "r" (a), "r" (b) :)
+#define XORC16(r,a,b)  asm volatile("xorc16 %1, %2, %0\n\t"  : "=r" (r) : "r" (a), "r" (b) :)
+#define XNORC16(r,a,b) asm volatile("xnorc16 %1, %2, %0\n\t" : "=r" (r) : "r" (a), "r" (b) :)
 #endif
 
 static int lcg_rand() {
@@ -51,20 +97,20 @@ static int xorshift_rand() {
 #define RAND() xorshift_rand()
 
 
-#define FD_AND_1(a,b,c) (a) = (b) & (c)
-#define FD_OR_1(a,b,c)  (a) = (b) | (c)
-#define FD_XOR_1(a,b,c) (a) = (b) ^ (c)
-#define FD_NOT_1(a,b)   (a) = ~(b)
+#define FD_AND_1(r,a,b) (r) = (a) & (b)
+#define FD_OR_1(r,a,b) (r) = (a) | (b)
+#define FD_XOR_1(r,a,b) (r) = (a) ^ (b)
+#define FD_NOT_1(r,a)   (r) = ~(a)
 
-#define FD_AND_2(a,b,c) ANDC16(a,b,c)
-#define FD_OR_2(a,b,c)  { DATATYPE _tmp_or; ANDC16(_tmp_or,~b,~c); a = ~_tmp_or; }
-#define FD_XOR_2(a,b,c) XORC16(a,b,c)
-#define FD_NOT_2(a,b)   (a) = ~(b)
+#define FD_AND_2(r,a,c) ANDC16(r,a,b)
+#define FD_OR_2(r,a,c)  { DATATYPE _tmp_or; ANDC16(_tmp_or,~a,~b); r = ~_tmp_or; }
+#define FD_XOR_2(r,a,c) XORC16(r,a,b)
+#define FD_NOT_2(r,a)   (r) = ~(a)
 
-#define FD_AND_4(a,b,c) ANDC8(a,b,c)
-#define FD_OR_4(a,b,c)  { DATATYPE _tmp_or; ANDC8(_tmp_or,~b,~c); a = ~_tmp_or; }
-#define FD_XOR_4(a,b,c) XORC8(a,b,c)
-#define FD_NOT_4(a,b)   (a) = ~(b)
+#define FD_AND_4(r,a,c) ANDC8(r,a,b)
+#define FD_OR_4(r,a,c)  { DATATYPE _tmp_or; ANDC8(_tmp_or,~a,~b); r = ~_tmp_or; }
+#define FD_XOR_4(r,a,c) XORC8(r,a,b)
+#define FD_NOT_4(r,a)   (r) = ~(a)
 
 #ifndef FD
 #define FD 1
@@ -79,10 +125,10 @@ static int xorshift_rand() {
 #define FD_NOT BUILD_OP_FD(NOT,FD)
 
 
-#define TI_AND_1(a,b,c) FD_AND(a,b,c) /* a = b & c */
-#define TI_OR_1(a,b,c)  FD_OR(a,b,c)  /* a = b | c */
-#define TI_XOR_1(a,b,c) FD_XOR(a,b,c) /* a = b ^ c */
-#define TI_NOT_1(a,b)   FD_NOT(a,b)   /* a = ~b */
+#define TI_AND_1(r,a,b) FD_AND(r,a,b) /* a = b & c */
+#define TI_OR_1(r,a,b)  FD_OR(r,a,b)  /* a = b | c */
+#define TI_XOR_1(r,a,b) FD_XOR(r,a,b) /* a = b ^ c */
+#define TI_NOT_1(r,a)   FD_NOT(r,a)   /* a = ~b */
 
 #define TI_AND_2(a,b,c) {                             \
     DATATYPE c1, c2, d1, d2, d3;                    \

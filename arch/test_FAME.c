@@ -3,26 +3,59 @@
 #include <stdint.h>
 #include <assert.h>
 
-#define X86
 #include "FAME.h"
 
 /* Checks that OP(v1,v2) == expected */
 #define CHECK(OP,expected,v1,v2) {              \
-    int a = v1, b = v2, r;                      \
+    uint32_t a = v1, b = v2, r;                 \
     OP(r,a,b);                                  \
     assert(r == expected);                      \
   }
 
 /* Checks that OP(v1) == expected */
 #define CHECK_UN(OP,expected,v1) {              \
-    int a = v1, r;                              \
+    uint32_t a = v1, r;                         \
     OP(r,a);                                    \
     assert(r == expected);                      \
   }
 
+#define CHECK_RED(expect_rd,expect_y,i,v) {     \
+    uint32_t a = v, rd, y;                      \
+    RED(rd,y,i,a);                              \
+    assert(rd == expect_rd && y == expect_y);   \
+  }
+
 /* tests the basic (custom) instructions (TIBSROT, ANDC8, XORC16, etc.) */
 void test_custom_instr() {
-  int a, b, c;
+
+  // RED 0b010
+  CHECK_RED(0x00000000,0xffffffff,0b010,0xffff0000);
+  CHECK_RED(0xffffffff,0x00000000,0b010,0x0000ffff);
+  CHECK_RED(0x00ff00ff,0xff00ff00,0b010,0xff0000ff);
+  // RED 0b011
+  CHECK_RED(0xffff0000,0x0000ffff,0b011,0xffff0000);
+  CHECK_RED(0x0000ffff,0xffff0000,0b011,0x0000ffff);
+  CHECK_RED(0xff0000ff,0x00ffff00,0b011,0xff0000ff);
+  // RED 0b100
+  CHECK_RED(0x00000000,0xffffffff,0b100,0x0000ff00);
+  CHECK_RED(0x00000000,0xffffffff,0b100,0xffffff00);
+  CHECK_RED(0xffffffff,0x00000000,0b100,0x000000ff);
+  CHECK_RED(0xf0f0f0f0,0x0f0f0f0f,0b100,0x00000ff0);
+  // RED 0b101
+  CHECK_RED(0xff00ff00,0x00ff00ff,0b101,0x0000ff00);
+  CHECK_RED(0xff00ff00,0x00ff00ff,0b101,0xffffff00);
+  CHECK_RED(0x00ff00ff,0xff00ff00,0b101,0x000000ff);
+  CHECK_RED(0x0ff00ff0,0xf00ff00f,0b101,0x00000ff0);
+  // RED 0b110
+  CHECK_RED(0x00000000,0xffffffff,0b110,0xff000000);
+  CHECK_RED(0x00000000,0xffffffff,0b110,0xff00ffff);
+  CHECK_RED(0xffffffff,0x00000000,0b110,0x00ff0000);
+  CHECK_RED(0xf0f0f0f0,0x0f0f0f0f,0b110,0x0ff00000);
+  // RED 0b111
+  CHECK_RED(0xff00ff00,0x00ff00ff,0b111,0xff000000);
+  CHECK_RED(0xff00ff00,0x00ff00ff,0b111,0xff00ffff);
+  CHECK_RED(0x00ff00ff,0xff00ff00,0b111,0x00ff0000);
+  CHECK_RED(0x0ff00ff0,0xf00ff00f,0b111,0x0ff00000);
   
   // TIBSROT_2
   CHECK_UN(TIBSROT_2,0x5555aaaa,0xaaaa5555);
@@ -150,10 +183,25 @@ void test_fd() {
   
 }
 
+void test_ti() {
+  // no tests for TI == 1 since they would be the same as FD == 1
+
+  // TI = 2
+  int a, b, c;
+  a = 0x00000000;
+  b = 0x00000000;
+  TI_AND_2(c,a,b);
+  
+}
+
+#include <time.h>
 int main() {
+  srand(time(NULL));
   test_custom_instr();
   
   test_fd();
+
+  test_ti();
 
   return 0;
 }
