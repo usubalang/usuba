@@ -24,6 +24,12 @@
     assert(rd == expect_rd && y == expect_y);   \
   }
 
+#define CHECK_FTCHK(expected,i,v) {             \
+    DATATYPE a = v, rd;                         \
+    FTCHK(rd,i,a);                              \
+    assert(rd == expected);                     \
+  }
+
 /* tests the basic (custom) instructions (TIBSROT, ANDC8, XORC16, etc.) */
 void test_custom_instr() {
 
@@ -55,6 +61,53 @@ void test_custom_instr() {
   CHECK_RED(0xff00ff00,0x00ff00ff,0b111,0xff00ffff);
   CHECK_RED(0x00ff00ff,0xff00ff00,0b111,0x00ff0000);
   CHECK_RED(0x0ff00ff0,0xf00ff00f,0b111,0x0ff00000);
+
+  // FTCHK 0b0010
+  CHECK_FTCHK(0x0000ffff,0b0010,0xffff0000);
+  CHECK_FTCHK(0x0000ffff,0b0010,0x0000ffff);
+  CHECK_FTCHK(0x00000000,0b0010,0x00000000);
+  CHECK_FTCHK(0x00000000,0b0010,0xff00ff00);
+  // FTCHK 0b1010
+  CHECK_FTCHK(0x0000ffff,0b1010,0xffff0000);
+  CHECK_FTCHK(0x0000ffff,0b1010,0x0000ffff);
+  CHECK_FTCHK(0xffff0000,0b1010,0x00000000);
+  CHECK_FTCHK(0xffff0000,0b1010,0xff00ff00);
+  // FTCHK 0b0011
+  CHECK_FTCHK(0x00000000,0b0011,0xffff0000);
+  CHECK_FTCHK(0x00000000,0b0011,0x0000ffff);
+  CHECK_FTCHK(0x0000ffff,0b0011,0x00000000);
+  CHECK_FTCHK(0x0000ffff,0b0011,0xff00ff00);
+  // FTCHK 0b1011
+  CHECK_FTCHK(0xffff0000,0b1011,0xffff0000);
+  CHECK_FTCHK(0xffff0000,0b1011,0x0000ffff);
+  CHECK_FTCHK(0x0000ffff,0b1011,0x00000000);
+  CHECK_FTCHK(0x0000ffff,0b1011,0xff00ff00);
+  // FTCHK 0b0100
+  CHECK_FTCHK(0x00000000,0b0100,0x00000000);
+  CHECK_FTCHK(0x00000000,0b0100,0xffffffff);
+  CHECK_FTCHK(0x000000ff,0b0100,0x00ff00ff);
+  CHECK_FTCHK(0x000000ff,0b0100,0x000000ff);
+  CHECK_FTCHK(0x000000ff,0b0100,0xffffff00);
+  // FTCHK 0b1100
+  CHECK_FTCHK(0xff00ff00,0b1100,0x00000000);
+  CHECK_FTCHK(0xff00ff00,0b1100,0xffffffff);
+  CHECK_FTCHK(0x00ff00ff,0b1100,0x00ff00ff);
+  CHECK_FTCHK(0x00ff00ff,0b1100,0x000000ff);
+  CHECK_FTCHK(0x00ff00ff,0b1100,0xffffff00);
+  // FTCHK 0b0101
+  CHECK_FTCHK(0x000000ff,0b0101,0x00000000);
+  CHECK_FTCHK(0x000000ff,0b0101,0xffffffff);
+  CHECK_FTCHK(0x00000000,0b0101,0x00ff00ff);
+  CHECK_FTCHK(0x000000ff,0b0101,0x000000ff);
+  CHECK_FTCHK(0x000000ff,0b0101,0xffffff00);
+  CHECK_FTCHK(0x00000000,0b0101,0x0ff00ff0);
+  // FTCHK 0b1101
+  CHECK_FTCHK(0x00ff00ff,0b1101,0x00000000);
+  CHECK_FTCHK(0x00ff00ff,0b1101,0xffffffff);
+  CHECK_FTCHK(0xff00ff00,0b1101,0x00ff00ff);
+  CHECK_FTCHK(0x00ff00ff,0b1101,0x000000ff);
+  CHECK_FTCHK(0x00ff00ff,0b1101,0xffffff00);
+  CHECK_FTCHK(0xff00ff00,0b1101,0x0ff00ff0);
   
   // TIBSROT_2
   CHECK_UN(TIBSROT_2,0x5555aaaa,0xaaaa5555);
