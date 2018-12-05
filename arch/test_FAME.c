@@ -1,26 +1,25 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <assert.h>
 
 #include "FAME.h"
 
 /* Checks that OP(v1,v2) == expected */
 #define CHECK(OP,expected,v1,v2) {              \
-    uint32_t a = v1, b = v2, r;                 \
+    DATATYPE a = v1, b = v2, r;                 \
     OP(r,a,b);                                  \
     assert(r == expected);                      \
   }
 
 /* Checks that OP(v1) == expected */
 #define CHECK_UN(OP,expected,v1) {              \
-    uint32_t a = v1, r;                         \
+    DATATYPE a = v1, r;                         \
     OP(r,a);                                    \
     assert(r == expected);                      \
   }
 
 #define CHECK_RED(expect_rd,expect_y,i,v) {     \
-    uint32_t a = v, rd, y;                      \
+    DATATYPE a = v, rd, y;                      \
     RED(rd,y,i,a);                              \
     assert(rd == expect_rd && y == expect_y);   \
   }
@@ -196,12 +195,14 @@ void test_ti() {
 
 #include <time.h>
 int main() {
-  srand(time(NULL));
+  /* srand(time(NULL)); */
   test_custom_instr();
   
   test_fd();
 
   test_ti();
+
+  printf("All right\n");
 
   return 0;
 }

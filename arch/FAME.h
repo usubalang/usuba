@@ -63,9 +63,8 @@
 #else
 
 #define RED(r,y,i,a)   {                                                \
-    DATATYPE n = i;                                                     \
     asm volatile("red %2, %3, %0\n\t"                                   \
-                 "mov %%y, %1\n\t" : "=r" (r), "=r" (y) : "r" (a), "r" (n)); \
+                 "mov %%y, %1\n\t" : "=r" (r), "=r" (y) : "r" (a), "i" (i)); \
   }
 
 #define TIBSROT_2(r,a) asm volatile("tibsrot %1, 2, %0\n\t" : "=r" (r) : "r" (a) :)
