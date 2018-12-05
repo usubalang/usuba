@@ -49,6 +49,47 @@
     }                                                                   \
   }
 
+#define FTCHK(rd,i,a) {                                                 \
+    if (i == 0b0010) {                                                  \
+      rd = ((a >> 16) ^ a) & 0xFFFF;                                    \
+    }                                                                   \
+    else if (i == 0b1010) {                                             \
+      rd = (((a >> 16) ^ a) & 0xFFFF) | (~((a >> 16) ^ a) << 16) ;      \
+    }                                                                   \
+    else if (i == 0b0011) {                                             \
+      rd = ~((a >> 16) ^ a) & 0xFFFF;                                   \
+    }                                                                   \
+    else if (i == 0b1011) {                                             \
+      rd = (~((a >> 16) ^ a) & 0xFFFF) | (((a >> 16) ^ a) << 16);       \
+    }                                                                   \
+    else if (i == 0b0100) {                                             \
+      rd = (((a & 0xFF) ^ (a >> 8)) |                                   \
+            ((a & 0xFF) ^ (a >> 16)) |                                  \
+            ((a & 0xFF) ^ (a >> 24))) & 0xFF;                           \
+    }                                                                   \
+    else if (i == 0b1100) {                                             \
+      DATATYPE tmp = (((a & 0xFF) ^ (a >> 8)) |                         \
+                      ((a & 0xFF) ^ (a >> 16)) |                        \
+                      ((a & 0xFF) ^ (a >> 24))) & 0xFF;                 \
+      rd = tmp | ((~tmp & 0xFF) << 8) | (tmp << 16) | ((~tmp & 0xFF) << 24); \
+    }                                                                   \
+    else if (i == 0b0101) {                                             \
+      rd = (((~a & 0xFF) ^ (a >> 8)) |                                  \
+            ((a & 0xFF) ^ (a >> 16)) |                                  \
+            ((~a & 0xFF) ^ (a >> 24))) & 0xFF;                          \
+    }                                                                   \
+    else if (i == 0b1101) {                                             \
+      DATATYPE tmp = ((~(a & 0xFF) ^ (a >> 8)) |                        \
+                      ((a & 0xFF) ^ (a >> 16)) |                        \
+                      (~(a & 0xFF) ^ (a >> 24))) & 0xFF;                \
+      rd = tmp | ((~tmp & 0xFF) << 8) | (tmp << 16) | ((~tmp & 0xFF) << 24); \
+    }                                                                   \
+    else {                                                              \
+      fprintf(stderr, "Invalid FTCHK@%d.\n",i);                         \
+      exit(EXIT_FAILURE);                                               \
+    }                                                                   \
+  }
+
 #define TIBSROT_2(r,a) r = ((a << 1) & 0xAAAAAAAA) | ((a >> 1) & 0x55555555)
 #define TIBSROT_4(r,a) r = ((a << 1) & 0xEEEEEEEE) | ((a >> 3) & 0x11111111)
 
