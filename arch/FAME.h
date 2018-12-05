@@ -50,43 +50,41 @@ static int xorshift_rand() {
 
 #define RAND() xorshift_rand()
 
-#if (! defined FD) || (FD == 1)
 
-#define FD_AND(a,b,c) (a) = (b) & (c)
-#define FD_OR(a,b,c)  (a) = (b) | (c)
-#define FD_XOR(a,b,c) (a) = (b) ^ (c)
-#define FD_NOT(a,b)   (a) = ~(b)
+#define FD_AND_1(a,b,c) (a) = (b) & (c)
+#define FD_OR_1(a,b,c)  (a) = (b) | (c)
+#define FD_XOR_1(a,b,c) (a) = (b) ^ (c)
+#define FD_NOT_1(a,b)   (a) = ~(b)
 
-#elif FD == 2
+#define FD_AND_2(a,b,c) ANDC16(a,b,c)
+#define FD_OR_2(a,b,c)  { DATATYPE _tmp_or; ANDC16(_tmp_or,~b,~c); a = ~_tmp_or; }
+#define FD_XOR_2(a,b,c) XORC16(a,b,c)
+#define FD_NOT_2(a,b)   (a) = ~(b)
 
-#define FD_AND(a,b,c) ANDC16(a,b,c)
-#define FD_OR(a,b,c)  { DATATYPE _tmp_or; ANDC16(_tmp_or,b,c); a = ~_tmp_or; }
-#define FD_XOR(a,b,c) XORC16(a,b,c)
-#define FD_NOT(a,b)   (a) = ~(b)
+#define FD_AND_4(a,b,c) ANDC8(a,b,c)
+#define FD_OR_4(a,b,c)  { DATATYPE _tmp_or; ANDC8(_tmp_or,~b,~c); a = ~_tmp_or; }
+#define FD_XOR_4(a,b,c) XORC8(a,b,c)
+#define FD_NOT_4(a,b)   (a) = ~(b)
 
-#elif FD == 4
+#ifndef FD
+#define FD 1
+#endif
 
-#define FD_AND(a,b,c) ANDC8(a,b,c)
-#define FD_OR(a,b,c)  { DATATYPE _tmp_or; ANDC8(_tmp_or,b,c); a = ~_tmp_or; }
-#define FD_XOR(a,b,c) XORC8(a,b,c)
-#define FD_NOT(a,b)   (a) = ~(b)
+#define _BUILD_OP_FD(OP,n) FD_ ## OP ## _ ## n
+#define BUILD_OP_FD(OP,n) _BUILD_OP_FD(OP,n)
 
-#else
-#error Invalid FD value
-
-#endif // FD == 1 // FD == 2 // FD == 4
+#define FD_AND BUILD_OP_FD(AND,FD)
+#define FD_OR  BUILD_OP_FD(OR, FD)
+#define FD_XOR BUILD_OP_FD(XOR,FD)
+#define FD_NOT BUILD_OP_FD(NOT,FD)
 
 
-#if (! defined TI) || (TI == 1)
+#define TI_AND_1(a,b,c) FD_AND(a,b,c) /* a = b & c */
+#define TI_OR_1(a,b,c)  FD_OR(a,b,c)  /* a = b | c */
+#define TI_XOR_1(a,b,c) FD_XOR(a,b,c) /* a = b ^ c */
+#define TI_NOT_1(a,b)   FD_NOT(a,b)   /* a = ~b */
 
-#define TI_AND(a,b,c) FD_AND(a,b,c) /* a = b & c */
-#define TI_OR(a,b,c)  FD_OR(a,b,c)  /* a = b | c */
-#define TI_XOR(a,b,c) FD_XOR(a,b,c) /* a = b ^ c */
-#define TI_NOT(a,b)   FD_NOT(a,b)   /* a = ~b */
-
-#elif TI == 2
-
-#define TI_AND(a,b,c) {                             \
+#define TI_AND_2(a,b,c) {                             \
     DATATYPE c1, c2, d1, d2, d3;                    \
     DATATYPE r = RAND();                            \
     FD_AND(c1,b,c);    /* c1 = b & c */             \
@@ -100,22 +98,17 @@ static int xorshift_rand() {
     FD_XOR(d3,d2,r_r1); /* d3 = d2 ^ (r <<< 1) */   \
     a = d3;             /* a  = d3 */               \
   }
-
-#define TI_NOT(a,b) FD_NOT(a,b) 
-
-#define TI_OR(a,b,c) {                          \
+#define TI_NOT_2(a,b) FD_NOT(a,b) 
+#define TI_OR_2(a,b,c) {                          \
     DATATYPE notb, notc, nota;                  \
     FD_NOT(notb,b);                             \
     FD_NOT(notc,c);                             \
     FD_AND(nota,notb,notc);                     \
     FD_NOT(a,nota);                             \
   }
+#define TI_XOR_2(a,b,c) FD_XOR(a,b,c)
 
-#define TI_XOR(a,b,c) FD_XOR(a,b,c)
-
-#elif TI == 4
-
-#define TI_AND(a,b,c) {                             \
+#define TI_AND_4(a,b,c) {                             \
     DATATYPE c1, c2, c3, c4, d1, d2, d3, d4;        \
     DATATYPE r = RAND();                            \
     FD_AND(c1,b,c);    /* c1 = b & c */             \
@@ -137,23 +130,27 @@ static int xorshift_rand() {
     FD_XOR(d4,d3,r_r1); /* d4 = d3 ^ (r <<< 1) */   \
     FD_XOR(a,d4,c4);    /* a  = d4 ^ c4 */      \
   }
-
-#define TI_NOT(a,b) FD_NOT(a,b)
-
-#define TI_OR(a,b,c) {                          \
+#define TI_NOT_4(a,b) FD_NOT(a,b)
+#define TI_OR_4(a,b,c) {                          \
     DATATYPE notb, notc, nota;                  \
     FD_NOT(notb,b);                             \
     FD_NOT(notc,c);                             \
     FD_AND(nota,notb,notc);                     \
     FD_NOT(a,nota);                             \
   }
+#define TI_XOR_4(a,b,c) FD_XOR(a,b,c)
 
-#define TI_XOR(a,b,c) FD_XOR(a,b,c)
+#ifndef TI
+#define TI 1
+#endif
 
-#else
-#error Invalid TI value
+#define _BUILD_OP_TI(OP,n) TI_ ## OP ## _ ## n
+#define BUILD_OP_TI(OP,n) _BUILD_OP_TI(OP,n)
 
-#endif // TI
+#define TI_AND BUILD_OP_TI(AND,TI)
+#define TI_OR  BUILD_OP_TI(OR, TI)
+#define TI_XOR BUILD_OP_TI(XOR,TI)
+#define TI_NOT BUILD_OP_TI(NOT,TI)
 
 
 #define AND(a,b,c) TI_AND(a,b,c) /* a = b & c */
