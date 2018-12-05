@@ -128,8 +128,9 @@ static int lcg_rand() {
 }
 /* The following algorithm is attritubed by Wikipedia (https://en.wikipedia.org/wiki/Xorshift)
    to p. 4 of Marsaglia, "Xorshift RNGs" */
+static int state = 1;
+void seed(int seed) { state = seed; }
 static int xorshift_rand() {
-  static int state = 1;
   state ^= state << 13;
   state ^= state >> 17;
   state ^= state << 5;
@@ -186,13 +187,13 @@ static int xorshift_rand() {
     FD_XOR(d3,d2,r_r1); /* d3 = d2 ^ (r <<< 1) */   \
     a = d3;             /* a  = d3 */               \
   }
-#define TI_NOT_2(a,b) FD_NOT(a,b) 
-#define TI_OR_2(a,b,c) {                          \
+#define TI_NOT_2(a,b) a = (b) ^ 0x55555555 
+#define TI_OR_2(a,b,c) {                        \
     DATATYPE notb, notc, nota;                  \
-    FD_NOT(notb,b);                             \
-    FD_NOT(notc,c);                             \
-    FD_AND(nota,notb,notc);                     \
-    FD_NOT(a,nota);                             \
+    TI_NOT_2(notb,b);                           \
+    TI_NOT_2(notc,c);                           \
+    TI_AND_2(nota,notb,notc);                   \
+    TI_NOT_2(a,nota);                           \
   }
 #define TI_XOR_2(a,b,c) FD_XOR(a,b,c)
 
@@ -218,13 +219,13 @@ static int xorshift_rand() {
     FD_XOR(d4,d3,r_r1); /* d4 = d3 ^ (r <<< 1) */   \
     FD_XOR(a,d4,c4);    /* a  = d4 ^ c4 */      \
   }
-#define TI_NOT_4(a,b) FD_NOT(a,b)
+#define TI_NOT_4(a,b) a = (b) ^ 0x11111111
 #define TI_OR_4(a,b,c) {                          \
     DATATYPE notb, notc, nota;                  \
-    FD_NOT(notb,b);                             \
-    FD_NOT(notc,c);                             \
-    FD_AND(nota,notb,notc);                     \
-    FD_NOT(a,nota);                             \
+    TI_NOT_4(notb,b);                             \
+    TI_NOT_4(notc,c);                             \
+    TI_AND_4(nota,notb,notc);                     \
+    TI_NOT_4(a,nota);                             \
   }
 #define TI_XOR_4(a,b,c) FD_XOR(a,b,c)
 
