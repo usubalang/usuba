@@ -5,7 +5,7 @@
 #include "FAME.h"
 
 /* Checks that OP(v1,v2) == expected */
-#define CHECK(OP,expected,v1,v2) {              \
+#define CHECK_BIN(OP,expected,v1,v2) {          \
     DATATYPE a = v1, b = v2, r;                 \
     OP(r,a,b);                                  \
     assert(r == expected);                      \
@@ -118,40 +118,40 @@ void test_custom_instr() {
   CHECK_UN(TIBSROT_4,0xdddddddd,0xeeeeeeee);
 
   // ANDC8
-  CHECK(ANDC8,0xff00ff00,0xffffffff,0x00000000);
-  CHECK(ANDC8,0xffffffff,0x00ff00ff,0xffffffff);
-  CHECK(ANDC8,0x00ff00ff,0x00ff00ff,0x00ff00ff);
-  CHECK(ANDC8,0xff00ff00,0x00000000,0xffffffff);
+  CHECK_BIN(ANDC8,0xff00ff00,0xffffffff,0x00000000);
+  CHECK_BIN(ANDC8,0xffffffff,0x00ff00ff,0xffffffff);
+  CHECK_BIN(ANDC8,0x00ff00ff,0x00ff00ff,0x00ff00ff);
+  CHECK_BIN(ANDC8,0xff00ff00,0x00000000,0xffffffff);
 
   // XORC8
-  CHECK(XORC8,0x00ff00ff,0xffffffff,0x00000000);
-  CHECK(XORC8,0x00000000,0x00ff00ff,0xffffffff);
-  CHECK(XORC8,0xff00ff00,0x00ff00ff,0x00ff00ff);
-  CHECK(XORC8,0xffffffff,0x00000000,0x00ff00ff);
+  CHECK_BIN(XORC8,0x00ff00ff,0xffffffff,0x00000000);
+  CHECK_BIN(XORC8,0x00000000,0x00ff00ff,0xffffffff);
+  CHECK_BIN(XORC8,0xff00ff00,0x00ff00ff,0x00ff00ff);
+  CHECK_BIN(XORC8,0xffffffff,0x00000000,0x00ff00ff);
 
   // XNORC8
-  CHECK(XNORC8,0xff00ff00,0xffffffff,0x00000000);
-  CHECK(XNORC8,0xffffffff,0x00ff00ff,0xffffffff);
-  CHECK(XNORC8,0x00ff00ff,0x00ff00ff,0x00ff00ff);
-  CHECK(XNORC8,0x00000000,0x00000000,0x00ff00ff);
+  CHECK_BIN(XNORC8,0xff00ff00,0xffffffff,0x00000000);
+  CHECK_BIN(XNORC8,0xffffffff,0x00ff00ff,0xffffffff);
+  CHECK_BIN(XNORC8,0x00ff00ff,0x00ff00ff,0x00ff00ff);
+  CHECK_BIN(XNORC8,0x00000000,0x00000000,0x00ff00ff);
   
   // ANDC16
-  CHECK(ANDC16,0xffff0000,0xffffffff,0x00000000);
-  CHECK(ANDC16,0xffff00ff,0x00ff00ff,0xffffffff);
-  CHECK(ANDC16,0x00ff00ff,0x00ff00ff,0x00ff00ff);
-  CHECK(ANDC16,0xffff0000,0x00000000,0xffffffff);
+  CHECK_BIN(ANDC16,0xffff0000,0xffffffff,0x00000000);
+  CHECK_BIN(ANDC16,0xffff00ff,0x00ff00ff,0xffffffff);
+  CHECK_BIN(ANDC16,0x00ff00ff,0x00ff00ff,0x00ff00ff);
+  CHECK_BIN(ANDC16,0xffff0000,0x00000000,0xffffffff);
   
   // XORC16
-  CHECK(XORC16,0x0000ffff,0xffffffff,0x00000000);
-  CHECK(XORC16,0x00ffff00,0x00ff00ff,0xffffffff);
-  CHECK(XORC16,0xffff0000,0x00ff00ff,0x00ff00ff);
-  CHECK(XORC16,0xff0000ff,0x00000000,0x00ff00ff);
+  CHECK_BIN(XORC16,0x0000ffff,0xffffffff,0x00000000);
+  CHECK_BIN(XORC16,0x00ffff00,0x00ff00ff,0xffffffff);
+  CHECK_BIN(XORC16,0xffff0000,0x00ff00ff,0x00ff00ff);
+  CHECK_BIN(XORC16,0xff0000ff,0x00000000,0x00ff00ff);
 
   // XNORC16
-  CHECK(XNORC16,0xffff0000,0xffffffff,0x00000000);
-  CHECK(XNORC16,0xff0000ff,0x00ff00ff,0xffffffff);
-  CHECK(XNORC16,0x0000ffff,0x00ff00ff,0x00ff00ff);
-  CHECK(XNORC16,0x00ffff00,0x00000000,0x00ff00ff);
+  CHECK_BIN(XNORC16,0xffff0000,0xffffffff,0x00000000);
+  CHECK_BIN(XNORC16,0xff0000ff,0x00ff00ff,0xffffffff);
+  CHECK_BIN(XNORC16,0x0000ffff,0x00ff00ff,0x00ff00ff);
+  CHECK_BIN(XNORC16,0x00ffff00,0x00000000,0x00ff00ff);
 
 }
 
@@ -159,75 +159,75 @@ void test_custom_instr() {
 void test_fd() {
 
   // FD = 1
-  CHECK(FD_AND_1,0x00000000,0xffffffff,0x00000000);
-  CHECK(FD_AND_1,0x00000000,0x00000000,0xffffffff);
-  CHECK(FD_AND_1,0xffffffff,0xffffffff,0xffffffff);
-  CHECK(FD_AND_1,0xf0f0f0f0,0xffffffff,0xf0f0f0f0);
-  CHECK(FD_AND_1,0x00000000,0xf0f0f0f0,0x0f0f0f0f);
+  CHECK_BIN(FD_AND_1,0x00000000,0xffffffff,0x00000000);
+  CHECK_BIN(FD_AND_1,0x00000000,0x00000000,0xffffffff);
+  CHECK_BIN(FD_AND_1,0xffffffff,0xffffffff,0xffffffff);
+  CHECK_BIN(FD_AND_1,0xf0f0f0f0,0xffffffff,0xf0f0f0f0);
+  CHECK_BIN(FD_AND_1,0x00000000,0xf0f0f0f0,0x0f0f0f0f);
 
-  CHECK(FD_OR_1,0xffffffff,0xffffffff,0x00000000);
-  CHECK(FD_OR_1,0xffffffff,0x00000000,0xffffffff);
-  CHECK(FD_OR_1,0x00000000,0x00000000,0x00000000);
-  CHECK(FD_OR_1,0xffffffff,0xffffffff,0xffffffff);
-  CHECK(FD_OR_1,0xf0f0f0f0,0x00000000,0xf0f0f0f0);
-  CHECK(FD_OR_1,0xffffffff,0xf0f0f0f0,0x0f0f0f0f);
+  CHECK_BIN(FD_OR_1,0xffffffff,0xffffffff,0x00000000);
+  CHECK_BIN(FD_OR_1,0xffffffff,0x00000000,0xffffffff);
+  CHECK_BIN(FD_OR_1,0x00000000,0x00000000,0x00000000);
+  CHECK_BIN(FD_OR_1,0xffffffff,0xffffffff,0xffffffff);
+  CHECK_BIN(FD_OR_1,0xf0f0f0f0,0x00000000,0xf0f0f0f0);
+  CHECK_BIN(FD_OR_1,0xffffffff,0xf0f0f0f0,0x0f0f0f0f);
   
-  CHECK(FD_XOR_1,0xffffffff,0xffffffff,0x00000000);
-  CHECK(FD_XOR_1,0xffffffff,0x00000000,0xffffffff);
-  CHECK(FD_XOR_1,0x00000000,0x00000000,0x00000000);
-  CHECK(FD_XOR_1,0x00000000,0xffffffff,0xffffffff);
-  CHECK(FD_XOR_1,0xf0f0f0f0,0x00000000,0xf0f0f0f0);
-  CHECK(FD_XOR_1,0xffffffff,0xf0f0f0f0,0x0f0f0f0f);
+  CHECK_BIN(FD_XOR_1,0xffffffff,0xffffffff,0x00000000);
+  CHECK_BIN(FD_XOR_1,0xffffffff,0x00000000,0xffffffff);
+  CHECK_BIN(FD_XOR_1,0x00000000,0x00000000,0x00000000);
+  CHECK_BIN(FD_XOR_1,0x00000000,0xffffffff,0xffffffff);
+  CHECK_BIN(FD_XOR_1,0xf0f0f0f0,0x00000000,0xf0f0f0f0);
+  CHECK_BIN(FD_XOR_1,0xffffffff,0xf0f0f0f0,0x0f0f0f0f);
 
   CHECK_UN(FD_NOT_1,0x00000000,0xffffffff);
   CHECK_UN(FD_NOT_1,0xffffffff,0x00000000);
   CHECK_UN(FD_NOT_1,0xf0f0f0f0,0x0f0f0f0f);
 
   // FD = 2
-  CHECK(FD_AND_2,0xffff0000,0xffffffff,0x00000000);
-  CHECK(FD_AND_2,0xffff0000,0x00000000,0xffffffff);
-  CHECK(FD_AND_2,0xffffffff,0xffffffff,0xffffffff);
-  CHECK(FD_AND_2,0xfffff0f0,0xffffffff,0xf0f0f0f0);
-  CHECK(FD_AND_2,0xffff0000,0xf0f0f0f0,0x0f0f0f0f);
+  CHECK_BIN(FD_AND_2,0xffff0000,0xffffffff,0x00000000);
+  CHECK_BIN(FD_AND_2,0xffff0000,0x00000000,0xffffffff);
+  CHECK_BIN(FD_AND_2,0xffffffff,0xffffffff,0xffffffff);
+  CHECK_BIN(FD_AND_2,0xfffff0f0,0xffffffff,0xf0f0f0f0);
+  CHECK_BIN(FD_AND_2,0xffff0000,0xf0f0f0f0,0x0f0f0f0f);
 
-  CHECK(FD_OR_2,0x0000ffff,0xffffffff,0x00000000);
-  CHECK(FD_OR_2,0x0000ffff,0x00000000,0xffffffff);
-  CHECK(FD_OR_2,0x00000000,0x00000000,0x00000000);
-  CHECK(FD_OR_2,0xffffffff,0xffffffff,0xffffffff);
-  CHECK(FD_OR_2,0x0000f0f0,0x00000000,0xf0f0f0f0);
-  CHECK(FD_OR_2,0x0000ffff,0xf0f0f0f0,0x0f0f0f0f);
+  CHECK_BIN(FD_OR_2,0x0000ffff,0xffffffff,0x00000000);
+  CHECK_BIN(FD_OR_2,0x0000ffff,0x00000000,0xffffffff);
+  CHECK_BIN(FD_OR_2,0x00000000,0x00000000,0x00000000);
+  CHECK_BIN(FD_OR_2,0xffffffff,0xffffffff,0xffffffff);
+  CHECK_BIN(FD_OR_2,0x0000f0f0,0x00000000,0xf0f0f0f0);
+  CHECK_BIN(FD_OR_2,0x0000ffff,0xf0f0f0f0,0x0f0f0f0f);
   
-  CHECK(FD_XOR_2,0x0000ffff,0xffffffff,0x00000000);
-  CHECK(FD_XOR_2,0x0000ffff,0x00000000,0xffffffff);
-  CHECK(FD_XOR_2,0xffff0000,0x00000000,0x00000000);
-  CHECK(FD_XOR_2,0xffff0000,0xffffffff,0xffffffff);
-  CHECK(FD_XOR_2,0x0f0ff0f0,0x00000000,0xf0f0f0f0);
-  CHECK(FD_XOR_2,0x0000ffff,0xf0f0f0f0,0x0f0f0f0f);
+  CHECK_BIN(FD_XOR_2,0x0000ffff,0xffffffff,0x00000000);
+  CHECK_BIN(FD_XOR_2,0x0000ffff,0x00000000,0xffffffff);
+  CHECK_BIN(FD_XOR_2,0xffff0000,0x00000000,0x00000000);
+  CHECK_BIN(FD_XOR_2,0xffff0000,0xffffffff,0xffffffff);
+  CHECK_BIN(FD_XOR_2,0x0f0ff0f0,0x00000000,0xf0f0f0f0);
+  CHECK_BIN(FD_XOR_2,0x0000ffff,0xf0f0f0f0,0x0f0f0f0f);
 
   CHECK_UN(FD_NOT_2,0x00000000,0xffffffff);
   CHECK_UN(FD_NOT_2,0xffffffff,0x00000000);
   CHECK_UN(FD_NOT_2,0xf0f0f0f0,0x0f0f0f0f);
   
   // FD = 4
-  CHECK(FD_AND_4,0xff00ff00,0xffffffff,0x00000000);
-  CHECK(FD_AND_4,0xff00ff00,0x00000000,0xffffffff);
-  CHECK(FD_AND_4,0xffffffff,0xffffffff,0xffffffff);
-  CHECK(FD_AND_4,0xfff0fff0,0xffffffff,0xf0f0f0f0);
-  CHECK(FD_AND_4,0xff00ff00,0xf0f0f0f0,0x0f0f0f0f);
+  CHECK_BIN(FD_AND_4,0xff00ff00,0xffffffff,0x00000000);
+  CHECK_BIN(FD_AND_4,0xff00ff00,0x00000000,0xffffffff);
+  CHECK_BIN(FD_AND_4,0xffffffff,0xffffffff,0xffffffff);
+  CHECK_BIN(FD_AND_4,0xfff0fff0,0xffffffff,0xf0f0f0f0);
+  CHECK_BIN(FD_AND_4,0xff00ff00,0xf0f0f0f0,0x0f0f0f0f);
 
-  CHECK(FD_OR_4,0x00ff00ff,0xffffffff,0x00000000);
-  CHECK(FD_OR_4,0x00ff00ff,0x00000000,0xffffffff);
-  CHECK(FD_OR_4,0x00000000,0x00000000,0x00000000);
-  CHECK(FD_OR_4,0xffffffff,0xffffffff,0xffffffff);
-  CHECK(FD_OR_4,0x00f000f0,0x00000000,0xf0f0f0f0);
-  CHECK(FD_OR_4,0x00ff00ff,0xf0f0f0f0,0x0f0f0f0f);
+  CHECK_BIN(FD_OR_4,0x00ff00ff,0xffffffff,0x00000000);
+  CHECK_BIN(FD_OR_4,0x00ff00ff,0x00000000,0xffffffff);
+  CHECK_BIN(FD_OR_4,0x00000000,0x00000000,0x00000000);
+  CHECK_BIN(FD_OR_4,0xffffffff,0xffffffff,0xffffffff);
+  CHECK_BIN(FD_OR_4,0x00f000f0,0x00000000,0xf0f0f0f0);
+  CHECK_BIN(FD_OR_4,0x00ff00ff,0xf0f0f0f0,0x0f0f0f0f);
   
-  CHECK(FD_XOR_4,0x00ff00ff,0xffffffff,0x00000000);
-  CHECK(FD_XOR_4,0x00ff00ff,0x00000000,0xffffffff);
-  CHECK(FD_XOR_4,0xff00ff00,0x00000000,0x00000000);
-  CHECK(FD_XOR_4,0xff00ff00,0xffffffff,0xffffffff);
-  CHECK(FD_XOR_4,0x0ff00ff0,0x00000000,0xf0f0f0f0);
-  CHECK(FD_XOR_4,0x00ff00ff,0xf0f0f0f0,0x0f0f0f0f);
+  CHECK_BIN(FD_XOR_4,0x00ff00ff,0xffffffff,0x00000000);
+  CHECK_BIN(FD_XOR_4,0x00ff00ff,0x00000000,0xffffffff);
+  CHECK_BIN(FD_XOR_4,0xff00ff00,0x00000000,0x00000000);
+  CHECK_BIN(FD_XOR_4,0xff00ff00,0xffffffff,0xffffffff);
+  CHECK_BIN(FD_XOR_4,0x0ff00ff0,0x00000000,0xf0f0f0f0);
+  CHECK_BIN(FD_XOR_4,0x00ff00ff,0xf0f0f0f0,0x0f0f0f0f);
 
   CHECK_UN(FD_NOT_4,0x00000000,0xffffffff);
   CHECK_UN(FD_NOT_4,0xffffffff,0x00000000);
@@ -235,20 +235,77 @@ void test_fd() {
   
 }
 
+#define RED2(x) ((x ^ (x >> 1)) & 0x55555555)
+#define RED4(x) ((x ^ (x >> 1) ^ (x >> 2) ^ (x >> 3)) & 0x11111111)
+
+/* The for loop is present because of the randomness */
+#define CHECK_TI_BIN(OP,REDUCE,expected,v1,v2) {    \
+    DATATYPE a = v1, b = v2, res;                   \
+    for (int i = 0; i < 100; i++) {                 \
+      OP(res,a,b);                                  \
+      assert(REDUCE(res) == expected);              \
+    }                                               \
+  }
+/* The for loop is present because of the randomness */
+#define CHECK_TI_UN(OP,REDUCE,expected,v1) {    \
+    DATATYPE a = v1, res;                       \
+    for (int i = 0; i < 100; i++) {             \
+      OP(res,a);                                \
+      assert(REDUCE(res) == expected);          \
+    }                                           \
+  }
+
+/* Checks that the TI operators are **functionally** correct.
+   Not that this only checks for FD = 1. */
 void test_ti() {
   // no tests for TI == 1 since they would be the same as FD == 1
 
   // TI = 2
-  int a, b, c;
-  a = 0x00000000;
-  b = 0x00000000;
-  TI_AND_2(c,a,b);
+  CHECK_TI_BIN(TI_AND_2,RED2,0x00000000,0x00000000,0x00000000);
+  CHECK_TI_BIN(TI_AND_2,RED2,0x55555555,0xaaaaaaaa,0x55555555);
+  CHECK_TI_BIN(TI_AND_2,RED2,0x11111111,0x126a126a,0x11111111);
+
+  CHECK_TI_UN(TI_NOT_2,RED2,0x00000000,0x55555555);
+  CHECK_TI_UN(TI_NOT_2,RED2,0x55555555,0xcccccccc);
+  CHECK_TI_UN(TI_NOT_2,RED2,0x55555555,0x00000000);
+  
+  CHECK_TI_BIN(TI_OR_2,RED2,0x00000000,0x00000000,0x00000000);
+  CHECK_TI_BIN(TI_OR_2,RED2,0x55555555,0x55555555,0x55555555);  
+  CHECK_TI_BIN(TI_OR_2,RED2,0x55555555,0x88888888,0x22222222);
+
+  CHECK_TI_BIN(TI_XOR_2,RED2,0x00000000,0x00000000,0x00000000);
+  CHECK_TI_BIN(TI_XOR_2,RED2,0x00000000,0xffffffff,0x00000000);
+  CHECK_TI_BIN(TI_XOR_2,RED2,0x55555555,0x55555555,0x00000000);
+
+  // TI = 4
+  CHECK_TI_BIN(TI_AND_4,RED4,0x00000000,0x00000000,0x00000000);
+  CHECK_TI_BIN(TI_AND_4,RED4,0x00000000,0xffffffff,0x00000000);
+  CHECK_TI_BIN(TI_AND_4,RED4,0x11111111,0x88888888,0x11111111);
+  CHECK_TI_BIN(TI_AND_4,RED4,0x11110000,0x71716a6a,0x11111111);
+  
+  CHECK_TI_UN(TI_NOT_4,RED4,0x00000000,0x11111111);
+  CHECK_TI_UN(TI_NOT_4,RED4,0x11111111,0xffffffff);
+  CHECK_TI_UN(TI_NOT_4,RED4,0x11111111,0x00000000);
+  CHECK_TI_UN(TI_NOT_4,RED4,0x10101010,0xf237f237);
+
+  CHECK_TI_BIN(TI_OR_4,RED4,0x00000000,0x00000000,0x00000000);
+  CHECK_TI_BIN(TI_OR_4,RED4,0x11111111,0x71de71de,0x00000000);
+  CHECK_TI_BIN(TI_OR_4,RED4,0x11111111,0x10721072,0x07210721);
+
+  CHECK_TI_BIN(TI_XOR_4,RED4,0x00000000,0x00000000,0x00000000);
+  CHECK_TI_BIN(TI_XOR_4,RED4,0x00000000,0xffffffff,0x00000000);
+  CHECK_TI_BIN(TI_XOR_4,RED4,0x11111111,0x71de71de,0x00000000);
+  CHECK_TI_BIN(TI_XOR_4,RED4,0x11001100,0x10721072,0x07210721);
+  CHECK_TI_BIN(TI_XOR_4,RED4,0x00000000,0x11111111,0x77777777);
+  
+  
+  
+  
   
 }
 
 #include <time.h>
 int main() {
-  /* srand(time(NULL)); */
   test_custom_instr();
   
   test_fd();
