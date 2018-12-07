@@ -121,14 +121,9 @@
 #define XNORC16(r,a,b) asm volatile("xnorc16 %1, %2, %0\n\t" : "=r" (r) : "r" (a), "r" (b) :)
 #endif
 
-static int lcg_rand() {
-  static int state = 1;
-  state = state * 1664525 + 1013904223;
-  return state;
-}
 /* The following algorithm is attritubed by Wikipedia (https://en.wikipedia.org/wiki/Xorshift)
    to p. 4 of Marsaglia, "Xorshift RNGs" */
-static int state = 1;
+static int state = 0x8e20a6e5;
 void seed(int seed) { state = seed; }
 static int xorshift_rand() {
   state ^= state << 13;
@@ -137,22 +132,32 @@ static int xorshift_rand() {
   return state;
 }
 
+#if defined(FD) && FD >= 2
+#if FD == 2
+#define RAND() ({ DATATYPE _tmp = xorshift_rand(); (~_tmp & 0xFFFF) | (_tmp << 16); }) 
+#elif FD == 4
+#define RAND() ({ DATATYPE _tmp = xorshift_rand(); \
+      (~_tmp & 0xFF) | ((_tmp & 0xFF) << 8) | ((~_tmp & 0xFF) << 16) | (_tmp<< 24); })
+#else
+#error Invalid FD
+#endif
+#else
 #define RAND() xorshift_rand()
-
+#endif
 
 #define FD_AND_1(r,a,b) (r) = (a) & (b)
 #define FD_OR_1(r,a,b) (r) = (a) | (b)
 #define FD_XOR_1(r,a,b) (r) = (a) ^ (b)
 #define FD_NOT_1(r,a)   (r) = ~(a)
 
-#define FD_AND_2(r,a,c) ANDC16(r,a,b)
-#define FD_OR_2(r,a,c)  { DATATYPE _tmp_or; ANDC16(_tmp_or,~a,~b); r = ~_tmp_or; }
-#define FD_XOR_2(r,a,c) XORC16(r,a,b)
+#define FD_AND_2(r,a,b) ANDC16(r,a,b)
+#define FD_OR_2(r,a,b)  { DATATYPE _tmp_or; ANDC16(_tmp_or,~a,~b); r = ~_tmp_or; }
+#define FD_XOR_2(r,a,b) XORC16(r,a,b)
 #define FD_NOT_2(r,a)   (r) = ~(a)
 
-#define FD_AND_4(r,a,c) ANDC8(r,a,b)
-#define FD_OR_4(r,a,c)  { DATATYPE _tmp_or; ANDC8(_tmp_or,~a,~b); r = ~_tmp_or; }
-#define FD_XOR_4(r,a,c) XORC8(r,a,b)
+#define FD_AND_4(r,a,b) ANDC8(r,a,b)
+#define FD_OR_4(r,a,b)  { DATATYPE _tmp_or; ANDC8(_tmp_or,~a,~b); r = ~_tmp_or; }
+#define FD_XOR_4(r,a,b) XORC8(r,a,b)
 #define FD_NOT_4(r,a)   (r) = ~(a)
 
 #ifndef FD
@@ -173,7 +178,7 @@ static int xorshift_rand() {
 #define TI_XOR_1(r,a,b) FD_XOR(r,a,b) /* a = b ^ c */
 #define TI_NOT_1(r,a)   FD_NOT(r,a)   /* a = ~b */
 
-#define TI_AND_2(a,b,c) {                             \
+#define TI_AND_2(a,b,c) {                           \
     DATATYPE c1, c2, d1, d2, d3;                    \
     DATATYPE r = RAND();                            \
     FD_AND(c1,b,c);    /* c1 = b & c */             \
