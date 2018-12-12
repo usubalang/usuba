@@ -223,8 +223,8 @@ let get_reg_size env (v:var) : int =
                            
 let rec get_expr_reg_size env (e:expr) : int =
   match e with
-  | Const n -> Printf.fprintf stderr "Can't infer `Const %d' size.\n" n;
-               assert false
+  | Const n -> Printf.fprintf stderr "Hazardous inference of `Const %d' size.\n" n;
+               1
   | ExpVar v -> get_reg_size env v
   | Not e -> get_expr_reg_size env e
   | Shift(_,e,_) -> get_expr_reg_size env e
@@ -241,8 +241,8 @@ let rec get_expr_reg_size env (e:expr) : int =
 
 let rec get_expr_type env_fun env_var (e:expr) : typ list =
   match e with
-  | Const n -> Printf.fprintf stderr "Can't infer `Const %d' type.\n" n;
-               assert false
+  | Const n -> Printf.fprintf stderr "Hazardous inference of `Const %d' size.\n" n;
+               [ Nat ]
   | ExpVar v -> [ get_var_type env_var v ]
   | Tuple l -> flat_map (get_expr_type env_fun env_var) l
   | Not e -> get_expr_type env_fun env_var e
@@ -261,7 +261,7 @@ let rec get_expr_type env_fun env_var (e:expr) : typ list =
 let rec expand_var env_var ?(env_it=Hashtbl.create 100) ?(partial=false) (v:var) : var list =
   let typ = get_var_type env_var v in
   match typ with
-  | Bool -> [ v ]
+  | Bool | Nat -> [ v ]
   | Int(_,1) -> [ v ]
   | Int(_,m) -> List.map (fun i -> Index(v,Const_e i)) (gen_list_0_int m)
   | Array(_,ae) -> if partial then
@@ -270,7 +270,6 @@ let rec expand_var env_var ?(env_it=Hashtbl.create 100) ?(partial=false) (v:var)
                    else
                      flat_map (fun i -> expand_var env_var ~env_it:env_it (Index(v,Const_e i)))
                               (gen_list_0_int (eval_arith env_it ae))
-  | _ -> assert false
 
 let rec expand_var_partial env_var ?(env_it=Hashtbl.create 100) (v:var) : var list =
   expand_var env_var ~env_it:env_it ~partial:true v
@@ -291,8 +290,14 @@ let rec get_base_type (typ:typ) : typ =
   | Int(n,_) -> Int(n,1)
   | Array(t,_) -> get_base_type t
   | _ -> assert false
-                
 
+
+let vd_to_var (vd:var_d) : var =
+  Var vd.vid
+
+let p_to_vars (p:p) : var list =
+  List.map vd_to_var p
+                
 let env_fetch (env: ('b, 'a) Hashtbl.t) (id: ident) : 'a option =
   try
     let v = Hashtbl.find env id.name in Some v

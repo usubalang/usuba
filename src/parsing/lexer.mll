@@ -59,6 +59,8 @@ let bitslicing = ref true
 
 rule token = parse
 
+| "__END__" { TOK_EOF }
+
 (* pragmas *)
 | "#pragma" [' ']+ (['a' - 'z']+ as pragma)    
   { (match pragma with
