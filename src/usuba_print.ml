@@ -156,8 +156,9 @@ let rec deq_to_str = function
   | Eqn(pat,e,sync) -> sprintf "%s %s= %s" (pat_to_str pat) (if sync then ":" else "")
                                 (expr_to_str e)
   | Loop(id,ei,ef,d,opts) ->
-     sprintf "%s forall %s in [%s,%s] {\n    %s\n  }"
+     sprintf "%s%sforall %s in [%s,%s] {\n    %s\n  }"
              (join " " (List.map optstmt_to_str opts))
+             (if List.length opts > 0 then " " else "")
              id.name  (arith_to_str ei) (arith_to_str ef)
              (join "\n    " (List.map deq_to_str d))
 let deq_to_str_l = lift_comma deq_to_str

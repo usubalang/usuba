@@ -138,7 +138,11 @@ let rec expand_deq env_fun env_var (deq:deq) : deq =
        let _,args = unzip (match_args env_fun env_var f f.p_in args) in
        let _,ret  = unzip (match_ret  env_fun env_var f f.p_out lhs) in
        Eqn(List.rev ret,Fun(id,List.rev args),sync)
-  | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,List.map (expand_deq env_fun env_var) dl,opts)
+  | Loop(i,ei,ef,dl,opts) ->
+     Hashtbl.add env_var i Nat;
+     let res = Loop(i,ei,ef,List.map (expand_deq env_fun env_var) dl,opts) in
+     Hashtbl.remove env_var i;
+     res
   | _ -> deq
 
                                               
