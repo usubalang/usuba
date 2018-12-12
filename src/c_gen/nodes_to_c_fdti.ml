@@ -204,9 +204,11 @@ let rec gen_list_typ (x:string) (typ:typ) : string list =
   match typ with
   | Bool  -> [ x ]
   | Int(_,n) -> List.map (sprintf "%s'") (gen_list0 x n)
-  | Array(t',Const_e n) -> List.flatten @@
-                             List.map (fun x -> gen_list_typ x t')
-                                      (List.map (sprintf "%s'") (gen_list0 x n))
+  | Array(t',size) ->
+     let n = eval_arith_ne size in
+     List.flatten @@
+       List.map (fun x -> gen_list_typ x t')
+                (List.map (sprintf "%s'") (gen_list0 x n))
   | _ -> assert false
                               
            
@@ -234,13 +236,15 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
                                  (Printf.sprintf "%s[%d]" (rename id) y))
                     (gen_list0 id n)
                     (gen_list_0_int n)
-    | Array(t,Const_e n) -> let size = typ_size t in
-                            List.iter2
-                              (fun x y ->
-                               Hashtbl.add inputs x
-                                           (Printf.sprintf "%s[%d]" (rename id) y))
-                              (gen_list_typ id vd.vtyp)
-                              (gen_list_0_int (size * n))
+    | Array(t,size) ->
+       let n = eval_arith_ne size in
+       let size = typ_size t in
+       List.iter2
+         (fun x y ->
+          Hashtbl.add inputs x
+                      (Printf.sprintf "%s[%d]" (rename id) y))
+         (gen_list_typ id vd.vtyp)
+         (gen_list_0_int (size * n))
     | _ -> Printf.printf "%s => %s:%s\n" def.id.name id
                          (Usuba_print.typ_to_str vd.vtyp);
            raise (Not_implemented "Arrays as input") in
