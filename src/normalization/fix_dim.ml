@@ -111,7 +111,11 @@ module Dir_params = struct
                             ) vs;
                  deq
               | Eqn(vs,e,sync)        -> deq (* Eqn(expand_vars vs, expand_expr e, sync) *)
-              | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,fix_deqs env_fun env_var dl,opts)) deqs
+              | Loop(i,ei,ef,dl,opts) ->
+                 Hashtbl.add env_var i Nat;
+                 let res = Loop(i,ei,ef,fix_deqs env_fun env_var dl,opts) in
+                 Hashtbl.remove env_var i;
+                 res) deqs
 
   let fix_def env_fun (def:def) : unit =
     match def.node with
@@ -241,7 +245,11 @@ module Dir_inner = struct
                             ) vs;
                  deq
               | Eqn(vs,e,sync)        -> deq (* Eqn(expand_vars vs, expand_expr e, sync) *)
-              | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,fix_deqs env_fun env_var def dl,opts)) deqs
+              | Loop(i,ei,ef,dl,opts) ->
+                 Hashtbl.add env_var i Nat;
+                 let res = Loop(i,ei,ef,fix_deqs env_fun env_var def dl,opts) in
+                 Hashtbl.remove env_var i;
+                 res) deqs
 
   let rec fix_def env_fun (def:def) : unit =
     try

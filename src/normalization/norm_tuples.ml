@@ -78,11 +78,16 @@ module Split_tuples = struct
                
   let rec split_tuples_deq env (body: deq list) : deq list =
     flat_map
-      (fun x -> match x with
+      (fun x ->
+       match x with
                 | Eqn (p,e,sync) -> (match e with
                                      | Tuple l -> real_split_tuple env p l sync
                                      | _ -> [ x ])
-                | Loop(i,ei,ef,dl,opts) -> [ Loop(i,ei,ef,split_tuples_deq env dl,opts) ]) body
+                | Loop(i,ei,ef,dl,opts) ->
+                   Hashtbl.add env i Nat;
+                   let res = [ Loop(i,ei,ef,split_tuples_deq env dl,opts) ] in
+                   Hashtbl.remove env i;
+                   res) body
 
   let split_tuples_def (def: def) : def =
     match def.node with

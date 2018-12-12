@@ -194,8 +194,10 @@ let rec norm_deq env_var env_fun (body: deq list) : deq list =
   flat_map
     (function
       | Eqn (p,e,sync) ->
-         let (expr_l, e') = norm_expr env_var env_fun e in
-         expr_l @ [Eqn(p,e',sync)]
+         (match get_var_type env_var (List.hd p) with
+          | Nat -> [Eqn(p,e,sync)]
+          | _   ->  let (expr_l, e') = norm_expr env_var env_fun e in
+                    expr_l @ [Eqn(p,e',sync)])
       | Loop(x,ei,ef,dl,opts) ->
          [ Loop(x,ei,ef,norm_deq env_var env_fun dl,opts) ]) body
     

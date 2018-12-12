@@ -160,7 +160,11 @@ let rec commit_asgns ?(env_it=(Hashtbl.create 10))
           : deq list =
     match deq with
     | Eqn(l,e,_) -> flat_map (find_usage env_it env_expr env_var) (get_used_vars e)
-    | Loop(i,ei,ef,dl,_) -> commit_asgns ~env_it:env_it env_expr env_var (i,ei,ef,dl) in
+    | Loop(i,ei,ef,dl,_) ->
+       Hashtbl.add env_var i Nat;
+       let res = commit_asgns ~env_it:env_it env_expr env_var (i,ei,ef,dl) in
+       Hashtbl.remove env_var i;
+       res in
 
   
   let ei = eval_arith env_it ei in

@@ -102,8 +102,13 @@ let rec expand_expr env_var env_keep env force (e:expr) : expr =
   let rec_call = expand_expr env_var env_keep env force in
   match e with
   | Const _ -> e
-  | ExpVar v -> Tuple(List.map (fun x -> ExpVar x)
-                               (expand_var env_var env_keep env force v))
+  | ExpVar v -> let l = (expand_var env_var env_keep env force v) in
+                Tuple (List.map (fun x ->
+                                 match x with
+                                 | Var id -> (match Hashtbl.find_opt env id with
+                                              | Some i -> Const i
+                                              | None   -> ExpVar x)
+                                 | _ -> ExpVar x) l)
   | Tuple el -> Tuple(List.map rec_call el)
   | Not e' -> Not (rec_call e')
   | Shift(op,e1,ae) -> Shift(op,expand_expr env_var env_keep env
@@ -133,17 +138,21 @@ let rec do_unroll env_var env_keep env force unroll x ei ef deqs : deq list =
 and expand_deqs env_var env_keep ?(env=make_env ())
                 (force:int) (unroll:bool) (deqs:deq list) : deq list =
   flat_map
-    (fun deq -> 
+    (fun deq ->
      match deq with
      | Eqn(lhs,e,sync) -> [ Eqn(expand_vars env_var env_keep env force lhs,
                                 expand_expr env_var env_keep env force e, sync) ]
      | Loop(x,ei,ef,deqs,opts) ->
-        if List.mem Unroll opts || (force = 1) || unroll then
-          do_unroll env_var env_keep env force unroll x ei ef deqs
-        else
-          try
-            [ Loop(x,ei,ef,expand_deqs env_var env_keep ~env:env force unroll deqs,opts) ]
-          with Need_unroll -> do_unroll env_var env_keep env force unroll x ei ef deqs)
+        Hashtbl.add env_var x Nat;
+        let res =
+          if List.mem Unroll opts || (force = 1) || unroll then
+            do_unroll env_var env_keep env force unroll x ei ef deqs
+          else
+            try
+              [ Loop(x,ei,ef,expand_deqs env_var env_keep ~env:env force unroll deqs,opts) ]
+            with Need_unroll -> do_unroll env_var env_keep env force unroll x ei ef deqs in
+        Hashtbl.remove env_var x;
+        res)
     deqs
     
 (* Expands p: 
@@ -155,7 +164,7 @@ and expand_deqs env_var env_keep ?(env=make_env ())
 let expand_p (p:p) : p =
   let rec aux vd =
     match vd.vtyp with
-    | Bool -> [ vd ]
+    | Bool | Nat -> [ vd ]
     | Array(t,s) -> let size = eval_arith (make_env ()) s in
                     flat_map (fun i ->
                               aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
@@ -165,8 +174,7 @@ let expand_p (p:p) : p =
     | Int(n,m) -> flat_map (fun i ->
                             aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
                                           vtyp = Int(n,1) })
-                           (gen_list_0_int m)
-    | _ -> assert false in
+                           (gen_list_0_int m) in
   flat_map aux p
 
 

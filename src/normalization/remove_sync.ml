@@ -49,7 +49,7 @@ let rec clean_var (env_var : (ident,typ) Hashtbl.t)
                                 | Some x' -> x'
                                 | None -> x) subv
            else [ v ]
-        | _ -> assert false)
+        | Nat -> [ v ])
      | _ -> assert false
                           
 
@@ -81,7 +81,11 @@ let rec clean_deqs (env_var : (ident,typ) Hashtbl.t)
                    (deqs:deq list) : deq list =
   List.map (
       function
-      | Loop(x,ei,ef,dl,opts) -> Loop(x,ei,ef,clean_deqs env_var env_replace dl,opts)
+      | Loop(x,ei,ef,dl,opts) ->
+         Hashtbl.add env_var x Nat;
+         let res = Loop(x,ei,ef,clean_deqs env_var env_replace dl,opts) in
+         Hashtbl.remove env_var x;
+         res
       | Eqn(lhs,e,sync) ->
          let e' = clean_expr env_var env_replace e in
          match sync with
