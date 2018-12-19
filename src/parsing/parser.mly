@@ -41,6 +41,8 @@
 %token TOK_NOOPT
 %token TOK_CONST
 %token TOK_LAZYLIFT
+%token TOK_PIPELINED
+%token TOK_SAFEEXIT
        
 %token TOK_LPAREN
 %token TOK_RPAREN
@@ -187,8 +189,10 @@ norec_deq:
   | p=pat op=arith_op TOK_COLON TOK_EQUAL e=exp  { Eqn( p, Arith(op,left_to_right p,e), true) }
 
 opt_stmt:
-   | TOK_UNROLL   { Unroll    }
-   | TOK_NOUNROLL { No_unroll }
+   | TOK_UNROLL    { Unroll    }
+   | TOK_NOUNROLL  { No_unroll }
+   | TOK_PIPELINED { Pipelined }
+   | TOK_SAFEEXIT  { Safe_exit }
                   
 deq_forall:
  | opts=list(opt_stmt) TOK_FORALL i=TOK_id TOK_IN TOK_LBRACKET startr=arith_exp
