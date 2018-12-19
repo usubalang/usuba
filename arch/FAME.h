@@ -9,6 +9,8 @@
 #endif
 
 #ifdef X86
+#include <stdio.h>
+#include <stdlib.h>
 
 #define RED(rd,y,i,a) {                                                 \
     if (i == 0b010) {                                                   \
