@@ -58,7 +58,7 @@ Inductive expr :=
   | When (e: expr)(x: constr) (y: ident)
   | Merge (x: ident)(xs: list (constr * expr)).
 
-Inductive stmt_opt := Unroll | No_unroll.
+Inductive stmt_opt := Unroll | No_unroll | Pipelined | Safe_exit.
 
 Inductive deq :=
   | Eqn (vs: list var)(e: expr)(sync:bool)

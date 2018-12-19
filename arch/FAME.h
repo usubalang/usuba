@@ -124,7 +124,7 @@
 /* The following algorithm is attritubed by Wikipedia (https://en.wikipedia.org/wiki/Xorshift)
    to p. 4 of Marsaglia, "Xorshift RNGs" */
 static int state = 0x8e20a6e5;
-void seed(int seed) { state = seed; }
+//static void seed(int seed) { state = seed; }
 static int xorshift_rand() {
   state ^= state << 13;
   state ^= state >> 17;

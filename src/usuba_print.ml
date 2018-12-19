@@ -151,6 +151,8 @@ let p_to_str = lift_comma vd_to_str
 let optstmt_to_str = function
   | Unroll    -> "_unroll"
   | No_unroll -> "_no_unroll"
+  | Pipelined -> "_pipelined"
+  | Safe_exit -> "_safe_exit"
                    
 let rec deq_to_str = function
   | Eqn(pat,e,sync) -> sprintf "%s %s= %s" (pat_to_str pat) (if sync then ":" else "")

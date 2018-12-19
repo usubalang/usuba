@@ -38,6 +38,8 @@ let _ =
      "_no_opt", TOK_NOOPT;
      "const", TOK_CONST;
      "lazyLift", TOK_LAZYLIFT;
+     "_pipelined", TOK_PIPELINED;
+     "_safe_exit", TOK_SAFEEXIT;
     ]
 
 let next_line lexbuf =
