@@ -257,12 +257,12 @@ static int xorshift_rand() {
 
 // TODO: should fix this for TI
 #if !defined(FD) || (FD == 1)
-#define SET_ALL_ONE_1()  -1
-#define SET_ALL_ZERO_1() 0
+#define SET_ALL_ONE()  -1
+#define SET_ALL_ZERO() 0
 #elif FD == 2
-#define SET_ALL_ONE_2()  0x0000ffff
-#define SET_ALL_ZERO_2() 0xffff0000
+#define SET_ALL_ONE()  0x0000ffff
+#define SET_ALL_ZERO() 0xffff0000
 #elif FD == 4
-#define SET_ALL_ONE_4()  0x00ff00ff
-#define SET_ALL_ZERO_4() 0xff00ff00
+#define SET_ALL_ONE()  0x00ff00ff
+#define SET_ALL_ZERO() 0xff00ff00
 #endif
