@@ -16,7 +16,11 @@ module Dir_params = struct
     if vb = Var vd.vid then
       match v with
       | Index(Index(v',i1),i2) -> Index(v',simpl_arith_ne (Op_e(Add,Op_e(Mul,i1,s),i2)))
-      | Index(v',i1) -> Range(v',simpl_arith_ne (Op_e(Mul,i1,s)),simpl_arith_ne (Op_e(Add,Op_e(Mul,i1,s),Op_e(Sub,s,Const_e 1))))
+      | Index(v',i1) ->
+         (try
+             Slice(v',List.map (fun n -> Op_e(Add,Op_e(Mul,i1,s),Const_e n)) (gen_list_bounds 0 ((eval_arith_ne s)-1)))
+           with Not_found -> 
+                Range(v',simpl_arith_ne (Op_e(Mul,i1,s)),simpl_arith_ne (Op_e(Add,Op_e(Mul,i1,s),Op_e(Sub,s,Const_e 1)))))
       | _ -> v
     else v
 
