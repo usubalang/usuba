@@ -50,6 +50,10 @@ let rec fold_expr (e:expr) : expr =
                | _ -> Not x')
   | _ -> e
 
+let rec fold_deq (deq:deq) : deq =
+  match deq with
+  | Eqn(v,e,sync)      -> Eqn(v,fold_expr e,sync)
+  | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,List.map fold_deq dl,opts)
            
 let rec cse_expr env_expr ?(invert=true) (e:expr) : expr =
   let e = fold_expr e in
@@ -199,7 +203,7 @@ let rec opt_deqs env_var (deqs:deq list) (out:p) : deq list =
       (* A loop *)
       | Loop(i,ei,ef,dl,opts) ->
          (commit_asgns env_expr env_var (i,ei,ef,dl)) @
-           [ Loop(i,ei,ef,dl,opts) ]) deqs
+           [ Loop(i,ei,ef,List.map fold_deq dl,opts) ]) deqs
       
 
 let opt_def (def: def) : def =
