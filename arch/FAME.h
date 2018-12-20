@@ -148,7 +148,7 @@ static int xorshift_rand() {
 #endif
 
 #define FD_AND_1(r,a,b) (r) = (a) & (b)
-#define FD_OR_1(r,a,b) (r) = (a) | (b)
+#define FD_OR_1(r,a,b)  (r) = (a) | (b)
 #define FD_XOR_1(r,a,b) (r) = (a) ^ (b)
 #define FD_NOT_1(r,a)   (r) = ~(a)
 
@@ -253,3 +253,16 @@ static int xorshift_rand() {
 #define OR(a,b,c)  TI_OR(a,b,c)  /* a = b | c */
 #define XOR(a,b,c) TI_XOR(a,b,c) /* a = b ^ c */
 #define NOT(a,b)   TI_NOT(a,b)   /* a = ~b */
+
+
+// TODO: should fix this for TI
+#if !defined(FD) || (FD == 1)
+#define SET_ALL_ONE_1()  -1
+#define SET_ALL_ZERO_1() 0
+#elif FD == 2
+#define SET_ALL_ONE_2()  0x0000ffff
+#define SET_ALL_ZERO_2() 0xffff0000
+#elif FD == 4
+#define SET_ALL_ONE_4()  0x00ff00ff
+#define SET_ALL_ZERO_4() 0xff00ff00
+#endif
