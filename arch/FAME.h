@@ -12,6 +12,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define TIBS(rd,y,r1,r2) {                          \
+    rd = 0, y = 0;                                  \
+    for (int i = 31, j = 0; i >= 16; i--, j++) {    \
+      rd |= ((r1 >> i) & 1) << (31 - j*2);          \
+      rd |= ((r2 >> i) & 1) << (31 - (j*2+1));      \
+    }                                               \
+    for (int i = 0; i < 16; i++) {                  \
+      y |= ((r2 >> i) & 1) << i*2;                  \
+      y |= ((r1 >> i) & 1) << (i*2+1);              \
+    }                                               \
+  }
+
+/* r1/r2 are actually the destination, and rd/y the source
+   but it makes it clearer to name them that way (since 
+   INVTIBS is the inverse of TIBS) */
+#define INVTIBS(r1,r2,rd,y) {                       \
+    r1 = 0, r2 = 0;                                 \
+    for (int i = 31, j = 31; i >= 0; i -= 2, j--) { \
+      r1 |= ((rd >> i) & 1) << j;                   \
+      r2 |= ((rd >> (i-1)) & 1) << j;               \
+    }                                               \
+    for (int i = 31, j = 15; i >= 0; i -= 2, j--) { \
+      r1 |= ((y >> i) & 1) << j;                    \
+      r2 |= ((y >> (i-1)) & 1) << j;                \
+    }                                               \
+  }
+
 #define RED(rd,y,i,a) {                                                 \
     if (i == 0b010) {                                                   \
       rd = ((a) << 16) | ((a) & 0xFFFF);                                \
@@ -104,6 +131,18 @@
 #define XNORC16(r,a,b) r = ( ((a) ^ (b)) & 0xFFFF0000) | (~((a) ^ (b)) & 0x0000FFFF)
 
 #else
+
+#define TIBS(rd,y,r1,r2) {                                              \
+    asm volatile("tibs %2, %3, %0\n\t"                                  \
+                 "mov %%y, %1\n\t" : "=r" (r), "=r" (y) : "r" (r1), "r" (r2)): \
+  }
+/* r1/r2 are actually the destination, and rd/y the source
+   but it makes it clearer to name them that way (since 
+   INVTIBS is the inverse of TIBS) */
+#define INVTIBS(r1,r2,rd,y) {                                           \
+    asm volatile("invtibs %2, %3, %0\n\t"                               \
+                 "mov %%y, %1\n\t" : "=r" (r1), "=r" (r2) : "r" (rd), "r" (y)): \
+  }
 
 #define RED(r,y,i,a)   {                                                \
     asm volatile("red %2, %3, %0\n\t"                                   \

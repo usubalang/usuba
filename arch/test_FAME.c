@@ -16,6 +16,20 @@
     DATATYPE a = v1, r;                         \
     OP(r,a);                                    \
     assert(r == expected);                      \
+  }    
+    
+/* Note: CHECK_TIBS and CHECK_INVTIBS could be factorized.
+   However, it's trickier for CHECK_RED, because "i" is an immediate,
+   and not a register. */
+#define CHECK_TIBS(expect_rd,expect_y,v1,v2) {  \
+    DATATYPE r1 = v1, r2 = v2, rd, y;           \
+    TIBS(rd,y,r1,r2);                           \
+    assert(rd == expect_rd && y == expect_y);   \
+  }
+#define CHECK_INVTIBS(expect_rd,expect_y,v1,v2) {   \
+    DATATYPE r1 = v1, r2 = v2, rd, y;               \
+    INVTIBS(rd,y,r1,r2);                            \
+    assert(rd == expect_rd && y == expect_y);       \
   }
 
 #define CHECK_RED(expect_rd,expect_y,i,v) {     \
@@ -32,6 +46,24 @@
 
 /* tests the basic (custom) instructions (TIBSROT, ANDC8, XORC16, etc.) */
 void test_custom_instr() {
+
+  //TIBS
+  CHECK_TIBS(0x00000000,0x00000000,0x00000000,0x00000000);
+  CHECK_TIBS(0xffffffff,0xffffffff,0xffffffff,0xffffffff);
+  CHECK_TIBS(0xffffffff,0x00000000,0xffff0000,0xffff0000);
+  CHECK_TIBS(0x00000000,0xffffffff,0x0000ffff,0x0000ffff);
+  CHECK_TIBS(0xaaaaaaaa,0xaaaaaaaa,0xffffffff,0x00000000);
+  CHECK_TIBS(0xaaaaaaaa,0x55555555,0xffff0000,0x0000ffff);
+  CHECK_TIBS(0xff55aa00,0xff55aa00,0xf0f0f0f0,0xff00ff00);
+
+  //INVTIBS
+  CHECK_INVTIBS(0x00000000,0x00000000,0x00000000,0x00000000);
+  CHECK_INVTIBS(0xffffffff,0xffffffff,0xffffffff,0xffffffff);
+  CHECK_INVTIBS(0xffff0000,0xffff0000,0xffffffff,0x00000000);
+  CHECK_INVTIBS(0x0000ffff,0x0000ffff,0x00000000,0xffffffff);
+  CHECK_INVTIBS(0xffffffff,0x00000000,0xaaaaaaaa,0xaaaaaaaa);
+  CHECK_INVTIBS(0xffff0000,0x0000ffff,0xaaaaaaaa,0x55555555);
+  CHECK_INVTIBS(0xf0f0f0f0,0xff00ff00,0xff55aa00,0xff55aa00);
 
   // RED 0b010
   CHECK_RED(0x00000000,0xffffffff,0b010,0xffff0000);
