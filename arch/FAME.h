@@ -12,7 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define TIBS(rd,y,r1,r2) {                          \
+#define TIBS(rd,y,_r1,_r2) {                        \
+    DATATYPE r1 = _r1, r2 = _r2;                    \
     rd = 0, y = 0;                                  \
     for (int i = 31, j = 0; i >= 16; i--, j++) {    \
       rd |= ((r1 >> i) & 1) << (31 - j*2);          \
@@ -165,12 +166,41 @@
 /* The following algorithm is attritubed by Wikipedia (https://en.wikipedia.org/wiki/Xorshift)
    to p. 4 of Marsaglia, "Xorshift RNGs" */
 static int state = 0x8e20a6e5;
-//static void seed(int seed) { state = seed; }
+#ifdef PIPELINED
+static int state_prev = 0x8e20a6e5;
+#endif
+static void seed(int seed) { state = seed; }
+#ifdef PIPELINED
+static void get_seed() { return state; }
+static void seed_prev(int seed) { state_prev = seed; }
+#endif
 static int xorshift_rand() {
   state ^= state << 13;
   state ^= state >> 17;
   state ^= state << 5;
+#ifdef PIPELINED
+  state_prev ^= state_prev << 13;
+  state_prev ^= state_prev >> 17;
+  state_prev ^= state_prev << 5;
+#endif
+#if FD == 1
+#ifdef PIPELINED
+  return (state_prev << 16) | (state & 0xFFFF);
+#else
   return state;
+#endif
+#elif FD == 2
+  // Can't have both PIPELINED and FD == 2
+  return (~state << 16) | (state & 0xFFFF);
+#elif FD == 4
+#ifdef PIPELINED
+  return (~state_prev << 24) | ((state_prev & 0xFF) << 16) |
+    ((~state & 0xFF) << 8) | (state & 0xFF);
+#else
+  return (~state << 24) | ((state & 0xFF) << 16) |
+    ((~state & 0xFF) << 8) | (state & 0xFF);
+#endif
+#endif
 }
 
 #if defined(FD) && FD >= 2
