@@ -171,7 +171,7 @@ static int state_prev = 0x8e20a6e5;
 #endif
 static void seed(int seed) { state = seed; }
 #ifdef PIPELINED
-static void get_seed() { return state; }
+static int get_seed() { return state; }
 static void seed_prev(int seed) { state_prev = seed; }
 #endif
 static int xorshift_rand() {
