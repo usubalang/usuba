@@ -291,7 +291,7 @@ static int xorshift_rand() {
     FD_XOR(d2,d1,c2);  /* d2 = d1 ^ c2 */           \
     FD_XOR(d3,d2,c3);  /* d3 = d2 ^ c3 */           \
     DATATYPE r_r1;                                  \
-    TIBSROT_2(r_r1,r);                              \
+    TIBSROT_4(r_r1,r);                              \
     FD_XOR(d4,d3,r_r1); /* d4 = d3 ^ (r <<< 1) */   \
     FD_XOR(a,d4,c4);    /* a  = d4 ^ c4 */          \
   }
