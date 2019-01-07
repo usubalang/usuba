@@ -278,20 +278,18 @@ static int xorshift_rand() {
 #define TI_AND_2(a,b,c) {                                               \
     DATATYPE r = RAND();                                                \
     register DATATYPE c1, c2, d1, d2, c_r1, r_r1;                       \
-    asm volatile(_FD_AND_TI2 " %8, %9, %1\n\t" /* c1 = b & c */          \
-                 "tibsrot %9, 2, %5\n\t"      /* [tmp]  c_r1 = c <<< 1 */ \
-                 _FD_AND_TI2 " %8, %5, %2\n\t" /* c2 = b & (c <<< 1) */  \
-                 _FD_XOR_TI2 " %1, %7, %3\n\t" /* d1 = c1 ^ r */         \
-                 _FD_XOR_TI2 " %3, %2, %4\n\t" /* d2 = d1 ^ c2 */        \
-                 "tibsrot %7, 2, %6\n\t"      /* [tmp] r_r1 = r <<< 1 */ \
-                 _FD_XOR_TI2 " %4, %6, %0\n\t" /* a = d2 ^ (r <<< 1) */  \
+    asm volatile(_FD_AND_TI2 " %[b_], %[c_], %[c1_]\n\t"    /* c1 = b & c */ \
+                 "tibsrot %[c_], 2, %[c_r1_]\n\t"           /* [tmp]  c_r1 = c <<< 1 */ \
+                 _FD_AND_TI2 " %[b_], %[c_r1_], %[c2_]\n\t" /* c2 = b & (c <<< 1) */ \
+                 _FD_XOR_TI2 " %[c1_], %[r_], %[d1_]\n\t"   /* d1 = c1 ^ r */ \
+                 _FD_XOR_TI2 " %[d1_], %[c2_], %[d2_]\n\t"  /* d2 = d1 ^ c2 */ \
+                 "tibsrot %[r_], 2, %[r_r1_]\n\t"           /* [tmp] r_r1 = r <<< 1 */ \
+                 _FD_XOR_TI2 " %[d2_], %[r_r1_], %[a_]\n\t" /* a = d2 ^ (r <<< 1) */ \
                                                                         \
-                 : "=&r" (a), "=&r" (c1), "=&r" (c2), "=&r" (d1), "=&r" (d2), \
-                   /*     0          1           2           3           4    */ \
-                   "=&r" (c_r1), "=&r" (r_r1)                           \
-                   /*       5            6*/                            \
-                 : "r" (r), "r" (b), "r" (c));                          \
-                   /*   7        8        9             */              \
+                 : [a_] "=&r" (a), [c1_] "=&r" (c1), [c2_] "=&r" (c2),  \
+                   [d1_] "=&r" (d1), [d2_] "=&r" (d2),                  \
+                   [c_r1_] "=&r" (c_r1), [r_r1_] "=&r" (r_r1)           \
+                 : [r_] "r" (r), [b_] "r" (b), [c_] "r" (c));           \
   }
   
 #endif
@@ -342,28 +340,26 @@ static int xorshift_rand() {
 #define TI_AND_4(a,b,c) {                                               \
     DATATYPE r = RAND();                                                \
     register DATATYPE c1, c2, c3, c4, d1, d2, d3, d4, c_r1, b_r1, c_r2, r_r1; \
-    asm volatile(_FD_AND_TI4 " %14, %15, %1\n\t" /* c1 = b & c */             \
-                 "tibsrot %15, 4, %9\n\t"        /* [tmp] c_r1 = c <<< 1 */   \
-                 _FD_AND_TI4 " %14, %9, %2\n\t"  /* c2 = b & (c <<< 1) */     \
-                 "tibsrot %14, 4, %10\n\t"       /* [tmp] b_r1 = b <<< 1 */   \
-                 _FD_AND_TI4 " %10, %15, %3\n\t" /* c3 = (b <<< 1) & c */     \
-                 "tibsrot %9, 4, %11\n\t"        /* [tmp] c_r2 = c_r1 <<< 1 */ \
-                 _FD_AND_TI4 " %14, %11, %4\n\t" /* c4 = b & (c <<< 2) */     \
-                 _FD_XOR_TI4 " %1, %13, %5\n\t"  /* d1 = c1 ^ r */            \
-                 _FD_XOR_TI4 " %5, %2, %6\n\t"   /* d2 = d1 ^ c2 */           \
-                 _FD_XOR_TI4 " %6, %3, %7\n\t"   /* d3 = d2 ^ c3 */           \
-                 "tibsrot %13, 4, %12\n\t"       /* [tmp] r_r1 = r <<< 1 */   \
-                 _FD_XOR_TI4 " %7, %12, %8\n\t"  /* d4 = d3 ^ (r <<< 1) */    \
-                 _FD_XOR_TI4 " %8, %4, %0\n\t"   /* a = d4 ^ c4 */            \
-                                                                              \
-                 : "=&r" (a), "=&r" (c1), "=&r" (c2), "=&r" (c3), "=&r" (c4), \
-                   /*     0          1           2           3           4 */ \
-                   "=&r" (d1), "=&r" (d2), "=&r" (d3), "=&r" (d4),            \
-                   /*     5           6           7           8  */           \
-                   "=&r" (c_r1), "=&r" (b_r1), "=&r" (c_r2), "=&r" (r_r1)     \
-                   /*      9             10            11            12 */    \
-                 : "r" (r), "r" (b), "r" (c));                                \
-                   /*  13       14       15             */                    \
+    asm volatile(_FD_AND_TI4 " %[c_], %[b_], %[c1_]\n\t"     /* c1 = b & c */ \
+                 "tibsrot %[c_], 4, %[c_r1_]\n\t"            /* [tmp] c_r1 = c <<< 1 */ \
+                 _FD_AND_TI4 " %[b_], %[c_r1_], %[c2_]\n\t"  /* c2 = b & (c <<< 1) */ \
+                 "tibsrot %[b_], 4, %[b_r1_]\n\t"            /* [tmp] b_r1 = b <<< 1 */ \
+                 _FD_AND_TI4 " %[b_r1_], %[c_], %[c3_]\n\t"  /* c3 = (b <<< 1) & c */ \
+                 "tibsrot %[c_r1_], 4, %[c_r2_]\n\t"         /* [tmp] c_r2 = c_r1 <<< 1 */ \
+                 _FD_AND_TI4 " %[b_], %[c_r2_], %[c4_]\n\t"  /* c4 = b & (c <<< 2) */ \
+                 _FD_XOR_TI4 " %[c1_], %[r_], %[d1_]\n\t"    /* d1 = c1 ^ r */ \
+                 _FD_XOR_TI4 " %[d1_], %[c2_], %[d2_]\n\t"   /* d2 = d1 ^ c2 */ \
+                 _FD_XOR_TI4 " %[d2_], %[c3_], %[d3_]\n\t"   /* d3 = d2 ^ c3 */ \
+                 "tibsrot %[r_], 4, %[r_r1_]\n\t"            /* [tmp] r_r1 = r <<< 1 */ \
+                 _FD_XOR_TI4 " %[d3_], %[r_r1_], %[d4_]\n\t" /* d4 = d3 ^ (r <<< 1) */ \
+                 _FD_XOR_TI4 " %[d4_], %[c4_], %[a_]\n\t"    /* a = d4 ^ c4 */ \
+                                                                        \
+                 : [a_] "=&r" (a), [c1_] "=&r" (c1), [c2_] "=&r" (c2),  \
+                   [c3_] "=&r" (c3), [c4_] "=&r" (c4), [d1_] "=&r" (d1), \
+                   [d2_] "=&r" (d2), [d3_] "=&r" (d3), [d4_] "=&r" (d4), \
+                   [c_r1_] "=&r" (c_r1), [b_r1_] "=&r" (b_r1),          \
+                   [c_r2_] "=&r" (c_r2), [r_r1_] "=&r" (r_r1)           \
+                 : [r_] "r" (r), [b_] "r" (b), [c_] "r" (c));           \
   }
   
 #endif
