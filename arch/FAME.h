@@ -11,6 +11,9 @@
 #ifdef X86
 #include <stdio.h>
 #include <stdlib.h>
+#endif
+
+#if defined(X86) || defined(NO_CUSTOM_INSTR)
 
 #define TIBS(rd,y,r1,r2) {                          \
     DATATYPE _r1 = r1, _r2 = r2;                    \
@@ -73,10 +76,10 @@
       y  = (((a) & 0xFF000000) >> 24) | ((~(a) & 0xFF000000) >> 16) |   \
       (((a) & 0xFF000000) >> 8) | (~(a) & 0xFF000000);                  \
     }                                                                   \
-    else {                                                              \
-      fprintf(stderr, "Invalid RED@%d.\n",i);                           \
-      exit(EXIT_FAILURE);                                               \
-    }                                                                   \
+    /* else { */                                                        \
+    /* fprintf(stderr, "Invalid RED@%d.\n",i); */                       \
+    /* exit(EXIT_FAILURE); */                                           \
+    /* } */                                                             \
   }
 
 #define FTCHK(rd,i,a) {                                                 \
@@ -114,10 +117,10 @@
                       (~((a) & 0xFF) ^ ((a) >> 24))) & 0xFF;            \
       rd = tmp | ((~tmp & 0xFF) << 8) | (tmp << 16) | ((~tmp & 0xFF) << 24); \
     }                                                                   \
-    else {                                                              \
-      fprintf(stderr, "Invalid FTCHK@%d.\n",i);                         \
-      exit(EXIT_FAILURE);                                               \
-    }                                                                   \
+    /* else { */                                                        \
+    /* fprintf(stderr, "Invalid FTCHK@%d.\n",i); */                     \
+    /* exit(EXIT_FAILURE); */                                           \
+    /* } */                                                             \
   }
 
 #define TIBSROT_2(r,a) r = ((a << 1) & 0xAAAAAAAA) | ((a >> 1) & 0x55555555)
@@ -161,8 +164,55 @@
 #define ANDC16(r,a,b)  asm volatile("andc16 %1, %2, %0\n\t"  : "=r" (r) : "r" (a), "r" (b) :)
 #define XORC16(r,a,b)  asm volatile("xorc16 %1, %2, %0\n\t"  : "=r" (r) : "r" (a), "r" (b) :)
 #define XNORC16(r,a,b) asm volatile("xnorc16 %1, %2, %0\n\t" : "=r" (r) : "r" (a), "r" (b) :)
+#define ANDC32(r,a,b)  asm volatile("and %1, %2, %0\n\t"     : "=r" (r) : "r" (a), "r" (b) :)
+#define XORC32(r,a,b)  asm volatile("xor %1, %2, %0\n\t"     : "=r" (r) : "r" (a), "r" (b) :)
+#define XNORC32(r,a,b) asm volatile("xnor %1, %2, %0\n\t"    : "=r" (r) : "r" (a), "r" (b) :)
 #endif
 
+#ifdef COPROC_RAND
+
+#define ADDR 0x80000600
+typedef struct {
+  volatile unsigned int counter;
+  volatile unsigned int reload;
+  volatile unsigned int control;
+  volatile unsigned int latch;
+} timerreg;
+typedef struct {
+  volatile unsigned int scalercnt;
+  volatile unsigned int scalerload;
+  volatile unsigned int configreg;
+  volatile unsigned int latch;
+  timerreg timer[7];
+} gptimer;
+
+static unsigned long timer_80cycles() {
+  gptimer* lr = (gptimer*) ADDR;
+  static unsigned long count = 0;
+  unsigned long lap = (unsigned long) (count - lr->timer[0].counter);
+  while (lap < 8) {
+    lap = (unsigned long) (count - lr->timer[0].counter);
+  }
+  count = lr->timer[0].counter;
+  return lap;
+}
+static int state = 0x8e20a6e5;
+static int remaining = 32;
+static int xorshift_rand() {
+  /* NOT AT ALL a xorshift, but it's easier to keep this function name */
+  if (remaining == 0) {
+    state     = timer_80cycles();
+    remaining = 32;
+  }
+  int bits_per_rand = 32 / TI / FD;
+#ifdef PIPELINED
+  bits_per_rand /= 2;
+#endif
+  remaining -= bits_per_rand;
+  return state; // Not quite correct, should depend on TI, FD and PIPELINED
+}
+#define RAND() xorshift_rand()
+#else
 /* The following algorithm is attritubed by Wikipedia (https://en.wikipedia.org/wiki/Xorshift)
    to p. 4 of Marsaglia, "Xorshift RNGs" */
 static int state = 0x8e20a6e5;
@@ -174,7 +224,7 @@ static void seed(int seed) { state = seed; }
 static int get_seed() { return state; }
 static void seed_prev(int seed) { state_prev = seed; }
 #endif
-static int xorshift_rand() {
+static int __attribute__((noinline)) xorshift_rand() {
   state ^= state << 13;
   state ^= state >> 17;
   state ^= state << 5;
@@ -215,7 +265,12 @@ static int xorshift_rand() {
 #else
 #define RAND() xorshift_rand()
 #endif
+#endif
 
+
+/* #define FD_AND_1(r,a,b) ANDC32(r,a,b) */
+/* #define FD_OR_1(r,a,b)  { DATATYPE _tmp_or; ANDC32(_tmp_or,~a,~b); r = ~_tmp_or; } */
+/* #define FD_XOR_1(r,a,b) XORC32(r,a,b) */
 #define FD_AND_1(r,a,b) (r) = (a) & (b)
 #define FD_OR_1(r,a,b)  (r) = (a) | (b)
 #define FD_XOR_1(r,a,b) (r) = (a) ^ (b)
@@ -249,7 +304,7 @@ static int xorshift_rand() {
 #define TI_XOR_1(r,a,b) FD_XOR(r,a,b) /* a = b ^ c */
 #define TI_NOT_1(r,a)   FD_NOT(r,a)   /* a = ~b */
 
-#ifdef X86
+#if defined(X86)
 #define TI_AND_2(a,b,c) {                           \
     DATATYPE c1, c2, d1, d2, d3;                    \
     DATATYPE r = RAND();                            \
@@ -264,6 +319,27 @@ static int xorshift_rand() {
     FD_XOR(d3,d2,r_r1); /* d3 = d2 ^ (r <<< 1) */   \
     a = d3;             /* a  = d3 */               \
   }
+#elif defined(NO_CUSTOM_INSTR)
+#define TI_AND_2(a,b,c) {                           \
+    DATATYPE c1, c2, d1, d2;                    \
+    DATATYPE r = RAND();                            \
+    asm volatile("xor %0, %0, %0\n\t" : "=r" (c1)::);   \
+    FD_AND(c1,b,c);    /* c1 = b & c */             \
+    DATATYPE c_r1;                                  \
+     asm volatile("xor %0, %0, %0\n\t" : "=r" (c_r1)::);   \
+    TIBSROT_2(c_r1,c);                              \
+     asm volatile("xor %0, %0, %0\n\t" : "=r" (c2)::);   \
+    FD_AND(c2,b,c_r1); /* c2 = b & (c <<< 1) */     \
+     asm volatile("xor %0, %0, %0\n\t" : "=r" (d1)::);   \
+    FD_XOR(d1,c1,r);   /* d1 = c1 ^ r */            \
+     asm volatile("xor %0, %0, %0\n\t" : "=r" (d2)::);   \
+    FD_XOR(d2,d1,c2);  /* d2 = d1 ^ c2 */           \
+    DATATYPE r_r1;                                  \
+     asm volatile("xor %0, %0, %0\n\t" : "=r" (r_r1)::);   \
+    TIBSROT_2(r_r1,r);                              \
+     asm volatile("xor %0, %0, %0\n\t" : "=r" (a)::);   \
+    FD_XOR(a,d2,r_r1); /* d3 = d2 ^ (r <<< 1) */   \
+  }   
 #else
 #if FD == 1
 #define _FD_AND_TI2 "and"
@@ -278,12 +354,19 @@ static int xorshift_rand() {
 #define TI_AND_2(a,b,c) {                                               \
     DATATYPE r = RAND();                                                \
     register DATATYPE c1, c2, d1, d2, c_r1, r_r1;                       \
-    asm volatile(_FD_AND_TI2 " %[b_], %[c_], %[c1_]\n\t"    /* c1 = b & c */ \
+    asm volatile(/* RESET */"xor %[c1_],   %[c1_],   %[c1_]\n\t"        \
+                 _FD_AND_TI2 " %[b_], %[c_], %[c1_]\n\t"    /* c1 = b & c */ \
+                 /* RESET */ "xor %[c_r1_], %[c_r1_], %[c_r1_]\n\t"     \
                  "tibsrot %[c_], 2, %[c_r1_]\n\t"           /* [tmp]  c_r1 = c <<< 1 */ \
+                 /* RESET */ "xor %[c2_], %[c2_], %[c2_]\n\t"           \
                  _FD_AND_TI2 " %[b_], %[c_r1_], %[c2_]\n\t" /* c2 = b & (c <<< 1) */ \
+                 /* RESET */"xor %[d1_], %[d1_], %[d1_]\n\t"            \
                  _FD_XOR_TI2 " %[c1_], %[r_], %[d1_]\n\t"   /* d1 = c1 ^ r */ \
+                 /* RESET */"xor %[d2_], %[d2_], %[d2_]\n\t"            \
                  _FD_XOR_TI2 " %[d1_], %[c2_], %[d2_]\n\t"  /* d2 = d1 ^ c2 */ \
+                 /* RESET */"xor %[r_r1_], %[r_r1_], %[r_r1_]\n\t"       \
                  "tibsrot %[r_], 2, %[r_r1_]\n\t"           /* [tmp] r_r1 = r <<< 1 */ \
+                 /* RESET */"xor %[a_],    %[a_],    %[a_]\n\t"         \
                  _FD_XOR_TI2 " %[d2_], %[r_r1_], %[a_]\n\t" /* a = d2 ^ (r <<< 1) */ \
                                                                         \
                  : [a_] "=&r" (a), [c1_] "=&r" (c1), [c2_] "=&r" (c2),  \
@@ -304,7 +387,7 @@ static int xorshift_rand() {
   }
 #define TI_XOR_2(a,b,c) FD_XOR(a,b,c)
 
-#ifdef X86
+#if defined(X86)
 #define TI_AND_4(a,b,c) {                           \
     DATATYPE c1, c2, c3, c4, d1, d2, d3, d4;        \
     DATATYPE r = RAND();                            \
@@ -326,6 +409,41 @@ static int xorshift_rand() {
     FD_XOR(d4,d3,r_r1); /* d4 = d3 ^ (r <<< 1) */   \
     FD_XOR(a,d4,c4);    /* a  = d4 ^ c4 */          \
   }
+#elif defined(NO_CUSTOM_INSTR)
+#define TI_AND_4(a,b,c) {                           \
+    DATATYPE c1, c2, c3, c4, d1, d2, d3, d4;        \
+    DATATYPE r = RAND();                            \
+    asm volatile("xor %0, %0, %0\n\t" : "=r" (c1)::);   \
+    FD_AND(c1,b,c);    /* c1 = b & c */             \
+    DATATYPE c_r1;                                  \
+        asm volatile("xor %0, %0, %0\n\t" : "=r" (c_r1)::);   \
+    TIBSROT_4(c_r1,c);                              \
+        asm volatile("xor %0, %0, %0\n\t" : "=r" (c2)::);   \
+    FD_AND(c2,b,c_r1); /* c2 = b & (c <<< 1) */     \
+    DATATYPE b_r1;                                  \
+        asm volatile("xor %0, %0, %0\n\t" : "=r" (b_r1)::);   \
+    TIBSROT_4(b_r1,b);                              \
+        asm volatile("xor %0, %0, %0\n\t" : "=r" (c3)::);   \
+    FD_AND(c3,b_r1,c); /* c3 = (b <<< 1) & c */     \
+    DATATYPE c_r2;                                  \
+        asm volatile("xor %0, %0, %0\n\t" : "=r" (c_r2)::);   \
+    TIBSROT_4(c_r2, c_r1);                          \
+        asm volatile("xor %0, %0, %0\n\t" : "=r" (c4)::);   \
+    FD_AND(c4,b,c_r2); /* c4 = b & (c <<< 2) */     \
+        asm volatile("xor %0, %0, %0\n\t" : "=r" (d1)::);   \
+    FD_XOR(d1,c1,r);   /* d1 = c1 ^ r */            \
+        asm volatile("xor %0, %0, %0\n\t" : "=r" (d2)::);   \
+    FD_XOR(d2,d1,c2);  /* d2 = d1 ^ c2 */           \
+        asm volatile("xor %0, %0, %0\n\t" : "=r" (d3)::);   \
+    FD_XOR(d3,d2,c3);  /* d3 = d2 ^ c3 */           \
+    DATATYPE r_r1;                                  \
+        asm volatile("xor %0, %0, %0\n\t" : "=r" (r_r1)::);   \
+    TIBSROT_4(r_r1,r);                              \
+        asm volatile("xor %0, %0, %0\n\t" : "=r" (d4)::);   \
+    FD_XOR(d4,d3,r_r1); /* d4 = d3 ^ (r <<< 1) */   \
+        asm volatile("xor %0, %0, %0\n\t" : "=r" (a)::);   \
+    FD_XOR(a,d4,c4);    /* a  = d4 ^ c4 */          \
+  }
 #else
 #if FD == 1
 #define _FD_AND_TI4 "and"
@@ -340,18 +458,31 @@ static int xorshift_rand() {
 #define TI_AND_4(a,b,c) {                                               \
     DATATYPE r = RAND();                                                \
     register DATATYPE c1, c2, c3, c4, d1, d2, d3, d4, c_r1, b_r1, c_r2, r_r1; \
-    asm volatile(_FD_AND_TI4 " %[c_], %[b_], %[c1_]\n\t"     /* c1 = b & c */ \
+    asm volatile(/* RESET */ "xor %[c1_], %[c1_], %[c1_]\n\t"           \
+                 _FD_AND_TI4 " %[c_], %[b_], %[c1_]\n\t"     /* c1 = b & c */ \
+                 /* RESET */ "xor %[c_r1_], %[c_r1_], %[c_r1_]\n\t"     \
                  "tibsrot %[c_], 4, %[c_r1_]\n\t"            /* [tmp] c_r1 = c <<< 1 */ \
+                 /* RESET */ "xor %[c2_], %[c2_], %[c2_]\n\t"           \
                  _FD_AND_TI4 " %[b_], %[c_r1_], %[c2_]\n\t"  /* c2 = b & (c <<< 1) */ \
+                 /* RESET */ "xor %[b_r1_], %[b_r1_], %[b_r1_]\n\t"     \
                  "tibsrot %[b_], 4, %[b_r1_]\n\t"            /* [tmp] b_r1 = b <<< 1 */ \
+                 /* RESET */ "xor %[c3_], %[c3_], %[c3_]\n\t"           \
                  _FD_AND_TI4 " %[b_r1_], %[c_], %[c3_]\n\t"  /* c3 = (b <<< 1) & c */ \
+                 /* RESET */ "xor %[c_r2_], %[c_r2_], %[c_r2_]\n\t"     \
                  "tibsrot %[c_r1_], 4, %[c_r2_]\n\t"         /* [tmp] c_r2 = c_r1 <<< 1 */ \
+                 /* RESET */ "xor %[c4_], %[c4_], %[c4_]\n\t"           \
                  _FD_AND_TI4 " %[b_], %[c_r2_], %[c4_]\n\t"  /* c4 = b & (c <<< 2) */ \
+                 /* RESET */ "xor %[d1_], %[d1_], %[d1_]\n\t"           \
                  _FD_XOR_TI4 " %[c1_], %[r_], %[d1_]\n\t"    /* d1 = c1 ^ r */ \
+                 /* RESET */ "xor %[d2_], %[d2_], %[d2_]\n\t"           \
                  _FD_XOR_TI4 " %[d1_], %[c2_], %[d2_]\n\t"   /* d2 = d1 ^ c2 */ \
+                 /* RESET */ "xor %[d3_], %[d3_], %[d3_]\n\t"           \
                  _FD_XOR_TI4 " %[d2_], %[c3_], %[d3_]\n\t"   /* d3 = d2 ^ c3 */ \
+                 /* RESET */ "xor %[r_r1_], %[r_r1_], %[r_r1_]\n\t"     \
                  "tibsrot %[r_], 4, %[r_r1_]\n\t"            /* [tmp] r_r1 = r <<< 1 */ \
+                 /* RESET */ "xor %[d4_], %[d4_], %[d4_]\n\t"           \
                  _FD_XOR_TI4 " %[d3_], %[r_r1_], %[d4_]\n\t" /* d4 = d3 ^ (r <<< 1) */ \
+                 /* RESET */ "xor %[a_], %[a_], %[a_]\n\t"              \
                  _FD_XOR_TI4 " %[d4_], %[c4_], %[a_]\n\t"    /* a = d4 ^ c4 */ \
                                                                         \
                  : [a_] "=&r" (a), [c1_] "=&r" (c1), [c2_] "=&r" (c2),  \
