@@ -126,12 +126,56 @@
 #define TIBSROT_2(r,a) r = ((a << 1) & 0xAAAAAAAA) | ((a >> 1) & 0x55555555)
 #define TIBSROT_4(r,a) r = ((a << 1) & 0xEEEEEEEE) | ((a >> 3) & 0x11111111)
 
+#ifdef ASM_SOFT
+#define ANDC8(r,a,b) {                                          \
+    DATATYPE tmp;                                               \
+    DATATYPE lmask = 0xFF00FF00, rmask = 0x00FF00FF;            \
+    asm volatile("or  %[a_], %[b_], %[r_]\n\t"                  \
+                 "and %[r_], %[lmask_], %[r_]\n\t"              \
+                 "and %[a_], %[b_], %[tmp_]\n\t"                \
+                 "and %[tmp_], %[rmask_], %[tmp_]\n\t"          \
+                 "or  %[r_], %[tmp_], %[r_]"                    \
+                 : [r_] "=&r" (r), [tmp_] "=r" (tmp)            \
+                 : [a_] "r" (a), [b_] "r" (b),                  \
+                   [lmask_] "r" (lmask), [rmask_] "r" (rmask)); \
+  }
+#define XORC8(r,a,b) {                                                  \
+    DATATYPE mask = 0xFF00FF00;                                         \
+    asm volatile("xor %[a_], %[mask_], %[r_]\n\t"                       \
+                 "xor %[b_], %[r_], %[r_]"                              \
+                 : [r_] "=&r" (r)                                       \
+                 : [a_] "r" (a), [b_] "r" (b), [mask_] "r" (mask) );    \
+  }
+#else
 #define ANDC8(r,a,b)   r = ( ((a) | (b)) & 0xFF00FF00) | ( ((a) & (b)) & 0x00FF00FF)
 #define XORC8(r,a,b)   r = (~((a) ^ (b)) & 0xFF00FF00) | ( ((a) ^ (b)) & 0x00FF00FF)
+#endif
 #define XNORC8(r,a,b)  r = ( ((a) ^ (b)) & 0xFF00FF00) | (~((a) ^ (b)) & 0x00FF00FF)
 
+#ifdef ASM_SOFT
+#define ANDC16(r,a,b) {                                                 \
+  DATATYPE tmp;                                                         \
+  DATATYPE lmask = 0xFFFF0000, rmask = 0x0000FFFF;                      \
+  asm volatile("or  %[a_], %[b_], %[r_]\n\t"                            \
+               "and %[r_], %[lmask_], %[r_]\n\t"                         \
+               "and %[a_], %[b_], %[tmp_]\n\t"                          \
+               "and %[tmp_], %[rmask_], %[tmp_]\n\t"                     \
+               "or  %[r_], %[tmp_], %[r_]"                              \
+               : [r_] "=&r" (r), [tmp_] "=r" (tmp)                       \
+               : [a_] "r" (a), [b_] "r" (b),                            \
+                 [lmask_] "r" (lmask), [rmask_] "r" (rmask));   \
+  }
+#define XORC16(r,a,b) {                                                 \
+    DATATYPE mask = 0xFFFF0000;                                         \
+    asm volatile("xor %[a_], %[mask_], %[r_]\n\t"                       \
+                 "xor %[b_], %[r_], %[r_]"                              \
+                 : [r_] "=&r" (r)                                        \
+                 : [a_] "r" (a), [b_] "r" (b), [mask_] "r" (mask) );    \
+  }
+#else
 #define ANDC16(r,a,b)  r = ( ((a) | (b)) & 0xFFFF0000) | ( ((a) & (b)) & 0x0000FFFF)
 #define XORC16(r,a,b)  r = (~((a) ^ (b)) & 0xFFFF0000) | ( ((a) ^ (b)) & 0x0000FFFF)
+#endif
 #define XNORC16(r,a,b) r = ( ((a) ^ (b)) & 0xFFFF0000) | (~((a) ^ (b)) & 0x0000FFFF)
 
 #else
