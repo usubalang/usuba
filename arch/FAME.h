@@ -202,6 +202,26 @@
 #define TIBSROT_2(r,a) asm volatile("tibsrot %1, 2, %0\n\t" : "=r" (r) : "r" (a) :)
 #define TIBSROT_4(r,a) asm volatile("tibsrot %1, 4, %0\n\t" : "=r" (r) : "r" (a) :)
 
+#ifdef CHEATY_CUSTOM
+#ifdef GCC_SUPPORT
+#define ANDC8(r,a,b)   r = (a) & (b)
+#define XORC8(r,a,b)   r = (a) ^ (b)
+#define ANDC16(r,a,b)  r = (a) & (b)
+#define XORC16(r,a,b)  r = (a) ^ (b)
+#define ANDC32(r,a,b)  r = (a) & (b)
+#define XORC32(r,a,b)  r = (a) ^ (b)
+#else
+#define ANDC8(r,a,b)   asm volatile("and %1, %2, %0\n\t"   : "=r" (r) : "r" (a), "r" (b) :)
+#define XORC8(r,a,b)   asm volatile("xor %1, %2, %0\n\t"   : "=r" (r) : "r" (a), "r" (b) :)
+#define XNORC8(r,a,b)  asm volatile("xnor %1, %2, %0\n\t"  : "=r" (r) : "r" (a), "r" (b) :)
+#define ANDC16(r,a,b)  asm volatile("and %1, %2, %0\n\t"  : "=r" (r) : "r" (a), "r" (b) :)
+#define XORC16(r,a,b)  asm volatile("xor %1, %2, %0\n\t"  : "=r" (r) : "r" (a), "r" (b) :)
+#define XNORC16(r,a,b) asm volatile("xnor %1, %2, %0\n\t" : "=r" (r) : "r" (a), "r" (b) :)
+#define ANDC32(r,a,b)  asm volatile("and %1, %2, %0\n\t"     : "=r" (r) : "r" (a), "r" (b) :)
+#define XORC32(r,a,b)  asm volatile("xor %1, %2, %0\n\t"     : "=r" (r) : "r" (a), "r" (b) :)
+#define XNORC32(r,a,b) asm volatile("xnor %1, %2, %0\n\t"    : "=r" (r) : "r" (a), "r" (b) :)
+#endif
+#else
 #define ANDC8(r,a,b)   asm volatile("andc8 %1, %2, %0\n\t"   : "=r" (r) : "r" (a), "r" (b) :)
 #define XORC8(r,a,b)   asm volatile("xorc8 %1, %2, %0\n\t"   : "=r" (r) : "r" (a), "r" (b) :)
 #define XNORC8(r,a,b)  asm volatile("xnorc8 %1, %2, %0\n\t"  : "=r" (r) : "r" (a), "r" (b) :)
@@ -211,6 +231,7 @@
 #define ANDC32(r,a,b)  asm volatile("and %1, %2, %0\n\t"     : "=r" (r) : "r" (a), "r" (b) :)
 #define XORC32(r,a,b)  asm volatile("xor %1, %2, %0\n\t"     : "=r" (r) : "r" (a), "r" (b) :)
 #define XNORC32(r,a,b) asm volatile("xnor %1, %2, %0\n\t"    : "=r" (r) : "r" (a), "r" (b) :)
+#endif
 #endif
 
 #ifdef COPROC_RAND
@@ -248,7 +269,7 @@ static int xorshift_rand() {
     state     = timer_80cycles();
     remaining = 32;
   }
-  int bits_per_rand = 32 / TI / FD;
+  int bits_per_rand = 32 / FD;
 #ifdef PIPELINED
   bits_per_rand /= 2;
 #endif
@@ -311,6 +332,8 @@ static int __attribute__((noinline)) xorshift_rand() {
 #endif
 #endif
 
+#undef RAND
+#define RAND() (unsigned int) *((volatile unsigned int*)0x80000600)
 
 /* #define FD_AND_1(r,a,b) ANDC32(r,a,b) */
 /* #define FD_OR_1(r,a,b)  { DATATYPE _tmp_or; ANDC32(_tmp_or,~a,~b); r = ~_tmp_or; } */
@@ -383,6 +406,7 @@ static int __attribute__((noinline)) xorshift_rand() {
     TIBSROT_2(r_r1,r);                              \
      asm volatile("xor %0, %0, %0\n\t" : "=r" (a)::);   \
     FD_XOR(a,d2,r_r1); /* d3 = d2 ^ (r <<< 1) */   \
+    asm volatile("" : "+r" (c1), "+r" (c2), "+r" (d1), "+r" (d2), "+r" (c_r1), "+r" (r_r1), "+r" (a)); \
   }   
 #else
 #if FD == 1
@@ -487,6 +511,7 @@ static int __attribute__((noinline)) xorshift_rand() {
     FD_XOR(d4,d3,r_r1); /* d4 = d3 ^ (r <<< 1) */   \
         asm volatile("xor %0, %0, %0\n\t" : "=r" (a)::);   \
     FD_XOR(a,d4,c4);    /* a  = d4 ^ c4 */          \
+    asm volatile("" : "+r" (c1), "+r" (c2), "+r" (c3), "+r" (c4), "+r" (d1), "+r" (d2), "+r" (d3), "+r" (d4), "+r" (c_r1), "+r" (b_r1), "+r" (c_r2), "+r" (r_r1), "+r" (a)); \
   }
 #else
 #if FD == 1
