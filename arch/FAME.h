@@ -251,13 +251,13 @@ typedef struct {
   timerreg timer[7];
 } gptimer;
 
-static unsigned long timer_80cycles() {
+extern int waiting_cycles;
+
+static unsigned long timer_count_cycles() {
   gptimer* lr = (gptimer*) ADDR;
   static unsigned long count = 0;
   unsigned long lap = (unsigned long) (count - lr->timer[0].counter);
-  while (lap < 8) {
-    lap = (unsigned long) (count - lr->timer[0].counter);
-  }
+  if (lap < RANDOM_DELAY) waiting_cycles += RANDOM_DELAY - lap;
   count = lr->timer[0].counter;
   return lap;
 }
@@ -266,7 +266,7 @@ static int remaining = 32;
 static int xorshift_rand() {
   /* NOT AT ALL a xorshift, but it's easier to keep this function name */
   if (remaining == 0) {
-    state     = timer_80cycles();
+    state     = timer_count_cycles();
     remaining = 32;
   }
   int bits_per_rand = 32 / FD;
@@ -332,8 +332,10 @@ static int __attribute__((noinline)) xorshift_rand() {
 #endif
 #endif
 
+#ifdef CST_RAND
 #undef RAND
 #define RAND() (unsigned int) *((volatile unsigned int*)0x80000600)
+#endif
 
 /* #define FD_AND_1(r,a,b) ANDC32(r,a,b) */
 /* #define FD_OR_1(r,a,b)  { DATATYPE _tmp_or; ANDC32(_tmp_or,~a,~b); r = ~_tmp_or; } */
