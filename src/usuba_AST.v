@@ -132,6 +132,7 @@ Record config := {
   ortho        : bool;
   openmp       : N;
   no_arr       : bool;
+  no_arr_tmp   : bool;
   arr_entry    : bool;
   unroll       : bool;
   interleave   : N;
@@ -141,6 +142,7 @@ Record config := {
   lazylift     : bool;
   slicing_set  : bool;
   slicing_type : slicing;
+  secure_loops : bool;
 }.
 
 Set Extraction KeepSingleton.
