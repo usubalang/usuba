@@ -19,7 +19,7 @@
 #include "SSE.h"
 
 /* auxiliary functions */
-void sbox__0 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
+static void sbox__0 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
   
   // Variables declaration
   DATATYPE x1;
@@ -158,7 +158,7 @@ void sbox__0 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYP
 
 }
 
-void sbox__1 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
+static void sbox__1 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
   
   // Variables declaration
   DATATYPE x1;
@@ -283,7 +283,7 @@ void sbox__1 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYP
 
 }
 
-void sbox__2 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
+static void sbox__2 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
   
   // Variables declaration
   DATATYPE x1;
@@ -410,7 +410,7 @@ void sbox__2 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYP
 
 }
 
-void sbox__3 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
+static void sbox__3 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
   
   // Variables declaration
   DATATYPE x1;
@@ -507,7 +507,7 @@ void sbox__3 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYP
 
 }
 
-void sbox__4 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
+static void sbox__4 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
   
   // Variables declaration
   DATATYPE x1;
@@ -644,7 +644,7 @@ void sbox__4 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYP
 
 }
 
-void sbox__5 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
+static void sbox__5 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
   
   // Variables declaration
   DATATYPE x1;
@@ -771,7 +771,7 @@ void sbox__5 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYP
 
 }
 
-void sbox__6 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
+static void sbox__6 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
   
   // Variables declaration
   DATATYPE x1;
@@ -898,7 +898,7 @@ void sbox__6 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYP
 
 }
 
-void sbox__7 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
+static void sbox__7 (/*inputs*/ DATATYPE a1,DATATYPE a2,DATATYPE a3,DATATYPE a4,DATATYPE a5,DATATYPE a6, /*outputs*/ DATATYPE* out1,DATATYPE* out2,DATATYPE* out3,DATATYPE* out4) {
   
   // Variables declaration
   DATATYPE x1;
