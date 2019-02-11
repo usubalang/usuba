@@ -35,6 +35,7 @@ let default_conf : config =
     ortho        = true;
     openmp       = 1;
     no_arr       = false;
+    no_arr_tmp   = false;
     arr_entry    = true;
     unroll       = false;
     interleave   = 1;
@@ -44,6 +45,7 @@ let default_conf : config =
     lazylift     = false;
     slicing_set  = false;
     slicing_type = B;
+    secure_loops = false;
   }
     
 let make_env () = Hashtbl.create 100
