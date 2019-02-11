@@ -800,6 +800,58 @@ aes_keysched_bitslice_avx:
 
 	ret;
 
+#ifdef EXACT_ORIG
+.align 8
+.global AES__
+.type   AES__,@function;
+AES__:
+	/* input:
+	 *	%rdi: ctx, CTX
+	 *	%xmm0-%xmm7: eight input/output blocks
+	 */
+
+	movl	nr(CTX), %eax;
+	decl	%eax;
+	leaq	bs_keysched(CTX), %r8;
+
+	bitslice(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
+	         %xmm8, %xmm9);
+    
+.Lenc_loop:
+	addroundkey(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
+		    %r8);
+	addq	$(8*16), %r8;
+
+	shiftrow(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7, %xmm8);
+
+	subbytes(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
+		 %xmm8, %xmm9, %xmm10, %xmm11, %xmm12, %xmm13, %xmm14, %xmm15);
+
+	mixcolumns(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
+		   %xmm8, %xmm9, %xmm10, %xmm11,
+		   %xmm12, %xmm13, %xmm14, %xmm15);
+	decl	%eax;
+	jnz	.Lenc_loop;
+    
+	addroundkey(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
+		    %r8);
+	addq	$(8*16), %r8;
+
+	shiftrow(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7, %xmm8);
+
+	subbytes(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
+		 %xmm8, %xmm9, %xmm10, %xmm11, %xmm12, %xmm13, %xmm14, %xmm15);
+
+	addroundkey(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
+		    %r8);
+    
+	bitslice(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
+		 %xmm8, %xmm9);
+
+	ret;
+
+#endif
+    
 #define load_8way(src, x0, x1, x2, x3, x4, x5, x6, x7) \
 	vmovdqu (0*16)(src), x0; \
 	vmovdqu (1*16)(src), x1; \
@@ -916,17 +968,30 @@ aes_ctr_8way:
 					     %xmm5, %xmm6, %xmm7, %xmm8, %xmm9,
 					     %xmm10);
 
-    
+#ifndef EXACT_ORIG    
     bitslice(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
 	         %xmm8, %xmm9);
+#endif
     
     // leaq bs_keysched(CTX), %rdi // does nothing
 	call AES__         ;
 
+#ifdef USUBA    
+    vmovdqa 0(%rsi), %xmm0
+    vmovdqa 16(%rsi), %xmm1
+    vmovdqa 32(%rsi), %xmm2
+    vmovdqa 48(%rsi), %xmm3
+    vmovdqa 64(%rsi), %xmm4
+    vmovdqa 80(%rsi), %xmm5
+    vmovdqa 96(%rsi), %xmm6
+    vmovdqa 112(%rsi), %xmm7
+#endif
     
+#ifndef EXACT_ORIG    
     bitslice(%xmm0, %xmm1, %xmm2, %xmm3, %xmm4, %xmm5, %xmm6, %xmm7,
 		 %xmm8, %xmm9);
-
+#endif
+    
 	cmpq $0, %rdx;
 	jne .Lctr_xor;
 
@@ -955,10 +1020,15 @@ aes_ctr_8way:
 
 #ifdef USUBA
 #include "usuba.s"
+#elif defined(TTTT)
+#include "t.s"
+#elif defined(USUBA_SCHED)
+#include "aes_sched.s"
 #elif defined(KIVI)
 #include "kivi.s"
 #elif defined(KIVI_ORIG)
 #include "kivi_orig.s"
+#elif defined(EXACT_ORIG)    
 #else
 #error Please define USUBA or KIVI or KIVI_ORIG
 #endif
