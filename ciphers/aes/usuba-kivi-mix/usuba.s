@@ -275,34 +275,34 @@ AES__:                                  # @AES__
 	jne	.LBB0_3
 # %bb.2:
    
-	vpxor	1280(%rdi), %xmm3, %xmm0
-	vpxor	1296(%rdi), %xmm5, %xmm1
-	vpxor	1312(%rdi), %xmm7, %xmm8
-	vpxor	1392(%rdi), %xmm4, %xmm7
-	vpxor	1344(%rdi), %xmm2, %xmm4
-    vmovdqa %xmm8, %xmm2
-	vpxor	1328(%rdi), %xmm6, %xmm3
-	vpxor	1360(%rdi), %xmm11, %xmm5
-	vpxor	1376(%rdi), %xmm10, %xmm6
-    
-    
-    
-//	vpxor	1280(%rdi), %xmm3, %xmm3
-//	vmovdqa	%xmm3, (%rsi)
-//	vpxor	1296(%rdi), %xmm5, %xmm3
-//	vmovdqa	%xmm3, 16(%rsi)
-//	vpxor	1312(%rdi), %xmm7, %xmm3
-//	vmovdqa	%xmm3, 32(%rsi)
+//	vpxor	1280(%rdi), %xmm3, %xmm0
+//	vpxor	1296(%rdi), %xmm5, %xmm1
+//	vpxor	1312(%rdi), %xmm7, %xmm8
+//	vpxor	1392(%rdi), %xmm4, %xmm7
+//	vpxor	1344(%rdi), %xmm2, %xmm4
+//    vmovdqa %xmm8, %xmm2
 //	vpxor	1328(%rdi), %xmm6, %xmm3
-//	vmovdqa	%xmm3, 48(%rsi)
-//	vpxor	1344(%rdi), %xmm2, %xmm2
-//	vmovdqa	%xmm2, 64(%rsi)
-//	vpxor	1360(%rdi), %xmm11, %xmm1
-//	vmovdqa	%xmm1, 80(%rsi)
-//	vpxor	1376(%rdi), %xmm10, %xmm0
-//	vmovdqa	%xmm0, 96(%rsi)
-//	vpxor	1392(%rdi), %xmm4, %xmm0
-//	vmovdqa	%xmm0, 112(%rsi)
+//	vpxor	1360(%rdi), %xmm11, %xmm5
+//	vpxor	1376(%rdi), %xmm10, %xmm6
+    
+    
+    
+	vpxor	1280(%rdi), %xmm3, %xmm3
+	vmovdqa	%xmm3, (%rsi)
+	vpxor	1296(%rdi), %xmm5, %xmm3
+	vmovdqa	%xmm3, 16(%rsi)
+	vpxor	1312(%rdi), %xmm7, %xmm3
+	vmovdqa	%xmm3, 32(%rsi)
+	vpxor	1328(%rdi), %xmm6, %xmm3
+	vmovdqa	%xmm3, 48(%rsi)
+	vpxor	1344(%rdi), %xmm2, %xmm2
+	vmovdqa	%xmm2, 64(%rsi)
+	vpxor	1360(%rdi), %xmm11, %xmm1
+	vmovdqa	%xmm1, 80(%rsi)
+	vpxor	1376(%rdi), %xmm10, %xmm0
+	vmovdqa	%xmm0, 96(%rsi)
+	vpxor	1392(%rdi), %xmm4, %xmm0
+	vmovdqa	%xmm0, 112(%rsi)
     
 	addq	$80, %rsp
 	retq
@@ -311,11 +311,11 @@ AES__:                                  # @AES__
 	.cfi_endproc
                                         # -- End function
 
-	vpxor	1280(%rdi), %xmm3, %xmm0 // 0
-	vpxor	1296(%rdi), %xmm5, %xmm1 // 1
-	vpxor	1392(%rdi), %xmm4, %xmm7 // 7
-	vpxor	1344(%rdi), %xmm2, %xmm4 // 4
-	vpxor	1312(%rdi), %xmm12, %xmm2 // 2 (replace xmm7 by xmm12)
-	vpxor	1328(%rdi), %xmm6, %xmm3 // 3
-	vpxor	1360(%rdi), %xmm11, %xmm5 // 5
-	vpxor	1376(%rdi), %xmm10, %xmm6 // 6
+//	vpxor	1280(%rdi), %xmm3, %xmm0 // 0
+//	vpxor	1296(%rdi), %xmm5, %xmm1 // 1
+//	vpxor	1392(%rdi), %xmm4, %xmm7 // 7
+//	vpxor	1344(%rdi), %xmm2, %xmm4 // 4
+//	vpxor	1312(%rdi), %xmm12, %xmm2 // 2 (replace xmm7 by xmm12)
+//	vpxor	1328(%rdi), %xmm6, %xmm3 // 3
+//	vpxor	1360(%rdi), %xmm11, %xmm5 // 5
+//	vpxor	1376(%rdi), %xmm10, %xmm6 // 6
