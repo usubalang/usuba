@@ -152,7 +152,7 @@ let rec commit_asgns ?(env_it=(Hashtbl.create 10))
     | Some e -> env_remove env_expr (ExpVar v);
                 [ Eqn([v],e, false) ]
     | None -> match get_var_type env_var v with
-              | Bool | Int(_,1) -> []
+              | Uint(_,_,1) -> []
               | _ -> flat_map (find_usage env_it env_expr env_var)
                               (expand_var_partial env_var v) in
   

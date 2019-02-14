@@ -1,6 +1,5 @@
-#pragma vectorization
 
-_no_inline table[] sbox (input:u32x4) returns (out:u32x4) [
+_no_inline table[] sbox (input:v4) returns (out:v4) [
     { 3, 8,15, 1,10, 6, 5,11,14,13, 4, 2, 7, 0, 9,12 } ;
 	{15,12, 2, 7, 9, 0, 5,10, 1,11,14, 8, 6,13, 3, 4 } ;
 	{ 8, 6, 7, 9, 3,12,10,15,13, 1,14, 4, 0,11, 5, 2 } ;

@@ -38,7 +38,7 @@ let rec expand_intn (id: ident) (n: int) : ident list =
     in aux 1
          
 let expand_intn_typed (id: ident) (n: int) (ck: clock) =
-  List.map (fun x -> (x,Bool,ck)) (expand_intn id n)
+  List.map (fun x -> (x,bool,ck)) (expand_intn id n)
          
 let expand_intn_pat (id: ident) (n: int) : var list =
   List.map (fun x -> Var x) (expand_intn id n)
@@ -113,7 +113,7 @@ let rec remove_call env_var env_fun e : deq list * expr =
   else
     let expr_typ_l = get_expr_type env_fun env_var e' in
     let typ = if List.length expr_typ_l > 1
-              then Array(reduce_same_list expr_typ_l,Const_e (List.length expr_typ_l))
+              then Array(reduce_same_list expr_typ_l,List.length expr_typ_l)
               else List.hd expr_typ_l in
     let new_var = gen_tmp env_var typ in
     new_vars := (make_var_d new_var typ Defclock []) :: !new_vars;
@@ -137,7 +137,7 @@ and remove_calls env_var env_fun l : deq list * expr list =
                                     raise Not_found in
                 let typ = if List.length expr_typ_l > 1
                           then Array(reduce_same_list expr_typ_l,
-                                     Const_e (List.length expr_typ_l))
+                                     List.length expr_typ_l)
                           else List.hd expr_typ_l in
                 let new_var = gen_tmp env_var typ in
                 new_vars := (make_var_d new_var typ Defclock []) :: !new_vars;

@@ -22,7 +22,7 @@ open Utils
  *)
 let rec expand_var_w_inter env_var (v:var) : var list =
   match get_var_type env_var v with
-  | Bool | Int(_,1) -> [ v ]
+  | Uint(_,_,1) -> [ v ]
   | _ -> v :: (flat_map (expand_var_w_inter env_var) (expand_var_partial env_var v))
       
 (* Expands each var of 'vars' and adds it to the table 'ready' *)

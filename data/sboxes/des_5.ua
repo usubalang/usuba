@@ -1,13 +1,13 @@
-node sbox_des_5 (a:u6) returns (out:u4)
+node sbox_des_5 (a:v6) returns (out:v4)
 vars
-	x1:bool, x2:bool, x3:bool, x4:bool, x5:bool, x6:bool, x7:bool, x8:bool,
-	x9:bool, x10:bool, x11:bool, x12:bool, x13:bool, x14:bool, x15:bool, x16:bool,
-	x17:bool, x18:bool, x19:bool, x20:bool, x21:bool, x22:bool, x23:bool, x24:bool,
-	x25:bool, x26:bool, x27:bool, x28:bool, x29:bool, x30:bool, x31:bool, x32:bool,
-	x33:bool, x34:bool, x35:bool, x36:bool, x37:bool, x38:bool, x39:bool, x40:bool,
-	x41:bool, x42:bool, x43:bool, x44:bool, x45:bool, x46:bool, x47:bool, x48:bool,
-	x49:bool, x50:bool, x51:bool, x52:bool, x53:bool, x54:bool, x55:bool, x56:bool,
-	x57:bool, x58:bool, x59:bool, x60:bool, x61:bool, x62:bool
+	x1:v1, x2:v1, x3:v1, x4:v1, x5:v1, x6:v1, x7:v1, x8:v1,
+	x9:v1, x10:v1, x11:v1, x12:v1, x13:v1, x14:v1, x15:v1, x16:v1,
+	x17:v1, x18:v1, x19:v1, x20:v1, x21:v1, x22:v1, x23:v1, x24:v1,
+	x25:v1, x26:v1, x27:v1, x28:v1, x29:v1, x30:v1, x31:v1, x32:v1,
+	x33:v1, x34:v1, x35:v1, x36:v1, x37:v1, x38:v1, x39:v1, x40:v1,
+	x41:v1, x42:v1, x43:v1, x44:v1, x45:v1, x46:v1, x47:v1, x48:v1,
+	x49:v1, x50:v1, x51:v1, x52:v1, x53:v1, x54:v1, x55:v1, x56:v1,
+	x57:v1, x58:v1, x59:v1, x60:v1, x61:v1, x62:v1
 let
 	x1 = ~a[5];
 	x2 = ~a[2];

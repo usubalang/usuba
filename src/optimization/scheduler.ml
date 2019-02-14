@@ -267,14 +267,13 @@ module Low_pressure_sched = struct
   let rec get_sub_vars env_var ?(env_it=Hashtbl.create 100) (v:var) : var list =
     let typ = get_var_type env_var v in
     match typ with
-    | Bool -> [ v ]
-    | Int(_,1) -> [ v ]
-    | Int(_,m) -> List.map (fun i -> Index(v,Const_e i)) (gen_list_0_int m)
-    | Array(_,ae) -> (List.map (fun i -> Index(v,Const_e i))
-                               (gen_list_0_int (eval_arith env_it ae))) @
+    | Uint(_,_,1)   -> [ v ]
+    | Uint(_,_,n)   -> List.map (fun i -> Index(v,Const_e i)) (gen_list_0_int n)
+    | Array(_,size) -> (List.map (fun i -> Index(v,Const_e i))
+                                 (gen_list_0_int size)) @
                        (flat_map (fun i -> expand_var env_var ~env_it:env_it
                                                       (Index(v,Const_e i)))
-                                 (gen_list_0_int (eval_arith env_it ae)))
+                                 (gen_list_0_int size))
     | _ -> assert false
 
   (* "remove the array indexes": 

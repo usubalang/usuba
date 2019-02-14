@@ -71,45 +71,7 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
     Soundness.tables_sound (Rename.rename_prog prog conf) norm_ok;
 
   norm_ok
-    
-
-let specialize (prog:prog) (conf:config) : prog =
-
-  let ti_file  = Printf.sprintf "data/nodes/ti%d.ua" conf.ti in
-
-  let run_pass title func ?(sconf = conf) prog =
-    run_pass title func sconf prog in
-
-
-  let specialized = 
-  if conf.fdti = "fdti" then
-    let ti_nodes = norm_prog false
-                             (Parse_file.parse_file ti_file)
-                             { conf with inlining = false } in
-    prog |>
-      run_pass "Fault detection" Fault_detection.fault_detection  |>
-      run_pass "Re-normalize" (norm_prog false) |>
-      run_pass "TI securisation" (Ti_secure.ti_secure ti_nodes)
-  else if conf.fdti = "tifd" then
-    let ti_nodes = norm_prog false
-                             (Parse_file.parse_file ti_file)
-                             { conf with inlining = false } in
-    prog |> 
-      run_pass "TI securisation" (Ti_secure.ti_secure ti_nodes) |>
-      run_pass "Re-normalize" (norm_prog false) |>
-      run_pass "Fault detection" Fault_detection.fault_detection
-  else if conf.fd then
-    prog |> run_pass "Fault detection" Fault_detection.fault_detection
-  else if conf.ti > 1 then
-    let ti_nodes = norm_prog false
-                             (Parse_file.parse_file ti_file)
-                             { conf with inlining = false } in
-    prog |>run_pass "TI securisation" (Ti_secure.ti_secure ti_nodes)
-  else
-    prog in
-
-  norm_prog false specialized conf
-      
+  
 
 let compile (prog:prog) (conf:config) : prog =
   print "INPUT:" prog conf;
@@ -117,7 +79,4 @@ let compile (prog:prog) (conf:config) : prog =
   let normalized = norm_prog true prog conf in
   (* Get_live_var.get_live_var normalized; *)
 
-  if conf.fd || conf.ti > 1 then
-    specialize normalized conf
-  else
-    normalized
+  normalized

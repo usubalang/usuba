@@ -1,8 +1,8 @@
-node s3(a:bool,b:bool,c:bool,d:bool) returns (w:bool,x:bool,y:bool,z:bool)
+node s3(a:v1,b:v1,c:v1,d:v1) returns (w:v1,x:v1,y:v1,z:v1)
 vars
-    t01 : bool, t02 : bool, t03 : bool, t04 : bool, t05 : bool, t06 : bool,
-    t07 : bool, t08 : bool, t09 : bool, t10 : bool, t11 : bool, t12 : bool,
-    t13 : bool, t14 : bool, t15 : bool, t16 : bool, t17 : bool, t18 : bool
+    t01 : v1, t02 : v1, t03 : v1, t04 : v1, t05 : v1, t06 : v1,
+    t07 : v1, t08 : v1, t09 : v1, t10 : v1, t11 : v1, t12 : v1,
+    t13 : v1, t14 : v1, t15 : v1, t16 : v1, t17 : v1, t18 : v1
 let
     t01 = a   ^ c  ;
 	t02 = a   | d  ;

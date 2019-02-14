@@ -164,17 +164,16 @@ and expand_deqs env_var env_keep ?(env=make_env ())
 let expand_p (p:p) : p =
   let rec aux vd =
     match vd.vtyp with
-    | Bool | Nat -> [ vd ]
-    | Array(t,s) -> let size = eval_arith (make_env ()) s in
-                    flat_map (fun i ->
+    | Nat -> [ vd ]
+    | Array(t,size) -> flat_map (fun i ->
                               aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
                                             vtyp = t })
                              (gen_list_0_int size)
-    | Int(n,1) -> [ vd ]
-    | Int(n,m) -> flat_map (fun i ->
-                            aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
-                                          vtyp = Int(n,1) })
-                           (gen_list_0_int m) in
+    | Uint(_,_,1) -> [ vd ]
+    | Uint(dir,m,n) -> flat_map (fun i ->
+                                 aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
+                                               vtyp = Uint(dir,m,1) })
+                                (gen_list_0_int n) in
   flat_map aux p
 
 

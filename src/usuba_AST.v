@@ -26,11 +26,21 @@ Inductive arith_expr :=
   | Var_e (x: ident)
   | Op_e (op: arith_op)(e1 e2: arith_expr). 
 
+Inductive dir :=
+  | Hslice
+  | Vslice
+  | Bslice
+  | Varslice (id:ident) (* variable *)
+  | Mslice (i:N). (* Generalized m-slicing *)
+
+Inductive mtyp :=
+  | Mint (i:N)
+  | Mvar (id:ident). (* variable *)
+
 Inductive typ :=
-  | Bool
-  | Int (i: N) (j :N)
-  | Nat (* for recurrence variables. Not part of usuba0 normalized *)
-  | Array (t: typ)(ae: arith_expr). (* arrays *)
+  | Nat
+  | Uint (d:dir) (m: mtyp) (n:N)
+  | Array (t: typ) (n:N).
 
 Inductive constr :=
   | True

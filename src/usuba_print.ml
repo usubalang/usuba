@@ -120,10 +120,21 @@ let pat_to_str_types pat =
 
 let rec typ_to_str typ =
   match typ with
-  | Bool -> "bool"
-  | Int(n,m) -> sprintf "u%dx%d" n m
   | Nat -> "nat"
-  | Array(typ,e) -> (typ_to_str typ) ^ "[" ^ (arith_to_str e) ^ "]"
+  | Uint(d,m,n) ->
+     let dir_str = match d with
+       | Hslice     -> "<H>"
+       | Vslice     -> "<V>"
+       | Bslice     -> "<B>"
+       | Mslice i   -> sprintf "<%d>" i
+       | Varslice v -> if v.name = "D" then "" else sprintf "<%s>" v.name in
+     begin match m with
+     | Mint 1  -> sprintf "b%s%d" dir_str n
+     | Mint i  -> if n = 1 then sprintf "u%s%d" dir_str i
+                  else sprintf "u%s%dx%d" dir_str i n
+     | Mvar id -> if id.name = "m" then sprintf "v%s%d" dir_str n
+                  else sprintf "u%s%sx%d" dir_str id.name n end
+  | Array(typ,n) -> sprintf "%s[%d]" (typ_to_str typ) n
 let typ_to_str_l = lift_comma typ_to_str
 
 let rec clock_to_str ck =

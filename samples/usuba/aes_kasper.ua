@@ -1,4 +1,4 @@
-_no_inline table SubBytes (input:u16x8) returns (output:u16x8) {
+_no_inline table SubBytes (input:v8) returns (output:v8) {
     99, 124, 119, 123, 242, 107, 111, 197, 48, 1, 103, 43, 254, 215, 171, 118,
     202, 130, 201, 125, 250, 89, 71, 240, 173, 212, 162, 175, 156, 164, 114, 192,
     183, 253, 147, 38, 54, 63, 247, 204, 52, 165, 229, 241, 113, 216, 49, 21,
@@ -17,7 +17,7 @@ _no_inline table SubBytes (input:u16x8) returns (output:u16x8) {
     140, 161, 137, 13, 191, 230, 66, 104, 65, 153, 45, 15, 176, 84, 187, 22
 }
 
-node ShiftRows (inputSR:u16x8) returns (out:u16x8)
+node ShiftRows (inputSR:u<H>16x8) returns (out:u<H>16x8)
 let
     forall i in [0,7] {
         out[i] = Shuffle(inputSR[i],[ 0,  1,  2,  3,
@@ -27,13 +27,13 @@ let
      }
 tel
 
-node RL32 (input:u16x1) returns (out:u16x1)
+node RL32 (input:u<H>16) returns (out:u<H>16)
 let
      out = Shuffle(input,[1,2,3,0])
      #out = input{1,2,3,0}
 tel
 
-node RL64 (input:u16x1) returns (out:u16x1)
+node RL64 (input:u<H>16) returns (out:u<H>16)
 let
      out = Shuffle(input,[2,3,0,1])
      #out = input{2,3,0,1}
@@ -41,7 +41,7 @@ tel
 
 # Note: the 7-x are due to the fact that Kasper & Schwabe don't index their array
 # the same way we do.
-node MixColumn (a:u16x8) returns (b:u16x8)
+node MixColumn (a:u<H>16x8) returns (b:u<H>16x8)
 vars
 let
     b[7-0] = (a[7-7] ^ (RL32(a[7-7]))) ^ (RL32(a[7-0])) ^ RL64(a[7-0] ^ (RL32(a[7-0])));
@@ -56,9 +56,9 @@ tel
 
 
 
-node AES (plain:u16x8,key:u16x8[11]) returns (cipher:u16x8)
+node AES (plain:u<H>16x8,key:u<H>16x8[11]) returns (cipher:u<H>16x8)
 vars
-    tmp : u16x8[10]
+    tmp : u<H>16x8[10]
 let
     # Initial AddRoundKey
     tmp[0] = plain ^ key[0];

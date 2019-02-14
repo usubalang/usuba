@@ -77,12 +77,11 @@ let expand_in_node env_fun (f:def) (id:ident) (ck:clock) (size:int) (old_typ:typ
 
 let expand_p env_fun (f:def) (vd:var_d) =  
   match vd.vtyp with
-  | Bool -> assert false
-  | Int(_,1) -> assert false
-  | Int(n,m) ->
-     expand_in_node env_fun f vd.vid vd.vck m vd.vtyp (Int(n,1))
-  | Array(typ',ae) ->
-     expand_in_node env_fun f vd.vid vd.vck (eval_arith_ne ae) vd.vtyp typ'
+  | Uint(_,_,1) -> assert false
+  | Uint(dir,m,n) ->
+     expand_in_node env_fun f vd.vid vd.vck n vd.vtyp (Uint(dir,m,1))
+  | Array(typ',size) ->
+     expand_in_node env_fun f vd.vid vd.vck size vd.vtyp typ'
   | _ -> assert false
                                                    
 

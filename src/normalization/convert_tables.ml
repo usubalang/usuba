@@ -83,10 +83,9 @@ let fix_p (old_p:p) (new_p:p) : p =
   List.map (fun x -> { x with vtyp =
                                 match x.vtyp with
                                 | Array(_,n) -> Array(t,n)
-                                | Int(_,m) -> ( match t with
-                                                | Bool -> Int(1,m)
-                                                | Int(n,1) -> Int(n,m)
-                                                | _ -> assert false)
+                                | Uint(_,_,n) -> ( match t with
+                                                   | Uint(dir,m,1) -> Uint(dir,m,n)
+                                                   | _ -> assert false)
                                 | _ -> t }) new_p
     
 let rewrite_single_table (id:ident) (p_in:p) (p_out:p)
