@@ -1,8 +1,8 @@
-_no_inline table SubColumn_single (input:u1x4) returns (out:u1x4) {
+_no_inline table SubColumn_single (input:v4) returns (out:v4) {
     6, 5, 12, 10, 1, 14, 7, 9, 11, 0, 3, 13, 8, 15, 4, 2
 }
 
-node SubColumn (input:u1x64) returns (out:u1x64)
+node SubColumn (input:b64) returns (out:b64)
 let
      forall i in  [0,15] {
          out[i,i+16,i+32,i+48] =
@@ -10,7 +10,7 @@ let
      }
 tel
 
-node ShiftRows (input:u1x16[4]) returns (out:u1x16[4])
+node ShiftRows (input:b16[4]) returns (out:b16[4])
 vars
 let
     out[0] = input[0];
@@ -19,9 +19,9 @@ let
     out[3] = input[3] <<< 13
 tel
 
-node Rectangle (plain:u1x64,key:const u1x64[26]) returns (cipher:u1x64)
+node Rectangle (plain:b64,key:const b64[26]) returns (cipher:b64)
 vars
-    tmp : u1x64[26]
+    tmp : b64[26]
 let
 
     tmp[0] = plain;

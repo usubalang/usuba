@@ -77,6 +77,9 @@ rule token = parse
 | "True"   { TOK_constr True  }
 | "False"  { TOK_constr False }
 (* This pattern is a bit hacky: it doesn't match types (like u8, v15, b2 etc.) *)
+| ['a' 'c'-'t' 'w' 'y' 'z' 'A'-'Z' '_' ] ['a'-'w' 'y' 'z' 'A'-'Z' '0'-'9' '_' '\'']*
+| [ 'u' 'v' 'b' ] ['a'-'w' 'y' 'z' 'A'-'Z' '_' ] ['a'-'w' 'y' 'z' 'A'-'Z' '0'-'9' '_' '\'']* as id
+{ try Hashtbl.find kwd_table id with Not_found -> TOK_id_no_x (fresh_ident id) }
 | ['a' 'c'-'t' 'w'-'z' 'A'-'Z' '_' ] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']*
 | [ 'u' 'v' 'b' ] ['a'-'z' 'A'-'Z' '_' ] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']* as id
 { try Hashtbl.find kwd_table id with Not_found -> TOK_id (fresh_ident id) }

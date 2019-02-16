@@ -86,6 +86,7 @@
 %token TOK_MOD
 
 %token <Usuba_AST.ident> TOK_id
+%token <Usuba_AST.ident> TOK_id_no_x
 %token <int> TOK_int               
 %token <Usuba_AST.constr> TOK_constr
 %token <Usuba_AST.dir> TOK_dir
@@ -107,6 +108,9 @@
 
 %left TOK_AND TOK_XOR TOK_PIPE
 %nonassoc TOK_TILDE
+
+%left TOK_id_no_x TOK_U TOK_B TOK_V TOK_IN TOK_CROSS TOK_dir
+%left TOK_id
   
 
 (******************************** Entry Point *********************************)
@@ -137,9 +141,25 @@ prog:
   | TOK_RROTATE { Rrotate }
 
 ident:
-  | id=TOK_id  { id               }
+  | id=ident_no_x { id }
+  | id=TOK_id     { id }
+  | s=ident e=ident %prec TOK_id_no_x { fresh_ident (s.name ^ e.name) }
+(*  | s=ident_no_x e=ident { fresh_ident (s.name ^ e.name) } *)
+(*  | s=ident e=ident_no_x { fresh_ident (s.name ^ e.name) } *)
+
+ident_no_x:
+  | id=TOK_id_no_x  { id }
   | TOK_IN     { fresh_ident "in" }
   | TOK_CROSS  { fresh_ident "x"  }
+  | TOK_U id=ident_no_x  { fresh_ident ("u" ^ id.name) }
+  | TOK_B id=ident_no_x  { fresh_ident ("b" ^ id.name) }
+  | TOK_V id=ident_no_x  { fresh_ident ("v" ^ id.name) }
+  | TOK_U n=TOK_int { fresh_ident ("u" ^ (string_of_int n)) }
+  | TOK_B n=TOK_int { fresh_ident ("b" ^ (string_of_int n)) }
+  | TOK_V n=TOK_int { fresh_ident ("v" ^ (string_of_int n)) }
+  | TOK_U n=TOK_int id=ident_no_x { fresh_ident ("u" ^ (string_of_int n) ^ id.name) }
+  | TOK_B n=TOK_int id=ident_no_x { fresh_ident ("b" ^ (string_of_int n) ^ id.name) }
+  | TOK_V n=TOK_int id=ident_no_x { fresh_ident ("v" ^ (string_of_int n) ^ id.name) }
   | TOK_U      { fresh_ident "u"  }
   | TOK_B      { fresh_ident "b"  }
   | TOK_V      { fresh_ident "v"  }
@@ -247,7 +267,7 @@ dir:
 
 mtyp:
   | i=TOK_int { Mint i }
-  | TOK_SQUOTE id=ident { Mvar id }
+  | TOK_SQUOTE id=ident_no_x { Mvar id }
 
 
 primitive_typ:
