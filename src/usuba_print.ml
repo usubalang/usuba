@@ -118,16 +118,19 @@ let pat_to_str pat =
 let pat_to_str_types pat =
   "(" ^ (join "," (List.map var_to_str_types pat)) ^ ")"
 
+let dir_to_str d =
+  match d with
+  | Hslice     -> "<H>"
+  | Vslice     -> "<V>"
+  | Bslice     -> "<B>"
+  | Mslice i   -> sprintf "<%d>" i
+  | Varslice v -> if v.name = "D" then "" else sprintf "<%s>" v.name
+          
 let rec typ_to_str typ =
   match typ with
   | Nat -> "nat"
   | Uint(d,m,n) ->
-     let dir_str = match d with
-       | Hslice     -> "<H>"
-       | Vslice     -> "<V>"
-       | Bslice     -> "<B>"
-       | Mslice i   -> sprintf "<%d>" i
-       | Varslice v -> if v.name = "D" then "" else sprintf "<%s>" v.name in
+     let dir_str = dir_to_str d in
      begin match m with
      | Mint 1  -> sprintf "b%s%d" dir_str n
      | Mint i  -> if n = 1 then sprintf "u%s%d" dir_str i

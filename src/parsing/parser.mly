@@ -11,9 +11,6 @@
      | [] -> raise Syntax_error
      | x::[] -> ExpVar x
      | _ -> Tuple (List.map (fun x -> ExpVar x) l)
-
-  let default_dir = Varslice { uid = -1; name = "D" }
-  let default_m   = Mvar     { uid = -1; name = "m" }
 %}
 
 /*******************\
@@ -144,8 +141,6 @@ ident:
   | id=ident_no_x { id }
   | id=TOK_id     { id }
   | s=ident e=ident %prec TOK_id_no_x { fresh_ident (s.name ^ e.name) }
-(*  | s=ident_no_x e=ident { fresh_ident (s.name ^ e.name) } *)
-(*  | s=ident e=ident_no_x { fresh_ident (s.name ^ e.name) } *)
 
 ident_no_x:
   | id=TOK_id_no_x  { id }

@@ -258,9 +258,9 @@ let rec get_expr_type env_fun env_var (e:expr) : typ list =
      if f.name = "rand" then [ Uint(default_dir,Mint 1,1) ]
      else
        let def = Hashtbl.find env_fun f in
-       List.map (fun vd -> vd.vtyp) def.p_out               
+       List.map (fun vd -> vd.vtyp) def.p_out
   | _ -> assert false
-
+  
                            
 let rec expand_var env_var ?(env_it=Hashtbl.create 100) ?(partial=false) (v:var) : var list =
   let typ = get_var_type env_var v in
@@ -294,6 +294,16 @@ let rec get_base_type (typ:typ) : typ =
   | Array(t,_) -> get_base_type t
   | _ -> assert false
 
+let get_type_dir (typ:typ) : typ =
+  match get_base_typ typ with
+  | Uint(dir,_,_) -> dir
+  | _ -> assert false
+
+let rec update_type_dir (typ:typ) (dir:dir) : typ =
+  match typ with
+  | Uint(_,m,n) -> Uint(dir,m,n)
+  | Array(t,n)  -> Array(update_type_dir t dir,n)
+  | _ -> assert false
 
 let vd_to_var (vd:var_d) : var =
   Var vd.vid
