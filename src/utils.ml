@@ -294,10 +294,13 @@ let rec get_base_type (typ:typ) : typ =
   | Array(t,_) -> get_base_type t
   | _ -> assert false
 
-let get_type_dir (typ:typ) : typ =
-  match get_base_typ typ with
+let get_type_dir (typ:typ) : dir =
+  match get_base_type typ with
   | Uint(dir,_,_) -> dir
   | _ -> assert false
+
+let get_var_dir env_var (v:var) : dir =
+  get_type_dir (get_var_type env_var v)
 
 let rec update_type_dir (typ:typ) (dir:dir) : typ =
   match typ with

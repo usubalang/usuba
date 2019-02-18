@@ -213,6 +213,19 @@ open Usuba_AST
 (*     { nodes = flat_map (slice_def n m) prog.nodes } *)
       
 (* end *)
+
+module Resolve_types = struct
+
+  let resolve_types (prog:prog) (conf:config) : prog =
+    match conf.slicing_set with
+    | false -> prog
+    | true  -> let slicing = match conf.slicing with
+                 | H -> Hslice
+                 | V -> Vslice
+                 | B -> Bslice in
+              
+end
+
        
 let slice (prog:prog) (conf:config) : prog =
   prog
