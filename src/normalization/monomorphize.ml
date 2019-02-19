@@ -113,10 +113,11 @@ module Specialize_types = struct
                            { vd with vtyp = vtyp }
                            ) p typs
       
-  let rec specialize_fun_call (all_nodes:(ident,def) Hashtbl.t)
-                              (specialized_nodes:(ident*(dir list),def) Hashtbl.t)
-                              (env_var:(ident, typ) Hashtbl.t)
-                              (vs:var list) (f:ident) (l:expr list) (sync:bool) : deq =
+  let rec specialize_fun_call
+            (all_nodes:(ident,def) Hashtbl.t)
+            (specialized_nodes:(ident,(ident*(dir list),def) Hashtbl.t) Hashtbl.t)
+            (env_var:(ident, typ) Hashtbl.t)
+            (vs:var list) (f:ident) (l:expr list) (sync:bool) : deq =
     let env_dir = Hashtbl.create 10 in
     
     let typs_out = List.map (get_var_type env_var) vs in
@@ -128,7 +129,7 @@ module Specialize_types = struct
 
     let ltyp = List.sort compare (Hashtbl.fold (fun _ t acc -> t :: acc) env_dir []) in
     let f'   = gen_fun_name f ltyp in
-    Hashtbl.add specialized_nodes (f,ltyp)
+    replace_key_2nd_layer specialized_nodes f (f',ltyp)
                 { def with
                   p_in  = p_in;
                   p_out = p_out;
@@ -142,11 +143,12 @@ module Specialize_types = struct
 
          
   and specialize_expr (all_nodes:(ident,def) Hashtbl.t)
-                      (specialized_nodes:(ident*(dir list),def) Hashtbl.t)
+                      (specialized_nodes:(ident,(ident*(dir list),def) Hashtbl.t) Hashtbl.t)
                       (env_var:(ident, typ) Hashtbl.t)
                       (vs:var list) (e:expr) (sync:bool) : deq =
     match e with
-    | Fun(f,l) -> specialize_fun_call all_nodes specialized_nodes env_var vs f l sync
+    | Fun(f,l) -> specialize_fun_call all_nodes specialized_nodes
+                                      env_var vs f l sync
     | _ -> match get_var_dir env_var (List.hd vs) with
            | Hslice -> Hslice.hslice_expr env_var vs e sync
            | Vslice -> Eqn(vs,e,sync) (* nothing to change *)
@@ -155,25 +157,23 @@ module Specialize_types = struct
                           
       
   and specialize_deqs (all_nodes:(ident,def) Hashtbl.t)
-                          (specialized_nodes:(ident*(dir list),def) Hashtbl.t)
-                          (env_var:(ident, typ) Hashtbl.t) (deqs:deq list) : deq list =
+                      (specialized_nodes:(ident,(ident*(dir list),def) Hashtbl.t) Hashtbl.t)
+                      (env_var:(ident, typ) Hashtbl.t) (deqs:deq list) : deq list =
     List.map (fun x ->
               match x with
               | Eqn(vs,e,sync) -> specialize_expr all_nodes specialized_nodes
                                                   env_var vs e sync
-                                                  
-              | Eqn(vs,Fun(f,l),sync) ->
-                 specialize_fun_call all_nodes specialized_nodes
-                                     env_var vs f l sync
               | Loop(e,ei,ef,l,opts) ->
-                 Loop(e,ei,ef,specialize_deqs all_nodes specialized_nodes env_var l,opts))
+                 Loop(e,ei,ef,specialize_deqs all_nodes specialized_nodes
+                                              env_var l,opts))
              deqs
 
-             
+  (* Called by either specialize_main of specialize_fun_call. 
+     Looked at either of those functions for more details *)
   and specialize_node (all_nodes:(ident,def) Hashtbl.t)
-                          (specialized_nodes:(ident*(dir list),def) Hashtbl.t)
-                          (env_dir:(dir,dir) Hashtbl.t)
-                          (p_in:p) (p_out:p) (vars:p) (body:deq list): def_i =
+                      (specialized_nodes:(ident,(ident*(dir list),def) Hashtbl.t) Hashtbl.t)
+                      (env_dir:(dir,dir) Hashtbl.t)
+                      (p_in:p) (p_out:p) (vars:p) (body:deq list): def_i =
     let vars = specialize_p env_dir vars in
     let env_var = build_env_var p_in p_out vars in
 
@@ -182,18 +182,18 @@ module Specialize_types = struct
     Single(vars, body)
       
 
-  (* Main monomorphization is a bit special: the specialization of the parameters
-   depends on the compilation flags rather than how it's called (since there is
-   no way to know how it will be called... *)
-  let specialize_main (all_nodes:(ident,def) Hashtbl.t)
-                      (specialized_nodes:(ident*(dir list),def) Hashtbl.t)
+  (* We call "entry" a node which is called by not other.
+     Their monomorphization is a bit special: the specialization of the parameters
+     depends on the compilation flags rather than how it's called (since there is
+     no way to know how it will be called) *)
+  let specialize_entry (all_nodes:(ident,def) Hashtbl.t)
+                      (specialized_nodes:(ident,(ident*(dir list),def) Hashtbl.t) Hashtbl.t)
                       (env_dir:(dir,dir) Hashtbl.t) (def:def) (conf:config) : unit =
 
     let p_in  = specialize_p env_dir def.p_in  in
     let p_out = specialize_p env_dir def.p_out in
 
-    let ltyp = List.sort compare (Hashtbl.fold (fun _ t acc -> t :: acc) env_dir []) in
-    Hashtbl.add specialized_nodes (def.id,[])
+    replace_key_2nd_layer specialized_nodes def.id (def.id,[])
                 { def with
                   p_in  = p_in;
                   p_out = p_out;
@@ -202,6 +202,7 @@ module Specialize_types = struct
                              specialize_node all_nodes specialized_nodes
                                              env_dir p_in p_out vars body
                           | _ -> def.node }
+    (* Printf.fprintf stderr "%s" (Usuba_print.def_to_str (Hashtbl.find specialized_nodes (def.id,[]))); *)
                     
                     
   let specialize_types (prog:prog) (conf:config) : prog =
@@ -222,11 +223,44 @@ module Specialize_types = struct
     (* Environment of monomorphized nodes *)
     let specialized_nodes = Hashtbl.create 100 in
 
-    specialize_main all_nodes specialized_nodes env_dir (last prog.nodes) conf;
-    let main = Hashtbl.find specialized_nodes ((last prog.nodes).id,[]) in
-    Printf.printf "%s" (Usuba_print.def_to_str main);
-    exit 1;
+    (* Starting monomorphization from the main *)
+    specialize_entry all_nodes specialized_nodes env_dir (last prog.nodes) conf;
+
+    (* Monomorphizing the nodes that aren't called by the main *)
+    List.iter (fun def -> match Hashtbl.find_opt specialized_nodes def.id with
+                          | Some _ -> ()
+                          | None   -> specialize_entry all_nodes specialized_nodes
+                                                      env_dir def conf)
+              prog.nodes;
+
+    (* Hashtbl.iter (fun id h2 -> Printf.fprintf stderr "%s: {%s}\n" id.name *)
+    (*                                           (join ", " (List.map (fun x -> (fst x).name) *)
+    (*                                                                (keys h2)))) *)
+    (*              specialized_index; *)
     
+    (* Reconstructing the program from the monomorphized nodes *)
+    let prog = { nodes =
+                   flat_map
+                     (fun def ->
+                      let monos_hash = Hashtbl.find specialized_nodes def.id in
+                      values monos_hash) prog.nodes } in
+                      
+                            (* Printf.fprintf stderr "def=%s\n" def.id.name; *)
+                            (* List.map (fun id -> *)
+                            (*           Printf.fprintf stderr "  -> (%s,[%s])\n" (fst id).name *)
+                            (*                          (join ";" (List.map Usuba_print.dir_to_str (snd id))); *)
+                            (*           Hashtbl.find specialized_nodes id) *)
+                            (* (keys_2nd_layer def.id)) prog.nodes } in *)
+
+    Usuba_print.print_prog prog;
+    exit 1;
+                 
+    (* let main = Hashtbl.find specialized_nodes ((last prog.nodes).id,[]) in *)
+    
+    (* Printf.printf "%s" (Usuba_print.def_to_str main); *)
+    (* exit 1; *)
+    
+    (* prog *)
     prog
 
 end
