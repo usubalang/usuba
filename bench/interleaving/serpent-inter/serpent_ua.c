@@ -13,7 +13,7 @@
 #include "SSE.h"
 
 /* auxiliary functions */
-void sbox__0__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
+void sbox__0__V32 (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
   
   // Variables declaration
   DATATYPE r4;
@@ -67,7 +67,7 @@ void sbox__0__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2
 
 }
 
-void sbox__1__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
+void sbox__1__V32 (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
   
   // Variables declaration
   DATATYPE r4;
@@ -121,7 +121,7 @@ void sbox__1__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2
 
 }
 
-void sbox__2__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
+void sbox__2__V32 (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
   
   // Variables declaration
   DATATYPE r4;
@@ -171,7 +171,7 @@ void sbox__2__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2
 
 }
 
-void sbox__3__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
+void sbox__3__V32 (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
   
   // Variables declaration
   DATATYPE r4;
@@ -227,7 +227,7 @@ void sbox__3__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2
 
 }
 
-void sbox__4__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
+void sbox__4__V32 (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
   
   // Variables declaration
   DATATYPE r4;
@@ -285,7 +285,7 @@ void sbox__4__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2
 
 }
 
-void sbox__5__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
+void sbox__5__V32 (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
   
   // Variables declaration
   DATATYPE r4;
@@ -341,7 +341,7 @@ void sbox__5__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2
 
 }
 
-void sbox__6__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
+void sbox__6__V32 (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
   
   // Variables declaration
   DATATYPE r4;
@@ -395,7 +395,7 @@ void sbox__6__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2
 
 }
 
-void sbox__7__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
+void sbox__7__V32 (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2,DATATYPE r2,DATATYPE r2__2,DATATYPE r3,DATATYPE r3__2, /*outputs*/ DATATYPE* r5,DATATYPE* r5__2,DATATYPE* r6,DATATYPE* r6__2,DATATYPE* r7,DATATYPE* r7__2,DATATYPE* r8,DATATYPE* r8__2) {
   
   // Variables declaration
   DATATYPE r4;
@@ -453,7 +453,7 @@ void sbox__7__ (/*inputs*/ DATATYPE r0,DATATYPE r0__2,DATATYPE r1,DATATYPE r1__2
 
 }
 
-void transform__ (/*inputs*/ DATATYPE x__0__,DATATYPE x__0____2,DATATYPE x__1__,DATATYPE x__1____2,DATATYPE x__2__,DATATYPE x__2____2,DATATYPE x__3__,DATATYPE x__3____2, /*outputs*/ DATATYPE* out__0__,DATATYPE* out__0____2,DATATYPE* out__1__,DATATYPE* out__1____2,DATATYPE* out__2__,DATATYPE* out__2____2,DATATYPE* out__3__,DATATYPE* out__3____2) {
+void transform__V32 (/*inputs*/ DATATYPE x__0__,DATATYPE x__0____2,DATATYPE x__1__,DATATYPE x__1____2,DATATYPE x__2__,DATATYPE x__2____2,DATATYPE x__3__,DATATYPE x__3____2, /*outputs*/ DATATYPE* out__0__,DATATYPE* out__0____2,DATATYPE* out__1__,DATATYPE* out__1____2,DATATYPE* out__2__,DATATYPE* out__2____2,DATATYPE* out__3__,DATATYPE* out__3____2) {
   
   // Variables declaration
   DATATYPE _shadow_x__0__1_;
@@ -1307,8 +1307,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp7_1____2 = XOR(plaintext____2[1],keys__[0][1]);
   _tmp7_2____2 = XOR(plaintext____2[2],keys__[0][2]);
   _tmp7_3____2 = XOR(plaintext____2[3],keys__[0][3]);
-  sbox__0__(_tmp7_0__,_tmp7_0____2,_tmp7_1__,_tmp7_1____2,_tmp7_2__,_tmp7_2____2,_tmp7_3__,_tmp7_3____2,&_tmp8_0__,&_tmp8_0____2,&_tmp8_1__,&_tmp8_1____2,&_tmp8_2__,&_tmp8_2____2,&_tmp8_3__,&_tmp8_3____2);
-  transform__(_tmp8_0__,_tmp8_0____2,_tmp8_1__,_tmp8_1____2,_tmp8_2__,_tmp8_2____2,_tmp8_3__,_tmp8_3____2,&tmp__1__0__,&tmp__1__0____2,&tmp__1__1__,&tmp__1__1____2,&tmp__1__2__,&tmp__1__2____2,&tmp__1__3__,&tmp__1__3____2);
+  sbox__0__V32(_tmp7_0__,_tmp7_0____2,_tmp7_1__,_tmp7_1____2,_tmp7_2__,_tmp7_2____2,_tmp7_3__,_tmp7_3____2,&_tmp8_0__,&_tmp8_0____2,&_tmp8_1__,&_tmp8_1____2,&_tmp8_2__,&_tmp8_2____2,&_tmp8_3__,&_tmp8_3____2);
+  transform__V32(_tmp8_0__,_tmp8_0____2,_tmp8_1__,_tmp8_1____2,_tmp8_2__,_tmp8_2____2,_tmp8_3__,_tmp8_3____2,&tmp__1__0__,&tmp__1__0____2,&tmp__1__1__,&tmp__1__1____2,&tmp__1__2__,&tmp__1__2____2,&tmp__1__3__,&tmp__1__3____2);
   _tmp9_0__ = XOR(tmp__1__0__,keys__[1][0]);
   _tmp9_1__ = XOR(tmp__1__1__,keys__[1][1]);
   _tmp9_2__ = XOR(tmp__1__2__,keys__[1][2]);
@@ -1317,8 +1317,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp9_1____2 = XOR(tmp__1__1____2,keys__[1][1]);
   _tmp9_2____2 = XOR(tmp__1__2____2,keys__[1][2]);
   _tmp9_3____2 = XOR(tmp__1__3____2,keys__[1][3]);
-  sbox__1__(_tmp9_0__,_tmp9_0____2,_tmp9_1__,_tmp9_1____2,_tmp9_2__,_tmp9_2____2,_tmp9_3__,_tmp9_3____2,&_tmp10_0__,&_tmp10_0____2,&_tmp10_1__,&_tmp10_1____2,&_tmp10_2__,&_tmp10_2____2,&_tmp10_3__,&_tmp10_3____2);
-  transform__(_tmp10_0__,_tmp10_0____2,_tmp10_1__,_tmp10_1____2,_tmp10_2__,_tmp10_2____2,_tmp10_3__,_tmp10_3____2,&tmp__2__0__,&tmp__2__0____2,&tmp__2__1__,&tmp__2__1____2,&tmp__2__2__,&tmp__2__2____2,&tmp__2__3__,&tmp__2__3____2);
+  sbox__1__V32(_tmp9_0__,_tmp9_0____2,_tmp9_1__,_tmp9_1____2,_tmp9_2__,_tmp9_2____2,_tmp9_3__,_tmp9_3____2,&_tmp10_0__,&_tmp10_0____2,&_tmp10_1__,&_tmp10_1____2,&_tmp10_2__,&_tmp10_2____2,&_tmp10_3__,&_tmp10_3____2);
+  transform__V32(_tmp10_0__,_tmp10_0____2,_tmp10_1__,_tmp10_1____2,_tmp10_2__,_tmp10_2____2,_tmp10_3__,_tmp10_3____2,&tmp__2__0__,&tmp__2__0____2,&tmp__2__1__,&tmp__2__1____2,&tmp__2__2__,&tmp__2__2____2,&tmp__2__3__,&tmp__2__3____2);
   _tmp11_0__ = XOR(tmp__2__0__,keys__[2][0]);
   _tmp11_1__ = XOR(tmp__2__1__,keys__[2][1]);
   _tmp11_2__ = XOR(tmp__2__2__,keys__[2][2]);
@@ -1327,8 +1327,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp11_1____2 = XOR(tmp__2__1____2,keys__[2][1]);
   _tmp11_2____2 = XOR(tmp__2__2____2,keys__[2][2]);
   _tmp11_3____2 = XOR(tmp__2__3____2,keys__[2][3]);
-  sbox__2__(_tmp11_0__,_tmp11_0____2,_tmp11_1__,_tmp11_1____2,_tmp11_2__,_tmp11_2____2,_tmp11_3__,_tmp11_3____2,&_tmp12_0__,&_tmp12_0____2,&_tmp12_1__,&_tmp12_1____2,&_tmp12_2__,&_tmp12_2____2,&_tmp12_3__,&_tmp12_3____2);
-  transform__(_tmp12_0__,_tmp12_0____2,_tmp12_1__,_tmp12_1____2,_tmp12_2__,_tmp12_2____2,_tmp12_3__,_tmp12_3____2,&tmp__3__0__,&tmp__3__0____2,&tmp__3__1__,&tmp__3__1____2,&tmp__3__2__,&tmp__3__2____2,&tmp__3__3__,&tmp__3__3____2);
+  sbox__2__V32(_tmp11_0__,_tmp11_0____2,_tmp11_1__,_tmp11_1____2,_tmp11_2__,_tmp11_2____2,_tmp11_3__,_tmp11_3____2,&_tmp12_0__,&_tmp12_0____2,&_tmp12_1__,&_tmp12_1____2,&_tmp12_2__,&_tmp12_2____2,&_tmp12_3__,&_tmp12_3____2);
+  transform__V32(_tmp12_0__,_tmp12_0____2,_tmp12_1__,_tmp12_1____2,_tmp12_2__,_tmp12_2____2,_tmp12_3__,_tmp12_3____2,&tmp__3__0__,&tmp__3__0____2,&tmp__3__1__,&tmp__3__1____2,&tmp__3__2__,&tmp__3__2____2,&tmp__3__3__,&tmp__3__3____2);
   _tmp13_0__ = XOR(tmp__3__0__,keys__[3][0]);
   _tmp13_1__ = XOR(tmp__3__1__,keys__[3][1]);
   _tmp13_2__ = XOR(tmp__3__2__,keys__[3][2]);
@@ -1337,8 +1337,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp13_1____2 = XOR(tmp__3__1____2,keys__[3][1]);
   _tmp13_2____2 = XOR(tmp__3__2____2,keys__[3][2]);
   _tmp13_3____2 = XOR(tmp__3__3____2,keys__[3][3]);
-  sbox__3__(_tmp13_0__,_tmp13_0____2,_tmp13_1__,_tmp13_1____2,_tmp13_2__,_tmp13_2____2,_tmp13_3__,_tmp13_3____2,&_tmp14_0__,&_tmp14_0____2,&_tmp14_1__,&_tmp14_1____2,&_tmp14_2__,&_tmp14_2____2,&_tmp14_3__,&_tmp14_3____2);
-  transform__(_tmp14_0__,_tmp14_0____2,_tmp14_1__,_tmp14_1____2,_tmp14_2__,_tmp14_2____2,_tmp14_3__,_tmp14_3____2,&tmp__4__0__,&tmp__4__0____2,&tmp__4__1__,&tmp__4__1____2,&tmp__4__2__,&tmp__4__2____2,&tmp__4__3__,&tmp__4__3____2);
+  sbox__3__V32(_tmp13_0__,_tmp13_0____2,_tmp13_1__,_tmp13_1____2,_tmp13_2__,_tmp13_2____2,_tmp13_3__,_tmp13_3____2,&_tmp14_0__,&_tmp14_0____2,&_tmp14_1__,&_tmp14_1____2,&_tmp14_2__,&_tmp14_2____2,&_tmp14_3__,&_tmp14_3____2);
+  transform__V32(_tmp14_0__,_tmp14_0____2,_tmp14_1__,_tmp14_1____2,_tmp14_2__,_tmp14_2____2,_tmp14_3__,_tmp14_3____2,&tmp__4__0__,&tmp__4__0____2,&tmp__4__1__,&tmp__4__1____2,&tmp__4__2__,&tmp__4__2____2,&tmp__4__3__,&tmp__4__3____2);
   _tmp15_0__ = XOR(tmp__4__0__,keys__[4][0]);
   _tmp15_1__ = XOR(tmp__4__1__,keys__[4][1]);
   _tmp15_2__ = XOR(tmp__4__2__,keys__[4][2]);
@@ -1347,8 +1347,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp15_1____2 = XOR(tmp__4__1____2,keys__[4][1]);
   _tmp15_2____2 = XOR(tmp__4__2____2,keys__[4][2]);
   _tmp15_3____2 = XOR(tmp__4__3____2,keys__[4][3]);
-  sbox__4__(_tmp15_0__,_tmp15_0____2,_tmp15_1__,_tmp15_1____2,_tmp15_2__,_tmp15_2____2,_tmp15_3__,_tmp15_3____2,&_tmp16_0__,&_tmp16_0____2,&_tmp16_1__,&_tmp16_1____2,&_tmp16_2__,&_tmp16_2____2,&_tmp16_3__,&_tmp16_3____2);
-  transform__(_tmp16_0__,_tmp16_0____2,_tmp16_1__,_tmp16_1____2,_tmp16_2__,_tmp16_2____2,_tmp16_3__,_tmp16_3____2,&tmp__5__0__,&tmp__5__0____2,&tmp__5__1__,&tmp__5__1____2,&tmp__5__2__,&tmp__5__2____2,&tmp__5__3__,&tmp__5__3____2);
+  sbox__4__V32(_tmp15_0__,_tmp15_0____2,_tmp15_1__,_tmp15_1____2,_tmp15_2__,_tmp15_2____2,_tmp15_3__,_tmp15_3____2,&_tmp16_0__,&_tmp16_0____2,&_tmp16_1__,&_tmp16_1____2,&_tmp16_2__,&_tmp16_2____2,&_tmp16_3__,&_tmp16_3____2);
+  transform__V32(_tmp16_0__,_tmp16_0____2,_tmp16_1__,_tmp16_1____2,_tmp16_2__,_tmp16_2____2,_tmp16_3__,_tmp16_3____2,&tmp__5__0__,&tmp__5__0____2,&tmp__5__1__,&tmp__5__1____2,&tmp__5__2__,&tmp__5__2____2,&tmp__5__3__,&tmp__5__3____2);
   _tmp17_0__ = XOR(tmp__5__0__,keys__[5][0]);
   _tmp17_1__ = XOR(tmp__5__1__,keys__[5][1]);
   _tmp17_2__ = XOR(tmp__5__2__,keys__[5][2]);
@@ -1357,8 +1357,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp17_1____2 = XOR(tmp__5__1____2,keys__[5][1]);
   _tmp17_2____2 = XOR(tmp__5__2____2,keys__[5][2]);
   _tmp17_3____2 = XOR(tmp__5__3____2,keys__[5][3]);
-  sbox__5__(_tmp17_0__,_tmp17_0____2,_tmp17_1__,_tmp17_1____2,_tmp17_2__,_tmp17_2____2,_tmp17_3__,_tmp17_3____2,&_tmp18_0__,&_tmp18_0____2,&_tmp18_1__,&_tmp18_1____2,&_tmp18_2__,&_tmp18_2____2,&_tmp18_3__,&_tmp18_3____2);
-  transform__(_tmp18_0__,_tmp18_0____2,_tmp18_1__,_tmp18_1____2,_tmp18_2__,_tmp18_2____2,_tmp18_3__,_tmp18_3____2,&tmp__6__0__,&tmp__6__0____2,&tmp__6__1__,&tmp__6__1____2,&tmp__6__2__,&tmp__6__2____2,&tmp__6__3__,&tmp__6__3____2);
+  sbox__5__V32(_tmp17_0__,_tmp17_0____2,_tmp17_1__,_tmp17_1____2,_tmp17_2__,_tmp17_2____2,_tmp17_3__,_tmp17_3____2,&_tmp18_0__,&_tmp18_0____2,&_tmp18_1__,&_tmp18_1____2,&_tmp18_2__,&_tmp18_2____2,&_tmp18_3__,&_tmp18_3____2);
+  transform__V32(_tmp18_0__,_tmp18_0____2,_tmp18_1__,_tmp18_1____2,_tmp18_2__,_tmp18_2____2,_tmp18_3__,_tmp18_3____2,&tmp__6__0__,&tmp__6__0____2,&tmp__6__1__,&tmp__6__1____2,&tmp__6__2__,&tmp__6__2____2,&tmp__6__3__,&tmp__6__3____2);
   _tmp19_0__ = XOR(tmp__6__0__,keys__[6][0]);
   _tmp19_1__ = XOR(tmp__6__1__,keys__[6][1]);
   _tmp19_2__ = XOR(tmp__6__2__,keys__[6][2]);
@@ -1367,8 +1367,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp19_1____2 = XOR(tmp__6__1____2,keys__[6][1]);
   _tmp19_2____2 = XOR(tmp__6__2____2,keys__[6][2]);
   _tmp19_3____2 = XOR(tmp__6__3____2,keys__[6][3]);
-  sbox__6__(_tmp19_0__,_tmp19_0____2,_tmp19_1__,_tmp19_1____2,_tmp19_2__,_tmp19_2____2,_tmp19_3__,_tmp19_3____2,&_tmp20_0__,&_tmp20_0____2,&_tmp20_1__,&_tmp20_1____2,&_tmp20_2__,&_tmp20_2____2,&_tmp20_3__,&_tmp20_3____2);
-  transform__(_tmp20_0__,_tmp20_0____2,_tmp20_1__,_tmp20_1____2,_tmp20_2__,_tmp20_2____2,_tmp20_3__,_tmp20_3____2,&tmp__7__0__,&tmp__7__0____2,&tmp__7__1__,&tmp__7__1____2,&tmp__7__2__,&tmp__7__2____2,&tmp__7__3__,&tmp__7__3____2);
+  sbox__6__V32(_tmp19_0__,_tmp19_0____2,_tmp19_1__,_tmp19_1____2,_tmp19_2__,_tmp19_2____2,_tmp19_3__,_tmp19_3____2,&_tmp20_0__,&_tmp20_0____2,&_tmp20_1__,&_tmp20_1____2,&_tmp20_2__,&_tmp20_2____2,&_tmp20_3__,&_tmp20_3____2);
+  transform__V32(_tmp20_0__,_tmp20_0____2,_tmp20_1__,_tmp20_1____2,_tmp20_2__,_tmp20_2____2,_tmp20_3__,_tmp20_3____2,&tmp__7__0__,&tmp__7__0____2,&tmp__7__1__,&tmp__7__1____2,&tmp__7__2__,&tmp__7__2____2,&tmp__7__3__,&tmp__7__3____2);
   _tmp21_0__ = XOR(tmp__7__0__,keys__[7][0]);
   _tmp21_1__ = XOR(tmp__7__1__,keys__[7][1]);
   _tmp21_2__ = XOR(tmp__7__2__,keys__[7][2]);
@@ -1377,8 +1377,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp21_1____2 = XOR(tmp__7__1____2,keys__[7][1]);
   _tmp21_2____2 = XOR(tmp__7__2____2,keys__[7][2]);
   _tmp21_3____2 = XOR(tmp__7__3____2,keys__[7][3]);
-  sbox__7__(_tmp21_0__,_tmp21_0____2,_tmp21_1__,_tmp21_1____2,_tmp21_2__,_tmp21_2____2,_tmp21_3__,_tmp21_3____2,&_tmp22_0__,&_tmp22_0____2,&_tmp22_1__,&_tmp22_1____2,&_tmp22_2__,&_tmp22_2____2,&_tmp22_3__,&_tmp22_3____2);
-  transform__(_tmp22_0__,_tmp22_0____2,_tmp22_1__,_tmp22_1____2,_tmp22_2__,_tmp22_2____2,_tmp22_3__,_tmp22_3____2,&tmp__8__0__,&tmp__8__0____2,&tmp__8__1__,&tmp__8__1____2,&tmp__8__2__,&tmp__8__2____2,&tmp__8__3__,&tmp__8__3____2);
+  sbox__7__V32(_tmp21_0__,_tmp21_0____2,_tmp21_1__,_tmp21_1____2,_tmp21_2__,_tmp21_2____2,_tmp21_3__,_tmp21_3____2,&_tmp22_0__,&_tmp22_0____2,&_tmp22_1__,&_tmp22_1____2,&_tmp22_2__,&_tmp22_2____2,&_tmp22_3__,&_tmp22_3____2);
+  transform__V32(_tmp22_0__,_tmp22_0____2,_tmp22_1__,_tmp22_1____2,_tmp22_2__,_tmp22_2____2,_tmp22_3__,_tmp22_3____2,&tmp__8__0__,&tmp__8__0____2,&tmp__8__1__,&tmp__8__1____2,&tmp__8__2__,&tmp__8__2____2,&tmp__8__3__,&tmp__8__3____2);
   _tmp23_0__ = XOR(tmp__8__0__,keys__[8][0]);
   _tmp23_1__ = XOR(tmp__8__1__,keys__[8][1]);
   _tmp23_2__ = XOR(tmp__8__2__,keys__[8][2]);
@@ -1387,8 +1387,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp23_1____2 = XOR(tmp__8__1____2,keys__[8][1]);
   _tmp23_2____2 = XOR(tmp__8__2____2,keys__[8][2]);
   _tmp23_3____2 = XOR(tmp__8__3____2,keys__[8][3]);
-  sbox__0__(_tmp23_0__,_tmp23_0____2,_tmp23_1__,_tmp23_1____2,_tmp23_2__,_tmp23_2____2,_tmp23_3__,_tmp23_3____2,&_tmp24_0__,&_tmp24_0____2,&_tmp24_1__,&_tmp24_1____2,&_tmp24_2__,&_tmp24_2____2,&_tmp24_3__,&_tmp24_3____2);
-  transform__(_tmp24_0__,_tmp24_0____2,_tmp24_1__,_tmp24_1____2,_tmp24_2__,_tmp24_2____2,_tmp24_3__,_tmp24_3____2,&tmp__9__0__,&tmp__9__0____2,&tmp__9__1__,&tmp__9__1____2,&tmp__9__2__,&tmp__9__2____2,&tmp__9__3__,&tmp__9__3____2);
+  sbox__0__V32(_tmp23_0__,_tmp23_0____2,_tmp23_1__,_tmp23_1____2,_tmp23_2__,_tmp23_2____2,_tmp23_3__,_tmp23_3____2,&_tmp24_0__,&_tmp24_0____2,&_tmp24_1__,&_tmp24_1____2,&_tmp24_2__,&_tmp24_2____2,&_tmp24_3__,&_tmp24_3____2);
+  transform__V32(_tmp24_0__,_tmp24_0____2,_tmp24_1__,_tmp24_1____2,_tmp24_2__,_tmp24_2____2,_tmp24_3__,_tmp24_3____2,&tmp__9__0__,&tmp__9__0____2,&tmp__9__1__,&tmp__9__1____2,&tmp__9__2__,&tmp__9__2____2,&tmp__9__3__,&tmp__9__3____2);
   _tmp25_0__ = XOR(tmp__9__0__,keys__[9][0]);
   _tmp25_1__ = XOR(tmp__9__1__,keys__[9][1]);
   _tmp25_2__ = XOR(tmp__9__2__,keys__[9][2]);
@@ -1397,8 +1397,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp25_1____2 = XOR(tmp__9__1____2,keys__[9][1]);
   _tmp25_2____2 = XOR(tmp__9__2____2,keys__[9][2]);
   _tmp25_3____2 = XOR(tmp__9__3____2,keys__[9][3]);
-  sbox__1__(_tmp25_0__,_tmp25_0____2,_tmp25_1__,_tmp25_1____2,_tmp25_2__,_tmp25_2____2,_tmp25_3__,_tmp25_3____2,&_tmp26_0__,&_tmp26_0____2,&_tmp26_1__,&_tmp26_1____2,&_tmp26_2__,&_tmp26_2____2,&_tmp26_3__,&_tmp26_3____2);
-  transform__(_tmp26_0__,_tmp26_0____2,_tmp26_1__,_tmp26_1____2,_tmp26_2__,_tmp26_2____2,_tmp26_3__,_tmp26_3____2,&tmp__10__0__,&tmp__10__0____2,&tmp__10__1__,&tmp__10__1____2,&tmp__10__2__,&tmp__10__2____2,&tmp__10__3__,&tmp__10__3____2);
+  sbox__1__V32(_tmp25_0__,_tmp25_0____2,_tmp25_1__,_tmp25_1____2,_tmp25_2__,_tmp25_2____2,_tmp25_3__,_tmp25_3____2,&_tmp26_0__,&_tmp26_0____2,&_tmp26_1__,&_tmp26_1____2,&_tmp26_2__,&_tmp26_2____2,&_tmp26_3__,&_tmp26_3____2);
+  transform__V32(_tmp26_0__,_tmp26_0____2,_tmp26_1__,_tmp26_1____2,_tmp26_2__,_tmp26_2____2,_tmp26_3__,_tmp26_3____2,&tmp__10__0__,&tmp__10__0____2,&tmp__10__1__,&tmp__10__1____2,&tmp__10__2__,&tmp__10__2____2,&tmp__10__3__,&tmp__10__3____2);
   _tmp27_0__ = XOR(tmp__10__0__,keys__[10][0]);
   _tmp27_1__ = XOR(tmp__10__1__,keys__[10][1]);
   _tmp27_2__ = XOR(tmp__10__2__,keys__[10][2]);
@@ -1407,8 +1407,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp27_1____2 = XOR(tmp__10__1____2,keys__[10][1]);
   _tmp27_2____2 = XOR(tmp__10__2____2,keys__[10][2]);
   _tmp27_3____2 = XOR(tmp__10__3____2,keys__[10][3]);
-  sbox__2__(_tmp27_0__,_tmp27_0____2,_tmp27_1__,_tmp27_1____2,_tmp27_2__,_tmp27_2____2,_tmp27_3__,_tmp27_3____2,&_tmp28_0__,&_tmp28_0____2,&_tmp28_1__,&_tmp28_1____2,&_tmp28_2__,&_tmp28_2____2,&_tmp28_3__,&_tmp28_3____2);
-  transform__(_tmp28_0__,_tmp28_0____2,_tmp28_1__,_tmp28_1____2,_tmp28_2__,_tmp28_2____2,_tmp28_3__,_tmp28_3____2,&tmp__11__0__,&tmp__11__0____2,&tmp__11__1__,&tmp__11__1____2,&tmp__11__2__,&tmp__11__2____2,&tmp__11__3__,&tmp__11__3____2);
+  sbox__2__V32(_tmp27_0__,_tmp27_0____2,_tmp27_1__,_tmp27_1____2,_tmp27_2__,_tmp27_2____2,_tmp27_3__,_tmp27_3____2,&_tmp28_0__,&_tmp28_0____2,&_tmp28_1__,&_tmp28_1____2,&_tmp28_2__,&_tmp28_2____2,&_tmp28_3__,&_tmp28_3____2);
+  transform__V32(_tmp28_0__,_tmp28_0____2,_tmp28_1__,_tmp28_1____2,_tmp28_2__,_tmp28_2____2,_tmp28_3__,_tmp28_3____2,&tmp__11__0__,&tmp__11__0____2,&tmp__11__1__,&tmp__11__1____2,&tmp__11__2__,&tmp__11__2____2,&tmp__11__3__,&tmp__11__3____2);
   _tmp29_0__ = XOR(tmp__11__0__,keys__[11][0]);
   _tmp29_1__ = XOR(tmp__11__1__,keys__[11][1]);
   _tmp29_2__ = XOR(tmp__11__2__,keys__[11][2]);
@@ -1417,8 +1417,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp29_1____2 = XOR(tmp__11__1____2,keys__[11][1]);
   _tmp29_2____2 = XOR(tmp__11__2____2,keys__[11][2]);
   _tmp29_3____2 = XOR(tmp__11__3____2,keys__[11][3]);
-  sbox__3__(_tmp29_0__,_tmp29_0____2,_tmp29_1__,_tmp29_1____2,_tmp29_2__,_tmp29_2____2,_tmp29_3__,_tmp29_3____2,&_tmp30_0__,&_tmp30_0____2,&_tmp30_1__,&_tmp30_1____2,&_tmp30_2__,&_tmp30_2____2,&_tmp30_3__,&_tmp30_3____2);
-  transform__(_tmp30_0__,_tmp30_0____2,_tmp30_1__,_tmp30_1____2,_tmp30_2__,_tmp30_2____2,_tmp30_3__,_tmp30_3____2,&tmp__12__0__,&tmp__12__0____2,&tmp__12__1__,&tmp__12__1____2,&tmp__12__2__,&tmp__12__2____2,&tmp__12__3__,&tmp__12__3____2);
+  sbox__3__V32(_tmp29_0__,_tmp29_0____2,_tmp29_1__,_tmp29_1____2,_tmp29_2__,_tmp29_2____2,_tmp29_3__,_tmp29_3____2,&_tmp30_0__,&_tmp30_0____2,&_tmp30_1__,&_tmp30_1____2,&_tmp30_2__,&_tmp30_2____2,&_tmp30_3__,&_tmp30_3____2);
+  transform__V32(_tmp30_0__,_tmp30_0____2,_tmp30_1__,_tmp30_1____2,_tmp30_2__,_tmp30_2____2,_tmp30_3__,_tmp30_3____2,&tmp__12__0__,&tmp__12__0____2,&tmp__12__1__,&tmp__12__1____2,&tmp__12__2__,&tmp__12__2____2,&tmp__12__3__,&tmp__12__3____2);
   _tmp31_0__ = XOR(tmp__12__0__,keys__[12][0]);
   _tmp31_1__ = XOR(tmp__12__1__,keys__[12][1]);
   _tmp31_2__ = XOR(tmp__12__2__,keys__[12][2]);
@@ -1427,8 +1427,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp31_1____2 = XOR(tmp__12__1____2,keys__[12][1]);
   _tmp31_2____2 = XOR(tmp__12__2____2,keys__[12][2]);
   _tmp31_3____2 = XOR(tmp__12__3____2,keys__[12][3]);
-  sbox__4__(_tmp31_0__,_tmp31_0____2,_tmp31_1__,_tmp31_1____2,_tmp31_2__,_tmp31_2____2,_tmp31_3__,_tmp31_3____2,&_tmp32_0__,&_tmp32_0____2,&_tmp32_1__,&_tmp32_1____2,&_tmp32_2__,&_tmp32_2____2,&_tmp32_3__,&_tmp32_3____2);
-  transform__(_tmp32_0__,_tmp32_0____2,_tmp32_1__,_tmp32_1____2,_tmp32_2__,_tmp32_2____2,_tmp32_3__,_tmp32_3____2,&tmp__13__0__,&tmp__13__0____2,&tmp__13__1__,&tmp__13__1____2,&tmp__13__2__,&tmp__13__2____2,&tmp__13__3__,&tmp__13__3____2);
+  sbox__4__V32(_tmp31_0__,_tmp31_0____2,_tmp31_1__,_tmp31_1____2,_tmp31_2__,_tmp31_2____2,_tmp31_3__,_tmp31_3____2,&_tmp32_0__,&_tmp32_0____2,&_tmp32_1__,&_tmp32_1____2,&_tmp32_2__,&_tmp32_2____2,&_tmp32_3__,&_tmp32_3____2);
+  transform__V32(_tmp32_0__,_tmp32_0____2,_tmp32_1__,_tmp32_1____2,_tmp32_2__,_tmp32_2____2,_tmp32_3__,_tmp32_3____2,&tmp__13__0__,&tmp__13__0____2,&tmp__13__1__,&tmp__13__1____2,&tmp__13__2__,&tmp__13__2____2,&tmp__13__3__,&tmp__13__3____2);
   _tmp33_0__ = XOR(tmp__13__0__,keys__[13][0]);
   _tmp33_1__ = XOR(tmp__13__1__,keys__[13][1]);
   _tmp33_2__ = XOR(tmp__13__2__,keys__[13][2]);
@@ -1437,8 +1437,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp33_1____2 = XOR(tmp__13__1____2,keys__[13][1]);
   _tmp33_2____2 = XOR(tmp__13__2____2,keys__[13][2]);
   _tmp33_3____2 = XOR(tmp__13__3____2,keys__[13][3]);
-  sbox__5__(_tmp33_0__,_tmp33_0____2,_tmp33_1__,_tmp33_1____2,_tmp33_2__,_tmp33_2____2,_tmp33_3__,_tmp33_3____2,&_tmp34_0__,&_tmp34_0____2,&_tmp34_1__,&_tmp34_1____2,&_tmp34_2__,&_tmp34_2____2,&_tmp34_3__,&_tmp34_3____2);
-  transform__(_tmp34_0__,_tmp34_0____2,_tmp34_1__,_tmp34_1____2,_tmp34_2__,_tmp34_2____2,_tmp34_3__,_tmp34_3____2,&tmp__14__0__,&tmp__14__0____2,&tmp__14__1__,&tmp__14__1____2,&tmp__14__2__,&tmp__14__2____2,&tmp__14__3__,&tmp__14__3____2);
+  sbox__5__V32(_tmp33_0__,_tmp33_0____2,_tmp33_1__,_tmp33_1____2,_tmp33_2__,_tmp33_2____2,_tmp33_3__,_tmp33_3____2,&_tmp34_0__,&_tmp34_0____2,&_tmp34_1__,&_tmp34_1____2,&_tmp34_2__,&_tmp34_2____2,&_tmp34_3__,&_tmp34_3____2);
+  transform__V32(_tmp34_0__,_tmp34_0____2,_tmp34_1__,_tmp34_1____2,_tmp34_2__,_tmp34_2____2,_tmp34_3__,_tmp34_3____2,&tmp__14__0__,&tmp__14__0____2,&tmp__14__1__,&tmp__14__1____2,&tmp__14__2__,&tmp__14__2____2,&tmp__14__3__,&tmp__14__3____2);
   _tmp35_0__ = XOR(tmp__14__0__,keys__[14][0]);
   _tmp35_1__ = XOR(tmp__14__1__,keys__[14][1]);
   _tmp35_2__ = XOR(tmp__14__2__,keys__[14][2]);
@@ -1447,8 +1447,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp35_1____2 = XOR(tmp__14__1____2,keys__[14][1]);
   _tmp35_2____2 = XOR(tmp__14__2____2,keys__[14][2]);
   _tmp35_3____2 = XOR(tmp__14__3____2,keys__[14][3]);
-  sbox__6__(_tmp35_0__,_tmp35_0____2,_tmp35_1__,_tmp35_1____2,_tmp35_2__,_tmp35_2____2,_tmp35_3__,_tmp35_3____2,&_tmp36_0__,&_tmp36_0____2,&_tmp36_1__,&_tmp36_1____2,&_tmp36_2__,&_tmp36_2____2,&_tmp36_3__,&_tmp36_3____2);
-  transform__(_tmp36_0__,_tmp36_0____2,_tmp36_1__,_tmp36_1____2,_tmp36_2__,_tmp36_2____2,_tmp36_3__,_tmp36_3____2,&tmp__15__0__,&tmp__15__0____2,&tmp__15__1__,&tmp__15__1____2,&tmp__15__2__,&tmp__15__2____2,&tmp__15__3__,&tmp__15__3____2);
+  sbox__6__V32(_tmp35_0__,_tmp35_0____2,_tmp35_1__,_tmp35_1____2,_tmp35_2__,_tmp35_2____2,_tmp35_3__,_tmp35_3____2,&_tmp36_0__,&_tmp36_0____2,&_tmp36_1__,&_tmp36_1____2,&_tmp36_2__,&_tmp36_2____2,&_tmp36_3__,&_tmp36_3____2);
+  transform__V32(_tmp36_0__,_tmp36_0____2,_tmp36_1__,_tmp36_1____2,_tmp36_2__,_tmp36_2____2,_tmp36_3__,_tmp36_3____2,&tmp__15__0__,&tmp__15__0____2,&tmp__15__1__,&tmp__15__1____2,&tmp__15__2__,&tmp__15__2____2,&tmp__15__3__,&tmp__15__3____2);
   _tmp37_0__ = XOR(tmp__15__0__,keys__[15][0]);
   _tmp37_1__ = XOR(tmp__15__1__,keys__[15][1]);
   _tmp37_2__ = XOR(tmp__15__2__,keys__[15][2]);
@@ -1457,8 +1457,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp37_1____2 = XOR(tmp__15__1____2,keys__[15][1]);
   _tmp37_2____2 = XOR(tmp__15__2____2,keys__[15][2]);
   _tmp37_3____2 = XOR(tmp__15__3____2,keys__[15][3]);
-  sbox__7__(_tmp37_0__,_tmp37_0____2,_tmp37_1__,_tmp37_1____2,_tmp37_2__,_tmp37_2____2,_tmp37_3__,_tmp37_3____2,&_tmp38_0__,&_tmp38_0____2,&_tmp38_1__,&_tmp38_1____2,&_tmp38_2__,&_tmp38_2____2,&_tmp38_3__,&_tmp38_3____2);
-  transform__(_tmp38_0__,_tmp38_0____2,_tmp38_1__,_tmp38_1____2,_tmp38_2__,_tmp38_2____2,_tmp38_3__,_tmp38_3____2,&tmp__16__0__,&tmp__16__0____2,&tmp__16__1__,&tmp__16__1____2,&tmp__16__2__,&tmp__16__2____2,&tmp__16__3__,&tmp__16__3____2);
+  sbox__7__V32(_tmp37_0__,_tmp37_0____2,_tmp37_1__,_tmp37_1____2,_tmp37_2__,_tmp37_2____2,_tmp37_3__,_tmp37_3____2,&_tmp38_0__,&_tmp38_0____2,&_tmp38_1__,&_tmp38_1____2,&_tmp38_2__,&_tmp38_2____2,&_tmp38_3__,&_tmp38_3____2);
+  transform__V32(_tmp38_0__,_tmp38_0____2,_tmp38_1__,_tmp38_1____2,_tmp38_2__,_tmp38_2____2,_tmp38_3__,_tmp38_3____2,&tmp__16__0__,&tmp__16__0____2,&tmp__16__1__,&tmp__16__1____2,&tmp__16__2__,&tmp__16__2____2,&tmp__16__3__,&tmp__16__3____2);
   _tmp39_0__ = XOR(tmp__16__0__,keys__[16][0]);
   _tmp39_1__ = XOR(tmp__16__1__,keys__[16][1]);
   _tmp39_2__ = XOR(tmp__16__2__,keys__[16][2]);
@@ -1467,8 +1467,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp39_1____2 = XOR(tmp__16__1____2,keys__[16][1]);
   _tmp39_2____2 = XOR(tmp__16__2____2,keys__[16][2]);
   _tmp39_3____2 = XOR(tmp__16__3____2,keys__[16][3]);
-  sbox__0__(_tmp39_0__,_tmp39_0____2,_tmp39_1__,_tmp39_1____2,_tmp39_2__,_tmp39_2____2,_tmp39_3__,_tmp39_3____2,&_tmp40_0__,&_tmp40_0____2,&_tmp40_1__,&_tmp40_1____2,&_tmp40_2__,&_tmp40_2____2,&_tmp40_3__,&_tmp40_3____2);
-  transform__(_tmp40_0__,_tmp40_0____2,_tmp40_1__,_tmp40_1____2,_tmp40_2__,_tmp40_2____2,_tmp40_3__,_tmp40_3____2,&tmp__17__0__,&tmp__17__0____2,&tmp__17__1__,&tmp__17__1____2,&tmp__17__2__,&tmp__17__2____2,&tmp__17__3__,&tmp__17__3____2);
+  sbox__0__V32(_tmp39_0__,_tmp39_0____2,_tmp39_1__,_tmp39_1____2,_tmp39_2__,_tmp39_2____2,_tmp39_3__,_tmp39_3____2,&_tmp40_0__,&_tmp40_0____2,&_tmp40_1__,&_tmp40_1____2,&_tmp40_2__,&_tmp40_2____2,&_tmp40_3__,&_tmp40_3____2);
+  transform__V32(_tmp40_0__,_tmp40_0____2,_tmp40_1__,_tmp40_1____2,_tmp40_2__,_tmp40_2____2,_tmp40_3__,_tmp40_3____2,&tmp__17__0__,&tmp__17__0____2,&tmp__17__1__,&tmp__17__1____2,&tmp__17__2__,&tmp__17__2____2,&tmp__17__3__,&tmp__17__3____2);
   _tmp41_0__ = XOR(tmp__17__0__,keys__[17][0]);
   _tmp41_1__ = XOR(tmp__17__1__,keys__[17][1]);
   _tmp41_2__ = XOR(tmp__17__2__,keys__[17][2]);
@@ -1477,8 +1477,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp41_1____2 = XOR(tmp__17__1____2,keys__[17][1]);
   _tmp41_2____2 = XOR(tmp__17__2____2,keys__[17][2]);
   _tmp41_3____2 = XOR(tmp__17__3____2,keys__[17][3]);
-  sbox__1__(_tmp41_0__,_tmp41_0____2,_tmp41_1__,_tmp41_1____2,_tmp41_2__,_tmp41_2____2,_tmp41_3__,_tmp41_3____2,&_tmp42_0__,&_tmp42_0____2,&_tmp42_1__,&_tmp42_1____2,&_tmp42_2__,&_tmp42_2____2,&_tmp42_3__,&_tmp42_3____2);
-  transform__(_tmp42_0__,_tmp42_0____2,_tmp42_1__,_tmp42_1____2,_tmp42_2__,_tmp42_2____2,_tmp42_3__,_tmp42_3____2,&tmp__18__0__,&tmp__18__0____2,&tmp__18__1__,&tmp__18__1____2,&tmp__18__2__,&tmp__18__2____2,&tmp__18__3__,&tmp__18__3____2);
+  sbox__1__V32(_tmp41_0__,_tmp41_0____2,_tmp41_1__,_tmp41_1____2,_tmp41_2__,_tmp41_2____2,_tmp41_3__,_tmp41_3____2,&_tmp42_0__,&_tmp42_0____2,&_tmp42_1__,&_tmp42_1____2,&_tmp42_2__,&_tmp42_2____2,&_tmp42_3__,&_tmp42_3____2);
+  transform__V32(_tmp42_0__,_tmp42_0____2,_tmp42_1__,_tmp42_1____2,_tmp42_2__,_tmp42_2____2,_tmp42_3__,_tmp42_3____2,&tmp__18__0__,&tmp__18__0____2,&tmp__18__1__,&tmp__18__1____2,&tmp__18__2__,&tmp__18__2____2,&tmp__18__3__,&tmp__18__3____2);
   _tmp43_0__ = XOR(tmp__18__0__,keys__[18][0]);
   _tmp43_1__ = XOR(tmp__18__1__,keys__[18][1]);
   _tmp43_2__ = XOR(tmp__18__2__,keys__[18][2]);
@@ -1487,8 +1487,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp43_1____2 = XOR(tmp__18__1____2,keys__[18][1]);
   _tmp43_2____2 = XOR(tmp__18__2____2,keys__[18][2]);
   _tmp43_3____2 = XOR(tmp__18__3____2,keys__[18][3]);
-  sbox__2__(_tmp43_0__,_tmp43_0____2,_tmp43_1__,_tmp43_1____2,_tmp43_2__,_tmp43_2____2,_tmp43_3__,_tmp43_3____2,&_tmp44_0__,&_tmp44_0____2,&_tmp44_1__,&_tmp44_1____2,&_tmp44_2__,&_tmp44_2____2,&_tmp44_3__,&_tmp44_3____2);
-  transform__(_tmp44_0__,_tmp44_0____2,_tmp44_1__,_tmp44_1____2,_tmp44_2__,_tmp44_2____2,_tmp44_3__,_tmp44_3____2,&tmp__19__0__,&tmp__19__0____2,&tmp__19__1__,&tmp__19__1____2,&tmp__19__2__,&tmp__19__2____2,&tmp__19__3__,&tmp__19__3____2);
+  sbox__2__V32(_tmp43_0__,_tmp43_0____2,_tmp43_1__,_tmp43_1____2,_tmp43_2__,_tmp43_2____2,_tmp43_3__,_tmp43_3____2,&_tmp44_0__,&_tmp44_0____2,&_tmp44_1__,&_tmp44_1____2,&_tmp44_2__,&_tmp44_2____2,&_tmp44_3__,&_tmp44_3____2);
+  transform__V32(_tmp44_0__,_tmp44_0____2,_tmp44_1__,_tmp44_1____2,_tmp44_2__,_tmp44_2____2,_tmp44_3__,_tmp44_3____2,&tmp__19__0__,&tmp__19__0____2,&tmp__19__1__,&tmp__19__1____2,&tmp__19__2__,&tmp__19__2____2,&tmp__19__3__,&tmp__19__3____2);
   _tmp45_0__ = XOR(tmp__19__0__,keys__[19][0]);
   _tmp45_1__ = XOR(tmp__19__1__,keys__[19][1]);
   _tmp45_2__ = XOR(tmp__19__2__,keys__[19][2]);
@@ -1497,8 +1497,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp45_1____2 = XOR(tmp__19__1____2,keys__[19][1]);
   _tmp45_2____2 = XOR(tmp__19__2____2,keys__[19][2]);
   _tmp45_3____2 = XOR(tmp__19__3____2,keys__[19][3]);
-  sbox__3__(_tmp45_0__,_tmp45_0____2,_tmp45_1__,_tmp45_1____2,_tmp45_2__,_tmp45_2____2,_tmp45_3__,_tmp45_3____2,&_tmp46_0__,&_tmp46_0____2,&_tmp46_1__,&_tmp46_1____2,&_tmp46_2__,&_tmp46_2____2,&_tmp46_3__,&_tmp46_3____2);
-  transform__(_tmp46_0__,_tmp46_0____2,_tmp46_1__,_tmp46_1____2,_tmp46_2__,_tmp46_2____2,_tmp46_3__,_tmp46_3____2,&tmp__20__0__,&tmp__20__0____2,&tmp__20__1__,&tmp__20__1____2,&tmp__20__2__,&tmp__20__2____2,&tmp__20__3__,&tmp__20__3____2);
+  sbox__3__V32(_tmp45_0__,_tmp45_0____2,_tmp45_1__,_tmp45_1____2,_tmp45_2__,_tmp45_2____2,_tmp45_3__,_tmp45_3____2,&_tmp46_0__,&_tmp46_0____2,&_tmp46_1__,&_tmp46_1____2,&_tmp46_2__,&_tmp46_2____2,&_tmp46_3__,&_tmp46_3____2);
+  transform__V32(_tmp46_0__,_tmp46_0____2,_tmp46_1__,_tmp46_1____2,_tmp46_2__,_tmp46_2____2,_tmp46_3__,_tmp46_3____2,&tmp__20__0__,&tmp__20__0____2,&tmp__20__1__,&tmp__20__1____2,&tmp__20__2__,&tmp__20__2____2,&tmp__20__3__,&tmp__20__3____2);
   _tmp47_0__ = XOR(tmp__20__0__,keys__[20][0]);
   _tmp47_1__ = XOR(tmp__20__1__,keys__[20][1]);
   _tmp47_2__ = XOR(tmp__20__2__,keys__[20][2]);
@@ -1507,8 +1507,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp47_1____2 = XOR(tmp__20__1____2,keys__[20][1]);
   _tmp47_2____2 = XOR(tmp__20__2____2,keys__[20][2]);
   _tmp47_3____2 = XOR(tmp__20__3____2,keys__[20][3]);
-  sbox__4__(_tmp47_0__,_tmp47_0____2,_tmp47_1__,_tmp47_1____2,_tmp47_2__,_tmp47_2____2,_tmp47_3__,_tmp47_3____2,&_tmp48_0__,&_tmp48_0____2,&_tmp48_1__,&_tmp48_1____2,&_tmp48_2__,&_tmp48_2____2,&_tmp48_3__,&_tmp48_3____2);
-  transform__(_tmp48_0__,_tmp48_0____2,_tmp48_1__,_tmp48_1____2,_tmp48_2__,_tmp48_2____2,_tmp48_3__,_tmp48_3____2,&tmp__21__0__,&tmp__21__0____2,&tmp__21__1__,&tmp__21__1____2,&tmp__21__2__,&tmp__21__2____2,&tmp__21__3__,&tmp__21__3____2);
+  sbox__4__V32(_tmp47_0__,_tmp47_0____2,_tmp47_1__,_tmp47_1____2,_tmp47_2__,_tmp47_2____2,_tmp47_3__,_tmp47_3____2,&_tmp48_0__,&_tmp48_0____2,&_tmp48_1__,&_tmp48_1____2,&_tmp48_2__,&_tmp48_2____2,&_tmp48_3__,&_tmp48_3____2);
+  transform__V32(_tmp48_0__,_tmp48_0____2,_tmp48_1__,_tmp48_1____2,_tmp48_2__,_tmp48_2____2,_tmp48_3__,_tmp48_3____2,&tmp__21__0__,&tmp__21__0____2,&tmp__21__1__,&tmp__21__1____2,&tmp__21__2__,&tmp__21__2____2,&tmp__21__3__,&tmp__21__3____2);
   _tmp49_0__ = XOR(tmp__21__0__,keys__[21][0]);
   _tmp49_1__ = XOR(tmp__21__1__,keys__[21][1]);
   _tmp49_2__ = XOR(tmp__21__2__,keys__[21][2]);
@@ -1517,8 +1517,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp49_1____2 = XOR(tmp__21__1____2,keys__[21][1]);
   _tmp49_2____2 = XOR(tmp__21__2____2,keys__[21][2]);
   _tmp49_3____2 = XOR(tmp__21__3____2,keys__[21][3]);
-  sbox__5__(_tmp49_0__,_tmp49_0____2,_tmp49_1__,_tmp49_1____2,_tmp49_2__,_tmp49_2____2,_tmp49_3__,_tmp49_3____2,&_tmp50_0__,&_tmp50_0____2,&_tmp50_1__,&_tmp50_1____2,&_tmp50_2__,&_tmp50_2____2,&_tmp50_3__,&_tmp50_3____2);
-  transform__(_tmp50_0__,_tmp50_0____2,_tmp50_1__,_tmp50_1____2,_tmp50_2__,_tmp50_2____2,_tmp50_3__,_tmp50_3____2,&tmp__22__0__,&tmp__22__0____2,&tmp__22__1__,&tmp__22__1____2,&tmp__22__2__,&tmp__22__2____2,&tmp__22__3__,&tmp__22__3____2);
+  sbox__5__V32(_tmp49_0__,_tmp49_0____2,_tmp49_1__,_tmp49_1____2,_tmp49_2__,_tmp49_2____2,_tmp49_3__,_tmp49_3____2,&_tmp50_0__,&_tmp50_0____2,&_tmp50_1__,&_tmp50_1____2,&_tmp50_2__,&_tmp50_2____2,&_tmp50_3__,&_tmp50_3____2);
+  transform__V32(_tmp50_0__,_tmp50_0____2,_tmp50_1__,_tmp50_1____2,_tmp50_2__,_tmp50_2____2,_tmp50_3__,_tmp50_3____2,&tmp__22__0__,&tmp__22__0____2,&tmp__22__1__,&tmp__22__1____2,&tmp__22__2__,&tmp__22__2____2,&tmp__22__3__,&tmp__22__3____2);
   _tmp51_0__ = XOR(tmp__22__0__,keys__[22][0]);
   _tmp51_1__ = XOR(tmp__22__1__,keys__[22][1]);
   _tmp51_2__ = XOR(tmp__22__2__,keys__[22][2]);
@@ -1527,8 +1527,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp51_1____2 = XOR(tmp__22__1____2,keys__[22][1]);
   _tmp51_2____2 = XOR(tmp__22__2____2,keys__[22][2]);
   _tmp51_3____2 = XOR(tmp__22__3____2,keys__[22][3]);
-  sbox__6__(_tmp51_0__,_tmp51_0____2,_tmp51_1__,_tmp51_1____2,_tmp51_2__,_tmp51_2____2,_tmp51_3__,_tmp51_3____2,&_tmp52_0__,&_tmp52_0____2,&_tmp52_1__,&_tmp52_1____2,&_tmp52_2__,&_tmp52_2____2,&_tmp52_3__,&_tmp52_3____2);
-  transform__(_tmp52_0__,_tmp52_0____2,_tmp52_1__,_tmp52_1____2,_tmp52_2__,_tmp52_2____2,_tmp52_3__,_tmp52_3____2,&tmp__23__0__,&tmp__23__0____2,&tmp__23__1__,&tmp__23__1____2,&tmp__23__2__,&tmp__23__2____2,&tmp__23__3__,&tmp__23__3____2);
+  sbox__6__V32(_tmp51_0__,_tmp51_0____2,_tmp51_1__,_tmp51_1____2,_tmp51_2__,_tmp51_2____2,_tmp51_3__,_tmp51_3____2,&_tmp52_0__,&_tmp52_0____2,&_tmp52_1__,&_tmp52_1____2,&_tmp52_2__,&_tmp52_2____2,&_tmp52_3__,&_tmp52_3____2);
+  transform__V32(_tmp52_0__,_tmp52_0____2,_tmp52_1__,_tmp52_1____2,_tmp52_2__,_tmp52_2____2,_tmp52_3__,_tmp52_3____2,&tmp__23__0__,&tmp__23__0____2,&tmp__23__1__,&tmp__23__1____2,&tmp__23__2__,&tmp__23__2____2,&tmp__23__3__,&tmp__23__3____2);
   _tmp53_0__ = XOR(tmp__23__0__,keys__[23][0]);
   _tmp53_1__ = XOR(tmp__23__1__,keys__[23][1]);
   _tmp53_2__ = XOR(tmp__23__2__,keys__[23][2]);
@@ -1537,8 +1537,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp53_1____2 = XOR(tmp__23__1____2,keys__[23][1]);
   _tmp53_2____2 = XOR(tmp__23__2____2,keys__[23][2]);
   _tmp53_3____2 = XOR(tmp__23__3____2,keys__[23][3]);
-  sbox__7__(_tmp53_0__,_tmp53_0____2,_tmp53_1__,_tmp53_1____2,_tmp53_2__,_tmp53_2____2,_tmp53_3__,_tmp53_3____2,&_tmp54_0__,&_tmp54_0____2,&_tmp54_1__,&_tmp54_1____2,&_tmp54_2__,&_tmp54_2____2,&_tmp54_3__,&_tmp54_3____2);
-  transform__(_tmp54_0__,_tmp54_0____2,_tmp54_1__,_tmp54_1____2,_tmp54_2__,_tmp54_2____2,_tmp54_3__,_tmp54_3____2,&tmp__24__0__,&tmp__24__0____2,&tmp__24__1__,&tmp__24__1____2,&tmp__24__2__,&tmp__24__2____2,&tmp__24__3__,&tmp__24__3____2);
+  sbox__7__V32(_tmp53_0__,_tmp53_0____2,_tmp53_1__,_tmp53_1____2,_tmp53_2__,_tmp53_2____2,_tmp53_3__,_tmp53_3____2,&_tmp54_0__,&_tmp54_0____2,&_tmp54_1__,&_tmp54_1____2,&_tmp54_2__,&_tmp54_2____2,&_tmp54_3__,&_tmp54_3____2);
+  transform__V32(_tmp54_0__,_tmp54_0____2,_tmp54_1__,_tmp54_1____2,_tmp54_2__,_tmp54_2____2,_tmp54_3__,_tmp54_3____2,&tmp__24__0__,&tmp__24__0____2,&tmp__24__1__,&tmp__24__1____2,&tmp__24__2__,&tmp__24__2____2,&tmp__24__3__,&tmp__24__3____2);
   _tmp55_0__ = XOR(tmp__24__0__,keys__[24][0]);
   _tmp55_1__ = XOR(tmp__24__1__,keys__[24][1]);
   _tmp55_2__ = XOR(tmp__24__2__,keys__[24][2]);
@@ -1547,8 +1547,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp55_1____2 = XOR(tmp__24__1____2,keys__[24][1]);
   _tmp55_2____2 = XOR(tmp__24__2____2,keys__[24][2]);
   _tmp55_3____2 = XOR(tmp__24__3____2,keys__[24][3]);
-  sbox__0__(_tmp55_0__,_tmp55_0____2,_tmp55_1__,_tmp55_1____2,_tmp55_2__,_tmp55_2____2,_tmp55_3__,_tmp55_3____2,&_tmp56_0__,&_tmp56_0____2,&_tmp56_1__,&_tmp56_1____2,&_tmp56_2__,&_tmp56_2____2,&_tmp56_3__,&_tmp56_3____2);
-  transform__(_tmp56_0__,_tmp56_0____2,_tmp56_1__,_tmp56_1____2,_tmp56_2__,_tmp56_2____2,_tmp56_3__,_tmp56_3____2,&tmp__25__0__,&tmp__25__0____2,&tmp__25__1__,&tmp__25__1____2,&tmp__25__2__,&tmp__25__2____2,&tmp__25__3__,&tmp__25__3____2);
+  sbox__0__V32(_tmp55_0__,_tmp55_0____2,_tmp55_1__,_tmp55_1____2,_tmp55_2__,_tmp55_2____2,_tmp55_3__,_tmp55_3____2,&_tmp56_0__,&_tmp56_0____2,&_tmp56_1__,&_tmp56_1____2,&_tmp56_2__,&_tmp56_2____2,&_tmp56_3__,&_tmp56_3____2);
+  transform__V32(_tmp56_0__,_tmp56_0____2,_tmp56_1__,_tmp56_1____2,_tmp56_2__,_tmp56_2____2,_tmp56_3__,_tmp56_3____2,&tmp__25__0__,&tmp__25__0____2,&tmp__25__1__,&tmp__25__1____2,&tmp__25__2__,&tmp__25__2____2,&tmp__25__3__,&tmp__25__3____2);
   _tmp57_0__ = XOR(tmp__25__0__,keys__[25][0]);
   _tmp57_1__ = XOR(tmp__25__1__,keys__[25][1]);
   _tmp57_2__ = XOR(tmp__25__2__,keys__[25][2]);
@@ -1557,8 +1557,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp57_1____2 = XOR(tmp__25__1____2,keys__[25][1]);
   _tmp57_2____2 = XOR(tmp__25__2____2,keys__[25][2]);
   _tmp57_3____2 = XOR(tmp__25__3____2,keys__[25][3]);
-  sbox__1__(_tmp57_0__,_tmp57_0____2,_tmp57_1__,_tmp57_1____2,_tmp57_2__,_tmp57_2____2,_tmp57_3__,_tmp57_3____2,&_tmp58_0__,&_tmp58_0____2,&_tmp58_1__,&_tmp58_1____2,&_tmp58_2__,&_tmp58_2____2,&_tmp58_3__,&_tmp58_3____2);
-  transform__(_tmp58_0__,_tmp58_0____2,_tmp58_1__,_tmp58_1____2,_tmp58_2__,_tmp58_2____2,_tmp58_3__,_tmp58_3____2,&tmp__26__0__,&tmp__26__0____2,&tmp__26__1__,&tmp__26__1____2,&tmp__26__2__,&tmp__26__2____2,&tmp__26__3__,&tmp__26__3____2);
+  sbox__1__V32(_tmp57_0__,_tmp57_0____2,_tmp57_1__,_tmp57_1____2,_tmp57_2__,_tmp57_2____2,_tmp57_3__,_tmp57_3____2,&_tmp58_0__,&_tmp58_0____2,&_tmp58_1__,&_tmp58_1____2,&_tmp58_2__,&_tmp58_2____2,&_tmp58_3__,&_tmp58_3____2);
+  transform__V32(_tmp58_0__,_tmp58_0____2,_tmp58_1__,_tmp58_1____2,_tmp58_2__,_tmp58_2____2,_tmp58_3__,_tmp58_3____2,&tmp__26__0__,&tmp__26__0____2,&tmp__26__1__,&tmp__26__1____2,&tmp__26__2__,&tmp__26__2____2,&tmp__26__3__,&tmp__26__3____2);
   _tmp59_0__ = XOR(tmp__26__0__,keys__[26][0]);
   _tmp59_1__ = XOR(tmp__26__1__,keys__[26][1]);
   _tmp59_2__ = XOR(tmp__26__2__,keys__[26][2]);
@@ -1567,8 +1567,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp59_1____2 = XOR(tmp__26__1____2,keys__[26][1]);
   _tmp59_2____2 = XOR(tmp__26__2____2,keys__[26][2]);
   _tmp59_3____2 = XOR(tmp__26__3____2,keys__[26][3]);
-  sbox__2__(_tmp59_0__,_tmp59_0____2,_tmp59_1__,_tmp59_1____2,_tmp59_2__,_tmp59_2____2,_tmp59_3__,_tmp59_3____2,&_tmp60_0__,&_tmp60_0____2,&_tmp60_1__,&_tmp60_1____2,&_tmp60_2__,&_tmp60_2____2,&_tmp60_3__,&_tmp60_3____2);
-  transform__(_tmp60_0__,_tmp60_0____2,_tmp60_1__,_tmp60_1____2,_tmp60_2__,_tmp60_2____2,_tmp60_3__,_tmp60_3____2,&tmp__27__0__,&tmp__27__0____2,&tmp__27__1__,&tmp__27__1____2,&tmp__27__2__,&tmp__27__2____2,&tmp__27__3__,&tmp__27__3____2);
+  sbox__2__V32(_tmp59_0__,_tmp59_0____2,_tmp59_1__,_tmp59_1____2,_tmp59_2__,_tmp59_2____2,_tmp59_3__,_tmp59_3____2,&_tmp60_0__,&_tmp60_0____2,&_tmp60_1__,&_tmp60_1____2,&_tmp60_2__,&_tmp60_2____2,&_tmp60_3__,&_tmp60_3____2);
+  transform__V32(_tmp60_0__,_tmp60_0____2,_tmp60_1__,_tmp60_1____2,_tmp60_2__,_tmp60_2____2,_tmp60_3__,_tmp60_3____2,&tmp__27__0__,&tmp__27__0____2,&tmp__27__1__,&tmp__27__1____2,&tmp__27__2__,&tmp__27__2____2,&tmp__27__3__,&tmp__27__3____2);
   _tmp61_0__ = XOR(tmp__27__0__,keys__[27][0]);
   _tmp61_1__ = XOR(tmp__27__1__,keys__[27][1]);
   _tmp61_2__ = XOR(tmp__27__2__,keys__[27][2]);
@@ -1577,8 +1577,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp61_1____2 = XOR(tmp__27__1____2,keys__[27][1]);
   _tmp61_2____2 = XOR(tmp__27__2____2,keys__[27][2]);
   _tmp61_3____2 = XOR(tmp__27__3____2,keys__[27][3]);
-  sbox__3__(_tmp61_0__,_tmp61_0____2,_tmp61_1__,_tmp61_1____2,_tmp61_2__,_tmp61_2____2,_tmp61_3__,_tmp61_3____2,&_tmp62_0__,&_tmp62_0____2,&_tmp62_1__,&_tmp62_1____2,&_tmp62_2__,&_tmp62_2____2,&_tmp62_3__,&_tmp62_3____2);
-  transform__(_tmp62_0__,_tmp62_0____2,_tmp62_1__,_tmp62_1____2,_tmp62_2__,_tmp62_2____2,_tmp62_3__,_tmp62_3____2,&tmp__28__0__,&tmp__28__0____2,&tmp__28__1__,&tmp__28__1____2,&tmp__28__2__,&tmp__28__2____2,&tmp__28__3__,&tmp__28__3____2);
+  sbox__3__V32(_tmp61_0__,_tmp61_0____2,_tmp61_1__,_tmp61_1____2,_tmp61_2__,_tmp61_2____2,_tmp61_3__,_tmp61_3____2,&_tmp62_0__,&_tmp62_0____2,&_tmp62_1__,&_tmp62_1____2,&_tmp62_2__,&_tmp62_2____2,&_tmp62_3__,&_tmp62_3____2);
+  transform__V32(_tmp62_0__,_tmp62_0____2,_tmp62_1__,_tmp62_1____2,_tmp62_2__,_tmp62_2____2,_tmp62_3__,_tmp62_3____2,&tmp__28__0__,&tmp__28__0____2,&tmp__28__1__,&tmp__28__1____2,&tmp__28__2__,&tmp__28__2____2,&tmp__28__3__,&tmp__28__3____2);
   _tmp63_0__ = XOR(tmp__28__0__,keys__[28][0]);
   _tmp63_1__ = XOR(tmp__28__1__,keys__[28][1]);
   _tmp63_2__ = XOR(tmp__28__2__,keys__[28][2]);
@@ -1587,8 +1587,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp63_1____2 = XOR(tmp__28__1____2,keys__[28][1]);
   _tmp63_2____2 = XOR(tmp__28__2____2,keys__[28][2]);
   _tmp63_3____2 = XOR(tmp__28__3____2,keys__[28][3]);
-  sbox__4__(_tmp63_0__,_tmp63_0____2,_tmp63_1__,_tmp63_1____2,_tmp63_2__,_tmp63_2____2,_tmp63_3__,_tmp63_3____2,&_tmp64_0__,&_tmp64_0____2,&_tmp64_1__,&_tmp64_1____2,&_tmp64_2__,&_tmp64_2____2,&_tmp64_3__,&_tmp64_3____2);
-  transform__(_tmp64_0__,_tmp64_0____2,_tmp64_1__,_tmp64_1____2,_tmp64_2__,_tmp64_2____2,_tmp64_3__,_tmp64_3____2,&tmp__29__0__,&tmp__29__0____2,&tmp__29__1__,&tmp__29__1____2,&tmp__29__2__,&tmp__29__2____2,&tmp__29__3__,&tmp__29__3____2);
+  sbox__4__V32(_tmp63_0__,_tmp63_0____2,_tmp63_1__,_tmp63_1____2,_tmp63_2__,_tmp63_2____2,_tmp63_3__,_tmp63_3____2,&_tmp64_0__,&_tmp64_0____2,&_tmp64_1__,&_tmp64_1____2,&_tmp64_2__,&_tmp64_2____2,&_tmp64_3__,&_tmp64_3____2);
+  transform__V32(_tmp64_0__,_tmp64_0____2,_tmp64_1__,_tmp64_1____2,_tmp64_2__,_tmp64_2____2,_tmp64_3__,_tmp64_3____2,&tmp__29__0__,&tmp__29__0____2,&tmp__29__1__,&tmp__29__1____2,&tmp__29__2__,&tmp__29__2____2,&tmp__29__3__,&tmp__29__3____2);
   _tmp65_0__ = XOR(tmp__29__0__,keys__[29][0]);
   _tmp65_1__ = XOR(tmp__29__1__,keys__[29][1]);
   _tmp65_2__ = XOR(tmp__29__2__,keys__[29][2]);
@@ -1597,8 +1597,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp65_1____2 = XOR(tmp__29__1____2,keys__[29][1]);
   _tmp65_2____2 = XOR(tmp__29__2____2,keys__[29][2]);
   _tmp65_3____2 = XOR(tmp__29__3____2,keys__[29][3]);
-  sbox__5__(_tmp65_0__,_tmp65_0____2,_tmp65_1__,_tmp65_1____2,_tmp65_2__,_tmp65_2____2,_tmp65_3__,_tmp65_3____2,&_tmp66_0__,&_tmp66_0____2,&_tmp66_1__,&_tmp66_1____2,&_tmp66_2__,&_tmp66_2____2,&_tmp66_3__,&_tmp66_3____2);
-  transform__(_tmp66_0__,_tmp66_0____2,_tmp66_1__,_tmp66_1____2,_tmp66_2__,_tmp66_2____2,_tmp66_3__,_tmp66_3____2,&tmp__30__0__,&tmp__30__0____2,&tmp__30__1__,&tmp__30__1____2,&tmp__30__2__,&tmp__30__2____2,&tmp__30__3__,&tmp__30__3____2);
+  sbox__5__V32(_tmp65_0__,_tmp65_0____2,_tmp65_1__,_tmp65_1____2,_tmp65_2__,_tmp65_2____2,_tmp65_3__,_tmp65_3____2,&_tmp66_0__,&_tmp66_0____2,&_tmp66_1__,&_tmp66_1____2,&_tmp66_2__,&_tmp66_2____2,&_tmp66_3__,&_tmp66_3____2);
+  transform__V32(_tmp66_0__,_tmp66_0____2,_tmp66_1__,_tmp66_1____2,_tmp66_2__,_tmp66_2____2,_tmp66_3__,_tmp66_3____2,&tmp__30__0__,&tmp__30__0____2,&tmp__30__1__,&tmp__30__1____2,&tmp__30__2__,&tmp__30__2____2,&tmp__30__3__,&tmp__30__3____2);
   _tmp67_0__ = XOR(tmp__30__0__,keys__[30][0]);
   _tmp67_1__ = XOR(tmp__30__1__,keys__[30][1]);
   _tmp67_2__ = XOR(tmp__30__2__,keys__[30][2]);
@@ -1607,8 +1607,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp67_1____2 = XOR(tmp__30__1____2,keys__[30][1]);
   _tmp67_2____2 = XOR(tmp__30__2____2,keys__[30][2]);
   _tmp67_3____2 = XOR(tmp__30__3____2,keys__[30][3]);
-  sbox__6__(_tmp67_0__,_tmp67_0____2,_tmp67_1__,_tmp67_1____2,_tmp67_2__,_tmp67_2____2,_tmp67_3__,_tmp67_3____2,&_tmp68_0__,&_tmp68_0____2,&_tmp68_1__,&_tmp68_1____2,&_tmp68_2__,&_tmp68_2____2,&_tmp68_3__,&_tmp68_3____2);
-  transform__(_tmp68_0__,_tmp68_0____2,_tmp68_1__,_tmp68_1____2,_tmp68_2__,_tmp68_2____2,_tmp68_3__,_tmp68_3____2,&tmp__31__0__,&tmp__31__0____2,&tmp__31__1__,&tmp__31__1____2,&tmp__31__2__,&tmp__31__2____2,&tmp__31__3__,&tmp__31__3____2);
+  sbox__6__V32(_tmp67_0__,_tmp67_0____2,_tmp67_1__,_tmp67_1____2,_tmp67_2__,_tmp67_2____2,_tmp67_3__,_tmp67_3____2,&_tmp68_0__,&_tmp68_0____2,&_tmp68_1__,&_tmp68_1____2,&_tmp68_2__,&_tmp68_2____2,&_tmp68_3__,&_tmp68_3____2);
+  transform__V32(_tmp68_0__,_tmp68_0____2,_tmp68_1__,_tmp68_1____2,_tmp68_2__,_tmp68_2____2,_tmp68_3__,_tmp68_3____2,&tmp__31__0__,&tmp__31__0____2,&tmp__31__1__,&tmp__31__1____2,&tmp__31__2__,&tmp__31__2____2,&tmp__31__3__,&tmp__31__3____2);
   _tmp69_0__ = XOR(tmp__31__0__,keys__[31][0]);
   _tmp69_1__ = XOR(tmp__31__1__,keys__[31][1]);
   _tmp69_2__ = XOR(tmp__31__2__,keys__[31][2]);
@@ -1617,7 +1617,7 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
   _tmp69_1____2 = XOR(tmp__31__1____2,keys__[31][1]);
   _tmp69_2____2 = XOR(tmp__31__2____2,keys__[31][2]);
   _tmp69_3____2 = XOR(tmp__31__3____2,keys__[31][3]);
-  sbox__7__(_tmp69_0__,_tmp69_0____2,_tmp69_1__,_tmp69_1____2,_tmp69_2__,_tmp69_2____2,_tmp69_3__,_tmp69_3____2,&_tmp70_0__,&_tmp70_0____2,&_tmp70_1__,&_tmp70_1____2,&_tmp70_2__,&_tmp70_2____2,&_tmp70_3__,&_tmp70_3____2);
+  sbox__7__V32(_tmp69_0__,_tmp69_0____2,_tmp69_1__,_tmp69_1____2,_tmp69_2__,_tmp69_2____2,_tmp69_3__,_tmp69_3____2,&_tmp70_0__,&_tmp70_0____2,&_tmp70_1__,&_tmp70_1____2,&_tmp70_2__,&_tmp70_2____2,&_tmp70_3__,&_tmp70_3____2);
   ciphertext__[0] = XOR(_tmp70_0__,keys__[32][0]);
   ciphertext__[1] = XOR(_tmp70_1__,keys__[32][1]);
   ciphertext__[2] = XOR(_tmp70_2__,keys__[32][2]);
@@ -1635,8 +1635,8 @@ void Serpent__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE plaintext____2[4],DA
 /*                                                                  */
 /*
 
-_no_inline table[] sbox(input :  u32x4 :: base)
-  returns out :  u32x4 :: base
+ _no_inline table[] sbox(input :  v4 :: base)
+  returns out :  v4 :: base
 [ {3, 8, 15, 1, 10, 6, 5, 11, 14, 13, 4, 2, 7, 0, 9, 12}
 ;
 {15, 12, 2, 7, 9, 0, 5, 10, 1, 11, 14, 8, 6, 13, 3, 4}
@@ -1679,7 +1679,7 @@ vars
   tmp :  u32x4[32] :: base
 let
   (tmp[0]) = plaintext;
-   forall i in [0,30] {
+  forall i in [0,30] {
     (tmp[(i + 1)]) = transform(sbox[(i % 8)]((tmp[i] ^ keys[i])))
   };
   (ciphertext) = (sbox[7]((tmp[31] ^ keys[31])) ^ keys[32])

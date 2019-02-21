@@ -54,7 +54,7 @@ if ($gen) {
     print "Compiling Usuba sources...";
     chdir "$FindBin::Bin/../..";
 
-    my $ua_args = "-arch sse -no-share -no-arr -no-sched";
+    my $ua_args = "-V -arch sse -no-arr -no-sched";
 
     for my $cipher (@ciphers) {
         my $source  = "samples/usuba/$cipher.ua";

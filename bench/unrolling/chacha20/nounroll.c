@@ -19,47 +19,47 @@
 void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[16]) {
   
   // Variables declaration
-  DATATYPE DR___1_DR_end___1_QR___1_QR_end___1__tmp3_;
-  DATATYPE DR___1_DR_end___1_QR___1_QR_end___1__tmp4_;
-  DATATYPE DR___1_DR_end___1_QR___1_QR_start___1__tmp1_;
-  DATATYPE DR___1_DR_end___1_QR___1_QR_start___1__tmp2_;
-  DATATYPE DR___1_DR_end___1_QR___1__tmp5_[4];
-  DATATYPE DR___1_DR_end___1_QR___2_QR_end___1__tmp3_;
-  DATATYPE DR___1_DR_end___1_QR___2_QR_end___1__tmp4_;
-  DATATYPE DR___1_DR_end___1_QR___2_QR_start___1__tmp1_;
-  DATATYPE DR___1_DR_end___1_QR___2_QR_start___1__tmp2_;
-  DATATYPE DR___1_DR_end___1_QR___2__tmp5_[4];
-  DATATYPE DR___1_DR_end___1_QR___3_QR_end___1__tmp3_;
-  DATATYPE DR___1_DR_end___1_QR___3_QR_end___1__tmp4_;
-  DATATYPE DR___1_DR_end___1_QR___3_QR_start___1__tmp1_;
-  DATATYPE DR___1_DR_end___1_QR___3_QR_start___1__tmp2_;
-  DATATYPE DR___1_DR_end___1_QR___3__tmp5_[4];
-  DATATYPE DR___1_DR_end___1_QR___4_QR_end___1__tmp3_;
-  DATATYPE DR___1_DR_end___1_QR___4_QR_end___1__tmp4_;
-  DATATYPE DR___1_DR_end___1_QR___4_QR_start___1__tmp1_;
-  DATATYPE DR___1_DR_end___1_QR___4_QR_start___1__tmp2_;
-  DATATYPE DR___1_DR_end___1_QR___4__tmp5_[4];
-  DATATYPE DR___1_DR_start___1_QR___1_QR_end___1__tmp3_;
-  DATATYPE DR___1_DR_start___1_QR___1_QR_end___1__tmp4_;
-  DATATYPE DR___1_DR_start___1_QR___1_QR_start___1__tmp1_;
-  DATATYPE DR___1_DR_start___1_QR___1_QR_start___1__tmp2_;
-  DATATYPE DR___1_DR_start___1_QR___1__tmp5_[4];
-  DATATYPE DR___1_DR_start___1_QR___2_QR_end___1__tmp3_;
-  DATATYPE DR___1_DR_start___1_QR___2_QR_end___1__tmp4_;
-  DATATYPE DR___1_DR_start___1_QR___2_QR_start___1__tmp1_;
-  DATATYPE DR___1_DR_start___1_QR___2_QR_start___1__tmp2_;
-  DATATYPE DR___1_DR_start___1_QR___2__tmp5_[4];
-  DATATYPE DR___1_DR_start___1_QR___3_QR_end___1__tmp3_;
-  DATATYPE DR___1_DR_start___1_QR___3_QR_end___1__tmp4_;
-  DATATYPE DR___1_DR_start___1_QR___3_QR_start___1__tmp1_;
-  DATATYPE DR___1_DR_start___1_QR___3_QR_start___1__tmp2_;
-  DATATYPE DR___1_DR_start___1_QR___3__tmp5_[4];
-  DATATYPE DR___1_DR_start___1_QR___4_QR_end___1__tmp3_;
-  DATATYPE DR___1_DR_start___1_QR___4_QR_end___1__tmp4_;
-  DATATYPE DR___1_DR_start___1_QR___4_QR_start___1__tmp1_;
-  DATATYPE DR___1_DR_start___1_QR___4_QR_start___1__tmp2_;
-  DATATYPE DR___1_DR_start___1_QR___4__tmp5_[4];
-  DATATYPE DR___1__tmp6_[16];
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_1_QR_end__V32_1__tmp3_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_1_QR_end__V32_1__tmp4_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_1_QR_start__V32_1__tmp1_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_1_QR_start__V32_1__tmp2_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_1__tmp5_[4];
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_2_QR_end__V32_1__tmp3_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_2_QR_end__V32_1__tmp4_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_2_QR_start__V32_1__tmp1_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_2_QR_start__V32_1__tmp2_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_2__tmp5_[4];
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_3_QR_end__V32_1__tmp3_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_3_QR_end__V32_1__tmp4_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_3_QR_start__V32_1__tmp1_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_3_QR_start__V32_1__tmp2_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_3__tmp5_[4];
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_4_QR_end__V32_1__tmp3_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_4_QR_end__V32_1__tmp4_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_4_QR_start__V32_1__tmp1_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_4_QR_start__V32_1__tmp2_;
+  DATATYPE DR__V32_1_DR_end__V32_1_QR__V32_4__tmp5_[4];
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_1_QR_end__V32_1__tmp3_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_1_QR_end__V32_1__tmp4_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_1_QR_start__V32_1__tmp1_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_1_QR_start__V32_1__tmp2_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_1__tmp5_[4];
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_2_QR_end__V32_1__tmp3_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_2_QR_end__V32_1__tmp4_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_2_QR_start__V32_1__tmp1_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_2_QR_start__V32_1__tmp2_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_2__tmp5_[4];
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_3_QR_end__V32_1__tmp3_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_3_QR_end__V32_1__tmp4_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_3_QR_start__V32_1__tmp1_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_3_QR_start__V32_1__tmp2_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_3__tmp5_[4];
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_4_QR_end__V32_1__tmp3_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_4_QR_end__V32_1__tmp4_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_4_QR_start__V32_1__tmp1_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_4_QR_start__V32_1__tmp2_;
+  DATATYPE DR__V32_1_DR_start__V32_1_QR__V32_4__tmp5_[4];
+  DATATYPE DR__V32_1__tmp6_[16];
   DATATYPE state__[16];
 
   // Instructions (body)
@@ -79,103 +79,103 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   state__[7] = plain__[7];
   state__[15] = plain__[15];
   state__[11] = plain__[11];
-  for (int i = 1; i <= 10; i++) {
-    DR___1_DR_start___1_QR___1__tmp5_[0] = ADD(state__[0],state__[4],32);
-    DR___1_DR_start___1_QR___2__tmp5_[0] = ADD(state__[1],state__[5],32);
-    DR___1_DR_start___1_QR___3__tmp5_[0] = ADD(state__[2],state__[6],32);
-    DR___1_DR_start___1_QR___4__tmp5_[0] = ADD(state__[3],state__[7],32);
-    DR___1_DR_start___1_QR___1_QR_start___1__tmp1_ = XOR(state__[12],DR___1_DR_start___1_QR___1__tmp5_[0]);
-    DR___1_DR_start___1_QR___2_QR_start___1__tmp1_ = XOR(state__[13],DR___1_DR_start___1_QR___2__tmp5_[0]);
-    DR___1_DR_start___1_QR___3_QR_start___1__tmp1_ = XOR(state__[14],DR___1_DR_start___1_QR___3__tmp5_[0]);
-    DR___1_DR_start___1_QR___4_QR_start___1__tmp1_ = XOR(state__[15],DR___1_DR_start___1_QR___4__tmp5_[0]);
-    DR___1_DR_start___1_QR___1__tmp5_[3] = L_ROTATE(DR___1_DR_start___1_QR___1_QR_start___1__tmp1_,16,32);
-    DR___1_DR_start___1_QR___2__tmp5_[3] = L_ROTATE(DR___1_DR_start___1_QR___2_QR_start___1__tmp1_,16,32);
-    DR___1_DR_start___1_QR___3__tmp5_[3] = L_ROTATE(DR___1_DR_start___1_QR___3_QR_start___1__tmp1_,16,32);
-    DR___1_DR_start___1_QR___4__tmp5_[3] = L_ROTATE(DR___1_DR_start___1_QR___4_QR_start___1__tmp1_,16,32);
-    DR___1_DR_start___1_QR___1__tmp5_[2] = ADD(state__[8],DR___1_DR_start___1_QR___1__tmp5_[3],32);
-    DR___1_DR_start___1_QR___2__tmp5_[2] = ADD(state__[9],DR___1_DR_start___1_QR___2__tmp5_[3],32);
-    DR___1_DR_start___1_QR___3__tmp5_[2] = ADD(state__[10],DR___1_DR_start___1_QR___3__tmp5_[3],32);
-    DR___1_DR_start___1_QR___4__tmp5_[2] = ADD(state__[11],DR___1_DR_start___1_QR___4__tmp5_[3],32);
-    DR___1_DR_start___1_QR___1_QR_start___1__tmp2_ = XOR(state__[4],DR___1_DR_start___1_QR___1__tmp5_[2]);
-    DR___1_DR_start___1_QR___2_QR_start___1__tmp2_ = XOR(state__[5],DR___1_DR_start___1_QR___2__tmp5_[2]);
-    DR___1_DR_start___1_QR___3_QR_start___1__tmp2_ = XOR(state__[6],DR___1_DR_start___1_QR___3__tmp5_[2]);
-    DR___1_DR_start___1_QR___4_QR_start___1__tmp2_ = XOR(state__[7],DR___1_DR_start___1_QR___4__tmp5_[2]);
-    DR___1_DR_start___1_QR___1__tmp5_[1] = L_ROTATE(DR___1_DR_start___1_QR___1_QR_start___1__tmp2_,12,32);
-    DR___1_DR_start___1_QR___2__tmp5_[1] = L_ROTATE(DR___1_DR_start___1_QR___2_QR_start___1__tmp2_,12,32);
-    DR___1_DR_start___1_QR___3__tmp5_[1] = L_ROTATE(DR___1_DR_start___1_QR___3_QR_start___1__tmp2_,12,32);
-    DR___1_DR_start___1_QR___4__tmp5_[1] = L_ROTATE(DR___1_DR_start___1_QR___4_QR_start___1__tmp2_,12,32);
-    DR___1__tmp6_[0] = ADD(DR___1_DR_start___1_QR___1__tmp5_[0],DR___1_DR_start___1_QR___1__tmp5_[1],32);
-    DR___1__tmp6_[1] = ADD(DR___1_DR_start___1_QR___2__tmp5_[0],DR___1_DR_start___1_QR___2__tmp5_[1],32);
-    DR___1__tmp6_[2] = ADD(DR___1_DR_start___1_QR___3__tmp5_[0],DR___1_DR_start___1_QR___3__tmp5_[1],32);
-    DR___1__tmp6_[3] = ADD(DR___1_DR_start___1_QR___4__tmp5_[0],DR___1_DR_start___1_QR___4__tmp5_[1],32);
-    DR___1_DR_start___1_QR___1_QR_end___1__tmp3_ = XOR(DR___1_DR_start___1_QR___1__tmp5_[3],DR___1__tmp6_[0]);
-    DR___1_DR_start___1_QR___2_QR_end___1__tmp3_ = XOR(DR___1_DR_start___1_QR___2__tmp5_[3],DR___1__tmp6_[1]);
-    DR___1_DR_start___1_QR___3_QR_end___1__tmp3_ = XOR(DR___1_DR_start___1_QR___3__tmp5_[3],DR___1__tmp6_[2]);
-    DR___1_DR_start___1_QR___4_QR_end___1__tmp3_ = XOR(DR___1_DR_start___1_QR___4__tmp5_[3],DR___1__tmp6_[3]);
-    DR___1__tmp6_[12] = L_ROTATE(DR___1_DR_start___1_QR___1_QR_end___1__tmp3_,8,32);
-    DR___1__tmp6_[13] = L_ROTATE(DR___1_DR_start___1_QR___2_QR_end___1__tmp3_,8,32);
-    DR___1__tmp6_[14] = L_ROTATE(DR___1_DR_start___1_QR___3_QR_end___1__tmp3_,8,32);
-    DR___1__tmp6_[15] = L_ROTATE(DR___1_DR_start___1_QR___4_QR_end___1__tmp3_,8,32);
-    DR___1__tmp6_[8] = ADD(DR___1_DR_start___1_QR___1__tmp5_[2],DR___1__tmp6_[12],32);
-    DR___1__tmp6_[9] = ADD(DR___1_DR_start___1_QR___2__tmp5_[2],DR___1__tmp6_[13],32);
-    DR___1__tmp6_[10] = ADD(DR___1_DR_start___1_QR___3__tmp5_[2],DR___1__tmp6_[14],32);
-    DR___1__tmp6_[11] = ADD(DR___1_DR_start___1_QR___4__tmp5_[2],DR___1__tmp6_[15],32);
-    DR___1_DR_start___1_QR___1_QR_end___1__tmp4_ = XOR(DR___1_DR_start___1_QR___1__tmp5_[1],DR___1__tmp6_[8]);
-    DR___1_DR_start___1_QR___2_QR_end___1__tmp4_ = XOR(DR___1_DR_start___1_QR___2__tmp5_[1],DR___1__tmp6_[9]);
-    DR___1_DR_start___1_QR___3_QR_end___1__tmp4_ = XOR(DR___1_DR_start___1_QR___3__tmp5_[1],DR___1__tmp6_[10]);
-    DR___1_DR_start___1_QR___4_QR_end___1__tmp4_ = XOR(DR___1_DR_start___1_QR___4__tmp5_[1],DR___1__tmp6_[11]);
-    DR___1__tmp6_[4] = L_ROTATE(DR___1_DR_start___1_QR___1_QR_end___1__tmp4_,7,32);
-    DR___1__tmp6_[5] = L_ROTATE(DR___1_DR_start___1_QR___2_QR_end___1__tmp4_,7,32);
-    DR___1__tmp6_[6] = L_ROTATE(DR___1_DR_start___1_QR___3_QR_end___1__tmp4_,7,32);
-    DR___1__tmp6_[7] = L_ROTATE(DR___1_DR_start___1_QR___4_QR_end___1__tmp4_,7,32);
-    DR___1_DR_end___1_QR___4__tmp5_[0] = ADD(DR___1__tmp6_[3],DR___1__tmp6_[4],32);
-    DR___1_DR_end___1_QR___1__tmp5_[0] = ADD(DR___1__tmp6_[0],DR___1__tmp6_[5],32);
-    DR___1_DR_end___1_QR___2__tmp5_[0] = ADD(DR___1__tmp6_[1],DR___1__tmp6_[6],32);
-    DR___1_DR_end___1_QR___3__tmp5_[0] = ADD(DR___1__tmp6_[2],DR___1__tmp6_[7],32);
-    DR___1_DR_end___1_QR___4_QR_start___1__tmp1_ = XOR(DR___1__tmp6_[14],DR___1_DR_end___1_QR___4__tmp5_[0]);
-    DR___1_DR_end___1_QR___1_QR_start___1__tmp1_ = XOR(DR___1__tmp6_[15],DR___1_DR_end___1_QR___1__tmp5_[0]);
-    DR___1_DR_end___1_QR___2_QR_start___1__tmp1_ = XOR(DR___1__tmp6_[12],DR___1_DR_end___1_QR___2__tmp5_[0]);
-    DR___1_DR_end___1_QR___3_QR_start___1__tmp1_ = XOR(DR___1__tmp6_[13],DR___1_DR_end___1_QR___3__tmp5_[0]);
-    DR___1_DR_end___1_QR___4__tmp5_[3] = L_ROTATE(DR___1_DR_end___1_QR___4_QR_start___1__tmp1_,16,32);
-    DR___1_DR_end___1_QR___1__tmp5_[3] = L_ROTATE(DR___1_DR_end___1_QR___1_QR_start___1__tmp1_,16,32);
-    DR___1_DR_end___1_QR___2__tmp5_[3] = L_ROTATE(DR___1_DR_end___1_QR___2_QR_start___1__tmp1_,16,32);
-    DR___1_DR_end___1_QR___3__tmp5_[3] = L_ROTATE(DR___1_DR_end___1_QR___3_QR_start___1__tmp1_,16,32);
-    DR___1_DR_end___1_QR___4__tmp5_[2] = ADD(DR___1__tmp6_[9],DR___1_DR_end___1_QR___4__tmp5_[3],32);
-    DR___1_DR_end___1_QR___1__tmp5_[2] = ADD(DR___1__tmp6_[10],DR___1_DR_end___1_QR___1__tmp5_[3],32);
-    DR___1_DR_end___1_QR___2__tmp5_[2] = ADD(DR___1__tmp6_[11],DR___1_DR_end___1_QR___2__tmp5_[3],32);
-    DR___1_DR_end___1_QR___3__tmp5_[2] = ADD(DR___1__tmp6_[8],DR___1_DR_end___1_QR___3__tmp5_[3],32);
-    DR___1_DR_end___1_QR___4_QR_start___1__tmp2_ = XOR(DR___1__tmp6_[4],DR___1_DR_end___1_QR___4__tmp5_[2]);
-    DR___1_DR_end___1_QR___1_QR_start___1__tmp2_ = XOR(DR___1__tmp6_[5],DR___1_DR_end___1_QR___1__tmp5_[2]);
-    DR___1_DR_end___1_QR___2_QR_start___1__tmp2_ = XOR(DR___1__tmp6_[6],DR___1_DR_end___1_QR___2__tmp5_[2]);
-    DR___1_DR_end___1_QR___3_QR_start___1__tmp2_ = XOR(DR___1__tmp6_[7],DR___1_DR_end___1_QR___3__tmp5_[2]);
-    DR___1_DR_end___1_QR___4__tmp5_[1] = L_ROTATE(DR___1_DR_end___1_QR___4_QR_start___1__tmp2_,12,32);
-    DR___1_DR_end___1_QR___1__tmp5_[1] = L_ROTATE(DR___1_DR_end___1_QR___1_QR_start___1__tmp2_,12,32);
-    DR___1_DR_end___1_QR___2__tmp5_[1] = L_ROTATE(DR___1_DR_end___1_QR___2_QR_start___1__tmp2_,12,32);
-    DR___1_DR_end___1_QR___3__tmp5_[1] = L_ROTATE(DR___1_DR_end___1_QR___3_QR_start___1__tmp2_,12,32);
-    state__[3] = ADD(DR___1_DR_end___1_QR___4__tmp5_[0],DR___1_DR_end___1_QR___4__tmp5_[1],32);
-    state__[0] = ADD(DR___1_DR_end___1_QR___1__tmp5_[0],DR___1_DR_end___1_QR___1__tmp5_[1],32);
-    state__[1] = ADD(DR___1_DR_end___1_QR___2__tmp5_[0],DR___1_DR_end___1_QR___2__tmp5_[1],32);
-    state__[2] = ADD(DR___1_DR_end___1_QR___3__tmp5_[0],DR___1_DR_end___1_QR___3__tmp5_[1],32);
-    DR___1_DR_end___1_QR___4_QR_end___1__tmp3_ = XOR(DR___1_DR_end___1_QR___4__tmp5_[3],state__[3]);
-    DR___1_DR_end___1_QR___1_QR_end___1__tmp3_ = XOR(DR___1_DR_end___1_QR___1__tmp5_[3],state__[0]);
-    DR___1_DR_end___1_QR___2_QR_end___1__tmp3_ = XOR(DR___1_DR_end___1_QR___2__tmp5_[3],state__[1]);
-    DR___1_DR_end___1_QR___3_QR_end___1__tmp3_ = XOR(DR___1_DR_end___1_QR___3__tmp5_[3],state__[2]);
-    state__[14] = L_ROTATE(DR___1_DR_end___1_QR___4_QR_end___1__tmp3_,8,32);
-    state__[15] = L_ROTATE(DR___1_DR_end___1_QR___1_QR_end___1__tmp3_,8,32);
-    state__[12] = L_ROTATE(DR___1_DR_end___1_QR___2_QR_end___1__tmp3_,8,32);
-    state__[13] = L_ROTATE(DR___1_DR_end___1_QR___3_QR_end___1__tmp3_,8,32);
-    state__[9] = ADD(DR___1_DR_end___1_QR___4__tmp5_[2],state__[14],32);
-    state__[10] = ADD(DR___1_DR_end___1_QR___1__tmp5_[2],state__[15],32);
-    state__[11] = ADD(DR___1_DR_end___1_QR___2__tmp5_[2],state__[12],32);
-    state__[8] = ADD(DR___1_DR_end___1_QR___3__tmp5_[2],state__[13],32);
-    DR___1_DR_end___1_QR___4_QR_end___1__tmp4_ = XOR(DR___1_DR_end___1_QR___4__tmp5_[1],state__[9]);
-    DR___1_DR_end___1_QR___1_QR_end___1__tmp4_ = XOR(DR___1_DR_end___1_QR___1__tmp5_[1],state__[10]);
-    DR___1_DR_end___1_QR___2_QR_end___1__tmp4_ = XOR(DR___1_DR_end___1_QR___2__tmp5_[1],state__[11]);
-    DR___1_DR_end___1_QR___3_QR_end___1__tmp4_ = XOR(DR___1_DR_end___1_QR___3__tmp5_[1],state__[8]);
-    state__[4] = L_ROTATE(DR___1_DR_end___1_QR___4_QR_end___1__tmp4_,7,32);
-    state__[5] = L_ROTATE(DR___1_DR_end___1_QR___1_QR_end___1__tmp4_,7,32);
-    state__[6] = L_ROTATE(DR___1_DR_end___1_QR___2_QR_end___1__tmp4_,7,32);
-    state__[7] = L_ROTATE(DR___1_DR_end___1_QR___3_QR_end___1__tmp4_,7,32);
+  for (int i__ = 1; i__ <= 10; i__++) {
+    DR__V32_1_DR_start__V32_1_QR__V32_1__tmp5_[0] = ADD(state__[0],state__[4],32);
+    DR__V32_1_DR_start__V32_1_QR__V32_2__tmp5_[0] = ADD(state__[1],state__[5],32);
+    DR__V32_1_DR_start__V32_1_QR__V32_3__tmp5_[0] = ADD(state__[2],state__[6],32);
+    DR__V32_1_DR_start__V32_1_QR__V32_4__tmp5_[0] = ADD(state__[3],state__[7],32);
+    DR__V32_1_DR_start__V32_1_QR__V32_1_QR_start__V32_1__tmp1_ = XOR(state__[12],DR__V32_1_DR_start__V32_1_QR__V32_1__tmp5_[0]);
+    DR__V32_1_DR_start__V32_1_QR__V32_2_QR_start__V32_1__tmp1_ = XOR(state__[13],DR__V32_1_DR_start__V32_1_QR__V32_2__tmp5_[0]);
+    DR__V32_1_DR_start__V32_1_QR__V32_3_QR_start__V32_1__tmp1_ = XOR(state__[14],DR__V32_1_DR_start__V32_1_QR__V32_3__tmp5_[0]);
+    DR__V32_1_DR_start__V32_1_QR__V32_4_QR_start__V32_1__tmp1_ = XOR(state__[15],DR__V32_1_DR_start__V32_1_QR__V32_4__tmp5_[0]);
+    DR__V32_1_DR_start__V32_1_QR__V32_1__tmp5_[3] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_1_QR_start__V32_1__tmp1_,16,32);
+    DR__V32_1_DR_start__V32_1_QR__V32_2__tmp5_[3] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_2_QR_start__V32_1__tmp1_,16,32);
+    DR__V32_1_DR_start__V32_1_QR__V32_3__tmp5_[3] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_3_QR_start__V32_1__tmp1_,16,32);
+    DR__V32_1_DR_start__V32_1_QR__V32_4__tmp5_[3] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_4_QR_start__V32_1__tmp1_,16,32);
+    DR__V32_1_DR_start__V32_1_QR__V32_1__tmp5_[2] = ADD(state__[8],DR__V32_1_DR_start__V32_1_QR__V32_1__tmp5_[3],32);
+    DR__V32_1_DR_start__V32_1_QR__V32_2__tmp5_[2] = ADD(state__[9],DR__V32_1_DR_start__V32_1_QR__V32_2__tmp5_[3],32);
+    DR__V32_1_DR_start__V32_1_QR__V32_3__tmp5_[2] = ADD(state__[10],DR__V32_1_DR_start__V32_1_QR__V32_3__tmp5_[3],32);
+    DR__V32_1_DR_start__V32_1_QR__V32_4__tmp5_[2] = ADD(state__[11],DR__V32_1_DR_start__V32_1_QR__V32_4__tmp5_[3],32);
+    DR__V32_1_DR_start__V32_1_QR__V32_1_QR_start__V32_1__tmp2_ = XOR(state__[4],DR__V32_1_DR_start__V32_1_QR__V32_1__tmp5_[2]);
+    DR__V32_1_DR_start__V32_1_QR__V32_2_QR_start__V32_1__tmp2_ = XOR(state__[5],DR__V32_1_DR_start__V32_1_QR__V32_2__tmp5_[2]);
+    DR__V32_1_DR_start__V32_1_QR__V32_3_QR_start__V32_1__tmp2_ = XOR(state__[6],DR__V32_1_DR_start__V32_1_QR__V32_3__tmp5_[2]);
+    DR__V32_1_DR_start__V32_1_QR__V32_4_QR_start__V32_1__tmp2_ = XOR(state__[7],DR__V32_1_DR_start__V32_1_QR__V32_4__tmp5_[2]);
+    DR__V32_1_DR_start__V32_1_QR__V32_1__tmp5_[1] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_1_QR_start__V32_1__tmp2_,12,32);
+    DR__V32_1_DR_start__V32_1_QR__V32_2__tmp5_[1] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_2_QR_start__V32_1__tmp2_,12,32);
+    DR__V32_1_DR_start__V32_1_QR__V32_3__tmp5_[1] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_3_QR_start__V32_1__tmp2_,12,32);
+    DR__V32_1_DR_start__V32_1_QR__V32_4__tmp5_[1] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_4_QR_start__V32_1__tmp2_,12,32);
+    DR__V32_1__tmp6_[0] = ADD(DR__V32_1_DR_start__V32_1_QR__V32_1__tmp5_[0],DR__V32_1_DR_start__V32_1_QR__V32_1__tmp5_[1],32);
+    DR__V32_1__tmp6_[1] = ADD(DR__V32_1_DR_start__V32_1_QR__V32_2__tmp5_[0],DR__V32_1_DR_start__V32_1_QR__V32_2__tmp5_[1],32);
+    DR__V32_1__tmp6_[2] = ADD(DR__V32_1_DR_start__V32_1_QR__V32_3__tmp5_[0],DR__V32_1_DR_start__V32_1_QR__V32_3__tmp5_[1],32);
+    DR__V32_1__tmp6_[3] = ADD(DR__V32_1_DR_start__V32_1_QR__V32_4__tmp5_[0],DR__V32_1_DR_start__V32_1_QR__V32_4__tmp5_[1],32);
+    DR__V32_1_DR_start__V32_1_QR__V32_1_QR_end__V32_1__tmp3_ = XOR(DR__V32_1_DR_start__V32_1_QR__V32_1__tmp5_[3],DR__V32_1__tmp6_[0]);
+    DR__V32_1_DR_start__V32_1_QR__V32_2_QR_end__V32_1__tmp3_ = XOR(DR__V32_1_DR_start__V32_1_QR__V32_2__tmp5_[3],DR__V32_1__tmp6_[1]);
+    DR__V32_1_DR_start__V32_1_QR__V32_3_QR_end__V32_1__tmp3_ = XOR(DR__V32_1_DR_start__V32_1_QR__V32_3__tmp5_[3],DR__V32_1__tmp6_[2]);
+    DR__V32_1_DR_start__V32_1_QR__V32_4_QR_end__V32_1__tmp3_ = XOR(DR__V32_1_DR_start__V32_1_QR__V32_4__tmp5_[3],DR__V32_1__tmp6_[3]);
+    DR__V32_1__tmp6_[12] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_1_QR_end__V32_1__tmp3_,8,32);
+    DR__V32_1__tmp6_[13] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_2_QR_end__V32_1__tmp3_,8,32);
+    DR__V32_1__tmp6_[14] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_3_QR_end__V32_1__tmp3_,8,32);
+    DR__V32_1__tmp6_[15] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_4_QR_end__V32_1__tmp3_,8,32);
+    DR__V32_1__tmp6_[8] = ADD(DR__V32_1_DR_start__V32_1_QR__V32_1__tmp5_[2],DR__V32_1__tmp6_[12],32);
+    DR__V32_1__tmp6_[9] = ADD(DR__V32_1_DR_start__V32_1_QR__V32_2__tmp5_[2],DR__V32_1__tmp6_[13],32);
+    DR__V32_1__tmp6_[10] = ADD(DR__V32_1_DR_start__V32_1_QR__V32_3__tmp5_[2],DR__V32_1__tmp6_[14],32);
+    DR__V32_1__tmp6_[11] = ADD(DR__V32_1_DR_start__V32_1_QR__V32_4__tmp5_[2],DR__V32_1__tmp6_[15],32);
+    DR__V32_1_DR_start__V32_1_QR__V32_1_QR_end__V32_1__tmp4_ = XOR(DR__V32_1_DR_start__V32_1_QR__V32_1__tmp5_[1],DR__V32_1__tmp6_[8]);
+    DR__V32_1_DR_start__V32_1_QR__V32_2_QR_end__V32_1__tmp4_ = XOR(DR__V32_1_DR_start__V32_1_QR__V32_2__tmp5_[1],DR__V32_1__tmp6_[9]);
+    DR__V32_1_DR_start__V32_1_QR__V32_3_QR_end__V32_1__tmp4_ = XOR(DR__V32_1_DR_start__V32_1_QR__V32_3__tmp5_[1],DR__V32_1__tmp6_[10]);
+    DR__V32_1_DR_start__V32_1_QR__V32_4_QR_end__V32_1__tmp4_ = XOR(DR__V32_1_DR_start__V32_1_QR__V32_4__tmp5_[1],DR__V32_1__tmp6_[11]);
+    DR__V32_1__tmp6_[4] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_1_QR_end__V32_1__tmp4_,7,32);
+    DR__V32_1__tmp6_[5] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_2_QR_end__V32_1__tmp4_,7,32);
+    DR__V32_1__tmp6_[6] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_3_QR_end__V32_1__tmp4_,7,32);
+    DR__V32_1__tmp6_[7] = L_ROTATE(DR__V32_1_DR_start__V32_1_QR__V32_4_QR_end__V32_1__tmp4_,7,32);
+    DR__V32_1_DR_end__V32_1_QR__V32_4__tmp5_[0] = ADD(DR__V32_1__tmp6_[3],DR__V32_1__tmp6_[4],32);
+    DR__V32_1_DR_end__V32_1_QR__V32_1__tmp5_[0] = ADD(DR__V32_1__tmp6_[0],DR__V32_1__tmp6_[5],32);
+    DR__V32_1_DR_end__V32_1_QR__V32_2__tmp5_[0] = ADD(DR__V32_1__tmp6_[1],DR__V32_1__tmp6_[6],32);
+    DR__V32_1_DR_end__V32_1_QR__V32_3__tmp5_[0] = ADD(DR__V32_1__tmp6_[2],DR__V32_1__tmp6_[7],32);
+    DR__V32_1_DR_end__V32_1_QR__V32_4_QR_start__V32_1__tmp1_ = XOR(DR__V32_1__tmp6_[14],DR__V32_1_DR_end__V32_1_QR__V32_4__tmp5_[0]);
+    DR__V32_1_DR_end__V32_1_QR__V32_1_QR_start__V32_1__tmp1_ = XOR(DR__V32_1__tmp6_[15],DR__V32_1_DR_end__V32_1_QR__V32_1__tmp5_[0]);
+    DR__V32_1_DR_end__V32_1_QR__V32_2_QR_start__V32_1__tmp1_ = XOR(DR__V32_1__tmp6_[12],DR__V32_1_DR_end__V32_1_QR__V32_2__tmp5_[0]);
+    DR__V32_1_DR_end__V32_1_QR__V32_3_QR_start__V32_1__tmp1_ = XOR(DR__V32_1__tmp6_[13],DR__V32_1_DR_end__V32_1_QR__V32_3__tmp5_[0]);
+    DR__V32_1_DR_end__V32_1_QR__V32_4__tmp5_[3] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_4_QR_start__V32_1__tmp1_,16,32);
+    DR__V32_1_DR_end__V32_1_QR__V32_1__tmp5_[3] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_1_QR_start__V32_1__tmp1_,16,32);
+    DR__V32_1_DR_end__V32_1_QR__V32_2__tmp5_[3] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_2_QR_start__V32_1__tmp1_,16,32);
+    DR__V32_1_DR_end__V32_1_QR__V32_3__tmp5_[3] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_3_QR_start__V32_1__tmp1_,16,32);
+    DR__V32_1_DR_end__V32_1_QR__V32_4__tmp5_[2] = ADD(DR__V32_1__tmp6_[9],DR__V32_1_DR_end__V32_1_QR__V32_4__tmp5_[3],32);
+    DR__V32_1_DR_end__V32_1_QR__V32_1__tmp5_[2] = ADD(DR__V32_1__tmp6_[10],DR__V32_1_DR_end__V32_1_QR__V32_1__tmp5_[3],32);
+    DR__V32_1_DR_end__V32_1_QR__V32_2__tmp5_[2] = ADD(DR__V32_1__tmp6_[11],DR__V32_1_DR_end__V32_1_QR__V32_2__tmp5_[3],32);
+    DR__V32_1_DR_end__V32_1_QR__V32_3__tmp5_[2] = ADD(DR__V32_1__tmp6_[8],DR__V32_1_DR_end__V32_1_QR__V32_3__tmp5_[3],32);
+    DR__V32_1_DR_end__V32_1_QR__V32_4_QR_start__V32_1__tmp2_ = XOR(DR__V32_1__tmp6_[4],DR__V32_1_DR_end__V32_1_QR__V32_4__tmp5_[2]);
+    DR__V32_1_DR_end__V32_1_QR__V32_1_QR_start__V32_1__tmp2_ = XOR(DR__V32_1__tmp6_[5],DR__V32_1_DR_end__V32_1_QR__V32_1__tmp5_[2]);
+    DR__V32_1_DR_end__V32_1_QR__V32_2_QR_start__V32_1__tmp2_ = XOR(DR__V32_1__tmp6_[6],DR__V32_1_DR_end__V32_1_QR__V32_2__tmp5_[2]);
+    DR__V32_1_DR_end__V32_1_QR__V32_3_QR_start__V32_1__tmp2_ = XOR(DR__V32_1__tmp6_[7],DR__V32_1_DR_end__V32_1_QR__V32_3__tmp5_[2]);
+    DR__V32_1_DR_end__V32_1_QR__V32_4__tmp5_[1] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_4_QR_start__V32_1__tmp2_,12,32);
+    DR__V32_1_DR_end__V32_1_QR__V32_1__tmp5_[1] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_1_QR_start__V32_1__tmp2_,12,32);
+    DR__V32_1_DR_end__V32_1_QR__V32_2__tmp5_[1] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_2_QR_start__V32_1__tmp2_,12,32);
+    DR__V32_1_DR_end__V32_1_QR__V32_3__tmp5_[1] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_3_QR_start__V32_1__tmp2_,12,32);
+    state__[3] = ADD(DR__V32_1_DR_end__V32_1_QR__V32_4__tmp5_[0],DR__V32_1_DR_end__V32_1_QR__V32_4__tmp5_[1],32);
+    state__[0] = ADD(DR__V32_1_DR_end__V32_1_QR__V32_1__tmp5_[0],DR__V32_1_DR_end__V32_1_QR__V32_1__tmp5_[1],32);
+    state__[1] = ADD(DR__V32_1_DR_end__V32_1_QR__V32_2__tmp5_[0],DR__V32_1_DR_end__V32_1_QR__V32_2__tmp5_[1],32);
+    state__[2] = ADD(DR__V32_1_DR_end__V32_1_QR__V32_3__tmp5_[0],DR__V32_1_DR_end__V32_1_QR__V32_3__tmp5_[1],32);
+    DR__V32_1_DR_end__V32_1_QR__V32_4_QR_end__V32_1__tmp3_ = XOR(DR__V32_1_DR_end__V32_1_QR__V32_4__tmp5_[3],state__[3]);
+    DR__V32_1_DR_end__V32_1_QR__V32_1_QR_end__V32_1__tmp3_ = XOR(DR__V32_1_DR_end__V32_1_QR__V32_1__tmp5_[3],state__[0]);
+    DR__V32_1_DR_end__V32_1_QR__V32_2_QR_end__V32_1__tmp3_ = XOR(DR__V32_1_DR_end__V32_1_QR__V32_2__tmp5_[3],state__[1]);
+    DR__V32_1_DR_end__V32_1_QR__V32_3_QR_end__V32_1__tmp3_ = XOR(DR__V32_1_DR_end__V32_1_QR__V32_3__tmp5_[3],state__[2]);
+    state__[14] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_4_QR_end__V32_1__tmp3_,8,32);
+    state__[15] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_1_QR_end__V32_1__tmp3_,8,32);
+    state__[12] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_2_QR_end__V32_1__tmp3_,8,32);
+    state__[13] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_3_QR_end__V32_1__tmp3_,8,32);
+    state__[9] = ADD(DR__V32_1_DR_end__V32_1_QR__V32_4__tmp5_[2],state__[14],32);
+    state__[10] = ADD(DR__V32_1_DR_end__V32_1_QR__V32_1__tmp5_[2],state__[15],32);
+    state__[11] = ADD(DR__V32_1_DR_end__V32_1_QR__V32_2__tmp5_[2],state__[12],32);
+    state__[8] = ADD(DR__V32_1_DR_end__V32_1_QR__V32_3__tmp5_[2],state__[13],32);
+    DR__V32_1_DR_end__V32_1_QR__V32_4_QR_end__V32_1__tmp4_ = XOR(DR__V32_1_DR_end__V32_1_QR__V32_4__tmp5_[1],state__[9]);
+    DR__V32_1_DR_end__V32_1_QR__V32_1_QR_end__V32_1__tmp4_ = XOR(DR__V32_1_DR_end__V32_1_QR__V32_1__tmp5_[1],state__[10]);
+    DR__V32_1_DR_end__V32_1_QR__V32_2_QR_end__V32_1__tmp4_ = XOR(DR__V32_1_DR_end__V32_1_QR__V32_2__tmp5_[1],state__[11]);
+    DR__V32_1_DR_end__V32_1_QR__V32_3_QR_end__V32_1__tmp4_ = XOR(DR__V32_1_DR_end__V32_1_QR__V32_3__tmp5_[1],state__[8]);
+    state__[4] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_4_QR_end__V32_1__tmp4_,7,32);
+    state__[5] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_1_QR_end__V32_1__tmp4_,7,32);
+    state__[6] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_2_QR_end__V32_1__tmp4_,7,32);
+    state__[7] = L_ROTATE(DR__V32_1_DR_end__V32_1_QR__V32_3_QR_end__V32_1__tmp4_,7,32);
   }
   cipher__[0] = state__[0];
   cipher__[1] = state__[1];
@@ -202,8 +202,8 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
 /*                                                                  */
 /*
 
- node QR_start(a :  u32x1 :: base,b :  u32x1 :: base,c :  u32x1 :: base,d :  u32x1 :: base)
-  returns aR :  u32x1 :: base,bR :  u32x1 :: base,cR :  u32x1 :: base,dR :  u32x1 :: base
+ node QR_start(a :  u<V>32 :: base,b :  u<V>32 :: base,c :  u<V>32 :: base,d :  u<V>32 :: base)
+  returns aR :  u<V>32 :: base,bR :  u<V>32 :: base,cR :  u<V>32 :: base,dR :  u<V>32 :: base
 vars
 
 let
@@ -213,8 +213,8 @@ let
   (bR) = ((b ^ cR) <<< 12)
 tel
 
- node QR_end(a :  u32x1 :: base,b :  u32x1 :: base,c :  u32x1 :: base,d :  u32x1 :: base)
-  returns aR :  u32x1 :: base,bR :  u32x1 :: base,cR :  u32x1 :: base,dR :  u32x1 :: base
+ node QR_end(a :  u<V>32 :: base,b :  u<V>32 :: base,c :  u<V>32 :: base,d :  u<V>32 :: base)
+  returns aR :  u<V>32 :: base,bR :  u<V>32 :: base,cR :  u<V>32 :: base,dR :  u<V>32 :: base
 vars
 
 let
@@ -224,16 +224,16 @@ let
   (bR) = ((b ^ cR) <<< 7)
 tel
 
- node QR(input :  u32x4 :: base)
-  returns output :  u32x4 :: base
+ node QR(input :  u<V>32x4 :: base)
+  returns output :  u<V>32x4 :: base
 vars
 
 let
   (output) = QR_end(QR_start(input))
 tel
 
- node DR_start(state :  u32x16 :: base)
-  returns stateR :  u32x16 :: base
+ node DR_start(state :  u<V>32x16 :: base)
+  returns stateR :  u<V>32x16 :: base
 vars
 
 let
@@ -243,8 +243,8 @@ let
   (stateR[3,7,11,15]) = QR(state[3,7,11,15])
 tel
 
- node DR_end(state :  u32x16 :: base)
-  returns stateR :  u32x16 :: base
+ node DR_end(state :  u<V>32x16 :: base)
+  returns stateR :  u<V>32x16 :: base
 vars
 
 let
@@ -254,18 +254,18 @@ let
   (stateR[3,4,9,14]) = QR(state[3,4,9,14])
 tel
 
-_no_inline node DR(state :  u32x16 :: base)
-  returns stateR :  u32x16 :: base
+_no_inline node DR(state :  u<V>32x16 :: base)
+  returns stateR :  u<V>32x16 :: base
 vars
 
 let
   (stateR) = DR_end(DR_start(state))
 tel
 
- node Chacha20(plain :  u32x16 :: base)
-  returns cipher :  u32x16 :: base
+ node Chacha20(plain :  u<V>32x16 :: base)
+  returns cipher :  u<V>32x16 :: base
 vars
-  state :  u32x16[11] :: base
+  state :  u<V>32x16[11] :: base
 let
   (state[0]) = plain;
   _no_unroll forall i in [1,10] {

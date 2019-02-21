@@ -1,3 +1,2 @@
-rectangle-noinline-sched 5.46 17248
-rectangle-inline-sched 5.64 17208
-rectangle-partinline-sched 5.64 17216
+rectangle-noinline-sched 5.36 17256
+rectangle-inline-sched 5.56 17176

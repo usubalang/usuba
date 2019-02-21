@@ -13,7 +13,7 @@
 #include "SSE.h"
 
 /* auxiliary functions */
-void QR_start__ (/*inputs*/ DATATYPE a__,DATATYPE b__,DATATYPE c__,DATATYPE d__, /*outputs*/ DATATYPE* aR__,DATATYPE* bR__,DATATYPE* cR__,DATATYPE* dR__) {
+void QR_start__V32 (/*inputs*/ DATATYPE a__,DATATYPE b__,DATATYPE c__,DATATYPE d__, /*outputs*/ DATATYPE* aR__,DATATYPE* bR__,DATATYPE* cR__,DATATYPE* dR__) {
   
   // Variables declaration
   DATATYPE _tmp1_;
@@ -29,7 +29,7 @@ void QR_start__ (/*inputs*/ DATATYPE a__,DATATYPE b__,DATATYPE c__,DATATYPE d__,
 
 }
 
-void QR_end__ (/*inputs*/ DATATYPE a__,DATATYPE b__,DATATYPE c__,DATATYPE d__, /*outputs*/ DATATYPE* aR__,DATATYPE* bR__,DATATYPE* cR__,DATATYPE* dR__) {
+void QR_end__V32 (/*inputs*/ DATATYPE a__,DATATYPE b__,DATATYPE c__,DATATYPE d__, /*outputs*/ DATATYPE* aR__,DATATYPE* bR__,DATATYPE* cR__,DATATYPE* dR__) {
   
   // Variables declaration
   DATATYPE _tmp3_;
@@ -45,7 +45,7 @@ void QR_end__ (/*inputs*/ DATATYPE a__,DATATYPE b__,DATATYPE c__,DATATYPE d__, /
 
 }
 
-void QR__ (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2__,DATATYPE input__3__, /*outputs*/ DATATYPE* output__0__,DATATYPE* output__1__,DATATYPE* output__2__,DATATYPE* output__3__) {
+void QR__V32 (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2__,DATATYPE input__3__, /*outputs*/ DATATYPE* output__0__,DATATYPE* output__1__,DATATYPE* output__2__,DATATYPE* output__3__) {
   
   // Variables declaration
   DATATYPE _tmp5_0__;
@@ -54,38 +54,38 @@ void QR__ (/*inputs*/ DATATYPE input__0__,DATATYPE input__1__,DATATYPE input__2_
   DATATYPE _tmp5_3__;
 
   // Instructions (body)
-  QR_start__(input__0__,input__1__,input__2__,input__3__,&_tmp5_0__,&_tmp5_1__,&_tmp5_2__,&_tmp5_3__);
-  QR_end__(_tmp5_0__,_tmp5_1__,_tmp5_2__,_tmp5_3__,&*output__0__,&*output__1__,&*output__2__,&*output__3__);
+  QR_start__V32(input__0__,input__1__,input__2__,input__3__,&_tmp5_0__,&_tmp5_1__,&_tmp5_2__,&_tmp5_3__);
+  QR_end__V32(_tmp5_0__,_tmp5_1__,_tmp5_2__,_tmp5_3__,&*output__0__,&*output__1__,&*output__2__,&*output__3__);
 
 }
 
-void DR_start__ (/*inputs*/ DATATYPE state__0__,DATATYPE state__1__,DATATYPE state__2__,DATATYPE state__3__,DATATYPE state__4__,DATATYPE state__5__,DATATYPE state__6__,DATATYPE state__7__,DATATYPE state__8__,DATATYPE state__9__,DATATYPE state__10__,DATATYPE state__11__,DATATYPE state__12__,DATATYPE state__13__,DATATYPE state__14__,DATATYPE state__15__, /*outputs*/ DATATYPE* stateR__0__,DATATYPE* stateR__1__,DATATYPE* stateR__2__,DATATYPE* stateR__3__,DATATYPE* stateR__4__,DATATYPE* stateR__5__,DATATYPE* stateR__6__,DATATYPE* stateR__7__,DATATYPE* stateR__8__,DATATYPE* stateR__9__,DATATYPE* stateR__10__,DATATYPE* stateR__11__,DATATYPE* stateR__12__,DATATYPE* stateR__13__,DATATYPE* stateR__14__,DATATYPE* stateR__15__) {
+void DR_start__V32 (/*inputs*/ DATATYPE state__0__,DATATYPE state__1__,DATATYPE state__2__,DATATYPE state__3__,DATATYPE state__4__,DATATYPE state__5__,DATATYPE state__6__,DATATYPE state__7__,DATATYPE state__8__,DATATYPE state__9__,DATATYPE state__10__,DATATYPE state__11__,DATATYPE state__12__,DATATYPE state__13__,DATATYPE state__14__,DATATYPE state__15__, /*outputs*/ DATATYPE* stateR__0__,DATATYPE* stateR__1__,DATATYPE* stateR__2__,DATATYPE* stateR__3__,DATATYPE* stateR__4__,DATATYPE* stateR__5__,DATATYPE* stateR__6__,DATATYPE* stateR__7__,DATATYPE* stateR__8__,DATATYPE* stateR__9__,DATATYPE* stateR__10__,DATATYPE* stateR__11__,DATATYPE* stateR__12__,DATATYPE* stateR__13__,DATATYPE* stateR__14__,DATATYPE* stateR__15__) {
   
   // Variables declaration
   ;
 
   // Instructions (body)
-  QR__(state__0__,state__4__,state__8__,state__12__,&*stateR__0__,&*stateR__4__,&*stateR__8__,&*stateR__12__);
-  QR__(state__1__,state__5__,state__9__,state__13__,&*stateR__1__,&*stateR__5__,&*stateR__9__,&*stateR__13__);
-  QR__(state__2__,state__6__,state__10__,state__14__,&*stateR__2__,&*stateR__6__,&*stateR__10__,&*stateR__14__);
-  QR__(state__3__,state__7__,state__11__,state__15__,&*stateR__3__,&*stateR__7__,&*stateR__11__,&*stateR__15__);
+  QR__V32(state__0__,state__4__,state__8__,state__12__,&*stateR__0__,&*stateR__4__,&*stateR__8__,&*stateR__12__);
+  QR__V32(state__1__,state__5__,state__9__,state__13__,&*stateR__1__,&*stateR__5__,&*stateR__9__,&*stateR__13__);
+  QR__V32(state__2__,state__6__,state__10__,state__14__,&*stateR__2__,&*stateR__6__,&*stateR__10__,&*stateR__14__);
+  QR__V32(state__3__,state__7__,state__11__,state__15__,&*stateR__3__,&*stateR__7__,&*stateR__11__,&*stateR__15__);
 
 }
 
-void DR_end__ (/*inputs*/ DATATYPE state__0__,DATATYPE state__1__,DATATYPE state__2__,DATATYPE state__3__,DATATYPE state__4__,DATATYPE state__5__,DATATYPE state__6__,DATATYPE state__7__,DATATYPE state__8__,DATATYPE state__9__,DATATYPE state__10__,DATATYPE state__11__,DATATYPE state__12__,DATATYPE state__13__,DATATYPE state__14__,DATATYPE state__15__, /*outputs*/ DATATYPE* stateR__0__,DATATYPE* stateR__1__,DATATYPE* stateR__2__,DATATYPE* stateR__3__,DATATYPE* stateR__4__,DATATYPE* stateR__5__,DATATYPE* stateR__6__,DATATYPE* stateR__7__,DATATYPE* stateR__8__,DATATYPE* stateR__9__,DATATYPE* stateR__10__,DATATYPE* stateR__11__,DATATYPE* stateR__12__,DATATYPE* stateR__13__,DATATYPE* stateR__14__,DATATYPE* stateR__15__) {
+void DR_end__V32 (/*inputs*/ DATATYPE state__0__,DATATYPE state__1__,DATATYPE state__2__,DATATYPE state__3__,DATATYPE state__4__,DATATYPE state__5__,DATATYPE state__6__,DATATYPE state__7__,DATATYPE state__8__,DATATYPE state__9__,DATATYPE state__10__,DATATYPE state__11__,DATATYPE state__12__,DATATYPE state__13__,DATATYPE state__14__,DATATYPE state__15__, /*outputs*/ DATATYPE* stateR__0__,DATATYPE* stateR__1__,DATATYPE* stateR__2__,DATATYPE* stateR__3__,DATATYPE* stateR__4__,DATATYPE* stateR__5__,DATATYPE* stateR__6__,DATATYPE* stateR__7__,DATATYPE* stateR__8__,DATATYPE* stateR__9__,DATATYPE* stateR__10__,DATATYPE* stateR__11__,DATATYPE* stateR__12__,DATATYPE* stateR__13__,DATATYPE* stateR__14__,DATATYPE* stateR__15__) {
   
   // Variables declaration
   ;
 
   // Instructions (body)
-  QR__(state__0__,state__5__,state__10__,state__15__,&*stateR__0__,&*stateR__5__,&*stateR__10__,&*stateR__15__);
-  QR__(state__1__,state__6__,state__11__,state__12__,&*stateR__1__,&*stateR__6__,&*stateR__11__,&*stateR__12__);
-  QR__(state__2__,state__7__,state__8__,state__13__,&*stateR__2__,&*stateR__7__,&*stateR__8__,&*stateR__13__);
-  QR__(state__3__,state__4__,state__9__,state__14__,&*stateR__3__,&*stateR__4__,&*stateR__9__,&*stateR__14__);
+  QR__V32(state__0__,state__5__,state__10__,state__15__,&*stateR__0__,&*stateR__5__,&*stateR__10__,&*stateR__15__);
+  QR__V32(state__1__,state__6__,state__11__,state__12__,&*stateR__1__,&*stateR__6__,&*stateR__11__,&*stateR__12__);
+  QR__V32(state__2__,state__7__,state__8__,state__13__,&*stateR__2__,&*stateR__7__,&*stateR__8__,&*stateR__13__);
+  QR__V32(state__3__,state__4__,state__9__,state__14__,&*stateR__3__,&*stateR__4__,&*stateR__9__,&*stateR__14__);
 
 }
 
-void DR__ (/*inputs*/ DATATYPE state__0__,DATATYPE state__1__,DATATYPE state__2__,DATATYPE state__3__,DATATYPE state__4__,DATATYPE state__5__,DATATYPE state__6__,DATATYPE state__7__,DATATYPE state__8__,DATATYPE state__9__,DATATYPE state__10__,DATATYPE state__11__,DATATYPE state__12__,DATATYPE state__13__,DATATYPE state__14__,DATATYPE state__15__, /*outputs*/ DATATYPE* stateR__0__,DATATYPE* stateR__1__,DATATYPE* stateR__2__,DATATYPE* stateR__3__,DATATYPE* stateR__4__,DATATYPE* stateR__5__,DATATYPE* stateR__6__,DATATYPE* stateR__7__,DATATYPE* stateR__8__,DATATYPE* stateR__9__,DATATYPE* stateR__10__,DATATYPE* stateR__11__,DATATYPE* stateR__12__,DATATYPE* stateR__13__,DATATYPE* stateR__14__,DATATYPE* stateR__15__) {
+void DR__V32 (/*inputs*/ DATATYPE state__0__,DATATYPE state__1__,DATATYPE state__2__,DATATYPE state__3__,DATATYPE state__4__,DATATYPE state__5__,DATATYPE state__6__,DATATYPE state__7__,DATATYPE state__8__,DATATYPE state__9__,DATATYPE state__10__,DATATYPE state__11__,DATATYPE state__12__,DATATYPE state__13__,DATATYPE state__14__,DATATYPE state__15__, /*outputs*/ DATATYPE* stateR__0__,DATATYPE* stateR__1__,DATATYPE* stateR__2__,DATATYPE* stateR__3__,DATATYPE* stateR__4__,DATATYPE* stateR__5__,DATATYPE* stateR__6__,DATATYPE* stateR__7__,DATATYPE* stateR__8__,DATATYPE* stateR__9__,DATATYPE* stateR__10__,DATATYPE* stateR__11__,DATATYPE* stateR__12__,DATATYPE* stateR__13__,DATATYPE* stateR__14__,DATATYPE* stateR__15__) {
   
   // Variables declaration
   DATATYPE _tmp6_0__;
@@ -106,8 +106,8 @@ void DR__ (/*inputs*/ DATATYPE state__0__,DATATYPE state__1__,DATATYPE state__2_
   DATATYPE _tmp6_9__;
 
   // Instructions (body)
-  DR_start__(state__0__,state__1__,state__2__,state__3__,state__4__,state__5__,state__6__,state__7__,state__8__,state__9__,state__10__,state__11__,state__12__,state__13__,state__14__,state__15__,&_tmp6_0__,&_tmp6_1__,&_tmp6_2__,&_tmp6_3__,&_tmp6_4__,&_tmp6_5__,&_tmp6_6__,&_tmp6_7__,&_tmp6_8__,&_tmp6_9__,&_tmp6_10__,&_tmp6_11__,&_tmp6_12__,&_tmp6_13__,&_tmp6_14__,&_tmp6_15__);
-  DR_end__(_tmp6_0__,_tmp6_1__,_tmp6_2__,_tmp6_3__,_tmp6_4__,_tmp6_5__,_tmp6_6__,_tmp6_7__,_tmp6_8__,_tmp6_9__,_tmp6_10__,_tmp6_11__,_tmp6_12__,_tmp6_13__,_tmp6_14__,_tmp6_15__,&*stateR__0__,&*stateR__1__,&*stateR__2__,&*stateR__3__,&*stateR__4__,&*stateR__5__,&*stateR__6__,&*stateR__7__,&*stateR__8__,&*stateR__9__,&*stateR__10__,&*stateR__11__,&*stateR__12__,&*stateR__13__,&*stateR__14__,&*stateR__15__);
+  DR_start__V32(state__0__,state__1__,state__2__,state__3__,state__4__,state__5__,state__6__,state__7__,state__8__,state__9__,state__10__,state__11__,state__12__,state__13__,state__14__,state__15__,&_tmp6_0__,&_tmp6_1__,&_tmp6_2__,&_tmp6_3__,&_tmp6_4__,&_tmp6_5__,&_tmp6_6__,&_tmp6_7__,&_tmp6_8__,&_tmp6_9__,&_tmp6_10__,&_tmp6_11__,&_tmp6_12__,&_tmp6_13__,&_tmp6_14__,&_tmp6_15__);
+  DR_end__V32(_tmp6_0__,_tmp6_1__,_tmp6_2__,_tmp6_3__,_tmp6_4__,_tmp6_5__,_tmp6_6__,_tmp6_7__,_tmp6_8__,_tmp6_9__,_tmp6_10__,_tmp6_11__,_tmp6_12__,_tmp6_13__,_tmp6_14__,_tmp6_15__,&*stateR__0__,&*stateR__1__,&*stateR__2__,&*stateR__3__,&*stateR__4__,&*stateR__5__,&*stateR__6__,&*stateR__7__,&*stateR__8__,&*stateR__9__,&*stateR__10__,&*stateR__11__,&*stateR__12__,&*stateR__13__,&*stateR__14__,&*stateR__15__);
 
 }
 
@@ -277,16 +277,16 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
   DATATYPE state__9__9__;
 
   // Instructions (body)
-  DR__(plain__[0],plain__[1],plain__[2],plain__[3],plain__[4],plain__[5],plain__[6],plain__[7],plain__[8],plain__[9],plain__[10],plain__[11],plain__[12],plain__[13],plain__[14],plain__[15],&state__1__0__,&state__1__1__,&state__1__2__,&state__1__3__,&state__1__4__,&state__1__5__,&state__1__6__,&state__1__7__,&state__1__8__,&state__1__9__,&state__1__10__,&state__1__11__,&state__1__12__,&state__1__13__,&state__1__14__,&state__1__15__);
-  DR__(state__1__0__,state__1__1__,state__1__2__,state__1__3__,state__1__4__,state__1__5__,state__1__6__,state__1__7__,state__1__8__,state__1__9__,state__1__10__,state__1__11__,state__1__12__,state__1__13__,state__1__14__,state__1__15__,&state__2__0__,&state__2__1__,&state__2__2__,&state__2__3__,&state__2__4__,&state__2__5__,&state__2__6__,&state__2__7__,&state__2__8__,&state__2__9__,&state__2__10__,&state__2__11__,&state__2__12__,&state__2__13__,&state__2__14__,&state__2__15__);
-  DR__(state__2__0__,state__2__1__,state__2__2__,state__2__3__,state__2__4__,state__2__5__,state__2__6__,state__2__7__,state__2__8__,state__2__9__,state__2__10__,state__2__11__,state__2__12__,state__2__13__,state__2__14__,state__2__15__,&state__3__0__,&state__3__1__,&state__3__2__,&state__3__3__,&state__3__4__,&state__3__5__,&state__3__6__,&state__3__7__,&state__3__8__,&state__3__9__,&state__3__10__,&state__3__11__,&state__3__12__,&state__3__13__,&state__3__14__,&state__3__15__);
-  DR__(state__3__0__,state__3__1__,state__3__2__,state__3__3__,state__3__4__,state__3__5__,state__3__6__,state__3__7__,state__3__8__,state__3__9__,state__3__10__,state__3__11__,state__3__12__,state__3__13__,state__3__14__,state__3__15__,&state__4__0__,&state__4__1__,&state__4__2__,&state__4__3__,&state__4__4__,&state__4__5__,&state__4__6__,&state__4__7__,&state__4__8__,&state__4__9__,&state__4__10__,&state__4__11__,&state__4__12__,&state__4__13__,&state__4__14__,&state__4__15__);
-  DR__(state__4__0__,state__4__1__,state__4__2__,state__4__3__,state__4__4__,state__4__5__,state__4__6__,state__4__7__,state__4__8__,state__4__9__,state__4__10__,state__4__11__,state__4__12__,state__4__13__,state__4__14__,state__4__15__,&state__5__0__,&state__5__1__,&state__5__2__,&state__5__3__,&state__5__4__,&state__5__5__,&state__5__6__,&state__5__7__,&state__5__8__,&state__5__9__,&state__5__10__,&state__5__11__,&state__5__12__,&state__5__13__,&state__5__14__,&state__5__15__);
-  DR__(state__5__0__,state__5__1__,state__5__2__,state__5__3__,state__5__4__,state__5__5__,state__5__6__,state__5__7__,state__5__8__,state__5__9__,state__5__10__,state__5__11__,state__5__12__,state__5__13__,state__5__14__,state__5__15__,&state__6__0__,&state__6__1__,&state__6__2__,&state__6__3__,&state__6__4__,&state__6__5__,&state__6__6__,&state__6__7__,&state__6__8__,&state__6__9__,&state__6__10__,&state__6__11__,&state__6__12__,&state__6__13__,&state__6__14__,&state__6__15__);
-  DR__(state__6__0__,state__6__1__,state__6__2__,state__6__3__,state__6__4__,state__6__5__,state__6__6__,state__6__7__,state__6__8__,state__6__9__,state__6__10__,state__6__11__,state__6__12__,state__6__13__,state__6__14__,state__6__15__,&state__7__0__,&state__7__1__,&state__7__2__,&state__7__3__,&state__7__4__,&state__7__5__,&state__7__6__,&state__7__7__,&state__7__8__,&state__7__9__,&state__7__10__,&state__7__11__,&state__7__12__,&state__7__13__,&state__7__14__,&state__7__15__);
-  DR__(state__7__0__,state__7__1__,state__7__2__,state__7__3__,state__7__4__,state__7__5__,state__7__6__,state__7__7__,state__7__8__,state__7__9__,state__7__10__,state__7__11__,state__7__12__,state__7__13__,state__7__14__,state__7__15__,&state__8__0__,&state__8__1__,&state__8__2__,&state__8__3__,&state__8__4__,&state__8__5__,&state__8__6__,&state__8__7__,&state__8__8__,&state__8__9__,&state__8__10__,&state__8__11__,&state__8__12__,&state__8__13__,&state__8__14__,&state__8__15__);
-  DR__(state__8__0__,state__8__1__,state__8__2__,state__8__3__,state__8__4__,state__8__5__,state__8__6__,state__8__7__,state__8__8__,state__8__9__,state__8__10__,state__8__11__,state__8__12__,state__8__13__,state__8__14__,state__8__15__,&state__9__0__,&state__9__1__,&state__9__2__,&state__9__3__,&state__9__4__,&state__9__5__,&state__9__6__,&state__9__7__,&state__9__8__,&state__9__9__,&state__9__10__,&state__9__11__,&state__9__12__,&state__9__13__,&state__9__14__,&state__9__15__);
-  DR__(state__9__0__,state__9__1__,state__9__2__,state__9__3__,state__9__4__,state__9__5__,state__9__6__,state__9__7__,state__9__8__,state__9__9__,state__9__10__,state__9__11__,state__9__12__,state__9__13__,state__9__14__,state__9__15__,&state__10__0__,&state__10__1__,&state__10__2__,&state__10__3__,&state__10__4__,&state__10__5__,&state__10__6__,&state__10__7__,&state__10__8__,&state__10__9__,&state__10__10__,&state__10__11__,&state__10__12__,&state__10__13__,&state__10__14__,&state__10__15__);
+  DR__V32(plain__[0],plain__[1],plain__[2],plain__[3],plain__[4],plain__[5],plain__[6],plain__[7],plain__[8],plain__[9],plain__[10],plain__[11],plain__[12],plain__[13],plain__[14],plain__[15],&state__1__0__,&state__1__1__,&state__1__2__,&state__1__3__,&state__1__4__,&state__1__5__,&state__1__6__,&state__1__7__,&state__1__8__,&state__1__9__,&state__1__10__,&state__1__11__,&state__1__12__,&state__1__13__,&state__1__14__,&state__1__15__);
+  DR__V32(state__1__0__,state__1__1__,state__1__2__,state__1__3__,state__1__4__,state__1__5__,state__1__6__,state__1__7__,state__1__8__,state__1__9__,state__1__10__,state__1__11__,state__1__12__,state__1__13__,state__1__14__,state__1__15__,&state__2__0__,&state__2__1__,&state__2__2__,&state__2__3__,&state__2__4__,&state__2__5__,&state__2__6__,&state__2__7__,&state__2__8__,&state__2__9__,&state__2__10__,&state__2__11__,&state__2__12__,&state__2__13__,&state__2__14__,&state__2__15__);
+  DR__V32(state__2__0__,state__2__1__,state__2__2__,state__2__3__,state__2__4__,state__2__5__,state__2__6__,state__2__7__,state__2__8__,state__2__9__,state__2__10__,state__2__11__,state__2__12__,state__2__13__,state__2__14__,state__2__15__,&state__3__0__,&state__3__1__,&state__3__2__,&state__3__3__,&state__3__4__,&state__3__5__,&state__3__6__,&state__3__7__,&state__3__8__,&state__3__9__,&state__3__10__,&state__3__11__,&state__3__12__,&state__3__13__,&state__3__14__,&state__3__15__);
+  DR__V32(state__3__0__,state__3__1__,state__3__2__,state__3__3__,state__3__4__,state__3__5__,state__3__6__,state__3__7__,state__3__8__,state__3__9__,state__3__10__,state__3__11__,state__3__12__,state__3__13__,state__3__14__,state__3__15__,&state__4__0__,&state__4__1__,&state__4__2__,&state__4__3__,&state__4__4__,&state__4__5__,&state__4__6__,&state__4__7__,&state__4__8__,&state__4__9__,&state__4__10__,&state__4__11__,&state__4__12__,&state__4__13__,&state__4__14__,&state__4__15__);
+  DR__V32(state__4__0__,state__4__1__,state__4__2__,state__4__3__,state__4__4__,state__4__5__,state__4__6__,state__4__7__,state__4__8__,state__4__9__,state__4__10__,state__4__11__,state__4__12__,state__4__13__,state__4__14__,state__4__15__,&state__5__0__,&state__5__1__,&state__5__2__,&state__5__3__,&state__5__4__,&state__5__5__,&state__5__6__,&state__5__7__,&state__5__8__,&state__5__9__,&state__5__10__,&state__5__11__,&state__5__12__,&state__5__13__,&state__5__14__,&state__5__15__);
+  DR__V32(state__5__0__,state__5__1__,state__5__2__,state__5__3__,state__5__4__,state__5__5__,state__5__6__,state__5__7__,state__5__8__,state__5__9__,state__5__10__,state__5__11__,state__5__12__,state__5__13__,state__5__14__,state__5__15__,&state__6__0__,&state__6__1__,&state__6__2__,&state__6__3__,&state__6__4__,&state__6__5__,&state__6__6__,&state__6__7__,&state__6__8__,&state__6__9__,&state__6__10__,&state__6__11__,&state__6__12__,&state__6__13__,&state__6__14__,&state__6__15__);
+  DR__V32(state__6__0__,state__6__1__,state__6__2__,state__6__3__,state__6__4__,state__6__5__,state__6__6__,state__6__7__,state__6__8__,state__6__9__,state__6__10__,state__6__11__,state__6__12__,state__6__13__,state__6__14__,state__6__15__,&state__7__0__,&state__7__1__,&state__7__2__,&state__7__3__,&state__7__4__,&state__7__5__,&state__7__6__,&state__7__7__,&state__7__8__,&state__7__9__,&state__7__10__,&state__7__11__,&state__7__12__,&state__7__13__,&state__7__14__,&state__7__15__);
+  DR__V32(state__7__0__,state__7__1__,state__7__2__,state__7__3__,state__7__4__,state__7__5__,state__7__6__,state__7__7__,state__7__8__,state__7__9__,state__7__10__,state__7__11__,state__7__12__,state__7__13__,state__7__14__,state__7__15__,&state__8__0__,&state__8__1__,&state__8__2__,&state__8__3__,&state__8__4__,&state__8__5__,&state__8__6__,&state__8__7__,&state__8__8__,&state__8__9__,&state__8__10__,&state__8__11__,&state__8__12__,&state__8__13__,&state__8__14__,&state__8__15__);
+  DR__V32(state__8__0__,state__8__1__,state__8__2__,state__8__3__,state__8__4__,state__8__5__,state__8__6__,state__8__7__,state__8__8__,state__8__9__,state__8__10__,state__8__11__,state__8__12__,state__8__13__,state__8__14__,state__8__15__,&state__9__0__,&state__9__1__,&state__9__2__,&state__9__3__,&state__9__4__,&state__9__5__,&state__9__6__,&state__9__7__,&state__9__8__,&state__9__9__,&state__9__10__,&state__9__11__,&state__9__12__,&state__9__13__,&state__9__14__,&state__9__15__);
+  DR__V32(state__9__0__,state__9__1__,state__9__2__,state__9__3__,state__9__4__,state__9__5__,state__9__6__,state__9__7__,state__9__8__,state__9__9__,state__9__10__,state__9__11__,state__9__12__,state__9__13__,state__9__14__,state__9__15__,&state__10__0__,&state__10__1__,&state__10__2__,&state__10__3__,&state__10__4__,&state__10__5__,&state__10__6__,&state__10__7__,&state__10__8__,&state__10__9__,&state__10__10__,&state__10__11__,&state__10__12__,&state__10__13__,&state__10__14__,&state__10__15__);
   cipher__[0] = state__10__0__;
   cipher__[1] = state__10__1__;
   cipher__[2] = state__10__2__;
@@ -312,8 +312,8 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16], /*outputs*/ DATATYPE cipher__[
 /*                                                                  */
 /*
 
- node QR_start(a :  u32x1 :: base,b :  u32x1 :: base,c :  u32x1 :: base,d :  u32x1 :: base)
-  returns aR :  u32x1 :: base,bR :  u32x1 :: base,cR :  u32x1 :: base,dR :  u32x1 :: base
+ node QR_start(a :  u<V>32 :: base,b :  u<V>32 :: base,c :  u<V>32 :: base,d :  u<V>32 :: base)
+  returns aR :  u<V>32 :: base,bR :  u<V>32 :: base,cR :  u<V>32 :: base,dR :  u<V>32 :: base
 vars
 
 let
@@ -323,8 +323,8 @@ let
   (bR) = ((b ^ cR) <<< 12)
 tel
 
- node QR_end(a :  u32x1 :: base,b :  u32x1 :: base,c :  u32x1 :: base,d :  u32x1 :: base)
-  returns aR :  u32x1 :: base,bR :  u32x1 :: base,cR :  u32x1 :: base,dR :  u32x1 :: base
+ node QR_end(a :  u<V>32 :: base,b :  u<V>32 :: base,c :  u<V>32 :: base,d :  u<V>32 :: base)
+  returns aR :  u<V>32 :: base,bR :  u<V>32 :: base,cR :  u<V>32 :: base,dR :  u<V>32 :: base
 vars
 
 let
@@ -334,16 +334,16 @@ let
   (bR) = ((b ^ cR) <<< 7)
 tel
 
- node QR(input :  u32x4 :: base)
-  returns output :  u32x4 :: base
+ node QR(input :  u<V>32x4 :: base)
+  returns output :  u<V>32x4 :: base
 vars
 
 let
   (output) = QR_end(QR_start(input))
 tel
 
- node DR_start(state :  u32x16 :: base)
-  returns stateR :  u32x16 :: base
+ node DR_start(state :  u<V>32x16 :: base)
+  returns stateR :  u<V>32x16 :: base
 vars
 
 let
@@ -353,8 +353,8 @@ let
   (stateR[3,7,11,15]) = QR(state[3,7,11,15])
 tel
 
- node DR_end(state :  u32x16 :: base)
-  returns stateR :  u32x16 :: base
+ node DR_end(state :  u<V>32x16 :: base)
+  returns stateR :  u<V>32x16 :: base
 vars
 
 let
@@ -364,18 +364,18 @@ let
   (stateR[3,4,9,14]) = QR(state[3,4,9,14])
 tel
 
-_no_inline node DR(state :  u32x16 :: base)
-  returns stateR :  u32x16 :: base
+_no_inline node DR(state :  u<V>32x16 :: base)
+  returns stateR :  u<V>32x16 :: base
 vars
 
 let
   (stateR) = DR_end(DR_start(state))
 tel
 
- node Chacha20(plain :  u32x16 :: base)
-  returns cipher :  u32x16 :: base
+ node Chacha20(plain :  u<V>32x16 :: base)
+  returns cipher :  u<V>32x16 :: base
 vars
-  state :  u32x16[11] :: base
+  state :  u<V>32x16[11] :: base
 let
   (state[0]) = plain;
   _no_unroll forall i in [1,10] {

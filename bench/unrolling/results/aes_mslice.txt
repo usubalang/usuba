@@ -1,0 +1,2 @@
+aes_mslice-unroll 6.71 25656
+aes_mslice-nounroll 6.91 17472

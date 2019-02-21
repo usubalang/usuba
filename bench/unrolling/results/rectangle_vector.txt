@@ -1,2 +1,0 @@
-rectangle_vector-nounroll 5.47 13040
-rectangle_vector-unroll 5.66 17136
