@@ -1,6 +1,10 @@
 clang -march=native -O3 -fomit-frame-pointer -fwrapv -std=gnu11
 clang -mssse3 -O3 -fomit-frame-pointer -fwrapv -std=gnu11
+clang -msse4.2 -O3 -fomit-frame-pointer -fwrapv -std=gnu11
 gcc -march=native -O3 -fomit-frame-pointer -fwrapv -std=gnu11
 gcc -mssse3 -O3 -fomit-frame-pointer -fwrapv -std=gnu11
+gcc -msse4.2 -O3 -fomit-frame-pointer -fwrapv -std=gnu11
 icc -march=native -O3 -fomit-frame-pointer -fwrapv -std=gnu11
-icc -mssse3 -O3 -fomit-frame-pointer -fwrapv -std=gnu11
+icc -xSSSE3 -O3 -fomit-frame-pointer -fwrapv -std=gnu11
+icc -xSSE4.2 -O3 -fomit-frame-pointer -fwrapv -std=gnu11
+icc -xSSE2 -O3 -fomit-frame-pointer -fwrapv -std=gnu11

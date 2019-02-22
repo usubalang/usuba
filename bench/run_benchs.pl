@@ -371,6 +371,11 @@ B<sub-benchmarks>:
     produces files containing the cycles needed to encrypt a buffer of
     a given size (see for instance
     '/supercop-data/dadaubuntu/amd64/try/c/clang_-march=native_-O3_-fomit-frame-pointer_-fwrapv_-std=gnu11/crypto_stream/chacha20/usuba-avx-fast/data').
+    This benchmark is _not_ ran by this script. To run it, you must
+    delete the folder supercop-data, go in the folder supercop and run
+    './data-do'. This _will_ take a few hours. We added in the repo
+    the resulting files relevant for us that were produce by a
+    `./data-do` (inside supercop-data).
 
 
 B<Collecting the results>. (this is actually the content of bench/ua-vs-human/run.pl).
