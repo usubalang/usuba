@@ -50,7 +50,7 @@ if ($gen) {
     # Hslice
     for my $arch (qw(sse avx avx512)) {
         my $source = "samples/usuba/rectangle.ua";
-        system "./usubac -H -lf -arch $arch -o $pwd/hslice/$arch.c $source";
+        system "./usubac -H -arch $arch -o $pwd/hslice/$arch.c $source";
     }
     # Vslice
     for my $arch (qw(std sse avx avx512)) {
