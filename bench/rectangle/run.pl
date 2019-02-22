@@ -20,7 +20,7 @@ use v5.14;
 use FindBin;
 use File::Path qw(make_path);
 
-my $NB_LOOP = 1;
+my $NB_LOOP = 20;
 my $CC      = 'icc';
 my $CFLAGS  = '-O3 -std=gnu11';
 my $HEADERS = '-I ../../arch -I .';
