@@ -41,8 +41,10 @@ B<Core technical details>
 
     Each benchmark produces a .tex file that contains macros defining
     the numbers reported in the paper. In the following, we relate
-    these macros to their use-site in the paper.  The raw values are
-    to be found in the "results" subfolder.
+    these macros to their use-site in the paper. For absolute
+    accuracy, we also provide the TeX source of our paper, which can
+    be found at bench/paper.tex. The raw values computed by our
+    benchmarks are found in the "results" subfolders.
 
     Note that when code size decreases thanks to an optimization
     (instead of increasing such as, e.g., when inlining DES), the
