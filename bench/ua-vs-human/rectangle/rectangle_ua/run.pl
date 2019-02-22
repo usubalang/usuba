@@ -59,7 +59,7 @@ if ($gen) {
     # Vslice + interleaving
     for my $arch (qw(std sse avx)) {
         my $source = "samples/usuba/rectangle.ua";
-        system "./usubac -V -lf -arch $arch -interleave 5 -o $pwd/vslice-inter/$arch.c $source";
+        system "./usubac -V -arch $arch -interleave 5 -o $pwd/vslice-inter/$arch.c $source";
     }
 
     say " done.";
