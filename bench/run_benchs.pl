@@ -444,6 +444,13 @@ system "./run.pl @ARGV";
 
 
 
+
+
+
+
+
+
+
 =head1 FIGURE 3 BENCHES
 
 =over
@@ -497,4 +504,55 @@ B<Technical details>
 
 chdir "$FindBin::Bin";
 chdir "scaling-avx512";
+system "./run.pl @ARGV";
+
+
+
+
+
+
+
+
+=head1 FIGURE 4 BENCHES
+
+=over
+
+=item
+
+B<Paper>: Figure 4. Monomorphizations of Rectangle
+
+=item 
+
+B<bench directory>: bench/rectangle
+
+=item 
+
+B<bench run script>: bench/run.pl
+
+=item 
+
+B<High-level description>
+
+    This benchmark generates the file plot/slicing-compare.pdf, which is the
+    Figure 4 in the paper.
+    Raw data can be found in plot/*.dat, and plot/results.txt.
+
+
+B<Technical details>
+
+    This bench works quite like the benchs from section 3.2.
+    It first compiles the Usuba files (if -g option was
+    supplied) with each slicing (-B for bitslice, -V for vslice, -H
+    for hslice). Then compiles the C benchs, and then run the
+    benchmarks.
+    You might want to have a look at main.c, which does the actual
+    measurements.
+
+
+=back
+
+=cut
+
+chdir "$FindBin::Bin";
+chdir "rectangle";
 system "./run.pl @ARGV";

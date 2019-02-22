@@ -1,0 +1,42 @@
+set terminal svg size 900,400 fsize 16
+set output 'slicing-compare.svg'
+# set terminal pdf font ",16"
+# set output 'slicing-compare.pdf'
+
+set style data histogram
+set style histogram columnstacked title textcolor lt -1 offset character 0, 0.8
+set style fill pattern border rgb "black"
+
+set xtics ("vslice" 0, "bitslice" 1, "vslice" 3, "bilsice" 4, "hslice" 5,"vslice" 7, "bilsice" 8, "hslice" 9,"vslice" 11, "bilsice" 12, "hslice" 13,"vslice" 15, "bilsice" 16, "hslice" 17)
+
+set border 3 # remove top and right plot-border
+
+set key outside width -30
+
+set grid y
+set grid noxtics ytics
+set tics nomirror
+set xtics rotate by 45 right# offset 0,-1.5
+set xtics scale 0
+set ytics scale 0.5
+
+
+set ylabel "cycles/byte" offset 2
+set xlabel " "
+set linetype 1 lc rgb '#0000FF'
+set linetype 2 lc rgb '#FF0000'
+
+plot \
+     newhistogram "GP\n(64-bit)" fs pattern 2 lt 1, \
+     "std.dat" u 2, '' u 3, \
+     newhistogram "SSE\n(128-bit)" fs pattern 2 lt 1, \
+     "sse.dat" u 2, '' u 3, '' u 4,\
+     newhistogram "AVX\n(128-bit)" fs pattern 2 lt 1, \
+     "avx.dat" u 2, '' u 3, '' u 4, \
+     newhistogram "AVX2\n(256-bit)" fs pattern 2 lt 1, \
+     "avx2.dat" u 2, '' u 3, '' u 4, \
+     newhistogram "AVX512\n(512-bit)" fs pattern 2 lt 1, \
+     "avx512.dat" u 2:key(1), '' u 3, '' u 4
+
+set output
+system("inkscape -D -z --file=slicing-compare.svg --export-pdf=slicing-compare.pdf");
