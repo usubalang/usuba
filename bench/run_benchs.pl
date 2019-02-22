@@ -5,6 +5,23 @@ use warnings;
 
 use FindBin;
 
+
+
+=head1 USAGE
+    
+./compile.pl [-g] [-c] [-r]
+
+    -g: Re-compiles the Usuba sources to generate the C files (optional; not default)
+    -c: Re-compiles the benchmarks (needed at least the first time; default)
+    -r: Run the benchmarks (default)
+    (the options can be combined)
+
+=cut
+
+
+
+
+
 =head1 SECTION 3.2 BENCHES
 
 This section presents the common parts of the benchs for section 3.2.
@@ -100,6 +117,7 @@ B<Specific details>
 
 =cut
 
+say "Running interleaving benchmark";
 chdir "$FindBin::Bin";
 chdir "interleaving";
 system "./run.pl @ARGV";
@@ -160,7 +178,8 @@ B<Specific details>
 =back
 
 =cut
-    
+
+say "Running bitsliced scheduling benchmark";
 chdir "$FindBin::Bin";
 chdir "scheduling-bs";
 system "./run.pl @ARGV";
@@ -258,6 +277,7 @@ B<Specific details>
 =cut
 
     
+say "Running inlining benchmark";
 chdir "$FindBin::Bin";
 chdir "inlining";
 system "./run.pl @ARGV";
@@ -317,6 +337,7 @@ B<Specific details>
 
 =cut
     
+say "Running unrolling benchmark";
 chdir "$FindBin::Bin";
 chdir "unrolling";
 system "./run.pl @ARGV";
@@ -420,6 +441,7 @@ B<Collecting the results>. (this is actually the content of bench/ua-vs-human/ru
 
 =cut
 
+say "Running ua-vs-human benchmark";
 chdir "$FindBin::Bin";
 chdir "ua-vs-human";
 system "./run.pl @ARGV";
@@ -484,6 +506,7 @@ B<Technical details>
 
 =cut
 
+say "Running scaling benchmark";
 chdir "$FindBin::Bin";
 chdir "scaling-avx512";
 system "./run.pl @ARGV";
@@ -535,6 +558,7 @@ B<Technical details>
 
 =cut
 
+say "Running rectangle/monomorphization benchmark";
 chdir "$FindBin::Bin";
 chdir "rectangle";
 system "./run.pl @ARGV";
