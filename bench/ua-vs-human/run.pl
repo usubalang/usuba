@@ -387,17 +387,17 @@ sub get_speedup {
 }
 
 sub get_cpp_sloc {
-    my ($sloc) = `cloc $_[0]` =~ /^C\+\+\s.*?(\d+)$/m;
+    my ($sloc) = `cloc $_[0] 2>/dev/null` =~ /^C\+\+\s.*?(\d+)$/m;
     return $sloc;
 }
 
 sub get_c_sloc {
-    my ($sloc) = `cloc $_[0]` =~ /^C\s.*?(\d+)$/m;
+    my ($sloc) = `cloc $_[0] 2>/dev/null` =~ /^C\s.*?(\d+)$/m;
     return $sloc;
 }
 
 sub get_asm_sloc {
-    my ($sloc) = `cloc $_[0]` =~ /^Assembly\s.*?(\d+)$/m;
+    my ($sloc) = `cloc $_[0] 2>/dev/null` =~ /^Assembly\s.*?(\d+)$/m;
     return $sloc;
 }
 
