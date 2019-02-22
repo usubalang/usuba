@@ -21,13 +21,13 @@ B<Core technical details>
     to accurately measure cycles.  They run NB_LOOP (default 100000)
     encryptions of a BUFF_SIZE (default 4096) bytes buffer.
 
-    All the benchmarks main outputs are .tex files, which contain
-    macro that contain to the numbers reported in the paper.
-   
+    All the benchmarks output are .tex files, which contain macro
+    defining the numbers reported in the paper.
+
     Note that when the code size is decreased by an
     optimization instead of increased (for instance, it is the case
     when inlining DES), the macro generated contains a negative
-    number. However, we reformated those number in order to have them
+    number. However, we re-formated those number in order to have them
     positive instead of negative in the paper (thus allowing us to say
     something like "... while actually reducing code size by xx%";
     which wouldn't have be possible with negative numbers).
