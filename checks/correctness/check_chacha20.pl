@@ -38,7 +38,7 @@ mkdir $temp_dir;
 
 # Compiling Usuba DES.
 say "Compiling Chacha20 from Usuba to C...";
-error if system "./usubac -o $temp_dir/chacha20.c -arch sse -no-runtime -no-share samples/usuba/chacha20.ua" ;
+error if system "./usubac -V -o $temp_dir/chacha20.c -arch sse -no-runtime -no-share samples/usuba/chacha20.ua" ;
 {
     local $^I = "";
     local @ARGV = "$temp_dir/chacha20.c";
@@ -65,4 +65,4 @@ for my $ARCH (qw(STD SSE AVX)) {
 chdir '..';
 remove_tree $temp_dir;
 
-say "n-sliced Serpent OK.\n\n";
+say "Vsliced Chacha20 OK.\n\n";

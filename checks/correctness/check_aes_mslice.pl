@@ -14,9 +14,9 @@ sub error {
     exit $?;
 }
 
-my $temp_dir = "tmp_aes_kasper";
+my $temp_dir = "tmp_aes_mslice";
 
-say "############################### AES Kasper ############################";
+say "############################### AES Mslice ############################";
 
 # switching to usuba dir
 chdir "$FindBin::Bin/../..";
@@ -35,7 +35,7 @@ mkdir $temp_dir;
 
 # Compiling Usuba AES.
 say "Compiling AES from Usuba to C...";
-error if system "./usubac -o $temp_dir/aes.c -arch sse -no-runtime -no-share samples/usuba/aes_kasper.ua" ;
+error if system "./usubac -H -o $temp_dir/aes.c -arch sse -no-runtime -no-share samples/usuba/aes_mslice.ua" ;
 {
     local $^I = "";
     local @ARGV = "$temp_dir/aes.c";
@@ -46,7 +46,7 @@ error if system "./usubac -o $temp_dir/aes.c -arch sse -no-runtime -no-share sam
 
 
 chdir $temp_dir;
-copy $_, '.' for glob "$FindBin::Bin/aes_kasper/*";
+copy $_, '.' for glob "$FindBin::Bin/aes_mslice/*";
 
 
 for my $ARCH (qw(AVX SSE)) {

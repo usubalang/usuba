@@ -41,14 +41,6 @@ void orthogonalize(__m256i data[8]) {
         data[j + n + k] = _mm256_or_si256(_mm256_slli_epi64(v, n), y);
       }
   }
-  
-  for (int i = 0; i < 8; i++)
-    data[i] =  _mm256_shuffle_epi8(data[i],
-                                   _mm256_set_epi8(15,11,7,3,14,10,6,2,
-                                                   13,9,5,1,12,8,4,0,
-                                                   15,11,7,3,14,10,6,2,
-                                                   13,9,5,1,12,8,4,0));
-
 }
 
 #else // Not AVX
@@ -81,12 +73,6 @@ void orthogonalize(__m128i data[8]) {
         data[j + n + k] = _mm_or_si128(_mm_slli_epi64(v, n), y);
       }
   }
-  
-  for (int i = 0; i < 8; i++)
-    data[i] =  _mm_shuffle_epi8(data[i],_mm_set_epi8(15,11,7,3,
-                                                     14,10,6,2,
-                                                     13,9,5,1,
-                                                     12,8,4,0));  
 }
 
 #endif

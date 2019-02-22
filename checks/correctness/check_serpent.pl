@@ -36,7 +36,7 @@ mkdir $temp_dir;
 
 # Compiling Usuba DES.
 say "Compiling Serpent from Usuba to C...";
-error if system "./usubac -o $temp_dir/serpent.c -arch sse -no-runtime -no-share samples/usuba/serpent.ua" ;
+error if system "./usubac -V -o $temp_dir/serpent.c -arch sse -no-runtime -no-share samples/usuba/serpent.ua" ;
 {
     local $^I = "";
     local @ARGV = "$temp_dir/serpent.c";
