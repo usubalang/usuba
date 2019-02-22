@@ -18,7 +18,7 @@ let inline_all   = ref false
 let cse_cp       = ref true
 let scheduling   = ref true
 let schedule_n   = ref 10
-let share_var    = ref true
+let share_var    = ref false
 let precal_tbl   = ref true
 let no_arr       = ref false
 let no_arr_tmp   = ref false
@@ -133,6 +133,10 @@ let main () =
     let prog = Parse_file.parse_file s in
     let bits_per_reg = if !bits_per_reg <> 64 then !bits_per_reg
                        else bits_in_arch !arch in
+    let no_arr = if !slicing_set then match !slicing_type with
+                                      | B -> true
+                                      | _ -> !no_arr
+                 else !no_arr in
     let conf = { block_size     =   !block_size;
                  key_size       =   !key_size;
                  warnings       =   !warnings;
@@ -155,7 +159,7 @@ let main () =
                  rand_input     =   !rand_input;
                  ortho          =   !ortho;
                  openmp         =   !openmp;
-                 no_arr         =   !no_arr;
+                 no_arr         =   no_arr; (* local var! *)
                  no_arr_tmp     =   !no_arr_tmp;
                  arr_entry      =   !arr_entry;
                  unroll         =   !unroll;

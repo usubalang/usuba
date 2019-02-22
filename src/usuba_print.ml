@@ -118,6 +118,11 @@ let pat_to_str pat =
 let pat_to_str_types pat =
   "(" ^ (join "," (List.map var_to_str_types pat)) ^ ")"
 
+let m_to_str m =
+  match m with
+  | Mint n  -> sprintf "%d" n
+  | Mvar id -> id.name
+                                                       
 let dir_to_str d =
   match d with
   | Hslice     -> "<H>"
@@ -201,6 +206,7 @@ let optdef_to_str = function
   | No_inline -> "_no_inline"
   | Interleave n -> sprintf "_interleave(%d)" n
   | No_opt    -> "_no_opt"
+  | Is_table  -> ""
       
 let def_to_str (def:def) =
   let (id,p_in,p_out) = (def.id,def.p_in,def.p_out) in

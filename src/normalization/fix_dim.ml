@@ -19,8 +19,8 @@ module Dir_params = struct
       | Index(v',i1) ->
          (try
              Slice(v',List.map (fun n -> Op_e(Add,Op_e(Mul,i1,Const_e s),Const_e n)) (gen_list_bounds 0 (s-1)))
-           with Not_found -> 
-                Range(v',simpl_arith_ne (Op_e(Mul,i1,Const_e s)),simpl_arith_ne (Op_e(Add,Op_e(Mul,i1,Const_e s),Const_e (s-1)))))
+           with Not_found ->
+             Range(v',simpl_arith_ne (Op_e(Mul,i1,Const_e s)),simpl_arith_ne (Op_e(Add,Op_e(Mul,i1,Const_e s),Const_e (s-1)))))
       | _ -> v
     else v
 
@@ -151,7 +151,8 @@ module Dir_inner = struct
     if vb = vd then
       match v with
       | Index(Index(v',i1),i2) -> Index(v',simpl_arith_ne (Op_e(Add,Op_e(Mul,i1,Const_e s),i2)))
-      | Index(v',i1) -> Range(v',simpl_arith_ne (Op_e(Mul,i1,Const_e s)),simpl_arith_ne (Op_e(Add,Op_e(Mul,i1,Const_e s),Const_e (s-1))))
+      | Index(v',i1) -> 
+         Range(v',simpl_arith_ne (Op_e(Mul,i1,Const_e s)),simpl_arith_ne (Op_e(Add,Op_e(Mul,i1,Const_e s),Const_e (s-1))))
       | _ -> v
     else v
 
@@ -264,8 +265,12 @@ module Dir_inner = struct
          Hashtbl.replace env_fun def.id
                          { def with node = Single(vars, body) }
       | _ -> ()
-    with Updated -> fix_def env_fun (Hashtbl.find env_fun def.id)
-             
+    with Updated ->
+      fix_def env_fun
+              (Norm_tuples.norm_tuples_deq
+                 (Expand_array.expand_def 0 false true (Hashtbl.find env_fun def.id)))
+    
+                            
              
   let fix_dim (prog:prog) (conf:config) : prog =
   let env_fun = Hashtbl.create 100 in

@@ -136,6 +136,18 @@ module Flatten_tuples = struct
     { nodes = List.map flatten_tuples_def p.nodes }
 end
 
+let norm_tuples_deq (def:def) : def =
+  (* Dunno if I should loop for a fixpoint or not... 
+     For now, this should be sufficient. *)
+  def |>
+    Simplify_tuples.simpl_tuples_def |>
+    Split_tuples.split_tuples_def |>
+    Flatten_tuples.flatten_tuples_def |>
+    Remove_tuples_funcall.simpl_tuples_def |>
+    Simplify_tuples.simpl_tuples_def |>
+    Split_tuples.split_tuples_def |>
+    Remove_tuples_funcall.simpl_tuples_def
+
 let norm_tuples (prog:prog) (conf:config) : prog =
   (* Dunno if I should loop for a fixpoint or not... 
      For now, this should be sufficient. *)

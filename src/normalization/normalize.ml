@@ -37,17 +37,10 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
 
   (* Rename only if param rename is true *)
   let rename = if rename then Rename.rename_prog else (fun x _ -> x) in
-  
-  let normalized =
-    prog |>
-      (run_pass "Rename" rename)                                           |>
-      (run_pass "Expand_multiples" Expand_multiples.expand_multiples)      |>
-      (run_pass "Monomorphiz" Monomorphize.monomorphize)                   |>
-      (run_pass "Convert_tables" Convert_tables.convert_tables)            |>
-      (run_pass "Expand_array" Expand_array.expand_array)                  |>
-      (run_pass "Init_scheduler 1" Init_scheduler.schedule_prog)           |>
-      (run_pass "Remove_sync" Remove_sync.remove_sync)                     |>
-      (run_pass "Remove_ctrl" Remove_ctrl.remove_ctrl)                     |>
+
+  let normalize_core x _ =
+    x |>
+      (run_pass "Expand_array 1.5" Expand_array.expand_array)              |>
       (run_pass "Norm_bitslice 1" Norm_bitslice.norm_prog)                 |>
       (run_pass "Expand_parameters" Expand_parameters.expand_parameters)   |>
       (run_pass "Fix_dim params" Fix_dim.Dir_params.fix_dim)               |>
@@ -56,7 +49,21 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
       (run_pass "Expand_parameters 2" Expand_parameters.expand_parameters) |>
       (run_pass "Fix_dim inner" Fix_dim.Dir_inner.fix_dim)                 |>
       (run_pass "Expand_array 3" Expand_array.expand_array)                |>
-      (run_pass "Norm_bitslice 3" Norm_bitslice.norm_prog)                 |>
+      (run_pass "Norm_bitslice 3" Norm_bitslice.norm_prog) in
+    
+  
+  let normalized =
+    prog |>
+      (run_pass "Rename" rename)                                           |>
+      (run_pass "Expand_multiples" Expand_multiples.expand_multiples)      |>
+      (run_pass "Convert_tables" Convert_tables.convert_tables)            |>
+      (run_pass "Expand_array" Expand_array.expand_array)                  |>
+      (run_pass "Init_scheduler 1" Init_scheduler.schedule_prog)           |>
+      (run_pass "Remove_sync" Remove_sync.remove_sync)                     |>
+      (run_pass "Remove_ctrl" Remove_ctrl.remove_ctrl)                     |>
+      (run_pass "Core normalize 1" normalize_core)                         |>
+      (run_pass "Monomorphize" Monomorphize.monomorphize)                  |>
+      (run_pass "Core normalize 2" normalize_core)                         |>
       (run_pass "Init_scheduler 2" Init_scheduler.schedule_prog)           |>
       (run_pass "Pre_schedule" sched_fun)                                  |>
       (run_pass "Inline" Inline.inline)                                    |>

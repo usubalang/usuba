@@ -25,7 +25,7 @@ let default_conf : config =
     cse_cp       = true;
     scheduling   = true;
     schedule_n   = 10;
-    share_var    = true;
+    share_var    = false;
     precal_tbl   = true;
     runtime      = true;
     archi        = Std;
@@ -202,7 +202,8 @@ let rec get_var_type env (v:var) : typ =
                     | Array(t,_) -> t
                     | Uint(dir,m,n) -> Uint(dir,m,1)
                     | _ -> assert false)
-  | _ -> assert false
+  | _ -> Printf.fprintf stderr "Error: get_var_type(%s)\n" (Usuba_print.var_to_str v);
+         assert false
 
 let get_var_size env (v:var) : int =
   typ_size @@ get_var_type env v
@@ -227,7 +228,7 @@ let get_reg_size env (v:var) : int =
                            
 let rec get_expr_reg_size env (e:expr) : int =
   match e with
-  | Const n -> Printf.fprintf stderr "Hazardous inference of `Const %d' size.\n" n;
+  | Const n -> Printf.fprintf stderr "Unsafe inference of `Const %d' size.\n" n;
                1
   | ExpVar v -> get_reg_size env v
   | Not e -> get_expr_reg_size env e
@@ -245,7 +246,7 @@ let rec get_expr_reg_size env (e:expr) : int =
 
 let rec get_expr_type env_fun env_var (e:expr) : typ list =
   match e with
-  | Const n -> Printf.fprintf stderr "Hazardous inference of `Const %d' size.\n" n;
+  | Const n -> Printf.fprintf stderr "Unsafe inference of `Const %d' type.\n" n;
                [ Nat ]
   | ExpVar v -> [ get_var_type env_var v ]
   | Tuple l -> flat_map (get_expr_type env_fun env_var) l
@@ -298,14 +299,30 @@ let get_type_dir (typ:typ) : dir =
   match get_base_type typ with
   | Uint(dir,_,_) -> dir
   | _ -> assert false
+let get_type_m (typ:typ) : mtyp =
+  match get_base_type typ with
+  | Uint(_,m,_) -> m
+  | _ -> assert false
+let get_type_n (typ:typ) : int =
+  match get_base_type typ with
+  | Uint(_,_,n) -> n
+  | _ -> assert false
 
+                
 let get_var_dir env_var (v:var) : dir =
   get_type_dir (get_var_type env_var v)
+let get_var_m env_var (v:var) : mtyp =
+  get_type_m (get_var_type env_var v)
 
 let rec update_type_dir (typ:typ) (dir:dir) : typ =
   match typ with
   | Uint(_,m,n) -> Uint(dir,m,n)
   | Array(t,n)  -> Array(update_type_dir t dir,n)
+  | _ -> assert false
+let rec update_type_m (typ:typ) (m:mtyp) : typ =
+  match typ with
+  | Uint(dir,_,n) -> Uint(dir,m,n)
+  | Array(t,n)  -> Array(update_type_m t m,n)
   | _ -> assert false
 
 let vd_to_var (vd:var_d) : var =

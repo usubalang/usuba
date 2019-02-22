@@ -91,7 +91,7 @@ Inductive def_i :=
   | Table         (t: list N) (* lookup table *)
   | Multiple      (l: list def_i).
 
-Inductive def_opt := Inline | No_inline | Interleave (n:N) | No_opt.
+Inductive def_opt := Inline | No_inline | Interleave (n:N) | No_opt | Is_table.
 
 Record def := {
   id    : ident;
