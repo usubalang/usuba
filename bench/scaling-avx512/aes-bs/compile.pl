@@ -81,7 +81,7 @@ my %res;
 for ( 1 .. $NB_LOOP ) {
     print "\rRunning Benchs... $_/$NB_LOOP";
     for my $bin (@binaries) {
-        my $cycles = sprintf "%03.02f", `./$bin`; 
+        my $cycles = sprintf "%03.02f", (`./$bin` || 0); 
         push @{ $res{$bin}->{details} }, $cycles;
         $res{$bin}->{total} += $cycles;
     }

@@ -71,7 +71,7 @@ if (!@ARGV || $collect) {
         } else {
             my $sse = $results{$cipher}->{sse};
             for my $arch (keys %{$results{$cipher}}) {
-                $formatted{$cipher}->{$arch} = $results{$cipher}->{$arch} ?
+                $formatted{$cipher}->{$arch} = $results{$cipher}->{$arch} != 0 ?
                     $sse / $results{$cipher}->{$arch} : 0;
             }
         }

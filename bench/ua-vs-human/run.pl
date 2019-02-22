@@ -115,8 +115,8 @@ open my $FP_OUT, '>', 'human.tex';
     my $speedup   = get_speedup($ref_speed,$ua_speed);
 
     my $ref_sloc = get_asm_sloc('supercop/crypto_stream/aes128ctr/kivilinna-avx/aes_asm_bitslice_avx.S') - 500;
-    my $ua_sloc  = get_ua_sloc('samples/usuba/aes_kasper_constr.ua');
-
+    my $ua_sloc  = get_ua_sloc('samples/usuba/aes_mslice.ua') + 140;
+                                                             # 140 for the Sbox
     say $FP_OUT
 "\\newcommand{\\ReferenceAESKiviThroughput}{$ref_speed}
 \\newcommand{\\ReferenceAESKiviSLOC}{$ref_sloc}
