@@ -45,7 +45,7 @@ open my $FP_OUT, '>', 'human.tex';
 # ##############################  DES  ###############################
 
 {
-    chdir "$FindBin::Bin/../../ciphers/des";
+    chdir "$FindBin::Bin//des";
     
     system "./compile.pl @ARGV"
         if $gen || $compile || $run;
@@ -63,7 +63,8 @@ open my $FP_OUT, '>', 'human.tex';
     my $speedup = get_speedup($ref_speed,$ua_speed);
 
     my $ref_sloc = get_c_sloc('kwan/des.c');
-    my $ua_sloc  = get_ua_sloc('../../samples/usuba/des.ua') + 500; # 500 for the Sboxes
+    my $ua_sloc  = get_ua_sloc("$FindBin::Bin/../../samples/usuba/des.ua") + 500; 
+                                                             # 500 for the Sboxes
 
     say $FP_OUT
 "\\newcommand{\\ReferenceDESThroughput}{$ref_speed}
@@ -305,56 +306,58 @@ open my $FP_OUT, '>', 'human.tex';
 
 # ###########################  Rectangle #############################
 { 
-    chdir "$FindBin::Bin/../../ciphers/rectangle";
+    my %res;
 
-    system "./bench.pl @ARGV"
-        if $gen || $compile || $run;
+    { # Usuba
+        chdir "$FindBin::Bin/rectangle/rectangle_ua";
 
-    my $file = 'results.txt';
+        system "./run.pl @ARGV"
+            if $gen || $compile || $run;
 
-    my $ref_sloc = 115;
-    my $ua_sloc  = get_ua_sloc('../../samples/usuba/rectangle.ua') + 10; # +10 for sbox
-    
-    open my $FP_IN, '<', $file;
-    while (<$FP_IN>) {
-        chomp;
-        my ($expe) = split;
-        my ($arch,$slicing) = split '-', $expe;
-        chomp(my $ref = <$FP_IN>);
-        $ref = <$FP_IN> if $ref =~ /All OK/i;
-        chomp(my $ua = <$FP_IN>);
-        <$FP_IN>; <$FP_IN>;
-        next unless $expe =~ /vector.*inter_inline/;
-        ($arch) = $expe =~ /vector-(.+?)_/;
-        my ($ref_speed) = $ref =~ /(\d+\.\d+)/;
-        my ($ua_speed)  = $ua  =~ /(\d+\.\d+)/;
-        my $real_arch;
-        if    ($arch =~ /gp/)     { $real_arch = 'GP'   }
-        elsif ($arch =~ /avx/)    { $real_arch = 'AVXtwo' }
-        elsif ($arch =~ /sseSSE/) { $real_arch = 'SSE'  }
-        elsif ($arch =~ /sse/)    { $real_arch = 'AVX'  }
-        else { say "Unknown arch: $arch\n"; exit }
-
-        if ($real_arch eq 'GP') {
-            $ua_speed = sprintf "%.2f", $ua_speed / 1.1075; 
-            # Should compute that automatically
-            # Note: I didn't invent this number: got it from the C benchmarks
+        my $file = 'results.txt';
+        open my $FP_IN, '<', $file;
+        while (<$FP_IN>) {
+            my ($arch, $speed) = split;
+            $res{ua}->{$arch} += $speed;
         }
+    }
 
-        my $speedup = get_speedup($ref_speed,$ua_speed);
+    { # Ref
+        chdir "$FindBin::Bin/rectangle/rectangle_ref";
+        
+        system "./run.pl @ARGV"
+            if $gen || $compile || $run;
+
+        my $file = 'results.txt';
+        open my $FP_IN, '<', $file;
+        while (<$FP_IN>) {
+            my ($arch, $speed) = split;
+            $res{ref}->{$arch} += $speed;
+        }
+    }
+
+    for my $arch (keys %{$res{ua}}) {
+        my $ref_sloc = 115;
+        my $ua_sloc  = get_ua_sloc("$FindBin::Bin/../../samples/usuba/rectangle.ua") + 10; 
+                                                                            # +10 for sbox
+        
+        my $speedup = get_speedup($res{ref}->{$arch},$res{ua}->{$arch});
+
+        my $real_arch;
+        if    ($arch =~ /gp|std/i) { $real_arch = 'GP'   }
+        elsif ($arch =~ /avx2/i)   { $real_arch = 'AVX2' }
+        elsif ($arch =~ /avx/i)    { $real_arch = 'AVX'  }
+        elsif ($arch =~ /sse/i)    { $real_arch = 'SSE'  }
         
         say $FP_OUT   
-"\\newcommand{\\ReferenceRectangle${real_arch}Throughput}{$ref_speed}
+"\\newcommand{\\ReferenceRectangle${real_arch}Throughput}{$res{ref}->{$arch}}
 \\newcommand{\\ReferenceRectangle${real_arch}SLOC}{$ref_sloc}
-\\newcommand{\\UsubaRectangle${real_arch}Throughput}{$ua_speed}
+\\newcommand{\\UsubaRectangle${real_arch}Throughput}{$res{ua}->{$arch}}
 \\newcommand{\\UsubaRectangle${real_arch}SLOC}{$ua_sloc}
 \\newcommand{\\Rectangle${real_arch}AbsoluteSpeedup}{$speedup}\n";
     }
 
 }
-
-
-
 
 
 

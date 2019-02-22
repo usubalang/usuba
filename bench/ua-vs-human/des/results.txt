@@ -1,0 +1,2 @@
+  ua-std 11.36
+kwan-std 11.88
