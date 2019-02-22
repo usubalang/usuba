@@ -100,4 +100,5 @@ q{archi                              "GP 64-bit"   "SSE 128-bit"     "AVX 128-bi
 }
 
 chdir "plot";
-system "gnuplot plot-speedup.txt";
+#system "gnuplot plot-speedup.txt";
+say "Please copy the directory 'bench/schaling-avx512/plot' on your host machine, and run 'gnuplot plot-speedup.txt' in order to generate 'speedup.pdf'.";
