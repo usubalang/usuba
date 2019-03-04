@@ -70,10 +70,12 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
       (run_pass "Pre_schedule 2" sched_fun)                                |>
       (run_pass "Norm_bitslice 4" Norm_bitslice.norm_prog) in
 
+  Gen_smt.print_gen_smt normalized "smt/normalized.smt.l";
   let optimized   = run_pass "Optimize" Optimize.opt_prog normalized in
   let clock_fixed = run_pass "Fix_clocks" Fix_clocks.fix_prog optimized in
   let norm_ok     = run_pass "Norm_bitslice 3" Norm_bitslice.norm_prog clock_fixed in
-
+  Gen_smt.print_gen_smt norm_ok "smt/optimized.smt.l";
+  
   if conf.check_tbl then
     Soundness.tables_sound (Rename.rename_prog prog conf) norm_ok;
 

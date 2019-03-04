@@ -3,7 +3,7 @@
 MENHIR = menhir
 MENHIRFLAGS := --infer --explain
 PACKAGES := -pkg str -pkg unix
-INCLUDES := -I normalization -I optimization -I parsing -I c_gen -I verification -I c_gen/runtimes
+INCLUDES := -I normalization -I optimization -I parsing -I c_gen -I verification -I c_gen/runtimes -I verification/smt
 OCAMLBUILD  := ocamlbuild -use-ocamlfind $(PACKAGES) $(INCLUDES) -use-menhir -menhir "$(MENHIR) $(MENHIRFLAGS)"
 
 MAIN     := main
