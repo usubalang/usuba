@@ -12,8 +12,7 @@ exception Invalid_operator_call
 exception Break
             
 let default_conf : config =
-  { block_size   = 64;
-    key_size     = 64;
+  { filename     = "";
     warnings     = true;
     verbose      = 1;
     verif        = false;
@@ -28,21 +27,16 @@ let default_conf : config =
     schedule_n   = 10;
     share_var    = false;
     precal_tbl   = true;
-    runtime      = true;
+    runtime      = false;
     archi        = Std;
     bits_per_reg = 64;
-    bench        = false;
-    rand_input   = false;
     ortho        = true;
-    openmp       = 1;
     no_arr       = false;
     no_arr_tmp   = false;
     arr_entry    = true;
     unroll       = false;
     interleave   = 1;
-    fd           = false;
-    ti           = 1;
-    fdti         = "";
+    fdti         = false;
     lazylift     = false;
     slicing_set  = false;
     slicing_type = B;

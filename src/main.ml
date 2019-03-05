@@ -4,8 +4,6 @@ open Printf
 open Basic_utils
 open Utils
 
-let block_size  = ref 64
-let key_size    = ref 64
 let warnings    = ref false
 let verbose     = ref 1
 let verif       = ref false
@@ -30,14 +28,9 @@ let interleave   = ref 0
 let runtime      = ref false
 let arch         = ref Std
 let bits_per_reg = ref 64
-let bench        = ref false
-let rand_input   = ref false
 let ortho        = ref true
-let openmp       = ref 1
 let output       = ref ""
-let fd           = ref false
-let ti           = ref 1
-let fdti         = ref ""
+let fdti         = ref false
 let lazylift     = ref false
 let secure_loops = ref false
 
@@ -88,8 +81,6 @@ let main () =
   let speclist = 
     [ "-w", Arg.Set warnings, "Activate warnings";
       "-v", Arg.Set_int verbose, "Set verbosity level";
-      "-bsize", Arg.Int (fun n -> block_size := n), "Specify the block size";
-      "-ksize", Arg.Int (fun n -> key_size   := n), "Specify the key size";
       "-verif", Arg.Set verif, "Activate verification";
       "-smt", Arg.Set gen_smt, "Generate SMT equations";
       "-check-tbl", Arg.Set check_tbl, "Activate verification of tables";
@@ -114,14 +105,9 @@ let main () =
       "-bits-per-reg", Arg.Set_int bits_per_reg, "Set number of bits to use in the registers (with -arch std only, needs to be a multiple of 2)";
       "-runtime", Arg.Set runtime, "Use bitslice runtime";
       "-no-runtime", Arg.Clear runtime, "Do not generate a runtime";
-      "-bench", Arg.Set bench, "Generate benchmark runtime";
-      "-rand-input", Arg.Set rand_input, "Bench on random inputs rather than on a file (implies -bench)";
       "-ortho", Arg.Set ortho, "Perform data orthogonalization";
       "-no-ortho", Arg.Clear ortho, "Don't perform data orthogonalization";
-      "-openmp", Arg.Set_int openmp, "Set the number of core to use";
-      "-fd", Arg.Set fd, "Generate complementary redudant code";
-      "-ti", Arg.Set_int ti, "Set the number of shares to use for Threshold Implemenation (1, 2, 4, 8)";
-      "-fdti",Arg.Set_string fdti, "Specify the order of ti and fd (tifd or fdti)";
+      "-fdti",Arg.Set fdti, "Generate FD/TI secure code";
       "-secure-loops", Arg.Set secure_loops, "Secure loops with intra-redundancy in the counter";
       "-lf", Arg.Set lazylift, "Enable lazy lifting";
       "-o", Arg.Set_string output, "Set the output filename";
@@ -139,8 +125,7 @@ let main () =
                                       | B -> true
                                       | _ -> !no_arr
                  else !no_arr in
-    let conf = { block_size     =   !block_size;
-                 key_size       =   !key_size;
+    let conf = { filename       =   s;
                  warnings       =   !warnings;
                  verbose        =   !verbose;
                  verif          =   !verif;
@@ -158,17 +143,12 @@ let main () =
                  archi          =   !arch;
                  bits_per_reg   =   bits_per_reg; (* local var! *)
                  runtime        =   !runtime;
-                 bench          =   !bench || !rand_input;
-                 rand_input     =   !rand_input;
                  ortho          =   !ortho;
-                 openmp         =   !openmp;
                  no_arr         =   no_arr; (* local var! *)
                  no_arr_tmp     =   !no_arr_tmp;
                  arr_entry      =   !arr_entry;
                  unroll         =   !unroll;
                  interleave     =   !interleave;
-                 fd             =   !fd;
-                 ti             =   !ti;
                  fdti           =   !fdti;
                  lazylift       =   !lazylift;
                  slicing_set    =   !slicing_set;

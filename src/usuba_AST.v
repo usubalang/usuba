@@ -119,8 +119,7 @@ Inductive slicing := H | V | B.
 
 (* The compiler's configuration *)
 Record config := {
-  block_size   : N;
-  key_size     : N;
+  filename     : string;
   warnings     : bool;
   verbose      : N;
   verif        : bool;
@@ -137,19 +136,14 @@ Record config := {
   precal_tbl   : bool;
   archi        : arch;
   bits_per_reg : N;
-  bench        : bool;
-  rand_input   : bool;
   runtime      : bool;
   ortho        : bool;
-  openmp       : N;
   no_arr       : bool;
   no_arr_tmp   : bool;
   arr_entry    : bool;
   unroll       : bool;
   interleave   : N;
-  fd           : bool;
-  ti           : N;
-  fdti         : string;
+  fdti         : bool;
   lazylift     : bool;
   slicing_set  : bool;
   slicing_type : slicing;
