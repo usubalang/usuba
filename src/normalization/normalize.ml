@@ -22,6 +22,21 @@ let run_pass title func conf prog =
     Printf.fprintf stderr "%s\n%!" (Usuba_print.prog_to_str res);
   res
 
+        
+let norm_bitslice (prog: prog) (conf:config) =
+
+  let run_pass title func ?(sconf = conf) prog =
+    run_pass title func sconf prog in
+
+  prog |>
+    (run_pass "Expand_const" Expand_const.expand_prog) |>
+    (run_pass "Unfold_unnest" Unfold_unnest.norm_prog) |>
+    (run_pass "Expand_array (bitslice)" Expand_array.expand_array) |>
+    (run_pass "Expand_permut" Expand_permut.expand_permut) |>
+    (run_pass "Norm_tuples.norm_tuples 1" Norm_tuples.norm_tuples) |>
+    (run_pass "Bitslice_shift" Bitslice_shift.expand_shifts) |>
+    (run_pass "Norm_tuples.norm_tuples 2" Norm_tuples.norm_tuples)
+
     
 let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
 
@@ -40,41 +55,65 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
 
   let normalize_core x _ =
     x |>
+      (* Remove slices/ranges (and forall and arrays in some cases) *)
       (run_pass "Expand_array 1.5" Expand_array.expand_array)              |>
-      (run_pass "Norm_bitslice 1" Norm_bitslice.norm_prog)                 |>
+      (* *)
+      (run_pass "Norm_bitslice 1" norm_bitslice)                           |>
+      (* Remove arrays from parameters when needed *)
       (run_pass "Expand_parameters" Expand_parameters.expand_parameters)   |>
+      (* Make sure the number of parameters for each function call is right *)
       (run_pass "Fix_dim params" Fix_dim.Dir_params.fix_dim)               |>
+      (* Remove slices/ranges (and forall and arrays in some cases) *)
       (run_pass "Expand_array 2" Expand_array.expand_array)                |>
-      (run_pass "Norm_bitslice 2" Norm_bitslice.norm_prog)                 |>
+      (* *)
+      (run_pass "Norm_bitslice 2" norm_bitslice)                           |>
+      (* Remove arrays from parameters when needed *)
       (run_pass "Expand_parameters 2" Expand_parameters.expand_parameters) |>
+      (* Make sure the number of parameters for each function call is right *)
       (run_pass "Fix_dim inner" Fix_dim.Dir_inner.fix_dim)                 |>
+      (* Remove slices/ranges (and forall and arrays in some cases) *)
       (run_pass "Expand_array 3" Expand_array.expand_array)                |>
-      (run_pass "Norm_bitslice 3" Norm_bitslice.norm_prog) in
+      (* *)
+      (run_pass "Norm_bitslice 3" norm_bitslice) in
     
   
   let normalized =
     prog |>
       (run_pass "Rename" rename)                                           |>
+      (* Remove arrays of nodes *)
       (run_pass "Expand_multiples" Expand_multiples.expand_multiples)      |>
+      (* Convert tables to circuits *)
       (run_pass "Convert_tables" Convert_tables.convert_tables)            |>
+      (* Remove slices/ranges (and forall and arrays in some cases) *)
       (run_pass "Expand_array" Expand_array.expand_array)                  |>
+      (* Schedules instructions according to their dependencies *)
       (run_pass "Init_scheduler 1" Init_scheduler.schedule_prog)           |>
+      (* Converts ':=' to SSA *)
       (run_pass "Remove_sync" Remove_sync.remove_sync)                     |>
+      (* Remove when/merge *)
       (run_pass "Remove_ctrl" Remove_ctrl.remove_ctrl)                     |>
+      (* *)
       (run_pass "Core normalize 1" normalize_core)                         |>
+      (* Monomorphize to H/V/B-slice *)
       (run_pass "Monomorphize" Monomorphize.monomorphize)                  |>
+      (* *)
       (run_pass "Core normalize 2" normalize_core)                         |>
+      (* Schedules instructions according to their dependencies *)
       (run_pass "Init_scheduler 2" Init_scheduler.schedule_prog)           |>
+      (* Bitslice schedule *)
       (run_pass "Pre_schedule" sched_fun)                                  |>
+      (* Inlining *)
       (run_pass "Inline" Inline.inline)                                    |>
+      (* Bitslice-schedule, 2nd pass *)
       (run_pass "Pre_schedule 2" sched_fun)                                |>
-      (run_pass "Norm_bitslice 4" Norm_bitslice.norm_prog) in
+      (* *)
+      (run_pass "Norm_bitslice 4" norm_bitslice) in
 
-  Gen_smt.print_gen_smt normalized "smt/normalized.smt.l";
+  if conf.gen_smt then Gen_smt.print_gen_smt normalized "smt/normalized.smt.l";
   let optimized   = run_pass "Optimize" Optimize.opt_prog normalized in
   let clock_fixed = run_pass "Fix_clocks" Fix_clocks.fix_prog optimized in
-  let norm_ok     = run_pass "Norm_bitslice 3" Norm_bitslice.norm_prog clock_fixed in
-  Gen_smt.print_gen_smt norm_ok "smt/optimized.smt.l";
+  let norm_ok     = run_pass "Norm_bitslice 3" norm_bitslice clock_fixed in
+  if conf.gen_smt then Gen_smt.print_gen_smt norm_ok "smt/optimized.smt.l";
   
   if conf.check_tbl then
     Soundness.tables_sound (Rename.rename_prog prog conf) norm_ok;

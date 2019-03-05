@@ -127,6 +127,7 @@ Record config := {
   type_check   : bool;
   clock_check  : bool;
   check_tbl    : bool;
+  gen_smt      : bool;
   inlining     : bool;
   inline_all   : bool;
   cse_cp       : bool;

@@ -20,6 +20,7 @@ let default_conf : config =
     type_check   = true;
     clock_check  = true;
     check_tbl    = false;
+    gen_smt      = false;
     inlining     = true;
     inline_all   = false;
     cse_cp       = true;

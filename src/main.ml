@@ -12,6 +12,7 @@ let verif       = ref false
 let type_check  = ref true
 let clock_check = ref true
 let check_tbl   = ref false
+let gen_smt     = ref false
                      
 let inlining     = ref true
 let inline_all   = ref false
@@ -90,6 +91,7 @@ let main () =
       "-bsize", Arg.Int (fun n -> block_size := n), "Specify the block size";
       "-ksize", Arg.Int (fun n -> key_size   := n), "Specify the key size";
       "-verif", Arg.Set verif, "Activate verification";
+      "-smt", Arg.Set gen_smt, "Generate SMT equations";
       "-check-tbl", Arg.Set check_tbl, "Activate verification of tables";
       "-no-type-check", Arg.Clear type_check, "Deactivate type checking";
       "-no-clock-check", Arg.Clear clock_check, "Deactivate clock checking";
@@ -145,6 +147,7 @@ let main () =
                  type_check     =   !type_check;
                  clock_check    =   !clock_check;
                  check_tbl      =   !check_tbl;
+                 gen_smt        =   !gen_smt;
                  inlining       =   !inlining;
                  inline_all     =   !inline_all;
                  cse_cp         =   !cse_cp;
