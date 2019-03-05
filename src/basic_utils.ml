@@ -138,3 +138,14 @@ let int_to_boollist (n : int) (size: int) : bool list =
 
 (* Returns the max of a *non-empty* list *)
 let max_l l = List.fold_left max (List.hd l) l
+
+(* Opens a file (and create it's parent directories if needed) *)
+let open_create_file (filename:string) : out_channel =
+  let dirname = Filename.dirname filename in
+  if dirname <> "" && not (Sys.file_exists dirname) then
+    ignore(Sys.command ("mkdir -p " ^ dirname));
+  open_out filename
+
+(* Returns basename without extension *)
+let basename_noext (filename:string) : string =
+  Filename.remove_extension (Filename.basename filename)

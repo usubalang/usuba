@@ -273,6 +273,6 @@ let print_prog (prog:prog) : unit =
   print_endline (prog_to_str prog)
 
 let print_prog_to_file (prog:prog) (filename:string) : unit =
-  let fp = open_out filename in
+  let fp = open_create_file filename in
   output_string fp (prog_to_str prog);
   close_out fp

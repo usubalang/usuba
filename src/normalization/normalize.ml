@@ -39,6 +39,8 @@ let norm_bitslice (prog: prog) (conf:config) =
 
     
 let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
+  let basename = basename_noext conf.filename in
+  let ua_tmp_dir = "ua0dumps/" ^ basename ^ "/" in
 
   let run_pass title func ?(sconf = conf) prog =
     run_pass title func sconf prog in
@@ -77,7 +79,7 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
       (run_pass "Norm_bitslice 3" norm_bitslice) in
     
   
-  let normalized =
+  let prog =
     prog |>
       (run_pass "Rename" rename)                                           |>
       (* Remove arrays of nodes *)
@@ -99,26 +101,37 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
       (* *)
       (run_pass "Core normalize 2" normalize_core)                         |>
       (* Schedules instructions according to their dependencies *)
-      (run_pass "Init_scheduler 2" Init_scheduler.schedule_prog)           |>
-      (* Bitslice schedule *)
-      (run_pass "Pre_schedule" sched_fun)                                  |>
-      (* Inlining *)
-      (run_pass "Inline" Inline.inline)                                    |>
-      (* Bitslice-schedule, 2nd pass *)
-      (run_pass "Pre_schedule 2" sched_fun)                                |>
-      (* *)
-      (run_pass "Norm_bitslice 4" norm_bitslice) in
+      (run_pass "Init_scheduler 2" Init_scheduler.schedule_prog) in
 
-  if conf.gen_smt then Gen_smt.print_gen_smt normalized "smt/normalized.smt.l";
-  let optimized   = run_pass "Optimize" Optimize.opt_prog normalized in
-  let clock_fixed = run_pass "Fix_clocks" Fix_clocks.fix_prog optimized in
-  let norm_ok     = run_pass "Norm_bitslice 3" norm_bitslice clock_fixed in
-  if conf.gen_smt then Gen_smt.print_gen_smt norm_ok "smt/optimized.smt.l";
+  if false then Usuba_print.print_prog_to_file prog (ua_tmp_dir ^ "normalized.ua");
   
-  if conf.check_tbl then
-    Soundness.tables_sound (Rename.rename_prog prog conf) norm_ok;
+  (* Bitslice schedule *)
+  let prog = run_pass "Pre_schedule" sched_fun prog in
+  if false then Usuba_print.print_prog_to_file prog (ua_tmp_dir ^ "pre-scheduled.ua");
+    
+ (* Inlining + bitslice schedule v2 *)  
+  let prog = prog |>
+               (run_pass "Inline" Inline.inline)       |>
+               (run_pass "Pre_schedule 2" sched_fun)   |>
+               (run_pass "Norm_bitslice 3" norm_bitslice) in
+  if false then Usuba_print.print_prog_to_file prog (ua_tmp_dir ^ "inlined.ua");
+    
+  (* CSE-CP + Scheduling *)
+  let prog = prog |>
+               (run_pass "Optimize" Optimize.opt_prog) |>
+               (run_pass "Norm_bitslice 4" norm_bitslice) in
+  if false then Usuba_print.print_prog_to_file prog (ua_tmp_dir ^ "optimized.ua");
+    
 
-  norm_ok
+  (* let clock_fixed = run_pass "Fix_clocks" Fix_clocks.fix_prog optimized in *)
+
+  (* if conf.gen_smt then Gen_smt.print_gen_smt normalized "smt/normalized.smt.l"; *)
+  (* if conf.gen_smt then Gen_smt.print_gen_smt norm_ok "smt/optimized.smt.l"; *)
+  
+  (* if conf.check_tbl then *)
+  (*   Soundness.tables_sound (Rename.rename_prog prog conf) norm_ok; *)
+
+  prog
   
 
 let compile (prog:prog) (conf:config) : prog =
