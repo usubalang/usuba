@@ -20,6 +20,7 @@ let schedule_n   = ref 10
 let share_var    = ref false
 let precal_tbl   = ref true
 let no_arr       = ref false
+let split_arr    = ref false
 let no_arr_tmp   = ref false
 let arr_entry    = ref true
 let unroll       = ref false
@@ -98,6 +99,7 @@ let main () =
       "-no-precalc-tbl", Arg.Clear precal_tbl, "Don't use pre-computed tables";
       "-no-arr-tmp", Arg.Set no_arr, "Don't use arrays for temporaries";
       "-no-arr", Arg.Set no_arr, "Don't keep any array";
+      "-split-arr", Arg.Set split_arr, "Expand array, but keep them";
       "-no-arr-entry", Arg.Clear arr_entry, "Don't keep any arrays in the entry point";
       "-unroll", Arg.Set unroll, "Unroll all loops";
       "-interleave", Arg.Int (fun n -> interleave := n), "Interleave encryptions";
@@ -145,6 +147,7 @@ let main () =
                  runtime        =   !runtime;
                  ortho          =   !ortho;
                  no_arr         =   no_arr; (* local var! *)
+                 split_arr      =   !split_arr;
                  no_arr_tmp     =   !no_arr_tmp;
                  arr_entry      =   !arr_entry;
                  unroll         =   !unroll;

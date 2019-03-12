@@ -139,6 +139,7 @@ Record config := {
   runtime      : bool;
   ortho        : bool;
   no_arr       : bool;
+  split_arr    : bool;
   no_arr_tmp   : bool;
   arr_entry    : bool;
   unroll       : bool;

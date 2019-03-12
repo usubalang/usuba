@@ -32,6 +32,7 @@ let default_conf : config =
     bits_per_reg = 64;
     ortho        = true;
     no_arr       = false;
+    split_arr    = false;
     no_arr_tmp   = false;
     arr_entry    = true;
     unroll       = false;

@@ -158,13 +158,16 @@ let var_d_opt_to_str (vopt:var_d_opt) =
   | PlazyLift  -> "lazyLift"
 let var_d_opt_to_str_l = lift_space var_d_opt_to_str
                                                    
-let vd_to_str (vd:var_d) =
-  sprintf "%s : %s %s :: %s"
-          vd.vid.name
-          (var_d_opt_to_str_l vd.vopts)
-          (typ_to_str vd.vtyp)
-          (clock_to_str vd.vck)
-let p_to_str = lift_comma vd_to_str
+let vd_to_str ?(full=true) (vd:var_d) =
+  if full then
+    sprintf "%s : %s %s :: %s"
+            vd.vid.name
+            (var_d_opt_to_str_l vd.vopts)
+            (typ_to_str vd.vtyp)
+            (clock_to_str vd.vck)
+  else
+    vd.vid.name
+let p_to_str ?(full=true) = lift_comma (vd_to_str ~full:full)
                             
 
 let optstmt_to_str = function
@@ -194,12 +197,16 @@ let rec deq_to_str_types = function
              (join "\n    " (List.map deq_to_str_types d))
      
                                                                 
-let single_node_to_str (id:ident) (p_in:p) (p_out:p) (vars:p) (deq:deq list) =
-  "node " ^ id.name ^ "(" ^ (p_to_str p_in) ^ ")\n  returns "
-  ^ (p_to_str p_out) ^ "\nvars\n"
-  ^ (join ",\n" (List.map (fun x -> "  " ^ (vd_to_str x)) vars)) ^ "\nlet\n"
-  ^ (join ";\n" (List.map (fun x -> "  " ^ x) (List.map deq_to_str deq)))
-  ^ "\ntel"
+let single_node_to_str ?(full=true) (id:ident) (p_in:p) (p_out:p) (vars:p) (deq:deq list) =
+  "node " ^ id.name ^ "(" ^ (p_to_str ~full:full p_in) ^ ")\n  returns "
+  ^ (p_to_str ~full:full p_out) ^ "\n" ^
+    (if full then
+       "vars\n"
+       ^ (join ",\n" (List.map (fun x -> "  " ^ (vd_to_str x)) vars)) ^ "\n"
+     else "" )
+    ^ "let\n"
+    ^ (join ";\n" (List.map (fun x -> "  " ^ x) (List.map deq_to_str deq)))
+    ^ "\ntel"
 
 let optdef_to_str = function
   | Inline    -> "_inline"
@@ -208,42 +215,47 @@ let optdef_to_str = function
   | No_opt    -> "_no_opt"
   | Is_table  -> ""
       
-let def_to_str (def:def) =
+let def_to_str ?(full=true) (def:def) =
   let (id,p_in,p_out) = (def.id,def.p_in,def.p_out) in
-  (join " " (List.map optdef_to_str def.opt)) ^ " " ^ 
+  (join " " (List.map optdef_to_str def.opt)) ^
+    (if List.length def.opt > 0 then " " else "") ^ 
     (match def.node with
      | Single(vars,deq) ->
-        single_node_to_str id p_in p_out vars deq
+        single_node_to_str ~full:full id p_in p_out vars deq
      | Perm l ->
-        "perm " ^ id.name ^ "(" ^ (p_to_str p_in)
+        "perm " ^ id.name ^ "(" ^ (p_to_str ~full:full p_in)
         ^ ")\n  returns " ^ (p_to_str p_out) ^ "\n{\n  "
         ^ (join ", " (List.map string_of_int l)) ^ "\n}\n"
      | Table l ->
-        "table " ^ id.name ^ "(" ^ (p_to_str p_in)
-        ^ ")\n  returns " ^ (p_to_str p_out) ^ "\n{\n  "
+        "table " ^ id.name ^ "(" ^ (p_to_str ~full:full p_in)
+        ^ ")\n  returns " ^ (p_to_str ~full:full p_out) ^ "\n{\n  "
         ^ (join ", " (List.map string_of_int l)) ^ "\n}\n"
                                                      
      | Multiple l ->
         match List.nth l 0 with
         | Single _ ->
-           "node " ^ id.name ^ "(" ^ (p_to_str p_in)
-           ^ ")\n  returns " ^ (p_to_str p_out) ^ "\n[\n"
+           "node " ^ id.name ^ "(" ^ (p_to_str ~full:full p_in)
+           ^ ")\n  returns " ^ (p_to_str ~full:full p_out) ^ "\n[\n"
            ^  (join "\n;\n"
                     (List.map
                        (fun x -> match x with
-                                 | Single (v,d) -> "vars\n"
-                                                   ^ (join ",\n"
-                                                           (List.map
-                                                              (fun x -> "  " ^ (vd_to_str x)) v))
-                                                   ^ "\nlet\n" 
-                                                   ^ (join ";\n"
-                                                           (List.map deq_to_str d))
-                                                   ^ "\ntel\n"
+                                 | Single (v,d) ->
+                                    (if full then
+                                       ("vars\n"
+                                        ^ (join ",\n"
+                                                (List.map
+                                                   (fun x -> "  " ^ (vd_to_str x)) v))
+                                        ^ "\n")
+                                     else "") ^
+                                      "let\n" ^
+                                        (join ";\n"
+                                              (List.map deq_to_str d))
+                                        ^ "\ntel\n"
                                  | _ -> assert false) l))
            ^ "\n]\n"
         | Perm _   ->
-           "perm[] " ^ id.name ^ "(" ^ (p_to_str p_in)
-           ^ ")\n  returns " ^ (p_to_str p_out) ^ "\n[ "
+           "perm[] " ^ id.name ^ "(" ^ (p_to_str ~full:full p_in)
+           ^ ")\n  returns " ^ (p_to_str ~full:full p_out) ^ "\n[ "
            ^ (join "\n;\n"
                    (List.map
                       (fun x -> match x with
@@ -253,8 +265,8 @@ let def_to_str (def:def) =
                                 | _ -> assert false) l))
            ^ "\n]\n"
         | Table _  ->
-           "table[] " ^ id.name ^ "(" ^ (p_to_str p_in)
-           ^ ")\n  returns " ^ (p_to_str p_out) ^ "\n[ "
+           "table[] " ^ id.name ^ "(" ^ (p_to_str ~full:full p_in)
+           ^ ")\n  returns " ^ (p_to_str ~full:full p_out) ^ "\n[ "
            ^ (join "\n;\n"
                    (List.map
                       (fun x -> match x with
@@ -264,15 +276,15 @@ let def_to_str (def:def) =
                                 | _ -> assert false) l))
            ^ "\n]\n"
         | _ -> assert false)
-let def_to_str_l = lift_comma def_to_str
+let def_to_str_l  ?(full=true) = lift_comma (def_to_str ~full:full)
                                                        
-let prog_to_str (prog:prog) : string=
-  join "\n\n" (List.map def_to_str prog.nodes)
+let prog_to_str  ?(full=true)(prog:prog) : string=
+  join "\n\n" (List.map (def_to_str ~full:full) prog.nodes)
 
-let print_prog (prog:prog) : unit =
-  print_endline (prog_to_str prog)
+let print_prog ?(full=true) (prog:prog) : unit =
+  print_endline (prog_to_str ~full:full prog)
 
-let print_prog_to_file (prog:prog) (filename:string) : unit =
+let print_prog_to_file ?(full=true) (prog:prog) (filename:string) : unit =
   let fp = open_create_file filename in
-  output_string fp (prog_to_str prog);
+  output_string fp (prog_to_str ~full:full prog);
   close_out fp

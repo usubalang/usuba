@@ -217,7 +217,8 @@ let rec map_special_last f g l =
 
     
 let rec expand_array (prog:prog) (conf:config): prog =
-  let force  = if conf.no_arr || must_expand prog then 1 else 0 in
+  let force  = if conf.split_arr then 2 else
+                 if conf.no_arr || must_expand prog then 1 else 0 in
   let unroll = conf.unroll in
   { nodes = map_special_last (expand_def force unroll false) (expand_def force unroll conf.arr_entry) prog.nodes }
 

@@ -103,30 +103,36 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
       (* Schedules instructions according to their dependencies *)
       (run_pass "Init_scheduler 2" Init_scheduler.schedule_prog) in
 
-  if false then Usuba_print.print_prog_to_file prog (ua_tmp_dir ^ "normalized.ua");
+  let print_ua_inter = false in
   
+  if print_ua_inter then Usuba_print.print_prog_to_file ~full:false prog (ua_tmp_dir ^ "1-normalized.ua");
+  
+  let prev = prog in
   (* Bitslice schedule *)
   let prog = run_pass "Pre_schedule" sched_fun prog in
-  if false then Usuba_print.print_prog_to_file prog (ua_tmp_dir ^ "pre-scheduled.ua");
-    
- (* Inlining + bitslice schedule v2 *)  
+  if print_ua_inter then Usuba_print.print_prog_to_file ~full:false prog (ua_tmp_dir ^ "2-pre-scheduled.ua");
+  if conf.gen_smt   then Gen_smt.print_gen_smt prev prog
+                                               ("smt/" ^ basename ^ "/1-pre-scheduled");
+
+  let prev = prog in 
+  (* Inlining + bitslice schedule v2 *)  
   let prog = prog |>
                (run_pass "Inline" Inline.inline)       |>
                (run_pass "Pre_schedule 2" sched_fun)   |>
                (run_pass "Norm_bitslice 3" norm_bitslice) in
-  if false then Usuba_print.print_prog_to_file prog (ua_tmp_dir ^ "inlined.ua");
-    
+  if print_ua_inter then Usuba_print.print_prog_to_file ~full:false prog (ua_tmp_dir ^ "3-inlined.ua");
+  if conf.gen_smt   then Gen_smt.print_gen_smt prev prog ("smt/" ^ basename ^ "/2-inlined");
+
+  let prev = prog in
   (* CSE-CP + Scheduling *)
   let prog = prog |>
                (run_pass "Optimize" Optimize.opt_prog) |>
                (run_pass "Norm_bitslice 4" norm_bitslice) in
-  if false then Usuba_print.print_prog_to_file prog (ua_tmp_dir ^ "optimized.ua");
+  if print_ua_inter then Usuba_print.print_prog_to_file ~full:false prog (ua_tmp_dir ^ "4-optimized.ua");
+  if conf.gen_smt   then Gen_smt.print_gen_smt prev prog ("smt/" ^ basename ^ "/3-optimized");
     
 
   (* let clock_fixed = run_pass "Fix_clocks" Fix_clocks.fix_prog optimized in *)
-
-  (* if conf.gen_smt then Gen_smt.print_gen_smt normalized "smt/normalized.smt.l"; *)
-  (* if conf.gen_smt then Gen_smt.print_gen_smt norm_ok "smt/optimized.smt.l"; *)
   
   (* if conf.check_tbl then *)
   (*   Soundness.tables_sound (Rename.rename_prog prog conf) norm_ok; *)
