@@ -209,17 +209,21 @@ module PythonSMT = struct
                                       (*                   (eval_arith_ne ae)) *)
                          | Lrotate->
                             (* sprintf "(%s << %d) | LShR(%s, %d-%d)" *)
-                            sprintf "(%s << %d) | (%s >> (%d-%d))"
+                            (* sprintf "(%s << %d) | (%s >> (%d-%d))" *)
+                            sprintf "(%s << %d) | ((%s >> (%d-%d)) & %#010x)"
                                     (expr_to_smt slicing msize e)
                                     (eval_arith_ne ae)
                                     (expr_to_smt slicing msize e)
                                     msize
                                     (eval_arith_ne ae)
+                                    (0xFFFFFFFF lsr (msize-(eval_arith_ne ae)))
                           | Rrotate->
                             (* sprintf "LShR(%s, %d) | (%s << (%d-%d))" *)
-                            sprintf "(%s >> %d) | (%s << (%d-%d))"
+                            (* sprintf "(%s >> %d) | (%s << (%d-%d))" *)
+                            sprintf "((%s >> %d) & %#010x) | (%s << (%d-%d))"
                                     (expr_to_smt slicing msize e)
                                     (eval_arith_ne ae)
+                                    (0xFFFFFFFF lsr (eval_arith_ne ae))
                                     (expr_to_smt slicing msize e)
                                     msize
                                     (eval_arith_ne ae))
