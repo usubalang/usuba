@@ -176,39 +176,58 @@ module PythonSMT = struct
     | _ -> printf "Can't var_to_smt( %s )\n" (Usuba_print.var_to_str v);
            assert false
                      
-  let rec expr_to_smt (slicing:dir) (e:expr) : string =
+  let rec expr_to_smt (slicing:dir) (msize:int) (e:expr) : string =
     match e with
     | Const b  -> if b = 1 then "True" else "False"
     | ExpVar v -> var_to_smt v
     | Not e -> (match slicing with
-                | Bslice -> sprintf "Not(%s)" (expr_to_smt slicing e)
-                | _ -> sprintf "~ %s" (expr_to_smt slicing e))
+                | Bslice -> sprintf "Not(%s)" (expr_to_smt slicing msize e)
+                | _ -> sprintf "~ %s" (expr_to_smt slicing msize e))
     | Log(op,x,y) -> (match slicing with
                       | Bslice -> sprintf "%s(%s,%s)" 
                                           (log_op_to_smt slicing op)
-                                          (expr_to_smt slicing x)
-                                          (expr_to_smt slicing y)
+                                          (expr_to_smt slicing msize x)
+                                          (expr_to_smt slicing msize y)
                       | _ -> sprintf "%s %s %s" 
-                                     (expr_to_smt slicing x)
+                                     (expr_to_smt slicing msize x)
                                      (log_op_to_smt slicing op)
-                                     (expr_to_smt slicing y))
+                                     (expr_to_smt slicing msize y))
     | Arith(op,x,y) -> sprintf "%s %s %s"
-                               (expr_to_smt slicing x)
+                               (expr_to_smt slicing msize x)
                                (arith_op_to_smt op)
-                               (expr_to_smt slicing y)
+                               (expr_to_smt slicing msize y)
     | Shift(op,e,ae) -> (match op with
                          | Lshift | Rshift -> sprintf "%s %s %d"
-                                                      (expr_to_smt slicing e)
+                                                      (expr_to_smt slicing msize e)
                                                       (shift_op_to_smt op)
                                                       (eval_arith_ne ae)
-                         | Lrotate | Rrotate -> sprintf "%s(%s,%d)"
-                                                        (shift_op_to_smt op)
-                                                        (expr_to_smt slicing e)
-                                                        (eval_arith_ne ae))
+                         (* | Lrotate | Rrotate -> *)
+                                      (* Using Z3's Rotate functions *)
+                                      (* sprintf "%s(%s,%d)" *)
+                                      (*                   (shift_op_to_smt op) *)
+                                      (*                   (expr_to_smt slicing e) *)
+                                      (*                   (eval_arith_ne ae)) *)
+                         | Lrotate->
+                            (* sprintf "(%s << %d) | LShR(%s, %d-%d)" *)
+                            sprintf "(%s << %d) | (%s >> (%d-%d))"
+                                    (expr_to_smt slicing msize e)
+                                    (eval_arith_ne ae)
+                                    (expr_to_smt slicing msize e)
+                                    msize
+                                    (eval_arith_ne ae)
+                          | Rrotate->
+                            (* sprintf "LShR(%s, %d) | (%s << (%d-%d))" *)
+                            sprintf "(%s >> %d) | (%s << (%d-%d))"
+                                    (expr_to_smt slicing msize e)
+                                    (eval_arith_ne ae)
+                                    (expr_to_smt slicing msize e)
+                                    msize
+                                    (eval_arith_ne ae))
     | _ -> printf "Can't expr_to_smt( %s )\n" (Usuba_print.expr_to_str e);
            assert false
                   
-  let rec deqs_to_smt (indent:int) (prefix:string) (slicing:dir) (deqs:deq list) : string =
+  let rec deqs_to_smt (indent:int) (prefix:string) (slicing:dir)
+                      (msize:int) (deqs:deq list) : string =
     join ""
          (List.map (function
                      | Eqn(vl,Fun(f,l),_) -> (* funcall *)
@@ -216,19 +235,19 @@ module PythonSMT = struct
                                 (make_indent indent)
                                 (join "," (List.map var_to_smt vl))
                                 (prefix ^ (norm_ident f))
-                                (join "," (List.map (expr_to_smt slicing) l))
+                                (join "," (List.map (expr_to_smt slicing msize) l))
                      | Eqn([v],e,_) -> (* Not a funcall *)
                         sprintf "%s%s = %s\n"
                                 (make_indent indent)
                                 (var_to_smt v)
-                                (expr_to_smt slicing e)
+                                (expr_to_smt slicing msize e)
                      | Loop(i,ei,ef,dl,_) -> (* loop *)
                         sprintf "%sfor %s in range(%d,%d+1):\n%s"
                                 (make_indent indent)
                                 (norm_ident i)
                                 (eval_arith_ne ei)
                                 (eval_arith_ne ef)
-                                (deqs_to_smt (indent+1) prefix slicing dl)
+                                (deqs_to_smt (indent+1) prefix slicing msize dl)
                      | _ -> assert false (* *)
                    ) deqs)
                            
@@ -246,9 +265,12 @@ module PythonSMT = struct
     match def.node with
     | Single(vars,body) ->
        let slicing = get_type_dir (List.hd def.p_in).vtyp in
+       let msize = match get_type_m (List.hd def.p_in).vtyp with
+         | Mint m -> m
+         | _ -> assert false in
        let p_out = p_to_smt def.p_out in
        let vars = p_to_smt vars in
-       let body = deqs_to_smt 1 prefix slicing body in
+       let body = deqs_to_smt 1 prefix slicing msize body in
        sprintf "def %s(%s):\n%s\n%s\n%s\n  return (%s)\n"
                (prefix ^ (norm_ident def.id))
                (join "," (List.map (fun vd -> norm_ident vd.vid) def.p_in))
