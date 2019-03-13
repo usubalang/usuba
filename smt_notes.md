@@ -156,7 +156,7 @@ Using Python have several advantages over SMT-LIB:
  
  ```
  forall i in [1, 5] {
-       out[i] = in[i]
+     out[i] = in[i]
  }
  ```
  
@@ -164,11 +164,38 @@ Using Python have several advantages over SMT-LIB:
  
  ```
  forall i in range(1,6):
-       out[i] = in[i]
+     out[i] = in[i]
  ```
  
  Once again, Z3 won't know that there ever was a loop somewhere: the loop will be executed in Python are therefore be unrolled in the SMT tree generated. (this is possible only since loops bounds are statically known)
+ 
+ - **Datatypes.** We need to work with two basic datatypes: boolean (Z3's `Bool`) when doing bitslicing, and unsigned integers (Z3's `BitVec`) when doing V-slicing. Everything is pretty straight forward here. Arrays are once again kept in python:
+ 
+ ```
+ usuba     ->    Z3
+ ------------------------
+ x:bool    ->    x = Bool('x')
+ x:u4      ->    x = BitVec('x', 4)
+ x:u4[5]   ->    x = [ BitVec('x[%d]' % c, 4) for c in range(5) ]
+ ```
 
+ - **What we ask Z3 to solve**. We add Z3 to check that it's not possible to find inputs such that both programs produce different outputs. For instance,
+ 
+ ```
+ # Assume that f1/f2 both return an array of 2 elements
+ x = f1(inputs1)   # consider that 'f1' and 'inputs1' have been defined earlier
+ y = f2(inputs2)   # same for 'f2' and 'inputs2'
+ 
+ s = Solver()
+ s.add( Or( x[0] != y[0], x[1] != y[1] ) )
+ print(s.check())
+ ```
+ 
+ (the last 3 lignes could potentially be a single `prove` - I didn't know about `prove` until recently)
+ 
+ If `f1` and `f2` are indeed equivalent, Z3 should say `unsat`.
+ 
+ 
 
 ## Evaluation
 
@@ -182,17 +209,21 @@ For each pass, we generate two SMT trees: one for the program before, one for th
 - Rectangle V-sliced (using 16-bits BitVectors): 40/40/40 seconds
 - Rectangle Bitsliced (using Bool): 17/17/17 seconds
 - DES (using Bool): 1/1/1 second
-- AES (using Bool): 2.7//2.7 seconds
+- AES (using Bool): 2.7/6000/2.7 seconds
 - Chacha20 V-sliced (using 32-bits BitVectors): <1/<1/<1 second
-- Serpent V-sliced (using 32-bits BitVectors): <1/<1/<1 second (/!\ Using arithmetic shifts - see [Issues](#Issues))
+- Serpent V-sliced (using 32-bits BitVectors): <1/<1/<1 second
 
 We tried to manually insert errors in the SMT tree to check that Z3 would say `sat` (instead of `unsat`) as expected. It takes much longer to Z3 to come to such a conclusion: from a few seconds on DES, up to more than 25 minutes on Rectangle V-sliced (I actually stopped after 25 minutes; the memory consumption was about 16GB). Z3 never said `unsat` when we manually faulted the tree.
 
+Additionally, we compared two different implementations of Rectangle bitsliced (see [smt/rectangle_mixte](smt/rectangle_mixte)) (our compiler generated the usual SMT problems, and merged them to verify that both are indeed equivalent. It took about 18 seconds for Z3 to come to such conclusion (that is, about as much time as it needed to check that Rectangle's optimizations are correct (see above)).
+
 ## Issues
 
-- **Rotations / Logical shifts**. Some ciphers (eg Serpent) use rotations. Experimentally, Z3 doesn't come near proving equivalence between two full Serpents. Serpent contains 32 rounds. When reducing it to 5 rounds, it takes Z3 about 3 seconds to check the correctness of our transformations. With 10 rounds, it takes about 50 minutes. With 32 rounds, it's likely undoable. We can replace the rotations with shifts: if `x:u32`, then `x <<< n == (x << n) | (x >> (32-n))`. Using this to represent rotations allows Z3 to verify the whole Serpent in under 2 seconds. However, this result isn't the most precise, since `>>` is an arithmetic shift (ie signed) and not a logical one. Replacing `>>` with `LShR` (Z3's logical right shift) yield the same issue as rotations.
+- **Rotations / Logical shifts**. Some ciphers (eg Serpent) use rotations. Experimentally, Z3 doesn't come near proving equivalence between two full Serpents. Serpent contains 32 rounds. When reducing it to 5 rounds, it takes Z3 about 3 seconds to check the correctness of our transformations. With 10 rounds, it takes about 50 minutes. With 32 rounds, it's likely undoable. We can replace the rotations with shifts: if `x:u32`, then `x <<< n == (x << n) | (x >> (32-n))`. Using this to represent rotations allows Z3 to verify the whole Serpent in under 2 seconds. However, this result isn't the most precise, since `>>` is an arithmetic shift (ie signed) and not a logical one. Replacing `>>` with `LShR` (Z3's logical right shift) yield the same issue as rotations. Initial suggestions:
   - A solution could be to try and remove rotations at Usuba level. However, I expect that this isn't easily doable.
-  - Is using arithmetic shifts really wrong? If both programs are equivalent with arithmetic shifts, it might imply that they are equivalent when using logical shifts -> think of a proof/justification/counter-example.
+  - Is using arithmetic shifts really wrong? If both programs are equivalent with arithmetic shifts, it might imply that they are equivalent when using logical shifts -> think of a proof/justification/counter-example.  
+  
+ What we ended up doing is simulating logical shifts using an arithmetic ones. (and encoding rotations as combinations of shifts)
   
 - **AES inlining**. Transformations that don't change too much the structure of the program (eg. scheduling) seem easy to verify. However, inlining changes quite a lot structure of the program, and AES's code is quite long (fully unrolled (which it is once the SMT problem has been generated), it is probably around 8-10k instructions). 
 
