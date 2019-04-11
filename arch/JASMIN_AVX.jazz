@@ -1,0 +1,47 @@
+/* ******************************************** *\
+ * 
+ * 
+ *
+\* ******************************************** */
+
+
+/* Including headers */
+#pragma once
+
+#ifndef AVX
+#define AVX
+#endif
+
+#define DATATYPE u256
+
+#define AND(a,b)  a & b
+#define OR(a,b)   a | b
+#define XOR(a,b)  a ^ b
+#define ANDN(a,b) ~a & b
+#define NOT(a)    ~a
+
+// TODO: Don't harcode addition type
+#define ADD(a,b,c)  a +8u32 b
+
+
+u256 l_rotate_8_mask  = (32u8)[14,13,12,15, 10,9,8,11, 6,5,4,7, 2,1,0,3, 14,13,12,15, 10,9,8,11, 6,5,4,7, 2,1,0,3];
+u256 l_rotate_16_mask = (32u8)[13,12,15,14, 9,8,11,10, 5,4,7,6, 1,0,3,2, 13,12,15,14, 9,8,11,10, 5,4,7,6, 1,0,3,2];
+fn L_ROTATE(reg u256 k, inline int r) -> reg u256
+{
+  reg u256 t;
+
+  if(r==16){ 
+    k = #x86_VPSHUFB_256(k, l_rotate_16_mask);
+
+  } else { if (r==8) {
+    k = #x86_VPSHUFB_256(k, l_rotate_8_mask);
+
+  } else {
+    t = k <<8u32 r;
+    k = k >>8u32 (32-r);
+    k ^= t;
+
+  }}
+
+  return k;
+}

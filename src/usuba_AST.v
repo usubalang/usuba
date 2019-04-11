@@ -141,6 +141,7 @@ Record config := {
   lazylift     : bool;
   slicing_set  : bool;
   slicing_type : slicing;
+  jasmin       : bool;
 }.
 
 Set Extraction KeepSingleton.

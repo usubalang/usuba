@@ -44,6 +44,7 @@ let default_conf : config =
     lazylift     = false;
     slicing_set  = false;
     slicing_type = B;
+    jasmin       = false;
   }
     
 let make_env () = Hashtbl.create 100

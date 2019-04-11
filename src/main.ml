@@ -18,7 +18,7 @@ let inline_all   = ref false
 let cse_cp       = ref true
 let scheduling   = ref true
 let schedule_n   = ref 10
-let share_var    = ref true
+let share_var    = ref false
 let precal_tbl   = ref true
 let no_arr       = ref false
 let arr_entry    = ref true
@@ -41,6 +41,8 @@ let lazylift    = ref false
 let slicing_type = ref B
 let slicing_set  = ref false
 
+let jasmin      = ref false
+                 
 let str_to_arch = function
   | "std"     -> Std
   | "mmx"     -> MMX
@@ -60,15 +62,15 @@ let bits_in_arch = function
   | Neon     -> 128
   | AltiVec  -> 128
 
-let gen_output_filename (file_in: string) : string =
+let gen_output_filename (file_in: string) (ext:string) : string =
   let full_name = List.hd (String.split_on_char '.' file_in) in
   let out_name = last (String.split_on_char '/' full_name) in
-  out_name ^ ".c"
+  out_name ^ ext
                
 let print_c (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
   (* Generating C code *)
   let out = match !output with
-    | ""  -> open_out (gen_output_filename file_in)
+    | ""  -> open_out (gen_output_filename file_in ".c")
     | str -> open_out str in
 
   let normalized = Normalize.compile prog conf in
@@ -76,6 +78,19 @@ let print_c (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
   let c_prog = Usuba_to_c.prog_to_c prog normalized conf file_in in
   
   fprintf out "%s" c_prog;
+  close_out out
+
+let print_jasmin (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
+  (* Generating C code *)
+  let out = match !output with
+    | ""  -> open_out (gen_output_filename file_in ".jazz")
+    | str -> open_out str in
+
+  let normalized = Normalize.compile prog conf in
+
+  let jasmin_prog = Usuba_to_jasmin.prog_to_jasmin prog normalized conf file_in in
+  
+  fprintf out "%s" jasmin_prog;
   close_out out
 
             
@@ -122,6 +137,7 @@ let main () =
       "-H", Arg.Unit (fun () -> slicing_set := true; slicing_type := H), "Horizontal slicing.";
       "-V", Arg.Unit (fun () -> slicing_set := true; slicing_type := V), "Vertical slicing.";
       "-B", Arg.Unit (fun () -> slicing_set := true; slicing_type := B), "Bit slicing.";
+      "-jasmin", Arg.Set jasmin, "Generate jasmin code";
     ] in
   let usage_msg = "Usage: usuba [switches] [files]" in
   
@@ -161,6 +177,7 @@ let main () =
                  lazylift       =   !lazylift;
                  slicing_set    =   !slicing_set;
                  slicing_type   =   !slicing_type;
+                 jasmin         =   !jasmin;
                } in
 
     if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then
@@ -172,8 +189,12 @@ let main () =
     if !clock_check then
       if not (Clock_checker.is_clocked prog) then
         raise (Error "Unsound program: bad clocks");
-    print_c s prog conf in
-      
+
+    if !jasmin then
+      print_jasmin s prog conf
+    else
+      print_c s prog conf in
+  
   
   Arg.parse speclist compile usage_msg
     
