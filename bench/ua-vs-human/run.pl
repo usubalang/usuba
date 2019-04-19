@@ -34,8 +34,11 @@ my $collect = !@ARGV || "@ARGV" =~ /-l/;
 if ($run) {
     say "Running supercop (gonna take a while)...";
     chdir "$FindBin::Bin/../../supercop";
-    system "./data_do";
+    system "rm -rf ../supercop-data";
+    system "rm -f supercop-data";
+    system "./data-do";
     say "Running supercop: Done.";
+    chdir $FindBin::Bin;
 }
 
 
@@ -45,7 +48,7 @@ open my $FP_OUT, '>', 'human.tex';
 # ##############################  DES  ###############################
 
 {
-    chdir "$FindBin::Bin//des";
+    chdir "$FindBin::Bin/des";
     
     system "./compile.pl @ARGV"
         if $gen || $compile || $run;
@@ -194,7 +197,7 @@ open my $FP_OUT, '>', 'human.tex';
 { # STD
     chdir "$FindBin::Bin/../../";
 
-    my $ua_file  = 'supercop-data/dadaubuntu/amd64/try/c/icc_-msse4.2_-O3_-fomit-frame-pointer_-fwrapv_-std=gnu11/crypto_stream/chacha20/usuba-std/data';
+    my $ua_file  = 'supercop-data/dadaubuntu/amd64/try/c/icc_-xSSE4.2_-O3_-fomit-frame-pointer_-fwrapv_-std=gnu11/crypto_stream/chacha20/usuba-std/data';
     my $ref_file = 'supercop-data/dadaubuntu/amd64/try/c/icc_-march=native_-O3_-fomit-frame-pointer_-fwrapv_-std=gnu11/crypto_stream/chacha20/e/ref/data';
 
     my $ref_speed = get_speed_supercop($ref_file);
@@ -283,7 +286,7 @@ open my $FP_OUT, '>', 'human.tex';
     chdir "$FindBin::Bin/../../";
 
     my $ua_file  = 'supercop-data/dadaubuntu/amd64/try/c/clang_-march=native_-O3_-fomit-frame-pointer_-fwrapv_-std=gnu11/crypto_stream/serpent128ctr/inter-std/data';
-    my $ref_file = 'supercop-data/dadaubuntu/amd64/try/c/icc_-msse4.2_-O3_-fomit-frame-pointer_-fwrapv_-std=gnu11/crypto_stream/serpent128ctr/linux_c/data';
+    my $ref_file = 'supercop-data/dadaubuntu/amd64/try/c/icc_-xSSE4.2_-O3_-fomit-frame-pointer_-fwrapv_-std=gnu11/crypto_stream/serpent128ctr/linux_c/data';
 
     my $ref_speed = get_speed_supercop($ref_file);
     my $ua_speed  = get_speed_supercop($ua_file);
@@ -366,7 +369,7 @@ sub get_speed_supercop {
     open my $FP_IN, '<', $file or return 0;
     my @numbers;
     while (<$FP_IN>) {
-        next unless /xor_cycles 4096 (.*) $/;
+        next unless /xor_cycles 4096 (.*) *$/;
         push @numbers, split ' ', $1;
     }
     @numbers = sort { $a <=> $b } @numbers;
