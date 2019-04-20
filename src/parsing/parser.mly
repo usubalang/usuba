@@ -248,11 +248,11 @@ opt_var_d:
   | TOK_LAZYLIFT { PlazyLift }
 
 var_d:
-  x=ident TOK_COLON attr=list(opt_var_d) t=typ ck=pclock
-  { { vid = x; vtyp=t; vck=ck; vopts=attr } }
+  ids=separated_list(TOK_COMMA, ident) TOK_COLON attr=list(opt_var_d) t=typ ck=pclock
+  { List.map (fun x -> { vid = x; vtyp=t; vck=ck; vopts=attr }) ids }
 
 p:
-  | l=separated_list(TOK_COMMA, var_d) { l }
+  | l=separated_list(TOK_COMMA, var_d) { List.flatten l }
 
 dir:
   | { default_dir }
