@@ -11,8 +11,8 @@
   (list
    '("\\<\\(forall\\|in\\|let\\|node\\|perm\\|returns\\|t\\(?:able\\|el\\)\\|vars\\)\\>"
      . font-lock-keyword-face)
-   '("\\<\\(u[0-9]+\\(x[0-9]+\\)?\\|bool\\|nat\\)\\>" . font-lock-type-face)
-   '("\\<[a-z_][A-Za-z0-9_]*\\>" . font-lock-variable-name-face)
+   '("\\<\\(\\(u\\|v\\|b\\)[0-9]+\\(<[a-zA-Z0-9_']+>\\)?\\(x[0-9]+\\>\\)?\\|bool\\>\\|nat\\>\\)" . font-lock-type-face)
+   '("\\<[A-Za-z_][A-Za-z0-9_]*\\>" . font-lock-variable-name-face)
    '("\\<[0-9]+\\>" . font-lock-constant-face)
    '("\\<\\([&|^]=\\|[!&|~^]\\)\\>" . font-lock-builtin-face)))
 
