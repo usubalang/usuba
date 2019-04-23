@@ -153,6 +153,7 @@ Record config := {
   slicing_set  : bool;
   slicing_type : slicing;
   secure_loops : bool;
+  tightPROVE   : bool;
 }.
 
 Set Extraction KeepSingleton.

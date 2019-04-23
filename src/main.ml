@@ -40,6 +40,8 @@ let fdti         = ref ""
 let lazylift     = ref false
 let secure_loops = ref false
 
+let tightPROVE   = ref false
+                       
 let slicing_type = ref B
 let slicing_set  = ref false
 
@@ -126,6 +128,7 @@ let main () =
       "-H", Arg.Unit (fun () -> slicing_set := true; slicing_type := H), "Horizontal slicing.";
       "-V", Arg.Unit (fun () -> slicing_set := true; slicing_type := V), "Vertical slicing.";
       "-B", Arg.Unit (fun () -> slicing_set := true; slicing_type := B), "Bit slicing.";
+      "-tp", Arg.Set tightPROVE, "Generate tightPROVE circuits";
     ] in
   let usage_msg = "Usage: usuba [switches] [files]" in
   
@@ -133,10 +136,16 @@ let main () =
     let prog = Parse_file.parse_file s in
     let bits_per_reg = if !bits_per_reg <> 64 then !bits_per_reg
                        else bits_in_arch !arch in
-    let no_arr = if !slicing_set then match !slicing_type with
+    let no_arr = if !tightPROVE then
+                   true
+                 else
+                   if !slicing_set then match !slicing_type with
                                       | B -> true
                                       | _ -> !no_arr
-                 else !no_arr in
+                   else !no_arr in
+    if !tightPROVE then arr_entry := false;
+                       
+      
     let conf = { block_size     =   !block_size;
                  key_size       =   !key_size;
                  warnings       =   !warnings;
@@ -171,6 +180,7 @@ let main () =
                  slicing_set    =   !slicing_set;
                  slicing_type   =   !slicing_type;
                  secure_loops   =   !secure_loops;
+                 tightPROVE     =   !tightPROVE;
                } in
 
     if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then

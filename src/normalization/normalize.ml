@@ -77,6 +77,9 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
   if conf.check_tbl then
     Soundness.tables_sound (Rename.rename_prog prog conf) norm_ok;
 
+  if conf.tightPROVE then
+    Usuba_to_tightprove.print_prog norm_ok;
+  
   norm_ok
   
 
