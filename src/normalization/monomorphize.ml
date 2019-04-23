@@ -114,8 +114,10 @@ module Bslice = struct
     | Nat -> t
     | Uint(Bslice,Mint 1,n) -> t
     | Uint(Bslice,Mint m,n) -> Uint(Bslice,Mint 1,n*m)
+    | Uint(Bslice,Mvar m,n) when m.name = "m" -> Uint(Bslice,Mint 1,n)
     | Array(t',n) -> Array(refine_type t',n)
-    | _ -> assert false
+    | _ -> Printf.fprintf stderr "Can't refine_type(%s).\n" (Usuba_print.typ_to_str t);
+           assert false
   
   let refine_types (p:p) : p =
     List.map (fun vd -> { vd with vtyp = refine_type vd.vtyp }) p
