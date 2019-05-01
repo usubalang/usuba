@@ -154,6 +154,7 @@ Record config := {
   slicing_type : slicing;
   secure_loops : bool;
   tightPROVE   : bool;
+  shares       : N;
 }.
 
 Set Extraction KeepSingleton.

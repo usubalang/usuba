@@ -47,6 +47,7 @@ let default_conf : config =
     slicing_type = B;
     secure_loops = false;
     tightPROVE   = false;
+    shares       = 1;
   }
 
 let default_dir = Varslice { uid = -1; name = "D" }

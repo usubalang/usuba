@@ -19,11 +19,16 @@ let gen_runtime (orig:prog) (prog:prog) (conf:config) (filename:string) : string
   let entry = if conf.fdti <> "" then
                 List.(Nodes_to_c_fdti.def_to_c (nth prog.nodes (length prog.nodes -1))
                         conf.arr_entry conf)
+              else if conf.shares <> 1 then
+                List.(Nodes_to_c_masked.def_to_c (nth prog.nodes (length prog.nodes -1))
+                        conf.arr_entry conf)
               else
                 List.(Nodes_to_c.def_to_c (nth prog.nodes (length prog.nodes -1))
                         conf.arr_entry conf) in
   let prog_c = if conf.fdti <> "" then
                  map_no_end (fun x -> Nodes_to_c_fdti.def_to_c x false conf) prog.nodes
+               else if conf.shares <> 1 then
+                 map_no_end (fun x -> Nodes_to_c_masked.def_to_c x false conf) prog.nodes
                else
                  map_no_end (fun x -> Nodes_to_c.def_to_c x false conf) prog.nodes in
 
@@ -36,6 +41,7 @@ Printf.sprintf
 #include <stdint.h>
 
 /* Do NOT change the order of those define/include */
+%s
 %s
 #ifndef BITS_PER_REG
 #define BITS_PER_REG %d
@@ -61,8 +67,11 @@ Printf.sprintf
  "
   filename
   (if conf.runtime then "#define RUNTIME" else "#define NO_RUNTIME")
+  (if conf.shares <> 1 then Printf.sprintf "#define MASKING_ORDER %d" conf.shares else "")
   (bits_per_reg prog conf)
-  (if conf.fdti <> "" then Nodes_to_c_fdti.c_header conf.archi else Nodes_to_c.c_header conf.archi)
+  (if conf.fdti <> "" then Nodes_to_c_fdti.c_header conf.archi
+   else if conf.shares <> 1 then Nodes_to_c_masked.c_header conf.archi
+   else Nodes_to_c.c_header conf.archi)
   (join "\n\n" prog_c)
   entry
   (Usuba_print.prog_to_str orig)
