@@ -41,6 +41,7 @@ let lazylift     = ref false
 let secure_loops = ref false
 
 let tightPROVE   = ref false
+let shares       = ref 1
                        
 let slicing_type = ref B
 let slicing_set  = ref false
@@ -129,13 +130,15 @@ let main () =
       "-V", Arg.Unit (fun () -> slicing_set := true; slicing_type := V), "Vertical slicing.";
       "-B", Arg.Unit (fun () -> slicing_set := true; slicing_type := B), "Bit slicing.";
       "-tp", Arg.Set tightPROVE, "Generate tightPROVE circuits";
+      "-shares", Arg.Set_int shares, "Set the number of shares";
     ] in
   let usage_msg = "Usage: usuba [switches] [files]" in
   
   let compile s =
     let prog = Parse_file.parse_file s in
     let bits_per_reg = if !bits_per_reg <> 64 then !bits_per_reg
-                       else bits_in_arch !arch in
+                       else if !shares <> 1 then 32 else
+                         bits_in_arch !arch in
     let no_arr = if !tightPROVE then
                    true
                  else
@@ -181,6 +184,7 @@ let main () =
                  slicing_type   =   !slicing_type;
                  secure_loops   =   !secure_loops;
                  tightPROVE     =   !tightPROVE;
+                 shares         =   !shares;
                } in
 
     if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then
