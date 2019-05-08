@@ -119,6 +119,7 @@ rule token = parse
          
 (* integers *)
 | ['0'-'9']+ as i { TOK_int (int_of_string i) }
+| "0x" ['0'-'9' 'a'-'f' 'A'-'F'] as i { TOK_int (int_of_string i) }
                  
 (* end of file *)
 | eof   { TOK_EOF }
