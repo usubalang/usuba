@@ -167,10 +167,10 @@ let build_env_fun (nodes:def list) : (ident,def) Hashtbl.t =
                           
 (* Constructs a map { variables : types } *)
 let build_env_var (p_in:p) (p_out:p) (vars:p) : (ident, typ) Hashtbl.t =
-  let env = make_env () in
+  let env = Hashtbl.create 20 in
 
   let add_to_env (vd:var_d) : unit =
-    env_add env vd.vid vd.vtyp in
+    Hashtbl.replace env vd.vid vd.vtyp in
   
   List.iter add_to_env p_in;
   List.iter add_to_env p_out;
@@ -206,6 +206,12 @@ let rec get_var_type env (v:var) : typ =
                     | _ -> assert false)
   | _ -> Printf.fprintf stderr "Error: get_var_type(%s)\n" (Usuba_print.var_to_str v);
          assert false
+(* Shadowing the above def to add error treatment *)
+let get_var_type env (v:var) : typ =
+  try get_var_type env v with
+    Not_found -> Printf.fprintf stderr "Error: get_var_type(%s): not found\n"
+                                (Usuba_print.var_to_str v);
+                 raise Not_found
 
 let get_var_size env (v:var) : int =
   typ_size @@ get_var_type env v

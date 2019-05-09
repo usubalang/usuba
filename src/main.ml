@@ -10,7 +10,7 @@ let warnings    = ref false
 let verbose     = ref 1
 let verif       = ref false
 let type_check  = ref true
-let clock_check = ref true
+let clock_check = ref false
 let check_tbl   = ref false
                      
 let inlining     = ref true
