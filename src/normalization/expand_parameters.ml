@@ -8,17 +8,64 @@ open Basic_utils
 open Utils
 open Printf
 
-let stable = ref false
-
 exception Updated
-                                           
+exception Need_unroll
+            
+let stable = ref false                                           
 
-let get_vars_body = function Single(vars,body) -> vars,body | _ -> assert false
+let get_vars_body node = 
+  match node with
+  | Single(vars,body) -> vars,body 
+  | _ -> assert false
 
+let rec unroll_var env_it (v:var) : var =
+  match v with
+  | Var _ -> v
+  | Index(v',ae) -> Index(unroll_var env_it v',simpl_arith env_it ae)
+  | _ -> assert false
+                
+let rec unroll_expr (env_it:(ident,int) Hashtbl.t) (e:expr) : expr =
+  match e with
+  | Const _        -> e
+  | ExpVar v       -> ExpVar (unroll_var env_it v)
+  | Tuple  l       -> Tuple (List.map (unroll_expr env_it) l)
+  | Not e          -> Not (unroll_expr env_it e)
+  | Shift(op,e,ae) -> Shift(op,unroll_expr env_it e,simpl_arith env_it ae)
+  | Log(op,x,y)    -> Log(op,unroll_expr env_it x,unroll_expr env_it y)
+  | Shuffle(v,l)   -> Shuffle(unroll_var env_it v,l)
+  | Arith(op,x,y)  -> Arith(op,unroll_expr env_it x,unroll_expr env_it y)
+  | Fun(f,l)       -> Fun(f,List.map (unroll_expr env_it) l)
+  | _ -> assert false
+                
+let rec unroll_deq (env_it:(ident,int) Hashtbl.t) (deq:deq) : deq =
+  match deq with
+  | Eqn(lhs,e,sync) -> Eqn(List.map (unroll_var env_it) lhs,
+                           unroll_expr env_it e, sync)
+  | Loop(i',ei',ef',dl',opts') -> Loop(i',simpl_arith env_it ei',simpl_arith env_it ef',
+                                       List.map (unroll_deq env_it) dl', opts')
+
+let do_unroll (i:ident) (ei:arith_expr) (ef:arith_expr) (deqs:deq list) : deq list =
+  (* raise Need_unroll if ei/ef are in a nested loop and use surrounding loop variable *)
+  let ei = try eval_arith_ne ei with Not_found -> raise Need_unroll in
+  let ef = try eval_arith_ne ef with Not_found -> raise Need_unroll in
+
+  let env_it = Hashtbl.create 10 in
+  flat_map (fun i_val -> Hashtbl.replace env_it i i_val;
+                         List.map (unroll_deq env_it) deqs) (gen_list_bounds ei ef)
+
+
+let rec propagate_var_in_index env_var (v:var) : var list = 
+  match v with
+  | Index(v',i) -> (match Hashtbl.find_opt env_var v' with
+                    | Some _ -> raise Need_unroll
+                    | None   -> List.map (fun x -> Index(x,i))
+                                         (propagate_var_in_index env_var v') )
+  | _ -> [ v ]
+                                                                          
 let rec propagate_var env_var (v:var) : var list =
   match Hashtbl.find_opt env_var v with
   | Some v' -> v'
-  | None -> [ v ]
+  | None -> propagate_var_in_index env_var v
 
 let rec expand_expr env_var (e:expr) : expr list =
   match e with
@@ -48,10 +95,17 @@ let rec propagate_expr env_var (e:expr) : expr =
   | _ -> assert false
                 
 let rec propagate_deqs env_var (deqs:deq list) : deq list =
-  List.map (function
-             | Eqn(l,e,sync) -> Eqn(flat_map (propagate_var env_var) l,
-                                    propagate_expr env_var e, sync)
-             | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,propagate_deqs env_var dl,opts)) deqs
+  flat_map (function
+             | Eqn(l,e,sync) -> [ Eqn(flat_map (propagate_var env_var) l,
+                                      propagate_expr env_var e, sync) ]
+             | Loop(i,ei,ef,dl,opts) ->
+                try
+                  [ Loop(i,ei,ef,propagate_deqs env_var dl,opts) ]
+                with Need_unroll ->
+                  let new_eqns = do_unroll i ei ef dl in
+                  propagate_deqs env_var new_eqns
+           ) deqs
+            
 
 let replace l e e' = flat_map (fun x -> if x = e then e' else [x]) l
            
