@@ -154,27 +154,32 @@ and expand_deqs env_var env_keep ?(env=make_env ())
         Hashtbl.remove env_var x;
         res)
     deqs
-    
-(* Expands p: 
-    Bool       -> don't change
-    Int(n,1)   -> don't change
-    Int(n,m)   -> becomes a list of Int(n,1)
-    Array(t,s) -> reccursive call on t for 1 .. s.
- *)
-let expand_p (p:p) : p =
-  let rec aux vd =
+
+
+let expand_var_d (vd:var_d) : var_d list =
+  let rec aux (vd:var_d) : (var_d * string) list =
     match vd.vtyp with
-    | Nat -> [ vd ]
-    | Array(t,size) -> flat_map (fun i ->
-                              aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
-                                            vtyp = t })
-                             (gen_list_0_int size)
-    | Uint(_,_,1) -> [ vd ]
-    | Uint(dir,m,n) -> flat_map (fun i ->
-                                 aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
-                                               vtyp = Uint(dir,m,1) })
-                                (gen_list_0_int n) in
-  flat_map aux p
+    | Nat -> [ vd, "" ]
+    | Array(t,size) ->
+       flat_map
+         (fun i ->
+          let vds_suffs = aux { vd with vtyp = t } in
+          List.map (fun (vd,suff) ->
+                    { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i) },
+                    suff)
+                   vds_suffs)
+         (gen_list_0_int size)
+    | Uint(_,_,1) -> [ vd, "" ]
+    | Uint(dir,m,n) ->
+       List.map (fun i -> { vd with vtyp = Uint(dir,m,1) },
+                          (sprintf "%d'" i))
+                (gen_list_0_int n)
+  in
+  List.map (fun (vd,suff) -> { vd with vid = fresh_suffix vd.vid suff })
+           (aux vd)
+ 
+let expand_p (p:p) : p =
+  flat_map expand_var_d p
 
 
 (* cf env_keep description in expand_def:
