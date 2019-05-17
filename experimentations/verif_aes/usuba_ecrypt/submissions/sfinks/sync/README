@@ -1,4 +1,0 @@
-How to generatie the test vectors: 
-$rm *.o
-$make
-$./ecrypt-test > test-vectors.txt
