@@ -141,10 +141,10 @@ let main () =
                          bits_in_arch !arch in
     let no_arr = if !tightPROVE then
                    true
-                 else
-                   if !slicing_set then match !slicing_type with
-                                      | B -> true
-                                      | _ -> !no_arr
+                 (* else *)
+                 (*   if !slicing_set then match !slicing_type with *)
+                 (*                      | B -> true *)
+                 (*                      | _ -> !no_arr *)
                    else !no_arr in
     if !tightPROVE then arr_entry := false;
                        

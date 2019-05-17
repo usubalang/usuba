@@ -131,6 +131,17 @@ let dir_to_str d =
   | Mslice i   -> sprintf "<%d>" i
   | Varslice v -> if v.name = "D" then "" else sprintf "<%s>" v.name
           
+let rec full_typ_to_str typ =
+  match typ with
+  | Nat -> "nat"
+  | Uint(d,m,n) -> 
+     let dir_str = dir_to_str d in
+     let m_str = match m with
+       | Mint i  -> string_of_int i
+       | Mvar id -> id.name in
+     sprintf "u%s%sx%d" dir_str m_str n
+  | Array(typ,n) -> sprintf "%s[%d]" (full_typ_to_str typ) n
+                              
 let rec typ_to_str typ =
   match typ with
   | Nat -> "nat"
@@ -158,6 +169,13 @@ let var_d_opt_to_str (vopt:var_d_opt) =
   | PlazyLift  -> "lazyLift"
 let var_d_opt_to_str_l = lift_space var_d_opt_to_str
                                                    
+let full_vd_to_str (vd:var_d) =
+  sprintf "%s : %s %s :: %s"
+          vd.vid.name
+          (var_d_opt_to_str_l vd.vopts)
+          (full_typ_to_str vd.vtyp)
+          (clock_to_str vd.vck)
+          
 let vd_to_str (vd:var_d) =
   sprintf "%s : %s %s :: %s"
           vd.vid.name
