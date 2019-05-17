@@ -244,7 +244,7 @@ let rec var_decl_to_c conf (vd:var_d) (out:bool) : string =
     | Nat  -> (rename id.name) ^ start
     | Uint(_,_,1) -> (rename id.name) ^ start
     | Uint(_,_,n) -> sprintf "%s%s[%d]" (rename id.name) start n
-    | Array(typ,size) -> aux id typ (sprintf "[%d]" size) in
+    | Array(typ,size) -> aux id typ (sprintf "[%d]%s" size start) in
   let vname = aux vd.vid vd.vtyp "" in
   let vtype = if conf.lazylift && is_const vd then
                 gen_intn (get_lift_size vd)

@@ -66,6 +66,7 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
       (run_pass "Core normalize 2" normalize_core)                         |>
       (run_pass "Init_scheduler 2" Init_scheduler.schedule_prog)           |>
       (run_pass "Pre_schedule" sched_fun)                                  |>
+      (run_pass "Core normalize 3" normalize_core)                         |>      
       (run_pass "Inline" Inline.inline)                                    |>
       (run_pass "Pre_schedule 2" sched_fun)                                |>
       (run_pass "Norm_bitslice 4" Norm_bitslice.norm_prog) in

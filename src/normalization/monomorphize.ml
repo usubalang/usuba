@@ -78,7 +78,7 @@ module Bslice = struct
         | 1 -> v
         | _ ->
            (match get_var_type env_var v' with
-            | Uint(_,Mint m,n) ->
+            | Uint(_,Mint m,n) when m > 1 -> (* TODO: is that m > 1 correct? *)
                Range(v',Op_e(Mul,ae,Const_e m),Op_e(Add,Op_e(Mul,ae,Const_e m),Const_e (m-1)))
             | _ -> Index(specialize_var env_var v',ae)))
     | _ -> assert false
