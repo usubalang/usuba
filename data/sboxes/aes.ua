@@ -1,25 +1,25 @@
-# node sbox (xmm7:bool, xmm6:bool, xmm5:bool, xmm4:bool,
-#            xmm3:bool, xmm2:bool, xmm1:bool, xmm0:bool)
-#      returns  (S7:bool, S6:bool, S5:bool, S4:bool, S3:bool, S2:bool, S1:bool, S0:bool)
+# node sbox (xmm7:v1, xmm6:v1, xmm5:v1, xmm4:v1,
+#            xmm3:v1, xmm2:v1, xmm1:v1, xmm0:v1)
+#      returns  (S7:v1, S6:v1, S5:v1, S4:v1, S3:v1, S2:v1, S1:v1, S0:v1)
 # vars
-#     xmm8:bool,xmm9:bool,xmm10:bool,xmm11:bool,xmm12:bool,xmm13:bool,xmm14:bool,xmm15:bool,
-#     xmm16:bool,xmm17:bool,xmm18:bool,xmm19:bool,xmm20:bool,xmm21:bool,xmm22:bool,xmm23:bool,
-#     xmm24:bool,xmm25:bool,xmm26:bool,xmm27:bool,xmm28:bool,xmm29:bool,xmm30:bool,xmm31:bool,
-#     xmm32:bool,xmm33:bool,xmm34:bool,xmm35:bool,xmm36:bool,xmm37:bool,xmm38:bool,xmm39:bool,
-#     xmm40:bool,xmm41:bool,xmm42:bool,xmm43:bool,xmm44:bool,xmm45:bool,xmm46:bool,xmm47:bool,
-#     xmm48:bool,xmm49:bool,xmm50:bool,xmm51:bool,xmm52:bool,xmm53:bool,xmm54:bool,xmm55:bool,
-#     xmm56:bool,xmm57:bool,xmm58:bool,xmm59:bool,xmm60:bool,xmm61:bool,xmm62:bool,xmm63:bool,
-#     xmm64:bool,xmm65:bool,xmm66:bool,xmm67:bool,xmm68:bool,xmm69:bool,xmm70:bool,xmm71:bool,
-#     xmm72:bool,xmm73:bool,xmm74:bool,xmm75:bool,xmm76:bool,xmm77:bool,xmm78:bool,xmm79:bool,
-#     xmm80:bool,xmm81:bool,xmm82:bool,xmm83:bool,xmm84:bool,xmm85:bool,xmm86:bool,xmm87:bool,
-#     xmm88:bool,xmm89:bool,xmm90:bool,xmm91:bool,xmm92:bool,xmm93:bool,xmm94:bool,xmm95:bool,
-#     xmm96:bool,xmm97:bool,xmm98:bool,xmm99:bool,xmm100:bool,xmm101:bool,xmm102:bool,
-#     xmm103:bool,xmm104:bool,xmm105:bool,xmm106:bool,xmm107:bool,xmm108:bool,xmm109:bool,
-#     xmm110:bool,xmm111:bool,xmm112:bool,xmm113:bool,xmm114:bool,xmm115:bool,xmm116:bool,
-#     xmm117:bool,xmm118:bool,xmm119:bool,xmm120:bool,xmm121:bool,xmm122:bool,xmm123:bool,
-#     xmm124:bool,xmm125:bool,xmm126:bool,xmm127:bool,xmm128:bool,xmm129:bool,xmm130:bool,
-#     xmm131:bool,xmm132:bool,xmm133:bool,xmm134:bool,xmm135:bool,xmm136:bool,xmm137:bool,
-#     xmm138:bool,xmm139:bool
+#     xmm8:v1,xmm9:v1,xmm10:v1,xmm11:v1,xmm12:v1,xmm13:v1,xmm14:v1,xmm15:v1,
+#     xmm16:v1,xmm17:v1,xmm18:v1,xmm19:v1,xmm20:v1,xmm21:v1,xmm22:v1,xmm23:v1,
+#     xmm24:v1,xmm25:v1,xmm26:v1,xmm27:v1,xmm28:v1,xmm29:v1,xmm30:v1,xmm31:v1,
+#     xmm32:v1,xmm33:v1,xmm34:v1,xmm35:v1,xmm36:v1,xmm37:v1,xmm38:v1,xmm39:v1,
+#     xmm40:v1,xmm41:v1,xmm42:v1,xmm43:v1,xmm44:v1,xmm45:v1,xmm46:v1,xmm47:v1,
+#     xmm48:v1,xmm49:v1,xmm50:v1,xmm51:v1,xmm52:v1,xmm53:v1,xmm54:v1,xmm55:v1,
+#     xmm56:v1,xmm57:v1,xmm58:v1,xmm59:v1,xmm60:v1,xmm61:v1,xmm62:v1,xmm63:v1,
+#     xmm64:v1,xmm65:v1,xmm66:v1,xmm67:v1,xmm68:v1,xmm69:v1,xmm70:v1,xmm71:v1,
+#     xmm72:v1,xmm73:v1,xmm74:v1,xmm75:v1,xmm76:v1,xmm77:v1,xmm78:v1,xmm79:v1,
+#     xmm80:v1,xmm81:v1,xmm82:v1,xmm83:v1,xmm84:v1,xmm85:v1,xmm86:v1,xmm87:v1,
+#     xmm88:v1,xmm89:v1,xmm90:v1,xmm91:v1,xmm92:v1,xmm93:v1,xmm94:v1,xmm95:v1,
+#     xmm96:v1,xmm97:v1,xmm98:v1,xmm99:v1,xmm100:v1,xmm101:v1,xmm102:v1,
+#     xmm103:v1,xmm104:v1,xmm105:v1,xmm106:v1,xmm107:v1,xmm108:v1,xmm109:v1,
+#     xmm110:v1,xmm111:v1,xmm112:v1,xmm113:v1,xmm114:v1,xmm115:v1,xmm116:v1,
+#     xmm117:v1,xmm118:v1,xmm119:v1,xmm120:v1,xmm121:v1,xmm122:v1,xmm123:v1,
+#     xmm124:v1,xmm125:v1,xmm126:v1,xmm127:v1,xmm128:v1,xmm129:v1,xmm130:v1,
+#     xmm131:v1,xmm132:v1,xmm133:v1,xmm134:v1,xmm135:v1,xmm136:v1,xmm137:v1,
+#     xmm138:v1,xmm139:v1
 # let
 #     xmm8 = xmm6 ^ xmm5;     
 #     xmm9 = xmm1 ^ xmm2;     
@@ -164,25 +164,25 @@
 # tel
 
 
-node sbox (U0:bool, U1:bool, U2:bool, U3:bool, U4:bool, U5:bool, U6:bool, U7:bool)
-     returns  (S0:bool, S1:bool, S2:bool, S3:bool, S4:bool, S5:bool, S6:bool, S7:bool)
+node sbox (U0:b1, U1:b1, U2:b1, U3:b1, U4:b1, U5:b1, U6:b1, U7:b1)
+     returns  (S0:b1, S1:b1, S2:b1, S3:b1, S4:b1, S5:b1, S6:b1, S7:b1)
 vars
-    y0:bool,  y1:bool,  y2:bool,  y3:bool,  y4:bool,  y5:bool,  y6:bool,  y7:bool,
-    y8:bool,  y9:bool,  y10:bool, y11:bool, y12:bool, y13:bool, y14:bool, y15:bool,
-    y16:bool, y17:bool, y18:bool, y19:bool, y20:bool, y21:bool, 
-    t0:bool,  t1:bool,  t2:bool,  t3:bool,  t4:bool,  t5:bool,  t6:bool,  t7:bool,
-    t8:bool,  t9:bool,  t10:bool, t11:bool, t12:bool, t13:bool, t14:bool, t15:bool,
-    t16:bool, t17:bool, t18:bool, t19:bool, t20:bool, t21:bool, t22:bool, t23:bool,
-    t24:bool, t25:bool, t26:bool, t27:bool, t28:bool, t29:bool, t30:bool, t31:bool,
-    t32:bool, t33:bool, t34:bool, t35:bool, t36:bool, t37:bool, t38:bool, t39:bool,
-    t40:bool, t41:bool, t42:bool, t43:bool, t44:bool, t45:bool, 
-    z0:bool,  z1:bool,  z2:bool,  z3:bool,  z4:bool,  z5:bool,  z6:bool,  z7:bool,
-    z8:bool,  z9:bool,  z10:bool, z11:bool, z12:bool, z13:bool, z14:bool, z15:bool,
-    z16:bool, z17:bool,
-    tc0:bool,  tc1:bool,  tc2:bool,  tc3:bool,  tc4:bool,  tc5:bool,  tc6:bool,
-    tc7:bool,  tc8:bool,  tc9:bool,  tc10:bool, tc11:bool, tc12:bool, tc13:bool,
-    tc14:bool, tc15:bool, tc16:bool, tc17:bool, tc18:bool, tc19:bool, tc20:bool,
-    tc21:bool, tc22:bool, tc23:bool, tc24:bool, tc25:bool, tc26:bool
+    y0:b1,  y1:b1,  y2:b1,  y3:b1,  y4:b1,  y5:b1,  y6:b1,  y7:b1,
+    y8:b1,  y9:b1,  y10:b1, y11:b1, y12:b1, y13:b1, y14:b1, y15:b1,
+    y16:b1, y17:b1, y18:b1, y19:b1, y20:b1, y21:b1, 
+    t0:b1,  t1:b1,  t2:b1,  t3:b1,  t4:b1,  t5:b1,  t6:b1,  t7:b1,
+    t8:b1,  t9:b1,  t10:b1, t11:b1, t12:b1, t13:b1, t14:b1, t15:b1,
+    t16:b1, t17:b1, t18:b1, t19:b1, t20:b1, t21:b1, t22:b1, t23:b1,
+    t24:b1, t25:b1, t26:b1, t27:b1, t28:b1, t29:b1, t30:b1, t31:b1,
+    t32:b1, t33:b1, t34:b1, t35:b1, t36:b1, t37:b1, t38:b1, t39:b1,
+    t40:b1, t41:b1, t42:b1, t43:b1, t44:b1, t45:b1, 
+    z0:b1,  z1:b1,  z2:b1,  z3:b1,  z4:b1,  z5:b1,  z6:b1,  z7:b1,
+    z8:b1,  z9:b1,  z10:b1, z11:b1, z12:b1, z13:b1, z14:b1, z15:b1,
+    z16:b1, z17:b1,
+    tc0:b1,  tc1:b1,  tc2:b1,  tc3:b1,  tc4:b1,  tc5:b1,  tc6:b1,
+    tc7:b1,  tc8:b1,  tc9:b1,  tc10:b1, tc11:b1, tc12:b1, tc13:b1,
+    tc14:b1, tc15:b1, tc16:b1, tc17:b1, tc18:b1, tc19:b1, tc20:b1,
+    tc21:b1, tc22:b1, tc23:b1, tc24:b1, tc25:b1, tc26:b1
 let
   y14 = U3 ^ U5;
   y13 = U0 ^ U6;

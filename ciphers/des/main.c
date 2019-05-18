@@ -19,6 +19,10 @@
 #define AVX
 #endif
 
+#ifdef avx512
+#define AVX512
+#endif
+
 #ifdef kwan
 #define KWAN
 #endif
@@ -211,8 +215,92 @@ static void unorthogonalize(__m256i *in, uint64_t* data) {
   }
 }
 
+#elif defined(AVX512)
+#define NO_RUNTIME
+#include "AVX512.h"
+#define CHUNK_SIZE 4096
+
+static void real_ortho_512x512(__m512i data[]) {
+
+  __m512i mask_l[9] = {
+    _mm512_set1_epi64(0xaaaaaaaaaaaaaaaaUL),
+    _mm512_set1_epi64(0xccccccccccccccccUL),
+    _mm512_set1_epi64(0xf0f0f0f0f0f0f0f0UL),
+    _mm512_set1_epi64(0xff00ff00ff00ff00UL),
+    _mm512_set1_epi64(0xffff0000ffff0000UL),
+    _mm512_set1_epi64(0xffffffff00000000UL),
+    _mm512_set_epi64(0UL,-1UL,0UL,-1UL,0UL,-1UL,0UL,-1UL),
+    _mm512_set_epi64(0UL,0UL,-1UL,-1UL,0UL,0UL,-1UL,-1UL),
+    _mm512_set_epi64(0UL,0UL,0UL,0UL,-1UL,-1UL,-1UL,-1UL),
+  };
+
+  __m512i mask_r[9] = {
+    _mm512_set1_epi64(0x5555555555555555UL),
+    _mm512_set1_epi64(0x3333333333333333UL),
+    _mm512_set1_epi64(0x0f0f0f0f0f0f0f0fUL),
+    _mm512_set1_epi64(0x00ff00ff00ff00ffUL),
+    _mm512_set1_epi64(0x0000ffff0000ffffUL),
+    _mm512_set1_epi64(0x00000000ffffffffUL),
+    _mm512_set_epi64(-1UL,0UL,-1UL,0UL,-1UL,0UL,-1UL,0UL),
+    _mm512_set_epi64(-1UL,-1UL,0UL,0UL,-1UL,-1UL,0UL,0UL),
+    _mm512_set_epi64(-1UL,-1UL,-1UL,-1UL,0UL,0UL,0UL,0UL),
+  };
+  
+  for (int i = 0; i < 9; i ++) {
+    int n = (1UL << i);
+    for (int j = 0; j < 512; j += (2 * n))
+      for (int k = 0; k < n; k ++) {
+        __m512i u = _mm512_and_si512(data[j + k], mask_l[i]);
+        __m512i v = _mm512_and_si512(data[j + k], mask_r[i]);
+        __m512i x = _mm512_and_si512(data[j + n + k], mask_l[i]);
+        __m512i y = _mm512_and_si512(data[j + n + k], mask_r[i]);
+        if (i <= 5) {
+          data[j + k] = _mm512_or_si512(u, _mm512_srli_epi64(x, n));
+          data[j + n + k] = _mm512_or_si512(_mm512_slli_epi64(v, n), y);
+        } else if (i == 6) {
+          /* Note the "inversion" of srli and slli. */
+          data[j + k] = _mm512_or_si512(u, _mm512_bslli_epi128(x, 8));
+          data[j + n + k] = _mm512_or_si512(_mm512_bsrli_epi128(v, 8), y);
+        } else if (i == 7) {
+          /* might be 0b01001110 instead */
+          data[j + k] = _mm512_or_si512(u, _mm512_permutex_epi64(x,0b10110001));
+          data[j + n + k] = _mm512_or_si512(_mm512_permutex_epi64(v,0b10110001), y);
+        } else {
+          /* might be 0,1,2,3,4,5,6,7 */
+          __m512i ctrl = _mm512_set_epi64(4,5,6,7,0,1,2,3);
+          data[j + k] = _mm512_or_si512(u, _mm512_permutexvar_epi64(ctrl,x));
+          data[j + n + k] = _mm512_or_si512(_mm512_permutexvar_epi64(ctrl,v), y);
+        }
+      }
+  }
+}
+
+static void orthogonalize(uint64_t* data, __m512i* out) {
+  for (int i = 0; i < 512; i++)
+    out[i] = _mm512_set_epi64(data[i], data[512+i], data[1024+i],
+                              data[1536+i], data[2048+i],data[2560+i],
+                              data[3072+i],data[3584+i]);
+  real_ortho_512x512(out);
+}
+
+static void unorthogonalize(__m512i *in, uint64_t* data) {
+  real_ortho_512x512(in);
+  for (int i = 0; i < 512; i++) {
+    uint64_t tmp[8];
+    _mm512_store_si512 ((__m512i*)tmp, in[i]);
+    data[i]      = tmp[7];
+    data[512+i]  = tmp[6];
+    data[1024+i] = tmp[5];
+    data[1536+i] = tmp[4];
+    data[2048+i] = tmp[3];
+    data[2560+i] = tmp[2];
+    data[3072+i] = tmp[1];
+    data[3584+i] = tmp[0];
+  }
+}
+
 #else
-#error You need to define STD, SSE or AVX.
+#error You need to define STD, SSE, AVX or AVX512.
 #endif
 
 #ifdef KWAN
@@ -221,8 +309,10 @@ static void unorthogonalize(__m256i *in, uint64_t* data) {
 #include "std/des.c"
 #elif defined(SSE)
 #include "sse/des.c"
-#else
+#elif defined(AVX)
 #include "avx/des.c"
+#elif defined(AVX512)
+#include "avx512/des.c"
 #endif
 
 

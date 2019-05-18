@@ -1,6 +1,6 @@
-_no_opt node s4 (r0:bool,r1:bool,r2:bool,r3:bool) returns (r5:bool,r6:bool,r7:bool,r8:bool)
+_no_opt node s4 (r0:v1,r1:v1,r2:v1,r3:v1) returns (r5:v1,r6:v1,r7:v1,r8:v1)
 vars
-    r4 : bool
+    r4 : v1
 let
   r1 ^= r3;
   r3 = ~r3;

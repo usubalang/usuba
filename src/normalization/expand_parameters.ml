@@ -77,12 +77,11 @@ let expand_in_node env_fun (f:def) (id:ident) (ck:clock) (size:int) (old_typ:typ
 
 let expand_p env_fun (f:def) (vd:var_d) =  
   match vd.vtyp with
-  | Bool -> assert false
-  | Int(_,1) -> assert false
-  | Int(n,m) ->
-     expand_in_node env_fun f vd.vid vd.vck m vd.vtyp (Int(n,1))
-  | Array(typ',ae) ->
-     expand_in_node env_fun f vd.vid vd.vck (eval_arith_ne ae) vd.vtyp typ'
+  | Uint(_,_,1) -> assert false
+  | Uint(dir,m,n) ->
+     expand_in_node env_fun f vd.vid vd.vck n vd.vtyp (Uint(dir,m,1))
+  | Array(typ',size) ->
+     expand_in_node env_fun f vd.vid vd.vck size vd.vtyp typ'
   | _ -> assert false
                                                    
 
@@ -138,7 +137,11 @@ let rec expand_deq env_fun env_var (deq:deq) : deq =
        let _,args = unzip (match_args env_fun env_var f f.p_in args) in
        let _,ret  = unzip (match_ret  env_fun env_var f f.p_out lhs) in
        Eqn(List.rev ret,Fun(id,List.rev args),sync)
-  | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,List.map (expand_deq env_fun env_var) dl,opts)
+  | Loop(i,ei,ef,dl,opts) ->
+     Hashtbl.add env_var i Nat;
+     let res = Loop(i,ei,ef,List.map (expand_deq env_fun env_var) dl,opts) in
+     Hashtbl.remove env_var i;
+     res
   | _ -> deq
 
                                               

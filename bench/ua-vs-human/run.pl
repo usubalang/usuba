@@ -31,6 +31,14 @@ my $collect = !@ARGV || "@ARGV" =~ /-l/;
 @ARGV = grep { ! /-l/ } @ARGV;
 
 
+if ($run) {
+    say "Running supercop (gonna take a while)...";
+    chdir "$FindBin::Bin/../../supercop";
+    system "./data_do";
+    say "Running supercop: Done.";
+}
+
+
 open my $FP_OUT, '>', 'human.tex';
 
 
@@ -83,7 +91,7 @@ open my $FP_OUT, '>', 'human.tex';
         my $sbox       = 200;
         $mix_col + $shift_rows + $sbox + 10; # 10 for the 10 rounds
     };
-    my $ua_sloc = get_ua_sloc('samples/usuba/aes_kasper_constr.ua');
+    my $ua_sloc = get_ua_sloc('samples/usuba/aes_mslice.ua');
 
     say $FP_OUT
 "\\newcommand{\\ReferenceAESKSThroughput}{$ref_speed}
@@ -232,7 +240,7 @@ open my $FP_OUT, '>', 'human.tex';
     chdir "$FindBin::Bin/../../";
 
     my $ua_file  = 'supercop-data/dadaubuntu/amd64/try/c/clang_-march=native_-O3_-fomit-frame-pointer_-fwrapv_-std=gnu11/crypto_stream/serpent128ctr/inter-sse/data';
-    my $ref_file = 'supercop-data/dadaubuntu/amd64/try/c/icc_-msse4.2_-O3_-fomit-frame-pointer_-fwrapv_-std=gnu11/crypto_stream/serpent128ctr/avx-8way-1/data';
+    my $ref_file = 'supercop-data/dadaubuntu/amd64/try/c/icc_-march=native_-O3_-fomit-frame-pointer_-fwrapv_-std=gnu11/crypto_stream/serpent128ctr/avx-8way-1/data';
 
     my $ref_speed = get_speed_supercop($ref_file);
     my $ua_speed  = get_speed_supercop($ua_file);
@@ -296,8 +304,11 @@ open my $FP_OUT, '>', 'human.tex';
 
 
 # ###########################  Rectangle #############################
-{ # AVX2
+{ 
     chdir "$FindBin::Bin/../../ciphers/rectangle";
+
+    system "./bench.pl @ARGV"
+        if $gen || $compile || $run;
 
     my $file = 'results.txt';
 
@@ -349,7 +360,7 @@ open my $FP_OUT, '>', 'human.tex';
 
 sub get_speed_supercop {
     my $file = shift;
-    open my $FP_IN, '<', $file;
+    open my $FP_IN, '<', $file or return 0;
     my @numbers;
     while (<$FP_IN>) {
         next unless /xor_cycles 4096 (.*) $/;
@@ -357,11 +368,16 @@ sub get_speed_supercop {
     }
     @numbers = sort { $a <=> $b } @numbers;
     @numbers = @numbers[0 .. @numbers/2]; # Making sure there are no context switch
-    return sprintf "%.2f", sum(@numbers) / @numbers / 4096;
+    if (@numbers) {
+        return sprintf "%.2f", sum(@numbers) / @numbers / 4096;
+    } else {
+        return 0;
+    }
 }
 
 sub get_speedup {
     my ($ref_speed, $ua_speed) = @_;
+    return 0 if !$ref_speed;
     my $speedup = ($ref_speed - $ua_speed) / $ref_speed * 100;
     my $sign = $speedup > 0 ? "+" : "";
     return sprintf "%s%.2f", $sign, $speedup;

@@ -10,16 +10,31 @@
 #endif
 
 
+#if SPECIAL
+#ifdef INDIRECT
+void __attribute__ ((noinline))
+    tmp(__m128i key[11][8], __m128i v0, __m128i v1, __m128i v2, __m128i v3,
+        __m128i v4, __m128i v5, __m128i v6, __m128i v7, __m128i* input) {
+  AES__(key,v0,v1,v2,v3,v4,v5,v6,v7,input);
+}
+#define fun() tmp(key,input[0],input[1],input[2],input[3],\
+                  input[4],input[5],input[6],input[7], input);
+#else
+#define fun() AES__(key,input[0],input[1],input[2],input[3],input[4],input[5],input[6],input[7],input);
+#endif
+#else
+
 #ifdef UA_MACRO
 #define USUBA
 #define MACRO
 #elif defined(UA_KIVI)
 #define USUBA
 #define KIVI
+#elif defined(UA_FULL)
+#define USUBA
 #elif !defined(FULL_KIVI)
 #error Please define UA_MACRO, UA_KIVI or FULL_KIVI
 #endif
-
 
 #ifdef USUBA
 #include "aes.c"
@@ -68,6 +83,7 @@ void __attribute__ ((noinline)) tmp(__m128i* key, __m128i v0, __m128i v1, __m128
 #else
 #include "kivi_orig_inline.c"
 #define fun() AES__(key,input[0],input[1],input[2],input[3],input[4],input[5],input[6],input[7])
+#endif
 #endif
 #endif
 

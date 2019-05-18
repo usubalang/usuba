@@ -25,7 +25,7 @@ let default_conf : config =
     cse_cp       = true;
     scheduling   = true;
     schedule_n   = 10;
-    share_var    = true;
+    share_var    = false;
     precal_tbl   = true;
     runtime      = true;
     archi        = Std;
@@ -35,6 +35,7 @@ let default_conf : config =
     ortho        = true;
     openmp       = 1;
     no_arr       = false;
+    no_arr_tmp   = false;
     arr_entry    = true;
     unroll       = false;
     interleave   = 1;
@@ -44,7 +45,13 @@ let default_conf : config =
     lazylift     = false;
     slicing_set  = false;
     slicing_type = B;
+    secure_loops = false;
   }
+
+let default_dir = Varslice { uid = -1; name = "D" }
+let default_m   = Mvar     { uid = -1; name = "m" }
+
+let bool = Uint(Bslice, Mint 1, 1)
     
 let make_env () = Hashtbl.create 100
 let env_add env v e = Hashtbl.replace env v e
@@ -140,7 +147,7 @@ let make_var_d (id:ident) (typ:typ) (ck:clock) (opts:var_d_opt list) =
     vck   = ck;
     vopts = opts }
 
-let simple_var_d (id:ident) = make_var_d id Bool Defclock []
+let simple_var_d (id:ident) = make_var_d id bool Defclock []
          
 let env_fetch env v =
   (* try *)
@@ -171,15 +178,13 @@ let build_env_var (p_in:p) (p_out:p) (vars:p) : (ident, typ) Hashtbl.t =
                           
 let rec typ_size (t:typ) : int =
   match t with
-  | Bool -> 1
-  | Int(_,m) -> m
-  | Array(t',ae) -> (typ_size t') * (eval_arith_ne ae)
+  | Uint(_,_,n) -> n
+  | Array(t',s) -> (typ_size t') * s
   | Nat -> 1
              
 let rec reg_size (t:typ) : int =
   match t with
-  | Bool -> 1
-  | Int(n,1) -> n
+  | Uint(_,Mint i,1) -> i
   | _ -> Printf.fprintf stderr "Non linear type `%s', can't get reg_size.\n"
                         (Usuba_print.typ_to_str t);
          assert false
@@ -194,11 +199,11 @@ let rec get_var_type env (v:var) : typ =
   match v with
   | Var x -> env_fetch env x
   | Index(v',_) -> (match get_var_type env v' with
-                    | Bool -> Bool
                     | Array(t,_) -> t
-                    | Int(n,m) -> Int(n,1)
+                    | Uint(dir,m,n) -> Uint(dir,m,1)
                     | _ -> assert false)
-  | _ -> assert false
+  | _ -> Printf.fprintf stderr "Error: get_var_type(%s)\n" (Usuba_print.var_to_str v);
+         assert false
 
 let get_var_size env (v:var) : int =
   typ_size @@ get_var_type env v
@@ -223,8 +228,8 @@ let get_reg_size env (v:var) : int =
                            
 let rec get_expr_reg_size env (e:expr) : int =
   match e with
-  | Const n -> Printf.fprintf stderr "Can't infer `Const %d' size.\n" n;
-               assert false
+  | Const n -> Printf.fprintf stderr "Unsafe inference of `Const %d' size.\n" n;
+               1
   | ExpVar v -> get_reg_size env v
   | Not e -> get_expr_reg_size env e
   | Shift(_,e,_) -> get_expr_reg_size env e
@@ -241,8 +246,8 @@ let rec get_expr_reg_size env (e:expr) : int =
 
 let rec get_expr_type env_fun env_var (e:expr) : typ list =
   match e with
-  | Const n -> Printf.fprintf stderr "Can't infer `Const %d' type.\n" n;
-               assert false
+  | Const n -> Printf.fprintf stderr "Unsafe inference of `Const %d' type.\n" n;
+               [ Nat ]
   | ExpVar v -> [ get_var_type env_var v ]
   | Tuple l -> flat_map (get_expr_type env_fun env_var) l
   | Not e -> get_expr_type env_fun env_var e
@@ -251,26 +256,25 @@ let rec get_expr_type env_fun env_var (e:expr) : typ list =
   | Shuffle(v,_) -> [ get_var_type env_var v ]
   | Arith(_,e,_) -> get_expr_type env_fun env_var e
   | Fun(f,_) ->
-     if f.name = "rand" then [ Int(1,1) ]
+     if f.name = "rand" then [ Uint(default_dir,Mint 1,1) ]
      else
        let def = Hashtbl.find env_fun f in
-       List.map (fun vd -> vd.vtyp) def.p_out               
+       List.map (fun vd -> vd.vtyp) def.p_out
   | _ -> assert false
-
+  
                            
 let rec expand_var env_var ?(env_it=Hashtbl.create 100) ?(partial=false) (v:var) : var list =
   let typ = get_var_type env_var v in
   match typ with
-  | Bool -> [ v ]
-  | Int(_,1) -> [ v ]
-  | Int(_,m) -> List.map (fun i -> Index(v,Const_e i)) (gen_list_0_int m)
-  | Array(_,ae) -> if partial then
+  | Nat -> [ v ]
+  | Uint(_,_,1) -> [ v ]
+  | Uint(_,_,n) -> List.map (fun i -> Index(v,Const_e i)) (gen_list_0_int n)
+  | Array(_,s)  -> if partial then
                      List.map (fun i -> Index(v,Const_e i))
-                              (gen_list_0_int (eval_arith env_it ae))
+                              (gen_list_0_int s)
                    else
                      flat_map (fun i -> expand_var env_var ~env_it:env_it (Index(v,Const_e i)))
-                              (gen_list_0_int (eval_arith env_it ae))
-  | _ -> assert false
+                              (gen_list_0_int s)
 
 let rec expand_var_partial env_var ?(env_it=Hashtbl.create 100) (v:var) : var list =
   expand_var env_var ~env_it:env_it ~partial:true v
@@ -287,12 +291,46 @@ let rec get_base_name (v:var) : ident =
                                                            
 let rec get_base_type (typ:typ) : typ =
   match typ with
-  | Bool -> Bool
-  | Int(n,_) -> Int(n,1)
+  | Uint(dir,m,_) -> Uint(dir,m,1)
   | Array(t,_) -> get_base_type t
   | _ -> assert false
-                
 
+let get_type_dir (typ:typ) : dir =
+  match get_base_type typ with
+  | Uint(dir,_,_) -> dir
+  | _ -> assert false
+let get_type_m (typ:typ) : mtyp =
+  match get_base_type typ with
+  | Uint(_,m,_) -> m
+  | _ -> assert false
+let get_type_n (typ:typ) : int =
+  match get_base_type typ with
+  | Uint(_,_,n) -> n
+  | _ -> assert false
+
+                
+let get_var_dir env_var (v:var) : dir =
+  get_type_dir (get_var_type env_var v)
+let get_var_m env_var (v:var) : mtyp =
+  get_type_m (get_var_type env_var v)
+
+let rec update_type_dir (typ:typ) (dir:dir) : typ =
+  match typ with
+  | Uint(_,m,n) -> Uint(dir,m,n)
+  | Array(t,n)  -> Array(update_type_dir t dir,n)
+  | _ -> assert false
+let rec update_type_m (typ:typ) (m:mtyp) : typ =
+  match typ with
+  | Uint(dir,_,n) -> Uint(dir,m,n)
+  | Array(t,n)  -> Array(update_type_m t m,n)
+  | _ -> assert false
+
+let vd_to_var (vd:var_d) : var =
+  Var vd.vid
+
+let p_to_vars (p:p) : var list =
+  List.map vd_to_var p
+                
 let env_fetch (env: ('b, 'a) Hashtbl.t) (id: ident) : 'a option =
   try
     let v = Hashtbl.find env id.name in Some v
@@ -313,7 +351,7 @@ let env_add (env: 'a env) (id: ident) (value: 'a) : unit =
 let expand_intn_typed (id: ident) (n: int) (ck: clock) =
   let rec aux i =
     if i > n then []
-    else ((fresh_suffix id (string_of_int i), Bool), ck) :: (aux (i+1))
+    else ((fresh_suffix id (string_of_int i), bool), ck) :: (aux (i+1))
   in aux 1
 
 (* converts an uint_n to n bools (in the format of pat) *)

@@ -18,25 +18,27 @@ let inline_all   = ref false
 let cse_cp       = ref true
 let scheduling   = ref true
 let schedule_n   = ref 10
-let share_var    = ref true
+let share_var    = ref false
 let precal_tbl   = ref true
 let no_arr       = ref false
+let no_arr_tmp   = ref false
 let arr_entry    = ref true
 let unroll       = ref false
 let interleave   = ref 0
                       
-let runtime     = ref false
-let arch        = ref Std
+let runtime      = ref false
+let arch         = ref Std
 let bits_per_reg = ref 64
-let bench       = ref false
-let rand_input  = ref false
-let ortho       = ref true
-let openmp      = ref 1
-let output      = ref ""
-let fd          = ref false
-let ti          = ref 1
-let fdti        = ref ""
-let lazylift    = ref false
+let bench        = ref false
+let rand_input   = ref false
+let ortho        = ref true
+let openmp       = ref 1
+let output       = ref ""
+let fd           = ref false
+let ti           = ref 1
+let fdti         = ref ""
+let lazylift     = ref false
+let secure_loops = ref false
 
 let slicing_type = ref B
 let slicing_set  = ref false
@@ -101,6 +103,7 @@ let main () =
       "-sched-n", Arg.Int (fun n -> schedule_n := n), "Set scheduling param";
       "-no-share", Arg.Clear share_var, "Deactivate variable sharing";
       "-no-precalc-tbl", Arg.Clear precal_tbl, "Don't use pre-computed tables";
+      "-no-arr-tmp", Arg.Set no_arr, "Don't use arrays for temporaries";
       "-no-arr", Arg.Set no_arr, "Don't keep any array";
       "-no-arr-entry", Arg.Clear arr_entry, "Don't keep any arrays in the entry point";
       "-unroll", Arg.Set unroll, "Unroll all loops";
@@ -117,6 +120,7 @@ let main () =
       "-fd", Arg.Set fd, "Generate complementary redudant code";
       "-ti", Arg.Set_int ti, "Set the number of shares to use for Threshold Implemenation (1, 2, 4, 8)";
       "-fdti",Arg.Set_string fdti, "Specify the order of ti and fd (tifd or fdti)";
+      "-secure-loops", Arg.Set secure_loops, "Secure loops with intra-redundancy in the counter";
       "-lf", Arg.Set lazylift, "Enable lazy lifting";
       "-o", Arg.Set_string output, "Set the output filename";
       "-H", Arg.Unit (fun () -> slicing_set := true; slicing_type := H), "Horizontal slicing.";
@@ -129,6 +133,10 @@ let main () =
     let prog = Parse_file.parse_file s in
     let bits_per_reg = if !bits_per_reg <> 64 then !bits_per_reg
                        else bits_in_arch !arch in
+    let no_arr = if !slicing_set then match !slicing_type with
+                                      | B -> true
+                                      | _ -> !no_arr
+                 else !no_arr in
     let conf = { block_size     =   !block_size;
                  key_size       =   !key_size;
                  warnings       =   !warnings;
@@ -151,7 +159,8 @@ let main () =
                  rand_input     =   !rand_input;
                  ortho          =   !ortho;
                  openmp         =   !openmp;
-                 no_arr         =   !no_arr;
+                 no_arr         =   no_arr; (* local var! *)
+                 no_arr_tmp     =   !no_arr_tmp;
                  arr_entry      =   !arr_entry;
                  unroll         =   !unroll;
                  interleave     =   !interleave;
@@ -161,6 +170,7 @@ let main () =
                  lazylift       =   !lazylift;
                  slicing_set    =   !slicing_set;
                  slicing_type   =   !slicing_type;
+                 secure_loops   =   !secure_loops;
                } in
 
     if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then

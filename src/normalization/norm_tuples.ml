@@ -78,11 +78,16 @@ module Split_tuples = struct
                
   let rec split_tuples_deq env (body: deq list) : deq list =
     flat_map
-      (fun x -> match x with
+      (fun x ->
+       match x with
                 | Eqn (p,e,sync) -> (match e with
                                      | Tuple l -> real_split_tuple env p l sync
                                      | _ -> [ x ])
-                | Loop(i,ei,ef,dl,opts) -> [ Loop(i,ei,ef,split_tuples_deq env dl,opts) ]) body
+                | Loop(i,ei,ef,dl,opts) ->
+                   Hashtbl.add env i Nat;
+                   let res = [ Loop(i,ei,ef,split_tuples_deq env dl,opts) ] in
+                   Hashtbl.remove env i;
+                   res) body
 
   let split_tuples_def (def: def) : def =
     match def.node with
@@ -130,6 +135,18 @@ module Flatten_tuples = struct
   let flatten_tuples (p:prog) : prog =
     { nodes = List.map flatten_tuples_def p.nodes }
 end
+
+let norm_tuples_deq (def:def) : def =
+  (* Dunno if I should loop for a fixpoint or not... 
+     For now, this should be sufficient. *)
+  def |>
+    Simplify_tuples.simpl_tuples_def |>
+    Split_tuples.split_tuples_def |>
+    Flatten_tuples.flatten_tuples_def |>
+    Remove_tuples_funcall.simpl_tuples_def |>
+    Simplify_tuples.simpl_tuples_def |>
+    Split_tuples.split_tuples_def |>
+    Remove_tuples_funcall.simpl_tuples_def
 
 let norm_tuples (prog:prog) (conf:config) : prog =
   (* Dunno if I should loop for a fixpoint or not... 

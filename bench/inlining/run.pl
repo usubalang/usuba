@@ -31,12 +31,17 @@ $| = 1;
 
 my %ciphers = (
     des        => 1,
-    serpent    => 1, # Not good with inlining (scheduling actually)
     aes        => 1,
-    aes_kasper => 1,
+    aes_mslice => 1,
     chacha20   => 1,
     rectangle  => 1
     );
+my %slicing = (
+    des  => '-B',
+    aes  => '-B',
+    aes_mslice => '-H',
+    chacha20   => '-V',
+    rectangle  => '-V');
 my @ciphers = grep { $ciphers{$_} } keys %ciphers;
 my @scheds  = qw(nosched sched);
 
@@ -54,20 +59,11 @@ if ($gen) {
 
     for my $sched (@scheds) {
         my $sched_opt   = $sched eq 'nosched' ? '-no-sched' : '-sched-n 10';
-        my $ua_args = "-arch sse -no-arr -no-share $sched_opt";
+        my $ua_args = "-arch sse -no-arr $sched_opt";
         for my $cipher (@ciphers) {
             my $source  = "samples/usuba/$cipher.ua";
-            my $sched_flag = $cipher eq 'des' || $cipher eq 'aes' 
-                || $cipher eq 'rectangle' ? '' : '-inline-all';
-            if ($cipher eq 'aes_kasper') {
-                $source = "samples/usuba/aes_kasper_shufb.ua";
-            }
-            if ($cipher eq 'rectangle') {
-                $source = "samples/usuba/rectangle_vector.ua";
-            }
-            system "./usubac $ua_args             -o $pwd/$cipher/partinline-$sched.c $source";
-            system "./usubac $ua_args -no-inline  -o $pwd/$cipher/noinline-$sched.c $source";
-            system "./usubac $ua_args $sched_flag -o $pwd/$cipher/inline-$sched.c   $source";
+            system "./usubac $slicing{$cipher} $ua_args -no-inline  -o $pwd/$cipher/noinline-$sched.c $source";
+            system "./usubac $slicing{$cipher} $ua_args -inline-all -o $pwd/$cipher/inline-$sched.c   $source";
         }
     }
     say " done.";
@@ -76,11 +72,11 @@ if ($gen) {
 if ($compile) {
     print "Compiling C sources...";
     chdir "$FindBin::Bin";
+    make_path "bin" unless -d "bin";
     for my $sched (@scheds) {
         for my $cipher (@ciphers) {
             system "$CC $CFLAGS $HEADERS main_speed.c $cipher/stream.c $cipher/inline-$sched.c -o bin/$cipher-inline-$sched";
             system "$CC $CFLAGS $HEADERS main_speed.c $cipher/stream.c $cipher/noinline-$sched.c -o bin/$cipher-noinline-$sched";
-            system "$CC $CFLAGS $HEADERS main_speed.c $cipher/stream.c $cipher/partinline-$sched.c -o bin/$cipher-partinline-$sched";
         }
     }
     say " done.";
@@ -96,7 +92,7 @@ for my $sched (@scheds) {
         for ( 1 .. $NB_LOOP ) {
             print "\rRunning benchs $cipher... $_/$NB_LOOP";
 
-            for my $inline (qw(partinline noinline inline)) {
+            for my $inline (qw(noinline inline)) {
                 my $bin = "bin/$cipher-$inline-$sched";
                 my $cycles = sprintf "%03.02f", `./$bin`; 
                 push @{ $res{$bin}->{details} }, $cycles;
@@ -119,7 +115,6 @@ for my $sched (@scheds) {
 
         my $bin_inline     = "bin/$cipher-inline-$sched";
         my $bin_noinline   = "bin/$cipher-noinline-$sched";
-        my $bin_partinline = "bin/$cipher-noinline-$sched";
         my $speedup        = ($res{$bin_noinline}->{total} - $res{$bin_inline}->{total})
             / $res{$bin_noinline}->{total} * 100;
         my $size  = ((-s $bin_inline) - (-s $bin_noinline)) / (-s $bin_inline) * 100;
@@ -144,7 +139,7 @@ printf $FP_OUT
     $formatted{sched}->{des}->{speedup}, $formatted{sched}->{des}->{size},
     $formatted{sched}->{aes}->{speedup}, $formatted{sched}->{aes}->{size},
     $formatted{sched}->{chacha20}->{speedup}, $formatted{sched}->{chacha20}->{size},
-    $formatted{sched}->{aes_kasper}->{speedup}, $formatted{sched}->{aes_kasper}->{size};
+    $formatted{sched}->{aes_mslice}->{speedup}, $formatted{sched}->{aes_mslice}->{size};
 close $FP_OUT;
 
 open $FP_OUT, '>', 'results/inlining-nosched.tex';

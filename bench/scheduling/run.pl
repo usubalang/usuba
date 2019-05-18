@@ -58,9 +58,6 @@ if ($gen) {
     my $ua_args = "-arch sse -inline-all -no-arr";
     for my $cipher (@ciphers) {
         my $source  = "samples/usuba/$cipher.ua";
-        if ($cipher eq 'aes_kasper') {
-            $source = "samples/usuba/aes_kasper_shufb.ua";
-        }
         system "./usubac $ua_args -no-sched -o $pwd/$cipher/sched_0.c $source";
         for my $n (1 .. $max_sched) {
             system "./usubac $ua_args -sched-n $n -o $pwd/$cipher/sched_$n.c $source";

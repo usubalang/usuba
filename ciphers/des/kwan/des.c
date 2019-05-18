@@ -14,6 +14,8 @@
 #include "SSE.h"
 #elif defined(AVX)
 #include "AVX.h"
+#elif defined(AVX512)
+#include "AVX512.h"
 #else
 #error You need to define STD, SSE or AVX.
 #endif

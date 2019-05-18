@@ -92,11 +92,30 @@ let contains (s1:string) (s2:string) : bool =
 (* Retrieving the keys of a hash *)
 let keys hash = Hashtbl.fold (fun k _ acc -> k :: acc) hash []
 
+(* Retrieving the values of a hash *)
+let values hash = Hashtbl.fold (fun _ v acc -> v :: acc) hash []
+
+                             
 (* Retrieving the keys of a HoH's 2nd layer*)
 let keys_2nd_layer hash k =
   try
     keys (Hashtbl.find hash k)
   with Not_found -> []
+
+(* Adds a key/val in the 2nd layer of a HoH *)
+let add_key_2nd_layer hash1 k1 k2 v : unit =
+  match Hashtbl.find_opt hash1 k1 with
+  | Some hash2 -> Hashtbl.add hash2 k2 v
+  | None -> let hash2 = Hashtbl.create 10 in
+            Hashtbl.add hash2 k2 v;
+            Hashtbl.add hash1 k1 hash2
+(* Adds a key/val in the 2nd layer of a HoH *)
+let replace_key_2nd_layer hash1 k1 k2 v : unit =
+  match Hashtbl.find_opt hash1 k1 with
+  | Some hash2 -> Hashtbl.replace hash2 k2 v
+  | None -> let hash2 = Hashtbl.create 10 in
+            Hashtbl.replace hash2 k2 v;
+            Hashtbl.replace hash1 k1 hash2
 
 (* Generates the list of integers between i and f *)
 let rec gen_list_bounds (i:int) (f:int) : int list =

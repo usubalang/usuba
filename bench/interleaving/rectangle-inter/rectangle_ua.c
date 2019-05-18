@@ -13,7 +13,7 @@
 #include "SSE.h"
 
 /* auxiliary functions */
-void SubColumn__ (/*inputs*/ DATATYPE a0,DATATYPE a0__2,DATATYPE a1,DATATYPE a1__2,DATATYPE a2,DATATYPE a2__2,DATATYPE a3,DATATYPE a3__2, /*outputs*/ DATATYPE* b0,DATATYPE* b0__2,DATATYPE* b1,DATATYPE* b1__2,DATATYPE* b2,DATATYPE* b2__2,DATATYPE* b3,DATATYPE* b3__2) {
+void SubColumn__V16 (/*inputs*/ DATATYPE a0,DATATYPE a0__2,DATATYPE a1,DATATYPE a1__2,DATATYPE a2,DATATYPE a2__2,DATATYPE a3,DATATYPE a3__2, /*outputs*/ DATATYPE* b0,DATATYPE* b0__2,DATATYPE* b1,DATATYPE* b1__2,DATATYPE* b2,DATATYPE* b2__2,DATATYPE* b3,DATATYPE* b3__2) {
   
   // Variables declaration
   DATATYPE t1;
@@ -625,7 +625,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp1_1____2 = XOR(plain____2[1],LIFT_16(key__[0][1]));
   _tmp1_2____2 = XOR(plain____2[2],LIFT_16(key__[0][2]));
   _tmp1_3____2 = XOR(plain____2[3],LIFT_16(key__[0][3]));
-  SubColumn__(_tmp1_0__,_tmp1_0____2,_tmp1_1__,_tmp1_1____2,_tmp1_2__,_tmp1_2____2,_tmp1_3__,_tmp1_3____2,&_tmp2_0__,&_tmp2_0____2,&_tmp2_1__,&_tmp2_1____2,&_tmp2_2__,&_tmp2_2____2,&_tmp2_3__,&_tmp2_3____2);
+  SubColumn__V16(_tmp1_0__,_tmp1_0____2,_tmp1_1__,_tmp1_1____2,_tmp1_2__,_tmp1_2____2,_tmp1_3__,_tmp1_3____2,&_tmp2_0__,&_tmp2_0____2,&_tmp2_1__,&_tmp2_1____2,&_tmp2_2__,&_tmp2_2____2,&_tmp2_3__,&_tmp2_3____2);
   tmp__1__1__ = L_ROTATE(_tmp2_1__,1,16);
   tmp__1__2__ = L_ROTATE(_tmp2_2__,12,16);
   tmp__1__3__ = L_ROTATE(_tmp2_3__,13,16);
@@ -640,7 +640,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp3_1____2 = XOR(tmp__1__1____2,LIFT_16(key__[1][1]));
   _tmp3_2____2 = XOR(tmp__1__2____2,LIFT_16(key__[1][2]));
   _tmp3_3____2 = XOR(tmp__1__3____2,LIFT_16(key__[1][3]));
-  SubColumn__(_tmp3_0__,_tmp3_0____2,_tmp3_1__,_tmp3_1____2,_tmp3_2__,_tmp3_2____2,_tmp3_3__,_tmp3_3____2,&_tmp4_0__,&_tmp4_0____2,&_tmp4_1__,&_tmp4_1____2,&_tmp4_2__,&_tmp4_2____2,&_tmp4_3__,&_tmp4_3____2);
+  SubColumn__V16(_tmp3_0__,_tmp3_0____2,_tmp3_1__,_tmp3_1____2,_tmp3_2__,_tmp3_2____2,_tmp3_3__,_tmp3_3____2,&_tmp4_0__,&_tmp4_0____2,&_tmp4_1__,&_tmp4_1____2,&_tmp4_2__,&_tmp4_2____2,&_tmp4_3__,&_tmp4_3____2);
   tmp__2__1__ = L_ROTATE(_tmp4_1__,1,16);
   tmp__2__2__ = L_ROTATE(_tmp4_2__,12,16);
   tmp__2__3__ = L_ROTATE(_tmp4_3__,13,16);
@@ -655,7 +655,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp5_1____2 = XOR(tmp__2__1____2,LIFT_16(key__[2][1]));
   _tmp5_2____2 = XOR(tmp__2__2____2,LIFT_16(key__[2][2]));
   _tmp5_3____2 = XOR(tmp__2__3____2,LIFT_16(key__[2][3]));
-  SubColumn__(_tmp5_0__,_tmp5_0____2,_tmp5_1__,_tmp5_1____2,_tmp5_2__,_tmp5_2____2,_tmp5_3__,_tmp5_3____2,&_tmp6_0__,&_tmp6_0____2,&_tmp6_1__,&_tmp6_1____2,&_tmp6_2__,&_tmp6_2____2,&_tmp6_3__,&_tmp6_3____2);
+  SubColumn__V16(_tmp5_0__,_tmp5_0____2,_tmp5_1__,_tmp5_1____2,_tmp5_2__,_tmp5_2____2,_tmp5_3__,_tmp5_3____2,&_tmp6_0__,&_tmp6_0____2,&_tmp6_1__,&_tmp6_1____2,&_tmp6_2__,&_tmp6_2____2,&_tmp6_3__,&_tmp6_3____2);
   tmp__3__1__ = L_ROTATE(_tmp6_1__,1,16);
   tmp__3__2__ = L_ROTATE(_tmp6_2__,12,16);
   tmp__3__3__ = L_ROTATE(_tmp6_3__,13,16);
@@ -670,7 +670,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp7_1____2 = XOR(tmp__3__1____2,LIFT_16(key__[3][1]));
   _tmp7_2____2 = XOR(tmp__3__2____2,LIFT_16(key__[3][2]));
   _tmp7_3____2 = XOR(tmp__3__3____2,LIFT_16(key__[3][3]));
-  SubColumn__(_tmp7_0__,_tmp7_0____2,_tmp7_1__,_tmp7_1____2,_tmp7_2__,_tmp7_2____2,_tmp7_3__,_tmp7_3____2,&_tmp8_0__,&_tmp8_0____2,&_tmp8_1__,&_tmp8_1____2,&_tmp8_2__,&_tmp8_2____2,&_tmp8_3__,&_tmp8_3____2);
+  SubColumn__V16(_tmp7_0__,_tmp7_0____2,_tmp7_1__,_tmp7_1____2,_tmp7_2__,_tmp7_2____2,_tmp7_3__,_tmp7_3____2,&_tmp8_0__,&_tmp8_0____2,&_tmp8_1__,&_tmp8_1____2,&_tmp8_2__,&_tmp8_2____2,&_tmp8_3__,&_tmp8_3____2);
   tmp__4__1__ = L_ROTATE(_tmp8_1__,1,16);
   tmp__4__2__ = L_ROTATE(_tmp8_2__,12,16);
   tmp__4__3__ = L_ROTATE(_tmp8_3__,13,16);
@@ -685,7 +685,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp9_1____2 = XOR(tmp__4__1____2,LIFT_16(key__[4][1]));
   _tmp9_2____2 = XOR(tmp__4__2____2,LIFT_16(key__[4][2]));
   _tmp9_3____2 = XOR(tmp__4__3____2,LIFT_16(key__[4][3]));
-  SubColumn__(_tmp9_0__,_tmp9_0____2,_tmp9_1__,_tmp9_1____2,_tmp9_2__,_tmp9_2____2,_tmp9_3__,_tmp9_3____2,&_tmp10_0__,&_tmp10_0____2,&_tmp10_1__,&_tmp10_1____2,&_tmp10_2__,&_tmp10_2____2,&_tmp10_3__,&_tmp10_3____2);
+  SubColumn__V16(_tmp9_0__,_tmp9_0____2,_tmp9_1__,_tmp9_1____2,_tmp9_2__,_tmp9_2____2,_tmp9_3__,_tmp9_3____2,&_tmp10_0__,&_tmp10_0____2,&_tmp10_1__,&_tmp10_1____2,&_tmp10_2__,&_tmp10_2____2,&_tmp10_3__,&_tmp10_3____2);
   tmp__5__1__ = L_ROTATE(_tmp10_1__,1,16);
   tmp__5__2__ = L_ROTATE(_tmp10_2__,12,16);
   tmp__5__3__ = L_ROTATE(_tmp10_3__,13,16);
@@ -700,7 +700,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp11_1____2 = XOR(tmp__5__1____2,LIFT_16(key__[5][1]));
   _tmp11_2____2 = XOR(tmp__5__2____2,LIFT_16(key__[5][2]));
   _tmp11_3____2 = XOR(tmp__5__3____2,LIFT_16(key__[5][3]));
-  SubColumn__(_tmp11_0__,_tmp11_0____2,_tmp11_1__,_tmp11_1____2,_tmp11_2__,_tmp11_2____2,_tmp11_3__,_tmp11_3____2,&_tmp12_0__,&_tmp12_0____2,&_tmp12_1__,&_tmp12_1____2,&_tmp12_2__,&_tmp12_2____2,&_tmp12_3__,&_tmp12_3____2);
+  SubColumn__V16(_tmp11_0__,_tmp11_0____2,_tmp11_1__,_tmp11_1____2,_tmp11_2__,_tmp11_2____2,_tmp11_3__,_tmp11_3____2,&_tmp12_0__,&_tmp12_0____2,&_tmp12_1__,&_tmp12_1____2,&_tmp12_2__,&_tmp12_2____2,&_tmp12_3__,&_tmp12_3____2);
   tmp__6__1__ = L_ROTATE(_tmp12_1__,1,16);
   tmp__6__2__ = L_ROTATE(_tmp12_2__,12,16);
   tmp__6__3__ = L_ROTATE(_tmp12_3__,13,16);
@@ -715,7 +715,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp13_1____2 = XOR(tmp__6__1____2,LIFT_16(key__[6][1]));
   _tmp13_2____2 = XOR(tmp__6__2____2,LIFT_16(key__[6][2]));
   _tmp13_3____2 = XOR(tmp__6__3____2,LIFT_16(key__[6][3]));
-  SubColumn__(_tmp13_0__,_tmp13_0____2,_tmp13_1__,_tmp13_1____2,_tmp13_2__,_tmp13_2____2,_tmp13_3__,_tmp13_3____2,&_tmp14_0__,&_tmp14_0____2,&_tmp14_1__,&_tmp14_1____2,&_tmp14_2__,&_tmp14_2____2,&_tmp14_3__,&_tmp14_3____2);
+  SubColumn__V16(_tmp13_0__,_tmp13_0____2,_tmp13_1__,_tmp13_1____2,_tmp13_2__,_tmp13_2____2,_tmp13_3__,_tmp13_3____2,&_tmp14_0__,&_tmp14_0____2,&_tmp14_1__,&_tmp14_1____2,&_tmp14_2__,&_tmp14_2____2,&_tmp14_3__,&_tmp14_3____2);
   tmp__7__1__ = L_ROTATE(_tmp14_1__,1,16);
   tmp__7__2__ = L_ROTATE(_tmp14_2__,12,16);
   tmp__7__3__ = L_ROTATE(_tmp14_3__,13,16);
@@ -730,7 +730,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp15_1____2 = XOR(tmp__7__1____2,LIFT_16(key__[7][1]));
   _tmp15_2____2 = XOR(tmp__7__2____2,LIFT_16(key__[7][2]));
   _tmp15_3____2 = XOR(tmp__7__3____2,LIFT_16(key__[7][3]));
-  SubColumn__(_tmp15_0__,_tmp15_0____2,_tmp15_1__,_tmp15_1____2,_tmp15_2__,_tmp15_2____2,_tmp15_3__,_tmp15_3____2,&_tmp16_0__,&_tmp16_0____2,&_tmp16_1__,&_tmp16_1____2,&_tmp16_2__,&_tmp16_2____2,&_tmp16_3__,&_tmp16_3____2);
+  SubColumn__V16(_tmp15_0__,_tmp15_0____2,_tmp15_1__,_tmp15_1____2,_tmp15_2__,_tmp15_2____2,_tmp15_3__,_tmp15_3____2,&_tmp16_0__,&_tmp16_0____2,&_tmp16_1__,&_tmp16_1____2,&_tmp16_2__,&_tmp16_2____2,&_tmp16_3__,&_tmp16_3____2);
   tmp__8__1__ = L_ROTATE(_tmp16_1__,1,16);
   tmp__8__2__ = L_ROTATE(_tmp16_2__,12,16);
   tmp__8__3__ = L_ROTATE(_tmp16_3__,13,16);
@@ -745,7 +745,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp17_1____2 = XOR(tmp__8__1____2,LIFT_16(key__[8][1]));
   _tmp17_2____2 = XOR(tmp__8__2____2,LIFT_16(key__[8][2]));
   _tmp17_3____2 = XOR(tmp__8__3____2,LIFT_16(key__[8][3]));
-  SubColumn__(_tmp17_0__,_tmp17_0____2,_tmp17_1__,_tmp17_1____2,_tmp17_2__,_tmp17_2____2,_tmp17_3__,_tmp17_3____2,&_tmp18_0__,&_tmp18_0____2,&_tmp18_1__,&_tmp18_1____2,&_tmp18_2__,&_tmp18_2____2,&_tmp18_3__,&_tmp18_3____2);
+  SubColumn__V16(_tmp17_0__,_tmp17_0____2,_tmp17_1__,_tmp17_1____2,_tmp17_2__,_tmp17_2____2,_tmp17_3__,_tmp17_3____2,&_tmp18_0__,&_tmp18_0____2,&_tmp18_1__,&_tmp18_1____2,&_tmp18_2__,&_tmp18_2____2,&_tmp18_3__,&_tmp18_3____2);
   tmp__9__1__ = L_ROTATE(_tmp18_1__,1,16);
   tmp__9__2__ = L_ROTATE(_tmp18_2__,12,16);
   tmp__9__3__ = L_ROTATE(_tmp18_3__,13,16);
@@ -760,7 +760,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp19_1____2 = XOR(tmp__9__1____2,LIFT_16(key__[9][1]));
   _tmp19_2____2 = XOR(tmp__9__2____2,LIFT_16(key__[9][2]));
   _tmp19_3____2 = XOR(tmp__9__3____2,LIFT_16(key__[9][3]));
-  SubColumn__(_tmp19_0__,_tmp19_0____2,_tmp19_1__,_tmp19_1____2,_tmp19_2__,_tmp19_2____2,_tmp19_3__,_tmp19_3____2,&_tmp20_0__,&_tmp20_0____2,&_tmp20_1__,&_tmp20_1____2,&_tmp20_2__,&_tmp20_2____2,&_tmp20_3__,&_tmp20_3____2);
+  SubColumn__V16(_tmp19_0__,_tmp19_0____2,_tmp19_1__,_tmp19_1____2,_tmp19_2__,_tmp19_2____2,_tmp19_3__,_tmp19_3____2,&_tmp20_0__,&_tmp20_0____2,&_tmp20_1__,&_tmp20_1____2,&_tmp20_2__,&_tmp20_2____2,&_tmp20_3__,&_tmp20_3____2);
   tmp__10__1__ = L_ROTATE(_tmp20_1__,1,16);
   tmp__10__2__ = L_ROTATE(_tmp20_2__,12,16);
   tmp__10__3__ = L_ROTATE(_tmp20_3__,13,16);
@@ -775,7 +775,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp21_1____2 = XOR(tmp__10__1____2,LIFT_16(key__[10][1]));
   _tmp21_2____2 = XOR(tmp__10__2____2,LIFT_16(key__[10][2]));
   _tmp21_3____2 = XOR(tmp__10__3____2,LIFT_16(key__[10][3]));
-  SubColumn__(_tmp21_0__,_tmp21_0____2,_tmp21_1__,_tmp21_1____2,_tmp21_2__,_tmp21_2____2,_tmp21_3__,_tmp21_3____2,&_tmp22_0__,&_tmp22_0____2,&_tmp22_1__,&_tmp22_1____2,&_tmp22_2__,&_tmp22_2____2,&_tmp22_3__,&_tmp22_3____2);
+  SubColumn__V16(_tmp21_0__,_tmp21_0____2,_tmp21_1__,_tmp21_1____2,_tmp21_2__,_tmp21_2____2,_tmp21_3__,_tmp21_3____2,&_tmp22_0__,&_tmp22_0____2,&_tmp22_1__,&_tmp22_1____2,&_tmp22_2__,&_tmp22_2____2,&_tmp22_3__,&_tmp22_3____2);
   tmp__11__1__ = L_ROTATE(_tmp22_1__,1,16);
   tmp__11__2__ = L_ROTATE(_tmp22_2__,12,16);
   tmp__11__3__ = L_ROTATE(_tmp22_3__,13,16);
@@ -790,7 +790,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp23_1____2 = XOR(tmp__11__1____2,LIFT_16(key__[11][1]));
   _tmp23_2____2 = XOR(tmp__11__2____2,LIFT_16(key__[11][2]));
   _tmp23_3____2 = XOR(tmp__11__3____2,LIFT_16(key__[11][3]));
-  SubColumn__(_tmp23_0__,_tmp23_0____2,_tmp23_1__,_tmp23_1____2,_tmp23_2__,_tmp23_2____2,_tmp23_3__,_tmp23_3____2,&_tmp24_0__,&_tmp24_0____2,&_tmp24_1__,&_tmp24_1____2,&_tmp24_2__,&_tmp24_2____2,&_tmp24_3__,&_tmp24_3____2);
+  SubColumn__V16(_tmp23_0__,_tmp23_0____2,_tmp23_1__,_tmp23_1____2,_tmp23_2__,_tmp23_2____2,_tmp23_3__,_tmp23_3____2,&_tmp24_0__,&_tmp24_0____2,&_tmp24_1__,&_tmp24_1____2,&_tmp24_2__,&_tmp24_2____2,&_tmp24_3__,&_tmp24_3____2);
   tmp__12__1__ = L_ROTATE(_tmp24_1__,1,16);
   tmp__12__2__ = L_ROTATE(_tmp24_2__,12,16);
   tmp__12__3__ = L_ROTATE(_tmp24_3__,13,16);
@@ -805,7 +805,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp25_1____2 = XOR(tmp__12__1____2,LIFT_16(key__[12][1]));
   _tmp25_2____2 = XOR(tmp__12__2____2,LIFT_16(key__[12][2]));
   _tmp25_3____2 = XOR(tmp__12__3____2,LIFT_16(key__[12][3]));
-  SubColumn__(_tmp25_0__,_tmp25_0____2,_tmp25_1__,_tmp25_1____2,_tmp25_2__,_tmp25_2____2,_tmp25_3__,_tmp25_3____2,&_tmp26_0__,&_tmp26_0____2,&_tmp26_1__,&_tmp26_1____2,&_tmp26_2__,&_tmp26_2____2,&_tmp26_3__,&_tmp26_3____2);
+  SubColumn__V16(_tmp25_0__,_tmp25_0____2,_tmp25_1__,_tmp25_1____2,_tmp25_2__,_tmp25_2____2,_tmp25_3__,_tmp25_3____2,&_tmp26_0__,&_tmp26_0____2,&_tmp26_1__,&_tmp26_1____2,&_tmp26_2__,&_tmp26_2____2,&_tmp26_3__,&_tmp26_3____2);
   tmp__13__1__ = L_ROTATE(_tmp26_1__,1,16);
   tmp__13__2__ = L_ROTATE(_tmp26_2__,12,16);
   tmp__13__3__ = L_ROTATE(_tmp26_3__,13,16);
@@ -820,7 +820,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp27_1____2 = XOR(tmp__13__1____2,LIFT_16(key__[13][1]));
   _tmp27_2____2 = XOR(tmp__13__2____2,LIFT_16(key__[13][2]));
   _tmp27_3____2 = XOR(tmp__13__3____2,LIFT_16(key__[13][3]));
-  SubColumn__(_tmp27_0__,_tmp27_0____2,_tmp27_1__,_tmp27_1____2,_tmp27_2__,_tmp27_2____2,_tmp27_3__,_tmp27_3____2,&_tmp28_0__,&_tmp28_0____2,&_tmp28_1__,&_tmp28_1____2,&_tmp28_2__,&_tmp28_2____2,&_tmp28_3__,&_tmp28_3____2);
+  SubColumn__V16(_tmp27_0__,_tmp27_0____2,_tmp27_1__,_tmp27_1____2,_tmp27_2__,_tmp27_2____2,_tmp27_3__,_tmp27_3____2,&_tmp28_0__,&_tmp28_0____2,&_tmp28_1__,&_tmp28_1____2,&_tmp28_2__,&_tmp28_2____2,&_tmp28_3__,&_tmp28_3____2);
   tmp__14__1__ = L_ROTATE(_tmp28_1__,1,16);
   tmp__14__2__ = L_ROTATE(_tmp28_2__,12,16);
   tmp__14__3__ = L_ROTATE(_tmp28_3__,13,16);
@@ -835,7 +835,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp29_1____2 = XOR(tmp__14__1____2,LIFT_16(key__[14][1]));
   _tmp29_2____2 = XOR(tmp__14__2____2,LIFT_16(key__[14][2]));
   _tmp29_3____2 = XOR(tmp__14__3____2,LIFT_16(key__[14][3]));
-  SubColumn__(_tmp29_0__,_tmp29_0____2,_tmp29_1__,_tmp29_1____2,_tmp29_2__,_tmp29_2____2,_tmp29_3__,_tmp29_3____2,&_tmp30_0__,&_tmp30_0____2,&_tmp30_1__,&_tmp30_1____2,&_tmp30_2__,&_tmp30_2____2,&_tmp30_3__,&_tmp30_3____2);
+  SubColumn__V16(_tmp29_0__,_tmp29_0____2,_tmp29_1__,_tmp29_1____2,_tmp29_2__,_tmp29_2____2,_tmp29_3__,_tmp29_3____2,&_tmp30_0__,&_tmp30_0____2,&_tmp30_1__,&_tmp30_1____2,&_tmp30_2__,&_tmp30_2____2,&_tmp30_3__,&_tmp30_3____2);
   tmp__15__1__ = L_ROTATE(_tmp30_1__,1,16);
   tmp__15__2__ = L_ROTATE(_tmp30_2__,12,16);
   tmp__15__3__ = L_ROTATE(_tmp30_3__,13,16);
@@ -850,7 +850,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp31_1____2 = XOR(tmp__15__1____2,LIFT_16(key__[15][1]));
   _tmp31_2____2 = XOR(tmp__15__2____2,LIFT_16(key__[15][2]));
   _tmp31_3____2 = XOR(tmp__15__3____2,LIFT_16(key__[15][3]));
-  SubColumn__(_tmp31_0__,_tmp31_0____2,_tmp31_1__,_tmp31_1____2,_tmp31_2__,_tmp31_2____2,_tmp31_3__,_tmp31_3____2,&_tmp32_0__,&_tmp32_0____2,&_tmp32_1__,&_tmp32_1____2,&_tmp32_2__,&_tmp32_2____2,&_tmp32_3__,&_tmp32_3____2);
+  SubColumn__V16(_tmp31_0__,_tmp31_0____2,_tmp31_1__,_tmp31_1____2,_tmp31_2__,_tmp31_2____2,_tmp31_3__,_tmp31_3____2,&_tmp32_0__,&_tmp32_0____2,&_tmp32_1__,&_tmp32_1____2,&_tmp32_2__,&_tmp32_2____2,&_tmp32_3__,&_tmp32_3____2);
   tmp__16__1__ = L_ROTATE(_tmp32_1__,1,16);
   tmp__16__2__ = L_ROTATE(_tmp32_2__,12,16);
   tmp__16__3__ = L_ROTATE(_tmp32_3__,13,16);
@@ -865,7 +865,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp33_1____2 = XOR(tmp__16__1____2,LIFT_16(key__[16][1]));
   _tmp33_2____2 = XOR(tmp__16__2____2,LIFT_16(key__[16][2]));
   _tmp33_3____2 = XOR(tmp__16__3____2,LIFT_16(key__[16][3]));
-  SubColumn__(_tmp33_0__,_tmp33_0____2,_tmp33_1__,_tmp33_1____2,_tmp33_2__,_tmp33_2____2,_tmp33_3__,_tmp33_3____2,&_tmp34_0__,&_tmp34_0____2,&_tmp34_1__,&_tmp34_1____2,&_tmp34_2__,&_tmp34_2____2,&_tmp34_3__,&_tmp34_3____2);
+  SubColumn__V16(_tmp33_0__,_tmp33_0____2,_tmp33_1__,_tmp33_1____2,_tmp33_2__,_tmp33_2____2,_tmp33_3__,_tmp33_3____2,&_tmp34_0__,&_tmp34_0____2,&_tmp34_1__,&_tmp34_1____2,&_tmp34_2__,&_tmp34_2____2,&_tmp34_3__,&_tmp34_3____2);
   tmp__17__1__ = L_ROTATE(_tmp34_1__,1,16);
   tmp__17__2__ = L_ROTATE(_tmp34_2__,12,16);
   tmp__17__3__ = L_ROTATE(_tmp34_3__,13,16);
@@ -880,7 +880,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp35_1____2 = XOR(tmp__17__1____2,LIFT_16(key__[17][1]));
   _tmp35_2____2 = XOR(tmp__17__2____2,LIFT_16(key__[17][2]));
   _tmp35_3____2 = XOR(tmp__17__3____2,LIFT_16(key__[17][3]));
-  SubColumn__(_tmp35_0__,_tmp35_0____2,_tmp35_1__,_tmp35_1____2,_tmp35_2__,_tmp35_2____2,_tmp35_3__,_tmp35_3____2,&_tmp36_0__,&_tmp36_0____2,&_tmp36_1__,&_tmp36_1____2,&_tmp36_2__,&_tmp36_2____2,&_tmp36_3__,&_tmp36_3____2);
+  SubColumn__V16(_tmp35_0__,_tmp35_0____2,_tmp35_1__,_tmp35_1____2,_tmp35_2__,_tmp35_2____2,_tmp35_3__,_tmp35_3____2,&_tmp36_0__,&_tmp36_0____2,&_tmp36_1__,&_tmp36_1____2,&_tmp36_2__,&_tmp36_2____2,&_tmp36_3__,&_tmp36_3____2);
   tmp__18__1__ = L_ROTATE(_tmp36_1__,1,16);
   tmp__18__2__ = L_ROTATE(_tmp36_2__,12,16);
   tmp__18__3__ = L_ROTATE(_tmp36_3__,13,16);
@@ -895,7 +895,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp37_1____2 = XOR(tmp__18__1____2,LIFT_16(key__[18][1]));
   _tmp37_2____2 = XOR(tmp__18__2____2,LIFT_16(key__[18][2]));
   _tmp37_3____2 = XOR(tmp__18__3____2,LIFT_16(key__[18][3]));
-  SubColumn__(_tmp37_0__,_tmp37_0____2,_tmp37_1__,_tmp37_1____2,_tmp37_2__,_tmp37_2____2,_tmp37_3__,_tmp37_3____2,&_tmp38_0__,&_tmp38_0____2,&_tmp38_1__,&_tmp38_1____2,&_tmp38_2__,&_tmp38_2____2,&_tmp38_3__,&_tmp38_3____2);
+  SubColumn__V16(_tmp37_0__,_tmp37_0____2,_tmp37_1__,_tmp37_1____2,_tmp37_2__,_tmp37_2____2,_tmp37_3__,_tmp37_3____2,&_tmp38_0__,&_tmp38_0____2,&_tmp38_1__,&_tmp38_1____2,&_tmp38_2__,&_tmp38_2____2,&_tmp38_3__,&_tmp38_3____2);
   tmp__19__1__ = L_ROTATE(_tmp38_1__,1,16);
   tmp__19__2__ = L_ROTATE(_tmp38_2__,12,16);
   tmp__19__3__ = L_ROTATE(_tmp38_3__,13,16);
@@ -910,7 +910,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp39_1____2 = XOR(tmp__19__1____2,LIFT_16(key__[19][1]));
   _tmp39_2____2 = XOR(tmp__19__2____2,LIFT_16(key__[19][2]));
   _tmp39_3____2 = XOR(tmp__19__3____2,LIFT_16(key__[19][3]));
-  SubColumn__(_tmp39_0__,_tmp39_0____2,_tmp39_1__,_tmp39_1____2,_tmp39_2__,_tmp39_2____2,_tmp39_3__,_tmp39_3____2,&_tmp40_0__,&_tmp40_0____2,&_tmp40_1__,&_tmp40_1____2,&_tmp40_2__,&_tmp40_2____2,&_tmp40_3__,&_tmp40_3____2);
+  SubColumn__V16(_tmp39_0__,_tmp39_0____2,_tmp39_1__,_tmp39_1____2,_tmp39_2__,_tmp39_2____2,_tmp39_3__,_tmp39_3____2,&_tmp40_0__,&_tmp40_0____2,&_tmp40_1__,&_tmp40_1____2,&_tmp40_2__,&_tmp40_2____2,&_tmp40_3__,&_tmp40_3____2);
   tmp__20__1__ = L_ROTATE(_tmp40_1__,1,16);
   tmp__20__2__ = L_ROTATE(_tmp40_2__,12,16);
   tmp__20__3__ = L_ROTATE(_tmp40_3__,13,16);
@@ -925,7 +925,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp41_1____2 = XOR(tmp__20__1____2,LIFT_16(key__[20][1]));
   _tmp41_2____2 = XOR(tmp__20__2____2,LIFT_16(key__[20][2]));
   _tmp41_3____2 = XOR(tmp__20__3____2,LIFT_16(key__[20][3]));
-  SubColumn__(_tmp41_0__,_tmp41_0____2,_tmp41_1__,_tmp41_1____2,_tmp41_2__,_tmp41_2____2,_tmp41_3__,_tmp41_3____2,&_tmp42_0__,&_tmp42_0____2,&_tmp42_1__,&_tmp42_1____2,&_tmp42_2__,&_tmp42_2____2,&_tmp42_3__,&_tmp42_3____2);
+  SubColumn__V16(_tmp41_0__,_tmp41_0____2,_tmp41_1__,_tmp41_1____2,_tmp41_2__,_tmp41_2____2,_tmp41_3__,_tmp41_3____2,&_tmp42_0__,&_tmp42_0____2,&_tmp42_1__,&_tmp42_1____2,&_tmp42_2__,&_tmp42_2____2,&_tmp42_3__,&_tmp42_3____2);
   tmp__21__1__ = L_ROTATE(_tmp42_1__,1,16);
   tmp__21__2__ = L_ROTATE(_tmp42_2__,12,16);
   tmp__21__3__ = L_ROTATE(_tmp42_3__,13,16);
@@ -940,7 +940,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp43_1____2 = XOR(tmp__21__1____2,LIFT_16(key__[21][1]));
   _tmp43_2____2 = XOR(tmp__21__2____2,LIFT_16(key__[21][2]));
   _tmp43_3____2 = XOR(tmp__21__3____2,LIFT_16(key__[21][3]));
-  SubColumn__(_tmp43_0__,_tmp43_0____2,_tmp43_1__,_tmp43_1____2,_tmp43_2__,_tmp43_2____2,_tmp43_3__,_tmp43_3____2,&_tmp44_0__,&_tmp44_0____2,&_tmp44_1__,&_tmp44_1____2,&_tmp44_2__,&_tmp44_2____2,&_tmp44_3__,&_tmp44_3____2);
+  SubColumn__V16(_tmp43_0__,_tmp43_0____2,_tmp43_1__,_tmp43_1____2,_tmp43_2__,_tmp43_2____2,_tmp43_3__,_tmp43_3____2,&_tmp44_0__,&_tmp44_0____2,&_tmp44_1__,&_tmp44_1____2,&_tmp44_2__,&_tmp44_2____2,&_tmp44_3__,&_tmp44_3____2);
   tmp__22__1__ = L_ROTATE(_tmp44_1__,1,16);
   tmp__22__2__ = L_ROTATE(_tmp44_2__,12,16);
   tmp__22__3__ = L_ROTATE(_tmp44_3__,13,16);
@@ -955,7 +955,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp45_1____2 = XOR(tmp__22__1____2,LIFT_16(key__[22][1]));
   _tmp45_2____2 = XOR(tmp__22__2____2,LIFT_16(key__[22][2]));
   _tmp45_3____2 = XOR(tmp__22__3____2,LIFT_16(key__[22][3]));
-  SubColumn__(_tmp45_0__,_tmp45_0____2,_tmp45_1__,_tmp45_1____2,_tmp45_2__,_tmp45_2____2,_tmp45_3__,_tmp45_3____2,&_tmp46_0__,&_tmp46_0____2,&_tmp46_1__,&_tmp46_1____2,&_tmp46_2__,&_tmp46_2____2,&_tmp46_3__,&_tmp46_3____2);
+  SubColumn__V16(_tmp45_0__,_tmp45_0____2,_tmp45_1__,_tmp45_1____2,_tmp45_2__,_tmp45_2____2,_tmp45_3__,_tmp45_3____2,&_tmp46_0__,&_tmp46_0____2,&_tmp46_1__,&_tmp46_1____2,&_tmp46_2__,&_tmp46_2____2,&_tmp46_3__,&_tmp46_3____2);
   tmp__23__1__ = L_ROTATE(_tmp46_1__,1,16);
   tmp__23__2__ = L_ROTATE(_tmp46_2__,12,16);
   tmp__23__3__ = L_ROTATE(_tmp46_3__,13,16);
@@ -970,7 +970,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp47_1____2 = XOR(tmp__23__1____2,LIFT_16(key__[23][1]));
   _tmp47_2____2 = XOR(tmp__23__2____2,LIFT_16(key__[23][2]));
   _tmp47_3____2 = XOR(tmp__23__3____2,LIFT_16(key__[23][3]));
-  SubColumn__(_tmp47_0__,_tmp47_0____2,_tmp47_1__,_tmp47_1____2,_tmp47_2__,_tmp47_2____2,_tmp47_3__,_tmp47_3____2,&_tmp48_0__,&_tmp48_0____2,&_tmp48_1__,&_tmp48_1____2,&_tmp48_2__,&_tmp48_2____2,&_tmp48_3__,&_tmp48_3____2);
+  SubColumn__V16(_tmp47_0__,_tmp47_0____2,_tmp47_1__,_tmp47_1____2,_tmp47_2__,_tmp47_2____2,_tmp47_3__,_tmp47_3____2,&_tmp48_0__,&_tmp48_0____2,&_tmp48_1__,&_tmp48_1____2,&_tmp48_2__,&_tmp48_2____2,&_tmp48_3__,&_tmp48_3____2);
   tmp__24__1__ = L_ROTATE(_tmp48_1__,1,16);
   tmp__24__2__ = L_ROTATE(_tmp48_2__,12,16);
   tmp__24__3__ = L_ROTATE(_tmp48_3__,13,16);
@@ -985,7 +985,7 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
   _tmp49_1____2 = XOR(tmp__24__1____2,LIFT_16(key__[24][1]));
   _tmp49_2____2 = XOR(tmp__24__2____2,LIFT_16(key__[24][2]));
   _tmp49_3____2 = XOR(tmp__24__3____2,LIFT_16(key__[24][3]));
-  SubColumn__(_tmp49_0__,_tmp49_0____2,_tmp49_1__,_tmp49_1____2,_tmp49_2__,_tmp49_2____2,_tmp49_3__,_tmp49_3____2,&_tmp50_0__,&_tmp50_0____2,&_tmp50_1__,&_tmp50_1____2,&_tmp50_2__,&_tmp50_2____2,&_tmp50_3__,&_tmp50_3____2);
+  SubColumn__V16(_tmp49_0__,_tmp49_0____2,_tmp49_1__,_tmp49_1____2,_tmp49_2__,_tmp49_2____2,_tmp49_3__,_tmp49_3____2,&_tmp50_0__,&_tmp50_0____2,&_tmp50_1__,&_tmp50_1____2,&_tmp50_2__,&_tmp50_2____2,&_tmp50_3__,&_tmp50_3____2);
   tmp__25__1__ = L_ROTATE(_tmp50_1__,1,16);
   tmp__25__2__ = L_ROTATE(_tmp50_2__,12,16);
   tmp__25__3__ = L_ROTATE(_tmp50_3__,13,16);
@@ -1009,8 +1009,8 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
 /*                                                                  */
 /*
 
-_no_inline table SubColumn(input :  u16x4 :: base)
-  returns out :  u16x4 :: base
+ _no_inline table SubColumn(input :  v4 :: base)
+  returns out :  v4 :: base
 {
   6, 5, 12, 10, 1, 14, 7, 9, 11, 0, 3, 13, 8, 15, 4, 2
 }

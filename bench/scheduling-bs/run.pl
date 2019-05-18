@@ -1,4 +1,4 @@
->#!/usr/bin/perl
+#!/usr/bin/perl
 
 =usage
     
@@ -51,14 +51,11 @@ if ($gen) {
     print "Compiling Usuba sources...";
     chdir "$FindBin::Bin/../..";
 
-    my $ua_args = "-arch sse -no-share -no-arr -sched-n 0";
+    my $ua_args = "-arch sse";
     for my $cipher (@ciphers) {
         my $source  = "samples/usuba/$cipher.ua";
-        if ($cipher eq 'aes_kasper') {
-            $source = "samples/usuba/aes_kasper_shufb.ua";
-        }
-        system "./usubac $ua_args -no-sched -o $pwd/$cipher/nosched.c $source";
-        system "./usubac $ua_args           -o $pwd/$cipher/sched.c   $source";
+        system "./usubac -B $ua_args -no-sched -o $pwd/$cipher/nosched.c $source";
+        system "./usubac -B $ua_args           -o $pwd/$cipher/sched.c   $source";
     }
     say " done.";
 }

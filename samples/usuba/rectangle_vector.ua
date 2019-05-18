@@ -1,4 +1,4 @@
-_no_inline table SubColumn (input:u16x4) returns (out:u16x4) {
+_no_inline table SubColumn (input:v4) returns (out:v4) {
     6, 5, 12, 10, 1, 14, 7, 9, 11, 0, 3, 13, 8, 15, 4, 2
 }
 

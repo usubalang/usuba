@@ -1,8 +1,8 @@
-node sbox (a0:bool, a1:bool, a2:bool, a3:bool)
-     returns  (b0:bool, b1:bool, b2:bool, b3:bool)
+node sbox (a0:v1, a1:v1, a2:v1, a3:v1)
+     returns  (b0:v1, b1:v1, b2:v1, b3:v1)
 vars
-    t1:bool, t2:bool, t3:bool, t4:bool, t5:bool, t6:bool,
-    t7:bool, t8:bool, t9:bool, t10:bool, t11:bool, t12:bool
+    t1:v1, t2:v1, t3:v1, t4:v1, t5:v1, t6:v1,
+    t7:v1, t8:v1, t9:v1, t10:v1, t11:v1, t12:v1
 let
     t1 = ~a1;
     t2 = a0 & t1;

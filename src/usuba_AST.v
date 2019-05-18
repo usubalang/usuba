@@ -26,11 +26,21 @@ Inductive arith_expr :=
   | Var_e (x: ident)
   | Op_e (op: arith_op)(e1 e2: arith_expr). 
 
+Inductive dir :=
+  | Hslice
+  | Vslice
+  | Bslice
+  | Varslice (id:ident) (* variable *)
+  | Mslice (i:N). (* Generalized m-slicing *)
+
+Inductive mtyp :=
+  | Mint (i:N)
+  | Mvar (id:ident). (* variable *)
+
 Inductive typ :=
-  | Bool
-  | Int (i: N) (j :N)
-  | Nat (* for recurrence variables. Not part of usuba0 normalized *)
-  | Array (t: typ)(ae: arith_expr). (* arrays *)
+  | Nat
+  | Uint (d:dir) (m: mtyp) (n:N)
+  | Array (t: typ) (n:N).
 
 Inductive constr :=
   | True
@@ -58,7 +68,7 @@ Inductive expr :=
   | When (e: expr)(x: constr) (y: ident)
   | Merge (x: ident)(xs: list (constr * expr)).
 
-Inductive stmt_opt := Unroll | No_unroll.
+Inductive stmt_opt := Unroll | No_unroll | Pipelined | Safe_exit.
 
 Inductive deq :=
   | Eqn (vs: list var)(e: expr)(sync:bool)
@@ -81,7 +91,7 @@ Inductive def_i :=
   | Table         (t: list N) (* lookup table *)
   | Multiple      (l: list def_i).
 
-Inductive def_opt := Inline | No_inline | Interleave (n:N) | No_opt.
+Inductive def_opt := Inline | No_inline | Interleave (n:N) | No_opt | Is_table.
 
 Record def := {
   id    : ident;
@@ -132,6 +142,7 @@ Record config := {
   ortho        : bool;
   openmp       : N;
   no_arr       : bool;
+  no_arr_tmp   : bool;
   arr_entry    : bool;
   unroll       : bool;
   interleave   : N;
@@ -141,6 +152,7 @@ Record config := {
   lazylift     : bool;
   slicing_set  : bool;
   slicing_type : slicing;
+  secure_loops : bool;
 }.
 
 Set Extraction KeepSingleton.

@@ -118,12 +118,31 @@ let pat_to_str pat =
 let pat_to_str_types pat =
   "(" ^ (join "," (List.map var_to_str_types pat)) ^ ")"
 
+let m_to_str m =
+  match m with
+  | Mint n  -> sprintf "%d" n
+  | Mvar id -> id.name
+                                                       
+let dir_to_str d =
+  match d with
+  | Hslice     -> "<H>"
+  | Vslice     -> "<V>"
+  | Bslice     -> "<B>"
+  | Mslice i   -> sprintf "<%d>" i
+  | Varslice v -> if v.name = "D" then "" else sprintf "<%s>" v.name
+          
 let rec typ_to_str typ =
   match typ with
-  | Bool -> "bool"
-  | Int(n,m) -> sprintf "u%dx%d" n m
   | Nat -> "nat"
-  | Array(typ,e) -> (typ_to_str typ) ^ "[" ^ (arith_to_str e) ^ "]"
+  | Uint(d,m,n) ->
+     let dir_str = dir_to_str d in
+     begin match m with
+     | Mint 1  -> sprintf "b%s%d" dir_str n
+     | Mint i  -> if n = 1 then sprintf "u%s%d" dir_str i
+                  else sprintf "u%s%dx%d" dir_str i n
+     | Mvar id -> if id.name = "m" then sprintf "v%s%d" dir_str n
+                  else sprintf "u%s%sx%d" dir_str id.name n end
+  | Array(typ,n) -> sprintf "%s[%d]" (typ_to_str typ) n
 let typ_to_str_l = lift_comma typ_to_str
 
 let rec clock_to_str ck =
@@ -151,13 +170,16 @@ let p_to_str = lift_comma vd_to_str
 let optstmt_to_str = function
   | Unroll    -> "_unroll"
   | No_unroll -> "_no_unroll"
+  | Pipelined -> "_pipelined"
+  | Safe_exit -> "_safe_exit"
                    
 let rec deq_to_str = function
   | Eqn(pat,e,sync) -> sprintf "%s %s= %s" (pat_to_str pat) (if sync then ":" else "")
                                 (expr_to_str e)
   | Loop(id,ei,ef,d,opts) ->
-     sprintf "%s forall %s in [%s,%s] {\n    %s\n  }"
+     sprintf "%s%sforall %s in [%s,%s] {\n    %s\n  }"
              (join " " (List.map optstmt_to_str opts))
+             (if List.length opts > 0 then " " else "")
              id.name  (arith_to_str ei) (arith_to_str ef)
              (join "\n    " (List.map deq_to_str d))
 let deq_to_str_l = lift_comma deq_to_str
@@ -184,6 +206,7 @@ let optdef_to_str = function
   | No_inline -> "_no_inline"
   | Interleave n -> sprintf "_interleave(%d)" n
   | No_opt    -> "_no_opt"
+  | Is_table  -> ""
       
 let def_to_str (def:def) =
   let (id,p_in,p_out) = (def.id,def.p_in,def.p_out) in

@@ -70,8 +70,8 @@ let rec ret_var_to_c (lift_env:(var,int)  Hashtbl.t)
                      (env:(string,string) Hashtbl.t)
                      (env_var:(ident,typ) Hashtbl.t) (v:var) : string =
   match get_var_type env_var v with
-  | Bool | Int(_,1) -> "&" ^ (var_to_c lift_env env v)
-  | Array(_,_) | Int(_,_) -> var_to_c lift_env env v
+  | Uint(_,_,1) -> "&" ^ (var_to_c lift_env env v)
+  | Array _ | Uint _ -> var_to_c lift_env env v
   | _ -> assert false
 
 
@@ -81,8 +81,8 @@ let rec expr_to_c (lift_env:(var,int)  Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t) (e:expr) : string =
   match e with
   | Const n -> ( match n with
-                 | 0 -> "SET_ALL_ONE()"
-                 | 1 -> "SET_ALL_ZERO()"
+                 | 0 -> "SET_ALL_ZERO()"
+                 | 1 -> "SET_ALL_ONE()"
                  | n -> sprintf "SET(%d,%d)" n 64 )
   | ExpVar v -> var_to_c lift_env env v
   | Not e -> sprintf "NOT(%s)" (expr_to_c lift_env conf env env_var e)
@@ -109,7 +109,7 @@ let rec expr_to_c (lift_env:(var,int)  Hashtbl.t)
              (aexpr_to_c ae)
              (get_expr_reg_size env_var e)
   | Fun(f,[v]) when f.name = "rand" ->
-     sprintf "%s = rand();" (expr_to_c lift_env conf env env_var v)
+     sprintf "%s = RAND();" (expr_to_c lift_env conf env env_var v)
   | _ -> raise (Error (Printf.sprintf "Wrong expr: %s" (Usuba_print.expr_to_str e)))
 
                
@@ -134,7 +134,7 @@ let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
        (List.map
           (fun deq -> match deq with
             | Eqn([v],Fun(f,[]),_) when f.name = "rand" ->
-               sprintf "%s%s = rand();" tabs (var_to_c lift_env env v)
+               sprintf "%s%s = RAND();" tabs (var_to_c lift_env env v)
             | Eqn(p,Fun(f,l),_) -> fun_call_to_c lift_env conf env env_var ~tabs:tabs p f l
             | Eqn([v],e,_) ->
                sprintf "%s%s = %s;" tabs (var_to_c lift_env env v)
@@ -153,22 +153,22 @@ let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
 let params_to_arr (params: p) (marker:string) : string list =
   let rec typ_to_arr typ l =
     match typ with
-    | Bool | Int(_,1) -> l
-    | Int(_,n) -> (l @ [sprintf "[%d]" n])
-    | Array(t,Const_e n) -> typ_to_arr t ((sprintf "[%d]" n) :: l)
+    | Uint(_,_,1) -> l
+    | Uint(_,_,n) -> (l @ [sprintf "[%d]" n])
+    | Array(t,n) -> typ_to_arr t ((sprintf "[%d]" n) :: l)
     | _ -> raise (Not_implemented "Invalid input") in
   List.map (fun vd -> match vd.vtyp with
-                      | Bool | Int(_,1) -> sprintf "%s%s" marker vd.vid.name
+                      | Uint(_,_,1) -> sprintf "%s%s" marker vd.vid.name
                       | _ -> sprintf "%s%s" vd.vid.name
                                      (join "" (typ_to_arr vd.vtyp []))) params
 
 let rec gen_list_typ (x:string) (typ:typ) : string list =
   match typ with
-  | Bool  -> [ x ]
-  | Int(_,n) -> List.map (sprintf "%s'") (gen_list0 x n)
-  | Array(t',Const_e n) -> List.flatten @@
-                             List.map (fun x -> gen_list_typ x t')
-                                      (List.map (sprintf "%s'") (gen_list0 x n))
+  | Uint(_,_,n) -> List.map (sprintf "%s'") (gen_list0 x n)
+  | Array(t',n) ->
+     List.flatten @@
+       List.map (fun x -> gen_list_typ x t')
+                (List.map (sprintf "%s'") (gen_list0 x n))
   | _ -> assert false
                               
            
@@ -178,7 +178,7 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
     let id = vd.vid.name in
     match vd.vtyp with
     (* Hard-coding the case ukxn[m] for now *)
-    | Array(Int(_,n),Const_e m) ->
+    | Array(Uint(_,_,n),size) ->
        List.iteri
          (fun i x ->
           List.iteri (fun j y ->
@@ -186,23 +186,23 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
                                   (Printf.sprintf "%s'" y)
                                   (Printf.sprintf "%s[%d][%d]" (rename id) i j))
                      (gen_list0 (Printf.sprintf "%s'" x) n))
-         (gen_list0 id m)
-    | Bool -> Hashtbl.add inputs id (Printf.sprintf "%s%s" marker (rename id))
-    | Int(_,1) -> Hashtbl.add inputs id (Printf.sprintf "%s%s" marker (rename id));
-    | Int(_,n) -> List.iter2
+         (gen_list0 id size)
+    | Uint(_,_,1) -> Hashtbl.add inputs id (Printf.sprintf "%s%s" marker (rename id));
+    | Uint(_,_,n) -> List.iter2
                     (fun x y ->
                      Hashtbl.add inputs
                                  (Printf.sprintf "%s'" x)
                                  (Printf.sprintf "%s[%d]" (rename id) y))
                     (gen_list0 id n)
                     (gen_list_0_int n)
-    | Array(t,Const_e n) -> let size = typ_size t in
-                            List.iter2
-                              (fun x y ->
-                               Hashtbl.add inputs x
-                                           (Printf.sprintf "%s[%d]" (rename id) y))
-                              (gen_list_typ id vd.vtyp)
-                              (gen_list_0_int (size * n))
+    | Array(t,n) ->
+       let size = typ_size t in
+       List.iter2
+         (fun x y ->
+          Hashtbl.add inputs x
+                      (Printf.sprintf "%s[%d]" (rename id) y))
+         (gen_list_typ id vd.vtyp)
+         (gen_list_0_int (size * n))
     | _ -> Printf.printf "%s => %s:%s\n" def.id.name id
                          (Usuba_print.typ_to_str vd.vtyp);
            raise (Not_implemented "Arrays as input") in
@@ -216,7 +216,7 @@ let outputs_to_ptr (def:def) : (string, string) Hashtbl.t =
   List.iter (fun vd -> 
              let id = vd.vid.name in
              match vd.vtyp with
-             | Bool | Int(_,1) -> env_add outputs id ("*"^(rename id))
+             | Uint(_,_,1) -> env_add outputs id ("*"^(rename id))
              | _ -> ()) def.p_out;
   outputs    
 
@@ -230,7 +230,7 @@ let gen_intn (n:int) : string =
 
 let get_lift_size (vd:var_d) : int =
   match get_base_type vd.vtyp with
-  | Int(n,_) -> n
+  | Uint(_,Mint i,_) -> i
   | _ -> fprintf stderr "Invalid lazy lift with type '%s'.\n"
                  (Usuba_print.typ_to_str vd.vtyp);
          assert false
@@ -242,10 +242,9 @@ let rec var_decl_to_c conf (vd:var_d) (out:bool) : string =
   let rec aux (id:ident) (typ:typ) start =
     match typ with
     | Nat  -> (rename id.name) ^ start
-    | Bool -> (rename id.name) ^ start
-    | Int(_,1) -> (rename id.name) ^ start
-    | Int(_,m) -> sprintf "%s%s[%d]" (rename id.name) start m
-    | Array(typ,size) -> aux id typ (sprintf "[%d]" (eval_arith_ne size)) in
+    | Uint(_,_,1) -> (rename id.name) ^ start
+    | Uint(_,_,n) -> sprintf "%s%s[%d]" (rename id.name) start n
+    | Array(typ,size) -> aux id typ (sprintf "[%d]" size) in
   let vname = aux vd.vid vd.vtyp "" in
   let vtype = if conf.lazylift && is_const vd then
                 gen_intn (get_lift_size vd)
@@ -253,7 +252,7 @@ let rec var_decl_to_c conf (vd:var_d) (out:bool) : string =
   let pointer = match out with
     | false -> ""
     | true  -> match vd.vtyp with
-               | Bool | Int(_,1) -> "*"
+               | Uint(_,_,1) -> "*"
                | _ -> "" in
   sprintf "%s%s %s" vtype pointer vname
       

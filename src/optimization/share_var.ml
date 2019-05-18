@@ -23,8 +23,8 @@ module Linearize_arrays = struct
   let update_vars to_linearize (vars:p) : p =
     let rec simpl_type (typ:typ) : typ =
       match typ with
-      | Array(Int(n,m),_) -> Int(n,m)
-      | Array(Array(typ',ae),_) -> Array(typ',ae)
+      | Array(Uint(dir,m,n),_) -> Uint(dir,m,n)
+      | Array(Array(typ',s),_) -> Array(typ',s)
       | _ -> assert false in
     
     List.map (fun vd -> match Hashtbl.find_opt to_linearize vd.vid with
@@ -102,9 +102,8 @@ module Linearize_arrays = struct
   let get_2d_arrays (vars:p) : p =
     List.filter (fun vd ->
                  match vd.vtyp with
-                 | Array(Array(Bool,_),_) ->  true
-                 | Array(Array(Int(_,1),_),_) -> true
-                 | Array(Int(_,m),_) when m > 1 -> true
+                 | Array(Array(Uint(_,_,1),_),_) -> true
+                 | Array(Uint(_,_,n),_) when n > 1 -> true
                  | _ -> false) vars
 
   let linearize_def (def:def) : def =
@@ -176,8 +175,8 @@ let rec get_last_used
     Hashtbl.replace last_used v !cpt;
     if not no_arr then
       match get_var_type env_var v with
-      | Bool | Int(_,1) -> ()
-      | Int _ | Array _ -> List.iter (update_used_above env_var env_it last_used)
+      | Uint(_,_,1) -> ()
+      | Uint _ | Array _ -> List.iter (update_used_above env_var env_it last_used)
                                      (expand_var_partial env_var v)
       | _ -> assert false in
   

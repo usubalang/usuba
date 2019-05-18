@@ -50,9 +50,14 @@ let rec fold_expr (e:expr) : expr =
                | _ -> Not x')
   | _ -> e
 
+let rec fold_deq (deq:deq) : deq =
+  match deq with
+  | Eqn(v,e,sync)      -> Eqn(v,fold_expr e,sync)
+  | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,List.map fold_deq dl,opts)
            
 let rec cse_expr env_expr ?(invert=true) (e:expr) : expr =
-  let e =
+  let e = fold_expr e in
+  let e = 
     fold_expr 
       (match e with
        | Log(op,x,y)    -> Log(op,   cse_expr env_expr x, cse_expr env_expr y)
@@ -109,6 +114,11 @@ let opt_deq ret_env env_expr env_var opt_out_vars (p:var) (e:expr) (sync:bool) :
                  | None -> env_update env_expr (ExpVar p) (ExpVar v);
                            update_opt_out opt_out_vars p;
                            [])
+  | Const _  -> (match env_fetch_opt ret_env (get_var_base p) with
+                 | Some _ -> [ Eqn([p],e,sync) ]
+                 | None   -> env_update env_expr (ExpVar p) e;
+                             update_opt_out opt_out_vars p;
+                             [])
   | _        -> env_update env_expr e (ExpVar p);
                 [ Eqn([p],e,sync) ]
 
@@ -142,7 +152,7 @@ let rec commit_asgns ?(env_it=(Hashtbl.create 10))
     | Some e -> env_remove env_expr (ExpVar v);
                 [ Eqn([v],e, false) ]
     | None -> match get_var_type env_var v with
-              | Bool | Int(_,1) -> []
+              | Uint(_,_,1) -> []
               | _ -> flat_map (find_usage env_it env_expr env_var)
                               (expand_var_partial env_var v) in
   
@@ -154,7 +164,11 @@ let rec commit_asgns ?(env_it=(Hashtbl.create 10))
           : deq list =
     match deq with
     | Eqn(l,e,_) -> flat_map (find_usage env_it env_expr env_var) (get_used_vars e)
-    | Loop(i,ei,ef,dl,_) -> commit_asgns ~env_it:env_it env_expr env_var (i,ei,ef,dl) in
+    | Loop(i,ei,ef,dl,_) ->
+       Hashtbl.add env_var i Nat;
+       let res = commit_asgns ~env_it:env_it env_expr env_var (i,ei,ef,dl) in
+       Hashtbl.remove env_var i;
+       res in
 
   
   let ei = eval_arith env_it ei in
@@ -189,7 +203,7 @@ let rec opt_deqs env_var (deqs:deq list) (out:p) : deq list =
       (* A loop *)
       | Loop(i,ei,ef,dl,opts) ->
          (commit_asgns env_expr env_var (i,ei,ef,dl)) @
-           [ Loop(i,ei,ef,dl,opts) ]) deqs
+           [ Loop(i,ei,ef,List.map fold_deq dl,opts) ]) deqs
       
 
 let opt_def (def: def) : def =
