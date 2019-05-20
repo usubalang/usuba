@@ -19,11 +19,22 @@ void test_ref() {
 
   pyjamask_128_enc(plain,key,cipher);
 
-  printf("Ref:\n");
-  for (int i = 0; i < 16; i++) printf("%02x ",plain[i]);  printf("\n");
-  for (int i = 0; i < 16; i++) printf("%02x ",key[i]);    printf("\n");
-  for (int i = 0; i < 16; i++) printf("%02x ",cipher[i]); printf("\n");
-
+  /* printf("Ref:\n"); */
+  /* for (int i = 0; i < 16; i++) printf("%02x ",plain[i]);  printf("\n"); */
+  /* for (int i = 0; i < 16; i++) printf("%02x ",key[i]);    printf("\n"); */
+  /* for (int i = 0; i < 16; i++) printf("%02x ",cipher[i]); printf("\n"); */
+  
+  unsigned char expected[16] = { 0x48, 0xf1, 0x39, 0xa1, 0x09, 0xbd, 0xd9, 0xc0,
+                                 0x72, 0x6e, 0x82, 0x61, 0xf8, 0xd6, 0x8e, 0x7d };
+  if (memcmp(cipher, expected, 16) != 0) {
+    fprintf(stderr, "Ref encryption error.\nExpected: ");
+    for (int i = 0; i < 16; i++) printf("%02x ",expected[i]);
+    printf("\nGot     : ");
+    for (int i = 0; i < 16; i++) printf("%02x ",cipher[i]);
+    printf("\n");
+  } else {
+    fprintf(stderr, "Ref encryption OK.\n");
+  }
 }
 
 
@@ -134,20 +145,32 @@ void test_ua() {
   memcpy(&cipher[8],&output[64],8);
 
   
-  printf("UA:\n");
-  for (int i = 0; i < 16; i++) printf("%02x ",plain[i]);  printf("\n");
-  for (int i = 0; i < 16; i++) printf("%02x ",key[i]);    printf("\n");
-  for (int i = 0; i < 16; i++) printf("%02x ",cipher[i]); printf("\n");
+  /* printf("UA:\n"); */
+  /* for (int i = 0; i < 16; i++) printf("%02x ",plain[i]);  printf("\n"); */
+  /* for (int i = 0; i < 16; i++) printf("%02x ",key[i]);    printf("\n"); */
+  /* for (int i = 0; i < 16; i++) printf("%02x ",cipher[i]); printf("\n"); */
+
   
+  unsigned char expected[16] = { 0x48, 0xf1, 0x39, 0xa1, 0x09, 0xbd, 0xd9, 0xc0,
+                                 0x72, 0x6e, 0x82, 0x61, 0xf8, 0xd6, 0x8e, 0x7d };
+  if (memcmp(cipher, expected, 16) != 0) {
+    fprintf(stderr, "Ref encryption error.\nExpected: ");
+    for (int i = 0; i < 16; i++) fprintf(stderr, "%02x ",expected[i]);
+    fprintf(stderr, "\nGot     : ");
+    for (int i = 0; i < 16; i++) fprintf(stderr, "%02x ",cipher[i]);
+    fprintf(stderr, "\n");
+  } else {
+    fprintf(stderr, "UA encryption OK.\n");
+  }
 }
 
 
 int main() {
 
-#ifdef UA
+/* #ifdef UA */
   test_ua();
-#endif
-#ifdef REF
+/* #endif */
+/* #ifdef REF */
   test_ref();
-#endif
+/* #endif */
 }
