@@ -7,11 +7,13 @@ use feature 'say';
 use FindBin;
 chdir $FindBin::Bin;
 
+my $arch = "@ARGV" =~ /sse/i ? 'sse' : 'std';
+
 my $NB_RUN = 10;
 
-my $compile_line = 'clang -Dstd -Wall -Wextra -O3 -march=native -I. -I ../../arch main.c key.c bitslice/stream.c';
-system "$compile_line bitslice/manual.c -o main_manual";
-system "$compile_line bitslice/std.c -o main_usuba";
+my $compile_line = "clang -D $arch -Wall -Wextra -O3 -march=native -fno-slp-vectorize -fno-tree-vectorize -I. -I ../../arch main.c key.c bitslice/stream.c";
+system "$compile_line bitslice/manual_$arch.c -o main_manual";
+system "$compile_line bitslice/$arch.c -o main_usuba";
 
 my %time;
 for (1 .. $NB_RUN) {
