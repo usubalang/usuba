@@ -28,11 +28,13 @@ void verif() {
 
   if (xored != 207 || summed != 127) {
     fprintf(stderr, "Encryption Error.\n");
+  } else {
+    fprintf(stderr, "Encryption seems OK.\n");
   }
   
 }
 
-#define NB_LOOP 10000
+#define NB_LOOP 1000
 void speed() {
   unsigned char input[IN_SIZE] __attribute ((aligned(32)));
   unsigned char output[IN_SIZE] __attribute ((aligned(32)));
@@ -68,7 +70,7 @@ void speed() {
 }
 
 int main() {
-  //verif();
+  verif();
   speed();
 
   return 0;
