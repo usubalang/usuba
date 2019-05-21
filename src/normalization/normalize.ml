@@ -38,18 +38,28 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
   (* Rename only if param rename is true *)
   let rename = if rename then Rename.rename_prog else (fun x _ -> x) in
 
+  let norm_bitslice x _ =
+    x |>
+      (run_pass "Unfold_unnest" Unfold_unnest.norm_prog) |>
+      (run_pass "Expand_array (bitslice)" Expand_array.expand_array) |>
+      (run_pass "Expand_permut" Expand_permut.expand_permut) |>
+      (run_pass "Norm_tuples.norm_tuples 1" Norm_tuples.norm_tuples) |>
+      (run_pass "Bitslice_shift" Bitslice_shift.expand_shifts) |>
+      (run_pass "Norm_tuples.norm_tuples 2" Norm_tuples.norm_tuples) in
+
+  
   let normalize_core x _ =
     x |>
       (run_pass "Expand_array 1.5" Expand_array.expand_array)              |>
-      (run_pass "Norm_bitslice 1" Norm_bitslice.norm_prog)                 |>
+      (run_pass "Norm_bitslice 1" norm_bitslice)                 |>
       (run_pass "Expand_parameters" Expand_parameters.expand_parameters)   |>
       (run_pass "Fix_dim params" Fix_dim.Dir_params.fix_dim)               |>
       (run_pass "Expand_array 2" Expand_array.expand_array)                |>
-      (run_pass "Norm_bitslice 2" Norm_bitslice.norm_prog)                 |>
+      (run_pass "Norm_bitslice 2" norm_bitslice)                 |>
       (run_pass "Expand_parameters 2" Expand_parameters.expand_parameters) |>
       (run_pass "Fix_dim inner" Fix_dim.Dir_inner.fix_dim)                 |>
       (run_pass "Expand_array 3" Expand_array.expand_array)                |>
-      (run_pass "Norm_bitslice 3" Norm_bitslice.norm_prog) in
+      (run_pass "Norm_bitslice 3" norm_bitslice) in
     
   
   let normalized =
@@ -58,6 +68,7 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
       (run_pass "Expand_multiples" Expand_multiples.expand_multiples)      |>
       (run_pass "Convert_tables" Convert_tables.convert_tables)            |>
       (run_pass "Expand_array" Expand_array.expand_array)                  |>
+      (run_pass "Expand_const" Expand_const.expand_const)                  |>
       (run_pass "Init_scheduler 1" Init_scheduler.schedule_prog)           |>
       (run_pass "Remove_sync" Remove_sync.remove_sync)                     |>
       (run_pass "Remove_ctrl" Remove_ctrl.remove_ctrl)                     |>
