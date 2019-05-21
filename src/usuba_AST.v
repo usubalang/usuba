@@ -152,6 +152,8 @@ Record config := {
   lazylift     : bool;
   slicing_set  : bool;
   slicing_type : slicing;
+  m_set        : bool;
+  m_val        : N;
   secure_loops : bool;
   tightPROVE   : bool;
   shares       : N;
