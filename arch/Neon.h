@@ -44,7 +44,7 @@
 #define ALLOC(size) malloc(size * sizeof(uint64x2_t))
 
 
-#ifndef NO_RUNTIME
+#ifdef RUNTIME
 
 
 /* Orthogonalization stuffs */

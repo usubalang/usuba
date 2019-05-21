@@ -38,7 +38,7 @@
 
 #define ADD(a,b,c) ((a) + (b))
 
-#define ROTATE_MASK(x) (x == 64 ? -1ULL : x == 32 ? (int)-1 : x == 16 ? 0xFFFF : \
+#define ROTATE_MASK(x) (x == 64 ? -1ULL : x == 32 ? -1 : x == 16 ? 0xFFFF : \
     ({ fprintf(stderr,"Not implemented rotate [uint%d_t]. Exiting.\n",x); \
       exit(1); 1; }))
 
@@ -72,7 +72,7 @@
 
 
 
-#ifndef NO_RUNTIME
+#ifdef RUNTIME
 
 
 /* Orthogonalization stuffs */

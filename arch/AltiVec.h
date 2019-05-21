@@ -46,7 +46,7 @@
 #define ALLOC(size) malloc(size * sizeof(DATATYPE))
 
 
-#ifndef NO_RUNTIME
+#ifdef RUNTIME
 
 
 /* Orthogonalization stuffs */
