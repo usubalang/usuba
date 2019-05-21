@@ -35,7 +35,7 @@ mkdir $temp_dir;
 
 # Compiling Usuba DES.
 say "Regenerating the DES code...";
-error if system "./usubac -B -o $temp_dir/des.c -arch avx -runtime samples/usuba/des.ua" ;
+error if system "./usubac -no-arr -B -o $temp_dir/des.c -arch avx -runtime samples/usuba/des.ua" ;
 {
     local $^I = "";
     local @ARGV = "$temp_dir/des.c";
@@ -45,11 +45,10 @@ error if system "./usubac -B -o $temp_dir/des.c -arch avx -runtime samples/usuba
 }
 
 chdir $temp_dir;
-copy '../DES/ref_usuba.c', '.';
 copy $_, '.' for glob "$FindBin::Bin/des/*";
 
 
-error if system 'clang -O3 -march=native -o des_ref ref_usuba.c';
+error if system 'clang -march=native -o des_ref ref_usuba.c';
 
 
 for my $ARCH (qw(STD SSE AVX)) {
@@ -65,7 +64,7 @@ for my $ARCH (qw(STD SSE AVX)) {
     error if system 'cmp --silent output.txt output_to_test.txt';
     unlink "output.txt output_to_test.txt"
 }
-    
+
 chdir '..';
 remove_tree $temp_dir;
 
