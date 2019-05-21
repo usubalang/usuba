@@ -89,7 +89,7 @@
 #define ALLOC(size) aligned_alloc(64,size * sizeof(__m512i))
 
 
-#ifndef NO_RUNTIME
+#ifdef RUNTIME
 
 
 /* Orthogonalization stuffs */

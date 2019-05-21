@@ -74,7 +74,7 @@
 #define ALLOC(size) aligned_alloc(32,size * sizeof(__m128i))
 
 
-#ifndef NO_RUNTIME
+#ifdef RUNTIME
 
 
 /* Orthogonalization stuffs */
