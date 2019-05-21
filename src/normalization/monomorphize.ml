@@ -63,7 +63,16 @@ module Vslice = struct
 end
 
 module Bslice = struct
-  
+
+  (* get the size in bits of a typ: a unxm has size n*m in bitslicing *)
+  let rec get_typ_real_size (typ:typ) : int =
+    match typ with
+    | Uint(_,Mint m,n) -> m * n
+    | Uint(_,Mvar m,n) when m.name = "m" -> n
+    | Array(t,n) -> (get_typ_real_size t) * n
+    | _ -> assert false (* Nat or Uint(_,Mvar _,_) *)
+
+  (* Get the "n" associated to a type *)
   let rec get_base_n (typ:typ) : int =
     match typ with
     | Uint(_,_,n) -> n
@@ -82,13 +91,34 @@ module Bslice = struct
                Range(v',Op_e(Mul,ae,Const_e m),Op_e(Add,Op_e(Mul,ae,Const_e m),Const_e (m-1)))
             | _ -> Index(specialize_var env_var v',ae)))
     | _ -> assert false
-    
+
+  (* Expands a const to a Tuple of 0/1 *)
+  (* The tupple is padded with 0s to be of the right size (with make_0_list) *)
+  let expand_const (size:int) (n:int) : expr =
+    let rec make_0_list n acc =
+      if n > 0 then make_0_list (n-1) (Const 0 :: acc)
+      else acc in
+    let rec dec_to_binlist n =
+      if n > 0 then
+        (Const (n mod 2))::(dec_to_binlist (n/2))
+      else [] in
+    let l = dec_to_binlist n in
+    let len = List.length l in
+    let diff = size - len in
+    Tuple((make_0_list diff []) @ l)
+
+  (* Constants need to be turned into tuples of booleans (boolean = 0/1) *)
+  let specialize_const env_var (vs:var list) (n:int) : expr =
+    let size = match vs with
+      | [ v ] -> get_typ_real_size (get_var_type env_var v)
+      | _ -> assert false (* multiple vars on the left? shouldn't happend *) in
+    if size = 1 then Const n
+    else expand_const size n
 
   let rec specialize_expr env_var (vs:var list) (e:expr) (sync:bool) : deq =
-    let vs = List.map (specialize_var env_var) vs in
     let e =
       match e with
-      | Const _ -> e
+      | Const n -> specialize_const env_var vs n
       | ExpVar v -> ExpVar (specialize_var env_var v)
       | Not (ExpVar v) -> Not (ExpVar(specialize_var env_var v))
       | Shift(op,ExpVar x, ae) ->
@@ -106,7 +136,7 @@ module Bslice = struct
          Arith(op,ExpVar(specialize_var env_var x),ExpVar(specialize_var env_var y))
       | _ -> Printf.fprintf stderr "Invalid expr: %s\n" (Usuba_print.expr_to_str e);
              assert false in
-    Eqn(vs,e,sync)
+    Eqn(List.map (specialize_var env_var) vs,e,sync)
     
 
   let rec refine_type (t:typ) : typ =
@@ -224,7 +254,7 @@ let rec specialize_fun_call
   Eqn(vs,Fun(f',l),sync)
 
 
-(* Note that expressions have been normalized, and a therefore not reccursive 
+(* Note that expressions have been normalized, and are therefore not reccursive 
      at this point. *)
 and specialize_expr (all_nodes:(ident,def) Hashtbl.t)
                     (specialized_nodes:(ident,(ident*(dir list)*(mtyp list),def) Hashtbl.t) Hashtbl.t)
