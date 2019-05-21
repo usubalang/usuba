@@ -45,6 +45,8 @@ let shares       = ref 1
                        
 let slicing_type = ref B
 let slicing_set  = ref false
+let m_val        = ref 1
+let m_set        = ref false
 
 let str_to_arch = function
   | "std"     -> Std
@@ -129,6 +131,7 @@ let main () =
       "-H", Arg.Unit (fun () -> slicing_set := true; slicing_type := H), "Horizontal slicing.";
       "-V", Arg.Unit (fun () -> slicing_set := true; slicing_type := V), "Vertical slicing.";
       "-B", Arg.Unit (fun () -> slicing_set := true; slicing_type := B), "Bit slicing.";
+      "-m", Arg.Int (fun n -> m_set := true; m_val := n), "Set 'm value";
       "-tp", Arg.Set tightPROVE, "Generate tightPROVE circuits";
       "-shares", Arg.Set_int shares, "Set the number of shares";
     ] in
@@ -182,6 +185,8 @@ let main () =
                  lazylift       =   !lazylift;
                  slicing_set    =   !slicing_set;
                  slicing_type   =   !slicing_type;
+                 m_set          =   !m_set;
+                 m_val          =   !m_val;
                  secure_loops   =   !secure_loops;
                  tightPROVE     =   !tightPROVE;
                  shares         =   !shares;
