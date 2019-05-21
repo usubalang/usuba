@@ -74,42 +74,44 @@ let rec ret_var_to_c (lift_env:(var,int)  Hashtbl.t)
   | Array _ | Uint _ -> var_to_c lift_env env v
   | _ -> assert false
 
-
-(* TODO: this 64 and 32 shouldn't be hardcoded *)
-let rec expr_to_c (lift_env:(var,int)  Hashtbl.t)
+let const_to_c (m:int) (n:int) (conf:config) : string =
+  match m with
+  | 1 -> (match n with
+               | 0 -> "SET_ALL_ZERO()"
+               | 1 -> "SET_ALL_ONE()"
+               | _ -> assert false)
+  | _ -> sprintf "LIFT_%d(%d)" m n
+                
+let rec expr_to_c (m:int)
+                  (lift_env:(var,int)  Hashtbl.t)
                   (conf:config) (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t) (e:expr) : string =
   match e with
-  | Const n -> ( match n with
-                 | 0 -> "SET_ALL_ZERO()"
-                 | 1 -> "SET_ALL_ONE()"
-                 | n -> sprintf "SET(%d,%d)" n 64 )
+  | Const n -> const_to_c m n conf
   | ExpVar v -> var_to_c lift_env env v
-  | Not e -> sprintf "NOT(%s)" (expr_to_c lift_env conf env env_var e)
+  | Not e -> sprintf "NOT(%s)" (expr_to_c m lift_env conf env env_var e)
   | Log(op,x,y) -> sprintf "%s(%s,%s)"
                            (log_op_to_c op)
-                           (expr_to_c lift_env conf env env_var x)
-                           (expr_to_c lift_env conf env env_var y)
+                           (expr_to_c m lift_env conf env env_var x)
+                           (expr_to_c m lift_env conf env env_var y)
   | Arith(op,x,y) -> 
-     (*Printf.fprintf stderr "Hardcoded arith op size\n";*)
      sprintf "%s(%s,%s,%d)"
-                             (arith_op_to_c_generic op)
-                             (expr_to_c lift_env conf env env_var x)
-                             (expr_to_c lift_env conf env env_var y)
-                             32
+             (arith_op_to_c_generic op)
+             (expr_to_c m lift_env conf env env_var x)
+             (expr_to_c m lift_env conf env env_var y)
+             m
   | Shuffle(v,l) -> sprintf "PERMUT_%d(%s,%s)"
                                  (List.length l)
                                  (var_to_c lift_env env v)
                                  (join "," (List.map string_of_int l))
   | Shift(op,e,ae) ->
-     (*Printf.fprintf stderr "Hardcoded rotation size\n";*)
      sprintf "%s(%s,%s,%d)"
              (shift_op_to_c op)
-             (expr_to_c lift_env conf env env_var e)
+             (expr_to_c m lift_env conf env env_var e)
              (aexpr_to_c ae)
              (get_expr_reg_size env_var e)
   | Fun(f,[v]) when f.name = "rand" ->
-     sprintf "%s = RAND();" (expr_to_c lift_env conf env env_var v)
+     sprintf "%s = RAND();" (expr_to_c m lift_env conf env env_var v)
   | _ -> raise (Error (Printf.sprintf "Wrong expr: %s" (Usuba_print.expr_to_str e)))
 
                
@@ -121,7 +123,8 @@ let fun_call_to_c (lift_env:(var,int)  Hashtbl.t)
                   (p:var list) (f:ident) (args: expr list) : string =
   sprintf "%s%s(%s,%s);"
           tabs
-          (rename f.name) (join "," (List.map (expr_to_c lift_env conf env env_var) args))
+          (rename f.name) (join "," (List.map (expr_to_c (-1) lift_env conf env env_var) args))
+                                                      (* ^^^ this "m" value is ignored *)
           (join "," (List.map (fun v -> ret_var_to_c lift_env env env_var v) p))
           
 let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
@@ -137,8 +140,11 @@ let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
                sprintf "%s%s = RAND();" tabs (var_to_c lift_env env v)
             | Eqn(p,Fun(f,l),_) -> fun_call_to_c lift_env conf env env_var ~tabs:tabs p f l
             | Eqn([v],e,_) ->
+               let m = match get_type_m (get_var_type env_var v) with
+                 | Mint n -> n
+                 | _ -> assert false in
                sprintf "%s%s = %s;" tabs (var_to_c lift_env env v)
-                       (expr_to_c lift_env conf env env_var e)
+                       (expr_to_c m lift_env conf env env_var e)
             | Loop(i,ei,ef,l,_) ->
                sprintf "%sfor (int %s = %s; %s <= %s; %s++) {\n%s\n%s}"
                        tabs
