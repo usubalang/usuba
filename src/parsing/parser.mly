@@ -238,10 +238,10 @@ deq_forall:
     { Loop(i, startr, endr, d, opts) }
 
 deqs:
-  | d=deq_forall ds=deqs { d :: ds }
-  | d=norec_deq TOK_SEMICOLON ds=deqs { d :: ds }
-  | d=deq_forall { [ d ] }
-  | d=norec_deq  { [ d ] }
+  | d=deq_forall list(TOK_SEMICOLON) ds=deqs { d :: ds }
+  | d=norec_deq  nonempty_list(TOK_SEMICOLON) ds=deqs { d :: ds }
+  | d=deq_forall list(TOK_SEMICOLON)  { [ d ] }
+  | d=norec_deq  list(TOK_SEMICOLON)  { [ d ] }
 
 opt_var_d:
   TOK_CONST { Pconst }
