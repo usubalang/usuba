@@ -105,7 +105,7 @@ module Bslice = struct
     let l = dec_to_binlist n in
     let len = List.length l in
     let diff = size - len in
-    Tuple((make_0_list diff []) @ l)
+    Tuple((make_0_list diff []) @ (List.rev l))
 
   (* Constants need to be turned into tuples of booleans (boolean = 0/1) *)
   let specialize_const env_var (vs:var list) (n:int) : expr =
