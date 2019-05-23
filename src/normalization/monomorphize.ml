@@ -213,10 +213,16 @@ let specialize_expr_var (env_var:(ident, typ) Hashtbl.t) (e:expr) : expr =
 (* Given a list of var_d (p), and a list of types, update the dir/m of each
      var_d according to the corresponding type in the list of types *)
 let match_types env_dir env_m (p:p) (typs:typ list) : p =
+  (* updates the dir in tdest with the dir in tdir *)
+  let rec update_dir (tdest:typ) (tdir:typ) : typ =
+    match tdest with
+    | Nat -> tdest
+    | Uint(_,m,n) -> Uint(get_type_dir tdir,m,n)
+    | Array(t,s)  -> Array(update_dir t tdir,s) in
   List.map2 (fun vd t ->
              Hashtbl.replace env_dir (get_type_dir vd.vtyp) (get_type_dir t);
              Hashtbl.replace env_m (get_type_m vd.vtyp) (get_type_m t);
-             { vd with vtyp = t }
+             { vd with vtyp = update_dir vd.vtyp t }
             ) p typs
             
 let rec specialize_fun_call
@@ -237,6 +243,7 @@ let rec specialize_fun_call
   let ldir  = List.sort compare (values env_dir) in
   let lmtyp = List.sort compare (values env_m) in
   let f'   = gen_fun_name f ldir lmtyp in
+  
   replace_key_2nd_layer specialized_nodes f (f',ldir,lmtyp)
                         { def with
                           id    = f';
