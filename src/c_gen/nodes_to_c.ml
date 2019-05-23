@@ -76,7 +76,7 @@ let rec ret_var_to_c (lift_env:(var,int)  Hashtbl.t)
 
 let const_to_c (m:int) (n:int) (conf:config) : string =
   match m with
-  | 1 -> (match n with
+  | 1 | -1 -> (match n with
                | 0 -> "SET_ALL_ZERO()"
                | 1 -> "SET_ALL_ONE()"
                | _ -> assert false)
@@ -250,7 +250,7 @@ let rec var_decl_to_c conf (vd:var_d) (out:bool) : string =
     | Nat  -> (rename id.name) ^ start
     | Uint(_,_,1) -> (rename id.name) ^ start
     | Uint(_,_,n) -> sprintf "%s%s[%d]" (rename id.name) start n
-    | Array(typ,size) -> aux id typ (sprintf "[%d]%s" size start) in
+    | Array(typ,size) -> aux id typ (sprintf "%s[%d]" start size) in
   let vname = aux vd.vid vd.vtyp "" in
   let vtype = if conf.lazylift && is_const vd then
                 gen_intn (get_lift_size vd)
