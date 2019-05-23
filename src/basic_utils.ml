@@ -95,6 +95,8 @@ let keys hash = Hashtbl.fold (fun k _ acc -> k :: acc) hash []
 (* Retrieving the values of a hash *)
 let values hash = Hashtbl.fold (fun _ v acc -> v :: acc) hash []
 
+(* Getting a list of keys,values *)
+let each hash = Hashtbl.fold (fun k v acc -> (k,v) :: acc) hash []
                              
 (* Retrieving the keys of a HoH's 2nd layer*)
 let keys_2nd_layer hash k =
