@@ -11,8 +11,8 @@ use File::Copy::Recursive qw(dircopy fcopy rcopy);
 use FindBin;
 
 sub error {
-    say "************ ERROR **************";
-    exit $?;
+    say "************ ERROR **************\n\n";
+    exit 1;
 }
 
 my $temp_dir = "tmp_aes";

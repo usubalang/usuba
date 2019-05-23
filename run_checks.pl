@@ -24,17 +24,47 @@ use File::Copy;
 use FindBin;
 
 sub error {
-    say "************ ERROR **************";
-    exit $?;
+    say "************ ERROR **************\n\n";
+    exit 1;
 }
 
 # switching to usuba dir
 chdir $FindBin::Bin;
 
-say "################################ Compiling ############################";
+say "-----------------------------------------------------------------------";
+say "-------------------------------- Compiling ----------------------------";
+say "-----------------------------------------------------------------------";
 error if system 'make';
 say "\n";
 
 
-say "###################### Correctness verifications ######################\n";
-system "./$_ 1" for glob('checks/correctness/*.pl');
+my %status;
+say "\n\n-----------------------------------------------------------------------";
+say "---------------------- Correctness verifications ----------------------";
+say "-----------------------------------------------------------------------\n\n";
+for my $test (glob('checks/correctness/*.pl')) {
+    if (system("./$test 1") != 0) {
+        $status{$test} = 0;
+    } else {
+        $status{$test} = 1;
+    }
+}
+
+say "\n\n-----------------------------------------------------------------------";
+say "-------------------------------- Results ------------------------------";
+say "-----------------------------------------------------------------------\n";
+for (keys %status) {
+    if ($status{$_} == 0) {
+        say "failed.... $_";
+    } else {
+        say "OK........ $_";
+    }
+}
+my $n_fails = grep { $status{$_} == 0 } keys %status;
+my $n_ok    = grep { $status{$_} == 1 } keys %status;
+my $n_total = keys %status;
+
+print "\n";
+printf " %2d / %d test%s failed.\n", $n_fails, $n_total, $n_fails > 1 ? "s" : " ";
+printf " %2d / %d test%s succeeded.\n", $n_ok, $n_total, $n_ok    > 1 ? "s" : " ";
+print "\n";
