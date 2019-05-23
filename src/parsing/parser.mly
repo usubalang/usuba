@@ -289,8 +289,8 @@ typ:
   | t=primitive_typ sizes=list(delimited(TOK_LBRACKET,arith_exp,TOK_RBRACKET))
     { match sizes with
       | [] -> t
-      | _  -> List.fold_left (fun i s -> Array(i,eval_arith_ne s)) t sizes }
-                                      
+      | _ -> List.fold_right (fun s i -> Array(i, eval_arith_ne s)) sizes t }
+
 pclock:
    | { Base }
    | TOK_TWO_COLON ck=clock { ck }
