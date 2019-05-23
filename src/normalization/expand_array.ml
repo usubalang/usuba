@@ -83,8 +83,10 @@ let rec expand_var env_var env_keep env force (v:var) : var list =
        (try
            let ei = eval_arith env ei in
            let ef = eval_arith env ef in
-           flat_map (fun i -> aux (Index(v',Const_e i)))
-                    (gen_list_bounds ei ef)
+           flat_map (fun v'' -> List.map (fun i -> Index(v'',Const_e i))
+                                  (gen_list_bounds ei ef)) (aux v')
+           (* flat_map (fun i -> aux (Index(v',Const_e i)))
+            *          (gen_list_bounds ei ef) *)
                     (* Not_found can be raised by the calls to eval_arith *)
          with Not_found -> raise Need_unroll)
     | Slice(v',el) -> flat_map (fun i -> aux (Index(v',i))) el in
