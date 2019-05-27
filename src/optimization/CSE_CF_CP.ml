@@ -37,7 +37,7 @@ let rec fold_expr (e:expr) : expr =
          | Log(Andn,Const 1,x) -> Const 0
          | Log(Andn,x,Const 1) -> Not x
                                       
-         | _ -> assert false)
+         | _ -> Log(op,x',y') )
        | _, _ -> Log(op,x',y') )
   | Fun(f,l) -> Fun(f,List.map (fold_expr) l)
   | Tuple l -> Tuple(List.map (fold_expr) l)
