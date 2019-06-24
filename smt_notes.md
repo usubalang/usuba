@@ -208,10 +208,14 @@ For each pass, we generate two SMT trees: one for the program before, one for th
 
 - Rectangle V-sliced (using 16-bits BitVectors): 40/40/40 seconds
 - Rectangle Bitsliced (using Bool): 17/17/17 seconds
+  `./usubac -smt -B samples/usuba/rectangle_bitslice.ua`
 - DES (using Bool): 1/1/1 second
+  `./usubac -smt -B samples/usuba/des.ua`
 - AES (using Bool): 2.7/6000/2.7 seconds
+  `./usubac -smt -B samples/usuba/aes.ua`
 - Chacha20 V-sliced (using 32-bits BitVectors): <1/<1/<1 second
 - Serpent V-sliced (using 32-bits BitVectors): <1/<1/<1 second
+  `./usubac -smt -V -no-inline samples/usuba/serpent.ua`
 
 We tried to manually insert errors in the SMT tree to check that Z3 would say `sat` (instead of `unsat`) as expected. It takes much longer to Z3 to come to such a conclusion: from a few seconds on DES, up to more than 25 minutes on Rectangle V-sliced (I actually stopped after 25 minutes; the memory consumption was about 16GB). Z3 never said `unsat` when we manually faulted the tree.
 
