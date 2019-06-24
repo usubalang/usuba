@@ -100,13 +100,13 @@ module PythonSMT = struct
       | Array(typ',s) -> get_dim_list (s :: acc) typ'
       | _ -> assert false in
     match typ with
-    | Uint(_,Mint 1,1) -> sprintf "Bool('%s')" name
-    | Uint(_,Mint m,1) -> sprintf "BitVec('%s',%d)" name m
+    | Uint(_,Mint 1,1) -> sprintf "btor.Var(btor.BoolSort(), '%s')" name
+    | Uint(_,Mint m,1) -> sprintf "btor.Var(btor.BitVecSort(%d),'%s')" m name
     | _ -> let base, sizes = get_dim_list [] typ in
            let opening_brackets = String.make (List.length sizes) '[' in
            let base_type, end_type = match base with
-             | 1 -> "Bool", ""
-             | k -> "BitVec", sprintf ", %d" k in
+             | 1 -> "btor.Var", "btor.BoolSort()"
+             | k -> "btor.Var", sprintf "btor.BitVecSort(%d)" k in
            let var_name = name ^
                             (join "" (List.map (fun _ -> "[%d]") sizes)) in
            let size_tuple = join "," (List.mapi (fun i _ -> sprintf "c%d" i) sizes) in
@@ -114,8 +114,8 @@ module PythonSMT = struct
              List.fold_left (fun (cpt, acc) s -> (cpt+1), (sprintf "for c%d in range(%d)]"
                                                                    cpt s)::acc) (0,[]) sizes in
            let end_for = join " " end_for in
-           sprintf "%s %s('%s' %% (%s)%s) %s"
-                   opening_brackets base_type var_name size_tuple end_type end_for
+           sprintf "%s %s(%s, '%s' %% (%s)) %s"
+                   opening_brackets base_type end_type var_name size_tuple end_for
 
   let array_to_smt (typ:typ) : string =
     let rec get_dim_list (acc:int list) (typ:typ) : int list =
@@ -135,17 +135,11 @@ module PythonSMT = struct
     typ_to_smt (norm_ident vd.vid) vd.vtyp
 
   let log_op_to_smt (slicing:dir) (op:log_op) : string =
-    match slicing with
-    | Bslice -> (match op with
-                 | And -> "And"
-                 | Or  -> "Or"
-                 | Xor -> "Xor"
-                 | Andn -> assert false (* Let's hope this is fine *))
-    | _ -> (match op with
-            | And -> "&"
-            | Or  -> "|"
-            | Xor -> "^"
-            | Andn -> assert false (* Let's hope this is fine *))
+    match op with
+    | And -> "&"
+    | Or  -> "|"
+    | Xor -> "^"
+    | Andn -> assert false (* Let's hope this is fine *)
 
   let arith_op_to_smt (op:arith_op) : string =
     match op with
@@ -159,8 +153,8 @@ module PythonSMT = struct
     match op with
     | Lshift -> "<<"
     | Rshift -> ">>"
-    | Lrotate -> "RotateLeft"
-    | Rrotate -> "RotateRight"
+    | Lrotate -> "btor.Rol"
+    | Rrotate -> "btor.Ror"
 
   let rec arith_expr_to_smt (ae:arith_expr) : string =
     match ae with
@@ -201,13 +195,13 @@ module PythonSMT = struct
                                                       (expr_to_smt slicing msize e)
                                                       (shift_op_to_smt op)
                                                       (eval_arith_ne ae)
-                         (* | Lrotate | Rrotate -> *)
-                                      (* Using Z3's Rotate functions *)
-                                      (* sprintf "%s(%s,%d)" *)
-                                      (*                   (shift_op_to_smt op) *)
-                                      (*                   (expr_to_smt slicing e) *)
-                                      (*                   (eval_arith_ne ae)) *)
-                         | Lrotate->
+                         | Lrotate | Rrotate ->
+                                      (* Using Boolector's Rotate functions *)
+                                        sprintf "%s(%s,%d)"
+                                                        (shift_op_to_smt op)
+                                                        (expr_to_smt slicing msize e)
+                                                        (eval_arith_ne ae))
+                         (* | Lrotate->
                             (* sprintf "(%s << %d) | LShR(%s, %d-%d)" *)
                             (* sprintf "(%s << %d) | (%s >> (%d-%d))" *)
                             sprintf "(%s << %d) | ((%s >> (%d-%d)) & %#010x)"
@@ -226,7 +220,7 @@ module PythonSMT = struct
                                     (0xFFFFFFFF lsr (eval_arith_ne ae))
                                     (expr_to_smt slicing msize e)
                                     msize
-                                    (eval_arith_ne ae))
+                                    (eval_arith_ne ae)) *)
     | _ -> printf "Can't expr_to_smt( %s )\n" (Usuba_print.expr_to_str e);
            assert false
                   
@@ -297,19 +291,17 @@ module PythonSMT = struct
 "
 %s
 
-%s
-
 (%s) = %s(%s)
  "
 (join "\n\n" (List.map (def_to_smt prefix) prog.nodes))
-(prog_inputs_to_smt prefix prog)
 (join "," (List.map (fun vd -> prefix ^ (norm_ident vd.vid)) entry.p_out))
 (prefix ^ (norm_ident entry.id))
-(join "," (List.map (fun vd -> prefix ^ (norm_ident vd.vid)) entry.p_in))
+(join "," (List.map (fun vd ->  (norm_ident vd.vid)) entry.p_in))
 
   let gen_smt (orig:prog) (dest:prog) : string =
     let orig_smt = prog_to_smt "orig" orig in
     let dest_smt = prog_to_smt "dest" dest in
+    let inputs = prog_inputs_to_smt "" orig in
     let env_var_orig = build_env_var [] (last orig.nodes).p_out [] in
     let env_var_dest = build_env_var [] (last dest.nodes).p_out [] in
     let out_orig =
@@ -326,7 +318,12 @@ module PythonSMT = struct
         (last dest.nodes).p_out in
     sprintf
 "
-from z3 import *
+from pyboolector import *
+
+btor = Boolector()
+
+# Inputs
+%s
 
 ######################################################################
 #                          Original program                          #
@@ -344,15 +341,24 @@ from z3 import *
 ######################################################################
 #                        Equivalence checking                        #
 ######################################################################
-s = Solver()
-s.add(Or(%s))
-print(s.check())
+
+btor.Assert(%s)
+
+res = btor.Sat()
+if res == btor.SAT:
+  print('SAT')
+  #btor.Print_model()
+else:
+  print('UNSAT')
 "
+inputs
 orig_smt
 dest_smt
-(join ", " (List.map2 (fun v1 v2 -> sprintf "orig_%s != dest_%s"
-                                          (var_to_smt v1) (var_to_smt v2))
-                    out_orig out_dest))
+(List.fold_left2
+   (fun acc v1 v2 -> sprintf "btor.Or(orig_%s != dest_%s, %s)"
+                       (var_to_smt v1) (var_to_smt v2) acc)
+   "0"
+   out_orig out_dest)
     
 end
 
