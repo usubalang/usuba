@@ -207,6 +207,7 @@ We check 3 passes of the compiler using Z3:
 For each pass, we generate two SMT trees: one for the program before, one for the program after, and we ask Z3 to check that both are equivalent. The time need to check each pass were the following:
 
 - Rectangle V-sliced (using 16-bits BitVectors): 40/40/40 seconds
+  `./usubac -smt -V samples/usuba/rectangle.ua`
 - Rectangle Bitsliced (using Bool): 17/17/17 seconds
   `./usubac -smt -B samples/usuba/rectangle_bitslice.ua`
 - DES (using Bool): 1/1/1 second
@@ -214,6 +215,7 @@ For each pass, we generate two SMT trees: one for the program before, one for th
 - AES (using Bool): 2.7/6000/2.7 seconds
   `./usubac -smt -B samples/usuba/aes.ua`
 - Chacha20 V-sliced (using 32-bits BitVectors): <1/<1/<1 second
+  `./usubac -smt -V samples/usuba/chacha20.ua`
 - Serpent V-sliced (using 32-bits BitVectors): <1/<1/<1 second
   `./usubac -smt -V -no-inline samples/usuba/serpent.ua`
 
