@@ -12,9 +12,7 @@ exception Invalid_operator_call
 exception Break
             
 let default_conf : config =
-  { block_size   = 64;
-    key_size     = 64;
-    warnings     = true;
+  { warnings     = true;
     verbose      = 1;
     verif        = false;
     type_check   = true;
@@ -27,13 +25,8 @@ let default_conf : config =
     schedule_n   = 10;
     share_var    = false;
     precal_tbl   = true;
-    runtime      = true;
     archi        = Std;
     bits_per_reg = 64;
-    bench        = false;
-    rand_input   = false;
-    ortho        = true;
-    openmp       = 1;
     no_arr       = false;
     no_arr_tmp   = false;
     arr_entry    = true;
@@ -47,7 +40,6 @@ let default_conf : config =
     slicing_type = B;
     m_set        = false;
     m_val        = 1;
-    secure_loops = false;
     tightPROVE   = false;
     shares       = 1;
   }
@@ -303,7 +295,8 @@ let rec get_base_type (typ:typ) : typ =
   match typ with
   | Uint(dir,m,_) -> Uint(dir,m,1)
   | Array(t,_) -> get_base_type t
-  | _ -> assert false
+  | _ -> Printf.fprintf stderr "Can't get base type of '%s'" (Usuba_print.typ_to_str typ);
+         assert false
 
 let get_type_dir (typ:typ) : dir =
   match get_base_type typ with
