@@ -11,18 +11,19 @@ let type_check  = ref true
 let clock_check = ref false
 let check_tbl   = ref false
                      
-let inlining     = ref true
-let inline_all   = ref false
-let cse_cp       = ref true
-let scheduling   = ref true
-let schedule_n   = ref 10
-let share_var    = ref false
-let precal_tbl   = ref true
-let no_arr       = ref false
-let no_arr_tmp   = ref false
-let arr_entry    = ref true
-let unroll       = ref false
-let interleave   = ref 0
+let inlining      = ref true
+let inline_all    = ref false
+let cse_cp        = ref true
+let scheduling    = ref true
+let schedule_n    = ref 10
+let share_var     = ref false
+let linearize_arr = ref true
+let precal_tbl    = ref true
+let no_arr        = ref false
+let no_arr_tmp    = ref false
+let arr_entry     = ref true
+let unroll        = ref false
+let interleave    = ref 0
                       
 let arch         = ref Std
 (* TODO: remove bits_per_reg (should be type-driven) *)
@@ -99,6 +100,7 @@ let main () =
       "-no-sched", Arg.Clear scheduling, "Deactivate scheduling opti";
       "-sched-n", Arg.Int (fun n -> schedule_n := n), "Set scheduling param";
       "-no-share", Arg.Clear share_var, "Deactivate variable sharing";
+      "-no-linearize-arr", Arg.Clear linearize_arr, "Deactivate array linearization";
       "-no-precalc-tbl", Arg.Clear precal_tbl, "Don't use pre-computed tables";
       "-no-arr-tmp", Arg.Set no_arr, "Don't use arrays for temporaries";
       "-no-arr", Arg.Set no_arr, "Don't keep any array";
@@ -134,8 +136,6 @@ let main () =
        * arr_entry  := false *)
     );
     
-                       
-      
     let conf = {
         warnings       =   !warnings;
         verbose        =   !verbose;
@@ -149,6 +149,7 @@ let main () =
         scheduling     =   !scheduling;
         schedule_n     =   !schedule_n;
         share_var      =   !share_var;
+        linearize_arr  =   !linearize_arr;
         precal_tbl     =   !precal_tbl;
         archi          =   !arch;
         bits_per_reg   =   bits_per_reg; (* local var! *)

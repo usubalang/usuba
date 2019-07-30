@@ -24,6 +24,7 @@ let default_conf : config =
     scheduling   = true;
     schedule_n   = 10;
     share_var    = false;
+    linearize_arr= true;
     precal_tbl   = true;
     archi        = Std;
     bits_per_reg = 64;
