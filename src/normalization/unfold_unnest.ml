@@ -9,15 +9,6 @@ let no_arr_tmp = ref false
 let sum_type = List.fold_left (fun tot vd -> tot + (typ_size vd.vtyp)) 0
           
           
-let make_env () = Hashtbl.create 100
-let env_add env v e = Hashtbl.replace env v e
-let env_update env v e = Hashtbl.replace env v e
-let env_remove env v = Hashtbl.remove env v
-let env_fetch env v = try Hashtbl.find env v
-                      with Not_found -> raise (Error (__LOC__ ^ ":Not found: " ^ v.name))
-
-
-          
 (* ************************************************************************** *)
 
 let reduce_same_list l =
@@ -55,7 +46,7 @@ let gen_tmp =
   fun env_var typ ->
     incr cpt;
     let var = fresh_ident ("_tmp" ^ (string_of_int !cpt) ^ "_") in
-    env_add env_var var typ;
+    Hashtbl.replace env_var var typ;
     var
                              
 (* Note that when this function is called, Var have already been normalized *)
@@ -178,16 +169,19 @@ and norm_expr env_var env_fun (dir,mtyp:dir*mtyp) (e: expr) : deq list * expr =
           Tuple(List.map2 (fun x y -> Log(op,x,y))
                               (expand_expr env_var x1')
                               (expand_expr env_var x2')))
-  (* TODO: distrubtion of arith over tuples seems wrong / not done *)
   | Arith(op,x1,x2) ->
      let (deqs1, x1') = remove_call env_var env_fun (dir,mtyp) x1 in
      let (deqs2, x2') = remove_call env_var env_fun (dir,mtyp) x2 in
      deqs1 @ deqs2,
      ( match x1', x2' with
        | Tuple l1,Tuple l2 ->
-          Tuple (List.map2 (fun x y -> Arith(op,x,y)) l1 l2)
-       | _ -> Arith(op,x1',x2'))
-       
+          Tuple (List.map2 (fun x y -> Arith(op,x,y))
+                   (flat_map (expand_expr env_var) l1)
+                   (flat_map (expand_expr env_var) l2))
+       | _ ->
+          Tuple(List.map2 (fun x y -> Arith(op,x,y))
+                  (expand_expr env_var x1')
+                  (expand_expr env_var x2')))
   | Not e ->
      let (deqs,e') = remove_call env_var env_fun (dir,mtyp) e in
      deqs,
