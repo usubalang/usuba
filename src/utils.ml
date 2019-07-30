@@ -264,7 +264,13 @@ let rec get_expr_type env_fun env_var (e:expr) : typ list =
        let def = Hashtbl.find env_fun f in
        List.map (fun vd -> vd.vtyp) def.p_out
   | _ -> assert false
-  
+
+(* Expands a typ into a list of basic (umx1) types *)
+let rec expand_typ (typ:typ) : typ list =
+  match typ with
+  | Nat -> [ Nat ]
+  | Uint(d,m,n) -> List.map (fun _ -> Uint(d,m,1))  (gen_list_int n)
+  | Array(t, n) -> flat_map (fun _ -> expand_typ t) (gen_list_int n)
                            
 let rec expand_var env_var ?(env_it=Hashtbl.create 100) ?(bitslice=false) ?(partial=false) (v:var) : var list =
   let typ = get_var_type env_var v in
