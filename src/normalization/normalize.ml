@@ -50,14 +50,21 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
   
   let normalize_core x _ =
     x |>
+      (* Remove slices/ranges (and forall and arrays in some cases) *)
       (run_pass "Expand_array 1.5" Expand_array.expand_array)              |>
       (run_pass "Norm_bitslice 1" norm_bitslice)                           |>
+      (* Remove arrays from parameters when needed *)
       (run_pass "Expand_parameters" Expand_parameters.expand_parameters)   |>
+      (* Make sure the number of parameters for each function call is right *)
       (run_pass "Fix_dim params" Fix_dim.Dir_params.fix_dim)               |>
+      (* Remove slices/ranges (and forall and arrays in some cases) *)
       (run_pass "Expand_array 2" Expand_array.expand_array)                |>
       (run_pass "Norm_bitslice 2" norm_bitslice)                           |>
+      (* Remove arrays from parameters when needed *)
       (run_pass "Expand_parameters 2" Expand_parameters.expand_parameters) |>
+      (* Make sure the number of parameters for each function call is right *)
       (run_pass "Fix_dim inner" Fix_dim.Dir_inner.fix_dim)                 |>
+      (* Remove slices/ranges (and forall and arrays in some cases) *)
       (run_pass "Expand_array 3" Expand_array.expand_array)                |>
       (run_pass "Norm_bitslice 3" norm_bitslice) in
     
@@ -65,22 +72,35 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
   let normalized =
     prog |>
       (run_pass "Rename" rename)                                           |>
+      (* Remove arrays of nodes *)
       (run_pass "Expand_multiples" Expand_multiples.expand_multiples)      |>
+      (* Convert tables to circuits *)
       (run_pass "Convert_tables" Convert_tables.convert_tables)            |>
+      (* Remove slices/ranges (and forall and arrays in some cases) *)
       (run_pass "Expand_array" Expand_array.expand_array)                  |>
+      (* Schedules instructions according to their dependencies *)
       (run_pass "Init_scheduler 1" Init_scheduler.schedule_prog)           |>
+      (* Converts ':=' to SSA *)
       (run_pass "Remove_sync" Remove_sync.remove_sync)                     |>
+      (* Remove when/merge *)
       (run_pass "Remove_ctrl" Remove_ctrl.remove_ctrl)                     |>
       (run_pass "Core normalize 1" normalize_core)                         |>
+      (* Monomorphize to H/V/B-slice *)
       (run_pass "Monomorphize" Monomorphize.monomorphize)                  |>
       (run_pass "Core normalize 2" normalize_core)                         |>
+      (* Schedules instructions according to their dependencies *)
       (run_pass "Init_scheduler 2" Init_scheduler.schedule_prog)           |>
+      (* Optimized scheduling *)
       (run_pass "Pre_schedule" sched_fun)                                  |>
-      (run_pass "Core normalize 3" normalize_core)                         |>      
+      (run_pass "Core normalize 3" normalize_core)                         |>
+      (* Inlining *)
       (run_pass "Inline" Inline.inline)                                    |>
+      (* Re-optimized scheduling (inlining could have introduced some
+         oportunities for a better scheduling *)
       (run_pass "Pre_schedule 2" sched_fun)                                |>
       (run_pass "Norm_bitslice 4" norm_bitslice) in
 
+  (* CSE-CP + Scheduling *)
   let optimized   = run_pass "Optimize" Optimize.opt_prog normalized in
   let clock_fixed = run_pass "Fix_clocks" Fix_clocks.fix_prog optimized in
   let norm_ok     = run_pass "Norm_bitslice 5" norm_bitslice clock_fixed in
