@@ -41,7 +41,7 @@ copy $_, "." for glob "$FindBin::Bin/aes/{main.c,stream.h,aes_ctr.pl}";
 chdir "..";
 say "Compiling AES from Usuba to C...";
 for my $arch (qw(std sse avx)) {
-    error if system "./usubac -B -o $temp_dir/$arch/aes.c -arch $arch -no-share -no-arr -no-sched -no-runtime samples/usuba/aes.ua" ;
+    error if system "./usubac -B -o $temp_dir/$arch/aes.c -arch $arch -no-share -no-arr -no-sched samples/usuba/aes.ua" ;
 }
 
 chdir $temp_dir;

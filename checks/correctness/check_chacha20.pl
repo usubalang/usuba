@@ -38,7 +38,7 @@ mkdir $temp_dir;
 
 # Compiling Usuba DES.
 say "Compiling Chacha20 from Usuba to C...";
-error if system "./usubac -V -o $temp_dir/chacha20.c -arch sse -no-runtime -no-share samples/usuba/chacha20.ua" ;
+error if system "./usubac -V -o $temp_dir/chacha20.c -arch sse -no-share samples/usuba/chacha20.ua" ;
 {
     local $^I = "";
     local @ARGV = "$temp_dir/chacha20.c";
