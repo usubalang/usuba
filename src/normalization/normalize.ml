@@ -110,8 +110,12 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
 
   if conf.tightPROVE then
     Usuba_to_tightprove.print_prog norm_ok;
-  
-  norm_ok
+
+  (* Array linearization leaves the dataflow world (as it reuses variables),
+    so putting it at the end 
+    (might be more correct to put it in the C generation) *)
+  let linearized = run_pass "Linearize_arrays" Linearize_arrays.linearize_arrays norm_ok in
+  linearized
   
 
 let compile (prog:prog) (conf:config) : prog =
