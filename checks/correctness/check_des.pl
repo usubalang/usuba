@@ -35,7 +35,7 @@ mkdir $temp_dir;
 
 # Compiling Usuba DES.
 say "Regenerating the DES code...";
-error if system "./usubac -no-arr -B -o $temp_dir/des.c -arch avx -runtime samples/usuba/des.ua" ;
+error if system "./usubac -no-arr -B -o $temp_dir/des.c -arch avx samples/usuba/des.ua" ;
 {
     local $^I = "";
     local @ARGV = "$temp_dir/des.c";

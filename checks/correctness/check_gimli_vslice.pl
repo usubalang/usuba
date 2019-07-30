@@ -53,6 +53,6 @@ for my $ARCH (qw(STD)) {
 }
 
 chdir '..';
-remove_tree $temp_dir;
+#remove_tree $temp_dir;
 
 say "Bitsliced Gimli OK.\n\n";
