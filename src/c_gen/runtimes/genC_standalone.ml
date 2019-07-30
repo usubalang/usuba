@@ -42,7 +42,6 @@ Printf.sprintf
 
 /* Do NOT change the order of those define/include */
 %s
-%s
 #ifndef BITS_PER_REG
 #define BITS_PER_REG %d
 #endif
@@ -66,7 +65,6 @@ Printf.sprintf
 */
  "
   filename
-  (if conf.runtime then "#define RUNTIME" else "#define NO_RUNTIME")
   (if conf.shares <> 1 then Printf.sprintf "#define MASKING_ORDER %d" conf.shares else "")
   (bits_per_reg prog conf)
   (if conf.fdti <> "" then Nodes_to_c_fdti.c_header conf.archi

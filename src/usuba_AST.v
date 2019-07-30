@@ -24,7 +24,7 @@ Inductive shift_op := Lshift | Rshift | Lrotate | Rrotate.
 Inductive arith_expr :=
   | Const_e (i: Z)
   | Var_e (x: ident)
-  | Op_e (op: arith_op)(e1 e2: arith_expr). 
+  | Op_e (op: arith_op)(e1 e2: arith_expr).
 
 Inductive dir :=
   | Hslice
@@ -119,8 +119,6 @@ Inductive slicing := H | V | B.
 
 (* The compiler's configuration *)
 Record config := {
-  block_size   : N;
-  key_size     : N;
   warnings     : bool;
   verbose      : N;
   verif        : bool;
@@ -136,11 +134,6 @@ Record config := {
   precal_tbl   : bool;
   archi        : arch;
   bits_per_reg : N;
-  bench        : bool;
-  rand_input   : bool;
-  runtime      : bool;
-  ortho        : bool;
-  openmp       : N;
   no_arr       : bool;
   no_arr_tmp   : bool;
   arr_entry    : bool;
@@ -154,7 +147,6 @@ Record config := {
   slicing_type : slicing;
   m_set        : bool;
   m_val        : N;
-  secure_loops : bool;
   tightPROVE   : bool;
   shares       : N;
 }.
