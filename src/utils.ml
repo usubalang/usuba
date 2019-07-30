@@ -196,7 +196,8 @@ let rec get_var_type env (v:var) : typ =
   | Var x -> env_fetch env x
   | Index(v',_) -> (match get_var_type env v' with
                     | Array(t,_) -> t
-                    | Uint(dir,m,n) -> Uint(dir,m,1)
+                    | Uint(dir,m,n) when n > 1 -> Uint(dir,m,1)
+                    | Uint(dir,m,1) -> Uint(dir,Mint 1,1)
                     | _ -> assert false)
   | _ -> Printf.fprintf stderr "Error: get_var_type(%s)\n" (Usuba_print.var_to_str v);
          assert false
@@ -265,27 +266,33 @@ let rec get_expr_type env_fun env_var (e:expr) : typ list =
   | _ -> assert false
   
                            
-let rec expand_var env_var ?(env_it=Hashtbl.create 100) ?(partial=false) (v:var) : var list =
+let rec expand_var env_var ?(env_it=Hashtbl.create 100) ?(bitslice=false) ?(partial=false) (v:var) : var list =
   let typ = get_var_type env_var v in
   match typ with
   | Nat -> [ v ]
+  | Uint(_,Mint m,1) when m > 1 ->
+     if bitslice then
+       List.map (fun i -> Index(v, Const_e i)) (gen_list_0_int m)
+     else [ v ]
   | Uint(_,_,1) -> [ v ]
-  | Uint(_,_,n) -> List.map (fun i -> Index(v,Const_e i)) (gen_list_0_int n)
+  | Uint(_,_,n) -> flat_map (fun i -> expand_var env_var ~env_it:env_it ~bitslice:bitslice ~partial:partial (Index(v,Const_e i))) (gen_list_0_int n)
   | Array(_,s)  -> if partial then
                      List.map (fun i -> Index(v,Const_e i))
                               (gen_list_0_int s)
                    else
-                     flat_map (fun i -> expand_var env_var ~env_it:env_it (Index(v,Const_e i)))
+                     flat_map (fun i -> expand_var env_var ~env_it:env_it ~bitslice:bitslice (Index(v,Const_e i)))
                               (gen_list_0_int s)
 
 let rec expand_var_partial env_var ?(env_it=Hashtbl.create 100) (v:var) : var list =
   expand_var env_var ~env_it:env_it ~partial:true v
 
+(* Returns the base variable of a variable (ie, remove ranges/slices/index) *)
 let rec get_var_base (v:var) : var =
   match v with
   | Var _ -> v
   | Index(v,_) | Slice(v,_) | Range(v,_,_) -> get_var_base v
 
+(* Returns the base name of a variable *)
 let rec get_base_name (v:var) : ident =
   match v with
   | Var x -> x
@@ -295,8 +302,7 @@ let rec get_base_type (typ:typ) : typ =
   match typ with
   | Uint(dir,m,_) -> Uint(dir,m,1)
   | Array(t,_) -> get_base_type t
-  | _ -> Printf.fprintf stderr "Can't get base type of '%s'" (Usuba_print.typ_to_str typ);
-         assert false
+  | _ -> assert false
 
 let get_type_dir (typ:typ) : dir =
   match get_base_type typ with

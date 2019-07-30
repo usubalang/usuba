@@ -74,7 +74,8 @@ let remove_arr env_keep (v:var) : var =
   else remove_arr v
 
                 
-let rec expand_var env_var env_keep env force (v:var) : var list =
+let rec expand_var env_var env_keep env bitslice force (v:var) : var list =
+  
   let rec aux (v:var) : var list = 
     match v with
     | Var _ -> [ v ]
@@ -91,20 +92,20 @@ let rec expand_var env_var env_keep env force (v:var) : var list =
          with Not_found -> raise Need_unroll)
     | Slice(v',el) -> flat_map (fun i -> aux (Index(v',i))) el in
   if force = 1 then
-    List.map (remove_arr env_keep) (flat_map (Utils.expand_var env_var) (aux v))
+    List.map (remove_arr env_keep) (flat_map (Utils.expand_var env_var ~bitslice:bitslice) (aux v))
   else if force = 2 then
     flat_map (Utils.expand_var env_var) (aux v)
   else
     aux v
                              
-let expand_vars env_var env_keep env force (vars:var list) : var list =
-  flat_map (expand_var env_var env_keep env force) vars
+let expand_vars env_var env_keep env bitslice force (vars:var list) : var list =
+  flat_map (expand_var env_var env_keep env bitslice force) vars
            
-let rec expand_expr env_var env_keep env force (e:expr) : expr =
-  let rec_call = expand_expr env_var env_keep env force in
+let rec expand_expr env_var env_keep env bitslice force (e:expr) : expr =
+  let rec_call = expand_expr env_var env_keep env bitslice force in
   match e with
   | Const _ -> e
-  | ExpVar v -> let l = (expand_var env_var env_keep env force v) in
+  | ExpVar v -> let l = (expand_var env_var env_keep env bitslice force v) in
                 Tuple (List.map (fun x ->
                                  match x with
                                  | Var id -> (match Hashtbl.find_opt env id with
@@ -113,11 +114,11 @@ let rec expand_expr env_var env_keep env force (e:expr) : expr =
                                  | _ -> ExpVar x) l)
   | Tuple el -> Tuple(List.map rec_call el)
   | Not e' -> Not (rec_call e')
-  | Shift(op,e1,ae) -> Shift(op,expand_expr env_var env_keep env
+  | Shift(op,e1,ae) -> Shift(op,expand_expr env_var env_keep env bitslice
                                             (if force = 0 then 2 else force) e1,ae)
   | Log(op,e1,e2) -> Log(op,rec_call e1,rec_call e2)
   | Shuffle(v,pat) -> Tuple(List.map (fun x -> Shuffle(x,pat))
-                                     (expand_var env_var env_keep env force v))
+                                     (expand_var env_var env_keep env bitslice force v))
   | Arith(op,e1,e2) -> Arith(op,rec_call e1,rec_call e2)
   | Fun(f,el) -> Fun(f,List.map rec_call el)
   | Fun_v(f,ae,el) -> (try Fun(fresh_suffix f (sprintf "%d'" (eval_arith env ae)),
@@ -126,52 +127,61 @@ let rec expand_expr env_var env_keep env force (e:expr) : expr =
   | Fby _ | When _ | Merge _ -> e
 
 
-let rec do_unroll env_var env_keep env force unroll x ei ef deqs : deq list =
+let rec do_unroll env_var env_keep env bitslice force unroll x ei ef deqs : deq list =
   try
     let ei = eval_arith env ei in
     let ef = eval_arith env ef in
     let eqs = flat_map (fun i -> env_update env x i;
-                                 expand_deqs env_var env_keep ~env:env force unroll deqs)
+                                 expand_deqs env_var env_keep ~env:env bitslice force unroll deqs)
                        (gen_list_bounds ei ef) in
     env_remove env x;
     eqs
   with Not_found -> raise Need_unroll
 
 and expand_deqs env_var env_keep ?(env=make_env ())
-                (force:int) (unroll:bool) (deqs:deq list) : deq list =
+                (bitslice:bool) (force:int) (unroll:bool) (deqs:deq list) : deq list =
   flat_map
     (fun deq ->
      match deq with
-     | Eqn(lhs,e,sync) -> [ Eqn(expand_vars env_var env_keep env force lhs,
-                                expand_expr env_var env_keep env force e, sync) ]
+     | Eqn(lhs,e,sync) -> [ Eqn(expand_vars env_var env_keep env bitslice force lhs,
+                                expand_expr env_var env_keep env bitslice force e, sync) ]
      | Loop(x,ei,ef,deqs,opts) ->
         Hashtbl.add env_var x Nat;
         let res =
           if List.mem Unroll opts || (force = 1) || unroll then
-            do_unroll env_var env_keep env force unroll x ei ef deqs
+            do_unroll env_var env_keep env bitslice force unroll x ei ef deqs
           else
             try
-              [ Loop(x,ei,ef,expand_deqs env_var env_keep ~env:env force unroll deqs,opts) ]
-            with Need_unroll -> do_unroll env_var env_keep env force unroll x ei ef deqs in
+              [ Loop(x,ei,ef,expand_deqs env_var env_keep ~env:env bitslice force unroll deqs,opts) ]
+            with Need_unroll -> do_unroll env_var env_keep env bitslice force unroll x ei ef deqs in
         Hashtbl.remove env_var x;
         res)
     deqs
 
-let expand_p (p:p) : p =
+let expand_p (bitslice:bool) (p:p) : p =
   let rec aux vd =
     match vd.vtyp with
     | Nat -> [ vd ]
-    | Array(t,size) -> flat_map (fun i ->
-                              aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
-                                            vtyp = t })
-                             (gen_list_0_int size)
-    | Uint(_,_,1) -> [ vd ]
-    | Uint(dir,m,n) -> flat_map (fun i ->
-                                 aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
-                                               vtyp = Uint(dir,m,1) })
-                                (gen_list_0_int n) in
+    | Array(t,size) ->
+       flat_map (fun i ->
+                 aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
+                               vtyp = t })
+                (gen_list_0_int size)
+    | Uint(dir,Mint m,1) when m > 1 ->
+       if bitslice then
+         List.map (fun i ->
+                   { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
+                             vtyp = Uint(dir,Mint 1,1) })
+                  (gen_list_0_int m)
+       else [ vd ]
+    | Uint(_,_,1)   -> [ vd ]
+    | Uint(dir,m,n) ->
+       flat_map (fun i ->
+                 aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
+                               vtyp = Uint(dir,m,1) })
+                (gen_list_0_int n) in
   flat_map aux p
-  
+           
 
 (* cf env_keep description in expand_def:
    env_keep: in the main: contains the parameters (they should be expanded)
@@ -186,22 +196,36 @@ let build_env_keep (p_in:p) (p_out:p) =
 
   env
            
-           
-let expand_def (force:int) (unroll:bool) (keep_param:bool) (def:def) : def =
-  let expand_p = if force = 1 then expand_p else (fun x -> x) in
-  { def with p_in  = if keep_param then def.p_in  else expand_p def.p_in;
-             p_out = if keep_param then def.p_out else expand_p def.p_out;
-             node  = match def.node with
-                     | Single(vars,body) ->
-                        (* env_var: contains the variables and their types *)
-                        let env_var  = build_env_var def.p_in def.p_out vars in
-                        (* env_keep: in the main: contains the parameters 
+(* bitslice:
+      true: convert un to bn
+      false: keep un
+   force:
+      0: keep array
+      1: remove arrays
+      2: split arrays: arrays are kept around, but only as Index, not as Var.
+   unroll:
+      true: unroll all loops
+      false: keep loops that are not annotated "_unroll" and that can be kept
+   keep_param:
+      true: keep arrays in parameters
+      false: expand arrays from parameters IFF force == 1
+ *)
+let expand_def (bitslice:bool) (force:int) (unroll:bool) (keep_param:bool) (def:def) : def =
+  let expand_p = if force = 1 then expand_p bitslice else (fun x -> x) in
+  { def with
+    p_in  = if keep_param then def.p_in  else expand_p def.p_in;
+    p_out = if keep_param then def.p_out else expand_p def.p_out;
+    node  = match def.node with
+            | Single(vars,body) ->
+               (* env_var: contains the variables and their types *)
+               let env_var  = build_env_var def.p_in def.p_out vars in
+               (* env_keep: in the main: contains the parameters 
                                                   (they should be expanded)
                                      in the other functions: is empty. *)
-                        let env_keep = if keep_param then build_env_keep def.p_in def.p_out
-                                       else Hashtbl.create 100 in
-                        Single(expand_p vars, expand_deqs env_var env_keep force unroll body)
-                     | _ -> def.node }
+               let env_keep = if keep_param then build_env_keep def.p_in def.p_out
+                              else Hashtbl.create 100 in
+               Single(expand_p vars, expand_deqs env_var env_keep bitslice force unroll body)
+            | _ -> def.node }
 
 
 (* Like `map f l` but `g` is applied to the last element instead of `f`. *)
@@ -213,7 +237,9 @@ let rec map_special_last f g l =
 
     
 let rec expand_array (prog:prog) (conf:config): prog =
-  let force  = if conf.no_arr (* || must_expand prog  *)then 1 else 0 in
-  let unroll = conf.unroll in
-  { nodes = map_special_last (expand_def force unroll false) (expand_def force unroll conf.arr_entry) prog.nodes }
+  let force    = if conf.no_arr (* || must_expand prog  *)then 1 else 0 in
+  let bitslice = conf.slicing_set && (conf.slicing_type = B) in
+  let unroll   = conf.unroll in
+  { nodes = map_special_last (expand_def bitslice force unroll false)
+                             (expand_def bitslice force unroll conf.arr_entry) prog.nodes }
 

@@ -82,7 +82,7 @@ let rec flatten_expr (l: expr list) : expr list =
 (* A primitive expression doesn't need to be rewritten in Tuples or fun calls *)
 let rec is_primitive e =
   match e with
-  | Const _ | ExpVar _ | Shuffle _ -> true
+  | (* Const _ |  *)ExpVar _ | Shuffle _ -> true
   | Tuple l -> List.fold_left (&&) true (List.map is_primitive l)
   | _ -> false
 
@@ -112,6 +112,9 @@ let rec remove_call env_var env_fun (dir,mtyp:dir*mtyp) (e:expr) : deq list * ex
     deq, e'
   else
     let expr_typ_l = get_expr_type env_fun env_var e' in
+    let expr_typ_l = match expr_typ_l with
+      | [ Nat ] -> [ Uint(dir,mtyp,1) ]
+      | _ -> expr_typ_l in
     let typ = if List.length expr_typ_l > 1
               then Array(reduce_same_list expr_typ_l,List.length expr_typ_l)
               else List.hd expr_typ_l in
@@ -136,6 +139,9 @@ and remove_calls env_var env_fun (dir,mtyp:dir*mtyp) (l:expr list) : deq list * 
                     get_expr_type env_fun env_var e'
                   with Not_found -> Printf.printf "Not found: %s\n" (Usuba_print.expr_to_str e');
                                     raise Not_found in
+                let expr_typ_l = match expr_typ_l with
+                  | [ Nat ] -> [ Uint(dir,mtyp,1) ]
+                  | _ -> expr_typ_l in
                 let typ = if List.length expr_typ_l > 1
                           then Array(reduce_same_list expr_typ_l,
                                      List.length expr_typ_l)
@@ -172,6 +178,7 @@ and norm_expr env_var env_fun (dir,mtyp:dir*mtyp) (e: expr) : deq list * expr =
           Tuple(List.map2 (fun x y -> Log(op,x,y))
                               (expand_expr env_var x1')
                               (expand_expr env_var x2')))
+  (* TODO: distrubtion of arith over tuples seems wrong / not done *)
   | Arith(op,x1,x2) ->
      let (deqs1, x1') = remove_call env_var env_fun (dir,mtyp) x1 in
      let (deqs2, x2') = remove_call env_var env_fun (dir,mtyp) x2 in
