@@ -195,5 +195,5 @@ let linearize_def (def:def) : def =
      { def with node = Single(vars,body) }
   | _ -> def
 
-let linearize_arrays (prog:prog) : prog =
+let linearize_arrays (prog:prog) (conf:config) : prog =
   { nodes = List.map linearize_def prog.nodes }
