@@ -11,121 +11,6 @@ let rec simpl_var env_it (v:var) : var =
   | Index(v',ae) -> Index(simpl_var env_it v',Const_e(eval_arith env_it ae))
   | _ -> assert false
 
-
-(* Replace "arrays of arrays" by "arrays": 
-   for instance u8x16[10] becomes u8x16
-   (if possible)
-*)
-module Linearize_arrays = struct
-
-  exception Keep_it
-
-  let update_vars to_linearize (vars:p) : p =
-    let rec simpl_type (typ:typ) : typ =
-      match typ with
-      | Array(Uint(dir,m,n),_) -> Uint(dir,m,n)
-      | Array(Array(typ',s),_) -> Array(typ',s)
-      | _ -> assert false in
-    
-    List.map (fun vd -> match Hashtbl.find_opt to_linearize vd.vid with
-                        | Some _ -> { vd with vtyp = simpl_type vd.vtyp }
-                        | None -> vd) vars
-             
-              
-  let rec replace_var to_linearize (v:var) : var =
-    match v with
-    | Var _ -> v
-    | Index(Var id,_) ->
-       begin match Hashtbl.find_opt to_linearize id with
-             | Some _ -> Var id
-             | None -> v end
-    | Index(v',i) -> Index(replace_var to_linearize v',i)
-    | _ -> assert false
-
-  let rec replace_expr to_linearize (e:expr) : expr =
-    match e with
-    | Const _        -> e
-    | ExpVar v       -> ExpVar (replace_var to_linearize v)
-    | Tuple l        -> Tuple (List.map (replace_expr to_linearize) l)
-    | Not e          -> Not (replace_expr to_linearize e)
-    | Shift(op,e,ae) -> Shift(op,replace_expr to_linearize e,ae)
-    | Log(op,x,y)    -> Log(op,replace_expr to_linearize x,
-                            replace_expr to_linearize y)
-    | Arith(op,x,y)  -> Arith(op,replace_expr to_linearize x,
-                              replace_expr to_linearize y)
-    | Shuffle(v,pat) -> Shuffle(replace_var to_linearize v,pat)
-    | Fun(f,l)       -> Fun(f,List.map (replace_expr to_linearize) l)
-    | _ -> assert false
-
-    
-  let rec linearize to_linearize (deqs:deq list) : deq list =
-    List.map (function
-               | Eqn(v,e,sync) -> Eqn(List.map (replace_var to_linearize) v,
-                                      replace_expr to_linearize e, sync)
-               | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,linearize to_linearize dl,opts)) deqs
-              
-  let rec try_linear ?(env_it=Hashtbl.create 10)
-                     ?(idx=ref (-1))
-                     (deqs:deq list)
-                     (id:ident) : unit =
-    
-    List.iter (
-        function
-        | Eqn(lhs,e,_) ->
-           List.iter (
-               fun v ->
-               match v with
-               | Index(Var v',Const_e n)
-               | Index(Index(Var v',Const_e n),_) when v' = id ->
-                  if !idx <> -1 && n <> !idx then raise Keep_it
-               | Var v' when v' = id -> raise Keep_it
-               | _ -> ()
-             ) (List.map (simpl_var env_it) (get_used_vars e));
-           let new_idx = ref (-1) in
-           List.iter (fun v -> match v with
-                               | Index(Var v',Const_e n)
-                               | Index(Index(Var v',Const_e n),_) when v' = id ->
-                                  if !new_idx = -1 then
-                                    new_idx := n
-                                  else if !new_idx <> n then
-                                    raise Keep_it
-                               | _ -> ()) lhs;
-           idx := !new_idx
-        | Loop(x,ei,ef,dl,_) ->
-           let ei = eval_arith env_it ei in
-           let ef = eval_arith env_it ef in
-           List.iter (fun i -> Hashtbl.add env_it x i;
-                               try_linear ~env_it:env_it ~idx:idx dl id;
-                               Hashtbl.remove env_it x) (gen_list_bounds ei ef)
-      ) deqs
-  
-  let get_2d_arrays (vars:p) : p =
-    List.filter (fun vd ->
-                 match vd.vtyp with
-                 | Array(Array(Uint(_,_,1),_),_) -> true
-                 | Array(Uint(_,_,n),_) when n > 1 -> true
-                 | _ -> false) vars
-
-  let linearize_def (def:def) : def =
-    match def.node with
-    | Single(vars,body) ->
-       let to_linearize = Hashtbl.create 100 in
-       List.iter (fun vd ->
-                  try try_linear body vd.vid;
-                      Hashtbl.replace to_linearize vd.vid true
-                  with Keep_it -> ()) (get_2d_arrays vars);
-       let vars = update_vars to_linearize vars in
-       let body = linearize to_linearize body in
-       { def with node = Single(vars,body) }
-    | _ -> def
-
-  let linearize_arrays (prog:prog) : prog =
-    { nodes = List.map linearize_def prog.nodes }
-
-end
-
-
-
             
 let rec replace_var (env:(var,var) Hashtbl.t) (v:var) : var =
   match Hashtbl.find_opt env v with
@@ -278,7 +163,7 @@ let share_def (def:def) (no_arr:bool) : def =
   | _ -> def
            
 let share_prog (prog:prog) (conf:config) : prog =
-  let prog = if true then prog else Linearize_arrays.linearize_arrays prog in
+  let prog = Linearize_arrays.linearize_arrays prog in
   if conf.share_var then
     { nodes = apply_last prog.nodes (fun x -> share_def x conf.no_arr) }
   else
