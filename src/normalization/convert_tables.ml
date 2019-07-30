@@ -17,9 +17,11 @@ open Usuba_AST
 open Basic_utils
 open Utils
 open Printf
+
+let bitslice = ref false
        
 let rewrite_p (p:p) : var list =
-  List.map (fun vd -> Var vd.vid) (Expand_array.expand_p p)
+  List.map (fun vd -> Var vd.vid) (Expand_array.expand_p !bitslice p)
 
 let get_bits (l:int list) (i:int) : int list =
   List.rev @@ List.map (fun x -> x lsr i land 1) l
@@ -114,4 +116,5 @@ let rec rewrite_def (def: def) (conf:config) : def =
            
                        
 let convert_tables (p: prog) (conf:config): prog =
+  bitslice := conf.slicing_set && (conf.slicing_type = B);
   { nodes = List.map (fun x -> rewrite_def x conf) p.nodes }
