@@ -191,32 +191,38 @@ let optstmt_to_str = function
   | Pipelined -> "_pipelined"
   | Safe_exit -> "_safe_exit"
                    
-let rec deq_to_str = function
-  | Eqn(pat,e,sync) -> sprintf "%s %s= %s" (pat_to_str pat) (if sync then ":" else "")
-                                (expr_to_str e)
+let rec deq_to_str ?(indent="  ") = function
+  | Eqn(pat,e,sync) -> sprintf "%s%s %s= %s" indent (pat_to_str pat)
+                         (if sync then ":" else "")
+                         (expr_to_str e)
   | Loop(id,ei,ef,d,opts) ->
-     sprintf "%s%sforall %s in [%s,%s] {\n    %s\n  }"
-             (join " " (List.map optstmt_to_str opts))
-             (if List.length opts > 0 then " " else "")
-             id.name  (arith_to_str ei) (arith_to_str ef)
-             (join "\n    " (List.map deq_to_str d))
+     sprintf "%s%s%sforall %s in [%s,%s] {\n%s\n%s}"
+       indent
+       (join " " (List.map optstmt_to_str opts))
+       (if List.length opts > 0 then " " else "")
+       id.name  (arith_to_str ei) (arith_to_str ef)
+       (join ";\n" (List.map (deq_to_str ~indent:(indent ^ "  ")) d))
+       indent
 let deq_to_str_l = lift_comma deq_to_str
                                                                                  
-let rec deq_to_str_types = function
-  | Eqn(pat,e,sync) -> sprintf "%s %s= %s" (pat_to_str_types pat) (if sync then ":" else "")
-                               (expr_to_str_types e)
+let rec deq_to_str_types ?(indent="  ") = function
+  | Eqn(pat,e,sync) -> sprintf "%s%s %s= %s" indent (pat_to_str_types pat)
+                         (if sync then ":" else "")
+                         (expr_to_str_types e)
   | Loop(id,ei,ef,d,opts) ->
-     sprintf "%s forall %s in [%s,%s] {\n    %s\n  }"
-             (join " " (List.map optstmt_to_str opts))
-             id.name  (arith_to_str_types ei) (arith_to_str_types ef)
-             (join "\n    " (List.map deq_to_str_types d))
+     sprintf "%s%s forall %s in [%s,%s] {\n%s\n%s}"
+       indent
+       (join " " (List.map optstmt_to_str opts))
+       id.name  (arith_to_str_types ei) (arith_to_str_types ef)
+       (join ";\n" (List.map (deq_to_str_types ~indent:(indent ^ "  ")) d))
+       indent
      
                                                                 
 let single_node_to_str (id:ident) (p_in:p) (p_out:p) (vars:p) (deq:deq list) =
   "node " ^ id.name ^ "(" ^ (p_to_str p_in) ^ ")\n  returns "
   ^ (p_to_str p_out) ^ "\nvars\n"
   ^ (join ",\n" (List.map (fun x -> "  " ^ (vd_to_str x)) vars)) ^ "\nlet\n"
-  ^ (join ";\n" (List.map (fun x -> "  " ^ x) (List.map deq_to_str deq)))
+  ^ (join ";\n" (List.map deq_to_str deq))
   ^ "\ntel"
 
 let optdef_to_str = function
