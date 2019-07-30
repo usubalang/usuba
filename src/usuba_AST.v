@@ -131,6 +131,7 @@ Record config := {
   scheduling   : bool;
   schedule_n   : N;
   share_var    : bool;
+  linearize_arr: bool;
   precal_tbl   : bool;
   archi        : arch;
   bits_per_reg : N;

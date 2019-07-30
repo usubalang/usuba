@@ -1,10 +1,16 @@
 (***************************************************************************** )
- *                             expand_array.ml                                 
- *
- *  Replace "arrays of arrays" by "arrays": 
- *     for instance u8x16[10] becomes u8x16
- *     (if possible)
- *
+                              expand_array.ml                                 
+ 
+   Replace "arrays of arrays" by "arrays": 
+      for instance u8x16[10] becomes u8x16
+      (if possible)
+ 
+   WARNING: this can introduce bugs:
+    if you have a function call like a = f(b), this module can 
+    transform it into a = f(a). If f is doing something like 
+    r[0,1] = i[1,0], it becomes a[0,1] = a[1,0], which is wrong.
+   use -no-linearize-arr to disable this optimization.
+ 
 ( *****************************************************************************)
 
 
@@ -12,8 +18,6 @@ open Usuba_AST
 open Usuba_print
 open Basic_utils
 open Utils
-
-
 
 
 exception Keep_it
@@ -196,4 +200,6 @@ let linearize_def (def:def) : def =
   | _ -> def
 
 let linearize_arrays (prog:prog) (conf:config) : prog =
-  { nodes = List.map linearize_def prog.nodes }
+  if conf.linearize_arr then
+    { nodes = List.map linearize_def prog.nodes }
+  else prog
