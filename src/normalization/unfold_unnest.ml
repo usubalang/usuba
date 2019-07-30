@@ -38,7 +38,26 @@ let rec expand_intn_expr (id: ident) (n: int option) : expr =
   match n with
   | Some n -> Tuple(List.map (fun x -> ExpVar(Var x)) (expand_intn id n))
   | None -> ExpVar(Var id)
-                  
+
+(* Differs a bit from the version of utils in how Const are handled *)
+let rec get_expr_type env_fun env_var (ltyp:typ list) (e:expr) : typ list =
+  match e with
+  | Const n -> [ List.hd ltyp ]
+  | ExpVar v -> [ get_var_type env_var v ]
+  | Tuple l -> flat_map (get_expr_type env_fun env_var ltyp) l
+  | Not e -> get_expr_type env_fun env_var ltyp e
+  | Shift(_,e,_) -> get_expr_type env_fun env_var ltyp e
+  | Log(_,e,_) -> get_expr_type env_fun env_var ltyp e
+  | Shuffle(v,_) -> [ get_var_type env_var v ]
+  | Arith(_,e,_) -> get_expr_type env_fun env_var ltyp e
+  | Fun(f,_) ->
+     if f.name = "rand" then [ Uint(default_dir,Mint 1,1) ]
+     else
+       let def = Hashtbl.find env_fun f in
+       List.map (fun vd -> vd.vtyp) def.p_out
+  | _ -> assert false
+
+          
 let new_vars : p ref = ref []
                    
 let gen_tmp =
@@ -73,7 +92,7 @@ let rec flatten_expr (l: expr list) : expr list =
 (* A primitive expression doesn't need to be rewritten in Tuples or fun calls *)
 let rec is_primitive e =
   match e with
-  | (* Const _ |  *)ExpVar _ | Shuffle _ -> true
+  | (* Const _ |  *)ExpVar _ (* | Shuffle _ *) -> true
   | Tuple l -> List.fold_left (&&) true (List.map is_primitive l)
   | _ -> false
 
@@ -96,16 +115,14 @@ let rec expand_expr env_var (e:expr) : expr list =
            
 (* ************************************************************************** *)
 
-let rec remove_call env_var env_fun (dir,mtyp:dir*mtyp) (e:expr) : deq list * expr =
-  let (deq,e') = norm_expr env_var env_fun (dir,mtyp) e in
+let rec remove_call env_var env_fun (dir,mtyp:dir*mtyp) (ltyp:typ list) (e:expr)
+        : deq list * expr =
+  let (deq,e') = norm_expr env_var env_fun (dir,mtyp) ltyp e in
 
   if is_primitive e' then
     deq, e'
   else
-    let expr_typ_l = get_expr_type env_fun env_var e' in
-    let expr_typ_l = match expr_typ_l with
-      | [ Nat ] -> [ Uint(dir,mtyp,1) ]
-      | _ -> expr_typ_l in
+    let expr_typ_l = get_expr_type env_fun env_var ltyp e' in
     let typ = if List.length expr_typ_l > 1
               then Array(reduce_same_list expr_typ_l,List.length expr_typ_l)
               else List.hd expr_typ_l in
@@ -115,24 +132,22 @@ let rec remove_call env_var env_fun (dir,mtyp:dir*mtyp) (e:expr) : deq list * ex
 
     deq @ [Eqn([Var new_var],e',false)], ExpVar (Var new_var)
 
-and remove_calls env_var env_fun (dir,mtyp:dir*mtyp) (l:expr list) : deq list * expr list =
+and remove_calls env_var env_fun (dir,mtyp:dir*mtyp) (ltyp:typ list)  (l:expr list)
+    : deq list * expr list =
   let pre_deqs = ref [] in
   let l' = List.map
              (fun e ->
               
-              let (deq,e') = norm_expr env_var env_fun (dir,mtyp) e in
+              let (deq,e') = norm_expr env_var env_fun (dir,mtyp) ltyp e in
               pre_deqs := !pre_deqs @ deq;
 
               if is_primitive e' then
                 [ e' ]
               else
                 let expr_typ_l = try
-                    get_expr_type env_fun env_var e'
+                    get_expr_type env_fun env_var ltyp e'
                   with Not_found -> Printf.printf "Not found: %s\n" (Usuba_print.expr_to_str e');
                                     raise Not_found in
-                let expr_typ_l = match expr_typ_l with
-                  | [ Nat ] -> [ Uint(dir,mtyp,1) ]
-                  | _ -> expr_typ_l in
                 let typ = if List.length expr_typ_l > 1
                           then Array(reduce_same_list expr_typ_l,
                                      List.length expr_typ_l)
@@ -147,18 +162,19 @@ and remove_calls env_var env_fun (dir,mtyp:dir*mtyp) (l:expr list) : deq list * 
   !pre_deqs, flatten_expr (List.flatten l')
     
 
-and norm_expr env_var env_fun (dir,mtyp:dir*mtyp) (e: expr) : deq list * expr =
+and norm_expr env_var env_fun (dir,mtyp:dir*mtyp) (ltyp:typ list) (e: expr)
+    : deq list * expr =
   match e with
   | Const _ | ExpVar _ | Shuffle _-> [], e
   | Tuple (l) ->
-     let (deqs,l') = remove_calls env_var env_fun (dir,mtyp) l in
+     let (deqs,l') = remove_calls env_var env_fun (dir,mtyp) ltyp l in
      deqs, Tuple l'
   | Fun(f,l) ->
-     let (deqs,l') = remove_calls env_var env_fun (dir,mtyp) l in
+     let (deqs,l') = remove_calls env_var env_fun (dir,mtyp) ltyp l in
      deqs, Fun(f, l')
   | Log(op,x1,x2) ->
-     let (deqs1, x1') = remove_call env_var env_fun (dir,mtyp) x1 in
-     let (deqs2, x2') = remove_call env_var env_fun (dir,mtyp) x2 in
+     let (deqs1, x1') = remove_call env_var env_fun (dir,mtyp) ltyp x1 in
+     let (deqs2, x2') = remove_call env_var env_fun (dir,mtyp) ltyp x2 in
      deqs1 @ deqs2,
      ( match x1', x2' with
        | Tuple l1,Tuple l2 ->
@@ -170,8 +186,8 @@ and norm_expr env_var env_fun (dir,mtyp:dir*mtyp) (e: expr) : deq list * expr =
                               (expand_expr env_var x1')
                               (expand_expr env_var x2')))
   | Arith(op,x1,x2) ->
-     let (deqs1, x1') = remove_call env_var env_fun (dir,mtyp) x1 in
-     let (deqs2, x2') = remove_call env_var env_fun (dir,mtyp) x2 in
+     let (deqs1, x1') = remove_call env_var env_fun (dir,mtyp) ltyp x1 in
+     let (deqs2, x2') = remove_call env_var env_fun (dir,mtyp) ltyp x2 in
      deqs1 @ deqs2,
      ( match x1', x2' with
        | Tuple l1,Tuple l2 ->
@@ -183,27 +199,28 @@ and norm_expr env_var env_fun (dir,mtyp:dir*mtyp) (e: expr) : deq list * expr =
                   (expand_expr env_var x1')
                   (expand_expr env_var x2')))
   | Not e ->
-     let (deqs,e') = remove_call env_var env_fun (dir,mtyp) e in
+     let (deqs,e') = remove_call env_var env_fun (dir,mtyp) ltyp e in
      deqs,
      ( match e' with
        | Tuple l -> Tuple (List.map (fun x -> Not x) (flat_map (expand_expr env_var) l))
        | _ -> Tuple(List.map (fun x -> Not x) (expand_expr env_var e') ))
   | Shift(op,e,n) ->
-     let (deqs,e') = remove_call env_var env_fun (dir,mtyp) e in
+     let (deqs,e') = remove_call env_var env_fun (dir,mtyp) ltyp e in
      deqs, Shift(op,e',n)
   | _ -> assert false
                
 let rec norm_deq env_var env_fun (body: deq list) : deq list =
   flat_map
     (function
-      | Eqn (p,e,sync) ->
-         (match get_var_type env_var (List.hd p) with
-          | Nat -> [Eqn(p,e,sync)]
-          | t   ->
-             let dir = get_type_dir t in
-             let m   = get_type_m   t in
-             let (expr_l, e') = norm_expr env_var env_fun (dir,m) e in
-             expr_l @ [Eqn(p,e',sync)])
+     | Eqn (lhs,e,sync) ->
+        let ltyp = flat_map (fun v -> expand_typ (get_var_type env_var v)) lhs in
+        (match List.hd ltyp with
+         | Nat -> [Eqn(lhs,e,sync)]
+         | t   ->
+            let dir = get_type_dir t in
+            let m   = get_type_m   t in
+            let (expr_l, e') = norm_expr env_var env_fun (dir,m) ltyp e in
+            expr_l @ [Eqn(lhs,e',sync)])
       | Loop(x,ei,ef,dl,opts) ->
          [ Loop(x,ei,ef,norm_deq env_var env_fun dl,opts) ]) body
     
