@@ -8,11 +8,13 @@ open Basic_utils
 open Utils
 open Printf
 
+type array_fate = Keep | Remove | Split
+
 (* Precision on the "force" parameter that we keep around in most functions:
   It has 3 values possible:
-    0: keep array
-    1: remove arrays
-    2: split arrays: arrays are kept around, but only as Index, not as Var.
+    Keep: keep array
+    Remove: remove arrays
+    Split: split arrays: arrays are kept around, but only as Index, not as Var.
   This was needed for rotations/shifts.
   More explanations in this commit: 24cf4b83aed7388c31f71c1b30ac8ba7a74bdc7c.
 *)
@@ -91,9 +93,9 @@ let rec expand_var env_var env_keep env bitslice force (v:var) : var list =
                     (* Not_found can be raised by the calls to eval_arith *)
          with Not_found -> raise Need_unroll)
     | Slice(v',el) -> flat_map (fun i -> aux (Index(v',i))) el in
-  if force = 1 then
+  if force = Remove then
     List.map (remove_arr env_keep) (flat_map (Utils.expand_var env_var ~bitslice:bitslice) (aux v))
-  else if force = 2 then
+  else if force = Split then
     flat_map (Utils.expand_var env_var) (aux v)
   else
     aux v
@@ -115,7 +117,7 @@ let rec expand_expr env_var env_keep env bitslice force (e:expr) : expr =
   | Tuple el -> Tuple(List.map rec_call el)
   | Not e' -> Not (rec_call e')
   | Shift(op,e1,ae) -> Shift(op,expand_expr env_var env_keep env bitslice
-                                            (if force = 0 then 2 else force) e1,ae)
+                                            (if force = Keep then Split else force) e1,ae)
   | Log(op,e1,e2) -> Log(op,rec_call e1,rec_call e2)
   | Shuffle(v,pat) -> Tuple(List.map (fun x -> Shuffle(x,pat))
                                      (expand_var env_var env_keep env bitslice force v))
@@ -139,7 +141,7 @@ let rec do_unroll env_var env_keep env bitslice force unroll x ei ef deqs : deq 
   with Not_found -> raise Need_unroll
 
 and expand_deqs env_var env_keep ?(env=make_env ())
-                (bitslice:bool) (force:int) (unroll:bool) (deqs:deq list) : deq list =
+                (bitslice:bool) (force:array_fate) (unroll:bool) (deqs:deq list) : deq list =
   flat_map
     (fun deq ->
      match deq with
@@ -148,7 +150,7 @@ and expand_deqs env_var env_keep ?(env=make_env ())
      | Loop(x,ei,ef,deqs,opts) ->
         Hashtbl.add env_var x Nat;
         let res =
-          if List.mem Unroll opts || (force = 1) || unroll then
+          if List.mem Unroll opts || (force = Remove) || unroll then
             do_unroll env_var env_keep env bitslice force unroll x ei ef deqs
           else
             try
@@ -200,18 +202,18 @@ let build_env_keep (p_in:p) (p_out:p) =
       true: convert un to bn
       false: keep un
    force:
-      0: keep array
-      1: remove arrays
-      2: split arrays: arrays are kept around, but only as Index, not as Var.
+      Keep: keep array
+      Remove: remove arrays
+      Split: split arrays: arrays are kept around, but only as Index, not as Var.
    unroll:
       true: unroll all loops
       false: keep loops that are not annotated "_unroll" and that can be kept
    keep_param:
       true: keep arrays in parameters
-      false: expand arrays from parameters IFF force == 1
+      false: expand arrays from parameters IFF force == Remove
  *)
-let expand_def (bitslice:bool) (force:int) (unroll:bool) (keep_param:bool) (def:def) : def =
-  let expand_p = if force = 1 then expand_p bitslice else (fun x -> x) in
+let expand_def (bitslice:bool) (force:array_fate) (unroll:bool) (keep_param:bool) (def:def) : def =
+  let expand_p = if force = Remove then expand_p bitslice else (fun x -> x) in
   { def with
     p_in  = if keep_param then def.p_in  else expand_p def.p_in;
     p_out = if keep_param then def.p_out else expand_p def.p_out;
@@ -237,7 +239,7 @@ let rec map_special_last f g l =
 
     
 let rec expand_array (prog:prog) (conf:config): prog =
-  let force    = if conf.no_arr (* || must_expand prog  *)then 1 else 0 in
+  let force    = if conf.no_arr (* || must_expand prog  *)then Remove else Keep in
   let bitslice = conf.slicing_set && (conf.slicing_type = B) in
   let unroll   = conf.unroll in
   { nodes = map_special_last (expand_def bitslice force unroll false)

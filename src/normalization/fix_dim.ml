@@ -242,9 +242,9 @@ module Dir_params = struct
     with Updated f ->
       fix_def env_fun
         (Norm_tuples.norm_tuples_deq
-           (Expand_array.expand_def false 0 false true (Hashtbl.find env_fun f)))
-              (*  0     = keep arrays
-                  false = keep loops
+           (Expand_array.expand_def false Expand_array.Keep false true
+              (Hashtbl.find env_fun f)))
+              (*  false = keep loops
                   true  = keep arrays in parameters
                   So basically, this combination of (0,false,true) means
                   "just expand ranges", and anything else only if needed. *)
@@ -345,10 +345,10 @@ module Dir_inner = struct
       | _ -> ()
     with Updated ->
       fix_def env_fun
-              (Norm_tuples.norm_tuples_deq
-                 (Expand_array.expand_def false 0 false true (Hashtbl.find env_fun def.id)))
-              (*  0     = keep arrays
-                  false = keep loops
+        (Norm_tuples.norm_tuples_deq
+           (Expand_array.expand_def false  Expand_array.Keep false true
+              (Hashtbl.find env_fun def.id)))
+              (*  false = keep loops
                   true  = keep arrays in parameters
                   So basically, this combination of (0,false,true) means
                   "just expand ranges", and anything else only if needed. *)
