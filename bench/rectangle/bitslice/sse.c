@@ -13,7 +13,7 @@
 #include "SSE.h"
 
 /* auxiliary functions */
-void SubColumn_single__B1 (/*inputs*/ DATATYPE a0,DATATYPE a1,DATATYPE a2,DATATYPE a3, /*outputs*/ DATATYPE* b0,DATATYPE* b1,DATATYPE* b2,DATATYPE* b3) {
+static inline void SubColumn_single__B1 (/*inputs*/ DATATYPE a0,DATATYPE a1,DATATYPE a2,DATATYPE a3, /*outputs*/ DATATYPE* b0,DATATYPE* b1,DATATYPE* b2,DATATYPE* b3) {
   
   // Variables declaration
   DATATYPE t1;

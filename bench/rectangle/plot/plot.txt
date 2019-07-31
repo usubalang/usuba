@@ -7,7 +7,7 @@ set style data histogram
 set style histogram columnstacked title textcolor lt -1 offset character 0, 0.8
 set style fill pattern border rgb "black"
 
-set xtics ("vslice" 0, "bitslice" 1, "vslice" 3, "bilsice" 4, "hslice" 5,"vslice" 7, "bilsice" 8, "hslice" 9,"vslice" 11, "bilsice" 12, "hslice" 13,"vslice" 15, "bilsice" 16, "hslice" 17)
+set xtics ("vslice" 0, "bitslice" 1, "vslice" 3, "bitlsice" 4, "hslice" 5,"vslice" 7, "bitlsice" 8, "hslice" 9,"vslice" 11, "bitlsice" 12, "hslice" 13,"vslice" 15, "bitlsice" 16, "hslice" 17)
 
 set border 3 # remove top and right plot-border
 
