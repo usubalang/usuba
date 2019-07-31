@@ -43,6 +43,7 @@ let default_conf : config =
     m_val        = 1;
     tightPROVE   = false;
     shares       = 1;
+    keep_tables  = false;
   }
 
 let default_dir = Varslice { uid = -1; name = "D" }

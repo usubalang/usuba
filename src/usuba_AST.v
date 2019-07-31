@@ -150,6 +150,7 @@ Record config := {
   m_val        : N;
   tightPROVE   : bool;
   shares       : N;
+  keep_tables  : bool;
 }.
 
 Set Extraction KeepSingleton.
