@@ -43,6 +43,8 @@ let slicing_set  = ref false
 let m_val        = ref 1
 let m_set        = ref false
 
+let keep_tables  = ref false
+
 let str_to_arch = function
   | "std"     -> Std
   | "mmx"     -> MMX
@@ -120,6 +122,7 @@ let main () =
       "-m", Arg.Int (fun n -> m_set := true; m_val := n), "Set 'm value";
       "-tp", Arg.Set tightPROVE, "Generate tightPROVE circuits";
       "-shares", Arg.Set_int shares, "Set the number of shares";
+      "-keep-tables", Arg.Set keep_tables, "Keep lookup tables (can't use SIMD)";
     ] in
   let usage_msg = "Usage: usuba [switches] [files]" in
   
@@ -168,6 +171,7 @@ let main () =
         m_val          =   !m_val;
         tightPROVE     =   !tightPROVE;
         shares         =   !shares;
+        keep_tables    =   !keep_tables;
       } in
 
     if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then
