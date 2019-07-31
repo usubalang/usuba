@@ -3,8 +3,6 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "primitives.h"
-
 
 #ifdef UA_B
 
@@ -63,22 +61,6 @@ void clyde128_encrypt(unsigned char* m, const unsigned char* c,
   for (int i = 0; i < 2; i++)                           \
     for (int j = 0; j < 32; j++)                        \
       swap(var##_bs[i*64+j],var##_bs[i*64+j+32]);       \
-
-  
-/* #define bitslice(var)                                   \ */
-/*   uint64_t var##_bs[128];                               \ */
-/*   for (int i = 0; i < 64; i++) {                        \ */
-/*     memcpy(&var##_bs[i],var,8);                         \ */
-/*     memcpy(&var##_bs[64+i],&var[1],8);                  \ */
-/*     var##_bs[i]    = __builtin_bswap64(var##_bs[i]);    \ */
-/*     var##_bs[64+i] = __builtin_bswap64(var##_bs[64+i]); \ */
-/*   }                                                     \ */
-/*   transpose(var##_bs);                                  \ */
-/*   transpose(&var##_bs[64]);                             \ */
-/*   for (int i = 0; i < 16; i++)                          \ */
-/*     for (int j = 0; j < 4; j++)                         \ */
-/*       swap(var##_bs[i*8+j],var##_bs[i*8+7-j]);          \ */
-  
   
   /* inputs */
   bitslice(plain);
@@ -115,6 +97,8 @@ void clyde128_encrypt(unsigned char* m, const unsigned char* c,
 }
 
 #elif defined(REF)
+
+#include "primitives.h"
 #include "primitives.c"
 #else
 #error Define UA_V, UA_B or REF.
