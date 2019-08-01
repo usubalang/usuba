@@ -40,7 +40,8 @@ Inductive mtyp :=
 Inductive typ :=
   | Nat
   | Uint (d:dir) (m: mtyp) (n:N)
-  | Array (t: typ) (n:N).
+  | Array (t: typ) (n:N)
+  | Unknown.
 
 Inductive constr :=
   | True

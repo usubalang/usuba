@@ -141,6 +141,7 @@ let rec full_typ_to_str typ =
        | Mvar id -> id.name in
      sprintf "u%s%sx%d" dir_str m_str n
   | Array(typ,n) -> sprintf "%s[%d]" (full_typ_to_str typ) n
+  | Unknown -> "?type?"
                               
 let rec typ_to_str typ =
   match typ with
@@ -154,6 +155,7 @@ let rec typ_to_str typ =
      | Mvar id -> if id.name = "m" then sprintf "v%s%d" dir_str n
                   else sprintf "u%s%sx%d" dir_str id.name n end
   | Array(typ,n) -> sprintf "%s[%d]" (typ_to_str typ) n
+  | Unknown -> "?type?"
 let typ_to_str_l = lift_comma typ_to_str
 
 let rec clock_to_str ck =
