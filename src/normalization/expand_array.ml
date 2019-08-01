@@ -181,8 +181,7 @@ let expand_p (bitslice:bool) (p:p) : p =
        flat_map (fun i ->
                  aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
                                vtyp = Uint(dir,m,1) })
-         (gen_list_0_int n)
-    | Unknown -> assert false in
+                (gen_list_0_int n) in
   flat_map aux p
            
 
