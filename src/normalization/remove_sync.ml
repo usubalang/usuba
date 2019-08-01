@@ -48,7 +48,8 @@ let rec clean_var (env_var : (ident,typ) Hashtbl.t)
                                 | Some x' -> x'
                                 | None -> x) subv
            else [ v ]
-        | Nat -> [ v ])
+        | Nat -> [ v ]
+        | Unknown -> assert false)
      | _ -> assert false
                           
 

@@ -36,6 +36,7 @@ let rec get_nested_level (t:typ) : int =
   | Uint(_,_,1) -> 0
   | Uint(_,_,n) -> 1
   | Array(t',_) -> 1 + (get_nested_level t')
+  | Unknown     -> assert false
 
 let rec get_index_level (v:var) : int =
   match v with

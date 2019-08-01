@@ -179,6 +179,7 @@ let rec typ_size (t:typ) : int =
   | Uint(_,_,n) -> n
   | Array(t',s) -> (typ_size t') * s
   | Nat -> 1
+  | Unknown -> assert false
              
 let rec reg_size (t:typ) : int =
   match t with
@@ -273,6 +274,7 @@ let rec expand_typ (typ:typ) : typ list =
   | Nat -> [ Nat ]
   | Uint(d,m,n) -> List.map (fun _ -> Uint(d,m,1))  (gen_list_int n)
   | Array(t, n) -> flat_map (fun _ -> expand_typ t) (gen_list_int n)
+  | Unknown -> assert false
                            
 let rec expand_var env_var ?(env_it=Hashtbl.create 100) ?(bitslice=false) ?(partial=false) (v:var) : var list =
   let typ = get_var_type env_var v in
@@ -283,13 +285,17 @@ let rec expand_var env_var ?(env_it=Hashtbl.create 100) ?(bitslice=false) ?(part
        List.map (fun i -> Index(v, Const_e i)) (gen_list_0_int m)
      else [ v ]
   | Uint(_,_,1) -> [ v ]
-  | Uint(_,_,n) -> flat_map (fun i -> expand_var env_var ~env_it:env_it ~bitslice:bitslice ~partial:partial (Index(v,Const_e i))) (gen_list_0_int n)
+  | Uint(_,_,n) -> flat_map (fun i -> expand_var env_var ~env_it:env_it
+                                        ~bitslice:bitslice ~partial:partial
+                                        (Index(v,Const_e i))) (gen_list_0_int n)
   | Array(_,s)  -> if partial then
                      List.map (fun i -> Index(v,Const_e i))
-                              (gen_list_0_int s)
+                       (gen_list_0_int s)
                    else
-                     flat_map (fun i -> expand_var env_var ~env_it:env_it ~bitslice:bitslice (Index(v,Const_e i)))
-                              (gen_list_0_int s)
+                     flat_map (fun i -> expand_var env_var ~env_it:env_it
+                                          ~bitslice:bitslice (Index(v,Const_e i)))
+                       (gen_list_0_int s)
+  | Unknown -> assert false
 
 let rec expand_var_partial env_var ?(env_it=Hashtbl.create 100) (v:var) : var list =
   expand_var env_var ~env_it:env_it ~partial:true v
