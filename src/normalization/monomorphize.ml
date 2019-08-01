@@ -186,13 +186,11 @@ let rec specialize_typ (env_dir:(dir,dir) Hashtbl.t)
   match t with
   | Nat -> t
   | Array(t', n)  -> Array(specialize_typ env_dir env_m t', n)
-  | Uint(d, m, n) -> (match Hashtbl.find_opt env_dir d, Hashtbl.find_opt env_m m with
-                      | Some d', Some m' -> Uint(d', m', n)
-                      | Some d', None    -> Uint(d', m,  n)
-                      | None,    Some m' -> Uint(d,  m', n)
-                      | None,    None    -> Uint(d,  m,  n))
-  | Unknown -> assert false
-
+  | Uint(d, m, n) -> match Hashtbl.find_opt env_dir d, Hashtbl.find_opt env_m m with
+                     | Some d', Some m' -> Uint(d', m', n)
+                     | Some d', None    -> Uint(d', m,  n)
+                     | None,    Some m' -> Uint(d,  m', n)
+                     | None,    None    -> Uint(d,  m,  n)
                                                
 let specialize_p (env_dir:(dir,dir) Hashtbl.t)
                  (env_m:(mtyp,mtyp) Hashtbl.t)
@@ -218,10 +216,9 @@ let match_types env_dir env_m (p:p) (typs:typ list) : p =
   (* updates the dir in tdest with the dir in tdir *)
   let rec update_dir_m (t_dest:typ) (t_dir_m:typ) : typ =
     match t_dest with
-    | Nat         -> t_dest
+    | Nat -> t_dest
     | Uint(_,_,n) -> Uint(get_type_dir t_dir_m,get_type_m t_dir_m,n)
-    | Array(t,s)  -> Array(update_dir_m t t_dir_m,s)
-    | Unknown     -> assert false in
+    | Array(t,s)  -> Array(update_dir_m t t_dir_m,s) in
   List.map2 (fun vd t ->
              Hashtbl.replace env_dir (get_type_dir vd.vtyp) (get_type_dir t);
              Hashtbl.replace env_m (get_type_m vd.vtyp) (get_type_m t);
