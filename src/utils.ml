@@ -460,3 +460,19 @@ let var_constr_to_str (v:var) : string =
   | Index _ -> "Index"
   | Range _ -> "Range"
   | Slice _ -> "Slice"
+
+let get_expr_constr_str (e:expr) : string =
+  match e with
+  | Const _   -> "Const"
+  | ExpVar _  -> "ExpVar"
+  | Tuple _   -> "Tuple"
+  | Not _     -> "Not"
+  | Shift _   -> "Shift"
+  | Log _     -> "Log"
+  | Shuffle _ -> "Shuffle"
+  | Arith _   -> "Arith"
+  | Fun _     -> "Fun"
+  | Fun_v _   -> "Fun_v"
+  | Fby _     -> "Fby"
+  | Merge _   -> "Merge"
+  | When _    -> "When"
