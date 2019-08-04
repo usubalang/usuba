@@ -5,18 +5,18 @@ open Printf
 
 let lift_comma f = fun l -> join "," (List.map f l)
 let lift_space f = fun l -> join " " (List.map f l)
-                           
+
 let unfold_andn e =
   match e with
   | Log(Andn,x,y) -> Log(And,Not x,y)
-  | _ -> e         
+  | _ -> e
 
 let log_op_to_str = function
   | And -> "&"
   | Or  -> "|"
   | Xor -> "^"
   | Andn -> "&~"
-             
+
 let arith_op_to_str = function
   | Add -> "+"
   | Mul -> "*"
@@ -35,7 +35,7 @@ let rec arith_to_str = function
   | Var_e v   -> v.name
   | Op_e(op,x,y) -> sprintf "(%s %s %s)" (arith_to_str x) (arith_op_to_str op)
                             (arith_to_str y)
-                                                 
+
 let rec arith_to_str_types = function
   | Const_e i -> "Const_e: " ^ (string_of_int i)
   | Var_e v   -> "Var_e: " ^ v.name
@@ -48,7 +48,7 @@ let rec var_to_str = function
   | Range(v,ei,ef) -> sprintf "%s[%s .. %s]" (var_to_str v) (arith_to_str ei) (arith_to_str ef)
   | Slice(v,l) -> sprintf "%s[%s]" (var_to_str v) (join "," (List.map arith_to_str l))
 let var_to_str_l = lift_comma var_to_str
-                                              
+
 let rec var_to_str_types = function
   | Var v -> sprintf "Var: %s" v.name
   | Index(v,e) -> sprintf "Index: %s[%s]" (var_to_str_types v) (arith_to_str_types e)
@@ -60,9 +60,9 @@ let rec var_to_str_types = function
 let constr_to_str = function
   | True  -> "True"
   | False -> "False"
-                                                                    
+
 let rec expr_to_str_types = function
-  | Const c -> "Const: " ^ (string_of_int c)
+  | Const(c,_) -> "Const: " ^ (string_of_int c)
   | ExpVar v -> "ExpVar: " ^ (var_to_str v)
   | Tuple t -> "Tuple: (" ^ (join "," (List.map expr_to_str_types t)) ^ ")"
   | Log(Andn,x,y) -> "Andn: " ^ (expr_to_str_types (unfold_andn (Log(Andn,x,y))))
@@ -88,7 +88,7 @@ let rec expr_to_str_types = function
                                                          (expr_to_str_types y)) c))
 
 let rec expr_to_str = function
-  | Const c -> (string_of_int c)
+  | Const(c,_) -> (string_of_int c)
   | ExpVar v   -> var_to_str v
   | Tuple t -> sprintf "(%s)" (join "," (List.map expr_to_str t))
   | Log(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
@@ -122,7 +122,7 @@ let m_to_str m =
   match m with
   | Mint n  -> sprintf "%d" n
   | Mvar id -> id.name
-                                                       
+
 let dir_to_str d =
   match d with
   | Hslice     -> "<H>"
@@ -130,18 +130,18 @@ let dir_to_str d =
   | Bslice     -> "<B>"
   | Mslice i   -> sprintf "<%d>" i
   | Varslice v -> if v.name = "D" then "" else sprintf "<%s>" v.name
-          
+
 let rec full_typ_to_str typ =
   match typ with
   | Nat -> "nat"
-  | Uint(d,m,n) -> 
+  | Uint(d,m,n) ->
      let dir_str = dir_to_str d in
      let m_str = match m with
        | Mint i  -> string_of_int i
        | Mvar id -> id.name in
      sprintf "u%s%sx%d" dir_str m_str n
   | Array(typ,n) -> sprintf "%s[%d]" (full_typ_to_str typ) n
-                              
+
 let rec typ_to_str typ =
   match typ with
   | Nat -> "nat"
@@ -168,14 +168,14 @@ let var_d_opt_to_str (vopt:var_d_opt) =
   | Pconst -> "const"
   | PlazyLift  -> "lazyLift"
 let var_d_opt_to_str_l = lift_space var_d_opt_to_str
-                                                   
+
 let full_vd_to_str (vd:var_d) =
   sprintf "%s : %s %s :: %s"
           vd.vid.name
           (var_d_opt_to_str_l vd.vopts)
           (full_typ_to_str vd.vtyp)
           (clock_to_str vd.vck)
-          
+
 let vd_to_str (vd:var_d) =
   sprintf "%s : %s %s :: %s"
           vd.vid.name
@@ -183,14 +183,14 @@ let vd_to_str (vd:var_d) =
           (typ_to_str vd.vtyp)
           (clock_to_str vd.vck)
 let p_to_str = lift_comma vd_to_str
-                            
+
 
 let optstmt_to_str = function
   | Unroll    -> "_unroll"
   | No_unroll -> "_no_unroll"
   | Pipelined -> "_pipelined"
   | Safe_exit -> "_safe_exit"
-                   
+
 let rec deq_to_str ?(indent="  ") = function
   | Eqn(pat,e,sync) -> sprintf "%s%s %s= %s" indent (pat_to_str pat)
                          (if sync then ":" else "")
@@ -204,7 +204,7 @@ let rec deq_to_str ?(indent="  ") = function
        (join ";\n" (List.map (deq_to_str ~indent:(indent ^ "  ")) d))
        indent
 let deq_to_str_l = lift_comma deq_to_str
-                                                                                 
+
 let rec deq_to_str_types ?(indent="  ") = function
   | Eqn(pat,e,sync) -> sprintf "%s%s %s= %s" indent (pat_to_str_types pat)
                          (if sync then ":" else "")
@@ -216,8 +216,8 @@ let rec deq_to_str_types ?(indent="  ") = function
        id.name  (arith_to_str_types ei) (arith_to_str_types ef)
        (join ";\n" (List.map (deq_to_str_types ~indent:(indent ^ "  ")) d))
        indent
-     
-                                                                
+
+
 let single_node_to_str (id:ident) (p_in:p) (p_out:p) (vars:p) (deq:deq list) =
   "node " ^ id.name ^ "(" ^ (p_to_str p_in) ^ ")\n  returns "
   ^ (p_to_str p_out) ^ "\nvars\n"
@@ -231,10 +231,10 @@ let optdef_to_str = function
   | Interleave n -> sprintf "_interleave(%d)" n
   | No_opt    -> "_no_opt"
   | Is_table  -> ""
-      
+
 let def_to_str (def:def) =
   let (id,p_in,p_out) = (def.id,def.p_in,def.p_out) in
-  (join " " (List.map optdef_to_str def.opt)) ^ " " ^ 
+  (join " " (List.map optdef_to_str def.opt)) ^ " " ^
     (match def.node with
      | Single(vars,deq) ->
         single_node_to_str id p_in p_out vars deq
@@ -246,7 +246,7 @@ let def_to_str (def:def) =
         "table " ^ id.name ^ "(" ^ (p_to_str p_in)
         ^ ")\n  returns " ^ (p_to_str p_out) ^ "\n{\n  "
         ^ (join ", " (List.map string_of_int l)) ^ "\n}\n"
-                                                     
+
      | Multiple l ->
         match List.nth l 0 with
         | Single _ ->
@@ -259,7 +259,7 @@ let def_to_str (def:def) =
                                                    ^ (join ",\n"
                                                            (List.map
                                                               (fun x -> "  " ^ (vd_to_str x)) v))
-                                                   ^ "\nlet\n" 
+                                                   ^ "\nlet\n"
                                                    ^ (join ";\n"
                                                            (List.map deq_to_str d))
                                                    ^ "\ntel\n"
@@ -289,7 +289,7 @@ let def_to_str (def:def) =
            ^ "\n]\n"
         | _ -> assert false)
 let def_to_str_l = lift_comma def_to_str
-                                                       
+
 let prog_to_str (prog:prog) : string=
   join "\n\n" (List.map def_to_str prog.nodes)
 

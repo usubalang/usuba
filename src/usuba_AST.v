@@ -54,7 +54,7 @@ Inductive var :=
 
 (* XXX: factorize operations in a single case *)
 Inductive expr :=
-  | Const (i: N)
+  | Const (i: N) (t:option typ)
   | ExpVar (v: var)
   | Tuple (es: list expr)
   | Not (e: expr) (* special case for bitwise not *)
@@ -154,7 +154,7 @@ Record config := {
 }.
 
 Set Extraction KeepSingleton.
-Extraction "usuba_AST.ml" 
+Extraction "usuba_AST.ml"
            config prog def def_opt def_i p var_d var_d_opt
            deq expr var typ arith_expr shift_op
            arith_op log_op clock ident arch.

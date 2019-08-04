@@ -8,12 +8,12 @@ let env_fetch env id =
 let env_update env id v =
   Hashtbl.replace env id.name v
 
-module Usuba0 = struct 
+module Usuba0 = struct
   let rec interp_expr env_fun env_var (e:expr) : bool list =
     let interp_expr_rec = interp_expr env_fun env_var in
     match e with
-    | Const 0 -> [ false ]
-    | Const 1 -> [ true ]
+    | Const(0,_) -> [ false ]
+    | Const(1,_) -> [ true ]
     | ExpVar (Var v) -> [ env_fetch env_var v ]
     | Not e' -> List.map (not) (interp_expr_rec e')
     | Log(op,x,y) -> (match op with
@@ -29,7 +29,7 @@ module Usuba0 = struct
     | _ -> raise (Error ("Invalid expression :" ^ (Usuba_print.expr_to_str e)))
 
   and interp_node env_fun (f:def) (l:bool list) : bool list =
-    
+
     (* the function to evaluate an assignment *)
     let interp_asgn env_fun env_var (vars : var list) (expr: expr) : unit =
       let res = interp_expr env_fun env_var expr in
@@ -52,8 +52,8 @@ module Usuba0 = struct
     end;
     (* returning the values of the output variables *)
     List.map (fun vd -> env_fetch env_var vd.vid) f.p_out
-             
-             
+
+
   let interp_prog (prog:prog) (input: bool list) : bool list =
     let env_fun = Hashtbl.create 100 in
     (* Collecting the list of nodes *)
@@ -70,6 +70,6 @@ module Usuba = struct
     match node.node with
     | Table tbl -> int_to_boollist (List.nth tbl idx) (p_size node.p_out)
     | _ -> assert false
-    
-                     
+
+
 end

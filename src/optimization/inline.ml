@@ -14,7 +14,7 @@ open Usuba_AST
 open Basic_utils
 open Utils
 
-       
+
 let gen_iterator =
   let cpt = ref 0 in
   fun id ->
@@ -36,7 +36,7 @@ let rec update_in_var (it_env:(var,var) Hashtbl.t)
   | Var _ -> v
   | Index(v',ae) -> Index(update_in_var it_env v',update_aexpr_idx it_env ae)
   | _ -> assert false
-              
+
 let rec  update_var_to_var (it_env:(var,var) Hashtbl.t)
                       (var_env : (var,var) Hashtbl.t)
                       (v:var) : var =
@@ -51,7 +51,7 @@ let rec  update_var_to_var (it_env:(var,var) Hashtbl.t)
                           assert false
                | Index(v',ae) -> Index(update_var_to_var it_env var_env v',ae)
                | _ -> assert false
-                             
+
 let rec update_var_to_expr (it_env:(var,var) Hashtbl.t)
                            (var_env : (var,var) Hashtbl.t)
                            (expr_env: (var,expr) Hashtbl.t)
@@ -77,11 +77,11 @@ let rec update_var_to_expr (it_env:(var,var) Hashtbl.t)
 
 and expr_to_aexpr (e:expr) : arith_expr =
   match e with
-  | Const c -> Const_e c
+  | Const(c,_) -> Const_e c
   | ExpVar(Var v) -> Var_e v
   | Arith(op,x,y) -> Op_e(op,expr_to_aexpr x,expr_to_aexpr y)
   | _ -> assert false
-                                    
+
 (* TODO: this is quite messy, as we are mixing aexpr and expr ... *)
 and update_aexpr(it_env:(var,var) Hashtbl.t)
                 (var_env : (var,var) Hashtbl.t)
@@ -92,7 +92,7 @@ and update_aexpr(it_env:(var,var) Hashtbl.t)
   | Const_e _ -> ae
   | Var_e v -> expr_to_aexpr (update_var_to_expr it_env var_env expr_env (Var v))
   | Op_e(op,x,y) -> Op_e(op,rec_call x, rec_call y)
-                                    
+
 (* Convert variables names inside an expression *)
 let rec update_expr (it_env:(var,var) Hashtbl.t)
                     (var_env : (var,var) Hashtbl.t)
@@ -136,14 +136,14 @@ let rec update_vars (it_env:(var,var) Hashtbl.t)
          updated
            ) body
 
-           
+
 (* Inline a specific call (defined by lhs & args) *)
 let inline_call (to_inl:def) (args:expr list) (lhs:var list) (cpt:int) :
       p * deq list =
   (* Define a name conversion function *)
   let conv_name (id:ident) : ident =
     { id with name = Printf.sprintf "%s_%d_%s" to_inl.id.name cpt id.name } in
-  
+
   (* Extract body, vars, params and name of the node to inline *)
   let (vars_inl,body_inl) = match to_inl.node with
     | Single(vars,body) -> vars, body
@@ -163,23 +163,23 @@ let inline_call (to_inl:def) (args:expr list) (lhs:var list) (cpt:int) :
   (* nodes variables alpha-converted *)
   List.iter2 ( fun vd vd' ->
                Hashtbl.add var_env (Var vd.vid) (Var vd'.vid)) vars_inl vars;
-  
-  vars, update_vars (Hashtbl.create 10) var_env expr_env body_inl  
-  
-  
-(* Inline all the calls to "to_inl" in a given node 
+
+  vars, update_vars (Hashtbl.create 10) var_env expr_env body_inl
+
+
+(* Inline all the calls to "to_inl" in a given node
    (desribed by its variables and body "vars,body") *)
 let rec inline_in_node (deqs:deq list) (to_inl:def) : p * deq list =
   let f_inl = to_inl.id.name in
   (* maintain a counter for variables alpha-conversion *)
   let cpt   = ref 0 in
-  
+
   let (vars,deqs) =
-    (* Unpack the list bellow into a single list of vars and 
+    (* Unpack the list bellow into a single list of vars and
        a list of deqs *)
-    List.split      
-      (* Find the calls to f_inl, and inline them. 
-       This will introduce new variables, which is 
+    List.split
+      (* Find the calls to f_inl, and inline them.
+       This will introduce new variables, which is
        why maps returns a (p * deq list) list. *)
       ( List.map (
             fun eqn -> match eqn with
@@ -192,7 +192,7 @@ let rec inline_in_node (deqs:deq list) (to_inl:def) : p * deq list =
                           vars, [ Loop(i,ei,ef,deqs,opts) ]
           ) deqs ) in
   List.flatten vars, List.flatten deqs
-    
+
 
 (* Perform the inlining of node "to_inline" at every call point *)
 (* And removes the node from the program *)
@@ -206,10 +206,10 @@ let do_inline (prog:prog) (to_inline:def) : prog =
                      let (vars',body') = inline_in_node body to_inline in
                      { def with node = Single(vars @ vars',body') }
                   | _ -> def) prog.nodes }
-  
-  
+
+
 (* Returns true if def doesn't contain any function call,
-   or if those calls are to functions that are not going 
+   or if those calls are to functions that are not going
    to be inlined *)
 let is_call_free env (def:def) : bool =
   let rec deq_call_free (deq:deq) : bool =
@@ -222,7 +222,7 @@ let is_call_free env (def:def) : bool =
   | Single(_,body) ->
      List.for_all deq_call_free body
   | _ -> false
-  
+
 (* Returns true if the node can be inlined now. ie:
     - is not already inlined
     - it doesn't have the attribute "no_inline"
@@ -237,7 +237,7 @@ let can_inline env inlined conf (node:def) : bool =
       (* Doesn't contain any call, or calls to "no_inline" *)
       (is_call_free env node)
 
-        
+
 (* Inline every node that should be and hasn't already been
    (inlined contains the status of each node: inlined or not) *)
 let rec _inline (prog:prog) (conf:config) inlined : prog =

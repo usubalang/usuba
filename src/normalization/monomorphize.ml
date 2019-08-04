@@ -3,15 +3,15 @@ open Basic_utils
 open Utils
 
 module HVsliceCommon = struct
-  
-           
+
+
   let specialize_typ (d:dir) (m:mtyp) (n:int) : typ =
     Uint(d,m,n)
-    
+
 end
-       
+
 module Hslice = struct
-  
+
   let rotate_l l x =
     let rec aux x l1 l2 =
       match x with
@@ -34,7 +34,7 @@ module Hslice = struct
   let shift_r l x =
     List.rev (shift_l (List.rev l) x)
 
-             
+
   let specialize_expr env_var (vs:var list) (e:expr) (sync:bool) : deq =
     let ltyp = List.map (get_var_type env_var) vs in
     let e =
@@ -52,7 +52,7 @@ module Hslice = struct
         | Rshift  -> Shuffle(v, shift_r  l (eval_arith_ne ae)))
       | _ -> e in
     Eqn(vs,e,sync)
-           
+
   let refine_types (p:p) : p = p
   let specialize_var env_var (v:var) : var = v
 end
@@ -78,7 +78,7 @@ module Bslice = struct
     | Uint(_,_,n) -> n
     | Array(t,_) -> get_base_n t
     | _ -> assert false
-                  
+
   let rec specialize_var env_var (v:var) : var =
     match v with
     | Var _ -> v
@@ -96,11 +96,11 @@ module Bslice = struct
   (* The tupple is padded with 0s to be of the right size (with make_0_list) *)
   let expand_const (size:int) (n:int) : expr =
     let rec make_0_list n acc =
-      if n > 0 then make_0_list (n-1) (Const 0 :: acc)
+      if n > 0 then make_0_list (n-1) (Const(0,Some (Uint(Bslice,Mint 1,1))) :: acc)
       else acc in
     let rec dec_to_binlist n =
       if n > 0 then
-        (Const (n mod 2))::(dec_to_binlist (n/2))
+        (Const (n mod 2,Some (Uint(Bslice,Mint 1,1))))::(dec_to_binlist (n/2))
       else [] in
     let l = dec_to_binlist n in
     let len = List.length l in
@@ -108,17 +108,18 @@ module Bslice = struct
     Tuple((make_0_list diff []) @ (List.rev l))
 
   (* Constants need to be turned into tuples of booleans (boolean = 0/1) *)
-  let specialize_const env_var (vs:var list) (n:int) : expr =
+  let specialize_const env_var (vs:var list) (n:int) (typ:typ option) : expr =
+    Printf.eprintf "specialize_const: should use Const's type instead of trying to infer\n";
     let size = match vs with
       | [ v ] -> get_typ_real_size (get_var_type env_var v)
       | _ -> assert false (* multiple vars on the left? shouldn't happend *) in
-    if size = 1 then Const n
+    if size = 1 then Const(n,typ)
     else expand_const size n
 
   let rec specialize_expr env_var (vs:var list) (e:expr) (sync:bool) : deq =
     let e =
       match e with
-      | Const n -> specialize_const env_var vs n
+      | Const(n,typ) -> specialize_const env_var vs n typ
       | ExpVar v -> ExpVar (specialize_var env_var v)
       | Not (ExpVar v) -> Not (ExpVar(specialize_var env_var v))
       | Shift(op,ExpVar x, ae) ->
@@ -126,9 +127,9 @@ module Bslice = struct
       | Log(op,ExpVar x, ExpVar y) ->
          Log(op,ExpVar(specialize_var env_var x),ExpVar(specialize_var env_var y))
       | Log(op,ExpVar x, y) ->
-         Log(op,ExpVar(specialize_var env_var x),y)    
+         Log(op,ExpVar(specialize_var env_var x),y)
       | Log(op,x, ExpVar y) ->
-         Log(op,x,ExpVar(specialize_var env_var y))  
+         Log(op,x,ExpVar(specialize_var env_var y))
       | Log(op,x,y) ->
          Log(op,x,y)
       | Shuffle(v,l) -> Shuffle(specialize_var env_var v,l)
@@ -137,7 +138,7 @@ module Bslice = struct
       | _ -> Printf.fprintf stderr "Invalid expr: %s\n" (Usuba_print.expr_to_str e);
              assert false in
     Eqn(List.map (specialize_var env_var) vs,e,sync)
-    
+
 
   let rec refine_type (t:typ) : typ =
     match t with
@@ -148,11 +149,11 @@ module Bslice = struct
     | Array(t',n) -> Array(refine_type t',n)
     | _ -> Printf.fprintf stderr "Can't refine_type(%s).\n" (Usuba_print.typ_to_str t);
            assert false
-  
+
   let refine_types (p:p) : p =
     List.map (fun vd -> { vd with vtyp = refine_type vd.vtyp }) p
 
-  
+
 end
 
 
@@ -178,8 +179,8 @@ let refine_types (p:p) : p =
               | Hslice -> Hslice.refine_types p
               | Vslice -> Vslice.refine_types p
               | _ -> assert false
-  
-    
+
+
 let rec specialize_typ (env_dir:(dir,dir) Hashtbl.t)
                        (env_m:(mtyp,mtyp) Hashtbl.t)
                        (t:typ) : typ =
@@ -191,7 +192,7 @@ let rec specialize_typ (env_dir:(dir,dir) Hashtbl.t)
                      | Some d', None    -> Uint(d', m,  n)
                      | None,    Some m' -> Uint(d,  m', n)
                      | None,    None    -> Uint(d,  m,  n)
-                                               
+
 let specialize_p (env_dir:(dir,dir) Hashtbl.t)
                  (env_m:(mtyp,mtyp) Hashtbl.t)
                  (p:p) : p =
@@ -209,7 +210,7 @@ let specialize_expr_var (env_var:(ident, typ) Hashtbl.t) (e:expr) : expr =
   match e with
   | ExpVar v -> ExpVar (specialize_var env_var v)
   | _ -> assert false
-  
+
 (* Given a list of var_d (p), and a list of types, update the dir/m of each
      var_d according to the corresponding type in the list of types *)
 let match_types env_dir env_m (p:p) (typs:typ list) : p =
@@ -224,7 +225,7 @@ let match_types env_dir env_m (p:p) (typs:typ list) : p =
              Hashtbl.replace env_m (get_type_m vd.vtyp) (get_type_m t);
              { vd with vtyp = update_dir_m vd.vtyp t }
             ) p typs
-            
+
 let rec specialize_fun_call
           (all_nodes:(ident,def) Hashtbl.t)
           (specialized_nodes:(ident,(ident*(dir list)*(mtyp list),def) Hashtbl.t) Hashtbl.t)
@@ -232,7 +233,7 @@ let rec specialize_fun_call
           (vs:var list) (f:ident) (l:expr list) (sync:bool) : deq =
   let env_dir = Hashtbl.create 10 in
   let env_m   = Hashtbl.create 10 in
-  
+
   let typs_out = List.map (get_var_type env_var) vs in
   let typs_in  = flat_map (get_expr_type (Hashtbl.create 1) env_var) l in
 
@@ -243,7 +244,7 @@ let rec specialize_fun_call
   let ldir  = List.sort compare (values env_dir) in
   let lmtyp = List.sort compare (values env_m) in
   let f'   = gen_fun_name f ldir lmtyp in
-  
+
   replace_key_2nd_layer specialized_nodes f (f',ldir,lmtyp)
                         { def with
                           id    = f';
@@ -261,7 +262,7 @@ let rec specialize_fun_call
   Eqn(vs,Fun(f',l),sync)
 
 
-(* Note that expressions have been normalized, and are therefore not reccursive 
+(* Note that expressions have been normalized, and are therefore not reccursive
      at this point. *)
 and specialize_expr (all_nodes:(ident,def) Hashtbl.t)
                     (specialized_nodes:(ident,(ident*(dir list)*(mtyp list),def) Hashtbl.t) Hashtbl.t)
@@ -276,9 +277,9 @@ and specialize_expr (all_nodes:(ident,def) Hashtbl.t)
          | Hslice -> Hslice.specialize_expr env_var vs e sync
          | Vslice -> Eqn(vs,e,sync) (* nothing to change *)
          | Bslice -> Bslice.specialize_expr env_var vs e sync
-         | _ -> assert false 
-                       
-                       
+         | _ -> assert false
+
+
 and specialize_deqs (all_nodes:(ident,def) Hashtbl.t)
                     (specialized_nodes:(ident,(ident*(dir list)*(mtyp list),def) Hashtbl.t) Hashtbl.t)
                     (env_var:(ident, typ) Hashtbl.t) (deqs:deq list) : deq list =
@@ -291,7 +292,7 @@ and specialize_deqs (all_nodes:(ident,def) Hashtbl.t)
                                             env_var l,opts))
            deqs
 
-(* Called by either specialize_entry of specialize_fun_call. 
+(* Called by either specialize_entry of specialize_fun_call.
      Looked at either of those functions for more details *)
 and specialize_node (all_nodes:(ident,def) Hashtbl.t)
                     (specialized_nodes:(ident,(ident*(dir list)*(mtyp list),def) Hashtbl.t) Hashtbl.t)
@@ -304,7 +305,7 @@ and specialize_node (all_nodes:(ident,def) Hashtbl.t)
   let body = specialize_deqs all_nodes specialized_nodes env_var body in
 
   Single(refine_types vars, body)
-        
+
 
 (* We call "entry" a node which is called by not other.
      Their monomorphization is a bit special: the specialization of the parameters
@@ -326,8 +327,8 @@ let specialize_entry (all_nodes:(ident,def) Hashtbl.t)
                                      specialize_node all_nodes specialized_nodes
                                                      env_dir (Hashtbl.create 1) p_in p_out vars body
                                   | _ -> def.node }
-                        
-                        
+
+
 let monomorphize (prog:prog) (conf:config) : prog =
   (* Getting the default dir (command line parameter) *)
   let spec_dir = match conf.slicing_set with
@@ -355,7 +356,7 @@ let monomorphize (prog:prog) (conf:config) : prog =
                         | None   -> specialize_entry all_nodes specialized_nodes
                                                      env_dir def conf)
             prog.nodes;
-  
+
   (* Reconstructing the program from the monomorphized nodes *)
   { nodes =
       flat_map

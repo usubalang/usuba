@@ -3,12 +3,12 @@ open Basic_utils
 open Utils
 
 
-let no_arr_tmp = ref false 
-       
-          
+let no_arr_tmp = ref false
+
+
 let sum_type = List.fold_left (fun tot vd -> tot + (typ_size vd.vtyp)) 0
-          
-          
+
+
 (* ************************************************************************** *)
 
 let reduce_same_list l =
@@ -17,8 +17,8 @@ let reduce_same_list l =
   with Exit -> Printf.fprintf stderr "Error: list [%s] isn't type-homogeneous.\n"
                                (Usuba_print.typ_to_str_l l);
                 assert false
-                                 
-                                              
+
+
 let rec expand_intn (id: ident) (n: int) : ident list =
   if n = 1 || n = 0 then
     [ id ]
@@ -27,13 +27,13 @@ let rec expand_intn (id: ident) (n: int) : ident list =
       if i > n then []
       else (fresh_suffix id (string_of_int i)) :: (aux (i+1))
     in aux 1
-         
+
 let expand_intn_typed (id: ident) (n: int) (ck: clock) =
   List.map (fun x -> (x,bool,ck)) (expand_intn id n)
-         
+
 let expand_intn_pat (id: ident) (n: int) : var list =
   List.map (fun x -> Var x) (expand_intn id n)
-         
+
 let rec expand_intn_expr (id: ident) (n: int option) : expr =
   match n with
   | Some n -> Tuple(List.map (fun x -> ExpVar(Var x)) (expand_intn id n))
@@ -42,7 +42,9 @@ let rec expand_intn_expr (id: ident) (n: int option) : expr =
 (* Differs a bit from the version of utils in how Const are handled *)
 let rec get_expr_type env_fun env_var (ltyp:typ list) (e:expr) : typ list =
   match e with
-  | Const n -> [ List.hd ltyp ]
+  | Const(n,None) -> Printf.eprintf "Invalid untyped const (0x%x). Exiting.\n" n;
+                     assert false
+  | Const(n,Some typ) -> [ typ ]
   | ExpVar v -> [ get_var_type env_var v ]
   | Tuple l -> flat_map (get_expr_type env_fun env_var ltyp) l
   | Not e -> get_expr_type env_fun env_var ltyp e
@@ -57,9 +59,9 @@ let rec get_expr_type env_fun env_var (ltyp:typ list) (e:expr) : typ list =
        List.map (fun vd -> vd.vtyp) def.p_out
   | _ -> assert false
 
-          
+
 let new_vars : p ref = ref []
-                   
+
 let gen_tmp =
   let cpt = ref 0 in
   fun env_var typ ->
@@ -67,7 +69,7 @@ let gen_tmp =
     let var = fresh_ident ("_tmp" ^ (string_of_int !cpt) ^ "_") in
     Hashtbl.replace env_var var typ;
     var
-                             
+
 (* Note that when this function is called, Var have already been normalized *)
 let rec get_expr_size env_var env_fun l : int =
   match l with
@@ -110,9 +112,9 @@ let rec expand_expr env_var (e:expr) : expr list =
   | Arith(op,x,y) -> List.map2 (fun x y -> Arith(op,x,y))
                               (expand_expr env_var x)
                               (expand_expr env_var y)
-  | Fun _ -> [ e ] 
+  | Fun _ -> [ e ]
   | _ -> assert false
-           
+
 (* ************************************************************************** *)
 
 let rec remove_call env_var env_fun (dir,mtyp:dir*mtyp) (ltyp:typ list) (e:expr)
@@ -137,7 +139,7 @@ and remove_calls env_var env_fun (dir,mtyp:dir*mtyp) (ltyp:typ list)  (l:expr li
   let pre_deqs = ref [] in
   let l' = List.map
              (fun e ->
-              
+
               let (deq,e') = norm_expr env_var env_fun (dir,mtyp) ltyp e in
               pre_deqs := !pre_deqs @ deq;
 
@@ -156,11 +158,11 @@ and remove_calls env_var env_fun (dir,mtyp:dir*mtyp) (ltyp:typ list)  (l:expr li
                 let new_var = gen_tmp env_var typ in
                 new_vars := (make_var_d new_var typ Defclock []) :: !new_vars;
                 pre_deqs := !pre_deqs @ [(Eqn([Var new_var],e',false))];
-                
+
                 [ExpVar (Var new_var)])
              l in
   !pre_deqs, flatten_expr (List.flatten l')
-    
+
 
 and norm_expr env_var env_fun (dir,mtyp:dir*mtyp) (ltyp:typ list) (e: expr)
     : deq list * expr =
@@ -208,7 +210,7 @@ and norm_expr env_var env_fun (dir,mtyp:dir*mtyp) (ltyp:typ list) (e: expr)
      let (deqs,e') = remove_call env_var env_fun (dir,mtyp) ltyp e in
      deqs, Shift(op,e',n)
   | _ -> assert false
-               
+
 let rec norm_deq env_var env_fun (body: deq list) : deq list =
   flat_map
     (function
@@ -223,7 +225,7 @@ let rec norm_deq env_var env_fun (body: deq list) : deq list =
             expr_l @ [Eqn(lhs,e',sync)])
       | Loop(x,ei,ef,dl,opts) ->
          [ Loop(x,ei,ef,norm_deq env_var env_fun dl,opts) ]) body
-    
+
 let norm_def env_fun (def: def) : def =
   match def.node with
   | Single(p_var,body) ->
@@ -238,4 +240,3 @@ let norm_prog (prog:prog) (conf:config) : prog =
   no_arr_tmp := conf.no_arr_tmp;
   let env_fun = build_env_fun prog.nodes in
   { nodes = List.map (norm_def env_fun) prog.nodes }
-  

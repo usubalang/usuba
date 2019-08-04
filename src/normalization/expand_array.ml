@@ -1,5 +1,5 @@
 (***************************************************************************** )
-                              expand_array.ml                                 
+                              expand_array.ml
 
 ( *****************************************************************************)
 
@@ -21,7 +21,7 @@ type array_fate = Keep | Remove | Split
 
 (* To notify calling function that unrolling is necessary *)
 exception Need_unroll
-            
+
 (* Abstracting Hashtbl.
    This functions should replace the ones in Utils, one day. *)
 let make_env () = Hashtbl.create 100
@@ -33,7 +33,7 @@ let env_fetch env v = try Hashtbl.find env v
 
 
 (* If the program contains permutations, then arrays must be unrolled
- This is a bit of a simplification: 
+ This is a bit of a simplification:
   - The permutation could be at some point where it doesn't impact unrolling
   - Dummy assigments are a sign that indicates that arrays should be unrolled as well
  *)
@@ -54,10 +54,10 @@ let rec need_to_keep env_keep (v:var) : bool =
                     | Some _ -> true
                     | _ -> false end
   | Index(v,_) -> need_to_keep env_keep v
-  | _ -> assert false                       
+  | _ -> assert false
 
 (* Replaces Index with Var, thus removing arrays.
-   remove_arr( Index(x,5) ) = Var( x'5 )  
+   remove_arr( Index(x,5) ) = Var( x'5 )
 *)
 let rec remove_arr (v:var) : var =
   match v with
@@ -75,10 +75,10 @@ let remove_arr env_keep (v:var) : var =
   if need_to_keep env_keep v then v
   else remove_arr v
 
-                
+
 let rec expand_var env_var env_keep env bitslice force (v:var) : var list =
-  
-  let rec aux (v:var) : var list = 
+
+  let rec aux (v:var) : var list =
     match v with
     | Var _ -> [ v ]
     | Index(v',i) -> List.map (fun x -> Index(x,simpl_arith env i)) (aux v')
@@ -99,21 +99,22 @@ let rec expand_var env_var env_keep env bitslice force (v:var) : var list =
     flat_map (Utils.expand_var env_var) (aux v)
   else
     aux v
-                             
+
 let expand_vars env_var env_keep env bitslice force (vars:var list) : var list =
   flat_map (expand_var env_var env_keep env bitslice force) vars
-           
+
 let rec expand_expr env_var env_keep env bitslice force (e:expr) : expr =
   let rec_call = expand_expr env_var env_keep env bitslice force in
   match e with
   | Const _ -> e
-  | ExpVar v -> let l = (expand_var env_var env_keep env bitslice force v) in
-                Tuple (List.map (fun x ->
-                                 match x with
-                                 | Var id -> (match Hashtbl.find_opt env id with
-                                              | Some i -> Const i
-                                              | None   -> ExpVar x)
-                                 | _ -> ExpVar x) l)
+  | ExpVar v ->
+     let l = (expand_var env_var env_keep env bitslice force v) in
+     Tuple (List.map (fun x ->
+                match x with
+                | Var id -> (match Hashtbl.find_opt env id with
+                             | Some i -> Const(i,Some (get_var_type env_var (Var id)))
+                             | None   -> ExpVar x)
+                | _ -> ExpVar x) l)
   | Tuple el -> Tuple(List.map rec_call el)
   | Not e' -> Not (rec_call e')
   | Shift(op,e1,ae) -> Shift(op,expand_expr env_var env_keep env bitslice
@@ -183,21 +184,21 @@ let expand_p (bitslice:bool) (p:p) : p =
                                vtyp = Uint(dir,m,1) })
                 (gen_list_0_int n) in
   flat_map aux p
-           
+
 
 (* cf env_keep description in expand_def:
    env_keep: in the main: contains the parameters (they should be expanded)
              in the other functions: is empty.*)
 let build_env_keep (p_in:p) (p_out:p) =
   let env = Hashtbl.create 100 in
-  
+
   let f (vd:var_d) = Hashtbl.add env vd.vid true in
 
   List.iter f p_in;
   List.iter f p_out;
 
   env
-           
+
 (* bitslice:
       true: convert un to bn
       false: keep un
@@ -221,7 +222,7 @@ let expand_def (bitslice:bool) (force:array_fate) (unroll:bool) (keep_param:bool
             | Single(vars,body) ->
                (* env_var: contains the variables and their types *)
                let env_var  = build_env_var def.p_in def.p_out vars in
-               (* env_keep: in the main: contains the parameters 
+               (* env_keep: in the main: contains the parameters
                                                   (they should be expanded)
                                      in the other functions: is empty. *)
                let env_keep = if keep_param then build_env_keep def.p_in def.p_out
@@ -237,11 +238,10 @@ let rec map_special_last f g l =
   | [ x ] -> [ g x ]
   | hd :: tl -> (f hd) :: (map_special_last f g tl)
 
-    
+
 let rec expand_array (prog:prog) (conf:config): prog =
   let force    = if conf.no_arr (* || must_expand prog  *)then Remove else Keep in
   let bitslice = conf.slicing_set && (conf.slicing_type = B) in
   let unroll   = conf.unroll in
   { nodes = map_special_last (expand_def bitslice force unroll false)
                              (expand_def bitslice force unroll conf.arr_entry) prog.nodes }
-
