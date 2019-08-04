@@ -10,7 +10,7 @@ let verif       = ref false
 let type_check  = ref true
 let clock_check = ref false
 let check_tbl   = ref false
-                     
+
 let inlining      = ref true
 let inline_all    = ref false
 let cse_cp        = ref true
@@ -24,7 +24,7 @@ let no_arr_tmp    = ref false
 let arr_entry     = ref true
 let unroll        = ref false
 let interleave    = ref 0
-                      
+
 let arch         = ref Std
 (* TODO: remove bits_per_reg (should be type-driven) *)
 let bits_per_reg = ref 64
@@ -37,7 +37,7 @@ let lazylift     = ref false
 
 let tightPROVE   = ref false
 let shares       = ref 1
-                       
+
 let slicing_type = ref B
 let slicing_set  = ref false
 let m_val        = ref 1
@@ -68,7 +68,7 @@ let gen_output_filename (file_in: string) : string =
   let full_name = List.hd (String.split_on_char '.' file_in) in
   let out_name = last (String.split_on_char '/' full_name) in
   out_name ^ ".c"
-               
+
 let print_c (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
   (* Generating C code *)
   let out = match !output with
@@ -78,15 +78,15 @@ let print_c (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
   let normalized = Normalize.compile prog conf in
 
   let c_prog = Usuba_to_c.prog_to_c prog normalized conf file_in in
-  
+
   fprintf out "%s" c_prog;
   close_out out
 
-            
+
 let main () =
   Printexc.record_backtrace true;
 
-  let speclist = 
+  let speclist =
     [ "-w", Arg.Set warnings, "Activate warnings";
       "-v", Arg.Set_int verbose, "Set verbosity level";
       "-verif", Arg.Set verif, "Activate verification";
@@ -125,7 +125,7 @@ let main () =
       "-keep-tables", Arg.Set keep_tables, "Keep lookup tables (can't use SIMD)";
     ] in
   let usage_msg = "Usage: usuba [switches] [files]" in
-  
+
   let compile s =
     let prog = Parse_file.parse_file s in
     let bits_per_reg = if !bits_per_reg <> 64 then !bits_per_reg
@@ -138,7 +138,7 @@ let main () =
       (* no_arr     := true;
        * arr_entry  := false *)
     );
-    
+
     let conf = {
         warnings       =   !warnings;
         verbose        =   !verbose;
@@ -177,16 +177,14 @@ let main () =
     if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then
       raise (Error ("Invalid -fix-size " ^ (string_of_int conf.bits_per_reg)));
 
-    if !type_check then
-      if false (*not (Type_checker.is_typed prog)*) then
-       raise (Error "Unsound program: bad types");
+    let prog = Type_checker.type_prog prog in
     if !clock_check then
       if not (Clock_checker.is_clocked prog) then
         raise (Error "Unsound program: bad clocks");
     print_c s prog conf in
-      
-  
+
+
   Arg.parse speclist compile usage_msg
-    
+
 
 let () = main ()

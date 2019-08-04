@@ -8,7 +8,7 @@
 (* ****************************************************************** *)
 
 
-(* Apply a function to every elements of a list but the last, 
+(* Apply a function to every elements of a list but the last,
    which is removed *)
 let rec map_no_end f = function
   | [] -> []
@@ -19,10 +19,10 @@ let rec map_no_end f = function
 let rec pow a = function
   | 0 -> 1
   | 1 -> a
-  | n -> 
+  | n ->
      let b = pow a (n / 2) in
      b * b * (if n mod 2 = 0 then 1 else a)
-                
+
 (* Returns the last element of a list *)
 let last l =
   List.nth l (List.length l - 1)
@@ -32,7 +32,7 @@ let rec apply_last l f =
   | x::[] -> [ f x ]
   | hd::tl -> hd :: (apply_last tl f)
   | [] -> []
-           
+
 (* Returns true if a list is empty *)
 let is_empty = function [] -> true | _ -> false
 
@@ -69,16 +69,16 @@ let rec remove_nth (l:'a list) (n:int) =
     match n with
     | 0 -> List.tl l
     | _ -> (List.hd l) :: (remove_nth (List.tl l) (n-1))
-                            
+
 (* Removes duplicates from a list *)
 let uniq (l:'a list) : 'a list =
   let mem = Hashtbl.create 50 in
   List.filter (fun e -> if Hashtbl.mem mem e then false
-                        else (Hashtbl.add mem e true; true)) l 
+                        else (Hashtbl.add mem e true; true)) l
 
 (* Returns true if l1 and l2 have at least one common element *)
 let common_elem l1 l2 = List.fold_left (fun x y -> x || List.mem y l2) false l1
-                
+
 (* Alias for String.concat *)
 let rec join = String.concat
 
@@ -97,7 +97,7 @@ let values hash = Hashtbl.fold (fun _ v acc -> v :: acc) hash []
 
 (* Getting a list of keys,values *)
 let each hash = Hashtbl.fold (fun k v acc -> (k,v) :: acc) hash []
-                             
+
 (* Retrieving the keys of a HoH's 2nd layer*)
 let keys_2nd_layer hash k =
   try
@@ -127,7 +127,7 @@ let rec gen_list_bounds (i:int) (f:int) : int list =
     i :: (gen_list_bounds (i-1) f)
   else [ f ]
 
-(* Note: boollist_to_int (int_to_boollist x n) == x 
+(* Note: boollist_to_int (int_to_boollist x n) == x
    (if x is less than 2^n) *)
 let boollist_to_int (l: bool list) : int =
   List.fold_left (fun n b -> (n lsl 1) lor (if b then 1 else 0)) 0 l
@@ -140,3 +140,15 @@ let int_to_boollist (n : int) (size: int) : bool list =
 
 (* Returns the max of a *non-empty* list *)
 let max_l l = List.fold_left max (List.hd l) l
+
+(* Returns the first |n| elements of |l|. *)
+(* Will raise an error if |l| is too short. *)
+let rec first_n l n =
+  match n with
+  | 0 -> []
+  | n ->
+     if n > 0 then
+       (List.hd l) :: (first_n (List.tl l) (n-1))
+     else
+       (Printf.eprintf "Can't call first_n with a negative n. Exiting.\n";
+        assert false)

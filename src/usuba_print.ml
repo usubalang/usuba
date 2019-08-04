@@ -191,7 +191,7 @@ let optstmt_to_str = function
   | Pipelined -> "_pipelined"
   | Safe_exit -> "_safe_exit"
 
-let rec deq_to_str ?(indent="  ") = function
+let rec deq_to_str ?(indent="") = function
   | Eqn(pat,e,sync) -> sprintf "%s%s %s= %s" indent (pat_to_str pat)
                          (if sync then ":" else "")
                          (expr_to_str e)
@@ -205,7 +205,7 @@ let rec deq_to_str ?(indent="  ") = function
        indent
 let deq_to_str_l = lift_comma deq_to_str
 
-let rec deq_to_str_types ?(indent="  ") = function
+let rec deq_to_str_types ?(indent="") = function
   | Eqn(pat,e,sync) -> sprintf "%s%s %s= %s" indent (pat_to_str_types pat)
                          (if sync then ":" else "")
                          (expr_to_str_types e)
@@ -222,7 +222,7 @@ let single_node_to_str (id:ident) (p_in:p) (p_out:p) (vars:p) (deq:deq list) =
   "node " ^ id.name ^ "(" ^ (p_to_str p_in) ^ ")\n  returns "
   ^ (p_to_str p_out) ^ "\nvars\n"
   ^ (join ",\n" (List.map (fun x -> "  " ^ (vd_to_str x)) vars)) ^ "\nlet\n"
-  ^ (join ";\n" (List.map deq_to_str deq))
+  ^ (join ";\n" (List.map (deq_to_str ~indent:"  ") deq))
   ^ "\ntel"
 
 let optdef_to_str = function
