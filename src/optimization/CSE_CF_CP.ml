@@ -21,22 +21,22 @@ let rec fold_expr (e:expr) : expr =
      let x' = fold_expr x in
      let y' = fold_expr y in
      ( match x',y' with
-       | Const _, _ | _, Const _ -> (
+       | Const(_,typ), _ | _, Const(_,typ) -> (
          match Log(op,x',y') with
-         | Log(And,Const 1,x) | Log(And,x,Const 1) -> x
-         | Log(And,Const 0,_) | Log(And,_,Const 0) -> Const 0
-              
-         | Log(Or,Const 1,_)  | Log(Or,_,Const 1)  -> Const 1
-         | Log(Or,Const 0,x)  | Log(Or,x,Const 0)  -> x
-                                  
-         | Log(Xor,Const 0,x) | Log(Xor,x,Const 0) -> x    
-         | Log(Xor,Const 1,x) | Log(Xor,x,Const 1) -> Not x
-                                     
-         | Log(Andn,Const 0,x) -> x
-         | Log(Andn,x,Const 0) -> Const 0
-         | Log(Andn,Const 1,x) -> Const 0
-         | Log(Andn,x,Const 1) -> Not x
-                                      
+         | Log(And,Const(1,_),x) | Log(And,x,Const(1,_)) -> x
+         | Log(And,Const(0,_),_) | Log(And,_,Const(0,_)) -> Const(0,typ)
+
+         | Log(Or,Const(1,_),_)  | Log(Or,_,Const(1,_))  -> Const(1,typ)
+         | Log(Or,Const(0,_),x)  | Log(Or,x,Const(0,_))  -> x
+
+         | Log(Xor,Const(0,_),x) | Log(Xor,x,Const(0,_)) -> x
+         | Log(Xor,Const(1,_),x) | Log(Xor,x,Const(1,_)) -> Not x
+
+         | Log(Andn,Const(0,_),x) -> x
+         | Log(Andn,x,Const(0,_)) -> Const(0,typ)
+         | Log(Andn,Const(1,_),x) -> Const(0,typ)
+         | Log(Andn,x,Const(1,_)) -> Not x
+
          | _ -> assert false)
        | _, _ -> Log(op,x',y') )
   | Fun(f,l) -> Fun(f,List.map (fold_expr) l)
@@ -45,8 +45,8 @@ let rec fold_expr (e:expr) : expr =
   | Arith(op,x,y)  -> Arith(op,fold_expr x, fold_expr y)
   | Not x -> let x' = fold_expr x in
              ( match x with
-               | Const 1 -> Const 0
-               | Const 0 -> Const 1
+               | Const(1,typ) -> Const(0,typ)
+               | Const(0,typ) -> Const(1,typ)
                | _ -> Not x')
   | _ -> e
 
@@ -57,13 +57,13 @@ let rec fold_deq env_var (deq:deq) : deq =
       | Mint m when m > 1 -> deq
       | _ -> Eqn(v,fold_expr e,sync))
   | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,List.map (fold_deq env_var) dl,opts)
-           
+
 let rec cse_expr ltyp_m env_expr ?(invert=true) (e:expr) : expr =
   let fold = match ltyp_m with
     | Mint m when m > 1 -> fun x -> x
     | _ -> fold_expr in
   let e =
-    fold 
+    fold
       (match fold e with
        | Log(op,x,y)    -> Log(op,   cse_expr ltyp_m env_expr x, cse_expr ltyp_m env_expr y)
        | Arith(op,x,y)  -> Arith(op, cse_expr ltyp_m env_expr x, cse_expr ltyp_m env_expr y)
@@ -100,7 +100,7 @@ let rec expand_vars env_var opt_out_vars (e:expr) : expr list =
                   | None -> [ e ] )
   | Const _ -> [ e ]
   | _ -> assert false
-                   
+
 let opt_expr ltyp_m env_expr env_var opt_out_vars (e:expr) : expr =
   match e with
   | Fun(f,[]) when f.name = "rand" -> Fun(f,[])
@@ -113,7 +113,7 @@ let rec update_opt_out opt_out_vars (v:var) : unit =
   match v with
   | Index(v,_) -> update_opt_out opt_out_vars v
   | _ -> ()
-           
+
 let opt_deq ret_env env_expr env_var opt_out_vars (p:var) (e:expr) (sync:bool) : deq list =
   let ltyp_m = get_type_m (get_var_type env_var p) in
   let e = opt_expr ltyp_m env_expr env_var opt_out_vars e in
@@ -149,7 +149,7 @@ let rec commit_asgns ?(env_it=(Hashtbl.create 10))
     | Var _ -> v
     | Index(v,ae) -> Index(compute_index env_it v,simpl_arith env_it ae)
     | _ -> assert false in
-  
+
   let rec find_usage
             (env_it:(ident,int) Hashtbl.t)
             (env_expr:(expr,expr) Hashtbl.t)
@@ -164,7 +164,7 @@ let rec commit_asgns ?(env_it=(Hashtbl.create 10))
               | Uint(_,_,1) -> []
               | _ -> flat_map (find_usage env_it env_expr env_var)
                               (expand_var_partial env_var v) in
-  
+
 
   let rec commit_deq (env_it:(ident,int) Hashtbl.t)
                      (env_expr:(expr,expr) Hashtbl.t)
@@ -179,7 +179,7 @@ let rec commit_asgns ?(env_it=(Hashtbl.create 10))
        Hashtbl.remove env_var i;
        res in
 
-  
+
   let ei = eval_arith env_it ei in
   let ef = eval_arith env_it ef in
   let eqs =
@@ -190,16 +190,16 @@ let rec commit_asgns ?(env_it=(Hashtbl.create 10))
   env_remove env_it i;
 
   eqs
-        
-                  
-            
+
+
+
 let rec opt_deqs env_var (deqs:deq list) (out:p) : deq list =
   (* The expressions already available *)
   let env_expr : (expr,expr) Hashtbl.t = make_env () in
   (* The return values, that shouldn't be optimized out *)
   let ret_env : (var,bool) Hashtbl.t = make_env () in
   List.iter (fun vd -> env_add ret_env (Var vd.vid) true) out;
-  (* Array assignments that have been optimized out and use of those arrays 
+  (* Array assignments that have been optimized out and use of those arrays
      must therefore be expanded *)
   let opt_out_vars : (var,bool) Hashtbl.t = make_env () in
 
@@ -215,7 +215,7 @@ let rec opt_deqs env_var (deqs:deq list) (out:p) : deq list =
       | Loop(i,ei,ef,dl,opts) ->
          (commit_asgns env_expr env_var (i,ei,ef,dl)) @
            [ Loop(i,ei,ef,List.map (fold_deq env_var) dl,opts) ]) deqs
-      
+
 
 let opt_def (def: def) : def =
   match def.node with
@@ -228,4 +228,3 @@ let opt_def (def: def) : def =
 let opt_prog (prog:prog) (conf:config) : prog =
   (* Expand_parameters.expand_parameters { nodes = List.map opt_def prog.nodes } conf *)
   { nodes = List.map opt_def prog.nodes }
-    

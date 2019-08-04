@@ -3,20 +3,20 @@ open Basic_utils
 open Utils
 open Printf
 
-       
+
 let make_env () = Hashtbl.create 100
 let env_add env v e = Hashtbl.replace env v e
 let env_update env v e = Hashtbl.replace env v e
 let env_remove env v = Hashtbl.remove env v
 let env_fetch (env:('a,'b) Hashtbl.t) (v:'a) : 'b = try Hashtbl.find env v
                       with Not_found -> raise (Error (__LOC__ ^ ":Not found: " ^ v.name))
-                                              
+
 
 let get_vars_body (node:def_i) : p * deq list =
   match node with
   | Single(vars,body) -> vars,body
   | _ -> raise (Error "Not a Single")
-               
+
 let rename (name:string) : string =
   Str.global_replace (Str.regexp "'") "__" name
 
@@ -38,7 +38,7 @@ let arith_op_to_c = function
   | Sub -> "-"
   | Div -> "/"
   | Mod -> "%"
-             
+
 let arith_op_to_c_generic = function
   | Add -> "ADD"
   | Mul -> "MUL"
@@ -71,17 +71,17 @@ let rec expr_to_c (lift_env:(var,int)  Hashtbl.t)
                   (conf:config) (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t) (e:expr) : string =
   match e with
-  | Const n -> ( match n with
-                 | 0 -> "SET_ALL_ZERO()"
-                 | 1 -> "SET_ALL_ONE()"
-                 | n -> sprintf "SET(%d,%d)" n 64 )
+  | Const(n,_) -> ( match n with
+                    | 0 -> "SET_ALL_ZERO()"
+                    | 1 -> "SET_ALL_ONE()"
+                    | n -> sprintf "SET(%d,%d)" n 64 )
   | ExpVar v -> var_to_c lift_env env v
   | Not e -> sprintf "NOT(%s)" (expr_to_c lift_env conf env env_var e)
   | Log(op,x,y) -> sprintf "%s(%s,%s)"
                            (log_op_to_c op)
                            (expr_to_c lift_env conf env env_var x)
                            (expr_to_c lift_env conf env env_var y)
-  | Arith(op,x,y) -> 
+  | Arith(op,x,y) ->
      (*Printf.fprintf stderr "Hardcoded arith op size\n";*)
      sprintf "%s(%s,%s,%d)"
                              (arith_op_to_c_generic op)
@@ -109,19 +109,19 @@ let rec expr_to_c_ret (lift_env:(var,int)  Hashtbl.t)
                   (conf:config) (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t) (ret:string) (e:expr) : string =
   match e with
-  | Const n -> ( match n with
-                 | 0 -> sprintf "%s = SET_ALL_ONE()" ret
-                 | 1 -> sprintf "%s = SET_ALL_ZERO()" ret
-                 | n -> sprintf "%s = SET(%d,%d)" ret n 64 )
+  | Const(n,_) -> ( match n with
+                    | 0 -> sprintf "%s = SET_ALL_ONE()" ret
+                    | 1 -> sprintf "%s = SET_ALL_ZERO()" ret
+                    | n -> sprintf "%s = SET(%d,%d)" ret n 64 )
   | ExpVar v -> sprintf "ASGN(%s,%s)" ret (var_to_c lift_env env v)
   | Not e -> sprintf "NOT(%s,%s)" ret (expr_to_c lift_env conf env env_var e)
   | Log(op,x,y) -> sprintf "%s(%s,%s,%s)"
                            (log_op_to_c op) ret
                            (expr_to_c lift_env conf env env_var x)
                            (expr_to_c lift_env conf env env_var y)
-  | Arith(op,x,y) -> 
+  | Arith(op,x,y) ->
      (*Printf.fprintf stderr "Hardcoded arith op size\n";*)
-     sprintf "%s(%s,%s,%s,%d)" 
+     sprintf "%s(%s,%s,%s,%d)"
                              (arith_op_to_c_generic op) ret
                              (expr_to_c lift_env conf env env_var x)
                              (expr_to_c lift_env conf env env_var y)
@@ -141,7 +141,7 @@ let rec expr_to_c_ret (lift_env:(var,int)  Hashtbl.t)
      sprintf "%s = RAND();" (expr_to_c lift_env conf env env_var v)
   | _ -> raise (Error (Printf.sprintf "Wrong expr: %s" (Usuba_print.expr_to_str e)))
 
-               
+
 let fun_call_to_c (lift_env:(var,int)  Hashtbl.t)
                   (conf:config)
                   (env:(string,string) Hashtbl.t)
@@ -152,7 +152,7 @@ let fun_call_to_c (lift_env:(var,int)  Hashtbl.t)
           tabs
           (rename f.name) (join "," (List.map (expr_to_c lift_env conf env env_var) args))
           (join "," (List.map (fun v -> var_to_c lift_env env v) p))
-          
+
 let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
                   (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t)
@@ -186,8 +186,8 @@ let rec gen_list_typ (x:string) (typ:typ) : string list =
        List.map (fun x -> gen_list_typ x t')
                 (List.map (sprintf "%s'") (gen_list0 x n))
   | _ -> assert false
-                              
-           
+
+
 let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
   let inputs = make_env () in
   let aux (marker:string) vd =
@@ -222,7 +222,7 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
     | _ -> Printf.printf "%s => %s:%s\n" def.id.name id
                          (Usuba_print.typ_to_str vd.vtyp);
            raise (Not_implemented "Arrays as input") in
-  
+
   List.iter (aux "") def.p_in;
   List.iter (aux "") def.p_out;
   inputs
@@ -241,7 +241,7 @@ let get_lift_size (vd:var_d) : int =
   | _ -> fprintf stderr "Invalid lazy lift with type '%s'.\n"
                  (Usuba_print.typ_to_str vd.vtyp);
          assert false
-                  
+
 
 let rec var_decl_to_c conf (vd:var_d) (out:bool) : string =
   (* x : Array(Int(_,m),k) should become x[k][m] and not x[m][k]
@@ -257,7 +257,7 @@ let rec var_decl_to_c conf (vd:var_d) (out:bool) : string =
                 gen_intn (get_lift_size vd)
               else "DATATYPE" in
   sprintf "%s %s[%d]" vtype vname conf.shares
-      
+
 let c_header (arch:arch) : string =
   match arch with
   | Std -> "MASKED.h"
@@ -268,7 +268,7 @@ let c_header (arch:arch) : string =
   | Neon    -> "Neon.h"
   | AltiVec -> "AltiVec.h"
 
-                 
+
 let single_to_c (def:def) (array:bool) (vars:p)
                 (body:deq list) (conf:config) : string =
   let lift_env = Hashtbl.create 100 in
@@ -276,11 +276,11 @@ let single_to_c (def:def) (array:bool) (vars:p)
     List.iter (fun vd ->
                if is_const vd then
                  Hashtbl.add lift_env (Var vd.vid) (get_lift_size vd)) def.p_in;
-    
-  
+
+
   sprintf
 "void %s (/*inputs*/ %s, /*outputs*/ %s) {
-  
+
   // Variables declaration
   %s;
 
@@ -302,7 +302,7 @@ let single_to_c (def:def) (array:bool) (vars:p)
   (deqs_to_c lift_env
              (if array then inputs_to_arr def else (make_env ()))
              (build_env_var def.p_in def.p_out vars) body conf)
-  
+
 
 let def_to_c (def:def) (array:bool) (conf:config) : string =
   match def.node with

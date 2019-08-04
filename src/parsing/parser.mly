@@ -49,19 +49,19 @@
 %token TOK_U
 %token TOK_V
 %token TOK_CROSS
-       
+
 %token TOK_LPAREN
 %token TOK_RPAREN
 %token TOK_LBRACKET
 %token TOK_RBRACKET
 %token TOK_LCURLY
 %token TOK_RCURLY
-%token TOK_EQUAL     
+%token TOK_EQUAL
 %token TOK_COMMA
 %token TOK_TWO_COLON
 %token TOK_COLON
 %token TOK_SEMICOLON
-%token TOK_PIPE  
+%token TOK_PIPE
 %token TOK_LROTATE
 %token TOK_LSHIFT
 %token TOK_RROTATE
@@ -71,7 +71,7 @@
 %token TOK_GT
 %token TOK_ARROW
 %token TOK_SQUOTE
-       
+
 %token TOK_AND
 %token TOK_TILDE
 %token TOK_XOR
@@ -84,20 +84,20 @@
 
 %token <Usuba_AST.ident> TOK_id
 %token <Usuba_AST.ident> TOK_id_no_x
-%token <int> TOK_int               
+%token <int> TOK_int
 %token <Usuba_AST.constr> TOK_constr
 %token <Usuba_AST.dir> TOK_dir
-                            
+
 %token TOK_EOF
 
-       
+
 (***************************** Precedence levels ******************************)
 
 %nonassoc TOK_FBY
 %nonassoc TOK_WHEN
 %nonassoc TOK_WHENOT
 %nonassoc TOK_ARROW
-       
+
 %nonassoc TOK_LSHIFT TOK_RSHIFT TOK_LROTATE TOK_RROTATE
 
 %left TOK_PLUS TOK_DASH
@@ -108,7 +108,7 @@
 
 %left TOK_id_no_x TOK_U TOK_B TOK_V TOK_IN TOK_CROSS TOK_dir
 %left TOK_id
-  
+
 
 (******************************** Entry Point *********************************)
 %start<Usuba_AST.prog> prog
@@ -181,8 +181,8 @@ var:
 
 exp:
   | TOK_LPAREN e=exp TOK_RPAREN { e }
-  | x=TOK_int { Const x }
-  | x=var { ExpVar x } 
+  | x=TOK_int { Const(x,None) }
+  | x=var { ExpVar x }
     (* note that a tuple has at least 2 elements (enforced by the following rule) *)
   | TOK_LPAREN e1=exp TOK_COMMA t=explist TOK_RPAREN  { Tuple (e1::t) }
   | TOK_SHUFFLE TOK_LPAREN v=var TOK_COMMA TOK_LBRACKET
@@ -207,7 +207,7 @@ exp:
   | init=exp TOK_FBY follow=exp { Fby(init,follow,None) }
   (* | init=exp TOK_LT f=ident TOK_GT TOK_FBY follow=exp *)
   (*   { Fby(init,follow,Some f) } *)
-                                     
+
 explist: l=separated_nonempty_list(TOK_COMMA,exp) { l }
 
 caselist:
@@ -231,7 +231,7 @@ opt_stmt:
    | TOK_NOUNROLL  { No_unroll }
    | TOK_PIPELINED { Pipelined }
    | TOK_SAFEEXIT  { Safe_exit }
-                  
+
 deq_forall:
  | opts=list(opt_stmt) TOK_FORALL i=ident TOK_IN TOK_LBRACKET startr=arith_exp
    TOK_COMMA endr=arith_exp TOK_RBRACKET TOK_LCURLY d=deqs TOK_RCURLY
@@ -348,13 +348,13 @@ def:
   { { id=f;p_in=p_in;p_out=p_out;opt=Is_table::opts;
       node=Multiple (List.map (fun x -> Table x) l) } }
 
-  
+
 intlist: l=separated_nonempty_list(TOK_COMMA, TOK_int) { l }
 
 permlist:
   | l=separated_nonempty_list(TOK_SEMICOLON,
                               delimited(TOK_LCURLY,intlist,TOK_RCURLY)) { l }
-  
+
 def_list:
   l=separated_nonempty_list(TOK_SEMICOLON, def_list_elem)
                            { l }
@@ -362,5 +362,5 @@ def_list:
 def_list_elem:
   | TOK_VAR vars=p TOK_LET body=deqs TOK_TEL { vars,body }
   | TOK_LET body=deqs TOK_TEL { [],body }
-  
+
 %%
