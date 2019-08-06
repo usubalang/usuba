@@ -2,8 +2,22 @@ open Usuba_AST
 open Basic_utils
 open Utils
 
-module HVsliceCommon = struct
 
+(* Will be used within Hslice/Vslice/Bslice (which is why it's located
+   up here) *)
+let rec specialize_typ (env_dir:(dir,dir) Hashtbl.t)
+                       (env_m:(mtyp,mtyp) Hashtbl.t)
+                       (t:typ) : typ =
+  match t with
+  | Nat -> t
+  | Array(t', n)  -> Array(specialize_typ env_dir env_m t', n)
+  | Uint(d, m, n) -> match Hashtbl.find_opt env_dir d, Hashtbl.find_opt env_m m with
+                     | Some d', Some m' -> Uint(d', m', n)
+                     | Some d', None    -> Uint(d', m,  n)
+                     | None,    Some m' -> Uint(d,  m', n)
+                     | None,    None    -> Uint(d,  m,  n)
+
+module HVsliceCommon = struct
 
   let specialize_typ (d:dir) (m:mtyp) (n:int) : typ =
     Uint(d,m,n)
@@ -34,41 +48,59 @@ module Hslice = struct
   let shift_r l x =
     List.rev (shift_l (List.rev l) x)
 
-
-  let specialize_expr env_var (vs:var list) (e:expr) (sync:bool) : deq =
-    let ltyp = List.map (get_var_type env_var) vs in
-    let e =
-      match e with
-      | Shift(op,ExpVar v,ae) ->
-         (* ltyp _has_ to be only one element here *)
-         let m = match List.hd ltyp with
-           | Uint(_,Mint m,_) -> m
-           | _ -> assert false in
-         let l = gen_list_0_int m in
+  (* Transforms the Shifts into Shuffles, and specialize the Const's types. *)
+  let specialize_expr (env_dir:(dir,dir) Hashtbl.t)
+        (env_m:(mtyp,mtyp) Hashtbl.t)
+        (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
+    match e with
+    | Shift(op,ExpVar v,ae) ->
+       (* m  _has_ to be only one element here *)
+       let m = match get_var_type env_var v with
+         | Uint(_,Mint m,_) -> m
+         | _ -> assert false in
+       let l = gen_list_0_int m in
        (match op with
         | Lrotate -> Shuffle(v, rotate_l l (eval_arith_ne ae))
         | Rrotate -> Shuffle(v, rotate_r l (eval_arith_ne ae))
         | Lshift  -> Shuffle(v, shift_l  l (eval_arith_ne ae))
         | Rshift  -> Shuffle(v, shift_r  l (eval_arith_ne ae)))
-      | _ -> e in
-    Eqn(vs,e,sync)
+    | Const(n,Some t) -> Const(n,Some (specialize_typ env_dir env_m t))
+    | _ -> e
+
+  let specialize_var env_var (v:var) : var = v
 
   let refine_types (p:p) : p = p
-  let specialize_var env_var (v:var) : var = v
 end
 
 module Vslice = struct
-  let refine_types (p:p) : p = p
+  (* Just specialize the types of Consts within this expr *)
+  let specialize_expr (env_dir:(dir,dir) Hashtbl.t)
+        (env_m:(mtyp,mtyp) Hashtbl.t)
+        (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
+    match e with
+    | Const(n,Some typ) -> Const(n,Some (specialize_typ env_dir env_m typ))
+    | _ -> e
+
   let specialize_var env_var (v:var) : var = v
+
+  let refine_types (p:p) : p = p
 end
 
 module Bslice = struct
+  (* Uint(_,n,m) needs to be turned into Uint(_,1,n*m) *)
+  let rec refine_type (t:typ) : typ =
+    match t with
+    | Nat -> t
+    | Uint(Bslice,Mint 1,n) -> t
+    | Uint(Bslice,Mint m,n) -> Uint(Bslice,Mint 1,n*m)
+    | Array(t',n) -> Array(refine_type t',n)
+    | _ -> Printf.fprintf stderr "Can't refine_type(%s).\n" (Usuba_print.typ_to_str t);
+           assert false
 
   (* get the size in bits of a typ: a unxm has size n*m in bitslicing *)
   let rec get_typ_real_size (typ:typ) : int =
     match typ with
     | Uint(_,Mint m,n) -> m * n
-    | Uint(_,Mvar m,n) when m.name = "m" -> n
     | Array(t,n) -> (get_typ_real_size t) * n
     | _ -> assert false (* Nat or Uint(_,Mvar _,_) *)
 
@@ -79,15 +111,23 @@ module Bslice = struct
     | Array(t,_) -> get_base_n t
     | _ -> assert false
 
+  (* The only case in which var needs specialization is the following family:
+       Example 1: `x:u8x4` will be transformed into `x:u1x32`.
+                  Then, `x[2]` needs to become `x[16 .. 23]`.
+       Example 2: `x:u8x1[4]` will be transformed into `x:u1x8[4]`.
+                  Then, `x[2]` needs to become `x[2]` (nothing changed).
+   *)
+  (* TODO: test on some examples (nesting arrays, trying different m/n) *)
   let rec specialize_var env_var (v:var) : var =
     match v with
     | Var _ -> v
     | Index(v',ae) ->
        (match get_base_n (get_var_type env_var (get_var_base v')) with
-        | 1 -> v
+        | 1 -> v (* example 2 *)
         | _ ->
            (match get_var_type env_var v' with
             | Uint(_,Mint m,n) when m > 1 -> (* TODO: is that m > 1 correct? *)
+               (* example 1 *)
                Range(v',Op_e(Mul,ae,Const_e m),Op_e(Add,Op_e(Mul,ae,Const_e m),Const_e (m-1)))
             | _ -> Index(specialize_var env_var v',ae)))
     | _ -> assert false
@@ -108,52 +148,52 @@ module Bslice = struct
     Tuple((make_0_list diff []) @ (List.rev l))
 
   (* Constants need to be turned into tuples of booleans (boolean = 0/1) *)
-  let specialize_const env_var (vs:var list) (n:int) (typ:typ option) : expr =
-    Printf.eprintf "specialize_const: should use Const's type instead of trying to infer\n";
-    let size = match vs with
-      | [ v ] -> get_typ_real_size (get_var_type env_var v)
-      | _ -> assert false (* multiple vars on the left? shouldn't happend *) in
-    if size = 1 then Const(n,typ)
+  let specialize_const (n:int) (typ:typ) : expr =
+    let size = get_typ_real_size typ in
+    (* The special case for size = 1 avoids to needlessly create a Tuple *)
+    if size = 1 then Const(n, Some typ)
     else expand_const size n
 
-  let rec specialize_expr env_var (vs:var list) (e:expr) (sync:bool) : deq =
-    let e =
-      match e with
-      | Const(n,typ) -> specialize_const env_var vs n typ
-      | ExpVar v -> ExpVar (specialize_var env_var v)
-      | Not (ExpVar v) -> Not (ExpVar(specialize_var env_var v))
-      | Shift(op,ExpVar x, ae) ->
-         Shift(op,ExpVar(specialize_var env_var x),ae)
-      | Log(op,ExpVar x, ExpVar y) ->
-         Log(op,ExpVar(specialize_var env_var x),ExpVar(specialize_var env_var y))
-      | Log(op,ExpVar x, y) ->
-         Log(op,ExpVar(specialize_var env_var x),y)
-      | Log(op,x, ExpVar y) ->
-         Log(op,x,ExpVar(specialize_var env_var y))
-      | Log(op,x,y) ->
-         Log(op,x,y)
-      | Shuffle(v,l) -> Shuffle(specialize_var env_var v,l)
-      | Arith(op,ExpVar x,ExpVar y) ->
-         Arith(op,ExpVar(specialize_var env_var x),ExpVar(specialize_var env_var y))
-      | _ -> Printf.fprintf stderr "Invalid expr: %s\n" (Usuba_print.expr_to_str e);
-             assert false in
-    Eqn(List.map (specialize_var env_var) vs,e,sync)
+  let rec specialize_expr (env_dir:(dir,dir) Hashtbl.t)
+            (env_m:(mtyp,mtyp) Hashtbl.t)
+            (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
+    match e with
+    | Const(n,Some typ) ->
+       (* It's safe to specialize |typ| here because after
+          specialization, it will still have the same size.
 
-
-  let rec refine_type (t:typ) : typ =
-    match t with
-    | Nat -> t
-    | Uint(Bslice,Mint 1,n) -> t
-    | Uint(Bslice,Mint m,n) -> Uint(Bslice,Mint 1,n*m)
-    | Uint(Bslice,Mvar m,n) when m.name = "m" -> Uint(Bslice,Mint 1,n)
-    | Array(t',n) -> Array(refine_type t',n)
-    | _ -> Printf.fprintf stderr "Can't refine_type(%s).\n" (Usuba_print.typ_to_str t);
+          Moreover, it might be _needed_ to specialize |typ| first,
+          because if it's word-size m is polymorphic, then it needs to
+          be specialized to know the actual size of the const. (I
+          don't have any example with polymorphic word-size
+          though... But I expect my future self to thank me for
+          specializing |typ| here) *)
+       let typ = refine_type (specialize_typ env_dir env_m typ) in
+       specialize_const n typ
+    | ExpVar v -> ExpVar (specialize_var env_var v)
+    | Not (ExpVar v) -> Not (ExpVar(specialize_var env_var v))
+    | Shift(op,ExpVar x, ae) ->
+       Shift(op,ExpVar(specialize_var env_var x),ae)
+    | Log(op,ExpVar x, ExpVar y) ->
+       Log(op,ExpVar(specialize_var env_var x),ExpVar(specialize_var env_var y))
+    | Log(op,ExpVar x, y) ->
+       Log(op,ExpVar(specialize_var env_var x),y)
+    | Log(op,x, ExpVar y) ->
+       Log(op,x,ExpVar(specialize_var env_var y))
+    | Log(op,x,y) ->
+       Log(op,x,y)
+    | Shuffle(v,l) -> Shuffle(specialize_var env_var v,l)
+    | Arith(op,ExpVar x,ExpVar y) ->
+       Arith(op,ExpVar(specialize_var env_var x),ExpVar(specialize_var env_var y))
+    | _ -> Printf.eprintf "Monomorphize::Bslice::specialize_expr: Invalid expr: %s\n"
+             (Usuba_print.expr_to_str e);
            assert false
+
+  let specialize_vars env_var (vs:var list) : var list =
+    List.map (specialize_var env_var) vs
 
   let refine_types (p:p) : p =
     List.map (fun vd -> { vd with vtyp = refine_type vd.vtyp }) p
-
-
 end
 
 
@@ -179,19 +219,6 @@ let refine_types (p:p) : p =
               | Hslice -> Hslice.refine_types p
               | Vslice -> Vslice.refine_types p
               | _ -> assert false
-
-
-let rec specialize_typ (env_dir:(dir,dir) Hashtbl.t)
-                       (env_m:(mtyp,mtyp) Hashtbl.t)
-                       (t:typ) : typ =
-  match t with
-  | Nat -> t
-  | Array(t', n)  -> Array(specialize_typ env_dir env_m t', n)
-  | Uint(d, m, n) -> match Hashtbl.find_opt env_dir d, Hashtbl.find_opt env_m m with
-                     | Some d', Some m' -> Uint(d', m', n)
-                     | Some d', None    -> Uint(d', m,  n)
-                     | None,    Some m' -> Uint(d,  m', n)
-                     | None,    None    -> Uint(d,  m,  n)
 
 let specialize_p (env_dir:(dir,dir) Hashtbl.t)
                  (env_m:(mtyp,mtyp) Hashtbl.t)
@@ -266,6 +293,8 @@ let rec specialize_fun_call
      at this point. *)
 and specialize_expr (all_nodes:(ident,def) Hashtbl.t)
                     (specialized_nodes:(ident,(ident*(dir list)*(mtyp list),def) Hashtbl.t) Hashtbl.t)
+                    (env_dir:(dir,dir) Hashtbl.t)
+                    (env_m:(mtyp,mtyp) Hashtbl.t)
                     (env_var:(ident, typ) Hashtbl.t)
                     (vs:var list) (e:expr) (sync:bool) : deq =
   match e with
@@ -274,22 +303,26 @@ and specialize_expr (all_nodes:(ident,def) Hashtbl.t)
                                     env_var vs f l sync
   (* Otherwise (not a function call), we delegate to the modules of each Slicing *)
   | _ -> match get_var_dir env_var (List.hd vs) with
-         | Hslice -> Hslice.specialize_expr env_var vs e sync
-         | Vslice -> Eqn(vs,e,sync) (* nothing to change *)
-         | Bslice -> Bslice.specialize_expr env_var vs e sync
+         | Hslice -> Eqn(vs, Hslice.specialize_expr env_dir env_m env_var e, sync)
+         | Vslice -> Eqn(vs, Vslice.specialize_expr env_dir env_m env_var e, sync)
+         | Bslice -> Eqn(Bslice.specialize_vars env_var vs,
+                         Bslice.specialize_expr env_dir env_m env_var e,
+                         sync)
          | _ -> assert false
 
 
 and specialize_deqs (all_nodes:(ident,def) Hashtbl.t)
                     (specialized_nodes:(ident,(ident*(dir list)*(mtyp list),def) Hashtbl.t) Hashtbl.t)
+                    (env_dir:(dir,dir) Hashtbl.t)
+                    (env_m:(mtyp,mtyp) Hashtbl.t)
                     (env_var:(ident, typ) Hashtbl.t) (deqs:deq list) : deq list =
   List.map (fun x ->
             match x with
             | Eqn(vs,e,sync) -> specialize_expr all_nodes specialized_nodes
-                                                env_var vs e sync
+                                                env_dir env_m env_var vs e sync
             | Loop(e,ei,ef,l,opts) ->
                Loop(e,ei,ef,specialize_deqs all_nodes specialized_nodes
-                                            env_var l,opts))
+                              env_dir env_m env_var l,opts))
            deqs
 
 (* Called by either specialize_entry of specialize_fun_call.
@@ -302,7 +335,7 @@ and specialize_node (all_nodes:(ident,def) Hashtbl.t)
   let vars = specialize_p env_dir env_m vars  in
   let env_var = build_env_var p_in p_out vars in
 
-  let body = specialize_deqs all_nodes specialized_nodes env_var body in
+  let body = specialize_deqs all_nodes specialized_nodes env_dir env_m env_var body in
 
   Single(refine_types vars, body)
 
