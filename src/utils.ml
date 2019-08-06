@@ -308,9 +308,10 @@ let rec get_base_name (v:var) : ident =
   | Var x -> x
   | Index(v,_) | Slice(v,_) | Range(v,_,_) -> get_base_name v
 
+(* TODO: make this function return Uint(dir,m,n) instead of Uint(dir,m,1) ? *)
 let rec get_base_type (typ:typ) : typ =
   match typ with
-  | Uint(dir,m,_) -> Uint(dir,m,1)
+  | Uint(dir,m,_) ->  Uint(dir,m,1)
   | Array(t,_) -> get_base_type t
   | Nat -> Nat
 
@@ -321,10 +322,6 @@ let get_type_dir (typ:typ) : dir =
 let get_type_m (typ:typ) : mtyp =
   match get_base_type typ with
   | Uint(_,m,_) -> m
-  | _ -> assert false
-let get_type_n (typ:typ) : int =
-  match get_base_type typ with
-  | Uint(_,_,n) -> n
   | _ -> assert false
 
 
