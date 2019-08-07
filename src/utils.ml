@@ -29,7 +29,6 @@ let default_conf : config =
     archi        = Std;
     bits_per_reg = 64;
     no_arr       = false;
-    no_arr_tmp   = false;
     arr_entry    = true;
     unroll       = false;
     interleave   = 1;
