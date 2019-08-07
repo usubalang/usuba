@@ -136,7 +136,6 @@ Record config := {
   archi        : arch;
   bits_per_reg : N;
   no_arr       : bool;
-  no_arr_tmp   : bool;
   arr_entry    : bool;
   unroll       : bool;
   interleave   : N;

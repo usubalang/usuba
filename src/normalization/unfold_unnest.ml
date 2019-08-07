@@ -3,9 +3,6 @@ open Basic_utils
 open Utils
 
 
-let no_arr_tmp = ref false
-
-
 let sum_type = List.fold_left (fun tot vd -> tot + (typ_size vd.vtyp)) 0
 
 
@@ -237,6 +234,5 @@ let norm_def env_fun (def: def) : def =
      def
 
 let norm_prog (prog:prog) (conf:config) : prog =
-  no_arr_tmp := conf.no_arr_tmp;
   let env_fun = build_env_fun prog.nodes in
   { nodes = List.map (norm_def env_fun) prog.nodes }
