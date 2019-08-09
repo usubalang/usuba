@@ -29,8 +29,6 @@ let arch         = ref Std
 let bits_per_reg = ref 64
 let ortho        = ref true
 let output       = ref ""
-let fd           = ref false
-let ti           = ref 1
 let fdti         = ref ""
 let lazylift     = ref false
 
@@ -110,8 +108,6 @@ let main () =
       "-interleave", Arg.Int (fun n -> interleave := n), "Interleave encryptions";
       "-arch", Arg.String (fun s -> arch := str_to_arch s), "Set architecture";
       "-bits-per-reg", Arg.Set_int bits_per_reg, "Set number of bits to use in the registers (with -arch std only, needs to be a multiple of 2)";
-      "-fd", Arg.Set fd, "Generate complementary redudant code";
-      "-ti", Arg.Set_int ti, "Set the number of shares to use for Threshold Implemenation (1, 2, 4, 8)";
       "-fdti",Arg.Set_string fdti, "Specify the order of ti and fd (tifd or fdti)";
       "-lf", Arg.Set lazylift, "Enable lazy lifting";
       "-o", Arg.Set_string output, "Set the output filename";
@@ -159,8 +155,6 @@ let main () =
         arr_entry      =   !arr_entry;
         unroll         =   !unroll;
         interleave     =   !interleave;
-        fd             =   !fd;
-        ti             =   !ti;
         fdti           =   !fdti;
         lazylift       =   !lazylift;
         slicing_set    =   !slicing_set;

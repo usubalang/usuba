@@ -139,8 +139,6 @@ Record config := {
   arr_entry    : bool;
   unroll       : bool;
   interleave   : N;
-  fd           : bool;
-  ti           : N;
   fdti         : string;
   lazylift     : bool;
   slicing_set  : bool;
