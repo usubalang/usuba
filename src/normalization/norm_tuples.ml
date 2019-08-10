@@ -76,23 +76,22 @@ end
        x[2] = c;
  *)
 module Split_tuples = struct
-  let real_split_tuple env (p: var list) (l: expr list) (sync:bool) : deq list =
-    (* TODO: don't expand here. probably. *)
+  let real_split_tuple env (p: var list) (e: expr) (sync:bool) : deq list =
     List.map2 (fun l r -> Eqn([l],r,sync)) (flat_map (expand_var env) p)
-              (flat_map (Unfold_unnest.expand_expr env) l)
+              (Unfold_unnest.expand_expr env e)
 
   let rec split_tuples_deq env (body: deq list) : deq list =
     flat_map
       (fun x ->
        match x with
-                | Eqn (p,e,sync) -> (match e with
-                                     | Tuple l -> real_split_tuple env p l sync
-                                     | _ -> [ x ])
-                | Loop(i,ei,ef,dl,opts) ->
-                   Hashtbl.add env i Nat;
-                   let res = [ Loop(i,ei,ef,split_tuples_deq env dl,opts) ] in
-                   Hashtbl.remove env i;
-                   res) body
+       | Eqn (p,e,sync) ->
+          if contains_fun e then [ x ]
+          else real_split_tuple env p e sync
+       | Loop(i,ei,ef,dl,opts) ->
+          Hashtbl.add env i Nat;
+          let res = [ Loop(i,ei,ef,split_tuples_deq env dl,opts) ] in
+          Hashtbl.remove env i;
+          res) body
 
   let split_tuples_def (def: def) : def =
     match def.node with

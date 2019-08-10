@@ -101,7 +101,14 @@ let rec expand_expr env_var (e:expr) : expr list =
   | ExpVar v -> List.map (fun x -> ExpVar x) (expand_var env_var v)
   | Tuple l -> flat_map (fun e -> expand_expr env_var e) l
   | Not e -> List.map (fun x -> Not x) (expand_expr env_var e)
-  | Shift(op,x,ae) -> List.map (fun x -> Shift(op,x,ae)) (expand_expr env_var x)
+  | Shift(op,x,ae) ->
+     let x' =
+       (match expand_expr env_var x with
+        | x' :: [] ->  x'
+        | l -> Tuple l) in
+     (match Bitslice_shift.shift env_var op x' (eval_arith_ne ae) with
+      | Tuple l -> flat_map (expand_expr env_var) l
+      | x' -> [x'])
   | Log(op,x,y) -> List.map2 (fun x y -> Log(op,x,y))
                              (expand_expr env_var x)
                              (expand_expr env_var y)

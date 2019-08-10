@@ -36,7 +36,7 @@ let do_shift (env_var:(ident,typ) Hashtbl.t) (op:shift_op)
               in aux n (List.rev l) []
 
 (* TODO: I'm pretty sure this doesn't cover every cases *)
-let rec shift (env_var:(ident,typ) Hashtbl.t) (op:shift_op) (e:expr) (n:int) =
+let rec shift (env_var:(ident,typ) Hashtbl.t) (op:shift_op) (e:expr) (n:int) : expr =
   match e with
   | Const _ -> Shift(op,e,Const_e n)
   | ExpVar _ -> Shift(op,e,Const_e n)
