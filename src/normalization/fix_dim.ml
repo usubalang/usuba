@@ -12,21 +12,16 @@
       let ... f(a) ... tel
    When inlining f in g, we'd end with a[0][1], but a has type u1[6]...
 
-  Warning: The way I'm doing this for now is quite fragile and
-  can break. In particular, if you have two arrays, one of type
-  u1[a][b] and the other one of type u1[b][a], this module will
-  leave them as is, even though they should both be converted to
-  u1[a*b].
-
  ********************************************************************)
 
 open Usuba_AST
 open Basic_utils
 open Utils
 
+
 (* Returns the "nested" level of a type: it corresponds to how many
    nested arrays there are in the type.
-   For instance: 
+   For instance:
        get_nested_level( Array(Array(Uint(_,_,1))) ) == 2
        get_nested_level( Uint(_,_,5) ) == 1 get_nested_level(
        Uint(_,_,1) ) == 0 *)
@@ -37,19 +32,37 @@ let rec get_nested_level (t:typ) : int =
   | Uint(_,_,n) -> 1
   | Array(t',_) -> 1 + (get_nested_level t')
 
+(* Returns true if |t1| and |t2| have the same nested level, but
+   different dimensions. Since the type-checker accepted the program,
+   it means that we are in case where we have for instance b1[2][3] vs
+   b1[3][2]. But this coud be more nested as well: b1[2][3][4] vs
+   b1[6][2][2].
+*)
+let rec not_same_dim (t1:typ) (t2:typ) : bool =
+  if get_nested_level t1 <> get_nested_level t2 then false
+  else match t1, t2 with
+       | Array(t1',s1), Array(t2',s2) ->
+          s1 <> s2 || (not_same_dim t1' t2')
+       | _, _ -> (* Here, both t1 and t2 have to be Uint(_,_,_). There
+                    is not need to check the size of the Uint, because
+                    if they differ, then the size of a previous array
+                    must have differ as well. *)
+          false
+
+(* Returns the number of nested Index in |v|. *)
 let rec get_index_level (v:var) : int =
   match v with
   | Var _ -> 0
   | Index(v',_) -> 1 + (get_index_level v')
   | _ -> (* Usuba0, can't have Slice/Range *)
      assert false
-    
+
 (* Collapses the last two Index of |v|.
    Need to be careful that they actually need to be collapsed. For
-   instance, consider x:u1[2][3][4]: 
+   instance, consider x:u1[2][3][4]:
        (1) x[1] should not be changed,
        (2) x[1][2] should be come x[1][8..11],
-       (3) x[1][2][3] should become x[1][11].  
+       (3) x[1][2][3] should become x[1][11].
  *)
 let rec dim_var (v_tgt:var) (dim:int) (size:int) (v:var) : var =
   if get_var_base v = v_tgt then
@@ -98,14 +111,14 @@ let rec dim_deq (v_tgt:var) (dim:int) (size:int) (deq:deq) : deq =
 (* Merges the two innermost dimensions of |t|. For instance:
       u1[2][3]    -> u1[6]
       u1[2][3][4] -> u1[2][12]
-      b8[2]       -> b1[16] (b16 would also work) 
+      b8[2]       -> b1[16] (b16 would also work)
       b8[2][3]    -> b1[2][24] (b24|2] would also work)
  *)
 let rec collapse_inner_arrays (t:typ) : typ * int =
   match t with
   (* End found: Array of Array of bool *)
   | Array( Array( Uint(d,m,1), es2 ), es1 ) ->
-     Array( Uint(d,m,1), es2 * es1 ), es1
+     Array( Uint(d,m,1), es2 * es1 ), es2
   (* End found: Array of bm *)
   | Array( Uint(d,m,n), es1 ) ->
      Array( Uint(d,m,1), es1 * n ), n
@@ -125,20 +138,20 @@ let rec unnest_var (def:def) (var:var) : def =
   match def.node with
   | Single(vars,body) ->
      (* |size|: the size of the arrays being collapsed. For instance,
-            b1[3][5] -> size = 5 
-          (used to compute indices in the new array: 
+            b1[3][5] -> size = 5
+          (used to compute indices in the new array:
             x[a][b] becomes x[a*size+b]) *)
      let size = ref (-1) in
      (* |new_type|: the type of |var| after  this transformation *)
      let new_type = ref Nat in
      (* |old_type|: the type of |var| before this transformation *)
      let old_type = ref Nat in
-     
+
      (* find_interest_var go through |p| to find the variable we want
         to update, updates it, and updates |size|, |new_type| and
         |old_type|. *)
      let find_interest_var (p:p) : p =
-       List.map 
+       List.map
          (fun v ->
            if Var v.vid = var_base then
              (let (t',s) = collapse_inner_arrays v.vtyp in
@@ -158,7 +171,7 @@ let rec unnest_var (def:def) (var:var) : def =
        p_in  = p_in;
        p_out = p_out;
        node  = Single(vars, body) }
-  | _ -> assert false       
+  | _ -> assert false
 
 
 (* Go through each function call, and, if needed, updates the
@@ -167,7 +180,7 @@ module Dir_params = struct
 
   (* |ident|: the id of the updated node *)
   exception Updated of ident
-             
+
   let rec fix_deqs env_fun env_var (def:def) (deqs:deq list) : deq list =
     List.map
       (fun deq ->
@@ -177,7 +190,7 @@ module Dir_params = struct
               - iterate over arguments to make sure they have the correct types
               - iterate over return values to make sure they have the correct types
              (only nested arrays need to be considered) *)
-          (* Note that at this point, expand_parameters has ran, so we are 
+          (* Note that at this point, expand_parameters has ran, so we are
              assured that a call has exactly has many args as the function expects *)
 
           (* Retrieving f's parameters, and checking arguments' types *)
@@ -193,8 +206,9 @@ module Dir_params = struct
                 let arg_type  = get_var_type env_var v  in
                 (* type of the i-th expected parameter *)
                 let exp_type  = (List.nth p_in i).vtyp  in
-                                
-                if (get_nested_level arg_type) > (get_nested_level exp_type) then (
+
+                if (get_nested_level exp_type) > (get_nested_level arg_type) ||
+                     (not_same_dim exp_type arg_type) then (
                   (* Different sizes, need convert arg to a non-nested array *)
                   Hashtbl.replace env_fun f (unnest_var (Hashtbl.find env_fun f) v);
                   raise (Updated f)
@@ -214,9 +228,11 @@ module Dir_params = struct
               let ret_type = get_var_type env_var v  in
               (* type of the i-th returned variable *)
               let exp_type = (List.nth p_out i).vtyp in
-              if (get_nested_level ret_type) > (get_nested_level exp_type) then (
+
+              if (get_nested_level exp_type) > (get_nested_level ret_type)  ||
+                     (not_same_dim exp_type ret_type) then (
                 (* Different sizes, need convert arg to a non-nested array *)
-                Hashtbl.replace env_fun def.id (unnest_var (Hashtbl.find env_fun f) v);
+                Hashtbl.replace env_fun f (unnest_var (Hashtbl.find env_fun f) v);
                 raise (Updated f)
               ) else ()
             ) ret_vars;
@@ -229,7 +245,7 @@ module Dir_params = struct
           let res = Loop(i,ei,ef,fix_deqs env_fun env_var def dl,opts) in
           Hashtbl.remove env_var i;
           res) deqs
-             
+
   let rec fix_def env_fun (def:def) : unit =
     try
       match def.node with
@@ -248,9 +264,9 @@ module Dir_params = struct
                   true  = keep arrays in parameters
                   So basically, this combination of (0,false,true) means
                   "just expand ranges", and anything else only if needed. *)
-    
-                            
-             
+
+
+
   let fix_dim (prog:prog) (conf:config) : prog =
 
     (* Build a hash containing all nodes *)
@@ -263,15 +279,15 @@ module Dir_params = struct
     (* Collect fixed nodes *)
     { nodes = List.map (fun node -> Hashtbl.find env_fun node.id) prog.nodes }
 
-    
+
 end
 
 (* Go through each function call, and, if needed, updates the
    variables (from vars) of the caller. *)
 module Dir_inner = struct
 
-  exception Updated    
-             
+  exception Updated
+
   let rec fix_deqs env_fun env_var (def:def) (deqs:deq list) : deq list =
     List.map
       (fun deq ->
@@ -281,7 +297,7 @@ module Dir_inner = struct
               - iterate over arguments to make sure they have the correct types
               - iterate over return values to make sure they have the correct types
              (only nested arrays need to be considered) *)
-          (* Note that at this point, expand_parameters has ran, so we are 
+          (* Note that at this point, expand_parameters has ran, so we are
              assured that a call has exactly has many args as the function expects *)
 
           (* Retrieving f's parameters, and checking arguments' types *)
@@ -297,8 +313,9 @@ module Dir_inner = struct
                 let arg_type  = get_var_type env_var v  in
                 (* type of the i-th expected parameter *)
                 let exp_type  = (List.nth p_in i).vtyp  in
-                                
-                if (get_nested_level arg_type) > (get_nested_level exp_type) then (
+
+                if (get_nested_level arg_type) > (get_nested_level exp_type)  ||
+                     (not_same_dim arg_type exp_type) then (
                   (* Different sizes, need convert arg to a non-nested array *)
                   Hashtbl.replace env_fun def.id (unnest_var def v);
                   raise Updated
@@ -318,7 +335,8 @@ module Dir_inner = struct
               let ret_type = get_var_type env_var v  in
               (* type of the i-th returned variable *)
               let exp_type = (List.nth p_out i).vtyp in
-              if (get_nested_level ret_type) > (get_nested_level exp_type) then (
+              if (get_nested_level ret_type) > (get_nested_level exp_type)  ||
+                   (not_same_dim ret_type exp_type) then (
                 (* Different sizes, need convert arg to a non-nested array *)
                 Hashtbl.replace env_fun def.id (unnest_var def v);
                 raise Updated
@@ -352,9 +370,9 @@ module Dir_inner = struct
                   true  = keep arrays in parameters
                   So basically, this combination of (0,false,true) means
                   "just expand ranges", and anything else only if needed. *)
-    
-                            
-             
+
+
+
   let fix_dim (prog:prog) (conf:config) : prog =
 
     (* Build a hash containing all nodes *)
@@ -366,7 +384,6 @@ module Dir_inner = struct
 
     (* Collect fixed nodes *)
     { nodes = List.map (fun node -> Hashtbl.find env_fun node.id) prog.nodes }
-  
-  
+
+
 end
-                    
