@@ -482,3 +482,16 @@ let rec contains_fun (e:expr) : bool =
   | Fun _         -> true
   | Fun_v _       -> true
   | _ -> assert false
+
+let rec is_constant (ae:arith_expr) : bool =
+  match ae with
+  | Const_e _   -> true
+  | Var_e _     -> false
+  | Op_e(_,x,y) -> (is_constant x) && (is_constant y)
+
+
+let rec simpl_var_indices (v:var) : var =
+  match v with
+  | Var _ -> v
+  | Index(v',ae) -> Index(simpl_var_indices v',simpl_arith_ne ae)
+  | _ -> assert false
