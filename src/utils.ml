@@ -470,3 +470,15 @@ let get_expr_constr_str (e:expr) : string =
   | Fby _     -> "Fby"
   | Merge _   -> "Merge"
   | When _    -> "When"
+
+let rec contains_fun (e:expr) : bool =
+    match e with
+  | Const _ | ExpVar _ | Shuffle _ -> false
+  | Tuple l       -> List.exists contains_fun l
+  | Not e'        -> contains_fun e'
+  | Shift(_,e',_) -> (contains_fun e')
+  | Log(_,x,y)    -> (contains_fun x) || (contains_fun y)
+  | Arith(_,x,y)  -> (contains_fun x) || (contains_fun y)
+  | Fun _         -> true
+  | Fun_v _       -> true
+  | _ -> assert false
