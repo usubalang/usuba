@@ -142,18 +142,20 @@ let rec full_typ_to_str typ =
      sprintf "u%s%sx%d" dir_str m_str n
   | Array(typ,n) -> sprintf "%s[%d]" (full_typ_to_str typ) n
 
-let rec typ_to_str typ =
+let rec typ_to_str ?(acc="") typ =
   match typ with
   | Nat -> "nat"
   | Uint(d,m,n) ->
      let dir_str = dir_to_str d in
-     begin match m with
-     | Mint 1  -> sprintf "b%s%d" dir_str n
-     | Mint i  -> if n = 1 then sprintf "u%s%d" dir_str i
-                  else sprintf "u%s%dx%d" dir_str i n
-     | Mvar id -> if id.name = "m" then sprintf "v%s%d" dir_str n
-                  else sprintf "u%s%sx%d" dir_str id.name n end
-  | Array(typ,n) -> sprintf "%s[%d]" (typ_to_str typ) n
+     sprintf "%s%s"
+       (match m with
+        | Mint 1  -> sprintf "b%s%d" dir_str n
+        | Mint i  -> if n = 1 then sprintf "u%s%d" dir_str i
+                     else sprintf "u%s%dx%d" dir_str i n
+        | Mvar id -> if id.name = "m" then sprintf "v%s%d" dir_str n
+                     else sprintf "u%s%sx%d" dir_str id.name n)
+       acc
+  | Array(typ,n) -> typ_to_str ~acc:(sprintf "%s[%d]" acc n) typ
 let typ_to_str_l = lift_comma typ_to_str
 
 let rec clock_to_str ck =
