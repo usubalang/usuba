@@ -20,7 +20,7 @@ type array_fate = Keep | Remove | Split
 *)
 
 (* To notify calling function that unrolling is necessary *)
-exception Need_unroll
+exception Need_unroll of ident
 
 (* Abstracting Hashtbl.
    This functions should replace the ones in Utils, one day. *)
@@ -30,6 +30,23 @@ let env_update env v e = Hashtbl.replace env v e
 let env_remove env v = Hashtbl.remove env v
 let env_fetch env v = try Hashtbl.find env v
                       with Not_found -> raise (Error ("Not found: " ^ v.name))
+
+(* Using a custom eval_arith to raise Need_unroll with the correct
+   argument. *)
+let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
+  match e with
+  | Const_e n -> n
+  | Var_e id  -> (match Hashtbl.find_opt env id with
+                  | Some v -> v
+                  | None -> raise (Need_unroll id))
+  | Op_e(op,x,y) -> let x' = eval_arith env x in
+                    let y' = eval_arith env y in
+                    match op with
+                    | Add -> x' + y'
+                    | Mul -> x' * y'
+                    | Sub -> x' - y'
+                    | Div -> x' / y'
+                    | Mod -> if x' >= 0 then x' mod y' else y' + (x' mod y')
 
 
 (* If the program contains permutations, then arrays must be unrolled
@@ -83,15 +100,11 @@ let rec expand_var env_var env_keep env bitslice force (v:var) : var list =
     | Var _ -> [ v ]
     | Index(v',i) -> List.map (fun x -> Index(x,simpl_arith env i)) (aux v')
     | Range(v',ei,ef) ->
-       (try
-           let ei = eval_arith env ei in
-           let ef = eval_arith env ef in
-           flat_map (fun v'' -> List.map (fun i -> Index(v'',Const_e i))
-                                  (gen_list_bounds ei ef)) (aux v')
-           (* flat_map (fun i -> aux (Index(v',Const_e i)))
-            *          (gen_list_bounds ei ef) *)
-                    (* Not_found can be raised by the calls to eval_arith *)
-         with Not_found -> raise Need_unroll)
+       (* Note: can raise Need_unroll *)
+       let ei = eval_arith env ei in
+       let ef = eval_arith env ef in
+       flat_map (fun v'' -> List.map (fun i -> Index(v'',Const_e i))
+                              (gen_list_bounds ei ef)) (aux v')
     | Slice(v',el) -> flat_map (fun i -> aux (Index(v',i))) el in
   if force = Remove then
     List.map (remove_arr env_keep) (flat_map (Utils.expand_var env_var ~bitslice:bitslice) (aux v))
@@ -124,22 +137,22 @@ let rec expand_expr env_var env_keep env bitslice force (e:expr) : expr =
                                      (expand_var env_var env_keep env bitslice force v))
   | Arith(op,e1,e2) -> Arith(op,rec_call e1,rec_call e2)
   | Fun(f,el) -> Fun(f,List.map rec_call el)
-  | Fun_v(f,ae,el) -> (try Fun(fresh_suffix f (sprintf "%d'" (eval_arith env ae)),
-                               List.map rec_call el)
-                       with Not_found -> raise Need_unroll)
+  | Fun_v(f,ae,el) ->
+     (* Note: can raise Need_unroll *)
+     Fun(fresh_suffix f (sprintf "%d'" (eval_arith env ae)),
+                          List.map rec_call el)
   | Fby _ | When _ | Merge _ -> e
 
 
 let rec do_unroll env_var env_keep env bitslice force unroll x ei ef deqs : deq list =
-  try
-    let ei = eval_arith env ei in
-    let ef = eval_arith env ef in
-    let eqs = flat_map (fun i -> env_update env x i;
-                                 expand_deqs env_var env_keep ~env:env bitslice force unroll deqs)
-                       (gen_list_bounds ei ef) in
-    env_remove env x;
-    eqs
-  with Not_found -> raise Need_unroll
+  (* Note: can raise Need_unroll *)
+  let ei = eval_arith env ei in
+  let ef = eval_arith env ef in
+  let eqs = flat_map (fun i -> env_update env x i;
+                               expand_deqs env_var env_keep ~env:env bitslice force unroll deqs)
+              (gen_list_bounds ei ef) in
+  env_remove env x;
+  eqs
 
 and expand_deqs env_var env_keep ?(env=make_env ())
                 (bitslice:bool) (force:array_fate) (unroll:bool) (deqs:deq list) : deq list =
@@ -156,7 +169,23 @@ and expand_deqs env_var env_keep ?(env=make_env ())
           else
             try
               [ Loop(x,ei,ef,expand_deqs env_var env_keep ~env:env bitslice force unroll deqs,opts) ]
-            with Need_unroll -> do_unroll env_var env_keep env bitslice force unroll x ei ef deqs in
+            with Need_unroll id ->
+              if id = x then (
+                try
+                  do_unroll env_var env_keep env bitslice force unroll x ei ef deqs
+                with
+                  Need_unroll id2 ->
+                  (* Unrolling failed and needs to unroll one level
+                     higher -> need to clean the environements. *)
+                  Hashtbl.remove env_var x;
+                  Hashtbl.remove env x;
+                  raise (Need_unroll id2);
+              )
+              else (
+                (* Gonna update one loop above; need to clean the |env_var|. *)
+                Hashtbl.remove env_var x;
+                (* No need to clean |env| since |x| can's be in |env| here. *)
+                raise (Need_unroll id)) in
         Hashtbl.remove env_var x;
         res)
     deqs
