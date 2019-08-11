@@ -1,16 +1,36 @@
 (*********************************************************************
    fix_dim.ml
 
-  Usuba thinks that arrays like u1x8[16] and u1x128 are the same
+   Usuba thinks that arrays like u1x8[16] and u1x128 are the same
    thing, but they really aren't. This module fixes that.
 
-  The main reason why this transformation is inlining will fail
+   The main reason why this transformation is inlining will fail
    without it. For instance:
      node f(x:u1[2][3]) ...
       let ... x[0][1] ... tel
      node g(a:u1[6]) ...
       let ... f(a) ... tel
    When inlining f in g, we'd end with a[0][1], but a has type u1[6]...
+
+
+   Note that changing the dimension of a parameter of a node f can
+   cause functions calls inside f to have too many parameters. For
+   instance:
+
+     f (a1:b3,a2:b3) returns (b:b6) let b = (a1,a2)       tel
+     g (a:b3[2]) returns (b:b6)     let b = f(a[0],a[1])  tel
+     h (a:b6) returns (b:b6)        let b = g(a)          tel
+
+   The call `b = g(a)` inside `h` requires `g` to have its parameter
+   `a` expanded. We then get
+
+     g (a:b6) returns (b:b6) let b = f(a[0],a[1],a[2],a[3],a[4],a[5]) tel
+
+   And as you can see, `f` is now called with 6 parameters instead
+   of 2. Expand_parameters must therefore be called before going any
+   further (ie, before trying to match the call to `f` in `g`.
+   (this happend in real life on AES bitslice for instance)
+
 
  ********************************************************************)
 
@@ -120,7 +140,7 @@ let rec collapse_inner_arrays (t:typ) : typ * int =
   | Array( Array( Uint(d,m,1), es2 ), es1 ) ->
      Array( Uint(d,m,1), es2 * es1 ), es2
   (* End found: Array of bm *)
-  | Array( Uint(d,m,n), es1 ) ->
+  | Array( Uint(d,m,n), es1 ) when n > 1 ->
      Array( Uint(d,m,1), es1 * n ), n
   (* Not the end, going deeper *)
   | Array(t',es1) ->
@@ -163,6 +183,11 @@ let rec unnest_var (def:def) (var:var) : def =
      let vars  = find_interest_var vars in
      let p_in  = find_interest_var def.p_in in
      let p_out = find_interest_var def.p_out in
+
+     (* just in case; to make sure we found the variable we want to
+        expand. *)
+     assert (!size <> -1);
+
      (* Updating body with new variable *)
      let body = List.map (dim_deq var_base
                             (get_nested_level !old_type) !size) body in
@@ -179,7 +204,7 @@ let rec unnest_var (def:def) (var:var) : def =
 module Dir_params = struct
 
   (* |ident|: the id of the updated node *)
-  exception Updated of ident
+  exception Updated
 
   let rec fix_deqs env_fun env_var (def:def) (deqs:deq list) : deq list =
     List.map
@@ -210,8 +235,9 @@ module Dir_params = struct
                 if (get_nested_level exp_type) > (get_nested_level arg_type) ||
                      (not_same_dim exp_type arg_type) then (
                   (* Different sizes, need convert arg to a non-nested array *)
-                  Hashtbl.replace env_fun f (unnest_var (Hashtbl.find env_fun f) v);
-                  raise (Updated f)
+                  Hashtbl.replace env_fun f (unnest_var (Hashtbl.find env_fun f)
+                                               (Var (List.nth p_in i).vid));
+                  raise Updated
 
                 (* < isn't checked here: if dim is < than function
                    expects, then the function must be adapted
@@ -232,8 +258,9 @@ module Dir_params = struct
               if (get_nested_level exp_type) > (get_nested_level ret_type)  ||
                      (not_same_dim exp_type ret_type) then (
                 (* Different sizes, need convert arg to a non-nested array *)
-                Hashtbl.replace env_fun f (unnest_var (Hashtbl.find env_fun f) v);
-                raise (Updated f)
+                Hashtbl.replace env_fun f (unnest_var (Hashtbl.find env_fun f)
+                                             (Var (List.nth p_out i).vid));
+                raise Updated
               ) else ()
             ) ret_vars;
           deq
@@ -247,7 +274,6 @@ module Dir_params = struct
           res) deqs
 
   let rec fix_def env_fun (def:def) : unit =
-    try
       match def.node with
       | Single(vars,body) ->
          let env_var =  build_env_var def.p_in def.p_out vars in
@@ -255,29 +281,38 @@ module Dir_params = struct
          Hashtbl.replace env_fun def.id
                          { def with node = Single(vars, body) }
       | _ -> ()
-    with Updated f ->
-      fix_def env_fun
-        (Norm_tuples.norm_tuples_deq
-           (Expand_array.expand_def false Expand_array.Keep false true
-              (Hashtbl.find env_fun f)))
-              (*  false = keep loops
-                  true  = keep arrays in parameters
-                  So basically, this combination of (0,false,true) means
-                  "just expand ranges", and anything else only if needed. *)
 
 
-
-  let fix_dim (prog:prog) (conf:config) : prog =
+  let rec fix_dim (prog:prog) (conf:config) : prog =
 
     (* Build a hash containing all nodes *)
     let env_fun = Hashtbl.create 100 in
     List.iter (fun node -> Hashtbl.add env_fun node.id node) prog.nodes;
 
-    (* Fix dimensions within each node *)
-    List.iter (fun node -> fix_def env_fun (Hashtbl.find env_fun node.id)) prog.nodes;
-
-    (* Collect fixed nodes *)
-    { nodes = List.map (fun node -> Hashtbl.find env_fun node.id) prog.nodes }
+    try
+      (* Fix dimensions within each node *)
+      List.iter (fun node -> fix_def env_fun (Hashtbl.find env_fun node.id)) prog.nodes;
+      (* Collect fixed nodes *)
+      { nodes = List.map (fun node -> Hashtbl.find env_fun node.id) prog.nodes }
+    with Updated ->
+      (* Could have introduce unbalancing between parameters/arguments
+         and new unwanted arrays/tuples -> need to re-run a bunch of
+         normalization *)
+      (* TODO: make that less ugly *)
+      fix_dim (
+          Norm_tuples.norm_tuples (
+              Expand_array.expand_array (
+                  Expand_parameters.expand_parameters (
+                      Norm_tuples.norm_tuples (
+                          Expand_array.expand_array (
+                              { nodes = List.map (fun node -> Hashtbl.find env_fun node.id)
+                                          prog.nodes }
+                            ) conf
+                        ) conf
+                    ) conf
+                ) conf
+            ) conf
+        ) conf
 
 
 end
@@ -353,7 +388,6 @@ module Dir_inner = struct
           res) deqs
 
   let rec fix_def env_fun (def:def) : unit =
-    try
       match def.node with
       | Single(vars,body) ->
          let env_var =  build_env_var def.p_in def.p_out vars in
@@ -361,29 +395,37 @@ module Dir_inner = struct
          Hashtbl.replace env_fun def.id
                          { def with node = Single(vars, body) }
       | _ -> ()
-    with Updated ->
-      fix_def env_fun
-        (Norm_tuples.norm_tuples_deq
-           (Expand_array.expand_def false  Expand_array.Keep false true
-              (Hashtbl.find env_fun def.id)))
-              (*  false = keep loops
-                  true  = keep arrays in parameters
-                  So basically, this combination of (0,false,true) means
-                  "just expand ranges", and anything else only if needed. *)
 
 
-
-  let fix_dim (prog:prog) (conf:config) : prog =
+  let rec fix_dim (prog:prog) (conf:config) : prog =
 
     (* Build a hash containing all nodes *)
     let env_fun = Hashtbl.create 100 in
     List.iter (fun node -> Hashtbl.add env_fun node.id node) prog.nodes;
 
-    (* Fix dimensions within each node *)
-    List.iter (fun node -> fix_def env_fun (Hashtbl.find env_fun node.id)) prog.nodes;
-
-    (* Collect fixed nodes *)
-    { nodes = List.map (fun node -> Hashtbl.find env_fun node.id) prog.nodes }
-
+    try
+      (* Fix dimensions within each node *)
+      List.iter (fun node -> fix_def env_fun (Hashtbl.find env_fun node.id)) prog.nodes;
+      (* Collect fixed nodes *)
+      { nodes = List.map (fun node -> Hashtbl.find env_fun node.id) prog.nodes }
+    with Updated ->
+      (* Could have introduce unbalancing between parameters/arguments
+         and new unwanted arrays/tuples -> need to re-run a bunch of
+         normalization *)
+      (* TODO: make that less ugly *)
+      fix_dim (
+          Norm_tuples.norm_tuples (
+              Expand_array.expand_array (
+                  Expand_parameters.expand_parameters (
+                      Norm_tuples.norm_tuples (
+                          Expand_array.expand_array (
+                              { nodes = List.map (fun node -> Hashtbl.find env_fun node.id)
+                                          prog.nodes }
+                            ) conf
+                        ) conf
+                    ) conf
+                ) conf
+            ) conf
+        ) conf
 
 end
