@@ -307,8 +307,41 @@ let single_to_c (def:def) (array:bool) (vars:p)
              (if array then inputs_to_arr def else outputs_to_ptr def)
              (build_env_var def.p_in def.p_out vars) body conf)
 
+(* A table is converted into a function that contains the lookup table
+   (static const). The functions performs the lookup. It's necessary
+   because a Table is called like any other function, and thus only
+   generating a lookup table would result into function-like calls (ie
+   f(...)) to a table which should rather be indexed a f[...]). *)
+let table_to_c (def:def) (l:int list) (conf:config) : string =
+  assert ((List.length def.p_in)  == 1);
+  assert ((List.length def.p_out) == 1);
+
+  sprintf
+"void %s (/*inputs*/ %s, /*outputs*/ %s) {
+   static const DATATYPE t[%d] = { %s };
+   *%s = t[%s];
+}"
+  (* Table name *)
+  (rename def.id.name)
+
+  (* Parameters *)
+  (join "," (List.map (fun vd -> var_decl_to_c conf vd false) def.p_in))
+  (join "," (List.map (fun vd -> var_decl_to_c conf vd true) def.p_out))
+
+  (* Table size *)
+  (List.length l)
+
+  (* Table content *)
+  (join "," (List.map string_of_int l))
+
+  (* Return value *)
+  (rename (List.hd (def.p_out)).vid.name)
+
+  (* Index in the table *)
+  (rename (List.hd (def.p_in)).vid.name)
 
 let def_to_c (def:def) (array:bool) (conf:config) : string =
   match def.node with
   | Single(vars,body) -> single_to_c def array vars body conf
+  | Table l -> table_to_c def l conf
   | _ -> assert false
