@@ -396,6 +396,7 @@ let rec expand_def (env_fun:(ident,def) Hashtbl.t) (def:def) : unit =
        let env_var = build_env_var def.p_in def.p_out vars in
        Hashtbl.replace env_fun def.id
                   { def with node = Single(vars,List.map (expand_deq env_fun env_var) body) }
+    | Table _ -> () (* Can end up here with --keep-tables *)
     | _ -> assert false
   with
     (* Something was expanded -> reccursive call as this might not
