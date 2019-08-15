@@ -532,11 +532,11 @@ let rec type_expr (backtrace:string list)
      );
      (* Returning a typed Const *)
      Const(n,Some typ)
-  | Const(n,Some _) ->
-     (* Const shouldn't be already typed here. Ignoring that case for now. *)
-     eprintf "This case shouldn't be reached: Const aren't supposed to be typed yet.\n";
-     print_backtrace backtrace;
-     assert false
+  | Const(n,Some typ) ->
+     (* A typed Const; need to make sure its type is correct *)
+     let typs = expand_typ typ in
+     match_types_asgn backtrace typs lhs_types;
+     Const(n,Some typ)
   | ExpVar v ->
      (* An ExpVar. Need to make sure it matches with lhs_types (and
         consuming the first elements of lhs_types accordingly) *)
