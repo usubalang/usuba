@@ -182,6 +182,7 @@ var:
 exp:
   | TOK_LPAREN e=exp TOK_RPAREN { e }
   | x=TOK_int { Const(x,None) }
+  | x=TOK_int TOK_COLON t=typ { Const(x,Some t) }
   | x=var { ExpVar x }
     (* note that a tuple has at least 2 elements (enforced by the following rule) *)
   | TOK_LPAREN e1=exp TOK_COMMA t=explist TOK_RPAREN  { Tuple (e1::t) }
