@@ -49,14 +49,6 @@ let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
                     | Mod -> if x' >= 0 then x' mod y' else y' + (x' mod y')
 
 
-(* If the program contains permutations, then arrays must be unrolled
- This is a bit of a simplification:
-  - The permutation could be at some point where it doesn't impact unrolling
-  - Dummy assigments are a sign that indicates that arrays should be unrolled as well
- *)
-let must_expand (prog:prog) =
-  List.exists (fun x -> match x.node with Perm _ -> true | _ -> false) prog.nodes
-
 (* Returns true iff e uses variables. *)
 let rec uses_var (e:arith_expr) : bool =
   match e with
@@ -269,7 +261,7 @@ let rec map_special_last f g l =
 
 
 let rec expand_array (prog:prog) (conf:config): prog =
-  let force    = if conf.no_arr (* || must_expand prog  *)then Remove else Keep in
+  let force    = if conf.no_arr then Remove else Keep in
   let bitslice = conf.slicing_set && (conf.slicing_type = B) in
   let unroll   = conf.unroll in
   { nodes = map_special_last (expand_def bitslice force unroll false)
