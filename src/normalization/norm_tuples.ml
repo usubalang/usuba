@@ -77,8 +77,16 @@ end
  *)
 module Split_tuples = struct
   let real_split_tuple env (p: var list) (e: expr) (sync:bool) : deq list =
-    List.map2 (fun l r -> Eqn([l],r,sync)) (flat_map (expand_var env) p)
-              (Unfold_unnest.expand_expr env e)
+    let el = Unfold_unnest.expand_expr env e in
+    let pl = flat_map (expand_var env) p in
+    (* Need to make sure that |el| and |pl| have the same size. Since
+       monomorphization hasn't occured yet, it could happen that |p|
+       and |e| don't have the same size yet, in particular because
+       Const haven't been expanded. *)
+    if List.length el = List.length pl then
+      List.map2 (fun l r -> Eqn([l],r,sync)) pl el
+    else
+      [ Eqn(p,e,sync) ]
 
   let rec split_tuples_deq env (body: deq list) : deq list =
     flat_map
