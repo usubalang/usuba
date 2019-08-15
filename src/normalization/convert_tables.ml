@@ -79,17 +79,30 @@ let rewrite_table (id:ident) (p_in:p) (p_out:p)
   { id = id; p_in = p_in; p_out = p_out; opt = opt;
     node = Single(!vars,List.rev !body) }
 
-(* A bit hacky: should convert types as needed.
-   (for instance: bool[4] to u16[4] (rectangle)) *)
+(* When a table is replaced by a node, it's param types might be
+   different and need to be fixed:
+
+     - word-size polymorphic types can be specialized
+
+     - if the original types of the table params are unx1, then the
+       type unx1 needs to be expanded to a u1xn. In practice, there
+       are two cases here: either the circuit's parameters have type
+       unx1, and nothing needs to be done, or they have type u1xn, in
+       which case, nothing needs to be done either. Arguably, they
+       could have type ukxm, when k*m=n, but that sounds horribly
+       evil. Gonna assume this won't happen, and add a TODO just in
+       case.
+       TODO: fix the aforementioned issue.
+  *)
 let fix_p (old_p:p) (new_p:p) : p =
-  let t = get_base_type (List.hd old_p).vtyp in
-  List.map (fun x -> { x with vtyp =
-                                match x.vtyp with
-                                | Array(_,n) -> Array(t,n)
-                                | Uint(_,_,n) -> ( match t with
-                                                   | Uint(dir,m,1) -> Uint(dir,m,n)
-                                                   | _ -> assert false)
-                                | _ -> t }) new_p
+  match List.length old_p with
+  | 1 -> (* second case *) new_p
+  | _ -> (* first case *)
+     (* Assuming that the types of |new_p| all have the same
+        word-size, and retrived it. TODO: remove this assumption. *)
+     let m = get_type_m (List.hd old_p).vtyp in
+     List.map (fun x -> { x with vtyp = replace_m x.vtyp m }) new_p
+
 
 let rewrite_single_table (id:ident) (p_in:p) (p_out:p)
                          (opt:def_opt list) (l:int list)

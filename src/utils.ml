@@ -312,6 +312,12 @@ let rec replace_base (v:var) (id:ident) : var =
   | Range(v',aei,aef) -> Range(replace_base v' id,aei,aef)
   | Slice(v',l)       -> Slice(replace_base v' id,l)
 
+let rec replace_m (typ:typ) (m:mtyp) : typ =
+  match typ with
+  | Uint(dir,_,n) -> Uint(dir,m,n)
+  | Array(t,size) -> Array(replace_m t m,size)
+  | Nat -> Nat
+
 (* TODO: make this function return Uint(dir,m,n) instead of Uint(dir,m,1) ? *)
 let rec get_base_type (typ:typ) : typ =
   match typ with
