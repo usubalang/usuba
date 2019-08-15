@@ -1,8 +1,8 @@
 open Usuba_AST
 open Basic_utils
 open Utils
-       
-       
+
+
 let print title body conf =
   if conf.verbose >= 5 then
     begin
@@ -22,7 +22,7 @@ let run_pass title func conf prog =
     Printf.fprintf stderr "%s\n%!" (Usuba_print.prog_to_str res);
   res
 
-    
+
 let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
 
   let run_pass title func ?(sconf = conf) prog =
@@ -47,7 +47,7 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
       (run_pass "Bitslice_shift" Bitslice_shift.expand_shifts)       |>
       (run_pass "Norm_tuples.norm_tuples 2" Norm_tuples.norm_tuples) in
 
-  
+
   let normalize_core x _ =
     x |>
       (* Remove slices/ranges (and forall and arrays in some cases) *)
@@ -67,8 +67,8 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
       (* Remove slices/ranges (and forall and arrays in some cases) *)
       (run_pass "Expand_array 3" Expand_array.expand_array)                |>
       (run_pass "Norm_bitslice 3" norm_bitslice) in
-    
-  
+
+
   let normalized =
     prog |>
       (run_pass "Rename" rename)                                           |>
@@ -112,11 +112,11 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
     Usuba_to_tightprove.print_prog norm_ok;
 
   (* Array linearization leaves the dataflow world (as it reuses variables),
-    so putting it at the end 
+    so putting it at the end
     (might be more correct to put it in the C generation) *)
   let linearized = run_pass "Linearize_arrays" Linearize_arrays.linearize_arrays norm_ok in
   linearized
-  
+
 
 let compile (prog:prog) (conf:config) : prog =
   print "INPUT:" prog conf;
