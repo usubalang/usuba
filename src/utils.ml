@@ -305,6 +305,13 @@ let rec get_base_name (v:var) : ident =
   | Var x -> x
   | Index(v,_) | Slice(v,_) | Range(v,_,_) -> get_base_name v
 
+let rec replace_base (v:var) (id:ident) : var =
+  match v with
+  | Var x             -> Var id
+  | Index(v',idx)     -> Index(replace_base v' id,idx)
+  | Range(v',aei,aef) -> Range(replace_base v' id,aei,aef)
+  | Slice(v',l)       -> Slice(replace_base v' id,l)
+
 (* TODO: make this function return Uint(dir,m,n) instead of Uint(dir,m,1) ? *)
 let rec get_base_type (typ:typ) : typ =
   match typ with
