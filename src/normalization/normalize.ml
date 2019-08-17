@@ -14,10 +14,10 @@ let print title body conf =
 
 let run_pass title func conf prog =
   if conf.verbose >= 5 then
-    Printf.fprintf stderr "Running %s...\n%!" title;
+    Printf.fprintf stderr "\n\nRunning %s...\n%!" title;
   let res = func prog conf in
   if conf.verbose >= 5 then
-    Printf.fprintf stderr "%s done.\n%!" title;
+    Printf.fprintf stderr "\n%s done.\n%!" title;
   if conf.verbose >= 100 then
     Printf.fprintf stderr "%s\n%!" (Usuba_print.prog_to_str res);
   res
