@@ -1,6 +1,6 @@
 /* ******************************************** *\
- * 
- * 
+ *
+ *
  *
 \* ******************************************** */
 
@@ -53,7 +53,9 @@
 #define LIFT_64(x) (x)
 
 #ifndef DATATYPE
-#if BITS_PER_REG == 16
+#if BITS_PER_REG == 8
+#define DATATYPE uint8_t
+#elif BITS_PER_REG == 16
 #define DATATYPE uint16_t
 #elif BITS_PER_REG == 32
 #define DATATYPE uint32_t
