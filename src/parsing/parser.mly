@@ -112,7 +112,9 @@
 
 (******************************** Entry Point *********************************)
 %start<Usuba_AST.prog> prog
-
+%start<Usuba_AST.arith_expr> arith_exp_a
+%start<Usuba_AST.var> var_a
+%start<Usuba_AST.expr> exp_a
 
 %%
 
@@ -169,6 +171,7 @@ arith_exp:
   | n = TOK_int { Const_e n }
   | x = ident  { Var_e x }
   | e1=arith_exp op=arith_op e2=arith_exp { Op_e(op,e1,e2) }
+arith_exp_a: ae=arith_exp TOK_EOF { ae }
 
 var:
   | id=ident { Var id  }
@@ -178,6 +181,7 @@ var:
   | v=var TOK_LBRACKET e1=arith_exp TOK_COMMA
     l=separated_nonempty_list(TOK_COMMA,arith_exp) TOK_RBRACKET
     { Slice(v,e1::l) }
+var_a: v=var TOK_EOF { v }
 
 exp:
   | TOK_LPAREN e=exp TOK_RPAREN { e }
@@ -208,6 +212,7 @@ exp:
   | init=exp TOK_FBY follow=exp { Fby(init,follow,None) }
   (* | init=exp TOK_LT f=ident TOK_GT TOK_FBY follow=exp *)
   (*   { Fby(init,follow,Some f) } *)
+exp_a: e=exp TOK_EOF { e }
 
 explist: l=separated_nonempty_list(TOK_COMMA,exp) { l }
 

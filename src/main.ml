@@ -122,7 +122,7 @@ let main () =
   let usage_msg = "Usage: usuba [switches] [files]" in
 
   let compile s =
-    let prog = Parse_file.parse_file s in
+    let prog = Parser_api.parse_file s in
     let bits_per_reg = if !bits_per_reg <> 64 then !bits_per_reg
                        else if !shares <> 1 then 32 else
                          bits_in_arch !arch in
