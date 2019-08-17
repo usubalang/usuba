@@ -111,7 +111,7 @@ let rewrite_single_table (id:ident) (p_in:p) (p_out:p)
     try
       let (found,_) = List.find (fun (a,b) -> b = l) Sbox_index.sboxes in
       let file_name = "data/sboxes/" ^ found ^ ".ua" in
-      let new_node = List.nth (Parse_file.parse_file file_name).nodes 0 in
+      let new_node = List.nth (Parser_api.parse_file file_name).nodes 0 in
       { new_node with id = id;
                       p_in = fix_p p_in new_node.p_in;
                       p_out = fix_p p_out new_node.p_out;
