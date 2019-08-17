@@ -79,6 +79,9 @@ let print_c (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
   fprintf out "%s" c_prog;
   close_out out
 
+let run_tests () : unit =
+  Test_constant_folding.test ();
+  Printf.printf "All tests ran.\n"
 
 let main () =
   Printexc.record_backtrace true;
@@ -118,6 +121,7 @@ let main () =
       "-tp", Arg.Set tightPROVE, "Generate tightPROVE circuits";
       "-shares", Arg.Set_int shares, "Set the number of shares";
       "-keep-tables", Arg.Set keep_tables, "Keep lookup tables (can't use SIMD)";
+      "-tests", Arg.Unit (fun () -> run_tests ()), "Run tests";
     ] in
   let usage_msg = "Usage: usuba [switches] [files]" in
 

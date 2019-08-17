@@ -152,3 +152,9 @@ let rec first_n l n =
      else
        (Printf.eprintf "Can't call first_n with a negative n. Exiting.\n";
         assert false)
+
+(* Generates 0b11111, where there are |s| 1s. This corresponds to -1
+   on a |s| bits register. *)
+let rec gen_minus_one (s:int) =
+  if s <= 0 then 0
+  else (1 lsl (s-1)) lor (gen_minus_one (s-1))
