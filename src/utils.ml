@@ -266,6 +266,19 @@ let rec get_expr_type env_fun env_var (e:expr) : typ list =
        List.map (fun vd -> vd.vtyp) def.p_out
   | _ -> assert false
 
+let rec get_normed_expr_type env_var (e:expr) : typ =
+  match e with
+  | Const(n,Some typ) -> typ
+  | ExpVar v -> get_var_type env_var v
+  | Not e -> get_normed_expr_type env_var e
+  | Shift(_,e,_) -> get_normed_expr_type env_var e
+  | Log(_,e,_) -> get_normed_expr_type env_var e
+  | Shuffle(v,_) -> get_var_type env_var v
+  | Arith(_,e,_) -> get_normed_expr_type env_var e
+  | _ -> Printf.eprintf "get_normed_expr_type: error: unnormed expr: %s.\n"
+           (Usuba_print.expr_to_str e);
+         assert false
+
 (* Expands a typ into a list of basic (umx1) types *)
 let rec expand_typ (typ:typ) : typ list =
   match typ with
@@ -339,6 +352,11 @@ let get_var_dir env_var (v:var) : dir =
   get_type_dir (get_var_type env_var v)
 let get_var_m env_var (v:var) : mtyp =
   get_type_m (get_var_type env_var v)
+
+let get_normed_expr_dir env_var (e:expr) : dir =
+  get_type_dir (get_normed_expr_type env_var e)
+let get_normed_expr_m env_var (e:expr) : mtyp =
+  get_type_m (get_normed_expr_type env_var e)
 
 let rec update_type_dir (typ:typ) (dir:dir) : typ =
   match typ with

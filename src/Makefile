@@ -3,7 +3,7 @@
 MENHIR = menhir
 MENHIRFLAGS := --infer --explain
 PACKAGES := -pkg str -pkg unix
-INCLUDES := -I normalization -I optimization -I parsing -I c_gen -I verification -I c_gen/runtimes
+INCLUDES := -I normalization -I optimization -I parsing -I c_gen -I verification -I c_gen/runtimes -I tests
 OCAMLBUILD  := ocamlbuild -use-ocamlfind $(PACKAGES) $(INCLUDES) -use-menhir -menhir "$(MENHIR) $(MENHIRFLAGS)"
 
 MAIN     := main
@@ -14,9 +14,9 @@ all:
 	coqc $(COQCFILES)
 	$(OCAMLBUILD) $(MAIN).native
 	rm *.vo *.mli *.glob
+	./main.native -tests
 	cp main.native ../usubac
 
 clean:
 	rm -f *~ .*~
 	$(OCAMLBUILD) -clean
-
