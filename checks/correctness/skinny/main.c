@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <string.h>
 
 #ifdef REF
 #include "skinny_reference.c"
 #elif defined(UA_V)
 #include "skinny_ua_vslice.c"
-//#define enc Skinny__
 // Just a small wrapper to make gcc/clang not complain about
 // incompatible pointer types bla bla bla.
 void enc(uint8_t* input, uint8_t* tweakey, uint8_t* output) {
@@ -19,7 +19,6 @@ void enc(uint8_t* input, uint8_t* tweakey, uint8_t* output) {
   Skinny__(plain,tweak,cipher);
   memcpy(output,cipher,16);
 }
-
 #elif defined(UA_B)
 #include "skinny_ua_bitslice.c"
 /* Transposition stuffs */
@@ -117,17 +116,14 @@ void test_skinny() {
   uint8_t output_ref[16] = { 0x84, 0x27, 0x46, 0xbe, 0x9e, 0xae, 0x6b, 0x33,
                              0xfa, 0x9f, 0xf0, 0x00, 0x77, 0x4f, 0x2b, 0x63 };
 
-  fprintf(stderr, "Expected: ");
-  for (int i = 0; i < 16; i++) fprintf(stderr, "%02x ",output_ref[i]);
-  fprintf(stderr, "\n");
-
   if (memcmp(output, output_ref, 16) != 0) {
-    fprintf(stderr, "Error encryption.\n");
+    fprintf(stderr, "Encryption error.\nExpected: ");
+    for (int i = 0; i < 16; i++) fprintf(stderr, "%02x ",output_ref[i]);
+    fprintf(stderr, "\n");
     fprintf(stderr, "Got     : ");
     for (int i = 0; i < 16; i++) fprintf(stderr, "%02x ",output[i]);
     fprintf(stderr, "\n");
-  } else {
-    fprintf(stderr, "Seems OK.\n");
+    exit(EXIT_FAILURE);
   }
 }
 
