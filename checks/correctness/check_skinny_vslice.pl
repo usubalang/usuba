@@ -55,4 +55,4 @@ for my $ARCH (qw(STD)) {
 chdir '..';
 remove_tree $temp_dir;
 
-say "Bitsliced Clyde OK.\n\n";
+say "Vslice Skinny OK.\n\n";
