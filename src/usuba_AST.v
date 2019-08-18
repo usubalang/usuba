@@ -127,7 +127,9 @@ Record config := {
   check_tbl    : bool;
   inlining     : bool;
   inline_all   : bool;
-  cse_cp       : bool;
+  fold_const   : bool;
+  cse          : bool;
+  copy_prop    : bool;
   scheduling   : bool;
   schedule_n   : N;
   share_var    : bool;

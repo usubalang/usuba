@@ -32,7 +32,7 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
   let sched_fun prog conf =
     if conf.scheduling then
       Pre_schedule.schedule
-        (if conf.cse_cp then CSE_CF_CP.opt_prog prog conf else prog)
+        (Simple_opts.opt_prog prog conf)
     else prog in
 
   (* Rename only if param rename is true *)
