@@ -139,6 +139,9 @@ let fold_log (env_var:(ident,typ) Hashtbl.t) (op:log_op) (x:expr) (y:expr)
                else if is_full_ones env_var y then Not(x)  (* ~x & 1 = ~x *)
                else Log(Andn,x,y)
 
+(* Common documentation for all functions bellow: straight-forwardly
+   walks down the AST to finally call fold_log and fold_arith. *)
+
 let rec fold_expr (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
   match e with
   | Const _         -> e

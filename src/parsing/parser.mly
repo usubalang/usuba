@@ -116,6 +116,7 @@
 %start<Usuba_AST.var> var_a
 %start<Usuba_AST.expr> exp_a
 %start<Usuba_AST.deq> deq_a
+%start<Usuba_AST.def> def_a
 
 %%
 
@@ -361,7 +362,7 @@ def:
     l = permlist TOK_RBRACKET
   { { id=f;p_in=p_in;p_out=p_out;opt=Is_table::opts;
       node=Multiple (List.map (fun x -> Table x) l) } }
-
+def_a: d=def TOK_EOF { d }
 
 intlist: l=separated_nonempty_list(TOK_COMMA, TOK_int) { l }
 
