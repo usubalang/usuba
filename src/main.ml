@@ -82,6 +82,7 @@ let print_c (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
 let run_tests () : unit =
   Test_constant_folding.test ();
   Test_CSE.test ();
+  Test_copy_propagation.test ();
   Printf.printf "All tests ran.\n"
 
 let main () =
