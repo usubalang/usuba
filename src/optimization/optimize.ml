@@ -3,7 +3,7 @@ open Utils
 open Usuba_AST
 open Usuba_print
 
-(* Clean.clean_vars_decl removes unused variables from variable declarations of nodes 
+(* Clean.clean_vars_decl removes unused variables from variable declarations of nodes
    (unused variables will likely be variables that have been optimized out) *)
 module Clean = struct
 
@@ -25,7 +25,7 @@ module Clean = struct
     | Fun_v(_,_,l) -> List.iter (clean_expr env) l
     | Fby(ei,ef,_) -> clean_expr env ei; clean_expr env ef
     | _ -> ()
-  
+
   let clean_in_deqs (vars:p) (deqs:deq list) : p =
     let env = Hashtbl.create 100 in
     let rec aux = function
@@ -44,38 +44,48 @@ module Clean = struct
        let vars = clean_in_deqs vars body in
        { def with node = Single(vars,body) }
     | _ -> def
-  
-  let clean_vars_decl (prog:prog) : prog =
+
+  let clean_vars_decl (prog:prog) (conf:config) : prog =
     { nodes = List.map clean_def prog.nodes }
 end
-          
+
+
 let print title body conf =
   if conf.verbose >= 5 then
     begin
       Printf.fprintf stderr "%s\n" title;
-      if conf.verbose >= 100 then Printf.fprintf stderr "%s\n" (Usuba_print.prog_to_str body)
+      if conf.verbose >= 100 then
+        Printf.fprintf stderr "%s\n" (Usuba_print.prog_to_str body)
     end
-      
+
+
+let run_pass title func conf prog =
+  if conf.verbose >= 5 then
+    Printf.fprintf stderr "\n\nRunning %s...\n%!" title;
+  let res = func prog conf in
+  if conf.verbose >= 5 then
+    Printf.fprintf stderr "\n%s done.\n%!" title;
+  if conf.verbose >= 100 then
+    Printf.fprintf stderr "%s\n%!" (Usuba_print.prog_to_str res);
+  res
+
+
 let opt_prog (prog: Usuba_AST.prog) (conf:config) : Usuba_AST.prog =
 
-  (* Interleaving *)
-  let interleaved = if conf.interleave > 0 then Interleave.interleave prog conf else prog in
-  
-  (* CSE - CP *)
-  (* CSE - CP is already done in the normalization *)
-  let optimized = if conf.cse_cp then CSE_CF_CP.opt_prog interleaved conf else interleaved in
-  print "CSE-CP:" optimized conf;
-  
-  (* if conf.scheduling then Pre_schedule.schedule cleaned else cleaned *)
-  let scheduled =  if conf.scheduling then Scheduler.schedule optimized conf else optimized in
-  print "SCHEDULED:" scheduled conf;
+  let run_pass title func ?(sconf = conf) prog =
+    run_pass title func sconf prog in
 
-  (* Reusing variables *)
-  let vars_shared = Share_var.share_prog scheduled conf in
-  print "VARS SHARED:" vars_shared conf;
 
-  (* Removing unused variables *)
-  let cleaned = Clean.clean_vars_decl vars_shared in
-  print "CLEANED:" cleaned conf;
+  (* All optimization are opt-in/opt-out => selecting here which ones to do. *)
+  let interleave  = if conf.interleave > 0 then Interleave.interleave      else fun p _ -> p in
+  let schedule    = if conf.scheduling     then Scheduler.schedule         else fun p _ -> p in
+  let share_var   = if conf.share_var      then Share_var.share_prog       else fun p _ -> p in
+  (* Simple_opts alreay takes care of checking conf *)
+  let simple_opts = Simple_opts.opt_prog in
 
-  cleaned
+  prog |>
+    (run_pass "Interleaving" interleave)                   |>
+    (run_pass "Simple_opts" simple_opts)                   |>
+    (run_pass "Scheduling" schedule)                       |>
+    (run_pass "Share_var" share_var)                       |>
+    (run_pass "Cleaning var decls" Clean.clean_vars_decl)

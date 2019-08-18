@@ -11,7 +11,7 @@ let rec simpl_var env_it (v:var) : var =
   | Index(v',ae) -> Index(simpl_var env_it v',Const_e(eval_arith env_it ae))
   | _ -> assert false
 
-            
+
 let rec replace_var (env:(var,var) Hashtbl.t) (v:var) : var =
   match Hashtbl.find_opt env v with
   | Some v' -> v'
@@ -19,7 +19,7 @@ let rec replace_var (env:(var,var) Hashtbl.t) (v:var) : var =
              | Var _ -> v
              | Index(v',ae) -> Index(replace_var env v',ae)
              | _ -> assert false
-                
+
 let rec replace_expr
           (env:(var,var) Hashtbl.t)
           (e:expr) : expr =
@@ -64,12 +64,12 @@ let rec get_last_used
       | Uint _ | Array _ -> List.iter (update_used_above env_var env_it last_used)
                                      (expand_var_partial env_var v)
       | _ -> assert false in
-  
+
   let update_used env_var env_it last_used (v:var) : unit =
     update_used_bellow env_it last_used v;
     update_used_above env_var env_it last_used v in
-    
-  
+
+
   List.iter (fun d ->
              match d with
              | Eqn(_,e,_) ->
@@ -87,7 +87,7 @@ let rec get_last_used
                           (gen_list_bounds ei ef);
                 cpt := !cpt + (List.length dl)
             ) deqs
-             
+
 let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) (no_arr:bool) : deq list =
 
   (* variables and their types *)
@@ -143,27 +143,24 @@ let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) (no_arr:bool) : deq l
                             v'
                        | None -> v
                    ) lhs, e, sync)
-        | Loop(i,ei,ef,dl,opts) -> 
+        | Loop(i,ei,ef,dl,opts) ->
            let r = Loop(i,ei,ef,do_it ~cpt_start:!cpt dl,opts) in
            cpt := !cpt + (List.length dl);
            r
       ) deqs
-  
+
   in
 
   do_it deqs
-           
-  
-      
+
+
+
 let share_def (def:def) (no_arr:bool) : def =
   match def.node with
   | Single(vars,body) ->
      let body = share_deqs def.p_in def.p_out vars body no_arr in
      { def with node = Single(vars,body) }
   | _ -> def
-           
+
 let share_prog (prog:prog) (conf:config) : prog =
-  if conf.share_var then
-    { nodes = apply_last prog.nodes (fun x -> share_def x conf.no_arr) }
-  else
-    prog
+  { nodes = apply_last prog.nodes (fun x -> share_def x conf.no_arr) }

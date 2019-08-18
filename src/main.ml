@@ -13,7 +13,9 @@ let check_tbl   = ref false
 
 let inlining      = ref true
 let inline_all    = ref false
-let cse_cp        = ref true
+let fold_const    = ref true
+let cse           = ref true
+let copy_prop     = ref true
 let scheduling    = ref true
 let schedule_n    = ref 10
 let share_var     = ref false
@@ -100,7 +102,14 @@ let main () =
                     "Deactivate both type and clock checking";
       "-no-inline", Arg.Clear inlining, "Deactivate inlining opti";
       "-inline-all", Arg.Set inline_all, "Force inlining of every node";
-      "-no-CSE-CP", Arg.Clear cse_cp, "Deactive CSE and CP opti";
+      "-no-fold-const", Arg.Clear fold_const, "Deactive Constant Folding";
+      "-no-CSE", Arg.Clear cse, "Deactive CSE";
+      "-no-copy-prop", Arg.Clear copy_prop, "Deactive Copy Propagation";
+      "-no-CSE-CP-CF", Arg.Unit (fun () ->
+                           fold_const := false;
+                           cse := false;
+                           copy_prop := false),
+                       "Deactive CSE, Copy propagation and Constant folding";
       "-no-sched", Arg.Clear scheduling, "Deactivate scheduling opti";
       "-sched-n", Arg.Int (fun n -> schedule_n := n), "Set scheduling param";
       "-no-share", Arg.Clear share_var, "Deactivate variable sharing";
@@ -149,7 +158,9 @@ let main () =
         check_tbl      =   !check_tbl;
         inlining       =   !inlining;
         inline_all     =   !inline_all;
-        cse_cp         =   !cse_cp;
+        fold_const     =   !fold_const;
+        cse            =   !cse;
+        copy_prop      =   !copy_prop;
         scheduling     =   !scheduling;
         schedule_n     =   !schedule_n;
         share_var      =   !share_var;
