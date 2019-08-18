@@ -46,3 +46,6 @@ let parse_var (str:string) : Usuba_AST.var =
 
 let parse_expr (str:string) : Usuba_AST.expr =
   parse_generic Parser.exp_a str
+
+let parse_deq (str:string) : Usuba_AST.deq =
+  parse_generic Parser.deq_a str

@@ -115,6 +115,7 @@
 %start<Usuba_AST.arith_expr> arith_exp_a
 %start<Usuba_AST.var> var_a
 %start<Usuba_AST.expr> exp_a
+%start<Usuba_AST.deq> deq_a
 
 %%
 
@@ -243,11 +244,18 @@ deq_forall:
    TOK_COMMA endr=arith_exp TOK_RBRACKET TOK_LCURLY d=deqs TOK_RCURLY
     { Loop(i, startr, endr, d, opts) }
 
+(* Doesn't use the |deq| rule because it would make semicolons mandatory after
+   foralls. *)
 deqs:
   | d=deq_forall list(TOK_SEMICOLON) ds=deqs { d :: ds }
   | d=norec_deq  nonempty_list(TOK_SEMICOLON) ds=deqs { d :: ds }
   | d=deq_forall list(TOK_SEMICOLON)  { [ d ] }
   | d=norec_deq  list(TOK_SEMICOLON)  { [ d ] }
+
+deq:
+  | d=deq_forall { d }
+  | d=norec_deq  { d }
+deq_a: d=deq TOK_EOF { d }
 
 opt_var_d:
   TOK_CONST { Pconst }
