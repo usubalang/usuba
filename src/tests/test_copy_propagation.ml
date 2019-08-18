@@ -210,6 +210,56 @@ let
 tel" in
   assert (result = expected)
 
+(* Just makes sure that assignments of Consts are indeed removed. *)
+let test_simple_const () =
+    let def = parse_def
+"node f(x,y:u1) returns (z:u1)
+   vars a,b,c:u1
+let
+    a = 5;
+    b = a;
+    c = b;
+    z = c;
+tel" in
+  let result = cp_def def in
+  (* Note that local variables are not optimized away by this module. *)
+  let expected = parse_def
+"node f(x,y:u1) returns (z:u1)
+   vars a,b,c:u1
+let
+    z = 5;
+tel" in
+  assert (result = expected)
+
+
+(* Shuffle are a bit special because they only work on Vars. Making
+   sure that no Shuffle will use a variable that was optimized away or
+   something like that. *)
+let test_shuffle () =
+  let def = parse_def
+"node f(x,y:u4) returns (z:u4)
+   vars a,b,c,d,e:u4
+let
+    a = 5;
+    b = a{1,0,3,2};
+    c = b ^ x;
+    d = c ^ y;
+    e = d;
+    z = e;
+tel" in
+  let result = cp_def def in
+  (* Note that local variables are not optimized away by this module. *)
+  let expected = parse_def
+"node f(x,y:u4) returns (z:u4)
+   vars a,b,c,d,e:u4
+let
+    a = 5;
+    b = a{1,0,3,2};
+    c = b ^ x;
+    d = c ^ y;
+    z = d;
+tel" in
+  assert (result = expected)
 
 
 
@@ -220,4 +270,6 @@ let test () =
   test_loop_nofun ();
   test_funcall_noarr ();
   test_funcall_arr ();
-  test_funcall_loop1 ()
+  test_funcall_loop1 ();
+  test_simple_const ();
+  test_shuffle ()

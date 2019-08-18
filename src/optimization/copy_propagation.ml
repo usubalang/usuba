@@ -18,7 +18,8 @@
    code are of primitive types (ie Uint(_,_,1)) since we are in
    Usuba0. (only function calls return multiple arguments, and are
    by definition not "copy-assignments")
-
+   Assignments of Const to variables are also removed by this module
+   whenever possible.
 
    A few things are slightly tricky:
 
@@ -190,63 +191,95 @@ end
 
 (* Propagates optimized away variables: if |v| has been optimized
    away, it's replaced. *)
-let propagate_in_var (optimized_away:(var,var) Hashtbl.t) (v:var)
-    : var =
+let propagate_in_var (optimized_away:(var,expr) Hashtbl.t) (v:var)
+    : expr =
   match Hashtbl.find_opt optimized_away v with
   | Some v' -> v'
-  | None    -> v
+  | None    -> ExpVar v
 
 (* Need to propagate optimized out variables in expression. *)
-let rec propagate_in_expr  (optimized_away:(var,var) Hashtbl.t) (e:expr)
-        : expr =
+(* Returns a `deq list` as well as an `expr`, because if a variable
+   used in a Shuffle has been optimized out and is supposed to be
+   replaced by a Const, it needs to be un-optmized-out. *)
+(* Note that since expressions are normalized at that point, we can
+   safely assume that no reccursive call within propagate_in_expr can
+   end up in a Shuffle. Therefore, we use propagate_in_expr_rec for
+   reccursive calls, thus avoiding us to need discarding an empty deq
+   list for each reccursive call. *)
+let rec propagate_in_expr  (optimized_away:(var,expr) Hashtbl.t) (e:expr)
+        : (deq list) * expr =
   match e with
-  | Const _         -> e
-  | ExpVar v        -> ExpVar (propagate_in_var optimized_away v)
-  | Shuffle(v,l)    -> Shuffle(propagate_in_var optimized_away v, l)
-  | Tuple l         -> Tuple (List.map (propagate_in_expr optimized_away) l)
-  | Not e'          -> Not (propagate_in_expr optimized_away e')
-  | Shift(op,e',ae) -> Shift(op,propagate_in_expr optimized_away e',ae)
-  | Log(op,x,y)     -> Log(op,propagate_in_expr optimized_away x,
-                           propagate_in_expr optimized_away y)
-  | Arith(op,x,y)   -> Arith(op,propagate_in_expr optimized_away x,
-                             propagate_in_expr optimized_away y)
-  | Fun(f,l)        -> Fun(f,List.map (propagate_in_expr optimized_away) l)
+  | Const _         -> [], e
+  | ExpVar v        -> [], propagate_in_var optimized_away v
+  | Shuffle(v,l)    ->
+     (match propagate_in_var optimized_away v with
+      | ExpVar v'    -> [], Shuffle(v', l)
+      | Const(n,typ) ->
+         (* Need to add |v|'s declaration that will contain this Const *)
+         [ Eqn([v],Const(n,typ),false) ],
+         Shuffle(v,l)
+      | _ -> assert false)
+  | Not e'          -> [], Not (propagate_in_expr_rec optimized_away e')
+  | Shift(op,e',ae) -> [], Shift(op,propagate_in_expr_rec optimized_away e',ae)
+  | Log(op,x,y)     -> [], Log(op,propagate_in_expr_rec optimized_away x,
+                                 propagate_in_expr_rec optimized_away y)
+  | Arith(op,x,y)   -> [], Arith(op,propagate_in_expr_rec optimized_away x,
+                                   propagate_in_expr_rec optimized_away y)
+  | Fun(f,l)        -> [], Fun(f,(List.map (propagate_in_expr_rec optimized_away) l))
   | _ -> Printf.eprintf "propagate_in_expr: invalid expr: %s.\n"
+           (Usuba_print.expr_to_str e);
+         assert false
+and propagate_in_expr_rec (optimized_away:(var,expr) Hashtbl.t) (e:expr)
+    : expr =
+  match e with
+  | Const _  -> e
+  | ExpVar v -> propagate_in_var optimized_away v
+  | _ -> Printf.eprintf "propagate_in_expr_rec: invalid expr: %s.\n"
            (Usuba_print.expr_to_str e);
          assert false
 
 
 let cp_assign (keep_env:(ident,bool) Hashtbl.t)
-      (optimized_away:(var,var) Hashtbl.t)
-      (v:var) (ve:var) (sync:bool) : deq list =
+      (optimized_away:(var,expr) Hashtbl.t)
+      (v:var) (e:expr) (sync:bool) : deq list =
   match Hashtbl.find_opt keep_env (get_base_name v) with
   | Some _ -> (* Need to keep this assignment *)
+     (* Can discard the `deq` result of propagate_in_expr as |e| can
+        only be an ExpVar or a Const here. *)
+     let _,e' = propagate_in_expr optimized_away e in
      (* Don't forget to propagate previous optimized away in |ve|! *)
-     [ Eqn([v],ExpVar (propagate_in_var optimized_away ve),sync) ]
+     [ Eqn([v],e',sync) ]
   | None -> (* No need to keep this assigment -> remove it *)
-     (* Looking if |ve| has been optimized away itself. If so,
-        fetching the variable to use instead. *)
-     let replace_v = match Hashtbl.find_opt optimized_away ve with
-       | Some v' -> v'
-       | None    -> ve in
+     (* Looking if |e| is a variable that has been optimized away
+        itself. If so, fetching the variable to use instead. *)
+     let replace_e = match e with
+       | ExpVar ve -> (match Hashtbl.find_opt optimized_away ve with
+                       | Some v' -> v'
+                       | None    -> ExpVar ve)
+       | Const _ -> e
+       | _ -> assert false in
      (* Adding to |optimized_away| to be able to propagate to
         subsequent expressions. *)
-     Hashtbl.add optimized_away v replace_v;
+     Hashtbl.add optimized_away v replace_e;
      (* Adding to |hanging| to be able to re-commit if needed. *)
      []
 
 let rec cp_deqs (env_var:(ident,typ) Hashtbl.t)
           (keep_env:(ident,bool) Hashtbl.t)
-          (optimized_away:(var,var) Hashtbl.t)
+          (optimized_away:(var,expr) Hashtbl.t)
           (deqs:deq list) : deq list =
   flat_map (fun deq ->
       match deq with
       | Eqn([v],ExpVar ve,sync) ->
-         (* A copy -> will be removed if |v| isn't in |keep_env| *)
-         cp_assign keep_env optimized_away v ve sync
+         (* A Var copy -> will be removed if |v| isn't in |keep_env| *)
+         cp_assign keep_env optimized_away v (ExpVar ve) sync
+      | Eqn([v],Const(n,typ),sync) ->
+         (* A Const copy -> will be removed if |v| isn't in |keep_env| *)
+         cp_assign keep_env optimized_away v (Const(n,typ)) sync
       | Eqn(lhs,e,sync) ->
          (* A non-copy expression -> propagate copies inside *)
-         [ Eqn(lhs,propagate_in_expr optimized_away e,sync) ]
+         let (deq,e') = propagate_in_expr optimized_away e in
+         deq @ [ Eqn(lhs,e',sync) ]
       | Loop(i,ei,ef,dl,opts)  ->
          (* A loop -> reccursive call *)
          [ Loop(i,ei,ef, cp_deqs env_var keep_env optimized_away dl,opts) ])
