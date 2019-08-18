@@ -767,10 +767,26 @@ let type_perm (backtrace:string list) (p_in:p) (p_out:p) (l:int list) : int list
 (* In a table, we check that:
      - There are at most 2**#p_in elements
      - No element is greater than 2**#p_out (or it wouldn't fit in p_out) *)
-let type_table (backtrace:string list) (p_in:p) (p_out:p) (l:int list) : int list =
+let type_table (backtrace:string list) (conf:config) (p_in:p) (p_out:p) (l:int list)
+    : int list =
   let backtrace = "type_table()" :: backtrace in
-  let in_size  = p_size p_in  in
-  let out_size = p_size p_out in
+
+  (* Using a special p_size if conf.keep_tables *)
+  let p_size_keep (p:p) =
+    match p with
+    | vd :: [] -> (match get_type_m vd.vtyp with
+                   | Mint c -> c
+                   | Mvar _ -> begin
+                       eprintf "[Type error] Cannot use word-size polymorphic tables with -keep-tables.\n";
+                       print_backtrace backtrace;
+                       raise Fatal_type_error
+                     end)
+    | _ -> eprintf "[Type error] Tables with -keep-tables must have exactly one parameter. Got %d.\n"
+             (List.length p);
+           raise Fatal_type_error in
+
+  let in_size  = if conf.keep_tables then p_size_keep p_in  else p_size p_in  in
+  let out_size = if conf.keep_tables then p_size_keep p_out else p_size p_out in
   if List.length l > pow 2 in_size then
     begin
       eprintf "[Type error] Too many elements in table. Expected %d (or less), got %d.\n"
@@ -785,7 +801,7 @@ let type_table (backtrace:string list) (p_in:p) (p_out:p) (l:int list) : int lis
                    "[Type error] invalid element in table: `%d' is higher than 2**#inputs = 2**%d = %d.\n"
                    i in_size (pow 2 out_size);
                  print_backtrace backtrace;
-                 error := true) l;
+                 raise Fatal_type_error) l;
   l
 
 
@@ -793,7 +809,7 @@ let type_table (backtrace:string list) (p_in:p) (p_out:p) (l:int list) : int lis
    Multiple (reccursion happens over a def_i and not a def in that
    case). *)
 let rec type_defi (backtrace:string list) (env_fun:(ident,def) Hashtbl.t)
-          (p_in:p) (p_out:p) (defi:def_i) : def_i =
+          (conf:config) (p_in:p) (p_out:p) (defi:def_i) : def_i =
   match defi with
   | Single(vars,body) ->
      let backtrace = "type_defi(Single ...)" :: backtrace in
@@ -806,17 +822,18 @@ let rec type_defi (backtrace:string list) (env_fun:(ident,def) Hashtbl.t)
      Perm(type_perm  backtrace p_in p_out l)
   | Table l ->
      let backtrace = "type_defi(Table ...)" :: backtrace in
-     Table(type_table backtrace p_in p_out l)
+     Table(type_table backtrace conf p_in p_out l)
   | Multiple l ->
      let backtrace = "type_defi(Multiple ...)" :: backtrace in
-     Multiple (List.map (type_defi backtrace env_fun p_in p_out) l)
+     Multiple (List.map (type_defi backtrace env_fun conf p_in p_out) l)
 
-let type_def (backtrace:string list) (env_fun:(ident,def) Hashtbl.t) (def:def) : def =
+let type_def (backtrace:string list) (env_fun:(ident,def) Hashtbl.t)
+      (conf:config) (def:def) : def =
   let backtrace = (sprintf "type_def(%s)" def.id.name) :: backtrace in
-  { def with node = type_defi backtrace env_fun def.p_in def.p_out def.node }
+  { def with node = type_defi backtrace env_fun conf def.p_in def.p_out def.node }
 
 
-let type_prog (prog:prog) : prog =
+let type_prog (prog:prog) (conf:config) : prog =
   let backtrace = ["type_prog()"] in
   (* Environment containing the nodes *)
   let env_fun = build_env_fun backtrace prog in
@@ -825,7 +842,7 @@ let type_prog (prog:prog) : prog =
   let typed_nodes =
     List.map (
         fun x -> try
-                type_def backtrace env_fun x
+                type_def backtrace env_fun conf x
               with Fatal_type_error ->
                 error := true;
                 (* Returning |x| just to avoid early termination of

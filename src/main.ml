@@ -187,7 +187,7 @@ let main () =
     if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then
       raise (Error ("Invalid -fix-size " ^ (string_of_int conf.bits_per_reg)));
 
-    let prog = Type_checker.type_prog prog in
+    let prog = Type_checker.type_prog prog conf in
     if !clock_check then
       if not (Clock_checker.is_clocked prog) then
         raise (Error "Unsound program: bad clocks");
