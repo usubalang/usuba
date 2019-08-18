@@ -84,8 +84,9 @@ let opt_prog (prog: Usuba_AST.prog) (conf:config) : Usuba_AST.prog =
   let simple_opts = Simple_opts.opt_prog in
 
   prog |>
-    (run_pass "Interleaving" interleave)                   |>
-    (run_pass "Simple_opts" simple_opts)                   |>
-    (run_pass "Scheduling" schedule)                       |>
-    (run_pass "Share_var" share_var)                       |>
-    (run_pass "Cleaning var decls" Clean.clean_vars_decl)
+    (run_pass "Interleaving" interleave)                             |>
+    (run_pass "Simple_opts" simple_opts)                             |>
+    (run_pass "Scheduling" schedule)                                 |>
+    (run_pass "Share_var" share_var)                                 |>
+    (run_pass "Cleaning var decls" Clean.clean_vars_decl)            |>
+    (run_pass "Remove_dead_code" Remove_dead_code.remove_dead_code)
