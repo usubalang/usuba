@@ -85,6 +85,7 @@ let run_tests () : unit =
   Test_constant_folding.test ();
   Test_CSE.test ();
   Test_copy_propagation.test ();
+  Test_remove_dead_code.test ();
   Printf.printf "All tests ran.\n"
 
 let main () =
