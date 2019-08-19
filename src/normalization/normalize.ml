@@ -78,10 +78,10 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
       (run_pass "Convert_tables" Convert_tables.convert_tables)            |>
       (* Remove slices/ranges (and forall and arrays in some cases) *)
       (run_pass "Expand_array" Expand_array.expand_array)                  |>
-      (* Schedules instructions according to their dependencies *)
-      (run_pass "Init_scheduler 1" Init_scheduler.schedule_prog)           |>
       (* Converts ':=' to SSA *)
       (run_pass "Remove_sync" Remove_sync.remove_sync)                     |>
+      (* Schedules instructions according to their dependencies *)
+      (run_pass "Init_scheduler 1" Init_scheduler.schedule_prog)           |>
       (* Remove when/merge *)
       (run_pass "Remove_ctrl" Remove_ctrl.remove_ctrl)                     |>
       (run_pass "Core normalize 1" normalize_core)                         |>
