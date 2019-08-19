@@ -518,9 +518,10 @@ let rec type_expr (backtrace:string list)
      (match typ with
       | Nat -> () (* nothing do do *)
       | Uint(_,Mint i,_) ->
-         if pow 2 i <= n then
-           (eprintf "[Type error] Constant 0x%x doesn't fit in %d bits (inferred type: %s).\n"
-              n i (typ_to_str typ);
+         (* TODO: remove this "i < 63"; handle that better throughout Usubac *)
+         if i < 63 && pow 2 i <= n then
+           (eprintf "[Type error] Constant 0x%x doesn't fit in %d bits (inferred type: %s --> max=%d).\n"
+              n i (typ_to_str typ) (pow 2 i);
             print_backtrace backtrace;
             error := true)
       | Uint(_,Mvar _,_) ->
