@@ -37,7 +37,7 @@ let run_pass title func conf prog =
   res
 
 
-let opt_prog (prog:prog) (conf:config) =
+let rec opt_prog (prog:prog) (conf:config) =
 
   let run_pass title func ?(sconf = conf) prog =
     run_pass title func sconf prog in
@@ -46,14 +46,11 @@ let opt_prog (prog:prog) (conf:config) =
   let cse        = if conf.cse        then CSE.cse_prog               else fun p _ -> p in
   let copy_prop  = if conf.copy_prop  then Copy_propagation.cp_prog   else fun p _ -> p in
 
+  let prog' =
+    prog |>
+      (run_pass "Constant_folding" fold_const)                    |>
+      (run_pass "CSE" cse)                                        |>
+      (run_pass "Copy_propagation" copy_prop)                     |>
+      (run_pass "Norm_tuples" Norm_tuples.norm_tuples) in
 
-  prog |>
-    (* Running twice CF/CSE/CP; TODO: fixpoint instead? *)
-    (run_pass "Constant_folding 1" fold_const)                    |>
-    (run_pass "CSE 1" cse)                                        |>
-    (run_pass "Copy_propagation 1" copy_prop)                     |>
-    (run_pass "Norm_tuples 1" Norm_tuples.norm_tuples)            |>
-    (run_pass "Constant_folding 2" fold_const)                    |>
-    (run_pass "CSE 2" cse)                                        |>
-    (run_pass "Copy_propagation 2" copy_prop)                     |>
-    (run_pass "Norm_tuples 2" Norm_tuples.norm_tuples)
+  if prog = prog' then prog else opt_prog prog' conf
