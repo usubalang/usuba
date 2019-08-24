@@ -25,7 +25,7 @@ say "############################# Gimli Vslice ############################";
 chdir "$FindBin::Bin/../..";
 
 # Compiling the compiler.
-unless ($ARGV[0]) { 
+unless ($ARGV[0]) {
     say "Compiling...";
     error if system 'make';
 }
@@ -53,6 +53,6 @@ for my $ARCH (qw(STD)) {
 }
 
 chdir '..';
-#remove_tree $temp_dir;
+remove_tree $temp_dir;
 
 say "Bitsliced Gimli OK.\n\n";
