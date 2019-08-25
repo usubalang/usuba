@@ -37,6 +37,7 @@
 #define NOT(a)    (~(a))
 
 #define ADD(a,b,c) ((a) + (b))
+#define SUB(a,b,c) ((a) - (b))
 
 #define ROTATE_MASK(x) (x == 64 ? -1ULL : x == 32 ? -1 : x == 16 ? 0xFFFF : \
     ({ fprintf(stderr,"Not implemented rotate [uint%d_t]. Exiting.\n",x); \
