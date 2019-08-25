@@ -1,0 +1,5 @@
+./usubac -B -no-sched -o nist/ace/usuba/ua/ace_ua_bitslice.c -arch std -no-share nist/ace/usuba/ua/ace.ua
+./usubac -V -no-sched -o nist/ace/usuba/ua/ace_ua_vslice.c -arch std -no-share nist/ace/usuba/ua/ace.ua
+clang -D UA_V -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main
+clang -D UA_B -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main
+clang -D REF  -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main
