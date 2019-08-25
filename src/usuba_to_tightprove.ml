@@ -46,6 +46,8 @@ let rec expr_to_str = function
   | ExpVar v   -> var_to_str v
   | Log(o,x,y) -> sprintf "%s %s %s"
                     (log_op_to_str o) (expr_to_str x) (expr_to_str y)
+  | Arith(o,x,y) -> sprintf "%s %s %s"
+                      (arith_op_to_str o) (expr_to_str x) (expr_to_str y)
   | Shift(op,e,ae) -> sprintf "%s %s %s"
                     (expr_to_str e) (shift_op_to_str op) (arith_to_str ae)
   | Not e -> sprintf "not %s" (expr_to_str e)

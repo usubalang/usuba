@@ -2,8 +2,8 @@
 ===============================================================================
 
     Reference implementation of Pyjamask block ciphers in C
-    
-    Copyright (C) 2019  Dahmun Goudarzi, Jérémy Jean, Stefan Kölbl, 
+
+    Copyright (C) 2019  Dahmun Goudarzi, Jérémy Jean, Stefan Kölbl,
     Thomas Peyrin, Matthieu Rivain, Yu Sasaki, Siang Meng Sim
 
     This program is free software: you can redistribute it and/or modify
@@ -56,8 +56,8 @@
 #define COL_MK          0xb881b9ca
 
 #define COL_INV_M0      0x2037a121
-#define COL_INV_M1      0x108ff2a0 
-#define COL_INV_M2      0x9054d8c0 
+#define COL_INV_M1      0x108ff2a0
+#define COL_INV_M2      0x9054d8c0
 #define COL_INV_M3      0x3354b117
 
 #define KS_CONSTANT_0   0x00000080
@@ -151,7 +151,7 @@ void key_schedule(const uint8_t *key, uint32_t* round_keys)
     int r;
     uint32_t *ks_state = round_keys;
 
-    load_state(key, ks_state, 4); 
+    load_state(key, ks_state, 4);
 
     for (r=0; r<NB_ROUNDS_KS; r++)
     {
@@ -161,7 +161,7 @@ void key_schedule(const uint8_t *key, uint32_t* round_keys)
         ks_mix_rotate_rows(ks_state);
         ks_add_constant(ks_state,r);
 
-    }    
+    }
 }
 
 //==============================================================================
@@ -210,7 +210,7 @@ void pyjamask_96_enc(const uint8_t *plaintext, const uint8_t *key, uint8_t *ciph
 
     for (r=0; r<NB_ROUNDS_96; r++)
     {
-        add_round_key_96(state, round_keys, r); 
+        add_round_key_96(state, round_keys, r);
         sub_bytes_96(state);
         mix_rows_96(state);
     }
@@ -325,7 +325,7 @@ void pyjamask_128_enc(const uint8_t *plaintext, const uint8_t *key, uint8_t *cip
     }
 
     add_round_key_128(state, round_keys, NB_ROUNDS_128);
-    
+
     unload_state(ciphertext, state, STATE_SIZE_128);
 }
 
@@ -368,7 +368,7 @@ void pyjamask_128_dec(const uint8_t *ciphertext, const uint8_t *key, uint8_t *pl
     load_state(ciphertext, state, STATE_SIZE_128);
 
     add_round_key_128(state, round_keys, NB_ROUNDS_128);
-    
+
     for (r=NB_ROUNDS_128-1; r>=0; r--)
     {
         inv_mix_rows_128(state);
@@ -378,5 +378,3 @@ void pyjamask_128_dec(const uint8_t *ciphertext, const uint8_t *key, uint8_t *pl
 
     unload_state(plaintext, state, STATE_SIZE_128);
 }
-
-
