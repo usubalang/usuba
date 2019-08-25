@@ -44,7 +44,7 @@ let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
       (run_pass "Expand_array (bitslice)" Expand_array.expand_array) |>
       (run_pass "Expand_permut" Expand_permut.expand_permut)         |>
       (run_pass "Norm_tuples.norm_tuples 1" Norm_tuples.norm_tuples) |>
-      (run_pass "Bitslice_shift" Bitslice_shift.expand_shifts)       |>
+      (run_pass "Shift_tuples" Shift_tuples.expand_shifts)       |>
       (run_pass "Norm_tuples.norm_tuples 2" Norm_tuples.norm_tuples) in
 
 
