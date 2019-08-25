@@ -37,7 +37,7 @@ let run_pass title func conf prog =
   res
 
 
-let rec opt_prog (prog:prog) (conf:config) =
+let rec opt_prog ?(retry:int=5) (prog:prog) (conf:config) =
 
   let run_pass title func ?(sconf = conf) prog =
     run_pass title func sconf prog in
@@ -53,4 +53,6 @@ let rec opt_prog (prog:prog) (conf:config) =
       (run_pass "Copy_propagation" copy_prop)                     |>
       (run_pass "Norm_tuples" Norm_tuples.norm_tuples) in
 
-  if prog = prog' then prog else opt_prog prog' conf
+  if retry > 0 then
+    if prog = prog' then prog else opt_prog ~retry:(retry-1) prog' conf
+  else prog'
