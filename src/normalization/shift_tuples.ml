@@ -1,5 +1,5 @@
 (***************************************************************************** )
-                              expand_shift.ml
+                              shift_tuples.ml
 
    This module applies the "shift" and "rotate": in bitslice mode, it only
    means renaming the registers.
@@ -56,10 +56,10 @@ let rec shift_expr (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
   | Tuple l -> Tuple(List.map (shift_expr env_var) l)
   | Not e' -> Not (shift_expr env_var e')
   | Shift(op,e,n) ->
-     (try
-        let n = eval_arith_ne n in
-        shift env_var op (shift_expr env_var e) n
-      with Not_found -> Shift(op,shift_expr env_var e,n))
+     let e' = shift_expr env_var e in
+     (match e' with
+      | Tuple _ -> shift env_var op e' (eval_arith_ne n)
+      | _ -> Shift(op,e',n))
   | Log(op,x,y) -> Log(op,shift_expr env_var x,shift_expr env_var y)
   | Arith(op,x,y) -> Arith(op,shift_expr env_var x,shift_expr env_var y)
   | Fun(f,l) -> Fun(f,List.map (shift_expr env_var) l)

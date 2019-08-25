@@ -107,7 +107,7 @@ let rec expand_expr env_var (e:expr) : expr list =
         | x' :: [] ->  x'
         | l -> Tuple l) in
      (try
-       (match Bitslice_shift.shift env_var op x' (eval_arith_ne ae) with
+       (match Shift_tuples.shift env_var op x' (eval_arith_ne ae) with
         | Tuple l -> flat_map (expand_expr env_var) l
         | x' -> [x'])
       with Not_found -> (* |ae| does not simplify to a Const *)
