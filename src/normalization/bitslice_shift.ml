@@ -56,8 +56,10 @@ let rec shift_expr (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
   | Tuple l -> Tuple(List.map (shift_expr env_var) l)
   | Not e' -> Not (shift_expr env_var e')
   | Shift(op,e,n) ->
-     let n = eval_arith_ne n in
-     shift env_var op (shift_expr env_var e) n
+     (try
+        let n = eval_arith_ne n in
+        shift env_var op (shift_expr env_var e) n
+      with Not_found -> Shift(op,shift_expr env_var e,n))
   | Log(op,x,y) -> Log(op,shift_expr env_var x,shift_expr env_var y)
   | Arith(op,x,y) -> Arith(op,shift_expr env_var x,shift_expr env_var y)
   | Fun(f,l) -> Fun(f,List.map (shift_expr env_var) l)
