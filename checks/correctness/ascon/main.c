@@ -77,7 +77,7 @@ void ascon(uint64_t text[5]) {
 
 
 
-void test_skinny() {
+void test_ascon() {
 
   // This seemigly random input is produced by encrypting full 0s plain
   uint64_t text[5] = { 0x78ea7ae5cfebb108, 0x9b9bfb8513b560f7, 0x6937f83e03d11a50,
@@ -96,12 +96,11 @@ void test_skinny() {
     fprintf(stderr, "\nGot      : ");
     for (int i = 0; i < 5; i++) fprintf(stderr, "%016lx ",text[i]);
     fprintf(stderr, "\n");
-  } else {
-    fprintf(stderr, "Seems OK.\n");
+    exit(EXIT_FAILURE);
   }
 }
 
 
 int main() {
-  test_skinny();
+  test_ascon();
 }
