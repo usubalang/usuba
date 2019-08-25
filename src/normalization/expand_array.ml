@@ -123,7 +123,7 @@ let rec expand_expr env_var env_keep env bitslice force (e:expr) : expr =
   | Tuple el -> Tuple(List.map rec_call el)
   | Not e' -> Not (rec_call e')
   | Shift(op,e1,ae) -> Shift(op,expand_expr env_var env_keep env bitslice
-                                            (if force = Keep then Split else force) e1,ae)
+                                            (if force = Keep then Split else force) e1,simpl_arith env ae)
   | Log(op,e1,e2) -> Log(op,rec_call e1,rec_call e2)
   | Shuffle(v,pat) -> Tuple(List.map (fun x -> Shuffle(x,pat))
                                      (expand_var env_var env_keep env bitslice force v))
