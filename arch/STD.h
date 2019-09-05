@@ -48,13 +48,17 @@
 #define L_ROTATE(a,b,c) ((a << b) | ((a&ROTATE_MASK(c)) >> (c-b)))
 #define R_ROTATE(a,b,c) (((a&ROTATE_MASK(c)) >> b) | (a << (c-b)))
 
+#define LIFT_4(x)  (x)
 #define LIFT_8(x)  (x)
 #define LIFT_16(x) (x)
 #define LIFT_32(x) (x)
 #define LIFT_64(x) (x)
 
 #ifndef DATATYPE
-#if BITS_PER_REG == 8
+#if BITS_PER_REG == 4
+#define DATATYPE uint8_t // TODO: use something else? do something else?
+                         // (needed for Photon right now)
+#elif BITS_PER_REG == 8
 #define DATATYPE uint8_t
 #elif BITS_PER_REG == 16
 #define DATATYPE uint16_t
