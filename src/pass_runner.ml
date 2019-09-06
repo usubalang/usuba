@@ -11,7 +11,7 @@ type pass = { conf:config;
 (* |def_conf| is the config used by default for all passes. *)
 class pass_runner (def_conf:config) =
 object (self)
-  
+
   (* The passes to run. They are stored in reverse order and the list
   is reverted before running the passes. *)
   val mutable passes : pass list = []
@@ -28,7 +28,7 @@ object (self)
     let conf = pass.conf in
 
     if conf.verbose >= 5 then Printf.eprintf "\rRunning pass %s... %!" pass.name;
-    
+
     let prog' = pass.action prog pass.conf in
     passes <- [];
 
@@ -43,7 +43,7 @@ object (self)
   method run_all_passes (prog:prog) : prog =
     (* Note the use of fold_right, which amounts to using fold_left + rev.*)
     List.fold_right self#run_pass passes prog
-                
+
   method get_passes () : pass list = passes
   method get_conf () : config = def_conf
 end
