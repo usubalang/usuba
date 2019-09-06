@@ -205,9 +205,11 @@ let gen_fun_name (f:ident) (ldir:dir list) (lmtyp:mtyp list): ident =
                              | Hslice -> "H"
                              | Vslice -> "V"
                              | Bslice -> "B"
+                             | Natdir -> "Nat"
                              | _ -> assert false) ldir)) ^
          (join "_" (List.map (function
                                | Mint n -> string_of_int n
+                               | Mnat   -> "nat"
                                | _ -> assert false) lmtyp)))
 
 (* Mainly useful for bitslicing to convert Uint(_,m,_) to Array(Uint(_,1,_),m) *)
@@ -218,6 +220,7 @@ let refine_types (p:p) : p =
               | Bslice -> Bslice.refine_types p
               | Hslice -> Hslice.refine_types p
               | Vslice -> Vslice.refine_types p
+              | Natdir -> p
               | _ -> assert false
 
 let specialize_p (env_dir:(dir,dir) Hashtbl.t)
@@ -230,6 +233,7 @@ let specialize_var (env_var:(ident, typ) Hashtbl.t) (v:var) : var =
   | Bslice -> Bslice.specialize_var env_var v
   | Hslice -> Hslice.specialize_var env_var v
   | Vslice -> Vslice.specialize_var env_var v
+  | Natdir -> v
   | _ -> assert false
 
 (* Called on the parameters of a function call -> those should be ExpVars only *)
@@ -308,6 +312,7 @@ and specialize_expr (all_nodes:(ident,def) Hashtbl.t)
          | Bslice -> Eqn(Bslice.specialize_vars env_var vs,
                          Bslice.specialize_expr env_dir env_m env_var e,
                          sync)
+         | Natdir -> Eqn(vs,e,sync) (* A Nat, doing nothing *)
          | _ -> assert false
 
 

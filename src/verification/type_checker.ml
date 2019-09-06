@@ -327,6 +327,7 @@ let rec check_type_eq (backtrace:string list) (t1:typ) (t2:typ) : unit =
   let is_m_polymorphic (m:mtyp) : bool =
     match m with
     | Mint _ -> false
+    | Mnat   -> false
     | Mvar _ -> true in
   match t1,t2 with
   | Uint(_,m1,n1), Uint(_,m2,n2) ->
@@ -408,7 +409,7 @@ let match_types_binop (backtrace:string list) (l1:typ list) (l2:typ list) : unit
   aux l1 l2
 
 (* Checks that |typs| can be used in an Arith expr. That is, their
-   word size is either polymorphic, or in {8,16,32,64}. *)
+   word size is either polymorphic, or in {8,16,32,64}, or is a Nat. *)
 let check_can_be_arithed (backtrace:string list) (typs:typ list) : unit =
   let backtrace = (sprintf "check_can_be_arithed(%s)" (typ_to_str_l typs))
                   :: backtrace in
@@ -418,6 +419,7 @@ let check_can_be_arithed (backtrace:string list) (typs:typ list) : unit =
                     (eprintf "[Type error] Invalid word-size: can't perform arithmetics on %d bits.\n" n;
                      print_backtrace backtrace;
                      error := true)
+      | Mnat   -> () (* a Nat, ignoring for now *)
       | Mvar _ -> () (* polymorphic word-size; ignoring for now *)
     ) typs
 
@@ -437,14 +439,17 @@ let rec check_aexpr_is_typed (backtrace:string list)
      (match Hashtbl.find_opt env_it x with
       | Some _ -> ()
       | None   ->
-         eprintf "[Type error] Use of undeclared variable `%s' in index.\n" x.name;
-         if Hashtbl.mem env_var x then
-           eprintf "A variable with the same name exists, but is not a loop iterator and therefore cannot be used in an aexpr (type=%s).\n"
-             (typ_to_str (Hashtbl.find env_var x));
-         eprintf "Iterator environment: { %s }.\n"
-           (join "," (List.map (fun x -> x.name) (keys env_it)));
-         print_backtrace backtrace;
-         error := true)
+         match Hashtbl.find_opt env_var x with
+         | Some Nat -> ()
+         | _ ->
+            eprintf "[Type error] Use of undeclared variable `%s' in index.\n" x.name;
+            if Hashtbl.mem env_var x then
+              eprintf "A variable with the same name exists, but is not a loop iterator and therefore cannot be used in an aexpr (type=%s).\n"
+                      (typ_to_str (Hashtbl.find env_var x));
+            eprintf "Iterator environment: { %s }.\n"
+                    (join "," (List.map (fun x -> x.name) (keys env_it)));
+            print_backtrace backtrace;
+            error := true)
   | Op_e(_,ae1,ae2) ->
      check_aexpr_is_typed backtrace env_var env_it ae1;
      check_aexpr_is_typed backtrace env_var env_it ae2
@@ -777,6 +782,11 @@ let type_table (backtrace:string list) (conf:config) (p_in:p) (p_out:p) (l:int l
     match p with
     | vd :: [] -> (match get_type_m vd.vtyp with
                    | Mint c -> c
+                   | Mnat   -> begin
+                       eprintf "[Type error] Cannot use a Nat in a table's parameters.\n";
+                       print_backtrace backtrace;
+                       raise Fatal_type_error
+                             end
                    | Mvar _ -> begin
                        eprintf "[Type error] Cannot use word-size polymorphic tables with -keep-tables.\n";
                        print_backtrace backtrace;

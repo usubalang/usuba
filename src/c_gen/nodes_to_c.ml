@@ -74,15 +74,18 @@ let rec ret_var_to_c (lift_env:(var,int)  Hashtbl.t)
   | Array _ | Uint _ -> var_to_c lift_env env v
   | _ -> assert false
 
-let const_to_c (m:int) (n:int) (conf:config) : string =
+let const_to_c (m:mtyp) (n:int) (conf:config) : string =
   match m with
-  | 1 | -1 -> (match n with
+  | Mint 1 | Mint (-1) -> (match n with
                | 0 -> "SET_ALL_ZERO()"
                | 1 -> "SET_ALL_ONE()"
                | _ -> assert false)
-  | _ -> sprintf "LIFT_%d(%d)" m n
+  | _ -> match m with
+         | Mint m -> sprintf "LIFT_%d(%d)" m n
+         | Mnat -> sprintf "%d" n
+         | _ -> assert false
 
-let rec expr_to_c (m:int)
+let rec expr_to_c (m:mtyp)
                   (lift_env:(var,int)  Hashtbl.t)
                   (conf:config) (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t) (e:expr) : string =
@@ -95,11 +98,19 @@ let rec expr_to_c (m:int)
                            (expr_to_c m lift_env conf env env_var x)
                            (expr_to_c m lift_env conf env env_var y)
   | Arith(op,x,y) ->
-     sprintf "%s(%s,%s,%d)"
-             (arith_op_to_c_generic op)
-             (expr_to_c m lift_env conf env env_var x)
-             (expr_to_c m lift_env conf env env_var y)
-             m
+     (match m with
+      | Mint mval -> 
+         sprintf "%s(%s,%s,%d)"
+                 (arith_op_to_c_generic op)
+                 (expr_to_c m lift_env conf env env_var x)
+                 (expr_to_c m lift_env conf env env_var y)
+                 mval
+      | Mnat ->
+         sprintf "((%s) %s (%s))"
+                 (expr_to_c m lift_env conf env env_var x)
+                 (arith_op_to_c op)
+                 (expr_to_c m lift_env conf env env_var y)
+      | _ -> assert false)
   | Shuffle(v,l) -> sprintf "PERMUT_%d(%s,%s)"
                                  (List.length l)
                                  (var_to_c lift_env env v)
@@ -123,8 +134,8 @@ let fun_call_to_c (lift_env:(var,int)  Hashtbl.t)
                   (p:var list) (f:ident) (args: expr list) : string =
   sprintf "%s%s(%s,%s);"
           tabs
-          (rename f.name) (join "," (List.map (expr_to_c (-1) lift_env conf env env_var) args))
-                                                      (* ^^^ this "m" value is ignored *)
+          (rename f.name) (join "," (List.map (expr_to_c Mnat lift_env conf env env_var) args))
+                                                      (* ^^^^ this "m" value is ignored *)
           (join "," (List.map (fun v -> ret_var_to_c lift_env env env_var v) p))
 
 let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
@@ -140,9 +151,7 @@ let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
                sprintf "%s%s = RAND();" tabs (var_to_c lift_env env v)
             | Eqn(p,Fun(f,l),_) -> fun_call_to_c lift_env conf env env_var ~tabs:tabs p f l
             | Eqn([v],e,_) ->
-               let m = match get_type_m (get_var_type env_var v) with
-                 | Mint n -> n
-                 | _ -> assert false in
+               let m = get_type_m (get_var_type env_var v) in
                sprintf "%s%s = %s;" tabs (var_to_c lift_env env v)
                        (expr_to_c m lift_env conf env env_var e)
             | Loop(i,ei,ef,l,_) ->
@@ -254,7 +263,10 @@ let rec var_decl_to_c conf (vd:var_d) (out:bool) : string =
   let vname = aux vd.vid vd.vtyp "" in
   let vtype = if conf.lazylift && is_const vd then
                 gen_intn (get_lift_size vd)
-              else "DATATYPE" in
+              else
+                match get_type_m vd.vtyp with
+                | Mnat -> "int"
+                | _ -> "DATATYPE" in
   let pointer = match out with
     | false -> ""
     | true  -> match vd.vtyp with
