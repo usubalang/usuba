@@ -30,11 +30,13 @@ Inductive dir :=
   | Hslice
   | Vslice
   | Bslice
+  | Natdir (* Special direction for Nat *)
   | Varslice (id:ident) (* variable *)
   | Mslice (i:N). (* Generalized m-slicing *)
 
 Inductive mtyp :=
   | Mint (i:N)
+  | Mnat (* Special m for Nat *)     
   | Mvar (id:ident). (* variable *)
 
 Inductive typ :=

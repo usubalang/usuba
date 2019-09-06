@@ -121,6 +121,7 @@ let pat_to_str_types pat =
 let m_to_str m =
   match m with
   | Mint n  -> sprintf "%d" n
+  | Mnat    -> assert false
   | Mvar id -> id.name
 
 let dir_to_str d =
@@ -128,6 +129,7 @@ let dir_to_str d =
   | Hslice     -> "<H>"
   | Vslice     -> "<V>"
   | Bslice     -> "<B>"
+  | Natdir     -> assert false
   | Mslice i   -> sprintf "<%d>" i
   | Varslice v -> if v.name = "D" then "" else sprintf "<%s>" v.name
 
@@ -138,6 +140,7 @@ let rec full_typ_to_str typ =
      let dir_str = dir_to_str d in
      let m_str = match m with
        | Mint i  -> string_of_int i
+       | Mnat    -> assert false
        | Mvar id -> id.name in
      sprintf "u%s%sx%d" dir_str m_str n
   | Array(typ,n) -> sprintf "%s[%d]" (full_typ_to_str typ) n
@@ -152,6 +155,7 @@ let rec typ_to_str ?(acc="") typ =
         | Mint 1  -> sprintf "b%s%d" dir_str n
         | Mint i  -> if n = 1 then sprintf "u%s%d" dir_str i
                      else sprintf "u%s%dx%d" dir_str i n
+        | Mnat    -> assert false
         | Mvar id -> if id.name = "m" then sprintf "v%s%d" dir_str n
                      else sprintf "u%s%sx%d" dir_str id.name n)
        acc

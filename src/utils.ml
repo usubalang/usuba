@@ -343,10 +343,12 @@ let rec get_base_type (typ:typ) : typ =
 let get_type_dir (typ:typ) : dir =
   match get_base_type typ with
   | Uint(dir,_,_) -> dir
+  | Nat -> Natdir
   | _ -> assert false
 let get_type_m (typ:typ) : mtyp =
   match get_base_type typ with
   | Uint(_,m,_) -> m
+  | Nat -> Mnat
   | _ -> assert false
 
 
@@ -364,12 +366,12 @@ let rec update_type_dir (typ:typ) (dir:dir) : typ =
   match typ with
   | Uint(_,m,n) -> Uint(dir,m,n)
   | Array(t,n)  -> Array(update_type_dir t dir,n)
-  | _ -> assert false
+  | Nat         -> Nat
 let rec update_type_m (typ:typ) (m:mtyp) : typ =
   match typ with
   | Uint(dir,_,n) -> Uint(dir,m,n)
-  | Array(t,n)  -> Array(update_type_m t m,n)
-  | _ -> assert false
+  | Array(t,n)    -> Array(update_type_m t m,n)
+  | Nat           -> Nat
 
 let vd_to_var (vd:var_d) : var =
   Var vd.vid
