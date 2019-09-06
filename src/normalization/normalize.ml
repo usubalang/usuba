@@ -1,8 +1,8 @@
 open Usuba_AST
 open Basic_utils
 open Utils
-
-
+open Pass_runner
+       
 let print title body conf =
   if conf.verbose >= 5 then
     begin
@@ -23,100 +23,120 @@ let run_pass title func conf prog =
   res
 
 
-let norm_prog (rename:bool) (prog: prog) (conf:config) : prog  =
+let register_norm_bitslice (runner:pass_runner) : unit =
+  runner#register_pass Unfold_unnest.norm_prog  "Norm_bitslice.Unfold_unnest";
+  runner#register_pass Expand_array.expand_array "Norm_bitslice.Expand_array";
+  runner#register_pass Expand_permut.expand_permut "Norm_bitslice.Expand_permut";
+  runner#register_pass Norm_tuples.norm_tuples "Norm_bitslice.Norm_tuples 1";
+  runner#register_pass Shift_tuples.expand_shifts "Norm_bitslice.Shift_tuples";
+  runner#register_pass Norm_tuples.norm_tuples "Norm_bitslice.Norm_tuples 2"
 
-  let run_pass title func ?(sconf = conf) prog =
-    run_pass title func sconf prog in
+let register_normalize_core (runner:pass_runner) : unit =
+  (* Remove slices/ranges (and forall and arrays in some cases) *)
+  runner#register_pass Expand_array.expand_array "Expand_array";
+  
+  register_norm_bitslice runner;
+  
+  (* Remove arrays from parameters when needed *)
+  runner#register_pass  Expand_parameters.expand_parameters "Expand_parameters";
+  
+  (* Make sure the number of parameters for each function call is right *)
+  runner#register_pass Fix_dim.Dir_params.fix_dim "Fix_dim params";
+  
+  (* Remove slices/ranges (and forall and arrays in some cases) *)
+  runner#register_pass Expand_array.expand_array "Expand_array 2";
+  
+  register_norm_bitslice runner;
+  
+  (* Remove arrays from parameters when needed *)
+  runner#register_pass Expand_parameters.expand_parameters "Expand_parameters 2";
+  
+  (* Make sure the number of parameters for each function call is right *)
+  runner#register_pass Fix_dim.Dir_inner.fix_dim "Fix_dim inner";
+  
+  (* Remove slices/ranges (and forall and arrays in some cases) *)
+  runner#register_pass Expand_array.expand_array "Expand_array 3";
+  
+  register_norm_bitslice runner
 
-  (* Scheduling is a bit tricky: need to apply CSE_CF_CP before scheduling *)
-  let sched_fun prog conf =
-    if conf.scheduling then
-      Pre_schedule.schedule
-        (Simple_opts.opt_prog prog conf)
-    else prog in
+let register_pre_schedule (runner:pass_runner) : unit =
+  (* Scheduling is a bit tricky: need to apply CSE_CF_CP before
+  scheduling *)
+  if (runner#get_conf ()).scheduling then
+    runner#register_pass (fun prog conf ->
+                          Pre_schedule.schedule
+                            (Simple_opts.opt_prog prog conf)) "Pre_schedule"
+  
+    
+let norm_prog (rename:bool) (prog:prog) (conf:config) : prog =
+  let runner = new pass_runner conf in
 
-  (* Rename only if param rename is true *)
-  let rename = if rename then Rename.rename_prog else (fun x _ -> x) in
-
-  let norm_bitslice x _ =
-    x |>
-      (run_pass "Unfold_unnest" Unfold_unnest.norm_prog)             |>
-      (run_pass "Expand_array (bitslice)" Expand_array.expand_array) |>
-      (run_pass "Expand_permut" Expand_permut.expand_permut)         |>
-      (run_pass "Norm_tuples.norm_tuples 1" Norm_tuples.norm_tuples) |>
-      (run_pass "Shift_tuples" Shift_tuples.expand_shifts)       |>
-      (run_pass "Norm_tuples.norm_tuples 2" Norm_tuples.norm_tuples) in
-
-
-  let normalize_core x _ =
-    x |>
-      (* Remove slices/ranges (and forall and arrays in some cases) *)
-      (run_pass "Expand_array 1.5" Expand_array.expand_array)              |>
-      (run_pass "Norm_bitslice 1" norm_bitslice)                           |>
-      (* Remove arrays from parameters when needed *)
-      (run_pass "Expand_parameters" Expand_parameters.expand_parameters)   |>
-      (* Make sure the number of parameters for each function call is right *)
-      (run_pass "Fix_dim params" Fix_dim.Dir_params.fix_dim)               |>
-      (* Remove slices/ranges (and forall and arrays in some cases) *)
-      (run_pass "Expand_array 2" Expand_array.expand_array)                |>
-      (run_pass "Norm_bitslice 2" norm_bitslice)                           |>
-      (* Remove arrays from parameters when needed *)
-      (run_pass "Expand_parameters 2" Expand_parameters.expand_parameters) |>
-      (* Make sure the number of parameters for each function call is right *)
-      (run_pass "Fix_dim inner" Fix_dim.Dir_inner.fix_dim)                 |>
-      (* Remove slices/ranges (and forall and arrays in some cases) *)
-      (run_pass "Expand_array 3" Expand_array.expand_array)                |>
-      (run_pass "Norm_bitslice 3" norm_bitslice) in
-
-
-  let normalized =
-    prog |>
-      (run_pass "Rename" rename)                                           |>
-      (* Remove arrays of nodes *)
-      (run_pass "Expand_multiples" Expand_multiples.expand_multiples)      |>
-      (* Convert tables to circuits *)
-      (run_pass "Convert_tables" Convert_tables.convert_tables)            |>
-      (* Remove slices/ranges (and forall and arrays in some cases) *)
-      (run_pass "Expand_array" Expand_array.expand_array)                  |>
-      (* Converts ':=' to SSA *)
-      (run_pass "Remove_sync" Remove_sync.remove_sync)                     |>
-      (* Schedules instructions according to their dependencies *)
-      (run_pass "Init_scheduler 1" Init_scheduler.schedule_prog)           |>
-      (* Remove when/merge *)
-      (run_pass "Remove_ctrl" Remove_ctrl.remove_ctrl)                     |>
-      (run_pass "Core normalize 1" normalize_core)                         |>
-      (* Monomorphize to H/V/B-slice *)
-      (run_pass "Monomorphize" Monomorphize.monomorphize)                  |>
-      (run_pass "Core normalize 2" normalize_core)                         |>
-      (* Schedules instructions according to their dependencies *)
-      (run_pass "Init_scheduler 2" Init_scheduler.schedule_prog)           |>
-      (* Optimized scheduling *)
-      (run_pass "Pre_schedule" sched_fun)                                  |>
-      (run_pass "Core normalize 3" normalize_core)                         |>
-      (* Inlining *)
-      (run_pass "Inline" Inline.inline)                                    |>
-      (* Re-optimized scheduling (inlining could have introduced some
+  if rename then runner#register_pass Rename.rename_prog "rename";
+  
+  (* Remove arrays of nodes *)
+  runner#register_pass Expand_multiples.expand_multiples "Expand_multiples";
+  
+  (* Convert tables to circuits *)
+  runner#register_pass Convert_tables.convert_tables "Convert_tables";
+  
+  (* Remove slices/ranges (and forall and arrays in some cases) *)
+  runner#register_pass Expand_array.expand_array "Expand_array";
+  
+  (* Converts ':=' to SSA *)
+  runner#register_pass Remove_sync.remove_sync "Remove_sync";
+  
+  (* Schedules instructions according to their dependencies *)
+  runner#register_pass Init_scheduler.schedule_prog "Init_scheduler 1";
+  
+  (* Remove when/merge *)
+  runner#register_pass Remove_ctrl.remove_ctrl "Remove_ctrl";
+  
+  register_normalize_core runner;
+  
+  (* Monomorphize to H/V/B-slice *)
+  runner#register_pass Monomorphize.monomorphize "Monomorphize";
+  
+  register_normalize_core runner;
+  
+  (* Schedules instructions according to their dependencies *)
+  runner#register_pass Init_scheduler.schedule_prog "Init_scheduler 2";
+  
+  (* Optimized scheduling *)
+  register_pre_schedule runner;
+  
+  register_normalize_core runner;
+  
+  (* Inlining *)
+  runner#register_pass Inline.inline "Inline";
+  
+  (* Re-optimized scheduling (inlining could have introduced some
          oportunities for a better scheduling *)
-      (run_pass "Pre_schedule 2" sched_fun)                                |>
-      (run_pass "Norm_bitslice 4" norm_bitslice) in
+  register_pre_schedule runner;
+
+  register_norm_bitslice runner;
 
   (* CSE-CP + Scheduling *)
-  let optimized   = run_pass "Optimize" Optimize.opt_prog normalized in
-  let clock_fixed = run_pass "Fix_clocks" Fix_clocks.fix_prog optimized in
-  let norm_ok     = run_pass "Norm_bitslice 5" norm_bitslice clock_fixed in
+  runner#register_pass Optimize.opt_prog "Optimize";
+  
+  runner#register_pass Fix_clocks.fix_prog "Fix_clocks";
+
+  register_norm_bitslice runner;
+
+  let prog' = runner#run_all_passes prog in
 
   if conf.check_tbl then
-    Soundness.tables_sound (Rename.rename_prog prog conf) norm_ok;
+    Soundness.tables_sound (Rename.rename_prog prog conf) prog';
 
   if conf.tightPROVE then
-    Usuba_to_tightprove.print_prog norm_ok;
+    Usuba_to_tightprove.print_prog prog';
 
   (* Array linearization leaves the dataflow world (as it reuses variables),
     so putting it at the end
     (might be more correct to put it in the C generation) *)
-  let linearized = run_pass "Linearize_arrays" Linearize_arrays.linearize_arrays norm_ok in
-  linearized
+  runner#register_pass Linearize_arrays.linearize_arrays "Linearize_arrays";
 
+  runner#run_all_passes prog'
+                        
 
 let compile (prog:prog) (conf:config) : prog =
   print "INPUT:" prog conf;
