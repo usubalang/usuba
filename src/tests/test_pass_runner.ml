@@ -2,7 +2,7 @@ open Usuba_AST
 open Utils
 open Parser_api
 open Pass_runner
-       
+
 let test_simple () =
   let runner = new pass_runner default_conf in
   runner#register_pass
@@ -15,6 +15,6 @@ let test_simple () =
   let expected = parse_prog "node f_a_b(x:b1) returns (y:b1) let y = x tel" in
   let result   = runner#run_all_passes prog in
   assert (result = expected)
-       
+
 let test () =
   test_simple ()
