@@ -58,8 +58,16 @@ let rec shift_expr (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
   | Shift(op,e,n) ->
      let e' = shift_expr env_var e in
      (match e' with
-      | Tuple _ -> shift env_var op e' (eval_arith_ne n)
-      | _ -> Shift(op,e',n))
+      | Tuple _ ->
+         (try let n' = eval_arith_ne n in
+              shift env_var op e' n'
+          with Not_found ->
+            (* n depends on a parameter AND the node couldn't be
+               inlined -> the node will be inlined later, and then the
+               shift will be performed. *)
+            Printf.printf "Can shift: %s\n" (Usuba_print.expr_to_str e);
+            Shift(op,e',n))
+            | _ -> Shift(op,e',n))
   | Log(op,x,y) -> Log(op,shift_expr env_var x,shift_expr env_var y)
   | Arith(op,x,y) -> Arith(op,shift_expr env_var x,shift_expr env_var y)
   | Fun(f,l) -> Fun(f,List.map (shift_expr env_var) l)
@@ -80,4 +88,7 @@ let shift_def (def:def) : def =
   | _ -> def
 
 let expand_shifts (prog:prog) (conf:config) : prog =
-  { nodes = List.map shift_def prog.nodes }
+  (* Inlines nodes that _must_ be inlined. *)
+  let prog' = Inline.light_inline prog conf in
+  (* And perform shifts *)
+  { nodes = List.map shift_def prog'.nodes }
