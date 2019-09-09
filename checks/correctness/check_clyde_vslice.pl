@@ -25,7 +25,7 @@ say "############################# Clyde Vslice ############################";
 chdir "$FindBin::Bin/../..";
 
 # Compiling the compiler.
-unless ($ARGV[0]) { 
+unless ($ARGV[0]) {
     say "Compiling...";
     error if system 'make';
 }
