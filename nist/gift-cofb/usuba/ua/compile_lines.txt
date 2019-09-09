@@ -1,0 +1,5 @@
+./usubac -B -no-inline -no-sched -o nist/gift-cofb/usuba/ua/gift_ua_bitslice.c -arch std -no-share nist/gift-cofb/usuba/ua/gift_bitslice.ua
+./usubac -V -no-inline -no-sched -o nist/gift-cofb/usuba/ua/gift_ua_vslice.c -arch std -no-share nist/gift-cofb/usuba/ua/gift.ua
+clang -D UA_V -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main
+clang -D UA_B -Wno-incompatible-pointer-types -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main
+clang -D REF  -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main
