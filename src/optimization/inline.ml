@@ -313,7 +313,6 @@ let rec light_inline (prog:prog) (conf:config) : prog =
   | None      -> prog
   | Some node -> try light_inline (do_inline prog node) conf with
                    _ ->
-                   Printf.eprintf "Inlining of %s failed...\n" node.id.name;
                    prog (* Program not normalized -> can't inline now *)
 
 

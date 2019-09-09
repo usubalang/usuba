@@ -1,5 +1,5 @@
 (***************************************************************************** )
-                              init_scheduler.ml                                 
+                              init_scheduler.ml
 
   Schedule the equations of each nodes according to their dependencies.
   (basically, it "imperativize" the code)
@@ -18,21 +18,22 @@ open Utils
 
 (* Expands a variable, keeping it's intermediary expensions.
    For instance, if x:bool[2][3], then we'll get:
-     (x, x[0], x[1], x[0][0], x[0][1], ...) 
+     (x, x[0], x[1], x[0][0], x[0][1], ...)
  *)
 let rec expand_var_w_inter env_var (v:var) : var list =
   match get_var_type env_var v with
+  | Nat         -> [ v ]
   | Uint(_,_,1) -> [ v ]
   | _ -> v :: (flat_map (expand_var_w_inter env_var) (expand_var_partial env_var v))
-      
+
 (* Expands each var of 'vars' and adds it to the table 'ready' *)
 let update_ready (ready:(var,bool) Hashtbl.t)
                  (env_var:(ident,typ) Hashtbl.t)
                  (vars:var list) : unit =
   List.iter (fun v -> List.iter (fun v' -> Hashtbl.add ready v' true)
                                 (expand_var_w_inter env_var v)) vars
-  
-    
+
+
 (* Updates to_sched, which is a hash of hash (see comment in schedule_deqs) *)
 let update_to_sched (to_sched:(var,(deq,bool) Hashtbl.t) Hashtbl.t)
                     (v:var) (deq:deq) : unit =
@@ -53,30 +54,30 @@ let update_to_sched (to_sched:(var,(deq,bool) Hashtbl.t) Hashtbl.t)
 let rec is_ready (env_var:(ident,typ) Hashtbl.t)
                  (ready:(var,bool) Hashtbl.t)
                  (v:var) : bool =
-  (* Looks if sub-variables of v have been scheduled 
+  (* Looks if sub-variables of v have been scheduled
      ie. (x[0], x[1]) instead of x *)
   let rec is_ready_bot (v:var) : bool =
     match Hashtbl.mem ready v with
     | true  -> true
-    | false -> 
+    | false ->
        let expanded = expand_var_partial env_var v in
        match expanded with
        | [ v' ] when v' = v -> false
        | _ -> List.for_all is_ready_bot expanded in
 
-  (* Looks if parent-variable have been scheduled 
+  (* Looks if parent-variable have been scheduled
      ie. x instead of x[0] *)
   let rec is_ready_top (v:var) : bool =
     match Hashtbl.mem ready v with
     | true  -> true
-    | false -> 
+    | false ->
        match v with
        | Var _       -> false
        | Index(v',_) -> is_ready_top v'
        | _ -> assert false in
 
   (is_ready_bot v) || (is_ready_top v)
-                              
+
 let schedule_deqs (env_var:(ident, typ) Hashtbl.t) (def:def) (deqs:deq list) : deq list =
   let ready = Hashtbl.create 100 in
   update_ready ready env_var (p_to_vars def.p_in);
@@ -200,8 +201,8 @@ let schedule_prog (prog:prog) (conf:config): prog =
 
 
 
-  
-  
+
+
 
 (* (\* Creates a hash containing the variables defined by 'p'. *)
 (*    (typically, p is the inputs of the program)  *)
@@ -216,7 +217,7 @@ let schedule_prog (prog:prog) (conf:config): prog =
 (*     match get_var_type env_var v with *)
 (*     | Bool | Int(_,1) -> [ v ] *)
 (*     | _ -> v :: (flat_map (aux env_var) (expand_var_partial env_var v)) in *)
-  
+
 (*   let env = Hashtbl.create 100 in *)
 (*   List.iter (fun vd -> *)
 (*              let env_var = Hashtbl.create 100 in *)
@@ -224,7 +225,7 @@ let schedule_prog (prog:prog) (conf:config): prog =
 (*              List.iter (fun v -> Hashtbl.add env v true) *)
 (*                        (aux env_var (Var vd.vid))) p; *)
 (*   env   *)
-  
+
 
 (* let schedule_deqs (def:def) (deqs:deq list) : deq list = *)
 (*   let ready = init_ready def.p_in in *)
@@ -263,8 +264,8 @@ let schedule_prog (prog:prog) (conf:config): prog =
 (*     ) *)
 (*   else *)
 (*     List.rev !body *)
-              
-       
+
+
 (* let schedule_def (def:def) : def = *)
 (*   { def with node = *)
 (*                match def.node with *)
