@@ -65,7 +65,6 @@ let rec shift_expr (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
             (* n depends on a parameter AND the node couldn't be
                inlined -> the node will be inlined later, and then the
                shift will be performed. *)
-            Printf.printf "Can shift: %s\n" (Usuba_print.expr_to_str e);
             Shift(op,e',n))
             | _ -> Shift(op,e',n))
   | Log(op,x,y) -> Log(op,shift_expr env_var x,shift_expr env_var y)

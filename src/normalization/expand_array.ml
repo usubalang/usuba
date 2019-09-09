@@ -48,6 +48,12 @@ let rec eval_arith env (e:Usuba_AST.arith_expr) : int =
                     | Div -> x' / y'
                     | Mod -> if x' >= 0 then x' mod y' else y' + (x' mod y')
 
+let rec check_need_unroll_it (env_it:(ident,bool) Hashtbl.t) (ae:arith_expr) : unit =
+  match ae with
+  | Const_e _   -> ()
+  | Var_e id    -> if Hashtbl.mem env_it id then raise (Need_unroll id)
+  | Op_e(_,x,y) -> check_need_unroll_it env_it x;
+                   check_need_unroll_it env_it y
 
 (* Returns true iff e uses variables. *)
 let rec uses_var (e:arith_expr) : bool =
@@ -108,8 +114,8 @@ let rec expand_var env_var env_keep env bitslice force (v:var) : var list =
 let expand_vars env_var env_keep env bitslice force (vars:var list) : var list =
   flat_map (expand_var env_var env_keep env bitslice force) vars
 
-let rec expand_expr env_var env_keep env bitslice force (e:expr) : expr =
-  let rec_call = expand_expr env_var env_keep env bitslice force in
+let rec expand_expr env_var env_keep env env_it bitslice force (e:expr) : expr =
+  let rec_call = expand_expr env_var env_keep env env_it bitslice force in
   match e with
   | Const _ -> e
   | ExpVar v ->
@@ -122,8 +128,17 @@ let rec expand_expr env_var env_keep env bitslice force (e:expr) : expr =
                 | _ -> ExpVar x) l)
   | Tuple el -> Tuple(List.map rec_call el)
   | Not e' -> Not (rec_call e')
-  | Shift(op,e1,ae) -> Shift(op,expand_expr env_var env_keep env bitslice
-                                            (if force = Keep then Split else force) e1,simpl_arith env ae)
+  | Shift(op,e1,ae) ->
+     let e1' = expand_expr env_var env_keep env env_it bitslice
+                           (if force = Keep then Split else force) e1 in
+     (* if e1' greater than 1, then it's a shift of a tuple *)
+     if get_expr_size env_var e1' > 1 then
+       (* check_need_unroll_it will raise Need_unroll if ae depends on
+       an iterator (since we are performing a shift on a tuple (which
+       needs to be done at compile time), but we can only do it if the
+       iterator has a value -> need to unroll). *)
+       check_need_unroll_it env_it ae;
+     Shift(op,e1',simpl_arith env ae)
   | Log(op,e1,e2) -> Log(op,rec_call e1,rec_call e2)
   | Shuffle(v,pat) -> Tuple(List.map (fun x -> Shuffle(x,pat))
                                      (expand_var env_var env_keep env bitslice force v))
@@ -147,20 +162,22 @@ let rec do_unroll env_var env_keep env bitslice force unroll x ei ef deqs : deq 
   eqs
 
 and expand_deqs env_var env_keep ?(env=make_env ())
+                ?(env_it:(ident,bool) Hashtbl.t = make_env ())
                 (bitslice:bool) (force:array_fate) (unroll:bool) (deqs:deq list) : deq list =
   flat_map
     (fun deq ->
      match deq with
      | Eqn(lhs,e,sync) -> [ Eqn(expand_vars env_var env_keep env bitslice force lhs,
-                                expand_expr env_var env_keep env bitslice force e, sync) ]
+                                expand_expr env_var env_keep env env_it bitslice force e, sync) ]
      | Loop(x,ei,ef,deqs,opts) ->
         Hashtbl.add env_var x Nat;
+        Hashtbl.add env_it x true;
         let res =
           if List.mem Unroll opts || (force = Remove) || unroll then
             do_unroll env_var env_keep env bitslice force unroll x ei ef deqs
           else
             try
-              [ Loop(x,ei,ef,expand_deqs env_var env_keep ~env:env bitslice force unroll deqs,opts) ]
+              [ Loop(x,ei,ef,expand_deqs env_var env_keep ~env:env ~env_it:env_it bitslice force unroll deqs,opts) ]
             with Need_unroll id ->
               if id = x then (
                 try

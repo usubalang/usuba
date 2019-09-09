@@ -189,6 +189,18 @@ module Compute_keeps = struct
 
 end
 
+(* This function is a bit weird because |optimized_away| contains Var
+   but |ae| contains Var_e, so... Maybe we should consider removing
+   arith_expr and keeping only expr. *)
+let rec propagate_in_aexpr (optimized_away:(var,expr) Hashtbl.t) (ae:arith_expr) =
+  match ae with
+  | Const_e _    -> ae
+  | Var_e x      -> (match Hashtbl.find_opt optimized_away (Var x) with
+                     | Some (Const(c,_)) -> Const_e c
+                     | _                 -> Var_e x)
+  | Op_e(op,x,y) -> Op_e(op,propagate_in_aexpr optimized_away x,
+                         propagate_in_aexpr optimized_away y)
+
 (* Propagates optimized away variables: if |v| has been optimized
    away, it's replaced. *)
 let propagate_in_var (optimized_away:(var,expr) Hashtbl.t) (v:var)
@@ -220,7 +232,8 @@ let rec propagate_in_expr  (optimized_away:(var,expr) Hashtbl.t) (e:expr)
          Shuffle(v,l)
       | _ -> assert false)
   | Not e'          -> [], Not (propagate_in_expr_rec optimized_away e')
-  | Shift(op,e',ae) -> [], Shift(op,propagate_in_expr_rec optimized_away e',ae)
+  | Shift(op,e',ae) -> [], Shift(op,propagate_in_expr_rec optimized_away e',
+                                 propagate_in_aexpr optimized_away ae)
   | Log(op,x,y)     -> [], Log(op,propagate_in_expr_rec optimized_away x,
                                  propagate_in_expr_rec optimized_away y)
   | Arith(op,x,y)   -> [], Arith(op,propagate_in_expr_rec optimized_away x,
@@ -234,6 +247,7 @@ and propagate_in_expr_rec (optimized_away:(var,expr) Hashtbl.t) (e:expr)
   match e with
   | Const _  -> e
   | ExpVar v -> propagate_in_var optimized_away v
+  | Tuple l -> Tuple (List.map (propagate_in_expr_rec optimized_away) l)
   | _ -> Printf.eprintf "propagate_in_expr_rec: invalid expr: %s.\n"
            (Usuba_print.expr_to_str e);
          assert false
