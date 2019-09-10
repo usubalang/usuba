@@ -88,6 +88,6 @@ let shift_def (def:def) : def =
 
 let expand_shifts (prog:prog) (conf:config) : prog =
   (* Inlines nodes that _must_ be inlined. *)
-  let prog' = Inline.light_inline prog conf in
+  let prog' = Inline.vital_inline prog conf in
   (* And perform shifts *)
   { nodes = List.map shift_def prog'.nodes }

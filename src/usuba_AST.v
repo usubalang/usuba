@@ -129,6 +129,7 @@ Record config := {
   check_tbl    : bool;
   inlining     : bool;
   inline_all   : bool;
+  light_inline : bool;
   fold_const   : bool;
   cse          : bool;
   copy_prop    : bool;

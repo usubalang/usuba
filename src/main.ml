@@ -13,6 +13,7 @@ let check_tbl   = ref false
 
 let inlining      = ref true
 let inline_all    = ref false
+let light_inline  = ref false
 let fold_const    = ref true
 let cse           = ref true
 let copy_prop     = ref true
@@ -105,6 +106,7 @@ let main () =
                     "Deactivate both type and clock checking";
       "-no-inline", Arg.Clear inlining, "Deactivate inlining opti";
       "-inline-all", Arg.Set inline_all, "Force inlining of every node";
+      "-light-inline", Arg.Set light_inline, "Inline only _inline functions";
       "-no-fold-const", Arg.Clear fold_const, "Deactive Constant Folding";
       "-no-CSE", Arg.Clear cse, "Deactive CSE";
       "-no-copy-prop", Arg.Clear copy_prop, "Deactive Copy Propagation";
@@ -162,6 +164,7 @@ let main () =
         check_tbl      =   !check_tbl;
         inlining       =   !inlining;
         inline_all     =   !inline_all;
+        light_inline   =   !light_inline;
         fold_const     =   !fold_const;
         cse            =   !cse;
         copy_prop      =   !copy_prop;
