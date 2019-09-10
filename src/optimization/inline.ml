@@ -14,6 +14,9 @@ open Usuba_AST
 open Basic_utils
 open Utils
 
+(* Contains the value of "inlining" within "conf". *)
+let light_inline = ref false
+
 (* This module checks if a node _must_ be inlined and if so, returns
    it. For now, a node must be inlined if it uses shifts of sizes
    depending on the parameters. *)
@@ -298,22 +301,23 @@ let is_call_free env (def:def) : bool =
 let can_inline env inlined conf (node:def) : bool =
   (* Is not already inlined *)
   (not (Hashtbl.find inlined node.id.name)) &&
-    (* Is not "no_inline" or inlining is forced *)
-    ( (not (is_noinline node)) || conf.inline_all ) &&
-      (* Doesn't contain any call, or calls to "no_inline" *)
-      (is_call_free env node)
+    (* if |light_inline|, then the node must be _inline *)
+    ( (not !light_inline) || (is_inline node) ) &&
+      (* Is not "no_inline" or inlining is forced *)
+      ( (not (is_noinline node)) || conf.inline_all ) &&
+        (* Doesn't contain any call, or calls to "no_inline" *)
+        (is_call_free env node)
 
 
 (* Inlines only the functions that must be inlined. For now, those are
    functions that use tuple shifts with a shift size depending on a
    parameter *)
-let rec light_inline (prog:prog) (conf:config) : prog =
-
+let rec vital_inline (prog:prog) (conf:config) : prog =
   match Must_inline.must_inline prog with
   | None      -> prog
-  | Some node -> try light_inline (do_inline prog node) conf with
-                   _ ->
-                   prog (* Program not normalized -> can't inline now *)
+  | Some node ->
+     try vital_inline (do_inline prog node) conf with
+       _ -> prog (* Program not normalized -> can't inline now *)
 
 
 (* Inline every node that should be and hasn't already been
@@ -341,7 +345,7 @@ let rec _inline (prog:prog) (conf:config) inlined : prog =
 
 (* Main inlining function. _inline actually does most of the job *)
 let inline (prog:prog) (conf:config) : prog =
-  if conf.inlining then
+  if conf.light_inline || conf.inlining then
     (* Hashtbl containing the inlining status of each node:
      false if it is not already inlined, true if it is *)
     let inlined = Hashtbl.create 20 in
@@ -349,6 +353,7 @@ let inline (prog:prog) (conf:config) : prog =
     (* The last node is the entry point, it wouldn't make sense to try inline it *)
     Hashtbl.replace inlined (last prog.nodes).id.name true;
 
+    light_inline := conf.light_inline;
     (* And now, perform the inlining *)
     _inline prog conf inlined
   else prog

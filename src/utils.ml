@@ -20,6 +20,7 @@ let default_conf : config =
     check_tbl    = false;
     inlining     = true;
     inline_all   = false;
+    light_inline = false;
     fold_const   = true;
     cse          = true;
     copy_prop    = true;
