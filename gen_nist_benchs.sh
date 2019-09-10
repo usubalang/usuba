@@ -35,7 +35,7 @@
 # Skinny vslice (uses tables)
 ./usubac -gen-bench -light-inline -keep-tables -V -no-sched -o nist/skinny/usuba/bench/skinny_ua_vslice.c -arch std -no-share nist/skinny/usuba/ua/skinny_vslice.ua
 
-# Spook (clyde) bitslice
-./usubac -gen-bench -light-inline -bits-per-reg 32 -no-sched -B -o nist/spook/usuba/bench/clyde_ua_bitslice.c nist/spook/usuba/ua/clyde.ua
-# Spook (clyde) vslice
-./usubac -gen-bench -light-inline -no-sched -V -o nist/spook/usuba/bench/clyde_ua_vslice.c nist/spook/usuba/ua/clyde.ua
+# Clyde (spook) bitslice
+./usubac -gen-bench -light-inline -bits-per-reg 32 -no-sched -B -o nist/clyde/usuba/bench/clyde_ua_bitslice.c nist/clyde/usuba/ua/clyde.ua
+# Clyde (spook) vslice
+./usubac -gen-bench -light-inline -no-sched -V -o nist/clyde/usuba/bench/clyde_ua_vslice.c nist/clyde/usuba/ua/clyde.ua
