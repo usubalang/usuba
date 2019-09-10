@@ -39,3 +39,6 @@
 ./usubac -gen-bench -light-inline -bits-per-reg 32 -no-sched -B -o nist/clyde/usuba/bench/clyde_ua_bitslice.c nist/clyde/usuba/ua/clyde.ua
 # Clyde (spook) vslice
 ./usubac -gen-bench -light-inline -no-sched -V -o nist/clyde/usuba/bench/clyde_ua_vslice.c nist/clyde/usuba/ua/clyde.ua
+
+# Spongent bitslice
+./usubac -gen-bench -light-inline -bits-per-reg 32 -check-tbl -B -no-sched -o nist/spongent/usuba/bench/spongent_ua_bitslice.c -arch std -no-share nist/spongent/usuba/ua/spongent.ua
