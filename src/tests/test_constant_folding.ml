@@ -56,6 +56,7 @@ let test_vslice () =
   assert (fold_expr env_var (parse_expr "1:u<V>8 & x") = parse_expr "1:u<V>8 & x");
   assert (fold_expr env_var (parse_expr "1:u<V>8 & 0x10:u<V>8") = parse_expr "0:u<V>8");
   assert (fold_expr env_var (parse_expr "1:u<V>8 & 0x11:u<V>8") = parse_expr "1:u<V>8");
+  assert (fold_expr env_var (parse_expr "x & x") = parse_expr "x");
 
   (* Or *)
   assert (fold_expr env_var (parse_expr "x | y") = parse_expr "x | y");
@@ -67,6 +68,7 @@ let test_vslice () =
   assert (fold_expr env_var (parse_expr "1:u<V>8 | x") = parse_expr "1:u<V>8 | x");
   assert (fold_expr env_var (parse_expr "1:u<V>8 | 0x10:u<V>8") = parse_expr "0x11:u<V>8");
   assert (fold_expr env_var (parse_expr "1:u<V>8 | 0x11:u<V>8") = parse_expr "0x11:u<V>8");
+  assert (fold_expr env_var (parse_expr "x | x") = parse_expr "x");
 
   (* Xor *)
   assert (fold_expr env_var (parse_expr "x ^ y") = parse_expr "x ^ y");
@@ -78,6 +80,7 @@ let test_vslice () =
   assert (fold_expr env_var (parse_expr "1:u<V>8 ^ x") = parse_expr "1:u<V>8 ^ x");
   assert (fold_expr env_var (parse_expr "1:u<V>8 ^ 0x10:u<V>8") = parse_expr "0x11:u<V>8");
   assert (fold_expr env_var (parse_expr "1:u<V>8 ^ 0x11:u<V>8") = parse_expr "0x10:u<V>8");
+  assert (fold_expr env_var (parse_expr "x ^ x") = parse_expr "0:u<V>8");
 
   (* Not *)
   assert (fold_expr env_var (parse_expr "~(0xff:u<V>8)") = parse_expr "0:u<V>8");
@@ -103,6 +106,7 @@ let test_bitslice () =
   assert (fold_expr env_var (parse_expr "0:u<B>1 & x") = parse_expr "0:u<B>1");
   assert (fold_expr env_var (parse_expr "1:u<B>1 & 0x0:u<B>1") = parse_expr "0:u<B>1");
   assert (fold_expr env_var (parse_expr "1:u<B>1 & 0x1:u<B>1") = parse_expr "1:u<B>1");
+  assert (fold_expr env_var (parse_expr "x & x") = parse_expr "x");
 
   (* Or *)
   assert (fold_expr env_var (parse_expr "x | y") = parse_expr "x | y");
@@ -113,6 +117,7 @@ let test_bitslice () =
   assert (fold_expr env_var (parse_expr "1:u<B>1 | 0x0:u<B>1") = parse_expr "1:u<B>1");
   assert (fold_expr env_var (parse_expr "1:u<B>1 | 0x1:u<B>1") = parse_expr "1:u<B>1");
   assert (fold_expr env_var (parse_expr "0:u<B>1 | 0x0:u<B>1") = parse_expr "0:u<B>1");
+  assert (fold_expr env_var (parse_expr "x | x") = parse_expr "x");
 
   (* Xor *)
   assert (fold_expr env_var (parse_expr "x ^ y") = parse_expr "x ^ y");
@@ -123,6 +128,7 @@ let test_bitslice () =
   assert (fold_expr env_var (parse_expr "1:u<B>1 ^ 0x0:u<B>1") = parse_expr "1:u<B>1");
   assert (fold_expr env_var (parse_expr "1:u<B>1 ^ 0x1:u<B>1") = parse_expr "0:u<B>1");
   assert (fold_expr env_var (parse_expr "0:u<B>1 ^ 0x0:u<B>1") = parse_expr "0:u<B>1");
+  assert (fold_expr env_var (parse_expr "x ^ x") = parse_expr "0:u<B>1");
 
   (* Not *)
   assert (fold_expr env_var (parse_expr "~(1:u<B>1)") = parse_expr "0:u<B>1");
