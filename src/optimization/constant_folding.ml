@@ -54,6 +54,13 @@ let is_full_ones (env_var:(ident,typ) Hashtbl.t) (e:expr) =
      n land minus_one = minus_one
   | _ -> false
 
+let gen_full_ones (typ:typ) : int =
+  let msize = match get_type_m typ with
+    | Mint m -> m
+    | _ -> Printf.eprintf "gen_full_ones: need a fixed word size, got: %s\n"
+                          (Usuba_print.typ_to_str typ);
+           assert false in
+  gen_minus_one msize
 
 let fold_arith (env_var:(ident,typ) Hashtbl.t) (op:arith_op) (x:expr) (y:expr)
     : expr =
@@ -139,6 +146,13 @@ let fold_log (env_var:(ident,typ) Hashtbl.t) (op:log_op) (x:expr) (y:expr)
                else if is_full_ones env_var y then Not(x)  (* ~x & 1 = ~x *)
                else Log(Andn,x,y)
 
+let fold_not (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
+  match e with
+  | Const(0,Some typ) -> Const(gen_full_ones typ,Some typ)         (* ~-1 = 0  *)
+  | Const(n,typ) -> if is_full_ones env_var e then Const(0,typ)    (* ~0  = -1 *)
+                    else Not e
+  | _ -> Not e
+
 (* Common documentation for all functions bellow: straight-forwardly
    walks down the AST to finally call fold_log and fold_arith. *)
 
@@ -148,7 +162,7 @@ let rec fold_expr (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
   | ExpVar _        -> e
   | Shuffle _       -> e
   | Tuple l         -> Tuple (List.map (fold_expr env_var) l)
-  | Not e'          -> Not (fold_expr env_var e')
+  | Not e'          -> fold_not env_var (fold_expr env_var e')
   | Shift(op,e,ae)  -> Shift(op,fold_expr env_var e,ae)
   | Log(op,e1,e2)   -> fold_log env_var op (fold_expr env_var e1)
                          (fold_expr env_var e2)
