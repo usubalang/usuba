@@ -875,6 +875,8 @@ void pyjamask__ (/*inputs*/ DATATYPE plaintext__[128],DATATYPE key__[15][128], /
 
 }
 
+/* Additional functions */
+
 
 /* **************************************************************** */
 /*                            Usuba source                          */
