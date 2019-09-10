@@ -1,0 +1,3 @@
+./usubac -light-inline -bits-per-reg 32 -check-tbl -B -no-sched -o nist/spongent/usuba/ua/spongent_ua_bitslice.c -arch std -no-share nist/spongent/usuba/ua/spongent.ua
+clang -D UA_B -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main
+clang -D REF  -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main
