@@ -36,7 +36,7 @@ Inductive dir :=
 
 Inductive mtyp :=
   | Mint (i:N)
-  | Mnat (* Special m for Nat *)     
+  | Mnat (* Special m for Nat *)
   | Mvar (id:ident). (* variable *)
 
 Inductive typ :=
@@ -151,6 +151,7 @@ Record config := {
   m_val        : N;
   tightPROVE   : bool;
   shares       : N;
+  gen_bench    : bool;
   keep_tables  : bool;
 }.
 

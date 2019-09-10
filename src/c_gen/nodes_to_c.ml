@@ -99,7 +99,7 @@ let rec expr_to_c (m:mtyp)
                            (expr_to_c m lift_env conf env env_var y)
   | Arith(op,x,y) ->
      (match m with
-      | Mint mval -> 
+      | Mint mval ->
          sprintf "%s(%s,%s,%d)"
                  (arith_op_to_c_generic op)
                  (expr_to_c m lift_env conf env env_var x)
@@ -357,3 +357,48 @@ let def_to_c (def:def) (array:bool) (conf:config) : string =
   | Single(vars,body) -> single_to_c def array vars body conf
   | Table l -> table_to_c def l conf
   | _ -> assert false
+
+
+let rec get_typ_size (conf:config) (typ:typ) : int =
+  match typ with
+  | Array(t,s)         -> (get_typ_size conf t) * s
+  | Uint(dir,Mint m,n) ->
+     n * m *
+       (match dir with
+        | Bslice -> assert (m = 1); (* Just in case *)
+                    conf.bits_per_reg
+        | Vslice | Hslice -> 1
+        | _ -> eprintf "Invalid polymorphic dir: %s.\n"
+                       (Usuba_print.dir_to_str dir);
+               assert false)
+  | Nat           -> eprintf "Can't get_typ_size(Nat).\n";
+                     assert false
+  | Uint(_,_,_)   -> eprintf "Can't get_typ_size(%s).\n"
+                             (Usuba_print.typ_to_str typ);
+                     assert false
+
+let gen_bench (node:def) (conf:config) : string =
+
+  sprintf
+"uint32_t bench_speed() {
+  /* inputs */
+  %s
+  /* outputs */
+  %s
+  /* fun call */
+  %s(%s,%s);
+
+  /* Returning the number of encrypted bytes */
+  return %d;
+}"
+  (join "\n  " (List.map (fun s -> s ^ " = { 0 };")
+                         (List.map (fun vd -> var_decl_to_c conf vd false) node.p_in)))
+  (join "\n  " (List.map (fun s -> s ^ " = { 0 };")
+                         (List.map (fun vd -> var_decl_to_c conf vd true) node.p_out)))
+  (rename node.id.name)
+  (join ", " (List.map (fun vd -> rename vd.vid.name) node.p_in))
+  (join ", " (List.map (fun vd ->
+                        match vd.vtyp with
+                        | Nat | Uint(_,_,1) -> "&" ^ (rename vd.vid.name)
+                        | _ -> rename vd.vid.name) node.p_out))
+  ((List.fold_left (fun sum vd -> sum + (get_typ_size conf vd.vtyp)) 0 node.p_out) / 8)

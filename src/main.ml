@@ -36,6 +36,7 @@ let lazylift     = ref false
 
 let tightPROVE   = ref false
 let shares       = ref 1
+let gen_bench    = ref false
 
 let slicing_type = ref B
 let slicing_set  = ref false
@@ -133,6 +134,7 @@ let main () =
       "-m", Arg.Int (fun n -> m_set := true; m_val := n), "Set 'm value";
       "-tp", Arg.Set tightPROVE, "Generate tightPROVE circuits";
       "-shares", Arg.Set_int shares, "Set the number of shares";
+      "-gen-bench", Arg.Set gen_bench, "Generate speed benchmark";
       "-keep-tables", Arg.Set keep_tables, "Keep lookup tables (can't use SIMD)";
       "-tests", Arg.Unit (fun () -> run_tests ()), "Run tests";
     ] in
@@ -182,6 +184,7 @@ let main () =
         m_val          =   !m_val;
         tightPROVE     =   !tightPROVE;
         shares         =   !shares;
+        gen_bench      =   !gen_bench;
         keep_tables    =   !keep_tables;
       } in
 
