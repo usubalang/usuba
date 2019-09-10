@@ -10,10 +10,10 @@
 # Ascon vslice
 ./usubac -gen-bench -light-inline -V -no-sched -o nist/ascon/usuba/bench/ascon_ua_vslice.c -arch std -no-share nist/ascon/usuba/ua/ascon.ua
 
-# GIFT-COFB bitslice
-./usubac -gen-bench -light-inline -bits-per-reg 32 -B -no-sched -o nist/gift-cofb/usuba/bench/gift_ua_bitslice.c -arch std -no-share nist/gift-cofb/usuba/ua/gift_bitslice.ua
-# GIFT-COFB bitslice
-./usubac -gen-bench -light-inline -V -no-sched -o nist/gift-cofb/usuba/bench/gift_ua_vslice.c -arch std -no-share nist/gift-cofb/usuba/ua/gift.ua
+# GIFT bitslice
+./usubac -gen-bench -light-inline -bits-per-reg 32 -B -no-sched -o nist/gift/usuba/bench/gift_ua_bitslice.c -arch std -no-share nist/gift/usuba/ua/gift_bitslice.ua
+# GIFT bitslice
+./usubac -gen-bench -light-inline -V -no-sched -o nist/gift/usuba/bench/gift_ua_vslice.c -arch std -no-share nist/gift/usuba/ua/gift.ua
 
 # Gimli bitslice
 ./usubac -gen-bench -light-inline -bits-per-reg 32 -no-sched -B -o nist/gimli/usuba/bench/gimli_ua_bitslice.c nist/gimli/usuba/ua/gimli.ua
