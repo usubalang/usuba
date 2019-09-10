@@ -1,4 +1,4 @@
-table sbox (x:v4) returns (y:v4) {
+_inline table sbox (x:v4) returns (y:v4) {
       0, 8, 1, 15, 2, 10, 7, 9, 4, 13, 5, 6, 14, 3, 11, 12
 }
 
@@ -7,7 +7,7 @@ let
     y = sbox(x)
 tel
 
-node lbox(x,y:u32) returns (xr,yr:u32)
+_inline node lbox(x,y:u32) returns (xr,yr:u32)
 vars
     a, b, c, d: u32
 let

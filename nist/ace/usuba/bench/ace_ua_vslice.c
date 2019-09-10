@@ -13,21 +13,6 @@
 #include "STD.h"
 
 /* auxiliary functions */
-void f__V32 (/*inputs*/ DATATYPE x__, /*outputs*/ DATATYPE* y__) {
-
-  // Variables declaration
-  DATATYPE _tmp1_;
-  DATATYPE _tmp2_;
-  DATATYPE _tmp3_;
-
-  // Instructions (body)
-  _tmp1_ = L_ROTATE(x__,5,32);
-  _tmp2_ = AND(_tmp1_,x__);
-  _tmp3_ = L_ROTATE(x__,1,32);
-  *y__ = XOR(_tmp2_,_tmp3_);
-
-}
-
 void simeck_box__V32 (/*inputs*/ DATATYPE input__[2],DATATYPE rc__, /*outputs*/ DATATYPE output__[2]) {
 
   // Variables declaration
@@ -36,6 +21,9 @@ void simeck_box__V32 (/*inputs*/ DATATYPE input__[2],DATATYPE rc__, /*outputs*/ 
   DATATYPE _tmp5_;
   DATATYPE _tmp7_;
   DATATYPE _tmp8_;
+  DATATYPE f__V32_1__tmp1_;
+  DATATYPE f__V32_1__tmp2_;
+  DATATYPE f__V32_1__tmp3_;
   DATATYPE round__[9][2];
   DATATYPE tmp__;
   DATATYPE _tmp123_;
@@ -45,7 +33,10 @@ void simeck_box__V32 (/*inputs*/ DATATYPE input__[2],DATATYPE rc__, /*outputs*/ 
   round__[0][0] = input__[0];
   round__[0][1] = input__[1];
   for (int i__ = 0; i__ <= 7; i__++) {
-    f__V32(round__[i__][0],&_tmp4_);
+    f__V32_1__tmp1_ = L_ROTATE(round__[i__][0],5,32);
+    f__V32_1__tmp2_ = AND(f__V32_1__tmp1_,round__[i__][0]);
+    f__V32_1__tmp3_ = L_ROTATE(round__[i__][0],1,32);
+    _tmp4_ = XOR(f__V32_1__tmp2_,f__V32_1__tmp3_);
     _tmp5_ = XOR(_tmp4_,round__[i__][1]);
     _tmp122_ = LIFT_32(4294967294);
     _tmp7_ = XOR(_tmp5_,_tmp122_);
@@ -246,13 +237,25 @@ void ACE__ (/*inputs*/ DATATYPE input__[5][2], /*outputs*/ DATATYPE output__[5][
 
 }
 
+/* Additional functions */
+uint32_t bench_speed() {
+  /* inputs */
+  DATATYPE input__[5][2] = { 0 };
+  /* outputs */
+  DATATYPE output__[5][2] = { 0 };
+  /* fun call */
+  ACE__(input__,output__);
+
+  /* Returning the number of encrypted bytes */
+  return 40;
+}
 
 /* **************************************************************** */
 /*                            Usuba source                          */
 /*                                                                  */
 /*
 
- node f(x :  u32 :: base)
+_inline node f(x :  u32 :: base)
   returns y :  u32 :: base
 vars
 

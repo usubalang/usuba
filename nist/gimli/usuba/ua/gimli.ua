@@ -1,4 +1,4 @@
-_no_inline node SPbox (col:u32[3]) returns (colR:u32[3])
+_inline node SPbox (col:u32[3]) returns (colR:u32[3])
 vars
     x, y, z : u32
 let
@@ -40,7 +40,7 @@ vars
 let
     rc = (0x9e377918, 0x9e377914, 0x9e377910,
           0x9e37790c, 0x9e377908, 0x9e377904);
-    
+
     round[0] = state;
 
     forall r in [0,5] {
