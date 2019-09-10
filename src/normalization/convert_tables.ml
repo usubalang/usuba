@@ -20,8 +20,11 @@ open Printf
 
 let bitslice = ref false
 
+
 let rewrite_p (p:p) : var list =
-  List.map (fun vd -> Var vd.vid) (Expand_array.expand_p !bitslice p)
+  let env_var = Hashtbl.create 10 in
+  List.iter (fun vd -> Hashtbl.add env_var vd.vid vd.vtyp) p;
+  flat_map (fun vd -> expand_var env_var ~bitslice:!bitslice (Var vd.vid)) p
 
 let get_bits (l:int list) (i:int) : int list =
   List.rev @@ List.map (fun x -> x lsr i land 1) l
@@ -29,7 +32,7 @@ let get_bits (l:int list) (i:int) : int list =
 let tmp_var i j k =
   fresh_ident ("tmp_" ^ (string_of_int i) ^ "_" ^ (string_of_int j) ^ "_" ^ (string_of_int k))
 
-let mux c a b = Log(Or,Log(Andn,c,ExpVar(Var a)),Log(And,c,ExpVar(Var b)))
+let mux c a b = Log(Or,Log(And,c,(Not (ExpVar(Var a)))),Log(And,c,ExpVar(Var b)))
 (* let mux c a b = Log(Xor,ExpVar(Var a),Log(And,c,Log(Xor,ExpVar(Var a),ExpVar(Var b)))) *)
 
 
