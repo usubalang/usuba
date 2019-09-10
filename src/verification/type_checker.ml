@@ -217,7 +217,7 @@ and get_var_type (backtrace:string list)
   | Range(v',ae1,ae2) ->
      let ae1 = eval_arith backtrace env_it ae1 in
      let ae2 = eval_arith backtrace env_it ae2 in
-     let range_size = ae2 - ae1 + 1 in
+     let range_size = abs(ae2 - ae1) + 1 in
      check_is_array backtrace env_var env_it v';
      Array(remove_outer_array backtrace env_var env_it v',range_size)
   | Slice(v',l) ->
