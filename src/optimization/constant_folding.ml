@@ -168,19 +168,18 @@ let rec fold_expr (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
   | Not e'          -> fold_not env_var (fold_expr env_var e')
   | Shift(op,e,ae)  -> Shift(op,fold_expr env_var e,ae)
   | Log(op,e1,e2)   -> fold_log env_var op (fold_expr env_var e1)
-                         (fold_expr env_var e2)
+                                (fold_expr env_var e2)
   | Arith(op,e1,e2) -> fold_arith env_var op (fold_expr env_var e1)
-                         (fold_expr env_var e2)
+                                  (fold_expr env_var e2)
   | Fun(f,l)        -> Fun(f,List.map (fold_expr env_var) l)
   | _ -> Printf.eprintf "fold_expr: Cannot fold unnormalized expression: %s.\n"
-           (Usuba_print.expr_to_str e);
+                        (Usuba_print.expr_to_str e);
          assert false
-
 
 let rec fold_deqs (env_var:(ident,typ) Hashtbl.t) (deqs:deq list) : deq list =
   List.map (function
-      | Eqn(lhs,e,sync) -> Eqn(lhs,fold_expr env_var e,sync)
-      | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,fold_deqs env_var dl,opts)) deqs
+             | Eqn(lhs,e,sync) -> Eqn(lhs,fold_expr env_var e,sync)
+             | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,fold_deqs env_var dl,opts)) deqs
 
 let fold_def (def:def) : def =
   match def.node with

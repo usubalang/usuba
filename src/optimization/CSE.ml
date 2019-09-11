@@ -94,7 +94,9 @@ let rec cse_deqs (env_expr:(expr,var list) Hashtbl.t) (deqs:deq list)
           *)
          (match Hashtbl.find_opt env_expr e' with
           | Some _ -> ()
-          | None -> Hashtbl.add env_expr e' lhs);
+          | None -> match e' with
+                    | Const _ -> () (* Don't replace Consts by variables *)
+                    | _-> Hashtbl.add env_expr e' lhs);
          Eqn(lhs,e',sync)
       | Loop(i,ei,ef,dl,opts) ->
          (* Passing a copy of |env_expr| to the loop, so that nothing
