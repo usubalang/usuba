@@ -119,8 +119,8 @@ let rewrite_single_table (id:ident) (p_in:p) (p_out:p)
                       p_in = fix_p p_in new_node.p_in;
                       p_out = fix_p p_out new_node.p_out;
                       opt = new_node.opt @ opt }
-    with Not_found -> rewrite_table id p_in p_out opt l
-  else rewrite_table id p_in p_out opt l
+    with Not_found -> Simple_opts.opt_def (Norm_tuples.norm_tuples_def (Unfold_unnest.norm_def (Hashtbl.create 1) (rewrite_table id p_in p_out opt l)))
+  else Simple_opts.opt_def (Norm_tuples.norm_tuples_def (Unfold_unnest.norm_def (Hashtbl.create 1) (rewrite_table id p_in p_out opt l)))
 
 let rec rewrite_def (def: def) (conf:config) : def =
   let id    = def.id in

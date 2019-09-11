@@ -151,8 +151,8 @@ let fold_log (env_var:(ident,typ) Hashtbl.t) (op:log_op) (x:expr) (y:expr)
 
 let fold_not (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
   match e with
-  | Const(0,Some typ) -> Const(gen_full_ones typ,Some typ)         (* ~-1 = 0  *)
-  | Const(n,typ) -> if is_full_ones env_var e then Const(0,typ)    (* ~0  = -1 *)
+  | Const(0,Some typ) -> Const(gen_full_ones typ,Some typ)         (* ~1 = 0 *)
+  | Const(n,typ) -> if is_full_ones env_var e then Const(0,typ)    (* ~0 = 1 *)
                     else Not e
   | _ -> Not e
 

@@ -112,14 +112,14 @@ module Split_tuples = struct
     { nodes = List.map split_tuples_def prog.nodes }
 end
 
-let rec norm_tuples_deq (def:def) : def =
+let rec norm_tuples_def (def:def) : def =
   let def' =
     Simplify_tuples.simpl_tuples_def
       (Split_tuples.split_tuples_def
          (Simplify_tuples.simpl_tuples_def def)) in
 
   (* Fixpoint to make sure every tuples are complitely simplified. *)
-  if def <> def' then norm_tuples_deq def'
+  if def <> def' then norm_tuples_def def'
   else def
 
 let rec norm_tuples (prog:prog) (conf:config) : prog =
