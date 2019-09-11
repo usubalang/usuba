@@ -36,6 +36,17 @@ let run_pass title func conf prog =
     Printf.fprintf stderr "%s\n%!" (Usuba_print.prog_to_str res);
   res
 
+let rec opt_def ?(retry:int=5) (def:def) =
+  let def' =
+    (Norm_tuples.norm_tuples_def
+       (Copy_propagation.cp_def
+          (CSE.cse_def
+             (Constant_folding.fold_def def)))) in
+
+  if retry > 0 then
+    if def = def' then def else opt_def ~retry:(retry-1) def'
+  else def'
+
 
 let rec opt_prog ?(retry:int=5) (prog:prog) (conf:config) =
 
