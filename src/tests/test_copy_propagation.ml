@@ -261,8 +261,49 @@ let
 tel" in
   assert (result = expected)
 
+(* Make sure that Consts assignments are optimized away as well *)
+let test_const () =
+  let def = parse_def
+"node f(x,y:b1) returns (z:b1)
+    vars a,b:b1
+let
+    a = 0;
+    b = a ^ x;
+    z = b ^ y;
+tel" in
+  let result = cp_def def in
+  (* Note that local variables are not optimized away by this module. *)
+  let expected = parse_def
+"node f(x,y:b1) returns (z:b1)
+    vars a,b:b1
+let
+    b = 0 ^ x;
+    z = b ^ y;
+tel" in
+  assert (result = expected)
 
 
+(* Make sure that Consts assignments are optimized away as well *)
+let test_const_advanced () =
+  let def = parse_def
+"node f(x,y:b1) returns (z:b1)
+    vars a,b,c:b1
+let
+    a = 0;
+    b = a;
+    c = b ^ x;
+    z = c ^ y;
+tel" in
+  let result = cp_def def in
+  (* Note that local variables are not optimized away by this module. *)
+  let expected = parse_def
+"node f(x,y:b1) returns (z:b1)
+    vars a,b,c:b1
+let
+    c = 0 ^ x;
+    z = c ^ y;
+tel" in
+  assert (result = expected)
 
 let test () =
   test_simple ();
@@ -272,4 +313,6 @@ let test () =
   test_funcall_arr ();
   test_funcall_loop1 ();
   test_simple_const ();
-  test_shuffle ()
+  test_shuffle ();
+  test_const ();
+  test_const_advanced ()

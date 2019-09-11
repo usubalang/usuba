@@ -8,6 +8,13 @@ let test_simple () =
   let deqs' = cse_deqs (Hashtbl.create 10) deqs in
   assert (deqs' = List.map parse_deq [ "x = a + b"; "y = x"; "z = x" ])
 
+(* Make sure that consts aren't getting replaced by variables *)
+let test_const () =
+  let deqs  = List.map parse_deq [ "x = 0"; "y = 0" ] in
+  let deqs' = cse_deqs (Hashtbl.create 10) deqs in
+  assert (deqs' <> List.map parse_deq [ "x = 0"; "y = x" ]);
+  assert (deqs' =  List.map parse_deq [ "x = 0"; "y = 0" ])
+
 let test_loop () =
   (* Making sure loops aren't uncorrectly optimized *)
   let deqs = List.map parse_deq [
@@ -20,4 +27,5 @@ let test_loop () =
 
 let test () =
   test_simple ();
+  test_const ();
   test_loop ()

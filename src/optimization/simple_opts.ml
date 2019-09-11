@@ -48,7 +48,7 @@ let rec opt_def ?(retry:int=5) (def:def) =
   else def'
 
 
-let rec opt_prog ?(retry:int=5) (prog:prog) (conf:config) =
+let rec opt_prog ?(retry:int=20) (prog:prog) (conf:config) =
 
   let run_pass title func ?(sconf = conf) prog =
     run_pass title func sconf prog in
