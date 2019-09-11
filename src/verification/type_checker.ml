@@ -43,6 +43,11 @@ let print_backtrace (backtrace:string list) : unit =
    given node. In that case, |Fatal_type_error| is raised. *)
 exception Fatal_type_error
 
+(* Exception raise whenever an arithmetic expression (array index for
+   instance) cannot be computed statically because it depends on a
+   parameter or something like that. *)
+exception Uncomputable
+
 (* On the otber hand, when an error that doesn't prevent typing the
    current node is encountered, |error| is just set to true. *)
 let error = ref false
@@ -92,23 +97,26 @@ let env_it_to_str (env_it:(ident,int) Hashtbl.t) : string =
 (* Using a custom eval_arith to display custom error if unexisting
    variables are used. *)
 let rec eval_arith (backtrace:string list)
-      (env_it:(ident,int) Hashtbl.t)
-      (ae:arith_expr) : int =
+                   (env_var:(ident,typ) Hashtbl.t)
+                   (env_it:(ident,int) Hashtbl.t)
+                   (ae:arith_expr) : int =
   let backtrace = (sprintf "eval_arith(%s)" (arith_to_str ae)) :: backtrace in
   match ae with
   | Const_e n -> n
   | Var_e id  ->
      (match Hashtbl.find_opt env_it id with
       | Some i -> i
-      | None ->
-         eprintf
-           "[Type error] Use of undeclared variable |%s|.\n(Iteror environment: %s)\n"
-           id.name (env_it_to_str env_it);
-         print_backtrace backtrace;
-         raise Fatal_type_error)
+      | None -> match Hashtbl.find_opt env_var id with
+                | Some Nat -> raise Uncomputable
+                | _ ->
+                   eprintf
+                     "[Type error] Use of undeclared variable |%s|.\n(Iteror environment: %s)\n"
+                     id.name (env_it_to_str env_it);
+                   print_backtrace backtrace;
+                   raise Fatal_type_error)
   | Op_e(op,x,y) ->
-     let x' = eval_arith backtrace env_it x in
-     let y' = eval_arith backtrace env_it y in
+     let x' = eval_arith backtrace env_var env_it x in
+     let y' = eval_arith backtrace env_var env_it y in
      match op with
      | Add -> x' + y'
      | Mul -> x' * y'
@@ -136,6 +144,15 @@ let check_in_bounds (backtrace:string list) (env_it:(ident,int) Hashtbl.t)
        idx v_size (env_it_to_str env_it);
      print_backtrace backtrace;
      error := true)
+
+(* Helper function to check that |idx| is less than the size |v_size|
+   of the array it is indexing. |v_size| can be None if it's not
+   computable. In that case, this function doesn't do anything. *)
+let check_in_bounds_opt (backtrace:string list) (env_it:(ident,int) Hashtbl.t)
+                        (v_size:int) (idx_opt:int option) : unit =
+  match idx_opt with
+  | Some idx -> check_in_bounds backtrace env_it v_size idx
+  | None -> ()
 
 (* Helper function to remove one level of array from |v|'s type. Used
    to compute type of Slices and Ranges.
@@ -193,13 +210,14 @@ and get_var_type (backtrace:string list)
      (* For Index, checking that:
          - |v'| is indeed an array
          - |idx| is withing the bounds of |v'| *)
-     let idx = eval_arith backtrace env_it idx in
+     let idx = try Some (eval_arith backtrace env_var env_it idx)
+               with Uncomputable -> None in
      (match get_var_type backtrace env_var env_it v' with
       | Array(t,size) ->
-         check_in_bounds backtrace env_it size idx;
+         check_in_bounds_opt backtrace env_it size idx;
          t
       | Uint(dir,m,n) when n > 1 ->
-         check_in_bounds backtrace env_it n idx;
+         check_in_bounds_opt backtrace env_it n idx;
          Uint(dir,m,1)
       | Uint(dir,m,1) ->
          eprintf "[Type error] indexing non-array `%s' (type: %s).\n"
@@ -215,8 +233,8 @@ and get_var_type (backtrace:string list)
   (* We don't perform bound checking for Slice/Range: it is done by
      expand_slices_ranges *)
   | Range(v',ae1,ae2) ->
-     let ae1 = eval_arith backtrace env_it ae1 in
-     let ae2 = eval_arith backtrace env_it ae2 in
+     let ae1 = eval_arith backtrace env_var env_it ae1 in
+     let ae2 = eval_arith backtrace env_var env_it ae2 in
      let range_size = abs(ae2 - ae1) + 1 in
      check_is_array backtrace env_var env_it v';
      Array(remove_outer_array backtrace env_var env_it v',range_size)
@@ -252,8 +270,8 @@ let rec expand_slices_ranges (backtrace:string list)
      List.map (fun v'' -> Index(v'',idx))
        (expand_slices_ranges backtrace env_var env_it v')
   | Range(v',ae1,ae2) ->
-     let ae1 = eval_arith backtrace env_it ae1 in
-     let ae2 = eval_arith backtrace env_it ae2 in
+     let ae1 = eval_arith backtrace env_var env_it ae1 in
+     let ae2 = eval_arith backtrace env_var env_it ae2 in
      let vl = expand_slices_ranges backtrace env_var env_it v' in
      (* The Range will be applied to each elements of |vl|. Therefore,
         we can perform type and bound-checking on (List.hd vl); since
@@ -272,7 +290,7 @@ let rec expand_slices_ranges (backtrace:string list)
                             (gen_list_bounds ae1 ae2))
        vl
   | Slice(v',aes) ->
-     let aes = List.map (eval_arith backtrace env_it) aes in
+     let aes = List.map (eval_arith backtrace env_var env_it) aes in
      let vl = expand_slices_ranges backtrace env_var env_it v' in
      (* The Slice will be applied to each elements of |vl|. Therefore,
         we can perform type and bound-checking on (List.hd vl); since
@@ -660,7 +678,7 @@ let rec type_expr (backtrace:string list)
      (match f.node with
       | Multiple l ->
          let size = List.length l in
-         let ae = eval_arith backtrace env_it ae in
+         let ae = eval_arith backtrace env_var env_it ae in
          if ae >= size then
            (eprintf "[Type error] Out of bounds access in `%s' (Multiple of size %d): index %d.\n"
               f.id.name size ae;
@@ -721,8 +739,8 @@ let rec type_deqs (backtrace:string list) (env_fun:(ident,def) Hashtbl.t)
             bounds array access. *)
          let backtrace = (sprintf "  deq = forall %s in [%s, %s] { ... }"
                          x.name (arith_to_str ei) (arith_to_str ef)) :: backtrace in
-         let ei_evaled = eval_arith backtrace env_it ei in
-         let ef_evaled = eval_arith backtrace env_it ef in
+         let ei_evaled = eval_arith backtrace env_var env_it ei in
+         let ef_evaled = eval_arith backtrace env_var env_it ef in
          let typed_dl =
            List.map
              (fun i ->
