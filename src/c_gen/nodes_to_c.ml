@@ -192,6 +192,7 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
   let aux (marker:string) vd =
     let id = vd.vid.name in
     match vd.vtyp with
+    | Nat -> Hashtbl.add inputs id (Printf.sprintf "%s%s" marker (rename id))
     (* Hard-coding the case ukxn[m] for now *)
     | Array(Uint(_,_,n),size) ->
        List.iteri
@@ -217,10 +218,7 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
           Hashtbl.add inputs x
                       (Printf.sprintf "%s[%d]" (rename id) y))
          (gen_list_typ id vd.vtyp)
-         (gen_list_0_int (size * n))
-    | _ -> Printf.printf "%s => %s:%s\n" def.id.name id
-                         (Usuba_print.typ_to_str vd.vtyp);
-           raise (Not_implemented "Arrays as input") in
+         (gen_list_0_int (size * n)) in
 
   List.iter (aux "") def.p_in;
   List.iter (aux "*") def.p_out;
