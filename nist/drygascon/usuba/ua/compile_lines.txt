@@ -1,0 +1,5 @@
+./usubac -B -light-inline -no-sched -o nist/drygascon/usuba/ua/drygascon_ua_bitslice.c -arch std -no-share nist/drygascon/usuba/ua/drygascon.ua
+./usubac -V -light-inline -no-sched -o nist/drygascon/usuba/ua/drygascon_ua_vslice.c -arch std -no-share nist/drygascon/usuba/ua/drygascon.ua
+clang -D UA_V -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main
+clang -D UA_B -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main
+clang -D REF  -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main
