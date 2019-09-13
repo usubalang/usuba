@@ -42,6 +42,7 @@ let default_conf : config =
     m_set        = false;
     m_val        = 1;
     tightPROVE   = false;
+    masked       = false;
     shares       = 1;
     gen_bench    = false;
     keep_tables  = false;

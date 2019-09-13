@@ -36,6 +36,7 @@ let fdti         = ref ""
 let lazylift     = ref false
 
 let tightPROVE   = ref false
+let masked       = ref true
 let shares       = ref 1
 let gen_bench    = ref false
 
@@ -135,7 +136,8 @@ let main () =
       "-B", Arg.Unit (fun () -> slicing_set := true; slicing_type := B), "Bit slicing.";
       "-m", Arg.Int (fun n -> m_set := true; m_val := n), "Set 'm value";
       "-tp", Arg.Set tightPROVE, "Generate tightPROVE circuits";
-      "-shares", Arg.Set_int shares, "Set the number of shares";
+      "-masked", Arg.Set masked, "Generate masked implementation";
+      "-shares", Arg.Int (fun n -> shares := n; masked := true), "Set the number of shares";
       "-gen-bench", Arg.Set gen_bench, "Generate speed benchmark";
       "-keep-tables", Arg.Set keep_tables, "Keep lookup tables (can't use SIMD)";
       "-tests", Arg.Unit (fun () -> run_tests ()), "Run tests";
@@ -186,6 +188,7 @@ let main () =
         m_set          =   !m_set;
         m_val          =   !m_val;
         tightPROVE     =   !tightPROVE;
+        masked         =   !masked;
         shares         =   !shares;
         gen_bench      =   !gen_bench;
         keep_tables    =   !keep_tables;
