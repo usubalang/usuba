@@ -36,7 +36,7 @@ let fdti         = ref ""
 let lazylift     = ref false
 
 let tightPROVE   = ref false
-let masked       = ref true
+let masked       = ref false
 let shares       = ref 1
 let gen_bench    = ref false
 
