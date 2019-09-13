@@ -315,3 +315,30 @@ let def_to_c (def:def) (array:bool) (conf:config) : string =
   match def.node with
   | Single(vars,body) -> single_to_c def array vars body conf
   | _ -> assert false
+
+
+let gen_bench (node:def) (conf:config) : string =
+
+  sprintf
+"uint32_t bench_speed() {
+  /* inputs */
+  %s
+  /* outputs */
+  %s
+  /* fun call */
+  %s(%s,%s);
+
+  /* Returning the number of encrypted bytes */
+  return %d;
+}"
+  (join "\n  " (List.map (fun s -> s ^ " = { 0 };")
+                         (List.map (fun vd -> var_decl_to_c conf vd false) node.p_in)))
+  (join "\n  " (List.map (fun s -> s ^ " = { 0 };")
+                         (List.map (fun vd -> var_decl_to_c conf vd true) node.p_out)))
+  (rename node.id.name)
+  (join ", " (List.map (fun vd -> rename vd.vid.name) node.p_in))
+  (join ", " (List.map (fun vd ->
+                        match vd.vtyp with
+                        | Nat | Uint(_,_,1) -> "&" ^ (rename vd.vid.name)
+                        | _ -> rename vd.vid.name) node.p_out))
+  ((List.fold_left (fun sum vd -> sum + (Nodes_to_c.get_typ_size conf vd.vtyp)) 0 node.p_out) / 8)
