@@ -19,7 +19,7 @@ let gen_runtime (orig:prog) (prog:prog) (conf:config) (filename:string) : string
   let entry = if conf.fdti <> "" then
                 List.(Nodes_to_c_fdti.def_to_c (nth prog.nodes (length prog.nodes -1))
                         conf.arr_entry conf)
-              else if conf.shares <> 1 then
+              else if conf.masked then
                 List.(Nodes_to_c_masked.def_to_c (nth prog.nodes (length prog.nodes -1))
                         conf.arr_entry conf)
               else
@@ -27,7 +27,7 @@ let gen_runtime (orig:prog) (prog:prog) (conf:config) (filename:string) : string
                         conf.arr_entry conf) in
   let prog_c = if conf.fdti <> "" then
                  map_no_end (fun x -> Nodes_to_c_fdti.def_to_c x false conf) prog.nodes
-               else if conf.shares <> 1 then
+               else if conf.masked then
                  map_no_end (fun x -> Nodes_to_c_masked.def_to_c x false conf) prog.nodes
                else
                  map_no_end (fun x -> Nodes_to_c.def_to_c x false conf) prog.nodes in
@@ -74,7 +74,7 @@ Printf.sprintf
   (if conf.shares <> 1 then Printf.sprintf "#define MASKING_ORDER %d" conf.shares else "")
   (bits_per_reg prog conf)
   (if conf.fdti <> "" then Nodes_to_c_fdti.c_header conf.archi
-   else if conf.shares <> 1 then Nodes_to_c_masked.c_header conf.archi
+   else if conf.masked then Nodes_to_c_masked.c_header conf.archi
    else Nodes_to_c.c_header conf.archi)
   (join "\n\n" prog_c)
   entry

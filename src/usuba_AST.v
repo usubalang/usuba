@@ -151,6 +151,7 @@ Record config := {
   m_set        : bool;
   m_val        : N;
   tightPROVE   : bool;
+  masked       : bool;
   shares       : N;
   gen_bench    : bool;
   keep_tables  : bool;
