@@ -1,6 +1,6 @@
 /* ******************************************** *\
- * 
- * 
+ *
+ *
  *
 \* ******************************************** */
 
@@ -21,7 +21,9 @@
 #endif
 
 #ifndef DATATYPE
-#if BITS_PER_REG == 16
+#if BITS_PER_REG == 8
+#define DATATYPE uint8_t
+#elif BITS_PER_REG == 16
 #define DATATYPE uint16_t
 #elif BITS_PER_REG == 32
 #define DATATYPE uint32_t
@@ -29,6 +31,36 @@
 #define DATATYPE uint64_t
 #endif
 #endif
+
+#define SET_ALL_ONE()  -1
+#define SET_ALL_ZERO() 0
+
+#define LIFT_8(x) (x)
+#define LIFT_16(x) (x)
+#define LIFT_32(x) (x)
+#define LIFT_64(x) (x)
+
+
+#define ROTATE_MASK(x)                                                  \
+  (x == 64 ? -1ULL : x == 32 ? -1 : x == 16 ? 0xFFFF :                  \
+   ({ fprintf(stderr,"Not implemented rotate [uint%d_t]. Exiting.\n",x); \
+     exit(1); 1; }))
+
+#define L_SHIFT(r,a,b,c)                                                \
+  for (int i_In_Header = 0; i_In_Header < MASKING_ORDER; i_In_Header++) \
+    r[i_In_Header] = (c == 4 ? (a[i_In_Header] << b) & 0xf :  a[i_In_Header] << b);
+
+#define R_SHIFT(r,a,b,c)                                                \
+  for (int i_In_Header = 0; i_In_Header < MASKING_ORDER; i_In_Header++) \
+    r[i_In_Header] = a[i_In_Header] >> b;
+
+#define L_ROTATE(r,a,b,c)                                               \
+  for (int i_In_Header = 0; i_In_Header < MASKING_ORDER; i_In_Header++) \
+    r[i_In_Header] = (a[i_In_Header] << b) | ((a[i_In_Header]&ROTATE_MASK(c)) >> (c-b))
+
+#define R_ROTATE(r,a,b,c)                                               \
+  for (int i_In_Header = 0; i_In_Header < MASKING_ORDER; i_In_Header++) \
+    r[i_In_Header] = ((a[i_In_Header]&ROTATE_MASK(c)) >> b) | (a[i_In_Header] << (c-b))
 
 /* Defining 0 and 1 */
 #define ZERO 0
@@ -60,59 +92,54 @@
   for (int i_In_Header = 0; i_In_Header < MASKING_ORDER; i_In_Header++) \
     r[i_In_Header] = a[i_In_Header];
 
+#define ASGN_CST(r,cst)                                                 \
+  r[0] = cst;                                                           \
+  for (int i_In_Header = 1; i_In_Header < MASKING_ORDER; i_In_Header++) \
+    r[i_In_Header] = 0;
+
 
 
 /* Multiplication and refresh */
 
-static uint32_t get_random()
-{
-    srand(time(NULL));
-    return (uint32_t) rand();
+static DATATYPE get_random() {
+  srand(time(NULL));
+  return rand();
 }
 
 
-static void isw_mult(uint32_t *res, const uint32_t *op1, const uint32_t *op2)
-{
-    int i,j;
-    uint32_t rnd;
+static void isw_mult(DATATYPE *res, const DATATYPE *op1, const DATATYPE *op2) {
+  int i,j;
+  DATATYPE rnd;
 
-    for (i=0; i<MASKING_ORDER; i++)
-    {
-        res[i] = 0;
-    }
+  for (i=0; i<MASKING_ORDER; i++) {
+    res[i] = 0;
+  }
 
-    for (i=0; i<MASKING_ORDER; i++)
-    {
-        res[i] ^= op1[i] & op2[i];
-        
-        for (j=i+1; j<MASKING_ORDER; j++)
-        {
-            rnd = get_random();
-            res[i] ^= rnd;
-            res[j] ^= (rnd ^ (op1[i] & op2[j])) ^ (op1[j] & op2[i]);
-        }
+  for (i=0; i<MASKING_ORDER; i++) {
+    res[i] ^= op1[i] & op2[i];
+
+    for (j=i+1; j<MASKING_ORDER; j++) {
+      rnd = get_random();
+      res[i] ^= rnd;
+      res[j] ^= (rnd ^ (op1[i] & op2[j])) ^ (op1[j] & op2[i]);
     }
+  }
 }
 
 
-static void isw_refresh(uint32_t *res, const uint32_t *in)
-{
-    int i,j;
-    uint32_t rnd;
+static void isw_refresh(DATATYPE *res, const DATATYPE *in) {
+  int i,j;
+  DATATYPE rnd;
 
-    for (i=0; i<MASKING_ORDER; i++)
-    {
-        res[i] = in[i];
-    }
+  for (i=0; i<MASKING_ORDER; i++) {
+    res[i] = in[i];
+  }
 
-    for (i=0; i<MASKING_ORDER; i++)
-    {        
-        for (j=i+1; j<MASKING_ORDER; j++)
-        {
-            rnd = get_random();
-            res[i] ^= rnd;
-            res[j] ^= rnd;
-        }
+  for (i=0; i<MASKING_ORDER; i++) {
+    for (j=i+1; j<MASKING_ORDER; j++) {
+      rnd = get_random();
+      res[i] ^= rnd;
+      res[j] ^= rnd;
     }
+  }
 }
-
