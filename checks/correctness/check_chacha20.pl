@@ -25,7 +25,7 @@ say "################################ Chacha20 ##############################";
 chdir "$FindBin::Bin/../..";
 
 # Compiling the compiler.
-unless ($ARGV[0]) { 
+unless ($ARGV[0]) {
     say "Compiling...";
     error if system 'make';
 }
@@ -56,7 +56,7 @@ for my $ARCH (qw(STD SSE AVX)) {
     copy "chacha20.c", "$ARCH/";
     # Compiling the C files
     say "Compiling the test executable with $ARCH...";
-    error if system "clang -O3 -march=native -I../arch -I . -o chacha20 main_verif.c $ARCH/stream.c";
+    error if system "clang -march=native -I../arch -I . -o chacha20 main_verif.c $ARCH/stream.c";
 
     say "Running the test with $ARCH...";
     error if system './chacha20';

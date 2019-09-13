@@ -46,7 +46,7 @@ copy $_, "." for glob "$FindBin::Bin/gimli/*";
 for my $ARCH (qw(STD)) {
     # Compiling the C files
     say "Compiling the test executable with $ARCH...";
-    error if system "clang -D UA_V -Wno-incompatible-pointer-types -O3 -march=native -I../arch -I . -o main main.c";
+    error if system "clang -D UA_V -Wno-incompatible-pointer-types -march=native -I../arch -I . -o main main.c";
 
     say "Running the test with $ARCH...";
     error if system './main';
