@@ -173,8 +173,12 @@ let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
           (fun deq -> match deq with
             | Eqn(p,Fun(f,l),_) -> fun_call_to_c lift_env env env_var ~tabs:tabs p f l
             | Eqn([v],e,_) ->
-               sprintf "%s%s;" tabs (expr_to_c_ret lift_env env env_var
-                                       (var_to_c lift_env env v) e)
+               (match get_var_m env_var v with
+                | Mnat -> sprintf "%s%s = %s;" tabs (var_to_c lift_env env v)
+                                  (expr_to_c lift_env env env_var e)
+                | _ ->  sprintf "%s%s;" tabs
+                                (expr_to_c_ret lift_env env env_var
+                                               (var_to_c lift_env env v) e))
             | Loop(i,ei,ef,l,_) ->
                sprintf "%sfor (int %s = %s; %s <= %s; %s++) {\n%s\n%s}"
                        tabs
@@ -263,7 +267,9 @@ let rec var_decl_to_c conf (vd:var_d) (out:bool) : string =
   let vtype = if conf.lazylift && is_const vd then
                 gen_intn (get_lift_size vd)
               else "DATATYPE" in
-  sprintf "%s %s[MASKING_ORDER]" vtype vname
+  match get_type_m vd.vtyp with
+  | Mnat -> sprintf "unsigned int %s" vname
+  | _    -> sprintf "%s %s[MASKING_ORDER]" vtype vname
 
 let c_header (arch:arch) : string =
   match arch with
