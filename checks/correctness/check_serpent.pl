@@ -23,7 +23,7 @@ say "################################ Serpent ##############################";
 chdir "$FindBin::Bin/../..";
 
 # Compiling the compiler.
-unless ($ARGV[0]) { 
+unless ($ARGV[0]) {
     say "Compiling...";
     error if system 'make';
 }
@@ -50,12 +50,12 @@ copy $_, '.' for glob "$FindBin::Bin/serpent/*";
 
 # Compiling the reference implementation
 say "Compiling reference C implementation...";
-error if system 'clang -O3 -march=native -I../arch -o serpent_ref ref.c';
+error if system 'clang -march=native -I../arch -o serpent_ref ref.c';
 
 for my $ARCH (qw(STD SSE AVX)) {
     # Compiling the C files
     say "Compiling the test executable with $ARCH...";
-    error if system "clang -D $ARCH -O3 -march=native -I../arch -o serpent main.c";
+    error if system "clang -D $ARCH -march=native -I../arch -o serpent main.c";
 
     say "Running the test with $ARCH...";
     error if system 'head -c 8M </dev/urandom > input.txt';

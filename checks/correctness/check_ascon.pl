@@ -47,7 +47,7 @@ for my $slicing ('vslice', 'bitslice') {
     # Compiling the C files
     say "Compiling the test executable...";
     my $implem_flag = $slicing eq 'vslice' ? 'UA_V' : 'UA_B';
-    error if system "clang -D $implem_flag -O3 -march=native -I../arch -I . -o main main.c";
+    error if system "clang -D $implem_flag -march=native -I../arch -I . -o main main.c";
 
     say "Running the test...";
 
