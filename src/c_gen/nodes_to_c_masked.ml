@@ -53,6 +53,17 @@ let rec aexpr_to_c (e:arith_expr) : string =
   | Op_e(op,x,y) -> sprintf "(%s %s %s)"
                             (aexpr_to_c x) (arith_op_to_c op) (aexpr_to_c y)
 
+let const_to_c (m:mtyp) (n:int) : string =
+  match m with
+  | Mint 1 | Mint (-1) -> (match n with
+                           | 0 -> "SET_ALL_ZERO()"
+                           | 1 -> "SET_ALL_ONE()"
+                           | _ -> assert false)
+  | _ -> match m with
+         | Mint m -> sprintf "LIFT_%d(%d)" m n
+         | Mnat -> sprintf "%d" n
+         | _ -> assert false
+
 let var_to_c (lift_env:(var,int)  Hashtbl.t)
              (env:(string,string) Hashtbl.t) (v:var) : string =
   let rec aux (v:var) : string =
@@ -66,105 +77,103 @@ let var_to_c (lift_env:(var,int)  Hashtbl.t)
   | Some n -> sprintf "LIFT_%d(%s)" n cvar
   | None -> cvar
 
-(* TODO: this 64 and 32 shouldn't be hardcoded *)
 let rec expr_to_c (lift_env:(var,int)  Hashtbl.t)
-                  (conf:config) (env:(string,string) Hashtbl.t)
+                  (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t) (e:expr) : string =
   match e with
-  | Const(n,_) -> ( match n with
-                    | 0 -> "SET_ALL_ZERO()"
-                    | 1 -> "SET_ALL_ONE()"
-                    | n -> sprintf "SET(%d,%d)" n 64 )
+  | Const(n,Some typ) -> const_to_c (get_type_m typ) n
   | ExpVar v -> var_to_c lift_env env v
-  | Not e -> sprintf "NOT(%s)" (expr_to_c lift_env conf env env_var e)
+  | Not e -> sprintf "NOT(%s)" (expr_to_c lift_env env env_var e)
   | Log(op,x,y) -> sprintf "%s(%s,%s)"
                            (log_op_to_c op)
-                           (expr_to_c lift_env conf env env_var x)
-                           (expr_to_c lift_env conf env env_var y)
+                           (expr_to_c lift_env env env_var x)
+                           (expr_to_c lift_env env env_var y)
   | Arith(op,x,y) ->
-     (*Printf.fprintf stderr "Hardcoded arith op size\n";*)
-     sprintf "%s(%s,%s,%d)"
-                             (arith_op_to_c_generic op)
-                             (expr_to_c lift_env conf env env_var x)
-                             (expr_to_c lift_env conf env env_var y)
-                             32
+     (match get_normed_expr_m env_var e with
+      | Mint mval ->
+         sprintf "%s(%s,%s,%d)"
+                 (arith_op_to_c_generic op)
+                 (expr_to_c lift_env env env_var x)
+                 (expr_to_c lift_env env env_var y)
+                 mval
+      | Mnat ->
+         sprintf "((%s) %s (%s))"
+                 (expr_to_c lift_env env env_var x)
+                 (arith_op_to_c op)
+                 (expr_to_c lift_env env env_var y)
+      | _ -> assert false)
   | Shuffle(v,l) -> sprintf "PERMUT_%d(%s,%s)"
                                  (List.length l)
                                  (var_to_c lift_env env v)
                                  (join "," (List.map string_of_int l))
   | Shift(op,e,ae) ->
-     (*Printf.fprintf stderr "Hardcoded rotation size\n";*)
      sprintf "%s(%s,%s,%d)"
              (shift_op_to_c op)
-             (expr_to_c lift_env conf env env_var e)
+             (expr_to_c lift_env env env_var e)
              (aexpr_to_c ae)
              (get_expr_reg_size env_var e)
   | Fun(f,[v]) when f.name = "rand" ->
-     sprintf "%s = RAND();" (expr_to_c lift_env conf env env_var v)
+     sprintf "%s = RAND();" (expr_to_c lift_env env env_var v)
   | _ -> raise (Error (Printf.sprintf "Wrong expr: %s" (Usuba_print.expr_to_str e)))
 
-
-(* TODO: this 64 and 32 shouldn't be hardcoded *)
 let rec expr_to_c_ret (lift_env:(var,int)  Hashtbl.t)
-                  (conf:config) (env:(string,string) Hashtbl.t)
+                  (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t) (ret:string) (e:expr) : string =
   match e with
-  | Const(n,_) -> ( match n with
-                    | 0 -> sprintf "%s = SET_ALL_ONE()" ret
-                    | 1 -> sprintf "%s = SET_ALL_ZERO()" ret
-                    | n -> sprintf "%s = SET(%d,%d)" ret n 64 )
+  | Const(n,Some typ) -> sprintf "ASGN_CST(%s, %s)" ret (const_to_c (get_type_m typ) n)
   | ExpVar v -> sprintf "ASGN(%s,%s)" ret (var_to_c lift_env env v)
-  | Not e -> sprintf "NOT(%s,%s)" ret (expr_to_c lift_env conf env env_var e)
+  | Not e -> sprintf "NOT(%s,%s)" ret (expr_to_c lift_env env env_var e)
   | Log(op,x,y) -> sprintf "%s(%s,%s,%s)"
                            (log_op_to_c op) ret
-                           (expr_to_c lift_env conf env env_var x)
-                           (expr_to_c lift_env conf env env_var y)
+                           (expr_to_c lift_env env env_var x)
+                           (expr_to_c lift_env env env_var y)
   | Arith(op,x,y) ->
-     (*Printf.fprintf stderr "Hardcoded arith op size\n";*)
-     sprintf "%s(%s,%s,%s,%d)"
-                             (arith_op_to_c_generic op) ret
-                             (expr_to_c lift_env conf env env_var x)
-                             (expr_to_c lift_env conf env env_var y)
-                             32
+     (match get_normed_expr_m env_var e with
+      | Mint mval ->
+         sprintf "%s(%s,%s,%s,%d)"
+                 (arith_op_to_c_generic op) ret
+                 (expr_to_c lift_env env env_var x)
+                 (expr_to_c lift_env env env_var y)
+                 mval
+      | Mnat ->
+         sprintf "%s = %s" ret (expr_to_c lift_env env env_var e)
+      | _ -> assert false)
   | Shuffle(v,l) -> sprintf "%s = PERMUT_%d(%s,%s)" ret
                                  (List.length l)
                                  (var_to_c lift_env env v)
                                  (join "," (List.map string_of_int l))
   | Shift(op,e,ae) ->
-     (*Printf.fprintf stderr "Hardcoded rotation size\n";*)
      sprintf "%s(%s,%s,%s,%d)"
              (shift_op_to_c op) ret
-             (expr_to_c lift_env conf env env_var e)
+             (expr_to_c lift_env env env_var e)
              (aexpr_to_c ae)
              (get_expr_reg_size env_var e)
   | Fun(f,[v]) when f.name = "rand" ->
-     sprintf "%s = RAND();" (expr_to_c lift_env conf env env_var v)
+     sprintf "%s = RAND();" (expr_to_c lift_env env env_var v)
   | _ -> raise (Error (Printf.sprintf "Wrong expr: %s" (Usuba_print.expr_to_str e)))
 
 
 let fun_call_to_c (lift_env:(var,int)  Hashtbl.t)
-                  (conf:config)
                   (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t)
                   ?(tabs="  ")
                   (p:var list) (f:ident) (args: expr list) : string =
   sprintf "%s%s(%s,%s);"
           tabs
-          (rename f.name) (join "," (List.map (expr_to_c lift_env conf env env_var) args))
+          (rename f.name) (join "," (List.map (expr_to_c lift_env env env_var) args))
           (join "," (List.map (fun v -> var_to_c lift_env env v) p))
 
 let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
                   (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t)
-                  (deqs: deq list)
                   ?(tabs="  ")
-                  (conf:config) : string =
+                  (deqs: deq list) : string =
   join "\n"
        (List.map
           (fun deq -> match deq with
-            | Eqn(p,Fun(f,l),_) -> fun_call_to_c lift_env conf env env_var ~tabs:tabs p f l
+            | Eqn(p,Fun(f,l),_) -> fun_call_to_c lift_env env env_var ~tabs:tabs p f l
             | Eqn([v],e,_) ->
-               sprintf "%s%s;" tabs (expr_to_c_ret lift_env conf env env_var
+               sprintf "%s%s;" tabs (expr_to_c_ret lift_env env env_var
                                        (var_to_c lift_env env v) e)
             | Loop(i,ei,ef,l,_) ->
                sprintf "%sfor (int %s = %s; %s <= %s; %s++) {\n%s\n%s}"
@@ -172,7 +181,7 @@ let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
                        (rename i.name) (aexpr_to_c ei)
                        (rename i.name) (aexpr_to_c ef)
                        (rename i.name)
-                       (deqs_to_c lift_env env env_var l ~tabs:(tabs ^ "  ") conf)
+                       (deqs_to_c lift_env env env_var ~tabs:(tabs ^ "  ") l)
                        tabs
             | _ -> print_endline (Usuba_print.deq_to_str deq);
                    assert false) deqs)
@@ -193,6 +202,7 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
   let aux (marker:string) vd =
     let id = vd.vid.name in
     match vd.vtyp with
+    | Nat -> Hashtbl.add inputs id (Printf.sprintf "%s%s" marker (rename id))
     (* Hard-coding the case ukxn[m] for now *)
     | Array(Uint(_,_,n),size) ->
        List.iteri
@@ -218,10 +228,7 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
           Hashtbl.add inputs x
                       (Printf.sprintf "%s[%d]" (rename id) y))
          (gen_list_typ id vd.vtyp)
-         (gen_list_0_int (size * n))
-    | _ -> Printf.printf "%s => %s:%s\n" def.id.name id
-                         (Usuba_print.typ_to_str vd.vtyp);
-           raise (Not_implemented "Arrays as input") in
+         (gen_list_0_int (size * n))  in
 
   List.iter (aux "") def.p_in;
   List.iter (aux "") def.p_out;
@@ -256,7 +263,7 @@ let rec var_decl_to_c conf (vd:var_d) (out:bool) : string =
   let vtype = if conf.lazylift && is_const vd then
                 gen_intn (get_lift_size vd)
               else "DATATYPE" in
-  sprintf "%s %s[%d]" vtype vname conf.shares
+  sprintf "%s %s[MASKING_ORDER]" vtype vname
 
 let c_header (arch:arch) : string =
   match arch with
@@ -301,7 +308,7 @@ let single_to_c (def:def) (array:bool) (vars:p)
   (* body *)
   (deqs_to_c lift_env
              (if array then inputs_to_arr def else (make_env ()))
-             (build_env_var def.p_in def.p_out vars) body conf)
+             (build_env_var def.p_in def.p_out vars) body)
 
 
 let def_to_c (def:def) (array:bool) (conf:config) : string =

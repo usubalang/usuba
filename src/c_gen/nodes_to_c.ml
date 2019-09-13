@@ -74,7 +74,7 @@ let rec ret_var_to_c (lift_env:(var,int)  Hashtbl.t)
   | Array _ | Uint _ -> var_to_c lift_env env v
   | _ -> assert false
 
-let const_to_c (m:mtyp) (n:int) (conf:config) : string =
+let const_to_c (m:mtyp) (n:int) : string =
   match m with
   | Mint 1 | Mint (-1) -> (match n with
                | 0 -> "SET_ALL_ZERO()"
@@ -87,29 +87,29 @@ let const_to_c (m:mtyp) (n:int) (conf:config) : string =
 
 let rec expr_to_c (m:mtyp)
                   (lift_env:(var,int)  Hashtbl.t)
-                  (conf:config) (env:(string,string) Hashtbl.t)
+                  (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t) (e:expr) : string =
   match e with
-  | Const(n,_) -> const_to_c m n conf
+  | Const(n,_) -> const_to_c m n
   | ExpVar v -> var_to_c lift_env env v
-  | Not e -> sprintf "NOT(%s)" (expr_to_c m lift_env conf env env_var e)
+  | Not e -> sprintf "NOT(%s)" (expr_to_c m lift_env env env_var e)
   | Log(op,x,y) -> sprintf "%s(%s,%s)"
                            (log_op_to_c op)
-                           (expr_to_c m lift_env conf env env_var x)
-                           (expr_to_c m lift_env conf env env_var y)
+                           (expr_to_c m lift_env env env_var x)
+                           (expr_to_c m lift_env env env_var y)
   | Arith(op,x,y) ->
      (match m with
       | Mint mval ->
          sprintf "%s(%s,%s,%d)"
                  (arith_op_to_c_generic op)
-                 (expr_to_c m lift_env conf env env_var x)
-                 (expr_to_c m lift_env conf env env_var y)
+                 (expr_to_c m lift_env env env_var x)
+                 (expr_to_c m lift_env env env_var y)
                  mval
       | Mnat ->
          sprintf "((%s) %s (%s))"
-                 (expr_to_c m lift_env conf env env_var x)
+                 (expr_to_c m lift_env env env_var x)
                  (arith_op_to_c op)
-                 (expr_to_c m lift_env conf env env_var y)
+                 (expr_to_c m lift_env env env_var y)
       | _ -> assert false)
   | Shuffle(v,l) -> sprintf "PERMUT_%d(%s,%s)"
                                  (List.length l)
@@ -118,49 +118,47 @@ let rec expr_to_c (m:mtyp)
   | Shift(op,e,ae) ->
      sprintf "%s(%s,%s,%d)"
              (shift_op_to_c op)
-             (expr_to_c m lift_env conf env env_var e)
+             (expr_to_c m lift_env env env_var e)
              (aexpr_to_c ae)
              (get_expr_reg_size env_var e)
   | Fun(f,[v]) when f.name = "rand" ->
-     sprintf "%s = RAND();" (expr_to_c m lift_env conf env env_var v)
+     sprintf "%s = RAND();" (expr_to_c m lift_env env env_var v)
   | _ -> raise (Error (Printf.sprintf "Wrong expr: %s" (Usuba_print.expr_to_str e)))
 
 
 let fun_call_to_c (lift_env:(var,int)  Hashtbl.t)
-                  (conf:config)
                   (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t)
                   ?(tabs="  ")
                   (p:var list) (f:ident) (args: expr list) : string =
   sprintf "%s%s(%s,%s);"
           tabs
-          (rename f.name) (join "," (List.map (expr_to_c Mnat lift_env conf env env_var) args))
+          (rename f.name) (join "," (List.map (expr_to_c Mnat lift_env env env_var) args))
                                                       (* ^^^^ this "m" value is ignored *)
           (join "," (List.map (fun v -> ret_var_to_c lift_env env env_var v) p))
 
 let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
                   (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t)
-                  (deqs: deq list)
                   ?(tabs="  ")
-                  (conf:config) : string =
+                  (deqs: deq list) : string =
   join "\n"
        (List.map
           (fun deq -> match deq with
             | Eqn([v],Fun(f,[]),_) when f.name = "rand" ->
                sprintf "%s%s = RAND();" tabs (var_to_c lift_env env v)
-            | Eqn(p,Fun(f,l),_) -> fun_call_to_c lift_env conf env env_var ~tabs:tabs p f l
+            | Eqn(p,Fun(f,l),_) -> fun_call_to_c lift_env env env_var ~tabs:tabs p f l
             | Eqn([v],e,_) ->
                let m = get_type_m (get_var_type env_var v) in
                sprintf "%s%s = %s;" tabs (var_to_c lift_env env v)
-                       (expr_to_c m lift_env conf env env_var e)
+                       (expr_to_c m lift_env env env_var e)
             | Loop(i,ei,ef,l,_) ->
                sprintf "%sfor (int %s = %s; %s <= %s; %s++) {\n%s\n%s}"
                        tabs
                        (rename i.name) (aexpr_to_c ei)
                        (rename i.name) (aexpr_to_c ef)
                        (rename i.name)
-                       (deqs_to_c lift_env env env_var l ~tabs:(tabs ^ "  ") conf)
+                       (deqs_to_c lift_env env env_var ~tabs:(tabs ^ "  ") l)
                        tabs
             | _ -> print_endline (Usuba_print.deq_to_str deq);
                    assert false) deqs)
@@ -315,7 +313,7 @@ let single_to_c (def:def) (array:bool) (vars:p)
   (* body *)
   (deqs_to_c lift_env
              (if array then inputs_to_arr def else outputs_to_ptr def)
-             (build_env_var def.p_in def.p_out vars) body conf)
+             (build_env_var def.p_in def.p_out vars) body)
 
 (* A table is converted into a function that contains the lookup table
    (static const). The functions performs the lookup. It's necessary
