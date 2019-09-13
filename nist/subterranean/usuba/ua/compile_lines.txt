@@ -1,0 +1,3 @@
+./usubac -B -light-inline -bits-per-reg 8 -no-sched -o nist/subterranean/usuba/ua/subterranean_ua_bitslice.c -arch std -no-share nist/subterranean/usuba/ua/subterranean.ua
+clang -D UA_B -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main
+clang -D REF  -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main

@@ -47,3 +47,6 @@
 ./usubac -gen-bench -light-inline -bits-per-reg 32 -no-sched -B -o nist/drygascon/usuba/bench/drygascon_ua_bitslice.c nist/drygascon/usuba/ua/drygascon.ua
 # Drygascon vslice
 ./usubac -gen-bench -light-inline -no-sched -V -o nist/drygascon/usuba/bench/drygascon_ua_vslice.c nist/drygascon/usuba/ua/drygascon.ua
+
+# Subterranean bitslice
+./usubac -gen-bench -light-inline -bits-per-reg 32 -no-sched -B -o nist/subterranean/usuba/bench/subterranean_ua_bitslice.c nist/subterranean/usuba/ua/subterranean.ua
