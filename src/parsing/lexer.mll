@@ -10,7 +10,7 @@ exception SyntaxError of string
 
 (* keyword table *)
 let kwd_table = Hashtbl.create 10
-let _ = 
+let _ =
   List.iter (fun (a,b) -> Hashtbl.add kwd_table a b)
     [
      "node",  TOK_NODE;
@@ -48,14 +48,14 @@ let next_line lexbuf =
       { pos with pos_bol = pos.pos_cnum; (*lexbuf.lex_curr_pos;*)
                  pos_lnum = pos.pos_lnum + 1
     }
-                     
+
 }
 
 
 rule token = parse
 
 | "__END__" { TOK_EOF }
-                                   
+
 (* spaces *)
 | [' ' '\t']+  { token lexbuf; }
 | ['\n']       { next_line lexbuf; token lexbuf; }
@@ -98,6 +98,7 @@ rule token = parse
 | "<<<"  { TOK_LROTATE   }
 | "<<"   { TOK_LSHIFT    }
 | ">>>"  { TOK_RROTATE   }
+| ">>!"  { TOK_RLSHIFT   }
 | ">>"   { TOK_RSHIFT    }
 | "<"    { TOK_LT        }
 | ">"    { TOK_GT        }
@@ -116,11 +117,11 @@ rule token = parse
 | "-"    { TOK_DASH      }
 | "/"    { TOK_SLASH     }
 | "%"    { TOK_MOD       }
-         
+
 (* integers *)
 | ['0'-'9']+ as i { TOK_int (int_of_string i) }
 | "0x" ['0'-'9' 'a'-'f' 'A'-'F']+ as i { TOK_int (int_of_string i) }
-                 
+
 (* end of file *)
 | eof   { TOK_EOF }
 

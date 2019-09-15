@@ -25,8 +25,9 @@ let arith_op_to_str = function
   | Mod -> "%"
 
 let shift_op_to_str = function
-  | Lshift -> "<<"
-  | Rshift -> ">>"
+  | Lshift  -> "<<"
+  | Rshift  -> ">>"
+  | RLshift -> ">>!"
   | Lrotate -> "<<<"
   | Rrotate -> ">>>"
 
