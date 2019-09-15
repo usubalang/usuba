@@ -1,0 +1,6 @@
+./usubac -light-inline -masked -B -no-sched -no-share -o nist/ascon/usuba/ua_masked/ascon_ua_bitslice.c -arch std nist/ascon/usuba/ua/ascon.ua
+./usubac -light-inline -masked -V -no-sched -no-share -o nist/ascon/usuba/ua_masked/ascon_ua_vslice.c -arch std nist/ascon/usuba/ua/ascon.ua
+clang -D UA_V -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main -D MASKING_ORDER=1 && ./main
+clang -D UA_V -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main -D MASKING_ORDER=8 && ./main
+clang -D UA_B -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main -D MASKING_ORDER=8 && ./main
+clang -D UA_B -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main -D MASKING_ORDER=1 && ./main
