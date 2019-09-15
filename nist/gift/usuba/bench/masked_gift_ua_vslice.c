@@ -78,22 +78,22 @@ void rowperm__V_Natnat_32 (/*inputs*/ DATATYPE S__[MASKING_ORDER],unsigned int B
     ASGN_CST(_tmp96_, LIFT_32(1));
     AND(_tmp7_,_tmp5_,_tmp96_);
     L_SHIFT(_tmp8_,_tmp7_,(b__ + (8 * B0_pos__)),32);
-    OR(_tmp9_,T__,_tmp8_);
+    XOR(_tmp9_,T__,_tmp8_);
     R_SHIFT(_tmp10_,S__,((4 * b__) + 1),32);
     ASGN_CST(_tmp97_, LIFT_32(1));
     AND(_tmp12_,_tmp10_,_tmp97_);
     L_SHIFT(_tmp13_,_tmp12_,(b__ + (8 * B1_pos__)),32);
-    OR(_tmp14_,_tmp9_,_tmp13_);
+    XOR(_tmp14_,_tmp9_,_tmp13_);
     R_SHIFT(_tmp15_,S__,((4 * b__) + 2),32);
     ASGN_CST(_tmp98_, LIFT_32(1));
     AND(_tmp17_,_tmp15_,_tmp98_);
     L_SHIFT(_tmp18_,_tmp17_,(b__ + (8 * B2_pos__)),32);
-    OR(_tmp19_,_tmp14_,_tmp18_);
+    XOR(_tmp19_,_tmp14_,_tmp18_);
     R_SHIFT(_tmp20_,S__,((4 * b__) + 3),32);
     ASGN_CST(_tmp99_, LIFT_32(1));
     AND(_tmp22_,_tmp20_,_tmp99_);
     L_SHIFT(_tmp23_,_tmp22_,(b__ + (8 * B3_pos__)),32);
-    OR(T__,_tmp19_,_tmp23_);
+    XOR(T__,_tmp19_,_tmp23_);
   }
   ASGN(S____,T__);
 
@@ -155,10 +155,10 @@ void AddRoundKey__V32 (/*inputs*/ DATATYPE S__[4][MASKING_ORDER],DATATYPE W__[8]
 
   // Instructions (body)
   L_SHIFT(_tmp40_,W__[2],16,32);
-  OR(_tmp41_,_tmp40_,W__[3]);
+  XOR(_tmp41_,_tmp40_,W__[3]);
   XOR(S____[2],S__[2],_tmp41_);
   L_SHIFT(_tmp42_,W__[6],16,32);
-  OR(_tmp43_,_tmp42_,W__[7]);
+  XOR(_tmp43_,_tmp42_,W__[7]);
   XOR(S____[1],S__[1],_tmp43_);
   ASGN_CST(_tmp116_, LIFT_32(2147483648));
   XOR(_tmp45_,S__[3],_tmp116_);
@@ -182,12 +182,12 @@ void KeyUpdate__V32 (/*inputs*/ DATATYPE W__[8][MASKING_ORDER], /*outputs*/ DATA
   // Instructions (body)
   R_SHIFT(_tmp46_,W__[6],2,32);
   L_SHIFT(_tmp47_,W__[6],14,32);
-  OR(_tmp48_,_tmp46_,_tmp47_);
+  XOR(_tmp48_,_tmp46_,_tmp47_);
   ASGN_CST(_tmp117_, LIFT_32(65535));
   AND(W____[0],_tmp48_,_tmp117_);
   R_SHIFT(_tmp50_,W__[7],12,32);
   L_SHIFT(_tmp51_,W__[7],4,32);
-  OR(_tmp52_,_tmp50_,_tmp51_);
+  XOR(_tmp52_,_tmp50_,_tmp51_);
   ASGN_CST(_tmp118_, LIFT_32(65535));
   AND(W____[1],_tmp52_,_tmp118_);
   ASGN(W____[7],W__[5]);
@@ -316,7 +316,7 @@ vars
 let
   (T[0]) = 0;
   forall b in [0,7] {
-    (T[(b + 1)]) = ((((T[b] | (((S >> ((4 * b) + 0)) & 1) << (b + (8 * B0_pos)))) | (((S >> ((4 * b) + 1)) & 1) << (b + (8 * B1_pos)))) | (((S >> ((4 * b) + 2)) & 1) << (b + (8 * B2_pos)))) | (((S >> ((4 * b) + 3)) & 1) << (b + (8 * B3_pos))))
+    (T[(b + 1)]) = ((((T[b] ^ (((S >> ((4 * b) + 0)) & 1) << (b + (8 * B0_pos)))) ^ (((S >> ((4 * b) + 1)) & 1) << (b + (8 * B1_pos)))) ^ (((S >> ((4 * b) + 2)) & 1) << (b + (8 * B2_pos)))) ^ (((S >> ((4 * b) + 3)) & 1) << (b + (8 * B3_pos))))
   };
   (S') = T[8]
 tel
@@ -337,8 +337,8 @@ tel
 vars
 
 let
-  (S'[2]) = (S[2] ^ ((W[2] << 16) | W[3]));
-  (S'[1]) = (S[1] ^ ((W[6] << 16) | W[7]));
+  (S'[2]) = (S[2] ^ ((W[2] << 16) ^ W[3]));
+  (S'[1]) = (S[1] ^ ((W[6] << 16) ^ W[7]));
   (S'[3]) = ((S[3] ^ 2147483648) ^ rc);
   (S'[0]) = S[0]
 tel
@@ -348,8 +348,8 @@ tel
 vars
 
 let
-  (W'[0]) = (((W[6] >> 2) | (W[6] << 14)) & 65535);
-  (W'[1]) = (((W[7] >> 12) | (W[7] << 4)) & 65535);
+  (W'[0]) = (((W[6] >> 2) ^ (W[6] << 14)) & 65535);
+  (W'[1]) = (((W[7] >> 12) ^ (W[7] << 4)) & 65535);
   (W'[7 .. 2]) = W[5 .. 0]
 tel
 

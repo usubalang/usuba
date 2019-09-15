@@ -20,8 +20,6 @@ void sBox__B1 (/*inputs*/ DATATYPE x__0__,DATATYPE x__1__,DATATYPE x__2__,DATATY
   DATATYPE _tmp129_;
   DATATYPE _tmp134_;
   DATATYPE _tmp135_;
-  DATATYPE _tmp174_;
-  DATATYPE _tmp176_;
   DATATYPE _tmp177_;
   DATATYPE _tmp179_;
   DATATYPE _tmp180_;
@@ -60,7 +58,6 @@ void sBox__B1 (/*inputs*/ DATATYPE x__0__,DATATYPE x__1__,DATATYPE x__2__,DATATY
   DATATYPE tmp_2_4_0;
   DATATYPE tmp_3_2_0;
   DATATYPE tmp_3_3_0;
-  DATATYPE tmp_3_3_1;
   DATATYPE tmp_3_4_0;
   DATATYPE tmp_4_3_0;
   DATATYPE tmp_4_3_1;
@@ -106,16 +103,13 @@ void sBox__B1 (/*inputs*/ DATATYPE x__0__,DATATYPE x__1__,DATATYPE x__2__,DATATY
   _tmp128_ = AND(_tmp37_,tmp_3_2_0);
   _tmp129_ = AND(x__1__,tmp_2_2_2);
   tmp_3_3_0 = OR(_tmp128_,_tmp129_);
-  tmp_3_3_1 = OR(_tmp83_,_tmp84_);
   _tmp134_ = AND(_tmp43_,tmp_3_3_0);
-  _tmp135_ = AND(x__0__,tmp_3_3_1);
+  _tmp135_ = AND(x__0__,tmp_2_3_0);
   tmp_3_4_0 = OR(_tmp134_,_tmp135_);
   *y__2__ = tmp_3_4_0;
-  _tmp174_ = AND(x__1__,tmp_2_2_3);
-  tmp_4_3_0 = OR(_tmp41_,_tmp174_);
-  _tmp176_ = AND(_tmp37_,tmp_2_2_2);
+  tmp_4_3_0 = OR(_tmp41_,_tmp87_);
   _tmp177_ = AND(x__1__,tmp_3_2_0);
-  tmp_4_3_1 = OR(_tmp176_,_tmp177_);
+  tmp_4_3_1 = OR(_tmp86_,_tmp177_);
   _tmp179_ = AND(_tmp43_,tmp_4_3_0);
   _tmp180_ = AND(x__0__,tmp_4_3_1);
   tmp_4_4_0 = OR(_tmp179_,_tmp180_);
@@ -515,12 +509,12 @@ void permutation__ (/*inputs*/ DATATYPE input__[20][8], /*outputs*/ DATATYPE out
   state__[19][7] = input__[19][7];
   counter__[0] = SET_ALL_ZERO();
   counter__[1] = SET_ALL_ONE();
-  counter__[2] = counter__[1];
-  counter__[3] = counter__[2];
-  counter__[4] = counter__[0];
-  counter__[5] = counter__[3];
-  counter__[6] = counter__[4];
-  counter__[7] = counter__[5];
+  counter__[2] = SET_ALL_ONE();
+  counter__[3] = SET_ALL_ONE();
+  counter__[4] = SET_ALL_ZERO();
+  counter__[5] = SET_ALL_ONE();
+  counter__[6] = SET_ALL_ZERO();
+  counter__[7] = SET_ALL_ONE();
   for (int i__ = 0; i__ <= 79; i__++) {
     counterLayer__B1(state__,counter__,_tmp191_);
     sBoxLayer__B1(_tmp191_,_tmp192_);

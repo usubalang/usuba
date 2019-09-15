@@ -65,27 +65,23 @@ void AddRoundKey__V32 (/*inputs*/ DATATYPE i__[4],DATATYPE k__[4], /*outputs*/ D
 void mat_mult__V32 (/*inputs*/ DATATYPE col__,DATATYPE vec__, /*outputs*/ DATATYPE* res__) {
 
   // Variables declaration
+  DATATYPE _tmp5_;
   DATATYPE _tmp6_;
-  DATATYPE _tmp8_;
-  DATATYPE _tmp9_;
   DATATYPE mask__;
   DATATYPE mat_col__;
-  DATATYPE res_tmp__[33];
-  DATATYPE _tmp16_;
+  DATATYPE res_tmp__;
 
   // Instructions (body)
   mat_col__ = col__;
-  res_tmp__[0] = LIFT_32(0);
+  res_tmp__ = LIFT_32(0);
   for (int i__ = 0; i__ <= 31; i__++) {
-    _tmp6_ = R_SHIFT(vec__,(31 - i__),32);
-    _tmp16_ = LIFT_32(1);
-    _tmp8_ = AND(_tmp6_,_tmp16_);
-    mask__ = SUB(res_tmp__[0],_tmp8_,32);
-    _tmp9_ = AND(mask__,mat_col__);
-    res_tmp__[(i__ + 1)] = XOR(res_tmp__[i__],_tmp9_);
+    _tmp5_ = L_SHIFT(vec__,i__,32);
+    mask__ = RL_SHIFT(_tmp5_,31,32);
+    _tmp6_ = AND(mask__,mat_col__);
+    res_tmp__ = XOR(res_tmp__,_tmp6_);
     mat_col__ = R_ROTATE(mat_col__,1,32);
   }
-  *res__ = res_tmp__[32];
+  *res__ = res_tmp__;
 
 }
 
@@ -109,8 +105,8 @@ void MixRows__V32 (/*inputs*/ DATATYPE input__[4], /*outputs*/ DATATYPE output__
 void pyjamask__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE key__[15][4], /*outputs*/ DATATYPE ciphertext__[4]) {
 
   // Variables declaration
-  DATATYPE _tmp14_[4];
-  DATATYPE _tmp15_[4];
+  DATATYPE _tmp11_[4];
+  DATATYPE _tmp12_[4];
   DATATYPE round__[4];
 
   // Instructions (body)
@@ -119,9 +115,9 @@ void pyjamask__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE key__[15][4], /*out
   round__[2] = plaintext__[2];
   round__[3] = plaintext__[3];
   for (int i__ = 0; i__ <= 13; i__++) {
-    AddRoundKey__V32(round__,key__[i__],_tmp14_);
-    SubBytes__V32(_tmp14_[0],_tmp14_[1],_tmp14_[2],_tmp14_[3],_tmp15_);
-    MixRows__V32(_tmp15_,round__);
+    AddRoundKey__V32(round__,key__[i__],_tmp11_);
+    SubBytes__V32(_tmp11_[0],_tmp11_[1],_tmp11_[2],_tmp11_[3],_tmp12_);
+    MixRows__V32(_tmp12_,round__);
   }
   AddRoundKey__V32(round__,key__[14],ciphertext__);
 
@@ -171,7 +167,7 @@ let
   (mat_col[0]) = col;
   (res_tmp[0]) = 0;
   forall i in [0,31] {
-    (mask[i]) = (0 - ((vec >> (31 - i)) & 1));
+    (mask[i]) = ((vec << i) >>! 31);
     (res_tmp[(i + 1)]) = (res_tmp[i] ^ (mask[i] & mat_col[i]));
     (mat_col[(i + 1)]) = (mat_col[i] >>> 1)
   };
