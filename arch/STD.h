@@ -1,7 +1,8 @@
 /* ******************************************** *\
  *
  *
- *
+ *  DATATYPE: the base type of every value.
+ *  SDATATYPE: the signed version of DATATYPE.
 \* ******************************************** */
 
 
@@ -45,6 +46,7 @@
 
 #define L_SHIFT(a,b,c) (c == 4 ? ((a) << (b)) & 0xf : ((a) << (b)))
 #define R_SHIFT(a,b,c) ((a) >> (b))
+#define RL_SHIFT(a,b,c) (((SDATATYPE)(a)) >> (b))
 #define L_ROTATE(a,b,c) ((a << b) | ((a&ROTATE_MASK(c)) >> (c-b)))
 #define R_ROTATE(a,b,c) (((a&ROTATE_MASK(c)) >> b) | (a << (c-b)))
 
@@ -58,14 +60,19 @@
 #if BITS_PER_REG == 4
 #define DATATYPE uint8_t // TODO: use something else? do something else?
                          // (needed for Photon right now)
+#define SDATATYPE int8_t
 #elif BITS_PER_REG == 8
 #define DATATYPE uint8_t
+#define SDATATYPE int8_t
 #elif BITS_PER_REG == 16
 #define DATATYPE uint16_t
+#define SDATATYPE int16_t
 #elif BITS_PER_REG == 32
 #define DATATYPE uint32_t
+#define SDATATYPE int32_t
 #else
 #define DATATYPE uint64_t
+#define SDATATYPE int64_t
 #endif
 #endif
 
