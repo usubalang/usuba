@@ -61,7 +61,7 @@
   for (int i_In_Header = 0; i_In_Header < MASKING_ORDER; i_In_Header++) \
     r[i_In_Header] = a[i_In_Header] >> b;
 
-#define RL_SHIFT(r,a,b,c)                                               \
+#define RA_SHIFT(r,a,b,c)                                               \
   for (int i_In_Header = 0; i_In_Header < MASKING_ORDER; i_In_Header++) \
     r[i_In_Header] = ((SDATATYPE)(a[i_In_Header])) >> b;
 

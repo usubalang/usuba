@@ -98,7 +98,7 @@ rule token = parse
 | "<<<"  { TOK_LROTATE   }
 | "<<"   { TOK_LSHIFT    }
 | ">>>"  { TOK_RROTATE   }
-| ">>!"  { TOK_RLSHIFT   }
+| ">>!"  { TOK_RASHIFT   }
 | ">>"   { TOK_RSHIFT    }
 | "<"    { TOK_LT        }
 | ">"    { TOK_GT        }
