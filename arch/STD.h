@@ -46,7 +46,7 @@
 
 #define L_SHIFT(a,b,c) (c == 4 ? ((a) << (b)) & 0xf : ((a) << (b)))
 #define R_SHIFT(a,b,c) ((a) >> (b))
-#define RL_SHIFT(a,b,c) (((SDATATYPE)(a)) >> (b))
+#define RA_SHIFT(a,b,c) (((SDATATYPE)(a)) >> (b))
 #define L_ROTATE(a,b,c) ((a << b) | ((a&ROTATE_MASK(c)) >> (c-b)))
 #define R_ROTATE(a,b,c) (((a&ROTATE_MASK(c)) >> b) | (a << (c-b)))
 

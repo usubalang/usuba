@@ -27,7 +27,7 @@ let arith_op_to_str = function
 let shift_op_to_str = function
   | Lshift  -> "<<"
   | Rshift  -> ">>"
-  | RLshift -> ">>!"
+  | RAshift -> ">>!"
   | Lrotate -> "<<<"
   | Rrotate -> ">>>"
 

@@ -34,6 +34,8 @@ let do_shift (env_var:(ident,typ) Hashtbl.t) (op:shift_op)
                 if i = 0 then acc @ (List.rev l)
                 else aux (i-1) (List.tl l) ((Const(0,Some typ))::acc)
               in aux n (List.rev l) []
+  | RAshift -> Printf.eprintf "Cannot do arithmetic shifts in bitslicing.\n";
+               assert false
 
 (* TODO: I'm pretty sure this doesn't cover every cases *)
 let rec shift (env_var:(ident,typ) Hashtbl.t) (op:shift_op) (e:expr) (n:int) : expr =

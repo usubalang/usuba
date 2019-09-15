@@ -63,7 +63,9 @@ module Hslice = struct
         | Lrotate -> Shuffle(v, rotate_l l (eval_arith_ne ae))
         | Rrotate -> Shuffle(v, rotate_r l (eval_arith_ne ae))
         | Lshift  -> Shuffle(v, shift_l  l (eval_arith_ne ae))
-        | Rshift  -> Shuffle(v, shift_r  l (eval_arith_ne ae)))
+        | Rshift  -> Shuffle(v, shift_r  l (eval_arith_ne ae))
+        | RAshift -> Printf.eprintf "Cannot Hslice arithmetic shifts.\n";
+                     assert false)
     | Const(n,Some t) -> Const(n,Some (specialize_typ env_dir env_m t))
     | _ -> e
 

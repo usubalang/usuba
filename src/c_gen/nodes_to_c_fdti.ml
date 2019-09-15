@@ -29,6 +29,7 @@ let log_op_to_c = function
 let shift_op_to_c = function
   | Lshift  -> "L_SHIFT"
   | Rshift  -> "R_SHIFT"
+  | RAshift -> "RA_SHIFT"
   | Lrotate -> "L_ROTATE"
   | Rrotate -> "R_ROTATE"
 

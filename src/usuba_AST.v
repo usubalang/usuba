@@ -19,7 +19,7 @@ Inductive clock :=
 
 Inductive log_op := And | Or | Xor | Andn.
 Inductive arith_op := Add | Mul | Sub | Div | Mod.
-Inductive shift_op := Lshift | Rshift | RLshift (* logical right shift *)
+Inductive shift_op := Lshift | Rshift | RAshift (* arithmetic right shift *)
                       | Lrotate | Rrotate.
 
 Inductive arith_expr :=
