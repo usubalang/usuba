@@ -17,7 +17,7 @@ let
     res_tmp[0] = 0;
 
     forall i in [0, 31] {
-        mask[i] = 0 - ((vec >> (31-i)) & 1);
+        mask[i] = (vec << i) >>! 31;
         res_tmp[i+1] = res_tmp[i] ^ (mask[i] & mat_col[i]);
         mat_col[i+1] = mat_col[i] >>> 1;
     }
