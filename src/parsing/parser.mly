@@ -66,6 +66,7 @@
 %token TOK_LSHIFT
 %token TOK_RROTATE
 %token TOK_RSHIFT
+%token TOK_RLSHIFT
 %token TOK_RANGE
 %token TOK_LT
 %token TOK_GT
@@ -98,7 +99,7 @@
 %nonassoc TOK_WHENOT
 %nonassoc TOK_ARROW
 
-%nonassoc TOK_LSHIFT TOK_RSHIFT TOK_LROTATE TOK_RROTATE
+%nonassoc TOK_LSHIFT TOK_RSHIFT TOK_RLSHIFT TOK_LROTATE TOK_RROTATE
 
 %left TOK_PLUS TOK_DASH
 %left TOK_STAR TOK_SLASH TOK_MOD
@@ -138,6 +139,7 @@ prog:
 %inline shift_op:
   | TOK_LSHIFT  { Lshift  }
   | TOK_RSHIFT  { Rshift  }
+  | TOK_RLSHIFT { RLshift }
   | TOK_LROTATE { Lrotate }
   | TOK_RROTATE { Rrotate }
 
