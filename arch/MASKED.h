@@ -21,14 +21,21 @@
 #endif
 
 #ifndef DATATYPE
-#if BITS_PER_REG == 8
+#if BITS_PER_REG == 4
 #define DATATYPE uint8_t
+#define SDATATYPE int8_t
+#elif BITS_PER_REG == 8
+#define DATATYPE uint8_t
+#define SDATATYPE int8_t
 #elif BITS_PER_REG == 16
 #define DATATYPE uint16_t
+#define SDATATYPE int16_t
 #elif BITS_PER_REG == 32
 #define DATATYPE uint32_t
+#define SDATATYPE int32_t
 #else
 #define DATATYPE uint64_t
+#define SDATATYPE int64_t
 #endif
 #endif
 
@@ -53,6 +60,10 @@
 #define R_SHIFT(r,a,b,c)                                                \
   for (int i_In_Header = 0; i_In_Header < MASKING_ORDER; i_In_Header++) \
     r[i_In_Header] = a[i_In_Header] >> b;
+
+#define RL_SHIFT(r,a,b,c)                                               \
+  for (int i_In_Header = 0; i_In_Header < MASKING_ORDER; i_In_Header++) \
+    r[i_In_Header] = ((SDATATYPE)(a[i_In_Header])) >> b;
 
 #define L_ROTATE(r,a,b,c)                                               \
   for (int i_In_Header = 0; i_In_Header < MASKING_ORDER; i_In_Header++) \
