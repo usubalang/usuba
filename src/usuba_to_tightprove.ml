@@ -29,16 +29,22 @@ let log_op_to_str = function
   | Andn -> assert false
 
 let shift_op_to_str = function
-  | Lshift -> "<<"
-  | Rshift -> ">>"
+  | Lshift  -> "<<"
+  | Rshift  -> ">>"
+  | RAshift -> Printf.eprintf "Cannot generate arithmetic shifts for tightprove.\n";
+               assert false
   | Lrotate -> "<<<"
   | Rrotate -> ">>>"
 
 let rec var_to_str = function
   | Var v -> ident_to_str v
   | Index(v,e) -> sprintf "%s[%s]" (var_to_str v) (arith_to_str e)
-  | Range(v,ei,ef) -> sprintf "%s[%s .. %s]" (var_to_str v) (arith_to_str ei) (arith_to_str ef)
-  | Slice(v,l) -> sprintf "%s[%s]" (var_to_str v) (join "," (List.map arith_to_str l))
+  | Range(v,ei,ef) -> Printf.eprintf "Cannot generate range for tightprove (%s).\n"
+                                     (Usuba_print.var_to_str (Range(v,ei,ef)));
+                      assert false
+  | Slice(v,l) -> Printf.eprintf "Cannot generate slice for tightprove (%s).\n"
+                                 (Usuba_print.var_to_str (Slice(v,l)));
+                  assert false
 
 let rec expr_to_str = function
   | Const(c,_) -> if !bitslice then sprintf "setcstall(%d)" c
