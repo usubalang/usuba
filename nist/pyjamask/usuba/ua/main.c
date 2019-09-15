@@ -67,7 +67,7 @@ void test_ua() {
     for (int i = 0; i < 16; i++) printf("%02x ",cipher[i]);
     printf("\n");
   } else {
-    fprintf(stderr, "Ref encryption OK.\n");
+    fprintf(stderr, "UAV encryption OK.\n");
   }
 }
 
