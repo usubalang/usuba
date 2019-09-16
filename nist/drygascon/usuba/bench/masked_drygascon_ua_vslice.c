@@ -96,7 +96,7 @@ void Rotr32__V_Natnat_64 (/*inputs*/ DATATYPE x__[MASKING_ORDER],unsigned int n_
   // Instructions (body)
   R_SHIFT(_tmp2_,x__,n__,64);
   L_SHIFT(_tmp3_,x__,(32 - n__),64);
-  OR(_tmp4_,_tmp2_,_tmp3_);
+  XOR(_tmp4_,_tmp2_,_tmp3_);
   ASGN_CST(_tmp75_, LIFT_64(4294967295));
   AND(y__,_tmp4_,_tmp75_);
 
@@ -129,7 +129,7 @@ void BitRotR_odd__V_Natnat_64 (/*inputs*/ DATATYPE x__[MASKING_ORDER],unsigned i
   L_SHIFT(_tmp15_,_shadow_i1__18_,32,64);
   ASGN_CST(_tmp77_, LIFT_64(4294967295));
   AND(_tmp17_,t__,_tmp77_);
-  OR(y__,_tmp15_,_tmp17_);
+  XOR(y__,_tmp15_,_tmp17_);
 
 }
 
@@ -156,7 +156,7 @@ void BitRotR_eve__V_Natnat_64 (/*inputs*/ DATATYPE x__[MASKING_ORDER],unsigned i
   L_SHIFT(_tmp23_,_shadow_i1__21_,32,64);
   ASGN_CST(_tmp79_, LIFT_64(4294967295));
   AND(_tmp25_,_shadow_i0__20_,_tmp79_);
-  OR(y__,_tmp23_,_tmp25_);
+  XOR(y__,_tmp23_,_tmp25_);
 
 }
 
@@ -343,7 +343,7 @@ tel
 vars
 
 let
-  (y) = (((x >> n) | (x << (32 - n))) & 4294967295)
+  (y) = (((x >> n) ^ (x << (32 - n))) & 4294967295)
 tel
 
 _inline node BitRotR_odd(x :  u64 :: base,shift :  nat :: base)
@@ -358,7 +358,7 @@ let
   (t) = Rotr32(i1,(shift / 2));
   (i1) := Rotr32(i0,(((shift / 2) + 1) % 32));
   (i0) := t;
-  (y) = ((i1 << 32) | (i0 & 4294967295))
+  (y) = ((i1 << 32) ^ (i0 & 4294967295))
 tel
 
 _inline node BitRotR_eve(x :  u64 :: base,shift :  nat :: base)
@@ -371,7 +371,7 @@ let
   (i1) = (x >> 32);
   (i0) := Rotr32(i0,(shift / 2));
   (i1) := Rotr32(i1,(shift / 2));
-  (y) = ((i1 << 32) | (i0 & 4294967295))
+  (y) = ((i1 << 32) ^ (i0 & 4294967295))
 tel
 
  node LinearLayer(state :  u64x5 :: base)

@@ -4870,7 +4870,7 @@ tel
 vars
 
 let
-  (y) = (((x >> n) | (x << (32 - n))) & 4294967295)
+  (y) = (((x >> n) ^ (x << (32 - n))) & 4294967295)
 tel
 
 _inline node BitRotR_odd(x :  u64 :: base,shift :  nat :: base)
@@ -4885,7 +4885,7 @@ let
   (t) = Rotr32(i1,(shift / 2));
   (i1) := Rotr32(i0,(((shift / 2) + 1) % 32));
   (i0) := t;
-  (y) = ((i1 << 32) | (i0 & 4294967295))
+  (y) = ((i1 << 32) ^ (i0 & 4294967295))
 tel
 
 _inline node BitRotR_eve(x :  u64 :: base,shift :  nat :: base)
@@ -4898,7 +4898,7 @@ let
   (i1) = (x >> 32);
   (i0) := Rotr32(i0,(shift / 2));
   (i1) := Rotr32(i1,(shift / 2));
-  (y) = ((i1 << 32) | (i0 & 4294967295))
+  (y) = ((i1 << 32) ^ (i0 & 4294967295))
 tel
 
  node LinearLayer(state :  u64x5 :: base)
