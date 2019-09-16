@@ -112,11 +112,18 @@
 
 /* Multiplication and refresh */
 
+#ifdef NUCLEO
+volatile int __rand = 0;
+
+static DATATYPE get_random() {
+  return __rand;
+}
+#else
 static DATATYPE get_random() {
   srand(time(NULL));
   return rand();
 }
-
+#endif
 
 static void isw_mult(DATATYPE *res, const DATATYPE *op1, const DATATYPE *op2) {
   int i,j;
