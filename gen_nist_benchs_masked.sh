@@ -26,7 +26,7 @@
 # Pyjamask bitslice
 ./usubac -masked -gen-bench -light-inline -bits-per-reg 32 -no-sched -B -o nist/pyjamask/usuba/bench/masked_pyjamask_ua_bitslice.c -arch std -no-share nist/pyjamask/usuba/ua/pyjamask_bitslice.ua
 # Pyjamask vslice
-# ./usubac -masked -gen-bench -light-inline -no-sched -V -o nist/pyjamask/usuba/bench/masked_pyjamask_ua_vslice.c -arch std -no-share nist/pyjamask/usuba/ua/pyjamask_vslice.ua
+./usubac -masked -gen-bench -light-inline -no-sched -V -o nist/pyjamask/usuba/bench/masked_pyjamask_ua_vslice.c -arch std -no-share nist/pyjamask/usuba/ua/pyjamask_vslice.ua
 
 # Skinny bitslice
 ./usubac -masked -gen-bench -light-inline -bits-per-reg 32 -B -no-sched -o nist/skinny/usuba/bench/masked_skinny_ua_bitslice.c -arch std -no-share nist/skinny/usuba/ua/skinny_bitslice.ua
