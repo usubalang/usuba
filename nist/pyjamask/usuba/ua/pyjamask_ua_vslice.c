@@ -76,7 +76,7 @@ void mat_mult__V32 (/*inputs*/ DATATYPE col__,DATATYPE vec__, /*outputs*/ DATATY
   res_tmp__ = LIFT_32(0);
   for (int i__ = 0; i__ <= 31; i__++) {
     _tmp5_ = L_SHIFT(vec__,i__,32);
-    mask__ = RL_SHIFT(_tmp5_,31,32);
+    mask__ = RA_SHIFT(_tmp5_,31,32);
     _tmp6_ = AND(mask__,mat_col__);
     res_tmp__ = XOR(res_tmp__,_tmp6_);
     mat_col__ = R_ROTATE(mat_col__,1,32);
