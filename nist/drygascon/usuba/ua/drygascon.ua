@@ -14,7 +14,7 @@ tel
 # Rotate the lowest 32 bits of |x|; discard the high half of |x|.
 node Rotr32(x:u64,n:nat) returns (y:u64)
 let
-    y = ((x >> n) | (x << (32-n))) & 0xffffffff;
+    y = ((x >> n) ^ (x << (32-n))) & 0xffffffff;
 tel
 
 _inline node BitRotR_odd(x:u64, shift:nat) returns (y:u64)
@@ -25,7 +25,7 @@ let
     t   = Rotr32(i1, (shift / 2));
     i1 := Rotr32(i0, (((shift / 2) + 1) % 32));
     i0 := t;
-    y = (i1 << 32) | (i0 & 0xffffffff);
+    y = (i1 << 32) ^ (i0 & 0xffffffff);
 tel
 
 _inline node BitRotR_eve(x:u64, shift:nat) returns (y:u64)
@@ -35,7 +35,7 @@ let
     i1  = x >> 32;
     i0 := Rotr32(i0, (shift / 2));
     i1 := Rotr32(i1, (shift / 2));
-    y = (i1 << 32) | (i0 & 0xffffffff);
+    y = (i1 << 32) ^ (i0 & 0xffffffff);
 tel
 
 
