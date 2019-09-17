@@ -13,107 +13,52 @@
 #include "STD.h"
 
 /* auxiliary functions */
-void sBox__B1 (/*inputs*/ DATATYPE x__0__,DATATYPE x__1__,DATATYPE x__2__,DATATYPE x__3__, /*outputs*/ DATATYPE* y__0__,DATATYPE* y__1__,DATATYPE* y__2__,DATATYPE* y__3__) {
+void sBox__B1 (/*inputs*/ DATATYPE x0__,DATATYPE x1__,DATATYPE x2__,DATATYPE x3__, /*outputs*/ DATATYPE* y0__,DATATYPE* y1__,DATATYPE* y2__,DATATYPE* y3__) {
 
   // Variables declaration
-  DATATYPE _tmp128_;
-  DATATYPE _tmp129_;
-  DATATYPE _tmp134_;
-  DATATYPE _tmp135_;
-  DATATYPE _tmp177_;
-  DATATYPE _tmp179_;
-  DATATYPE _tmp180_;
-  DATATYPE _tmp1_;
-  DATATYPE _tmp25_;
-  DATATYPE _tmp26_;
-  DATATYPE _tmp27_;
-  DATATYPE _tmp30_;
-  DATATYPE _tmp32_;
-  DATATYPE _tmp37_;
-  DATATYPE _tmp38_;
-  DATATYPE _tmp39_;
-  DATATYPE _tmp41_;
-  DATATYPE _tmp42_;
-  DATATYPE _tmp43_;
-  DATATYPE _tmp44_;
-  DATATYPE _tmp45_;
-  DATATYPE _tmp75_;
-  DATATYPE _tmp77_;
-  DATATYPE _tmp83_;
-  DATATYPE _tmp84_;
-  DATATYPE _tmp86_;
-  DATATYPE _tmp87_;
-  DATATYPE _tmp89_;
-  DATATYPE _tmp90_;
-  DATATYPE tmp_1_1_0;
-  DATATYPE tmp_1_2_0;
-  DATATYPE tmp_1_2_2;
-  DATATYPE tmp_1_3_0;
-  DATATYPE tmp_1_3_1;
-  DATATYPE tmp_1_4_0;
-  DATATYPE tmp_2_2_2;
-  DATATYPE tmp_2_2_3;
-  DATATYPE tmp_2_3_0;
-  DATATYPE tmp_2_3_1;
-  DATATYPE tmp_2_4_0;
-  DATATYPE tmp_3_2_0;
-  DATATYPE tmp_3_3_0;
-  DATATYPE tmp_3_4_0;
-  DATATYPE tmp_4_3_0;
-  DATATYPE tmp_4_3_1;
-  DATATYPE tmp_4_4_0;
+  DATATYPE _tmp10_;
+  DATATYPE _tmp14_;
+  DATATYPE _tmp15_;
+  DATATYPE _tmp16_;
+  DATATYPE _tmp17_;
+  DATATYPE _tmp18_;
+  DATATYPE _tmp19_;
+  DATATYPE _tmp2_;
+  DATATYPE _tmp3_;
+  DATATYPE _tmp4_;
+  DATATYPE _tmp7_;
+  DATATYPE _tmp8_;
+  DATATYPE q[8];
+  DATATYPE t[4];
 
   // Instructions (body)
-  _tmp1_ = NOT(x__3__);
-  tmp_1_1_0 = OR(_tmp1_,x__3__);
-  _tmp25_ = NOT(x__2__);
-  _tmp26_ = AND(_tmp25_,tmp_1_1_0);
-  _tmp27_ = AND(x__2__,_tmp1_);
-  tmp_1_2_0 = OR(_tmp26_,_tmp27_);
-  _tmp30_ = AND(x__2__,x__3__);
-  _tmp32_ = AND(_tmp25_,x__3__);
-  tmp_1_2_2 = OR(_tmp32_,_tmp27_);
-  _tmp37_ = NOT(x__1__);
-  _tmp38_ = AND(_tmp37_,tmp_1_2_0);
-  _tmp39_ = AND(x__1__,_tmp30_);
-  tmp_1_3_0 = OR(_tmp38_,_tmp39_);
-  _tmp41_ = AND(_tmp37_,tmp_1_2_2);
-  _tmp42_ = AND(x__1__,_tmp26_);
-  tmp_1_3_1 = OR(_tmp41_,_tmp42_);
-  _tmp43_ = NOT(x__0__);
-  _tmp44_ = AND(_tmp43_,tmp_1_3_0);
-  _tmp45_ = AND(x__0__,tmp_1_3_1);
-  tmp_1_4_0 = OR(_tmp44_,_tmp45_);
-  *y__0__ = tmp_1_4_0;
-  _tmp75_ = AND(x__2__,tmp_1_1_0);
-  _tmp77_ = AND(_tmp25_,_tmp1_);
-  tmp_2_2_2 = OR(_tmp77_,_tmp30_);
-  tmp_2_2_3 = OR(_tmp32_,_tmp30_);
-  _tmp83_ = AND(_tmp37_,_tmp26_);
-  _tmp84_ = AND(x__1__,_tmp75_);
-  tmp_2_3_0 = OR(_tmp83_,_tmp84_);
-  _tmp86_ = AND(_tmp37_,tmp_2_2_2);
-  _tmp87_ = AND(x__1__,tmp_2_2_3);
-  tmp_2_3_1 = OR(_tmp86_,_tmp87_);
-  _tmp89_ = AND(_tmp43_,tmp_2_3_0);
-  _tmp90_ = AND(x__0__,tmp_2_3_1);
-  tmp_2_4_0 = OR(_tmp89_,_tmp90_);
-  *y__1__ = tmp_2_4_0;
-  tmp_3_2_0 = OR(_tmp77_,_tmp27_);
-  _tmp128_ = AND(_tmp37_,tmp_3_2_0);
-  _tmp129_ = AND(x__1__,tmp_2_2_2);
-  tmp_3_3_0 = OR(_tmp128_,_tmp129_);
-  _tmp134_ = AND(_tmp43_,tmp_3_3_0);
-  _tmp135_ = AND(x__0__,tmp_2_3_0);
-  tmp_3_4_0 = OR(_tmp134_,_tmp135_);
-  *y__2__ = tmp_3_4_0;
-  tmp_4_3_0 = OR(_tmp41_,_tmp87_);
-  _tmp177_ = AND(x__1__,tmp_3_2_0);
-  tmp_4_3_1 = OR(_tmp86_,_tmp177_);
-  _tmp179_ = AND(_tmp43_,tmp_4_3_0);
-  _tmp180_ = AND(x__0__,tmp_4_3_1);
-  tmp_4_4_0 = OR(_tmp179_,_tmp180_);
-  *y__3__ = tmp_4_4_0;
+  q[0] = XOR(x0__,x2__);
+  q[1] = XOR(x1__,x2__);
+  t[0] = AND(q[0],q[1]);
+  _tmp2_ = NOT(x0__);
+  _tmp3_ = XOR(_tmp2_,x1__);
+  _tmp4_ = XOR(_tmp3_,x3__);
+  q[2] = XOR(_tmp4_,t[0]);
+  t[1] = AND(q[2],_tmp2_);
+  q[4] = XOR(x1__,t[1]);
+  _tmp7_ = XOR(q[1],x3__);
+  _tmp8_ = XOR(_tmp7_,t[0]);
+  q[5] = XOR(_tmp8_,t[1]);
+  t[2] = AND(q[4],q[5]);
+  q[6] = XOR(x2__,t[0]);
+  _tmp10_ = NOT(x1__);
+  q[7] = XOR(_tmp10_,t[0]);
+  t[3] = AND(q[6],q[7]);
+  *y0__ = XOR(_tmp7_,t[2]);
+  _tmp14_ = XOR(q[0],x3__);
+  _tmp15_ = XOR(_tmp14_,t[0]);
+  *y1__ = XOR(_tmp15_,t[1]);
+  _tmp16_ = XOR(x0__,x1__);
+  _tmp17_ = XOR(_tmp16_,x2__);
+  *y2__ = XOR(_tmp17_,t[1]);
+  _tmp18_ = XOR(x0__,x3__);
+  _tmp19_ = XOR(_tmp18_,t[0]);
+  *y3__ = XOR(_tmp19_,t[3]);
 
 }
 
@@ -322,10 +267,10 @@ void counterLayer__B1 (/*inputs*/ DATATYPE state__[20][8],DATATYPE counter__[8],
 void lfsr__B1 (/*inputs*/ DATATYPE counter__[8], /*outputs*/ DATATYPE counterR__[8]) {
 
   // Variables declaration
-  DATATYPE _tmp188_;
+  DATATYPE _tmp27_;
 
   // Instructions (body)
-  _tmp188_ = XOR(counter__[1],counter__[2]);
+  _tmp27_ = XOR(counter__[1],counter__[2]);
   counterR__[0] = SET_ALL_ZERO();
   counterR__[1] = counter__[2];
   counterR__[2] = counter__[3];
@@ -333,7 +278,7 @@ void lfsr__B1 (/*inputs*/ DATATYPE counter__[8], /*outputs*/ DATATYPE counterR__
   counterR__[4] = counter__[5];
   counterR__[5] = counter__[6];
   counterR__[6] = counter__[7];
-  counterR__[7] = _tmp188_;
+  counterR__[7] = _tmp27_;
 
 }
 
@@ -341,8 +286,8 @@ void lfsr__B1 (/*inputs*/ DATATYPE counter__[8], /*outputs*/ DATATYPE counterR__
 void permutation__ (/*inputs*/ DATATYPE input__[20][8], /*outputs*/ DATATYPE output__[20][8]) {
 
   // Variables declaration
-  DATATYPE _tmp191_[20][8];
-  DATATYPE _tmp192_[20][8];
+  DATATYPE _tmp30_[20][8];
+  DATATYPE _tmp31_[20][8];
   DATATYPE counter__[8];
   DATATYPE state__[20][8];
 
@@ -516,9 +461,9 @@ void permutation__ (/*inputs*/ DATATYPE input__[20][8], /*outputs*/ DATATYPE out
   counter__[6] = SET_ALL_ZERO();
   counter__[7] = SET_ALL_ONE();
   for (int i__ = 0; i__ <= 79; i__++) {
-    counterLayer__B1(state__,counter__,_tmp191_);
-    sBoxLayer__B1(_tmp191_,_tmp192_);
-    pLayer__B1(_tmp192_,state__);
+    counterLayer__B1(state__,counter__,_tmp30_);
+    sBoxLayer__B1(_tmp30_,_tmp31_);
+    pLayer__B1(_tmp31_,state__);
     lfsr__B1(counter__,counter__);
   }
   output__[0][0] = state__[0][0];
