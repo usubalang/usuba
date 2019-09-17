@@ -39,8 +39,8 @@
 #endif
 #endif
 
-#define SET_ALL_ONE()  -1
-#define SET_ALL_ZERO() 0
+#define SET_ALL_ONE()  ((DATATYPE)-1)
+#define SET_ALL_ZERO() ((DATATYPE)0)
 
 #define LIFT_8(x) (x)
 #define LIFT_16(x) (x)
