@@ -13,107 +13,52 @@
 #include "MASKED.h"
 
 /* auxiliary functions */
-void sBox__B1 (/*inputs*/ DATATYPE x__0__[MASKING_ORDER],DATATYPE x__1__[MASKING_ORDER],DATATYPE x__2__[MASKING_ORDER],DATATYPE x__3__[MASKING_ORDER], /*outputs*/ DATATYPE y__0__[MASKING_ORDER],DATATYPE y__1__[MASKING_ORDER],DATATYPE y__2__[MASKING_ORDER],DATATYPE y__3__[MASKING_ORDER]) {
+void sBox__B1 (/*inputs*/ DATATYPE x0__[MASKING_ORDER],DATATYPE x1__[MASKING_ORDER],DATATYPE x2__[MASKING_ORDER],DATATYPE x3__[MASKING_ORDER], /*outputs*/ DATATYPE y0__[MASKING_ORDER],DATATYPE y1__[MASKING_ORDER],DATATYPE y2__[MASKING_ORDER],DATATYPE y3__[MASKING_ORDER]) {
 
   // Variables declaration
-  DATATYPE _tmp128_[MASKING_ORDER];
-  DATATYPE _tmp129_[MASKING_ORDER];
-  DATATYPE _tmp134_[MASKING_ORDER];
-  DATATYPE _tmp135_[MASKING_ORDER];
-  DATATYPE _tmp177_[MASKING_ORDER];
-  DATATYPE _tmp179_[MASKING_ORDER];
-  DATATYPE _tmp180_[MASKING_ORDER];
-  DATATYPE _tmp1_[MASKING_ORDER];
-  DATATYPE _tmp25_[MASKING_ORDER];
-  DATATYPE _tmp26_[MASKING_ORDER];
-  DATATYPE _tmp27_[MASKING_ORDER];
-  DATATYPE _tmp30_[MASKING_ORDER];
-  DATATYPE _tmp32_[MASKING_ORDER];
-  DATATYPE _tmp37_[MASKING_ORDER];
-  DATATYPE _tmp38_[MASKING_ORDER];
-  DATATYPE _tmp39_[MASKING_ORDER];
-  DATATYPE _tmp41_[MASKING_ORDER];
-  DATATYPE _tmp42_[MASKING_ORDER];
-  DATATYPE _tmp43_[MASKING_ORDER];
-  DATATYPE _tmp44_[MASKING_ORDER];
-  DATATYPE _tmp45_[MASKING_ORDER];
-  DATATYPE _tmp75_[MASKING_ORDER];
-  DATATYPE _tmp77_[MASKING_ORDER];
-  DATATYPE _tmp83_[MASKING_ORDER];
-  DATATYPE _tmp84_[MASKING_ORDER];
-  DATATYPE _tmp86_[MASKING_ORDER];
-  DATATYPE _tmp87_[MASKING_ORDER];
-  DATATYPE _tmp89_[MASKING_ORDER];
-  DATATYPE _tmp90_[MASKING_ORDER];
-  DATATYPE tmp_1_1_0[MASKING_ORDER];
-  DATATYPE tmp_1_2_0[MASKING_ORDER];
-  DATATYPE tmp_1_2_2[MASKING_ORDER];
-  DATATYPE tmp_1_3_0[MASKING_ORDER];
-  DATATYPE tmp_1_3_1[MASKING_ORDER];
-  DATATYPE tmp_1_4_0[MASKING_ORDER];
-  DATATYPE tmp_2_2_2[MASKING_ORDER];
-  DATATYPE tmp_2_2_3[MASKING_ORDER];
-  DATATYPE tmp_2_3_0[MASKING_ORDER];
-  DATATYPE tmp_2_3_1[MASKING_ORDER];
-  DATATYPE tmp_2_4_0[MASKING_ORDER];
-  DATATYPE tmp_3_2_0[MASKING_ORDER];
-  DATATYPE tmp_3_3_0[MASKING_ORDER];
-  DATATYPE tmp_3_4_0[MASKING_ORDER];
-  DATATYPE tmp_4_3_0[MASKING_ORDER];
-  DATATYPE tmp_4_3_1[MASKING_ORDER];
-  DATATYPE tmp_4_4_0[MASKING_ORDER];
+  DATATYPE _tmp10_[MASKING_ORDER];
+  DATATYPE _tmp14_[MASKING_ORDER];
+  DATATYPE _tmp15_[MASKING_ORDER];
+  DATATYPE _tmp16_[MASKING_ORDER];
+  DATATYPE _tmp17_[MASKING_ORDER];
+  DATATYPE _tmp18_[MASKING_ORDER];
+  DATATYPE _tmp19_[MASKING_ORDER];
+  DATATYPE _tmp2_[MASKING_ORDER];
+  DATATYPE _tmp3_[MASKING_ORDER];
+  DATATYPE _tmp4_[MASKING_ORDER];
+  DATATYPE _tmp7_[MASKING_ORDER];
+  DATATYPE _tmp8_[MASKING_ORDER];
+  DATATYPE q[8][MASKING_ORDER];
+  DATATYPE t[4][MASKING_ORDER];
 
   // Instructions (body)
-  NOT(_tmp1_,x__3__);
-  OR(tmp_1_1_0,_tmp1_,x__3__);
-  NOT(_tmp25_,x__2__);
-  AND(_tmp26_,_tmp25_,tmp_1_1_0);
-  AND(_tmp27_,x__2__,_tmp1_);
-  OR(tmp_1_2_0,_tmp26_,_tmp27_);
-  AND(_tmp30_,x__2__,x__3__);
-  AND(_tmp32_,_tmp25_,x__3__);
-  OR(tmp_1_2_2,_tmp32_,_tmp27_);
-  NOT(_tmp37_,x__1__);
-  AND(_tmp38_,_tmp37_,tmp_1_2_0);
-  AND(_tmp39_,x__1__,_tmp30_);
-  OR(tmp_1_3_0,_tmp38_,_tmp39_);
-  AND(_tmp41_,_tmp37_,tmp_1_2_2);
-  AND(_tmp42_,x__1__,_tmp26_);
-  OR(tmp_1_3_1,_tmp41_,_tmp42_);
-  NOT(_tmp43_,x__0__);
-  AND(_tmp44_,_tmp43_,tmp_1_3_0);
-  AND(_tmp45_,x__0__,tmp_1_3_1);
-  OR(tmp_1_4_0,_tmp44_,_tmp45_);
-  ASGN(y__0__,tmp_1_4_0);
-  AND(_tmp75_,x__2__,tmp_1_1_0);
-  AND(_tmp77_,_tmp25_,_tmp1_);
-  OR(tmp_2_2_2,_tmp77_,_tmp30_);
-  OR(tmp_2_2_3,_tmp32_,_tmp30_);
-  AND(_tmp83_,_tmp37_,_tmp26_);
-  AND(_tmp84_,x__1__,_tmp75_);
-  OR(tmp_2_3_0,_tmp83_,_tmp84_);
-  AND(_tmp86_,_tmp37_,tmp_2_2_2);
-  AND(_tmp87_,x__1__,tmp_2_2_3);
-  OR(tmp_2_3_1,_tmp86_,_tmp87_);
-  AND(_tmp89_,_tmp43_,tmp_2_3_0);
-  AND(_tmp90_,x__0__,tmp_2_3_1);
-  OR(tmp_2_4_0,_tmp89_,_tmp90_);
-  ASGN(y__1__,tmp_2_4_0);
-  OR(tmp_3_2_0,_tmp77_,_tmp27_);
-  AND(_tmp128_,_tmp37_,tmp_3_2_0);
-  AND(_tmp129_,x__1__,tmp_2_2_2);
-  OR(tmp_3_3_0,_tmp128_,_tmp129_);
-  AND(_tmp134_,_tmp43_,tmp_3_3_0);
-  AND(_tmp135_,x__0__,tmp_2_3_0);
-  OR(tmp_3_4_0,_tmp134_,_tmp135_);
-  ASGN(y__2__,tmp_3_4_0);
-  OR(tmp_4_3_0,_tmp41_,_tmp87_);
-  AND(_tmp177_,x__1__,tmp_3_2_0);
-  OR(tmp_4_3_1,_tmp86_,_tmp177_);
-  AND(_tmp179_,_tmp43_,tmp_4_3_0);
-  AND(_tmp180_,x__0__,tmp_4_3_1);
-  OR(tmp_4_4_0,_tmp179_,_tmp180_);
-  ASGN(y__3__,tmp_4_4_0);
+  XOR(q[0],x0__,x2__);
+  XOR(q[1],x1__,x2__);
+  AND(t[0],q[0],q[1]);
+  NOT(_tmp2_,x0__);
+  XOR(_tmp3_,_tmp2_,x1__);
+  XOR(_tmp4_,_tmp3_,x3__);
+  XOR(q[2],_tmp4_,t[0]);
+  AND(t[1],q[2],_tmp2_);
+  XOR(q[4],x1__,t[1]);
+  XOR(_tmp7_,q[1],x3__);
+  XOR(_tmp8_,_tmp7_,t[0]);
+  XOR(q[5],_tmp8_,t[1]);
+  AND(t[2],q[4],q[5]);
+  XOR(q[6],x2__,t[0]);
+  NOT(_tmp10_,x1__);
+  XOR(q[7],_tmp10_,t[0]);
+  AND(t[3],q[6],q[7]);
+  XOR(y0__,_tmp7_,t[2]);
+  XOR(_tmp14_,q[0],x3__);
+  XOR(_tmp15_,_tmp14_,t[0]);
+  XOR(y1__,_tmp15_,t[1]);
+  XOR(_tmp16_,x0__,x1__);
+  XOR(_tmp17_,_tmp16_,x2__);
+  XOR(y2__,_tmp17_,t[1]);
+  XOR(_tmp18_,x0__,x3__);
+  XOR(_tmp19_,_tmp18_,t[0]);
+  XOR(y3__,_tmp19_,t[3]);
 
 }
 
@@ -322,10 +267,10 @@ void counterLayer__B1 (/*inputs*/ DATATYPE state__[20][8][MASKING_ORDER],DATATYP
 void lfsr__B1 (/*inputs*/ DATATYPE counter__[8][MASKING_ORDER], /*outputs*/ DATATYPE counterR__[8][MASKING_ORDER]) {
 
   // Variables declaration
-  DATATYPE _tmp188_[MASKING_ORDER];
+  DATATYPE _tmp27_[MASKING_ORDER];
 
   // Instructions (body)
-  XOR(_tmp188_,counter__[1],counter__[2]);
+  XOR(_tmp27_,counter__[1],counter__[2]);
   ASGN_CST(counterR__[0], SET_ALL_ZERO());
   ASGN(counterR__[1],counter__[2]);
   ASGN(counterR__[2],counter__[3]);
@@ -333,7 +278,7 @@ void lfsr__B1 (/*inputs*/ DATATYPE counter__[8][MASKING_ORDER], /*outputs*/ DATA
   ASGN(counterR__[4],counter__[5]);
   ASGN(counterR__[5],counter__[6]);
   ASGN(counterR__[6],counter__[7]);
-  ASGN(counterR__[7],_tmp188_);
+  ASGN(counterR__[7],_tmp27_);
 
 }
 
@@ -341,8 +286,8 @@ void lfsr__B1 (/*inputs*/ DATATYPE counter__[8][MASKING_ORDER], /*outputs*/ DATA
 void permutation__ (/*inputs*/ DATATYPE input__[20][8][MASKING_ORDER], /*outputs*/ DATATYPE output__[20][8][MASKING_ORDER]) {
 
   // Variables declaration
-  DATATYPE _tmp191_[20][8][MASKING_ORDER];
-  DATATYPE _tmp192_[20][8][MASKING_ORDER];
+  DATATYPE _tmp30_[20][8][MASKING_ORDER];
+  DATATYPE _tmp31_[20][8][MASKING_ORDER];
   DATATYPE counter__[8][MASKING_ORDER];
   DATATYPE state__[20][8][MASKING_ORDER];
 
@@ -516,9 +461,9 @@ void permutation__ (/*inputs*/ DATATYPE input__[20][8][MASKING_ORDER], /*outputs
   ASGN_CST(counter__[6], SET_ALL_ZERO());
   ASGN_CST(counter__[7], SET_ALL_ONE());
   for (int i__ = 0; i__ <= 79; i__++) {
-    counterLayer__B1(state__,counter__,_tmp191_);
-    sBoxLayer__B1(_tmp191_,_tmp192_);
-    pLayer__B1(_tmp192_,state__);
+    counterLayer__B1(state__,counter__,_tmp30_);
+    sBoxLayer__B1(_tmp30_,_tmp31_);
+    pLayer__B1(_tmp31_,state__);
     lfsr__B1(counter__,counter__);
   }
   ASGN(output__[0][0],state__[0][0]);
