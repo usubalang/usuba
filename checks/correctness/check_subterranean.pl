@@ -50,6 +50,7 @@ for my $slicing ('bitslice') {
     error if system "clang -D $implem_flag -march=native -I../arch -I . -o main main.c";
 
     say "Running the test...";
+    error if system './main';
 
     chdir '..';
     remove_tree $temp_dir;
