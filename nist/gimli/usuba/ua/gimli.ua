@@ -1,20 +1,45 @@
-_inline node SPbox (col:u32[3]) returns (colR:u32[3])
+node SPbox_Rx (col:u32[3]) returns (colR:u32[3])
 vars
-    x, y, z : u32
+    x, y, z, x_R : u32
 let
     x = col[0] <<< 24;
     y = col[1] <<< 9;
     z = col[2];
 
+    x_R = refresh(x);
+
     colR[2] = x ^ (z << 1) ^ ((y&z) << 2);
-    colR[1] = y ^ x        ^ ((x|z) << 1);
-    colR[0] = z ^ y        ^ ((x&y) << 3);
+    colR[1] = y ^ x        ^ ((x_R|z) << 1);
+    colR[0] = z ^ y        ^ ((x_R&y) << 3);
 tel
 
-node NonlinearLayer (state:u32x4[3]) returns (stateR:u32x4[3])
+node SPbox_Rxy (col:u32[3]) returns (colR:u32[3])
+vars
+    x, y, z, x_R, y_R : u32
+let
+    x = col[0] <<< 24;
+    y = col[1] <<< 9;
+    z = col[2];
+
+    x_R = refresh(x);
+    y_R = refresh(y);
+
+    colR[2] = x ^ (z << 1) ^ ((y_R&z) << 2);
+    colR[1] = y ^ x        ^ ((x_R|z) << 1);
+    colR[0] = z ^ y        ^ ((x_R&y_R) << 3);
+tel
+
+node NonlinearLayer_Rx (state:u32x4[3]) returns (stateR:u32x4[3])
 let
     forall i in [0, 3] {
-      stateR[0..2][i] = SPbox(state[0..2][i]);
+      stateR[0..2][i] = SPbox_Rx(state[0..2][i]);
+    }
+tel
+
+node NonlinearLayer_Rxy (state:u32x4[3]) returns (stateR:u32x4[3])
+let
+    forall i in [0, 3] {
+      stateR[0..2][i] = SPbox_Rxy(state[0..2][i]);
     }
 tel
 
@@ -44,12 +69,12 @@ let
     round[0] = state;
 
     forall r in [0,5] {
-       round[r*6+1] = NonlinearLayer(round[r*6]);
+       round[r*6+1] = NonlinearLayer_Rx(round[r*6]);
        round[r*6+2] = AddRC(SmallSwap(round[r*6+1]), rc[r]);
-       round[r*6+3] = NonlinearLayer(round[r*6+2]);
-       round[r*6+4] = NonlinearLayer(round[r*6+3]);
+       round[r*6+3] = NonlinearLayer_Rxy(round[r*6+2]);
+       round[r*6+4] = NonlinearLayer_Rx(round[r*6+3]);
        round[r*6+5] = BigSwap(round[r*6+4]);
-       round[r*6+6] = NonlinearLayer(round[r*6+5]);
+       round[r*6+6] = NonlinearLayer_Rx(round[r*6+5]);
     }
 
     stateR = round[36];
