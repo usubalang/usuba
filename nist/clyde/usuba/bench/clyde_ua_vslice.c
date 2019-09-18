@@ -13,26 +13,6 @@
 #include "STD.h"
 
 /* auxiliary functions */
-void sbox_layer__V32 (/*inputs*/ DATATYPE x__[4], /*outputs*/ DATATYPE y__[4]) {
-
-  // Variables declaration
-  DATATYPE sbox__V32_1__tmp1_;
-  DATATYPE sbox__V32_1__tmp2_;
-  DATATYPE sbox__V32_1__tmp3_;
-  DATATYPE sbox__V32_1__tmp4_;
-
-  // Instructions (body)
-  sbox__V32_1__tmp1_ = AND(x__[0],x__[1]);
-  y__[1] = XOR(sbox__V32_1__tmp1_,x__[2]);
-  sbox__V32_1__tmp2_ = AND(x__[3],x__[0]);
-  y__[0] = XOR(sbox__V32_1__tmp2_,x__[1]);
-  sbox__V32_1__tmp3_ = AND(y__[1],x__[3]);
-  y__[3] = XOR(sbox__V32_1__tmp3_,x__[0]);
-  sbox__V32_1__tmp4_ = AND(y__[0],y__[1]);
-  y__[2] = XOR(sbox__V32_1__tmp4_,x__[3]);
-
-}
-
 void lbox_layer__V32 (/*inputs*/ DATATYPE state__[4], /*outputs*/ DATATYPE stateR__[4]) {
 
   // Variables declaration
@@ -51,10 +31,10 @@ void lbox_layer__V32 (/*inputs*/ DATATYPE state__[4], /*outputs*/ DATATYPE state
   DATATYPE lbox__V32_1__tmp14_;
   DATATYPE lbox__V32_1__tmp15_;
   DATATYPE lbox__V32_1__tmp16_;
-  DATATYPE lbox__V32_1__tmp5_;
-  DATATYPE lbox__V32_1__tmp6_;
-  DATATYPE lbox__V32_1__tmp7_;
-  DATATYPE lbox__V32_1__tmp8_;
+  DATATYPE lbox__V32_1__tmp17_;
+  DATATYPE lbox__V32_1__tmp18_;
+  DATATYPE lbox__V32_1__tmp19_;
+  DATATYPE lbox__V32_1__tmp20_;
   DATATYPE lbox__V32_1__tmp9_;
   DATATYPE lbox__V32_1_a__;
   DATATYPE lbox__V32_1_b__;
@@ -75,10 +55,10 @@ void lbox_layer__V32 (/*inputs*/ DATATYPE state__[4], /*outputs*/ DATATYPE state
   DATATYPE lbox__V32_2__tmp14_;
   DATATYPE lbox__V32_2__tmp15_;
   DATATYPE lbox__V32_2__tmp16_;
-  DATATYPE lbox__V32_2__tmp5_;
-  DATATYPE lbox__V32_2__tmp6_;
-  DATATYPE lbox__V32_2__tmp7_;
-  DATATYPE lbox__V32_2__tmp8_;
+  DATATYPE lbox__V32_2__tmp17_;
+  DATATYPE lbox__V32_2__tmp18_;
+  DATATYPE lbox__V32_2__tmp19_;
+  DATATYPE lbox__V32_2__tmp20_;
   DATATYPE lbox__V32_2__tmp9_;
   DATATYPE lbox__V32_2_a__;
   DATATYPE lbox__V32_2_b__;
@@ -86,56 +66,56 @@ void lbox_layer__V32 (/*inputs*/ DATATYPE state__[4], /*outputs*/ DATATYPE state
   DATATYPE lbox__V32_2_d__;
 
   // Instructions (body)
-  lbox__V32_1__tmp5_ = R_ROTATE(state__[0],12,32);
-  lbox__V32_1_a__ = XOR(state__[0],lbox__V32_1__tmp5_);
-  lbox__V32_1__tmp6_ = R_ROTATE(state__[1],12,32);
-  lbox__V32_1_b__ = XOR(state__[1],lbox__V32_1__tmp6_);
-  lbox__V32_1__tmp7_ = R_ROTATE(lbox__V32_1_a__,3,32);
-  lbox__V32_1__shadow_a__1_ = XOR(lbox__V32_1_a__,lbox__V32_1__tmp7_);
-  lbox__V32_1__tmp8_ = R_ROTATE(lbox__V32_1_b__,3,32);
-  lbox__V32_1__shadow_b__2_ = XOR(lbox__V32_1_b__,lbox__V32_1__tmp8_);
-  lbox__V32_1__tmp9_ = R_ROTATE(state__[0],17,32);
-  lbox__V32_1__shadow_a__3_ = XOR(lbox__V32_1__shadow_a__1_,lbox__V32_1__tmp9_);
-  lbox__V32_1__tmp10_ = R_ROTATE(state__[1],17,32);
-  lbox__V32_1__shadow_b__4_ = XOR(lbox__V32_1__shadow_b__2_,lbox__V32_1__tmp10_);
-  lbox__V32_1__tmp11_ = R_ROTATE(lbox__V32_1__shadow_a__3_,31,32);
-  lbox__V32_1_c__ = XOR(lbox__V32_1__shadow_a__3_,lbox__V32_1__tmp11_);
-  lbox__V32_1__tmp12_ = R_ROTATE(lbox__V32_1__shadow_b__4_,31,32);
-  lbox__V32_1_d__ = XOR(lbox__V32_1__shadow_b__4_,lbox__V32_1__tmp12_);
-  lbox__V32_1__tmp13_ = R_ROTATE(lbox__V32_1_d__,26,32);
-  lbox__V32_1__shadow_a__5_ = XOR(lbox__V32_1__shadow_a__3_,lbox__V32_1__tmp13_);
-  lbox__V32_1__tmp14_ = R_ROTATE(lbox__V32_1_c__,25,32);
-  lbox__V32_1__shadow_b__6_ = XOR(lbox__V32_1__shadow_b__4_,lbox__V32_1__tmp14_);
-  lbox__V32_1__tmp15_ = R_ROTATE(lbox__V32_1_c__,15,32);
-  lbox__V32_1__shadow_a__7_ = XOR(lbox__V32_1__shadow_a__5_,lbox__V32_1__tmp15_);
-  lbox__V32_1__tmp16_ = R_ROTATE(lbox__V32_1_d__,15,32);
-  lbox__V32_1__shadow_b__8_ = XOR(lbox__V32_1__shadow_b__6_,lbox__V32_1__tmp16_);
+  lbox__V32_1__tmp9_ = R_ROTATE(state__[0],12,32);
+  lbox__V32_1_a__ = XOR(state__[0],lbox__V32_1__tmp9_);
+  lbox__V32_1__tmp10_ = R_ROTATE(state__[1],12,32);
+  lbox__V32_1_b__ = XOR(state__[1],lbox__V32_1__tmp10_);
+  lbox__V32_1__tmp11_ = R_ROTATE(lbox__V32_1_a__,3,32);
+  lbox__V32_1__shadow_a__1_ = XOR(lbox__V32_1_a__,lbox__V32_1__tmp11_);
+  lbox__V32_1__tmp12_ = R_ROTATE(lbox__V32_1_b__,3,32);
+  lbox__V32_1__shadow_b__2_ = XOR(lbox__V32_1_b__,lbox__V32_1__tmp12_);
+  lbox__V32_1__tmp13_ = R_ROTATE(state__[0],17,32);
+  lbox__V32_1__shadow_a__3_ = XOR(lbox__V32_1__shadow_a__1_,lbox__V32_1__tmp13_);
+  lbox__V32_1__tmp14_ = R_ROTATE(state__[1],17,32);
+  lbox__V32_1__shadow_b__4_ = XOR(lbox__V32_1__shadow_b__2_,lbox__V32_1__tmp14_);
+  lbox__V32_1__tmp15_ = R_ROTATE(lbox__V32_1__shadow_a__3_,31,32);
+  lbox__V32_1_c__ = XOR(lbox__V32_1__shadow_a__3_,lbox__V32_1__tmp15_);
+  lbox__V32_1__tmp16_ = R_ROTATE(lbox__V32_1__shadow_b__4_,31,32);
+  lbox__V32_1_d__ = XOR(lbox__V32_1__shadow_b__4_,lbox__V32_1__tmp16_);
+  lbox__V32_1__tmp17_ = R_ROTATE(lbox__V32_1_d__,26,32);
+  lbox__V32_1__shadow_a__5_ = XOR(lbox__V32_1__shadow_a__3_,lbox__V32_1__tmp17_);
+  lbox__V32_1__tmp18_ = R_ROTATE(lbox__V32_1_c__,25,32);
+  lbox__V32_1__shadow_b__6_ = XOR(lbox__V32_1__shadow_b__4_,lbox__V32_1__tmp18_);
+  lbox__V32_1__tmp19_ = R_ROTATE(lbox__V32_1_c__,15,32);
+  lbox__V32_1__shadow_a__7_ = XOR(lbox__V32_1__shadow_a__5_,lbox__V32_1__tmp19_);
+  lbox__V32_1__tmp20_ = R_ROTATE(lbox__V32_1_d__,15,32);
+  lbox__V32_1__shadow_b__8_ = XOR(lbox__V32_1__shadow_b__6_,lbox__V32_1__tmp20_);
   stateR__[0] = lbox__V32_1__shadow_a__7_;
   stateR__[1] = lbox__V32_1__shadow_b__8_;
-  lbox__V32_2__tmp5_ = R_ROTATE(state__[2],12,32);
-  lbox__V32_2_a__ = XOR(state__[2],lbox__V32_2__tmp5_);
-  lbox__V32_2__tmp6_ = R_ROTATE(state__[3],12,32);
-  lbox__V32_2_b__ = XOR(state__[3],lbox__V32_2__tmp6_);
-  lbox__V32_2__tmp7_ = R_ROTATE(lbox__V32_2_a__,3,32);
-  lbox__V32_2__shadow_a__1_ = XOR(lbox__V32_2_a__,lbox__V32_2__tmp7_);
-  lbox__V32_2__tmp8_ = R_ROTATE(lbox__V32_2_b__,3,32);
-  lbox__V32_2__shadow_b__2_ = XOR(lbox__V32_2_b__,lbox__V32_2__tmp8_);
-  lbox__V32_2__tmp9_ = R_ROTATE(state__[2],17,32);
-  lbox__V32_2__shadow_a__3_ = XOR(lbox__V32_2__shadow_a__1_,lbox__V32_2__tmp9_);
-  lbox__V32_2__tmp10_ = R_ROTATE(state__[3],17,32);
-  lbox__V32_2__shadow_b__4_ = XOR(lbox__V32_2__shadow_b__2_,lbox__V32_2__tmp10_);
-  lbox__V32_2__tmp11_ = R_ROTATE(lbox__V32_2__shadow_a__3_,31,32);
-  lbox__V32_2_c__ = XOR(lbox__V32_2__shadow_a__3_,lbox__V32_2__tmp11_);
-  lbox__V32_2__tmp12_ = R_ROTATE(lbox__V32_2__shadow_b__4_,31,32);
-  lbox__V32_2_d__ = XOR(lbox__V32_2__shadow_b__4_,lbox__V32_2__tmp12_);
-  lbox__V32_2__tmp13_ = R_ROTATE(lbox__V32_2_d__,26,32);
-  lbox__V32_2__shadow_a__5_ = XOR(lbox__V32_2__shadow_a__3_,lbox__V32_2__tmp13_);
-  lbox__V32_2__tmp14_ = R_ROTATE(lbox__V32_2_c__,25,32);
-  lbox__V32_2__shadow_b__6_ = XOR(lbox__V32_2__shadow_b__4_,lbox__V32_2__tmp14_);
-  lbox__V32_2__tmp15_ = R_ROTATE(lbox__V32_2_c__,15,32);
-  lbox__V32_2__shadow_a__7_ = XOR(lbox__V32_2__shadow_a__5_,lbox__V32_2__tmp15_);
-  lbox__V32_2__tmp16_ = R_ROTATE(lbox__V32_2_d__,15,32);
-  lbox__V32_2__shadow_b__8_ = XOR(lbox__V32_2__shadow_b__6_,lbox__V32_2__tmp16_);
+  lbox__V32_2__tmp9_ = R_ROTATE(state__[2],12,32);
+  lbox__V32_2_a__ = XOR(state__[2],lbox__V32_2__tmp9_);
+  lbox__V32_2__tmp10_ = R_ROTATE(state__[3],12,32);
+  lbox__V32_2_b__ = XOR(state__[3],lbox__V32_2__tmp10_);
+  lbox__V32_2__tmp11_ = R_ROTATE(lbox__V32_2_a__,3,32);
+  lbox__V32_2__shadow_a__1_ = XOR(lbox__V32_2_a__,lbox__V32_2__tmp11_);
+  lbox__V32_2__tmp12_ = R_ROTATE(lbox__V32_2_b__,3,32);
+  lbox__V32_2__shadow_b__2_ = XOR(lbox__V32_2_b__,lbox__V32_2__tmp12_);
+  lbox__V32_2__tmp13_ = R_ROTATE(state__[2],17,32);
+  lbox__V32_2__shadow_a__3_ = XOR(lbox__V32_2__shadow_a__1_,lbox__V32_2__tmp13_);
+  lbox__V32_2__tmp14_ = R_ROTATE(state__[3],17,32);
+  lbox__V32_2__shadow_b__4_ = XOR(lbox__V32_2__shadow_b__2_,lbox__V32_2__tmp14_);
+  lbox__V32_2__tmp15_ = R_ROTATE(lbox__V32_2__shadow_a__3_,31,32);
+  lbox__V32_2_c__ = XOR(lbox__V32_2__shadow_a__3_,lbox__V32_2__tmp15_);
+  lbox__V32_2__tmp16_ = R_ROTATE(lbox__V32_2__shadow_b__4_,31,32);
+  lbox__V32_2_d__ = XOR(lbox__V32_2__shadow_b__4_,lbox__V32_2__tmp16_);
+  lbox__V32_2__tmp17_ = R_ROTATE(lbox__V32_2_d__,26,32);
+  lbox__V32_2__shadow_a__5_ = XOR(lbox__V32_2__shadow_a__3_,lbox__V32_2__tmp17_);
+  lbox__V32_2__tmp18_ = R_ROTATE(lbox__V32_2_c__,25,32);
+  lbox__V32_2__shadow_b__6_ = XOR(lbox__V32_2__shadow_b__4_,lbox__V32_2__tmp18_);
+  lbox__V32_2__tmp19_ = R_ROTATE(lbox__V32_2_c__,15,32);
+  lbox__V32_2__shadow_a__7_ = XOR(lbox__V32_2__shadow_a__5_,lbox__V32_2__tmp19_);
+  lbox__V32_2__tmp20_ = R_ROTATE(lbox__V32_2_d__,15,32);
+  lbox__V32_2__shadow_b__8_ = XOR(lbox__V32_2__shadow_b__6_,lbox__V32_2__tmp20_);
   stateR__[2] = lbox__V32_2__shadow_a__7_;
   stateR__[3] = lbox__V32_2__shadow_b__8_;
 
@@ -156,10 +136,10 @@ void add_rc__V32 (/*inputs*/ DATATYPE state__[4],DATATYPE rc__[4], /*outputs*/ D
 void tweakey__V32 (/*inputs*/ DATATYPE key__[4],DATATYPE tweak__[4], /*outputs*/ DATATYPE tk__[3][4]) {
 
   // Variables declaration
-  DATATYPE _tmp17_[2];
-  DATATYPE _tmp18_[2];
-  DATATYPE _tmp19_[2];
-  DATATYPE _tmp20_[2];
+  DATATYPE _tmp21_[2];
+  DATATYPE _tmp22_[2];
+  DATATYPE _tmp23_[2];
+  DATATYPE _tmp24_[2];
   DATATYPE tx__[2];
 
   // Instructions (body)
@@ -169,22 +149,22 @@ void tweakey__V32 (/*inputs*/ DATATYPE key__[4],DATATYPE tweak__[4], /*outputs*/
   tk__[0][1] = XOR(key__[1],tweak__[1]);
   tk__[0][2] = XOR(key__[2],tweak__[2]);
   tk__[0][3] = XOR(key__[3],tweak__[3]);
-  _tmp17_[0] = XOR(key__[0],tx__[0]);
-  _tmp17_[1] = XOR(key__[1],tx__[1]);
-  _tmp18_[0] = XOR(key__[2],tweak__[0]);
-  _tmp18_[1] = XOR(key__[3],tweak__[1]);
-  tk__[1][0] = _tmp17_[0];
-  tk__[1][1] = _tmp17_[1];
-  tk__[1][2] = _tmp18_[0];
-  tk__[1][3] = _tmp18_[1];
-  _tmp19_[0] = XOR(key__[0],tweak__[2]);
-  _tmp19_[1] = XOR(key__[1],tweak__[3]);
-  _tmp20_[0] = XOR(key__[2],tx__[0]);
-  _tmp20_[1] = XOR(key__[3],tx__[1]);
-  tk__[2][0] = _tmp19_[0];
-  tk__[2][1] = _tmp19_[1];
-  tk__[2][2] = _tmp20_[0];
-  tk__[2][3] = _tmp20_[1];
+  _tmp21_[0] = XOR(key__[0],tx__[0]);
+  _tmp21_[1] = XOR(key__[1],tx__[1]);
+  _tmp22_[0] = XOR(key__[2],tweak__[0]);
+  _tmp22_[1] = XOR(key__[3],tweak__[1]);
+  tk__[1][0] = _tmp21_[0];
+  tk__[1][1] = _tmp21_[1];
+  tk__[1][2] = _tmp22_[0];
+  tk__[1][3] = _tmp22_[1];
+  _tmp23_[0] = XOR(key__[0],tweak__[2]);
+  _tmp23_[1] = XOR(key__[1],tweak__[3]);
+  _tmp24_[0] = XOR(key__[2],tx__[0]);
+  _tmp24_[1] = XOR(key__[3],tx__[1]);
+  tk__[2][0] = _tmp23_[0];
+  tk__[2][1] = _tmp23_[1];
+  tk__[2][2] = _tmp24_[0];
+  tk__[2][3] = _tmp24_[1];
 
 }
 
@@ -192,10 +172,21 @@ void tweakey__V32 (/*inputs*/ DATATYPE key__[4],DATATYPE tweak__[4], /*outputs*/
 void clyde128__ (/*inputs*/ DATATYPE state__[4],DATATYPE key__[4],DATATYPE tweak__[4], /*outputs*/ DATATYPE cipher__[4]) {
 
   // Variables declaration
-  DATATYPE _tmp69_[4];
-  DATATYPE _tmp70_[4];
+  DATATYPE _tmp73_[4];
+  DATATYPE _tmp74_[4];
+  DATATYPE _tmp75_[4];
+  DATATYPE _tmp76_[4];
   DATATYPE rc__[12][4];
   DATATYPE round__[4];
+  DATATYPE sbox__V32_1__tmp1_;
+  DATATYPE sbox__V32_1__tmp2_;
+  DATATYPE sbox__V32_1__tmp3_;
+  DATATYPE sbox__V32_1__tmp4_;
+  DATATYPE sbox_R__V32_1__tmp5_;
+  DATATYPE sbox_R__V32_1__tmp6_;
+  DATATYPE sbox_R__V32_1__tmp7_;
+  DATATYPE sbox_R__V32_1__tmp8_;
+  DATATYPE sbox_R__V32_1_y1_R__;
   DATATYPE tk__[3][4];
 
   // Instructions (body)
@@ -253,11 +244,27 @@ void clyde128__ (/*inputs*/ DATATYPE state__[4],DATATYPE key__[4],DATATYPE tweak
   round__[2] = XOR(state__[2],tk__[0][2]);
   round__[3] = XOR(state__[3],tk__[0][3]);
   for (int s__ = 0; s__ <= 5; s__++) {
-    for (int rho__ = 0; rho__ <= 1; rho__++) {
-      sbox_layer__V32(round__,_tmp69_);
-      lbox_layer__V32(_tmp69_,_tmp70_);
-      add_rc__V32(_tmp70_,rc__[((s__ * 2) + rho__)],round__);
-    }
+    sbox_R__V32_1__tmp5_ = AND(round__[0],round__[1]);
+    _tmp73_[1] = XOR(sbox_R__V32_1__tmp5_,round__[2]);
+    sbox_R__V32_1_y1_R__ = _tmp73_[1];
+    sbox_R__V32_1__tmp6_ = AND(round__[3],round__[0]);
+    _tmp73_[0] = XOR(sbox_R__V32_1__tmp6_,round__[1]);
+    sbox_R__V32_1__tmp7_ = AND(sbox_R__V32_1_y1_R__,round__[3]);
+    _tmp73_[3] = XOR(sbox_R__V32_1__tmp7_,round__[0]);
+    sbox_R__V32_1__tmp8_ = AND(_tmp73_[0],sbox_R__V32_1_y1_R__);
+    _tmp73_[2] = XOR(sbox_R__V32_1__tmp8_,round__[3]);
+    lbox_layer__V32(_tmp73_,_tmp74_);
+    add_rc__V32(_tmp74_,rc__[(s__ * 2)],round__);
+    sbox__V32_1__tmp1_ = AND(round__[0],round__[1]);
+    _tmp75_[1] = XOR(sbox__V32_1__tmp1_,round__[2]);
+    sbox__V32_1__tmp2_ = AND(round__[3],round__[0]);
+    _tmp75_[0] = XOR(sbox__V32_1__tmp2_,round__[1]);
+    sbox__V32_1__tmp3_ = AND(_tmp75_[1],round__[3]);
+    _tmp75_[3] = XOR(sbox__V32_1__tmp3_,round__[0]);
+    sbox__V32_1__tmp4_ = AND(_tmp75_[0],_tmp75_[1]);
+    _tmp75_[2] = XOR(sbox__V32_1__tmp4_,round__[3]);
+    lbox_layer__V32(_tmp75_,_tmp76_);
+    add_rc__V32(_tmp76_,rc__[((s__ * 2) + 1)],round__);
     round__[0] = XOR(round__[0],tk__[((s__ + 1) % 3)][0]);
     round__[1] = XOR(round__[1],tk__[((s__ + 1) % 3)][1]);
     round__[2] = XOR(round__[2],tk__[((s__ + 1) % 3)][2]);
@@ -290,19 +297,27 @@ uint32_t bench_speed() {
 /*                                                                  */
 /*
 
- _inline table sbox(x :  v4 :: base)
-  returns y :  v4 :: base
-{
-  0, 8, 1, 15, 2, 10, 7, 9, 4, 13, 5, 6, 14, 3, 11, 12
-}
-
-
-_no_inline node sbox_layer(x :  v4 :: base)
-  returns y :  v4 :: base
+_inline node sbox(x0 :  v1 :: base,x1 :  v1 :: base,x2 :  v1 :: base,x3 :  v1 :: base)
+  returns y0 :  v1 :: base,y1 :  v1 :: base,y2 :  v1 :: base,y3 :  v1 :: base
 vars
 
 let
-  (y) = sbox(x)
+  (y1) = ((x0 & x1) ^ x2);
+  (y0) = ((x3 & x0) ^ x1);
+  (y3) = ((y1 & x3) ^ x0);
+  (y2) = ((y0 & y1) ^ x3)
+tel
+
+_inline node sbox_R(x0 :  v1 :: base,x1 :  v1 :: base,x2 :  v1 :: base,x3 :  v1 :: base)
+  returns y0 :  v1 :: base,y1 :  v1 :: base,y2 :  v1 :: base,y3 :  v1 :: base
+vars
+  y1_R :  v1 :: base
+let
+  (y1) = ((x0 & x1) ^ x2);
+  (y1_R) = refresh(y1);
+  (y0) = ((x3 & x0) ^ x1);
+  (y3) = ((y1_R & x3) ^ x0);
+  (y2) = ((y0 & y1_R) ^ x3)
 tel
 
 _inline node lbox(x :  u32 :: base,y :  u32 :: base)
@@ -380,10 +395,9 @@ let
   (tk) = tweakey(key,tweak);
   (round[0]) = (state ^ tk[0]);
   forall s in [0,5] {
-    forall rho in [0,1] {
-      (round[(((s * 3) + rho) + 1)]) = add_rc(lbox_layer(sbox_layer(round[((s * 3) + rho)])),rc[((s * 2) + rho)])
-    };
-    (round[((s + 1) * 3)]) = (round[((s * 3) + 2)] ^ tk[((s + 1) % 3)])
+    (round[((s * 3) + 1)]) = add_rc(lbox_layer(sbox_R(round[(s * 3)])),rc[(s * 2)]);
+    (round[((s * 3) + 2)]) = add_rc(lbox_layer(sbox(round[((s * 3) + 1)])),rc[((s * 2) + 1)]);
+    (round[((s * 3) + 3)]) = (round[((s * 3) + 2)] ^ tk[((s + 1) % 3)])
   };
   (cipher) = round[18]
 tel

@@ -13,40 +13,168 @@
 #include "STD.h"
 
 /* auxiliary functions */
+void f__V32 (/*inputs*/ DATATYPE x__, /*outputs*/ DATATYPE* y__) {
+
+  // Variables declaration
+  DATATYPE _tmp1_;
+  DATATYPE _tmp2_;
+  DATATYPE _tmp3_;
+  DATATYPE _tmp4_;
+
+  // Instructions (body)
+  _tmp1_ = L_ROTATE(x__,5,32);
+  _tmp2_ = x__;
+  _tmp3_ = AND(_tmp1_,_tmp2_);
+  _tmp4_ = L_ROTATE(x__,1,32);
+  *y__ = XOR(_tmp3_,_tmp4_);
+
+}
+
 void simeck_box__V32 (/*inputs*/ DATATYPE input__[2],DATATYPE rc__, /*outputs*/ DATATYPE output__[2]) {
 
   // Variables declaration
-  DATATYPE _tmp10_;
-  DATATYPE _tmp4_;
+  DATATYPE _tmp11_;
+  DATATYPE _tmp12_;
+  DATATYPE _tmp13_;
+  DATATYPE _tmp15_;
+  DATATYPE _tmp16_;
+  DATATYPE _tmp18_;
+  DATATYPE _tmp19_;
+  DATATYPE _tmp20_;
+  DATATYPE _tmp22_;
+  DATATYPE _tmp23_;
+  DATATYPE _tmp25_;
+  DATATYPE _tmp26_;
+  DATATYPE _tmp27_;
+  DATATYPE _tmp29_;
+  DATATYPE _tmp30_;
+  DATATYPE _tmp32_;
+  DATATYPE _tmp33_;
+  DATATYPE _tmp34_;
+  DATATYPE _tmp36_;
+  DATATYPE _tmp37_;
+  DATATYPE _tmp39_;
+  DATATYPE _tmp40_;
+  DATATYPE _tmp41_;
+  DATATYPE _tmp43_;
+  DATATYPE _tmp44_;
+  DATATYPE _tmp46_;
+  DATATYPE _tmp47_;
+  DATATYPE _tmp48_;
+  DATATYPE _tmp50_;
+  DATATYPE _tmp51_;
+  DATATYPE _tmp53_;
+  DATATYPE _tmp54_;
+  DATATYPE _tmp55_;
+  DATATYPE _tmp57_;
+  DATATYPE _tmp58_;
   DATATYPE _tmp5_;
-  DATATYPE _tmp7_;
+  DATATYPE _tmp60_;
+  DATATYPE _tmp6_;
   DATATYPE _tmp8_;
-  DATATYPE f__V32_1__tmp1_;
-  DATATYPE f__V32_1__tmp2_;
-  DATATYPE f__V32_1__tmp3_;
+  DATATYPE _tmp9_;
   DATATYPE round__[9][2];
   DATATYPE tmp__;
-  DATATYPE _tmp123_;
-  DATATYPE _tmp122_;
+  DATATYPE _tmp187_;
+  DATATYPE _tmp186_;
+  DATATYPE _tmp185_;
+  DATATYPE _tmp184_;
+  DATATYPE _tmp183_;
+  DATATYPE _tmp182_;
+  DATATYPE _tmp181_;
+  DATATYPE _tmp180_;
+  DATATYPE _tmp179_;
+  DATATYPE _tmp178_;
+  DATATYPE _tmp177_;
+  DATATYPE _tmp176_;
+  DATATYPE _tmp175_;
+  DATATYPE _tmp174_;
+  DATATYPE _tmp173_;
+  DATATYPE _tmp172_;
 
   // Instructions (body)
   round__[0][0] = input__[0];
   round__[0][1] = input__[1];
-  for (int i__ = 0; i__ <= 7; i__++) {
-    f__V32_1__tmp1_ = L_ROTATE(round__[i__][0],5,32);
-    f__V32_1__tmp2_ = AND(f__V32_1__tmp1_,round__[i__][0]);
-    f__V32_1__tmp3_ = L_ROTATE(round__[i__][0],1,32);
-    _tmp4_ = XOR(f__V32_1__tmp2_,f__V32_1__tmp3_);
-    _tmp5_ = XOR(_tmp4_,round__[i__][1]);
-    _tmp122_ = LIFT_32(4294967294);
-    _tmp7_ = XOR(_tmp5_,_tmp122_);
-    _tmp8_ = R_SHIFT(rc__,i__,32);
-    _tmp123_ = LIFT_32(1);
-    _tmp10_ = AND(_tmp8_,_tmp123_);
-    tmp__ = XOR(_tmp7_,_tmp10_);
-    round__[(i__ + 1)][0] = tmp__;
-    round__[(i__ + 1)][1] = round__[i__][0];
-  }
+  f__V32(round__[0][0],&_tmp5_);
+  _tmp6_ = XOR(_tmp5_,round__[0][1]);
+  _tmp172_ = LIFT_32(4294967294);
+  _tmp8_ = XOR(_tmp6_,_tmp172_);
+  _tmp9_ = R_SHIFT(rc__,0,32);
+  _tmp173_ = LIFT_32(1);
+  _tmp11_ = AND(_tmp9_,_tmp173_);
+  tmp__ = XOR(_tmp8_,_tmp11_);
+  round__[1][0] = tmp__;
+  round__[1][1] = round__[0][0];
+  f__V32(round__[1][0],&_tmp12_);
+  _tmp13_ = XOR(_tmp12_,round__[1][1]);
+  _tmp174_ = LIFT_32(4294967294);
+  _tmp15_ = XOR(_tmp13_,_tmp174_);
+  _tmp16_ = R_SHIFT(rc__,1,32);
+  _tmp175_ = LIFT_32(1);
+  _tmp18_ = AND(_tmp16_,_tmp175_);
+  tmp__ = XOR(_tmp15_,_tmp18_);
+  round__[2][0] = tmp__;
+  round__[2][1] = round__[1][0];
+  f__V32(round__[2][0],&_tmp19_);
+  _tmp20_ = XOR(_tmp19_,round__[2][1]);
+  _tmp176_ = LIFT_32(4294967294);
+  _tmp22_ = XOR(_tmp20_,_tmp176_);
+  _tmp23_ = R_SHIFT(rc__,2,32);
+  _tmp177_ = LIFT_32(1);
+  _tmp25_ = AND(_tmp23_,_tmp177_);
+  tmp__ = XOR(_tmp22_,_tmp25_);
+  round__[3][0] = tmp__;
+  round__[3][1] = round__[2][0];
+  f__V32(round__[3][0],&_tmp26_);
+  _tmp27_ = XOR(_tmp26_,round__[3][1]);
+  _tmp178_ = LIFT_32(4294967294);
+  _tmp29_ = XOR(_tmp27_,_tmp178_);
+  _tmp30_ = R_SHIFT(rc__,3,32);
+  _tmp179_ = LIFT_32(1);
+  _tmp32_ = AND(_tmp30_,_tmp179_);
+  tmp__ = XOR(_tmp29_,_tmp32_);
+  round__[4][0] = tmp__;
+  round__[4][1] = round__[3][0];
+  f__V32(round__[4][0],&_tmp33_);
+  _tmp34_ = XOR(_tmp33_,round__[4][1]);
+  _tmp180_ = LIFT_32(4294967294);
+  _tmp36_ = XOR(_tmp34_,_tmp180_);
+  _tmp37_ = R_SHIFT(rc__,4,32);
+  _tmp181_ = LIFT_32(1);
+  _tmp39_ = AND(_tmp37_,_tmp181_);
+  tmp__ = XOR(_tmp36_,_tmp39_);
+  round__[5][0] = tmp__;
+  round__[5][1] = round__[4][0];
+  f__V32(round__[5][0],&_tmp40_);
+  _tmp41_ = XOR(_tmp40_,round__[5][1]);
+  _tmp182_ = LIFT_32(4294967294);
+  _tmp43_ = XOR(_tmp41_,_tmp182_);
+  _tmp44_ = R_SHIFT(rc__,5,32);
+  _tmp183_ = LIFT_32(1);
+  _tmp46_ = AND(_tmp44_,_tmp183_);
+  tmp__ = XOR(_tmp43_,_tmp46_);
+  round__[6][0] = tmp__;
+  round__[6][1] = round__[5][0];
+  f__V32(round__[6][0],&_tmp47_);
+  _tmp48_ = XOR(_tmp47_,round__[6][1]);
+  _tmp184_ = LIFT_32(4294967294);
+  _tmp50_ = XOR(_tmp48_,_tmp184_);
+  _tmp51_ = R_SHIFT(rc__,6,32);
+  _tmp185_ = LIFT_32(1);
+  _tmp53_ = AND(_tmp51_,_tmp185_);
+  tmp__ = XOR(_tmp50_,_tmp53_);
+  round__[7][0] = tmp__;
+  round__[7][1] = round__[6][0];
+  f__V32(round__[7][0],&_tmp54_);
+  _tmp55_ = XOR(_tmp54_,round__[7][1]);
+  _tmp186_ = LIFT_32(4294967294);
+  _tmp57_ = XOR(_tmp55_,_tmp186_);
+  _tmp58_ = R_SHIFT(rc__,7,32);
+  _tmp187_ = LIFT_32(1);
+  _tmp60_ = AND(_tmp58_,_tmp187_);
+  tmp__ = XOR(_tmp57_,_tmp60_);
+  round__[8][0] = tmp__;
+  round__[8][1] = round__[7][0];
   output__[0] = round__[8][0];
   output__[1] = round__[8][1];
 
@@ -61,38 +189,38 @@ void ACE_step__V32 (/*inputs*/ DATATYPE A__[2],DATATYPE B__[2],DATATYPE C__[2],D
   DATATYPE _shadow_D__5_[2];
   DATATYPE _shadow_E__3_[2];
   DATATYPE _shadow_E__6_[2];
-  DATATYPE _tmp11_[2];
-  DATATYPE _tmp13_;
-  DATATYPE _tmp16_[2];
-  DATATYPE _tmp18_;
-  DATATYPE _tmp21_[2];
-  DATATYPE _tmp23_;
-  DATATYPE _tmp126_;
-  DATATYPE _tmp125_;
-  DATATYPE _tmp124_;
+  DATATYPE _tmp61_[2];
+  DATATYPE _tmp63_;
+  DATATYPE _tmp66_[2];
+  DATATYPE _tmp68_;
+  DATATYPE _tmp71_[2];
+  DATATYPE _tmp73_;
+  DATATYPE _tmp190_;
+  DATATYPE _tmp189_;
+  DATATYPE _tmp188_;
 
   // Instructions (body)
   simeck_box__V32(A__,RC__0__,_shadow_A__1_);
   simeck_box__V32(C__,RC__1__,_shadow_C__2_);
   simeck_box__V32(E__,RC__2__,_shadow_E__3_);
-  _tmp11_[0] = XOR(B__[0],_shadow_C__2_[0]);
-  _tmp11_[1] = XOR(B__[1],_shadow_C__2_[1]);
-  _tmp13_ = XOR(_tmp11_[1],SC__0__);
-  _shadow_B__4_[0] = NOT(_tmp11_[0]);
-  _tmp124_ = LIFT_32(4294967040);
-  _shadow_B__4_[1] = XOR(_tmp13_,_tmp124_);
-  _tmp16_[0] = XOR(D__[0],_shadow_E__3_[0]);
-  _tmp16_[1] = XOR(D__[1],_shadow_E__3_[1]);
-  _tmp18_ = XOR(_tmp16_[1],SC__1__);
-  _shadow_D__5_[0] = NOT(_tmp16_[0]);
-  _tmp125_ = LIFT_32(4294967040);
-  _shadow_D__5_[1] = XOR(_tmp18_,_tmp125_);
-  _tmp21_[0] = XOR(_shadow_E__3_[0],_shadow_A__1_[0]);
-  _tmp21_[1] = XOR(_shadow_E__3_[1],_shadow_A__1_[1]);
-  _tmp23_ = XOR(_tmp21_[1],SC__2__);
-  _shadow_E__6_[0] = NOT(_tmp21_[0]);
-  _tmp126_ = LIFT_32(4294967040);
-  _shadow_E__6_[1] = XOR(_tmp23_,_tmp126_);
+  _tmp61_[0] = XOR(B__[0],_shadow_C__2_[0]);
+  _tmp61_[1] = XOR(B__[1],_shadow_C__2_[1]);
+  _tmp63_ = XOR(_tmp61_[1],SC__0__);
+  _shadow_B__4_[0] = NOT(_tmp61_[0]);
+  _tmp188_ = LIFT_32(4294967040);
+  _shadow_B__4_[1] = XOR(_tmp63_,_tmp188_);
+  _tmp66_[0] = XOR(D__[0],_shadow_E__3_[0]);
+  _tmp66_[1] = XOR(D__[1],_shadow_E__3_[1]);
+  _tmp68_ = XOR(_tmp66_[1],SC__1__);
+  _shadow_D__5_[0] = NOT(_tmp66_[0]);
+  _tmp189_ = LIFT_32(4294967040);
+  _shadow_D__5_[1] = XOR(_tmp68_,_tmp189_);
+  _tmp71_[0] = XOR(_shadow_E__3_[0],_shadow_A__1_[0]);
+  _tmp71_[1] = XOR(_shadow_E__3_[1],_shadow_A__1_[1]);
+  _tmp73_ = XOR(_tmp71_[1],SC__2__);
+  _shadow_E__6_[0] = NOT(_tmp71_[0]);
+  _tmp190_ = LIFT_32(4294967040);
+  _shadow_E__6_[1] = XOR(_tmp73_,_tmp190_);
   Ar__[0] = _shadow_D__5_[0];
   Ar__[1] = _shadow_D__5_[1];
   Br__[0] = _shadow_C__2_[0];
@@ -255,12 +383,12 @@ uint32_t bench_speed() {
 /*                                                                  */
 /*
 
-_inline node f(x :  u32 :: base)
+ node f(x :  u32 :: base)
   returns y :  u32 :: base
 vars
 
 let
-  (y) = (((x <<< 5) & x) ^ (x <<< 1))
+  (y) = (((x <<< 5) & refresh(x)) ^ (x <<< 1))
 tel
 
  node simeck_box(input :  u32x2 :: base,rc :  u32 :: base)
@@ -270,7 +398,7 @@ vars
   tmp :  u32[8] :: base
 let
   (round[0]) = input;
-  forall i in [0,7] {
+  _unroll forall i in [0,7] {
     (tmp[i]) = (((f(round[i][0]) ^ round[i][1]) ^ 4294967294) ^ ((rc >> i) & 1));
     (round[(i + 1)][0,1]) = (tmp[i],round[i][0])
   };
