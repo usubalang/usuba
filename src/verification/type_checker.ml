@@ -501,8 +501,19 @@ let rec get_expr_type
      | Log(_,e,_) -> get_expr_type env_fun env_var env_it e
      | Shuffle(v,_) -> [ get_var_type backtrace env_var env_it v ]
      | Arith(_,e,_) -> get_expr_type env_fun env_var env_it e
-     | Fun(f,_) | Fun_v(f,_,_) ->
+     | Fun(f,l)
+     | Fun_v(f,_,l) ->
         if f.name = "rand" then [ Uint(default_dir,Mint 1,1) ]
+        else if f.name = "refresh" then
+          (if List.length l <> 1 then
+             (eprintf "[Type error] refresh can only take one argument for now.\n";
+              print_backtrace backtrace;
+              raise Fatal_type_error);
+           match List.hd l with
+           | ExpVar v -> [ get_var_type backtrace env_var env_it v ]
+           | _ -> eprintf "[Type error] refresh can only take variables as arguments for now.\n";
+                  print_backtrace backtrace;
+                  raise Fatal_type_error)
         else
           let def = Hashtbl.find env_fun f in
           List.map (fun vd -> vd.vtyp) def.p_out
@@ -637,29 +648,42 @@ let rec type_expr (backtrace:string list)
      (* Need to match |l| against the parameters of |f|, and the
         return values of |f| against |lhs_types|. *)
      (* TODO: check that |f| isn't a Multiple *)
-     let f = match Hashtbl.find_opt env_fun f with
-       | Some def -> def
-       | None -> eprintf "[Type error] Use of undeclared funtion `%s'.\n"
-                   f.name;
-                 print_backtrace backtrace;
-                 raise Fatal_type_error in
-     (* First, typing |param_types| according to |f.p_in| *)
-     let param_types =
-       ref (flat_map expand_typ
-              (List.map (fun vd -> vd.vtyp) f.p_in)) in
-     let typed_l = List.map (type_expr backtrace env_fun env_var env_it param_types) l in
-     (* if |param_types| is not empty, then |vs| is larger than |e| *)
-     if !param_types <> [] then
-       (eprintf "[Type error] Unbalanced left/right types: type of rhs is smaller than type of lhs. Remains: %s.\n"
-          (typ_to_str_l !param_types);
-        print_backtrace backtrace;
-        error := true);
-     (* Then, making sure that |f.p_out| matches with |lhs_types| *)
-     let return_types =
-       flat_map expand_typ
-         (List.map (fun vd -> vd.vtyp) f.p_out) in
-     match_types_asgn backtrace return_types lhs_types;
-     Fun(f.id,typed_l)
+     if f.name = "refresh" then
+       (if List.length l <> 1 then
+          (eprintf "[Type error] refresh can only take one argument for now.\n";
+           print_backtrace backtrace;
+           raise Fatal_type_error);
+        match List.hd l with
+        | ExpVar v ->
+           (* Matching parameters with returns is done by the reccursive call *)
+           Fun(f,[type_expr backtrace env_fun env_var env_it lhs_types (ExpVar v)])
+        | _ -> eprintf "[Type error] refresh can only take variables as arguments for now.\n";
+               print_backtrace backtrace;
+                  raise Fatal_type_error)
+     else
+       (let f = match Hashtbl.find_opt env_fun f with
+          | Some def -> def
+          | None -> eprintf "[Type error] Use of undeclared funtion `%s'.\n"
+                            f.name;
+                    print_backtrace backtrace;
+                    raise Fatal_type_error in
+        (* First, typing |param_types| according to |f.p_in| *)
+        let param_types =
+          ref (flat_map expand_typ
+                        (List.map (fun vd -> vd.vtyp) f.p_in)) in
+        let typed_l = List.map (type_expr backtrace env_fun env_var env_it param_types) l in
+        (* if |param_types| is not empty, then |vs| is larger than |e| *)
+        if !param_types <> [] then
+          (eprintf "[Type error] Unbalanced left/right types: type of rhs is smaller than type of lhs. Remains: %s.\n"
+                   (typ_to_str_l !param_types);
+           print_backtrace backtrace;
+           error := true);
+        (* Then, making sure that |f.p_out| matches with |lhs_types| *)
+        let return_types =
+          flat_map expand_typ
+                   (List.map (fun vd -> vd.vtyp) f.p_out) in
+        match_types_asgn backtrace return_types lhs_types;
+        Fun(f.id,typed_l))
   | Fun_v(f,ae,l) ->
      (* Reccursive call using Fun(f,l) instead of the Fun_v, since
         everything done in the case Fun needs to be done here as

@@ -148,6 +148,11 @@ let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
           (fun deq -> match deq with
             | Eqn([v],Fun(f,[]),_) when f.name = "rand" ->
                sprintf "%s%s = RAND();" tabs (var_to_c lift_env env v)
+            | Eqn([vl],Fun(f,[vr]),_) when f.name = "refresh" ->
+               (* No refresh needed if we are not masking *)
+               sprintf "%s%s = %s;" tabs (var_to_c lift_env env vl)
+                       (expr_to_c (get_type_m (get_var_type env_var vl))
+                                  lift_env env env_var vr)
             | Eqn(p,Fun(f,l),_) -> fun_call_to_c lift_env env env_var ~tabs:tabs p f l
             | Eqn([v],e,_) ->
                let m = get_type_m (get_var_type env_var v) in

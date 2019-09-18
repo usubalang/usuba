@@ -210,7 +210,7 @@ module Dir_params = struct
     List.map
       (fun deq ->
        match deq with
-       | Eqn(ret_vars,Fun(f,args),sync) when f.name <> "rand" ->
+       | Eqn(ret_vars,Fun(f,args),sync) when not (is_builtin f) ->
           (* A funcall -> need to:
               - iterate over arguments to make sure they have the correct types
               - iterate over return values to make sure they have the correct types
@@ -327,7 +327,7 @@ module Dir_inner = struct
     List.map
       (fun deq ->
        match deq with
-       | Eqn(ret_vars,Fun(f,args),sync) when f.name <> "rand" ->
+       | Eqn(ret_vars,Fun(f,args),sync) when not (is_builtin f) ->
           (* A funcall -> need to:
               - iterate over arguments to make sure they have the correct types
               - iterate over return values to make sure they have the correct types

@@ -533,3 +533,6 @@ let rec simpl_var_indices (v:var) : var =
   | Var _ -> v
   | Index(v',ae) -> Index(simpl_var_indices v',simpl_arith_ne ae)
   | _ -> assert false
+
+let is_builtin (f:ident) : bool =
+  List.mem f.name [ "print"; "rand"; "refresh" ]
