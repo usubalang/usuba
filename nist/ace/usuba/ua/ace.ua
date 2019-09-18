@@ -1,6 +1,6 @@
-_inline node f(x:u32) returns (y:u32)
+node f(x:u32) returns (y:u32)
 let
-    y = ((x <<< 5) & x) ^ (x <<< 1)
+    y = ((x <<< 5) & refresh(x)) ^ (x <<< 1)
 tel
 
 node simeck_box(input:u32x2, rc:u32) returns (output:u32x2)
@@ -11,7 +11,7 @@ let
 
     round[0] = input;
 
-    forall i in [0, 7] {
+    _unroll forall i in [0, 7] {
       tmp[i] = f(round[i][0]) ^ round[i][1] ^ 0xfffffffe ^ ((rc >> i) & 1);
       round[i+1][0,1] = (tmp[i], round[i][0]) ;
     }
