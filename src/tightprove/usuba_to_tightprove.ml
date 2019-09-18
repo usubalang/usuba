@@ -77,7 +77,7 @@ let rec vd_typ_to_str (typ:typ) (acc:string) : string =
   match typ with
   | Uint(_,_,1)   -> sprintf "%s" acc
   | Uint(_,_,n)   -> sprintf "%s[%d]" acc n
-  | Array(typ',n) -> vd_typ_to_str typ' (sprintf "[%d]%s" n acc)
+  | Array(typ',n) -> vd_typ_to_str typ' (sprintf "%s[%d]" acc n)
   | _ -> assert false
 
 let vd_to_str (vd:var_d) : string =
