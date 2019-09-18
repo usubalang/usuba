@@ -1,0 +1,6 @@
+./usubac -masked -no-sched -no-inline -V -o nist/clyde/usuba/ua_masked/clyde_ua_vslice.c nist/clyde/usuba/ua_masked/clyde.ua
+./usubac -masked -no-sched -B -o nist/clyde/usuba/ua_masked/clyde_ua_bitslice.c nist/clyde/usuba/ua_masked/clyde.ua
+clang -D UA_V -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main -D MASKING_ORDER=1 && ./main
+clang -D UA_V -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main -D MASKING_ORDER=8 && ./main
+clang -D UA_B -Wall -Wextra -march=native -I../../../../arch main.c -o main -D MASKING_ORDER=8 && ./main
+clang -D UA_B -Wall -Wextra -march=native -I../../../../arch main.c -o main -D MASKING_ORDER=1 && ./main

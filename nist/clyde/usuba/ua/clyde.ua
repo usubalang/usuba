@@ -1,10 +1,20 @@
-_inline table sbox (x:v4) returns (y:v4) {
-      0, 8, 1, 15, 2, 10, 7, 9, 4, 13, 5, 6, 14, 3, 11, 12
-}
-
-_no_inline node sbox_layer (x:v4) returns (y:v4)
+_inline node sbox (x0:v1, x1:v1, x2:v1, x3:v1) returns (y0:v1, y1:v1, y2:v1, y3:v1)
 let
-    y = sbox(x)
+    y1 = (x0 & x1) ^ x2;
+    y0 = (x3 & x0) ^ x1;
+    y3 = (y1 & x3) ^ x0;
+    y2 = (y0 & y1) ^ x3
+tel
+
+_inline node sbox_R (x0:v1, x1:v1, x2:v1, x3:v1) returns (y0:v1, y1:v1, y2:v1, y3:v1)
+vars
+    y1_R:v1
+let
+    y1 = (x0 & x1) ^ x2;
+    y1_R = refresh(y1);
+    y0 = (x3 & x0) ^ x1;
+    y3 = (y1_R & x3) ^ x0;
+    y2 = (y0 & y1_R) ^ x3
 tel
 
 _inline node lbox(x,y:u32) returns (xr,yr:u32)
@@ -74,10 +84,9 @@ let
     round[0] = state ^ tk[0];
 
     forall s in [0, 5] {
-      forall rho in [0, 1] {
-        round[s*3+rho+1] = add_rc(lbox_layer(sbox_layer(round[s*3+rho])), rc[s*2+rho])
-      }
-      round[(s+1)*3] = round[s*3+2] ^ tk[(s+1)%3]
+      round[s*3+1] = add_rc(lbox_layer(sbox_R(round[s*3])), rc[s*2]);
+      round[s*3+2] = add_rc(lbox_layer(sbox(round[s*3+1])), rc[s*2+1]);
+      round[s*3+3] = round[s*3+2] ^ tk[(s+1)%3];
     }
 
     cipher = round[18]
