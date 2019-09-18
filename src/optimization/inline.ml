@@ -283,8 +283,11 @@ let do_inline (prog:prog) (to_inline:def) : prog =
 let is_call_free env (def:def) : bool =
   let rec deq_call_free (deq:deq) : bool =
     match deq with
-    | Eqn(_,Fun(f,_),_) -> is_noinline (Hashtbl.find env f.name)
-                           || is_perm (Hashtbl.find env f.name)
+    | Eqn(_,Fun(f,_),_) ->
+       if f.name = "refresh" then true
+       else
+         is_noinline (Hashtbl.find env f.name)
+         || is_perm (Hashtbl.find env f.name)
     | Eqn _ -> true
     | Loop(_,_,_,dl,_) -> List.for_all deq_call_free dl in
   match def.node with

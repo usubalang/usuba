@@ -305,8 +305,9 @@ and specialize_expr (all_nodes:(ident,def) Hashtbl.t)
                     (vs:var list) (e:expr) (sync:bool) : deq =
   match e with
   (* When a function call happens, we need to specialize the function called *)
-  | Fun(f,l) -> specialize_fun_call all_nodes specialized_nodes
-                                    env_var vs f l sync
+  | Fun(f,l) -> if f.name = "refresh" then Eqn(vs,e,sync)
+                else specialize_fun_call all_nodes specialized_nodes
+                                         env_var vs f l sync
   (* Otherwise (not a function call), we delegate to the modules of each Slicing *)
   | _ -> match get_var_dir env_var (List.hd vs) with
          | Hslice -> Eqn(vs, Hslice.specialize_expr env_dir env_m env_var e, sync)

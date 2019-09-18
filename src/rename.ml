@@ -46,7 +46,7 @@ let rec rename_expr (e:expr) =
   | Arith(op,x,y) -> Arith(op,rename_expr x,rename_expr y)
   | Shift(op,x,y) -> Shift(op,rename_expr x,rename_arith_expr y)
   | Not e -> Not (rename_expr e)
-  | Fun(f,l) -> if f.name = "print" then Fun(f,List.map rename_expr l)
+  | Fun(f,l) -> if is_builtin f then Fun(f,List.map rename_expr l)
                 else Fun(fresh_suffix f "'",List.map rename_expr l)
   | Fun_v(f,e,l) -> Fun_v(fresh_suffix f "'",rename_arith_expr e,List.map rename_expr l)
   | Fby(ei,ef,f)   -> Fby(rename_expr ei,rename_expr ef,

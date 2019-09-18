@@ -49,8 +49,10 @@ let rec get_expr_type env_fun env_var (ltyp:typ list) (e:expr) : typ list =
   | Log(_,e,_) -> get_expr_type env_fun env_var ltyp e
   | Shuffle(v,_) -> [ get_var_type env_var v ]
   | Arith(_,e,_) -> get_expr_type env_fun env_var ltyp e
-  | Fun(f,_) ->
+  | Fun(f,l) ->
      if f.name = "rand" then [ Uint(default_dir,Mint 1,1) ]
+     else if f.name = "refresh" then
+       flat_map (get_expr_type env_fun env_var ltyp) l
      else
        let def = Hashtbl.find env_fun f in
        List.map (fun vd -> vd.vtyp) def.p_out
@@ -119,7 +121,10 @@ let rec expand_expr env_var (e:expr) : expr list =
   | Arith(op,x,y) -> List.map2 (fun x y -> Arith(op,x,y))
                               (expand_expr env_var x)
                               (expand_expr env_var y)
-  | Fun _ -> [ e ]
+  | Fun(f,l) -> if f.name = "refresh" && List.length l <> 1 then
+                  flat_map (fun v -> expand_expr env_var (Fun(f,[v])))
+                           (flat_map (expand_expr env_var) l)
+                else [ e ]
   | _ -> assert false
 
 (* ************************************************************************** *)
@@ -179,8 +184,12 @@ and norm_expr env_var env_fun (dir,mtyp:dir*mtyp) (ltyp:typ list) (e: expr)
      let (deqs,l') = remove_calls env_var env_fun (dir,mtyp) ltyp l in
      deqs, Tuple l'
   | Fun(f,l) ->
-     let (deqs,l') = remove_calls env_var env_fun (dir,mtyp) ltyp l in
-     deqs, Fun(f, l')
+     if f.name = "refresh" && List.length l > 1 then
+       norm_expr env_var env_fun (dir,mtyp) ltyp
+                 (Tuple (List.map (fun v -> Fun(f,[v])) l))
+     else
+       let (deqs,l') = remove_calls env_var env_fun (dir,mtyp) ltyp l in
+       deqs, Fun(f, l')
   | Log(op,x1,x2) ->
      let (deqs1, x1') = remove_call env_var env_fun (dir,mtyp) ltyp x1 in
      let (deqs2, x2') = remove_call env_var env_fun (dir,mtyp) ltyp x2 in

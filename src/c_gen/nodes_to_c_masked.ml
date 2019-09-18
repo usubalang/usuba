@@ -172,6 +172,10 @@ let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
   join "\n"
        (List.map
           (fun deq -> match deq with
+            | Eqn([vl],Fun(f,[vr]),_) when f.name = "refresh" ->
+               (* No refresh needed if we are not masking *)
+               sprintf "%sREFRESH(%s,%s);" tabs
+                       (var_to_c lift_env env vl) (expr_to_c lift_env env env_var vr)
             | Eqn(p,Fun(f,l),_) -> fun_call_to_c lift_env env env_var ~tabs:tabs p f l
             | Eqn([v],e,_) ->
                (match get_var_m env_var v with

@@ -375,7 +375,7 @@ let rec expand_deq (env_fun:(ident,def) Hashtbl.t)
           (env_var:(ident,typ) Hashtbl.t) (deq:deq) : deq =
   match deq with
   | Eqn(lhs,Fun(id,args),sync) ->
-     if contains id.name "rand" then deq
+     if is_builtin id then deq
      else
        let f = Hashtbl.find env_fun id in
        let args = match_args env_fun env_var f f.p_in args in
