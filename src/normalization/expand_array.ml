@@ -143,7 +143,11 @@ let rec expand_expr env_var env_keep env env_it bitslice force (e:expr) : expr =
   | Shuffle(v,pat) -> Tuple(List.map (fun x -> Shuffle(x,pat))
                                      (expand_var env_var env_keep env bitslice force v))
   | Arith(op,e1,e2) -> Arith(op,rec_call e1,rec_call e2)
-  | Fun(f,el) -> Fun(f,List.map rec_call el)
+  | Fun(f,el) ->
+     if f.name = "refresh" then
+       Fun(f,List.map (expand_expr env_var env_keep env env_it bitslice
+                                   (if force = Remove then Remove else Split)) el)
+     else Fun(f,List.map rec_call el)
   | Fun_v(f,ae,el) ->
      (* Note: can raise Need_unroll *)
      Fun(fresh_suffix f (sprintf "%d'" (eval_arith env ae)),
