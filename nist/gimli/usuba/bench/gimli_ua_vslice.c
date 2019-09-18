@@ -13,39 +13,102 @@
 #include "STD.h"
 
 /* auxiliary functions */
-void NonlinearLayer__V32 (/*inputs*/ DATATYPE state__[3][4], /*outputs*/ DATATYPE stateR__[3][4]) {
+void SPbox_Rx__V32 (/*inputs*/ DATATYPE col__0__,DATATYPE col__1__,DATATYPE col__2__, /*outputs*/ DATATYPE* colR__0__,DATATYPE* colR__1__,DATATYPE* colR__2__) {
 
   // Variables declaration
-  DATATYPE SPbox__V32_1__tmp10_;
-  DATATYPE SPbox__V32_1__tmp1_;
-  DATATYPE SPbox__V32_1__tmp2_;
-  DATATYPE SPbox__V32_1__tmp3_;
-  DATATYPE SPbox__V32_1__tmp4_;
-  DATATYPE SPbox__V32_1__tmp5_;
-  DATATYPE SPbox__V32_1__tmp6_;
-  DATATYPE SPbox__V32_1__tmp7_;
-  DATATYPE SPbox__V32_1__tmp8_;
-  DATATYPE SPbox__V32_1__tmp9_;
-  DATATYPE SPbox__V32_1_x__;
-  DATATYPE SPbox__V32_1_y__;
+  DATATYPE _tmp10_;
+  DATATYPE _tmp1_;
+  DATATYPE _tmp2_;
+  DATATYPE _tmp3_;
+  DATATYPE _tmp4_;
+  DATATYPE _tmp5_;
+  DATATYPE _tmp6_;
+  DATATYPE _tmp7_;
+  DATATYPE _tmp8_;
+  DATATYPE _tmp9_;
+  DATATYPE x__;
+  DATATYPE x_R__;
+  DATATYPE y__;
+
+  // Instructions (body)
+  x__ = L_ROTATE(col__0__,24,32);
+  y__ = L_ROTATE(col__1__,9,32);
+  x_R__ = x__;
+  _tmp1_ = L_SHIFT(col__2__,1,32);
+  _tmp2_ = XOR(x__,_tmp1_);
+  _tmp3_ = AND(y__,col__2__);
+  _tmp4_ = L_SHIFT(_tmp3_,2,32);
+  *colR__2__ = XOR(_tmp2_,_tmp4_);
+  _tmp5_ = XOR(y__,x__);
+  _tmp6_ = OR(x_R__,col__2__);
+  _tmp7_ = L_SHIFT(_tmp6_,1,32);
+  *colR__1__ = XOR(_tmp5_,_tmp7_);
+  _tmp8_ = XOR(col__2__,y__);
+  _tmp9_ = AND(x_R__,y__);
+  _tmp10_ = L_SHIFT(_tmp9_,3,32);
+  *colR__0__ = XOR(_tmp8_,_tmp10_);
+
+}
+
+void SPbox_Rxy__V32 (/*inputs*/ DATATYPE col__0__,DATATYPE col__1__,DATATYPE col__2__, /*outputs*/ DATATYPE* colR__0__,DATATYPE* colR__1__,DATATYPE* colR__2__) {
+
+  // Variables declaration
+  DATATYPE _tmp11_;
+  DATATYPE _tmp12_;
+  DATATYPE _tmp13_;
+  DATATYPE _tmp14_;
+  DATATYPE _tmp15_;
+  DATATYPE _tmp16_;
+  DATATYPE _tmp17_;
+  DATATYPE _tmp18_;
+  DATATYPE _tmp19_;
+  DATATYPE _tmp20_;
+  DATATYPE x__;
+  DATATYPE x_R__;
+  DATATYPE y__;
+  DATATYPE y_R__;
+
+  // Instructions (body)
+  x__ = L_ROTATE(col__0__,24,32);
+  y__ = L_ROTATE(col__1__,9,32);
+  x_R__ = x__;
+  y_R__ = y__;
+  _tmp11_ = L_SHIFT(col__2__,1,32);
+  _tmp12_ = XOR(x__,_tmp11_);
+  _tmp13_ = AND(y_R__,col__2__);
+  _tmp14_ = L_SHIFT(_tmp13_,2,32);
+  *colR__2__ = XOR(_tmp12_,_tmp14_);
+  _tmp15_ = XOR(y__,x__);
+  _tmp16_ = OR(x_R__,col__2__);
+  _tmp17_ = L_SHIFT(_tmp16_,1,32);
+  *colR__1__ = XOR(_tmp15_,_tmp17_);
+  _tmp18_ = XOR(col__2__,y__);
+  _tmp19_ = AND(x_R__,y_R__);
+  _tmp20_ = L_SHIFT(_tmp19_,3,32);
+  *colR__0__ = XOR(_tmp18_,_tmp20_);
+
+}
+
+void NonlinearLayer_Rx__V32 (/*inputs*/ DATATYPE state__[3][4], /*outputs*/ DATATYPE stateR__[3][4]) {
+
+  // Variables declaration
+  ;
 
   // Instructions (body)
   for (int i__ = 0; i__ <= 3; i__++) {
-    SPbox__V32_1_x__ = L_ROTATE(state__[0][i__],24,32);
-    SPbox__V32_1_y__ = L_ROTATE(state__[1][i__],9,32);
-    SPbox__V32_1__tmp1_ = L_SHIFT(state__[2][i__],1,32);
-    SPbox__V32_1__tmp2_ = XOR(SPbox__V32_1_x__,SPbox__V32_1__tmp1_);
-    SPbox__V32_1__tmp3_ = AND(SPbox__V32_1_y__,state__[2][i__]);
-    SPbox__V32_1__tmp4_ = L_SHIFT(SPbox__V32_1__tmp3_,2,32);
-    stateR__[2][i__] = XOR(SPbox__V32_1__tmp2_,SPbox__V32_1__tmp4_);
-    SPbox__V32_1__tmp5_ = XOR(SPbox__V32_1_y__,SPbox__V32_1_x__);
-    SPbox__V32_1__tmp6_ = OR(SPbox__V32_1_x__,state__[2][i__]);
-    SPbox__V32_1__tmp7_ = L_SHIFT(SPbox__V32_1__tmp6_,1,32);
-    stateR__[1][i__] = XOR(SPbox__V32_1__tmp5_,SPbox__V32_1__tmp7_);
-    SPbox__V32_1__tmp8_ = XOR(state__[2][i__],SPbox__V32_1_y__);
-    SPbox__V32_1__tmp9_ = AND(SPbox__V32_1_x__,SPbox__V32_1_y__);
-    SPbox__V32_1__tmp10_ = L_SHIFT(SPbox__V32_1__tmp9_,3,32);
-    stateR__[0][i__] = XOR(SPbox__V32_1__tmp8_,SPbox__V32_1__tmp10_);
+    SPbox_Rx__V32(state__[0][i__],state__[1][i__],state__[2][i__],&stateR__[0][i__],&stateR__[1][i__],&stateR__[2][i__]);
+  }
+
+}
+
+void NonlinearLayer_Rxy__V32 (/*inputs*/ DATATYPE state__[3][4], /*outputs*/ DATATYPE stateR__[3][4]) {
+
+  // Variables declaration
+  ;
+
+  // Instructions (body)
+  for (int i__ = 0; i__ <= 3; i__++) {
+    SPbox_Rxy__V32(state__[0][i__],state__[1][i__],state__[2][i__],&stateR__[0][i__],&stateR__[1][i__],&stateR__[2][i__]);
   }
 
 }
@@ -95,11 +158,11 @@ void BigSwap__V32 (/*inputs*/ DATATYPE state__[3][4], /*outputs*/ DATATYPE state
 void AddRC__V32 (/*inputs*/ DATATYPE state__[3][4],DATATYPE rc__, /*outputs*/ DATATYPE stateR__[3][4]) {
 
   // Variables declaration
-  DATATYPE _tmp11_;
+  DATATYPE _tmp21_;
 
   // Instructions (body)
-  _tmp11_ = XOR(state__[0][0],rc__);
-  stateR__[0][0] = _tmp11_;
+  _tmp21_ = XOR(state__[0][0],rc__);
+  stateR__[0][0] = _tmp21_;
   stateR__[0][1] = state__[0][1];
   stateR__[0][2] = state__[0][2];
   stateR__[0][3] = state__[0][3];
@@ -118,7 +181,7 @@ void AddRC__V32 (/*inputs*/ DATATYPE state__[3][4],DATATYPE rc__, /*outputs*/ DA
 void gimli__ (/*inputs*/ DATATYPE state__[3][4], /*outputs*/ DATATYPE stateR__[3][4]) {
 
   // Variables declaration
-  DATATYPE _tmp18_[3][4];
+  DATATYPE _tmp28_[3][4];
   DATATYPE rc__[6];
   DATATYPE round__[37][3][4];
 
@@ -142,13 +205,13 @@ void gimli__ (/*inputs*/ DATATYPE state__[3][4], /*outputs*/ DATATYPE stateR__[3
   round__[0][2][2] = state__[2][2];
   round__[0][2][3] = state__[2][3];
   for (int r__ = 0; r__ <= 5; r__++) {
-    NonlinearLayer__V32(round__[(r__ * 6)],round__[((r__ * 6) + 1)]);
-    SmallSwap__V32(round__[((r__ * 6) + 1)],_tmp18_);
-    AddRC__V32(_tmp18_,rc__[r__],round__[((r__ * 6) + 2)]);
-    NonlinearLayer__V32(round__[((r__ * 6) + 2)],round__[((r__ * 6) + 3)]);
-    NonlinearLayer__V32(round__[((r__ * 6) + 3)],round__[((r__ * 6) + 4)]);
+    NonlinearLayer_Rx__V32(round__[(r__ * 6)],round__[((r__ * 6) + 1)]);
+    SmallSwap__V32(round__[((r__ * 6) + 1)],_tmp28_);
+    AddRC__V32(_tmp28_,rc__[r__],round__[((r__ * 6) + 2)]);
+    NonlinearLayer_Rxy__V32(round__[((r__ * 6) + 2)],round__[((r__ * 6) + 3)]);
+    NonlinearLayer_Rx__V32(round__[((r__ * 6) + 3)],round__[((r__ * 6) + 4)]);
     BigSwap__V32(round__[((r__ * 6) + 4)],round__[((r__ * 6) + 5)]);
-    NonlinearLayer__V32(round__[((r__ * 6) + 5)],round__[((r__ * 6) + 6)]);
+    NonlinearLayer_Rx__V32(round__[((r__ * 6) + 5)],round__[((r__ * 6) + 6)]);
   }
   stateR__[0][0] = round__[36][0][0];
   stateR__[0][1] = round__[36][0][1];
@@ -183,28 +246,59 @@ uint32_t bench_speed() {
 /*                                                                  */
 /*
 
-_inline node SPbox(col :  u32[3] :: base)
+ node SPbox_Rx(col :  u32[3] :: base)
   returns colR :  u32[3] :: base
 vars
   x :  u32 :: base,
   y :  u32 :: base,
-  z :  u32 :: base
+  z :  u32 :: base,
+  x_R :  u32 :: base
 let
   (x) = (col[0] <<< 24);
   (y) = (col[1] <<< 9);
   (z) = col[2];
+  (x_R) = refresh(x);
   (colR[2]) = ((x ^ (z << 1)) ^ ((y & z) << 2));
-  (colR[1]) = ((y ^ x) ^ ((x | z) << 1));
-  (colR[0]) = ((z ^ y) ^ ((x & y) << 3))
+  (colR[1]) = ((y ^ x) ^ ((x_R | z) << 1));
+  (colR[0]) = ((z ^ y) ^ ((x_R & y) << 3))
 tel
 
- node NonlinearLayer(state :  u32x4[3] :: base)
+ node SPbox_Rxy(col :  u32[3] :: base)
+  returns colR :  u32[3] :: base
+vars
+  x :  u32 :: base,
+  y :  u32 :: base,
+  z :  u32 :: base,
+  x_R :  u32 :: base,
+  y_R :  u32 :: base
+let
+  (x) = (col[0] <<< 24);
+  (y) = (col[1] <<< 9);
+  (z) = col[2];
+  (x_R) = refresh(x);
+  (y_R) = refresh(y);
+  (colR[2]) = ((x ^ (z << 1)) ^ ((y_R & z) << 2));
+  (colR[1]) = ((y ^ x) ^ ((x_R | z) << 1));
+  (colR[0]) = ((z ^ y) ^ ((x_R & y_R) << 3))
+tel
+
+ node NonlinearLayer_Rx(state :  u32x4[3] :: base)
   returns stateR :  u32x4[3] :: base
 vars
 
 let
   forall i in [0,3] {
-    (stateR[0 .. 2][i]) = SPbox(state[0 .. 2][i])
+    (stateR[0 .. 2][i]) = SPbox_Rx(state[0 .. 2][i])
+  }
+tel
+
+ node NonlinearLayer_Rxy(state :  u32x4[3] :: base)
+  returns stateR :  u32x4[3] :: base
+vars
+
+let
+  forall i in [0,3] {
+    (stateR[0 .. 2][i]) = SPbox_Rxy(state[0 .. 2][i])
   }
 tel
 
@@ -241,12 +335,12 @@ let
   (rc) = (2654435608,2654435604,2654435600,2654435596,2654435592,2654435588);
   (round[0]) = state;
   forall r in [0,5] {
-    (round[((r * 6) + 1)]) = NonlinearLayer(round[(r * 6)]);
+    (round[((r * 6) + 1)]) = NonlinearLayer_Rx(round[(r * 6)]);
     (round[((r * 6) + 2)]) = AddRC(SmallSwap(round[((r * 6) + 1)]),rc[r]);
-    (round[((r * 6) + 3)]) = NonlinearLayer(round[((r * 6) + 2)]);
-    (round[((r * 6) + 4)]) = NonlinearLayer(round[((r * 6) + 3)]);
+    (round[((r * 6) + 3)]) = NonlinearLayer_Rxy(round[((r * 6) + 2)]);
+    (round[((r * 6) + 4)]) = NonlinearLayer_Rx(round[((r * 6) + 3)]);
     (round[((r * 6) + 5)]) = BigSwap(round[((r * 6) + 4)]);
-    (round[((r * 6) + 6)]) = NonlinearLayer(round[((r * 6) + 5)])
+    (round[((r * 6) + 6)]) = NonlinearLayer_Rx(round[((r * 6) + 5)])
   };
   (stateR) = round[36]
 tel

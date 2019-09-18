@@ -13,40 +13,168 @@
 #include "MASKED.h"
 
 /* auxiliary functions */
+void f__V32 (/*inputs*/ DATATYPE x__[MASKING_ORDER], /*outputs*/ DATATYPE y__[MASKING_ORDER]) {
+
+  // Variables declaration
+  DATATYPE _tmp1_[MASKING_ORDER];
+  DATATYPE _tmp2_[MASKING_ORDER];
+  DATATYPE _tmp3_[MASKING_ORDER];
+  DATATYPE _tmp4_[MASKING_ORDER];
+
+  // Instructions (body)
+  L_ROTATE(_tmp1_,x__,5,32);
+  REFRESH(_tmp2_,x__);
+  AND(_tmp3_,_tmp1_,_tmp2_);
+  L_ROTATE(_tmp4_,x__,1,32);
+  XOR(y__,_tmp3_,_tmp4_);
+
+}
+
 void simeck_box__V32 (/*inputs*/ DATATYPE input__[2][MASKING_ORDER],DATATYPE rc__[MASKING_ORDER], /*outputs*/ DATATYPE output__[2][MASKING_ORDER]) {
 
   // Variables declaration
-  DATATYPE _tmp10_[MASKING_ORDER];
-  DATATYPE _tmp4_[MASKING_ORDER];
+  DATATYPE _tmp11_[MASKING_ORDER];
+  DATATYPE _tmp12_[MASKING_ORDER];
+  DATATYPE _tmp13_[MASKING_ORDER];
+  DATATYPE _tmp15_[MASKING_ORDER];
+  DATATYPE _tmp16_[MASKING_ORDER];
+  DATATYPE _tmp18_[MASKING_ORDER];
+  DATATYPE _tmp19_[MASKING_ORDER];
+  DATATYPE _tmp20_[MASKING_ORDER];
+  DATATYPE _tmp22_[MASKING_ORDER];
+  DATATYPE _tmp23_[MASKING_ORDER];
+  DATATYPE _tmp25_[MASKING_ORDER];
+  DATATYPE _tmp26_[MASKING_ORDER];
+  DATATYPE _tmp27_[MASKING_ORDER];
+  DATATYPE _tmp29_[MASKING_ORDER];
+  DATATYPE _tmp30_[MASKING_ORDER];
+  DATATYPE _tmp32_[MASKING_ORDER];
+  DATATYPE _tmp33_[MASKING_ORDER];
+  DATATYPE _tmp34_[MASKING_ORDER];
+  DATATYPE _tmp36_[MASKING_ORDER];
+  DATATYPE _tmp37_[MASKING_ORDER];
+  DATATYPE _tmp39_[MASKING_ORDER];
+  DATATYPE _tmp40_[MASKING_ORDER];
+  DATATYPE _tmp41_[MASKING_ORDER];
+  DATATYPE _tmp43_[MASKING_ORDER];
+  DATATYPE _tmp44_[MASKING_ORDER];
+  DATATYPE _tmp46_[MASKING_ORDER];
+  DATATYPE _tmp47_[MASKING_ORDER];
+  DATATYPE _tmp48_[MASKING_ORDER];
+  DATATYPE _tmp50_[MASKING_ORDER];
+  DATATYPE _tmp51_[MASKING_ORDER];
+  DATATYPE _tmp53_[MASKING_ORDER];
+  DATATYPE _tmp54_[MASKING_ORDER];
+  DATATYPE _tmp55_[MASKING_ORDER];
+  DATATYPE _tmp57_[MASKING_ORDER];
+  DATATYPE _tmp58_[MASKING_ORDER];
   DATATYPE _tmp5_[MASKING_ORDER];
-  DATATYPE _tmp7_[MASKING_ORDER];
+  DATATYPE _tmp60_[MASKING_ORDER];
+  DATATYPE _tmp6_[MASKING_ORDER];
   DATATYPE _tmp8_[MASKING_ORDER];
-  DATATYPE f__V32_1__tmp1_[MASKING_ORDER];
-  DATATYPE f__V32_1__tmp2_[MASKING_ORDER];
-  DATATYPE f__V32_1__tmp3_[MASKING_ORDER];
+  DATATYPE _tmp9_[MASKING_ORDER];
   DATATYPE round__[9][2][MASKING_ORDER];
   DATATYPE tmp__[MASKING_ORDER];
-  DATATYPE _tmp123_[MASKING_ORDER];
-  DATATYPE _tmp122_[MASKING_ORDER];
+  DATATYPE _tmp187_[MASKING_ORDER];
+  DATATYPE _tmp186_[MASKING_ORDER];
+  DATATYPE _tmp185_[MASKING_ORDER];
+  DATATYPE _tmp184_[MASKING_ORDER];
+  DATATYPE _tmp183_[MASKING_ORDER];
+  DATATYPE _tmp182_[MASKING_ORDER];
+  DATATYPE _tmp181_[MASKING_ORDER];
+  DATATYPE _tmp180_[MASKING_ORDER];
+  DATATYPE _tmp179_[MASKING_ORDER];
+  DATATYPE _tmp178_[MASKING_ORDER];
+  DATATYPE _tmp177_[MASKING_ORDER];
+  DATATYPE _tmp176_[MASKING_ORDER];
+  DATATYPE _tmp175_[MASKING_ORDER];
+  DATATYPE _tmp174_[MASKING_ORDER];
+  DATATYPE _tmp173_[MASKING_ORDER];
+  DATATYPE _tmp172_[MASKING_ORDER];
 
   // Instructions (body)
   ASGN(round__[0][0],input__[0]);
   ASGN(round__[0][1],input__[1]);
-  for (int i__ = 0; i__ <= 7; i__++) {
-    L_ROTATE(f__V32_1__tmp1_,round__[i__][0],5,32);
-    AND(f__V32_1__tmp2_,f__V32_1__tmp1_,round__[i__][0]);
-    L_ROTATE(f__V32_1__tmp3_,round__[i__][0],1,32);
-    XOR(_tmp4_,f__V32_1__tmp2_,f__V32_1__tmp3_);
-    XOR(_tmp5_,_tmp4_,round__[i__][1]);
-    ASGN_CST(_tmp122_, LIFT_32(4294967294));
-    XOR(_tmp7_,_tmp5_,_tmp122_);
-    R_SHIFT(_tmp8_,rc__,i__,32);
-    ASGN_CST(_tmp123_, LIFT_32(1));
-    AND(_tmp10_,_tmp8_,_tmp123_);
-    XOR(tmp__,_tmp7_,_tmp10_);
-    ASGN(round__[(i__ + 1)][0],tmp__);
-    ASGN(round__[(i__ + 1)][1],round__[i__][0]);
-  }
+  f__V32(round__[0][0],_tmp5_);
+  XOR(_tmp6_,_tmp5_,round__[0][1]);
+  ASGN_CST(_tmp172_, LIFT_32(4294967294));
+  XOR(_tmp8_,_tmp6_,_tmp172_);
+  R_SHIFT(_tmp9_,rc__,0,32);
+  ASGN_CST(_tmp173_, LIFT_32(1));
+  AND(_tmp11_,_tmp9_,_tmp173_);
+  XOR(tmp__,_tmp8_,_tmp11_);
+  ASGN(round__[1][0],tmp__);
+  ASGN(round__[1][1],round__[0][0]);
+  f__V32(round__[1][0],_tmp12_);
+  XOR(_tmp13_,_tmp12_,round__[1][1]);
+  ASGN_CST(_tmp174_, LIFT_32(4294967294));
+  XOR(_tmp15_,_tmp13_,_tmp174_);
+  R_SHIFT(_tmp16_,rc__,1,32);
+  ASGN_CST(_tmp175_, LIFT_32(1));
+  AND(_tmp18_,_tmp16_,_tmp175_);
+  XOR(tmp__,_tmp15_,_tmp18_);
+  ASGN(round__[2][0],tmp__);
+  ASGN(round__[2][1],round__[1][0]);
+  f__V32(round__[2][0],_tmp19_);
+  XOR(_tmp20_,_tmp19_,round__[2][1]);
+  ASGN_CST(_tmp176_, LIFT_32(4294967294));
+  XOR(_tmp22_,_tmp20_,_tmp176_);
+  R_SHIFT(_tmp23_,rc__,2,32);
+  ASGN_CST(_tmp177_, LIFT_32(1));
+  AND(_tmp25_,_tmp23_,_tmp177_);
+  XOR(tmp__,_tmp22_,_tmp25_);
+  ASGN(round__[3][0],tmp__);
+  ASGN(round__[3][1],round__[2][0]);
+  f__V32(round__[3][0],_tmp26_);
+  XOR(_tmp27_,_tmp26_,round__[3][1]);
+  ASGN_CST(_tmp178_, LIFT_32(4294967294));
+  XOR(_tmp29_,_tmp27_,_tmp178_);
+  R_SHIFT(_tmp30_,rc__,3,32);
+  ASGN_CST(_tmp179_, LIFT_32(1));
+  AND(_tmp32_,_tmp30_,_tmp179_);
+  XOR(tmp__,_tmp29_,_tmp32_);
+  ASGN(round__[4][0],tmp__);
+  ASGN(round__[4][1],round__[3][0]);
+  f__V32(round__[4][0],_tmp33_);
+  XOR(_tmp34_,_tmp33_,round__[4][1]);
+  ASGN_CST(_tmp180_, LIFT_32(4294967294));
+  XOR(_tmp36_,_tmp34_,_tmp180_);
+  R_SHIFT(_tmp37_,rc__,4,32);
+  ASGN_CST(_tmp181_, LIFT_32(1));
+  AND(_tmp39_,_tmp37_,_tmp181_);
+  XOR(tmp__,_tmp36_,_tmp39_);
+  ASGN(round__[5][0],tmp__);
+  ASGN(round__[5][1],round__[4][0]);
+  f__V32(round__[5][0],_tmp40_);
+  XOR(_tmp41_,_tmp40_,round__[5][1]);
+  ASGN_CST(_tmp182_, LIFT_32(4294967294));
+  XOR(_tmp43_,_tmp41_,_tmp182_);
+  R_SHIFT(_tmp44_,rc__,5,32);
+  ASGN_CST(_tmp183_, LIFT_32(1));
+  AND(_tmp46_,_tmp44_,_tmp183_);
+  XOR(tmp__,_tmp43_,_tmp46_);
+  ASGN(round__[6][0],tmp__);
+  ASGN(round__[6][1],round__[5][0]);
+  f__V32(round__[6][0],_tmp47_);
+  XOR(_tmp48_,_tmp47_,round__[6][1]);
+  ASGN_CST(_tmp184_, LIFT_32(4294967294));
+  XOR(_tmp50_,_tmp48_,_tmp184_);
+  R_SHIFT(_tmp51_,rc__,6,32);
+  ASGN_CST(_tmp185_, LIFT_32(1));
+  AND(_tmp53_,_tmp51_,_tmp185_);
+  XOR(tmp__,_tmp50_,_tmp53_);
+  ASGN(round__[7][0],tmp__);
+  ASGN(round__[7][1],round__[6][0]);
+  f__V32(round__[7][0],_tmp54_);
+  XOR(_tmp55_,_tmp54_,round__[7][1]);
+  ASGN_CST(_tmp186_, LIFT_32(4294967294));
+  XOR(_tmp57_,_tmp55_,_tmp186_);
+  R_SHIFT(_tmp58_,rc__,7,32);
+  ASGN_CST(_tmp187_, LIFT_32(1));
+  AND(_tmp60_,_tmp58_,_tmp187_);
+  XOR(tmp__,_tmp57_,_tmp60_);
+  ASGN(round__[8][0],tmp__);
+  ASGN(round__[8][1],round__[7][0]);
   ASGN(output__[0],round__[8][0]);
   ASGN(output__[1],round__[8][1]);
 
@@ -61,38 +189,38 @@ void ACE_step__V32 (/*inputs*/ DATATYPE A__[2][MASKING_ORDER],DATATYPE B__[2][MA
   DATATYPE _shadow_D__5_[2][MASKING_ORDER];
   DATATYPE _shadow_E__3_[2][MASKING_ORDER];
   DATATYPE _shadow_E__6_[2][MASKING_ORDER];
-  DATATYPE _tmp11_[2][MASKING_ORDER];
-  DATATYPE _tmp13_[MASKING_ORDER];
-  DATATYPE _tmp16_[2][MASKING_ORDER];
-  DATATYPE _tmp18_[MASKING_ORDER];
-  DATATYPE _tmp21_[2][MASKING_ORDER];
-  DATATYPE _tmp23_[MASKING_ORDER];
-  DATATYPE _tmp126_[MASKING_ORDER];
-  DATATYPE _tmp125_[MASKING_ORDER];
-  DATATYPE _tmp124_[MASKING_ORDER];
+  DATATYPE _tmp61_[2][MASKING_ORDER];
+  DATATYPE _tmp63_[MASKING_ORDER];
+  DATATYPE _tmp66_[2][MASKING_ORDER];
+  DATATYPE _tmp68_[MASKING_ORDER];
+  DATATYPE _tmp71_[2][MASKING_ORDER];
+  DATATYPE _tmp73_[MASKING_ORDER];
+  DATATYPE _tmp190_[MASKING_ORDER];
+  DATATYPE _tmp189_[MASKING_ORDER];
+  DATATYPE _tmp188_[MASKING_ORDER];
 
   // Instructions (body)
   simeck_box__V32(A__,RC__0__,_shadow_A__1_);
   simeck_box__V32(C__,RC__1__,_shadow_C__2_);
   simeck_box__V32(E__,RC__2__,_shadow_E__3_);
-  XOR(_tmp11_[0],B__[0],_shadow_C__2_[0]);
-  XOR(_tmp11_[1],B__[1],_shadow_C__2_[1]);
-  XOR(_tmp13_,_tmp11_[1],SC__0__);
-  NOT(_shadow_B__4_[0],_tmp11_[0]);
-  ASGN_CST(_tmp124_, LIFT_32(4294967040));
-  XOR(_shadow_B__4_[1],_tmp13_,_tmp124_);
-  XOR(_tmp16_[0],D__[0],_shadow_E__3_[0]);
-  XOR(_tmp16_[1],D__[1],_shadow_E__3_[1]);
-  XOR(_tmp18_,_tmp16_[1],SC__1__);
-  NOT(_shadow_D__5_[0],_tmp16_[0]);
-  ASGN_CST(_tmp125_, LIFT_32(4294967040));
-  XOR(_shadow_D__5_[1],_tmp18_,_tmp125_);
-  XOR(_tmp21_[0],_shadow_E__3_[0],_shadow_A__1_[0]);
-  XOR(_tmp21_[1],_shadow_E__3_[1],_shadow_A__1_[1]);
-  XOR(_tmp23_,_tmp21_[1],SC__2__);
-  NOT(_shadow_E__6_[0],_tmp21_[0]);
-  ASGN_CST(_tmp126_, LIFT_32(4294967040));
-  XOR(_shadow_E__6_[1],_tmp23_,_tmp126_);
+  XOR(_tmp61_[0],B__[0],_shadow_C__2_[0]);
+  XOR(_tmp61_[1],B__[1],_shadow_C__2_[1]);
+  XOR(_tmp63_,_tmp61_[1],SC__0__);
+  NOT(_shadow_B__4_[0],_tmp61_[0]);
+  ASGN_CST(_tmp188_, LIFT_32(4294967040));
+  XOR(_shadow_B__4_[1],_tmp63_,_tmp188_);
+  XOR(_tmp66_[0],D__[0],_shadow_E__3_[0]);
+  XOR(_tmp66_[1],D__[1],_shadow_E__3_[1]);
+  XOR(_tmp68_,_tmp66_[1],SC__1__);
+  NOT(_shadow_D__5_[0],_tmp66_[0]);
+  ASGN_CST(_tmp189_, LIFT_32(4294967040));
+  XOR(_shadow_D__5_[1],_tmp68_,_tmp189_);
+  XOR(_tmp71_[0],_shadow_E__3_[0],_shadow_A__1_[0]);
+  XOR(_tmp71_[1],_shadow_E__3_[1],_shadow_A__1_[1]);
+  XOR(_tmp73_,_tmp71_[1],SC__2__);
+  NOT(_shadow_E__6_[0],_tmp71_[0]);
+  ASGN_CST(_tmp190_, LIFT_32(4294967040));
+  XOR(_shadow_E__6_[1],_tmp73_,_tmp190_);
   ASGN(Ar__[0],_shadow_D__5_[0]);
   ASGN(Ar__[1],_shadow_D__5_[1]);
   ASGN(Br__[0],_shadow_C__2_[0]);
@@ -255,12 +383,12 @@ uint32_t bench_speed() {
 /*                                                                  */
 /*
 
-_inline node f(x :  u32 :: base)
+ node f(x :  u32 :: base)
   returns y :  u32 :: base
 vars
 
 let
-  (y) = (((x <<< 5) & x) ^ (x <<< 1))
+  (y) = (((x <<< 5) & refresh(x)) ^ (x <<< 1))
 tel
 
  node simeck_box(input :  u32x2 :: base,rc :  u32 :: base)
@@ -270,7 +398,7 @@ vars
   tmp :  u32[8] :: base
 let
   (round[0]) = input;
-  forall i in [0,7] {
+  _unroll forall i in [0,7] {
     (tmp[i]) = (((f(round[i][0]) ^ round[i][1]) ^ 4294967294) ^ ((rc >> i) & 1));
     (round[(i + 1)][0,1]) = (tmp[i],round[i][0])
   };
