@@ -98,7 +98,7 @@ void Rotr32__V_Natnat_64 (/*inputs*/ DATATYPE x__[MASKING_ORDER],unsigned int n_
   L_SHIFT(_tmp3_,x__,(32 - n__),64);
   XOR(_tmp4_,_tmp2_,_tmp3_);
   ASGN_CST(_tmp75_, LIFT_64(4294967295));
-  AND(y__,_tmp4_,_tmp75_);
+  AND_CST(y__,_tmp4_,_tmp75_);
 
 }
 
@@ -119,7 +119,7 @@ void BitRotR_odd__V_Natnat_64 (/*inputs*/ DATATYPE x__[MASKING_ORDER],unsigned i
 
   // Instructions (body)
   ASGN_CST(_tmp76_, LIFT_64(4294967295));
-  AND(i0__,x__,_tmp76_);
+  AND_CST(i0__,x__,_tmp76_);
   R_SHIFT(i1__,x__,32,64);
   _tmp8_ = ((shift__) / (2));
   Rotr32__V_Natnat_64(i1__,_tmp8_,t__);
@@ -128,7 +128,7 @@ void BitRotR_odd__V_Natnat_64 (/*inputs*/ DATATYPE x__[MASKING_ORDER],unsigned i
   Rotr32__V_Natnat_64(i0__,_tmp14_,_shadow_i1__18_);
   L_SHIFT(_tmp15_,_shadow_i1__18_,32,64);
   ASGN_CST(_tmp77_, LIFT_64(4294967295));
-  AND(_tmp17_,t__,_tmp77_);
+  AND_CST(_tmp17_,t__,_tmp77_);
   XOR(y__,_tmp15_,_tmp17_);
 
 }
@@ -148,14 +148,14 @@ void BitRotR_eve__V_Natnat_64 (/*inputs*/ DATATYPE x__[MASKING_ORDER],unsigned i
 
   // Instructions (body)
   ASGN_CST(_tmp78_, LIFT_64(4294967295));
-  AND(i0__,x__,_tmp78_);
+  AND_CST(i0__,x__,_tmp78_);
   R_SHIFT(i1__,x__,32,64);
   _tmp20_ = ((shift__) / (2));
   Rotr32__V_Natnat_64(i0__,_tmp20_,_shadow_i0__20_);
   Rotr32__V_Natnat_64(i1__,_tmp20_,_shadow_i1__21_);
   L_SHIFT(_tmp23_,_shadow_i1__21_,32,64);
   ASGN_CST(_tmp79_, LIFT_64(4294967295));
-  AND(_tmp25_,_shadow_i0__20_,_tmp79_);
+  AND_CST(_tmp25_,_shadow_i0__20_,_tmp79_);
   XOR(y__,_tmp23_,_tmp25_);
 
 }

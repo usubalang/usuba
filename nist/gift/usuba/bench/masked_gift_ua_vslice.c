@@ -76,22 +76,22 @@ void rowperm__V_Natnat_32 (/*inputs*/ DATATYPE S__[MASKING_ORDER],unsigned int B
   for (int b__ = 0; b__ <= 7; b__++) {
     R_SHIFT(_tmp5_,S__,((4 * b__) + 0),32);
     ASGN_CST(_tmp96_, LIFT_32(1));
-    AND(_tmp7_,_tmp5_,_tmp96_);
+    AND_CST(_tmp7_,_tmp5_,_tmp96_);
     L_SHIFT(_tmp8_,_tmp7_,(b__ + (8 * B0_pos__)),32);
-    XOR(_tmp9_,T__,_tmp8_);
+    XOR_CST(_tmp9_,_tmp8_,T__);
     R_SHIFT(_tmp10_,S__,((4 * b__) + 1),32);
     ASGN_CST(_tmp97_, LIFT_32(1));
-    AND(_tmp12_,_tmp10_,_tmp97_);
+    AND_CST(_tmp12_,_tmp10_,_tmp97_);
     L_SHIFT(_tmp13_,_tmp12_,(b__ + (8 * B1_pos__)),32);
     XOR(_tmp14_,_tmp9_,_tmp13_);
     R_SHIFT(_tmp15_,S__,((4 * b__) + 2),32);
     ASGN_CST(_tmp98_, LIFT_32(1));
-    AND(_tmp17_,_tmp15_,_tmp98_);
+    AND_CST(_tmp17_,_tmp15_,_tmp98_);
     L_SHIFT(_tmp18_,_tmp17_,(b__ + (8 * B2_pos__)),32);
     XOR(_tmp19_,_tmp14_,_tmp18_);
     R_SHIFT(_tmp20_,S__,((4 * b__) + 3),32);
     ASGN_CST(_tmp99_, LIFT_32(1));
-    AND(_tmp22_,_tmp20_,_tmp99_);
+    AND_CST(_tmp22_,_tmp20_,_tmp99_);
     L_SHIFT(_tmp23_,_tmp22_,(b__ + (8 * B3_pos__)),32);
     XOR(T__,_tmp19_,_tmp23_);
   }
@@ -161,7 +161,7 @@ void AddRoundKey__V32 (/*inputs*/ DATATYPE S__[4][MASKING_ORDER],DATATYPE W__[8]
   XOR(_tmp43_,_tmp42_,W__[7]);
   XOR(S____[1],S__[1],_tmp43_);
   ASGN_CST(_tmp116_, LIFT_32(2147483648));
-  XOR(_tmp45_,S__[3],_tmp116_);
+  XOR_CST(_tmp45_,S__[3],_tmp116_);
   XOR(S____[3],_tmp45_,rc__);
   ASGN(S____[0],S__[0]);
 
@@ -184,12 +184,12 @@ void KeyUpdate__V32 (/*inputs*/ DATATYPE W__[8][MASKING_ORDER], /*outputs*/ DATA
   L_SHIFT(_tmp47_,W__[6],14,32);
   XOR(_tmp48_,_tmp46_,_tmp47_);
   ASGN_CST(_tmp117_, LIFT_32(65535));
-  AND(W____[0],_tmp48_,_tmp117_);
+  AND_CST(W____[0],_tmp48_,_tmp117_);
   R_SHIFT(_tmp50_,W__[7],12,32);
   L_SHIFT(_tmp51_,W__[7],4,32);
   XOR(_tmp52_,_tmp50_,_tmp51_);
   ASGN_CST(_tmp118_, LIFT_32(65535));
-  AND(W____[1],_tmp52_,_tmp118_);
+  AND_CST(W____[1],_tmp52_,_tmp118_);
   ASGN(W____[7],W__[5]);
   ASGN(W____[6],W__[4]);
   ASGN(W____[5],W__[3]);
