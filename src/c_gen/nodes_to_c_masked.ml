@@ -3,6 +3,7 @@ open Basic_utils
 open Utils
 open Printf
 
+(* TODO: env_const is poorly handled. Fix. *)
 
 let make_env () = Hashtbl.create 100
 let env_add env v e = Hashtbl.replace env v e
@@ -84,12 +85,7 @@ let rec expr_to_c (lift_env:(var,int)  Hashtbl.t)
   match e with
   | Const(n,Some typ) -> const_to_c (get_type_m typ) n
   | ExpVar v -> var_to_c lift_env env v
-  | Not e -> sprintf "NOT(%s)" (expr_to_c lift_env env env_var e)
-  | Log(op,x,y) -> sprintf "%s(%s,%s)"
-                           (log_op_to_c op)
-                           (expr_to_c lift_env env env_var x)
-                           (expr_to_c lift_env env env_var y)
-  | Arith(op,x,y) ->
+  | Arith(op,x,y) -> (* nested arith are allowed (in shifts for instance) *)
      (match get_normed_expr_m env_var e with
       | Mint mval ->
          sprintf "%s(%s,%s,%d)"
@@ -103,31 +99,42 @@ let rec expr_to_c (lift_env:(var,int)  Hashtbl.t)
                  (arith_op_to_c op)
                  (expr_to_c lift_env env env_var y)
       | _ -> assert false)
-  | Shuffle(v,l) -> sprintf "PERMUT_%d(%s,%s)"
-                                 (List.length l)
-                                 (var_to_c lift_env env v)
-                                 (join "," (List.map string_of_int l))
-  | Shift(op,e,ae) ->
-     sprintf "%s(%s,%s,%d)"
-             (shift_op_to_c op)
-             (expr_to_c lift_env env env_var e)
-             (aexpr_to_c ae)
-             (get_expr_reg_size env_var e)
-  | Fun(f,[v]) when f.name = "rand" ->
-     sprintf "%s = RAND();" (expr_to_c lift_env env env_var v)
-  | _ -> raise (Error (Printf.sprintf "Wrong expr: %s" (Usuba_print.expr_to_str e)))
+  | _ -> raise (Error (Printf.sprintf "Nested expressions not supported: %s.\n"
+                                      (Usuba_print.expr_to_str e)))
 
-let rec expr_to_c_ret (lift_env:(var,int)  Hashtbl.t)
-                  (env:(string,string) Hashtbl.t)
-                  (env_var:(ident,typ) Hashtbl.t) (ret:string) (e:expr) : string =
+let is_const_expr (env_const:(ident,bool) Hashtbl.t) (e:expr) =
   match e with
-  | Const(n,Some typ) -> sprintf "ASGN_CST(%s, %s)" ret (const_to_c (get_type_m typ) n)
-  | ExpVar v -> sprintf "ASGN(%s,%s)" ret (var_to_c lift_env env v)
+  | Const _  -> true
+  | ExpVar v -> Hashtbl.mem env_const (get_base_name v)
+  | _ -> false
+
+let rec expr_to_c_ret (env_const:(ident,bool) Hashtbl.t)
+                      (lift_env:(var,int)  Hashtbl.t)
+                      (env:(string,string) Hashtbl.t)
+                      (env_var:(ident,typ) Hashtbl.t)
+                      (retvar:var) (e:expr) : string =
+  let ret = var_to_c lift_env env retvar in
+  match e with
+  | Const(n,Some typ) ->
+     Hashtbl.replace env_const (get_base_name retvar) true;
+     sprintf "ASGN_CST(%s, %s)" ret (const_to_c (get_type_m typ) n)
+  | ExpVar v ->
+     if Hashtbl.mem env_const (get_base_name v) then
+       Hashtbl.replace env_const (get_base_name retvar) true;
+     sprintf "ASGN(%s,%s)" ret (var_to_c lift_env env v)
   | Not e -> sprintf "NOT(%s,%s)" ret (expr_to_c lift_env env env_var e)
-  | Log(op,x,y) -> sprintf "%s(%s,%s,%s)"
-                           (log_op_to_c op) ret
-                           (expr_to_c lift_env env env_var x)
-                           (expr_to_c lift_env env env_var y)
+  | Log(op,x,y) ->
+     let (cst,x,y) =
+       if is_const_expr env_const y then
+         (true,x,y)
+       else if is_const_expr env_const x then
+         (true,y,x)
+       else
+         (false,x,y) in
+     sprintf "%s%s(%s,%s,%s)"
+             (log_op_to_c op) (if cst then "_CST" else "") ret
+             (expr_to_c lift_env env env_var x)
+             (expr_to_c lift_env env env_var y)
   | Arith(op,x,y) ->
      (match get_normed_expr_m env_var e with
       | Mint mval ->
@@ -164,7 +171,8 @@ let fun_call_to_c (lift_env:(var,int)  Hashtbl.t)
           (rename f.name) (join "," (List.map (expr_to_c lift_env env env_var) args))
           (join "," (List.map (fun v -> var_to_c lift_env env v) p))
 
-let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
+let rec deqs_to_c (env_const:(ident,bool) Hashtbl.t)
+                  (lift_env:(var,int)  Hashtbl.t)
                   (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t)
                   ?(tabs="  ")
@@ -182,15 +190,14 @@ let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
                 | Mnat -> sprintf "%s%s = %s;" tabs (var_to_c lift_env env v)
                                   (expr_to_c lift_env env env_var e)
                 | _ ->  sprintf "%s%s;" tabs
-                                (expr_to_c_ret lift_env env env_var
-                                               (var_to_c lift_env env v) e))
+                                (expr_to_c_ret env_const lift_env env env_var v e))
             | Loop(i,ei,ef,l,_) ->
                sprintf "%sfor (int %s = %s; %s <= %s; %s++) {\n%s\n%s}"
                        tabs
                        (rename i.name) (aexpr_to_c ei)
                        (rename i.name) (aexpr_to_c ef)
                        (rename i.name)
-                       (deqs_to_c lift_env env env_var ~tabs:(tabs ^ "  ") l)
+                       (deqs_to_c env_const lift_env env env_var ~tabs:(tabs ^ "  ") l)
                        tabs
             | _ -> print_endline (Usuba_print.deq_to_str deq);
                    assert false) deqs)
@@ -289,6 +296,9 @@ let c_header (arch:arch) : string =
 
 let single_to_c (def:def) (array:bool) (vars:p)
                 (body:deq list) (conf:config) : string =
+  let env_const = Hashtbl.create 10 in
+  List.iter (fun vd -> if is_const vd then Hashtbl.add env_const vd.vid true) def.p_in;
+  List.iter (fun vd -> if is_const vd then Hashtbl.add env_const vd.vid true) vars;
   let lift_env = Hashtbl.create 100 in
   if conf.lazylift then
     List.iter (fun vd ->
@@ -317,7 +327,7 @@ let single_to_c (def:def) (array:bool) (vars:p)
   (join ";\n  " (List.map (fun vd -> var_decl_to_c conf vd false) vars))
 
   (* body *)
-  (deqs_to_c lift_env
+  (deqs_to_c env_const lift_env
              (if array then inputs_to_arr def else (make_env ()))
              (build_env_var def.p_in def.p_out vars) body)
 
