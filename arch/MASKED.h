@@ -144,6 +144,7 @@ static void isw_mult(DATATYPE *res, const DATATYPE *op1, const DATATYPE *op2) {
   }
 }
 
+#define REFRESH isw_refresh
 
 static void isw_refresh(DATATYPE *res, const DATATYPE *in) {
   int i,j;

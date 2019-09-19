@@ -56,6 +56,8 @@
 #define LIFT_32(x) (x)
 #define LIFT_64(x) (x)
 
+#define refresh(x,y) *(y) = x
+
 #ifndef DATATYPE
 #if BITS_PER_REG == 4
 #define DATATYPE uint8_t // TODO: use something else? do something else?
