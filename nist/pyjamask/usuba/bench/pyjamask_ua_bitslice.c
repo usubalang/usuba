@@ -739,7 +739,7 @@ let
   }
 tel
 
- node col_mult(a :  b32 :: base,b :  b32 :: base)
+ node col_mult(a :  b32 :: base,b : const b32 :: base)
   returns r :  b1 :: base
 vars
   acc :  b32 :: base
@@ -754,7 +754,7 @@ tel
 _no_inline node MixRows(input :  b32[4] :: base)
   returns output :  b32[4] :: base
 vars
-  M :  b32[4][33] :: base
+  M : const b32[4][33] :: base
 let
   (M[0][0]) = (1,0,1,0,0,0,1,1,1,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,1);
   (M[1][0]) = (0,1,1,0,0,0,1,1,0,1,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,1,0,0,0,0,1);

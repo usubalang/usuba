@@ -205,68 +205,68 @@ void col_mult__B1 (/*inputs*/ DATATYPE a__0__[MASKING_ORDER],DATATYPE a__1__[MAS
   DATATYPE acc__[MASKING_ORDER];
 
   // Instructions (body)
-  AND(acc__,a__0__,b__[0]);
-  AND(_tmp5_,a__1__,b__[1]);
+  AND_CST(acc__,a__0__,b__[0]);
+  AND_CST(_tmp5_,a__1__,b__[1]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__2__,b__[2]);
+  AND_CST(_tmp5_,a__2__,b__[2]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__3__,b__[3]);
+  AND_CST(_tmp5_,a__3__,b__[3]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__4__,b__[4]);
+  AND_CST(_tmp5_,a__4__,b__[4]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__5__,b__[5]);
+  AND_CST(_tmp5_,a__5__,b__[5]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__6__,b__[6]);
+  AND_CST(_tmp5_,a__6__,b__[6]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__7__,b__[7]);
+  AND_CST(_tmp5_,a__7__,b__[7]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__8__,b__[8]);
+  AND_CST(_tmp5_,a__8__,b__[8]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__9__,b__[9]);
+  AND_CST(_tmp5_,a__9__,b__[9]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__10__,b__[10]);
+  AND_CST(_tmp5_,a__10__,b__[10]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__11__,b__[11]);
+  AND_CST(_tmp5_,a__11__,b__[11]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__12__,b__[12]);
+  AND_CST(_tmp5_,a__12__,b__[12]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__13__,b__[13]);
+  AND_CST(_tmp5_,a__13__,b__[13]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__14__,b__[14]);
+  AND_CST(_tmp5_,a__14__,b__[14]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__15__,b__[15]);
+  AND_CST(_tmp5_,a__15__,b__[15]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__16__,b__[16]);
+  AND_CST(_tmp5_,a__16__,b__[16]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__17__,b__[17]);
+  AND_CST(_tmp5_,a__17__,b__[17]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__18__,b__[18]);
+  AND_CST(_tmp5_,a__18__,b__[18]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__19__,b__[19]);
+  AND_CST(_tmp5_,a__19__,b__[19]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__20__,b__[20]);
+  AND_CST(_tmp5_,a__20__,b__[20]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__21__,b__[21]);
+  AND_CST(_tmp5_,a__21__,b__[21]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__22__,b__[22]);
+  AND_CST(_tmp5_,a__22__,b__[22]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__23__,b__[23]);
+  AND_CST(_tmp5_,a__23__,b__[23]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__24__,b__[24]);
+  AND_CST(_tmp5_,a__24__,b__[24]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__25__,b__[25]);
+  AND_CST(_tmp5_,a__25__,b__[25]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__26__,b__[26]);
+  AND_CST(_tmp5_,a__26__,b__[26]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__27__,b__[27]);
+  AND_CST(_tmp5_,a__27__,b__[27]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__28__,b__[28]);
+  AND_CST(_tmp5_,a__28__,b__[28]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__29__,b__[29]);
+  AND_CST(_tmp5_,a__29__,b__[29]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__30__,b__[30]);
+  AND_CST(_tmp5_,a__30__,b__[30]);
   XOR(acc__,acc__,_tmp5_);
-  AND(_tmp5_,a__31__,b__[31]);
+  AND_CST(_tmp5_,a__31__,b__[31]);
   XOR(acc__,acc__,_tmp5_);
   ASGN(r__,acc__);
 
@@ -739,7 +739,7 @@ let
   }
 tel
 
- node col_mult(a :  b32 :: base,b :  b32 :: base)
+ node col_mult(a :  b32 :: base,b : const b32 :: base)
   returns r :  b1 :: base
 vars
   acc :  b32 :: base
@@ -754,7 +754,7 @@ tel
 _no_inline node MixRows(input :  b32[4] :: base)
   returns output :  b32[4] :: base
 vars
-  M :  b32[4][33] :: base
+  M : const b32[4][33] :: base
 let
   (M[0][0]) = (1,0,1,0,0,0,1,1,1,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,1);
   (M[1][0]) = (0,1,1,0,0,0,1,1,0,1,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,1,0,0,0,0,1);

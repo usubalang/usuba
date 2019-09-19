@@ -157,7 +157,7 @@ let
   (o) = (i ^ k)
 tel
 
- node mat_mult(col :  u32 :: base,vec :  u32 :: base)
+ node mat_mult(col : const u32 :: base,vec :  u32 :: base)
   returns res :  u32 :: base
 vars
   mat_col :  u32[33] :: base,
@@ -177,7 +177,7 @@ tel
  node MixRows(input :  u32x4 :: base)
   returns output :  u32x4 :: base
 vars
-  M :  u32[4] :: base
+  M : const u32[4] :: base
 let
   (M) = (2743472261,1665232929,1764553344,1218791443);
   forall i in [0,3] {

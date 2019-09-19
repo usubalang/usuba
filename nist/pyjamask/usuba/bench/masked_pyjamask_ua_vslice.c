@@ -77,8 +77,8 @@ void mat_mult__V32 (/*inputs*/ DATATYPE col__[MASKING_ORDER],DATATYPE vec__[MASK
   for (int i__ = 0; i__ <= 31; i__++) {
     L_SHIFT(_tmp5_,vec__,i__,32);
     RA_SHIFT(mask__,_tmp5_,31,32);
-    AND(_tmp6_,mask__,mat_col__);
-    XOR(res_tmp__,res_tmp__,_tmp6_);
+    AND_CST(_tmp6_,mask__,mat_col__);
+    XOR_CST(res_tmp__,_tmp6_,res_tmp__);
     R_ROTATE(mat_col__,mat_col__,1,32);
   }
   ASGN(res__,res_tmp__);
@@ -157,7 +157,7 @@ let
   (o) = (i ^ k)
 tel
 
- node mat_mult(col :  u32 :: base,vec :  u32 :: base)
+ node mat_mult(col : const u32 :: base,vec :  u32 :: base)
   returns res :  u32 :: base
 vars
   mat_col :  u32[33] :: base,
@@ -177,7 +177,7 @@ tel
  node MixRows(input :  u32x4 :: base)
   returns output :  u32x4 :: base
 vars
-  M :  u32[4] :: base
+  M : const u32[4] :: base
 let
   (M) = (2743472261,1665232929,1764553344,1218791443);
   forall i in [0,3] {
