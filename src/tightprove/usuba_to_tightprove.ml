@@ -57,6 +57,8 @@ let rec expr_to_str = function
   | Shift(op,e,ae) -> sprintf "%s %s %s"
                     (expr_to_str e) (shift_op_to_str op) (arith_to_str ae)
   | Not e -> sprintf "not %s" (expr_to_str e)
+  | Fun(f,[ExpVar v]) when f.name = "refresh" ->
+     sprintf "refresh(%s)" (var_to_str v)
   | e -> Printf.eprintf "expr_to_str: invalid expr `%s`\n"
            (Usuba_print.expr_to_str e);
          assert false
