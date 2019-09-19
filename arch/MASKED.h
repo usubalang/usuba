@@ -81,6 +81,10 @@
 /* Defining operators */
 
 #define AND(r,a,b)  isw_mult(r,a,b)
+#define AND_CST(r,a,b)                                                  \
+  for (int i_In_Header = 0; i_In_Header < MASKING_ORDER; i_In_Header++) \
+    r[i_In_Header] = a[i_In_Header] & b[0];
+
 
 #define OR(r,a,b) {                             \
     DATATYPE nota[MASKING_ORDER], notb[MASKING_ORDER], notr[MASKING_ORDER]; \
@@ -89,10 +93,15 @@
     AND(notr,nota,notb);                                                \
     NOT(r,notr);                                                        \
   }
+#define OR_CST(r,a,b)                                                   \
+  for (int i_In_Header = 0; i_In_Header < MASKING_ORDER; i_In_Header++) \
+    r[i_In_Header] = a[i_In_Header] | b[0];
+
 
 #define XOR(r,a,b)                                                      \
   for (int i_In_Header = 0; i_In_Header < MASKING_ORDER; i_In_Header++) \
     r[i_In_Header] = a[i_In_Header] ^ b[i_In_Header];
+#define XOR_CST XOR
 
 #define NOT(r,a)                                                        \
   r[0] = ~a[0];                                                         \
