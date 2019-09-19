@@ -50,3 +50,8 @@
 
 # Subterranean bitslice
 ./usubac -gen-bench -light-inline -bits-per-reg 32 -no-sched -B -o nist/subterranean/usuba/bench/subterranean_ua_bitslice.c nist/subterranean/usuba/ua/subterranean.ua
+
+# Xoodoo bitslice
+./usubac -gen-bench -light-inline -bits-per-reg 32 -no-sched -B -o nist/xoodoo/usuba/bench/xoodoo_ua_bitslice.c nist/xoodoo/usuba/ua/xoodoo.ua
+# Xoodoo vslice
+./usubac -gen-bench -light-inline -no-sched -V -o nist/xoodoo/usuba/bench/xoodoo_ua_vslice.c nist/xoodoo/usuba/ua/xoodoo.ua
