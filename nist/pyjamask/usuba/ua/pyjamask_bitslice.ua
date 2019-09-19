@@ -14,7 +14,7 @@ let
     }
 tel
 
-node col_mult (a,b:b32) returns (r:b1)
+node col_mult (a:b32,b:const b32) returns (r:b1)
 vars
     acc:b32
 let
@@ -27,7 +27,7 @@ tel
 
 _no_inline node MixRows (input:b32[4]) returns (output:b32[4])
 vars
-    M: b32[4][33]
+    M: const b32[4][33]
 let
     M[0][0] = (1,0,1,0,0,0,1,1,1,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,1);
     M[1][0] = (0,1,1,0,0,0,1,1,0,1,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,1,0,0,0,0,1);
