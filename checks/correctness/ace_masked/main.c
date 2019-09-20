@@ -148,8 +148,7 @@ void test_ace() {
       fprintf(stderr," ");
     }
     fprintf(stderr, "\n");
-  } else {
-    fprintf(stderr, "Seems OK.\n");
+    exit(EXIT_FAILURE);
   }
 }
 
