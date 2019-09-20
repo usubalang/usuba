@@ -211,7 +211,7 @@ let expand_p (bitslice:bool) (p:p) : p =
        flat_map (fun i ->
                  aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
                                vtyp = t })
-                (gen_list_0_int size)
+                (gen_list_0_int (eval_arith_ne size))
     | Uint(dir,Mint m,1) when m > 1 ->
        if bitslice then
          List.map (fun i ->

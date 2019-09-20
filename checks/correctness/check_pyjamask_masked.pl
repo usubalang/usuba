@@ -42,7 +42,7 @@ for my $slicing ('bitslice', 'vslice') {
     # Compiling Usuba DES.
     say "Compiling Pyjamask-masked from Usuba to C...";
     my $slicing_flag = $slicing eq 'bitslice' ? '-B' : '-V';
-    error if system "./usubac -masked $slicing_flag -o $temp_dir/pyjamask_ua_$slicing.c -arch std -no-share -no-sched samples/usuba/pyjamask_$slicing.ua" ;
+    error if system "./usubac -ua-masked $slicing_flag -o $temp_dir/pyjamask_ua_$slicing.c -arch std -no-share -no-sched samples/usuba/pyjamask_$slicing.ua" ;
 
     chdir $temp_dir;
     copy $_, "." for glob "$FindBin::Bin/pyjamask_masked/*";
@@ -51,7 +51,7 @@ for my $slicing ('bitslice', 'vslice') {
         # Compiling the C files
         say "Compiling the test executable with $ARCH...";
         my $slicing_flag = $slicing eq 'bitslice' ? 'UA_B' : 'UA_V';
-        error if system "clang -march=native -I../arch -I . -o main -D $slicing_flag -D MASKING_ORDER=128 main.c";
+        error if system "clang -march=native -I../arch -I . -o main -D $slicing_flag -D MASKING_ORDER=4 main.c";
         say "Running the test with $ARCH...";
         error if system './main';
     }

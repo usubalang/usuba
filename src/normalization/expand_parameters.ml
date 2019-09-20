@@ -290,7 +290,7 @@ let expand_p (env_fun:(ident,def) Hashtbl.t) (f:def) (vd:var_d) (is_p_in:bool) :
   let (size,new_typ) =
     match vd.vtyp with
     | Uint(dir,m,n) when n > 1 -> (n, Uint(dir,m,1))
-    | Array(typ',size) -> (size, typ')
+    | Array(typ',size) -> (eval_arith_ne size, typ')
     | _ -> assert false in
 
   (* Actually performing the expansion *)

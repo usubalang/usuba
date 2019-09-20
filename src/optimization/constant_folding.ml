@@ -111,7 +111,8 @@ let fold_log (env_var:(ident,typ) Hashtbl.t) (op:log_op) (x:expr) (y:expr)
     | And  -> ( land )
     | Or   -> ( lor  )
     | Xor  -> ( lxor )
-    | Andn -> (fun x y -> (lnot x) land y) in
+    | Andn -> (fun x y -> (lnot x) land y)
+    | _ -> assert false (* Not dealing with masked operations here *) in
   (* If both |x| and |y| are constants, then computes |x op y|. *)
   let rec compute_const_log (op:log_op) (x:expr) (y:expr) : expr option =
     match x, y with
@@ -148,6 +149,7 @@ let fold_log (env_var:(ident,typ) Hashtbl.t) (op:log_op) (x:expr) (y:expr)
                else if is_full_ones env_var x then zero    (* ~1 & y = 0 *)
                else if is_full_ones env_var y then Not(x)  (* ~x & 1 = ~x *)
                else Log(Andn,x,y)
+     | _ -> Log(op,x,y)
 
 let fold_not (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
   match e with

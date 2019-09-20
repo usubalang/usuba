@@ -8,11 +8,11 @@ open Utils
 
 *)
 
-               
+
 module Basic_scheduler = struct
   (* Algorithm:
-      Schedule an instruction just before it's being used. 
-      So basically, 
+      Schedule an instruction just before it's being used.
+      So basically,
         x1 = 1;
         x2 = 2;
         y1 = x1 + 1;
@@ -26,8 +26,8 @@ module Basic_scheduler = struct
       scheduling as several instruction depend on the same variables. As a compromise,
       when limit the size of the chain to 2: when we arrive on an instruction, if it
       has unscheduled dependencies, then we schedule them and it; otherwise, we wait
-      to schedule it.   
-    
+      to schedule it.
+
 
      Performances:
       - 6.488 moves
@@ -36,7 +36,7 @@ module Basic_scheduler = struct
 
   let schedule_deqs (deqs:deq list) : deq list =
     let deflist = Hashtbl.create 10 in
-    let dep_deqs = 
+    let dep_deqs =
       List.flatten @@
         List.map (
             fun d ->
@@ -53,7 +53,7 @@ module Basic_scheduler = struct
                   (match pre with
                    | [] -> Hashtbl.add deflist (Var v) e; []
                    | _ -> pre @ [ (p,e) ])
-               | _ -> 
+               | _ ->
                   let used = get_used_vars e in
                   let pre = List.flatten @@
                               List.map (fun x -> match Hashtbl.find_opt deflist x with
@@ -64,9 +64,9 @@ module Basic_scheduler = struct
              | Loop _ -> raise (Error "Invalid Loop"))) deqs in
     List.map (fun (x,y) -> Eqn(x,y,false))
              (dep_deqs @ (Hashtbl.fold (fun k v acc -> ([k],v) :: acc) deflist []))
-             
-             
-             
+
+
+
   let schedule_def (def:def) : def =
     { def with node = match def.node with
                       | Single(vars,body) ->
@@ -75,7 +75,7 @@ module Basic_scheduler = struct
 
   let schedule (prog:prog) : prog =
     { nodes = List.map schedule_def prog.nodes }
-      
+
 end
 
 module Random_scheduler = struct
@@ -94,9 +94,9 @@ module Random_scheduler = struct
       | None -> let l = ref [] in
                 Hashtbl.add hash v l;
                 l in
-    
+
     Random.self_init ();
-    
+
     let imply : (var, deq list ref) Hashtbl.t = Hashtbl.create 100 in
     let status : (deq, int ref) Hashtbl.t = Hashtbl.create 100 in
     let scheduling : deq list ref = ref [] in
@@ -146,19 +146,19 @@ module Random_scheduler = struct
 
     (* Need to reverse as we added elements in 1st position in the list *)
     List.rev !scheduling
-                 
+
   let schedule_def (def:def) : def =
     { def with node = match def.node with
                       | Single(vars,body) ->
                          Single(vars,schedule_deqs body def.p_in)
                       | _ -> def.node }
-      
+
 
   let schedule (prog:prog) : prog =
     { nodes = List.map schedule_def prog.nodes }
 end
 
-                            
+
 module Depth_first_sched = struct
   (* Algorithm:
        Try to schedule an instruction s. If it has missing pre-requisite dependencies,
@@ -173,14 +173,14 @@ module Depth_first_sched = struct
   let exists hash k =
     try Hashtbl.find hash k; true
     with Not_found -> false
-  
+
   let update_hoh hash k1 k2 =
     match Hashtbl.find_opt hash k1 with
     | Some h -> Hashtbl.replace h k2 true
     | None   -> let h = Hashtbl.create 60 in
                 Hashtbl.add h k2 true;
                 Hashtbl.add hash k1 h
-                            
+
   type node = { current: var list * expr; sons: node list; father: node list }
 
   let build_dep (deqs: deq list) :
@@ -197,8 +197,8 @@ module Depth_first_sched = struct
                 | _ -> assert false) deqs;
 
     using,decls
-              
-  
+
+
   let schedule_deqs (deqs: deq list) (p_in: p) : deq list =
     let (using,decls) = build_dep deqs in
     let available     = Hashtbl.create 1000 in
@@ -214,7 +214,7 @@ module Depth_first_sched = struct
                                                  (get_used_vars e) = [] then
                                     ready := (l,e) :: !ready
                   | _ -> assert false) deqs );
-    
+
     let rec do_schedule ((l,e):var list*expr) =
       (* Only if "l" isn't scheduled already *)
       if List.filter (fun x -> not (exists available x)) l <> [] then (
@@ -239,15 +239,15 @@ module Depth_first_sched = struct
       ready := List.tl !ready;
       do_schedule current;
     done;
-    
+
     List.rev_map (fun (l,e) -> Eqn(l,e,false)) !scheduling
-                 
+
   let schedule_def (def:def) : def =
     { def with node = match def.node with
                       | Single(vars,body) ->
                          Single(vars,schedule_deqs body def.p_in)
                       | _ -> def.node }
-      
+
 
   let schedule (prog:prog) : prog =
     { nodes = List.map schedule_def prog.nodes }
@@ -255,14 +255,14 @@ end
 
 module Low_pressure_sched = struct
   (* Algorithm:
-       Schedule an instruction, then find an instruction without dependencies 
-       with it to schedule and so on. Should introduce some intra-round 
+       Schedule an instruction, then find an instruction without dependencies
+       with it to schedule and so on. Should introduce some intra-round
        interleaving.
-  
+
    *)
 
   (* Expands a var a returns the intermediate vars.
-     For instance, if x:u1x1[5][2] -> 
+     For instance, if x:u1x1[5][2] ->
         get_sub_vars x = x[0], x[1], ..., x[4], x[0][0], x[0][1], x[1][0], ..., x[4][1]. *)
   let rec get_sub_vars env_var ?(env_it=Hashtbl.create 100) (v:var) : var list =
     let typ = get_var_type env_var v in
@@ -270,13 +270,13 @@ module Low_pressure_sched = struct
     | Uint(_,_,1)   -> [ v ]
     | Uint(_,_,n)   -> List.map (fun i -> Index(v,Const_e i)) (gen_list_0_int n)
     | Array(_,size) -> (List.map (fun i -> Index(v,Const_e i))
-                                 (gen_list_0_int size)) @
+                                 (gen_list_0_int (eval_arith_ne size))) @
                        (flat_map (fun i -> expand_var env_var ~env_it:env_it
                                                       (Index(v,Const_e i)))
-                                 (gen_list_0_int size))
+                                 (gen_list_0_int (eval_arith_ne size)))
     | _ -> assert false
 
-  (* "remove the array indexes": 
+  (* "remove the array indexes":
        get_up_vars x[4][5] = [ x[4][5]; x[4]; x ] *)
   let rec get_up_vars (v:var) : var list =
     match v with
@@ -286,7 +286,7 @@ module Low_pressure_sched = struct
 
   let get_dep_vars env_var (vs:var list) : var list =
     (flat_map get_up_vars vs) @ (flat_map (get_sub_vars env_var) vs)
-                  
+
   let get_def_vars env_var (deq:deq) : var list =
     match deq with
     | Eqn(vs,e,_) -> uniq (flat_map (get_sub_vars env_var) vs)
@@ -329,14 +329,14 @@ module Low_pressure_sched = struct
     match deq with
     | Eqn _ -> deq
     | Loop(x,ei,ef,dl,opts) -> Loop(x,ei,ef,schedule_deqs env_var parallel_lvl dl,opts)
-                 
+
   and schedule_deqs env_var (parallel_lvl:int) (deqs: deq list) : deq list =
     let scheduling = ref [ List.hd deqs ] in
     let todo       = ref (List.tl deqs) in
 
     while !todo <> [] do
       let exception Found in
-      try 
+      try
       for num_prev = parallel_lvl-1 downto 1 do
         try
           let prev_deqs = flat_map (get_def_vars env_var) (get_first_n !scheduling num_prev) in
@@ -351,9 +351,9 @@ module Low_pressure_sched = struct
     done;
 
     List.rev !scheduling
-    
-    
-                 
+
+
+
   let schedule_def (parallel_lvl:int) (def:def) : def =
   (* TODO: cleaner decision than this "< 60" *)
     if Get_live_var.live_def def < 60 then
@@ -363,12 +363,12 @@ module Low_pressure_sched = struct
                            Single(vars,schedule_deqs env_var parallel_lvl body);
                         | _ -> def.node }
     else
-    (* Too many live variables (bitslicing) 
+    (* Too many live variables (bitslicing)
         => scheduling will actually introduce more spilling *)
       def
 
 
-  (* TODO: make this more precise. 
+  (* TODO: make this more precise.
      Could be 1 on ARM/PowerPC. *)
   let parallel_arch (arch:arch) : int =
     match arch with
@@ -380,11 +380,10 @@ module Low_pressure_sched = struct
     { nodes = List.map (schedule_def parallel_lvl) prog.nodes }
 
 end
-      
+
 let schedule (prog:prog) (conf:config) : prog =
   (* Reg_alloc.alloc_reg prog        *)
   (* Basic_scheduler.schedule prog *)
   (* Random_scheduler.schedule prog  *)
   (* Depth_first_sched.schedule prog *)
   Low_pressure_sched.schedule prog conf
-                              

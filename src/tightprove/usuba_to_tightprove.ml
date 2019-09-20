@@ -26,7 +26,7 @@ let log_op_to_str = function
   | And -> "and"
   | Or  -> "or"
   | Xor -> "xor"
-  | Andn -> assert false
+  | _   -> assert false
 
 let shift_op_to_str = function
   | Lshift  -> "<<"
@@ -79,7 +79,7 @@ let rec vd_typ_to_str (typ:typ) (acc:string) : string =
   match typ with
   | Uint(_,_,1)   -> sprintf "%s" acc
   | Uint(_,_,n)   -> sprintf "%s[%d]" acc n
-  | Array(typ',n) -> vd_typ_to_str typ' (sprintf "%s[%d]" acc n)
+  | Array(typ',n) -> vd_typ_to_str typ' (sprintf "%s[%s]" acc (arith_to_str n))
   | _ -> assert false
 
 let vd_to_str (vd:var_d) : string =

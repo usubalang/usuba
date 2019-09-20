@@ -17,7 +17,7 @@ Inductive clock :=
 | On (ck:clock) (x:ident)
 | Onot (ck:clock) (x:ident).
 
-Inductive log_op := And | Or | Xor | Andn.
+Inductive log_op := And | Or | Xor | Andn | Masked (op:log_op).
 Inductive arith_op := Add | Mul | Sub | Div | Mod.
 Inductive shift_op := Lshift | Rshift | RAshift (* arithmetic right shift *)
                       | Lrotate | Rrotate.
@@ -43,7 +43,7 @@ Inductive mtyp :=
 Inductive typ :=
   | Nat
   | Uint (d:dir) (m: mtyp) (n:N)
-  | Array (t: typ) (n:N).
+  | Array (t: typ) (n:arith_expr).
 
 Inductive constr :=
   | True
@@ -134,6 +134,7 @@ Record config := {
   fold_const   : bool;
   cse          : bool;
   copy_prop    : bool;
+  loop_fusion  : bool;
   scheduling   : bool;
   schedule_n   : N;
   share_var    : bool;
@@ -153,6 +154,7 @@ Record config := {
   m_val        : N;
   tightPROVE   : bool;
   masked       : bool;
+  ua_masked    : bool;
   shares       : N;
   gen_bench    : bool;
   keep_tables  : bool;

@@ -103,7 +103,7 @@ module Bslice = struct
   let rec get_typ_real_size (typ:typ) : int =
     match typ with
     | Uint(_,Mint m,n) -> m * n
-    | Array(t,n) -> (get_typ_real_size t) * n
+    | Array(t,n) -> (get_typ_real_size t) * (eval_arith_ne n)
     | _ -> assert false (* Nat or Uint(_,Mvar _,_) *)
 
   (* Get the "n" associated to a type *)

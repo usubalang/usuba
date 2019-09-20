@@ -11,11 +11,12 @@ let unfold_andn e =
   | Log(Andn,x,y) -> Log(And,Not x,y)
   | _ -> e
 
-let log_op_to_str = function
+let rec log_op_to_str = function
   | And -> "&"
   | Or  -> "|"
   | Xor -> "^"
   | Andn -> "&~"
+  | Masked op -> log_op_to_str op
 
 let arith_op_to_str = function
   | Add -> "+"
@@ -144,7 +145,7 @@ let rec full_typ_to_str typ =
        | Mnat    -> assert false
        | Mvar id -> id.name in
      sprintf "u%s%sx%d" dir_str m_str n
-  | Array(typ,n) -> sprintf "%s[%d]" (full_typ_to_str typ) n
+  | Array(typ,n) -> sprintf "%s[%s]" (full_typ_to_str typ) (arith_to_str n)
 
 let rec typ_to_str ?(acc="") typ =
   match typ with
@@ -160,7 +161,7 @@ let rec typ_to_str ?(acc="") typ =
         | Mvar id -> if id.name = "m" then sprintf "v%s%d" dir_str n
                      else sprintf "u%s%sx%d" dir_str id.name n)
        acc
-  | Array(typ,n) -> typ_to_str ~acc:(sprintf "%s[%d]" acc n) typ
+  | Array(typ,n) -> typ_to_str ~acc:(sprintf "%s[%s]" acc (arith_to_str n)) typ
 let typ_to_str_l = lift_comma typ_to_str
 
 let rec clock_to_str ck =
