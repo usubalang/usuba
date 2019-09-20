@@ -124,8 +124,7 @@ void test_skinny() {
     fprintf(stderr, "\nGot      : ");
     for (int i = 0; i < 5; i++) fprintf(stderr, "%016lx ",text[i]);
     fprintf(stderr, "\n");
-  } else {
-    fprintf(stderr, "Seems OK.\n");
+    exit(EXIT_FAILURE);
   }
 }
 

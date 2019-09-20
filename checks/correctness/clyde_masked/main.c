@@ -174,8 +174,6 @@ void verif_clyde() {
     for (int i = 0; i < 16; i++) fprintf(stderr, "%02x ",cipher[i]);
     fprintf(stderr, "\n");
     exit(EXIT_FAILURE);
-  } else {
-    fprintf(stderr, "Encryption seems OK.\n");
   }
 }
 

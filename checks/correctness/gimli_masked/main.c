@@ -110,8 +110,7 @@ void test_gimli() {
     for (int i = 0; i < STATE_SIZE; i++)
       printf("%02x ", state[i]);
     printf("\n");
-  } else {
-    fprintf(stderr, "Encryption seems OK.\n");
+    exit(EXIT_FAILURE);
   }
 }
 
