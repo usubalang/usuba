@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ACE bitslice
-./usubac -light-inline -gen-bench -bits-per-reg 32 -B -no-sched -o nist/ace/usuba/bench/ace_ua_bitslice.c -arch std -no-share nist/ace/usuba/ua/ace.ua
+./usubac -light-inline -gen-bench -bits-per-reg 32 -B -no-sched -o nist/ace/usuba/bench/ace_ua_bitslice.c -arch std -no-share nist/ace/usuba/ua/ace_bitslice.ua
 # ACE vslice
 ./usubac -light-inline -gen-bench -V -no-sched -o nist/ace/usuba/bench/ace_ua_vslice.c -arch std -no-share nist/ace/usuba/ua/ace.ua
 
@@ -16,7 +16,7 @@
 ./usubac -gen-bench -light-inline -V -no-sched -o nist/gift/usuba/bench/gift_ua_vslice.c -arch std -no-share nist/gift/usuba/ua/gift.ua
 
 # Gimli bitslice
-./usubac -gen-bench -light-inline -bits-per-reg 32 -no-sched -B -o nist/gimli/usuba/bench/gimli_ua_bitslice.c nist/gimli/usuba/ua/gimli.ua
+./usubac -gen-bench -light-inline -bits-per-reg 32 -no-sched -B -o nist/gimli/usuba/bench/gimli_ua_bitslice.c nist/gimli/usuba/ua/gimli_bitslice.ua
 # Gimli vslice
 ./usubac -gen-bench -light-inline -no-sched -V -o nist/gimli/usuba/bench/gimli_ua_vslice.c nist/gimli/usuba/ua/gimli.ua
 
