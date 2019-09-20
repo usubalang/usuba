@@ -1,5 +1,5 @@
-./usubac -masked -B -no-sched -o nist/ace/usuba/ua_masked/ace_ua_bitslice.c -arch std -no-share nist/ace/usuba/ua_masked/ace.ua
-./usubac -masked -V -no-sched -o nist/ace/usuba/ua_masked/ace_ua_vslice.c -arch std -no-share nist/ace/usuba/ua_masked/ace.ua
+./usubac -masked -B -light-inline -no-sched -o nist/ace/usuba/ua_masked/ace_ua_bitslice.c -arch std -no-share nist/ace/usuba/ua_masked/ace_bitslice.ua
+./usubac -masked -V -light-inline -no-sched -o nist/ace/usuba/ua_masked/ace_ua_vslice.c -arch std -no-share nist/ace/usuba/ua_masked/ace.ua
 clang -D UA_V -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main -D MASKING_ORDER=1 && ./main
 clang -D UA_V -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main -D MASKING_ORDER=8 && ./main
 clang -D UA_B -Wall -Wextra -march=native -I../../../../arch main.c -o main -D MASKING_ORDER=8 && ./main
