@@ -3,7 +3,7 @@ open Utils
 open Usuba_AST
 
 let new_vars = ref []
-                
+
 let gen_tmp =
   let cpt = ref 0 in
   fun env_var typ id ->
@@ -12,7 +12,7 @@ let gen_tmp =
     Hashtbl.add env_var var typ;
     new_vars := (make_var_d var typ Defclock []) :: !new_vars;
     Var var
-                
+
 
 let rec clean_var (env_var : (ident,typ) Hashtbl.t)
                   (env_replace: (var,var) Hashtbl.t)
@@ -39,7 +39,8 @@ let rec clean_var (env_var : (ident,typ) Hashtbl.t)
                                 | None -> x) subv
            else [ v ]
         | Array(_,n) ->
-           let subv = List.map (fun i -> Index(v,Const_e i)) (gen_list_0_int n) in
+           let subv = List.map (fun i -> Index(v,Const_e i))
+                               (gen_list_0_int (eval_arith_ne n)) in
            let change = List.exists (fun x -> match Hashtbl.find_opt env_replace x with
                                            | Some _ -> true
                                            | None -> false) subv in
@@ -50,10 +51,10 @@ let rec clean_var (env_var : (ident,typ) Hashtbl.t)
            else [ v ]
         | Nat -> [ v ])
      | _ -> assert false
-                          
 
-               
-        
+
+
+
 let rec clean_expr (env_var : (ident,typ) Hashtbl.t)
                    (env_replace: (var,var) Hashtbl.t)
                    (e:expr) : expr =
@@ -73,8 +74,8 @@ let rec clean_expr (env_var : (ident,typ) Hashtbl.t)
   | Arith(op,e1,e2) -> Arith(op,rec_call e1,rec_call e2)
   | Fun(f,l)        -> Fun(f,List.map (rec_call) l)
   | _               -> assert false
-        
-       
+
+
 let rec clean_deqs (env_var : (ident,typ) Hashtbl.t)
                    (env_replace: (var,var) Hashtbl.t)
                    (deqs:deq list) : deq list =
@@ -96,9 +97,9 @@ let rec clean_deqs (env_var : (ident,typ) Hashtbl.t)
                                  Hashtbl.add env_replace v v';
                                  v') lhs in
             Eqn(tmps,e',false)
-                   
+
     ) deqs
-  
+
 let clean_def (def:def) : def =
   match def.node with
   | Single(vars,body) ->
@@ -108,7 +109,7 @@ let clean_def (def:def) : def =
      let new_body    = clean_deqs env_var env_replace body in
      {def with node = Single(vars @ !new_vars, new_body) }
   | _ -> def
-       
-       
+
+
 let remove_sync (prog:prog) (conf:config) : prog =
   { nodes = List.map clean_def prog.nodes }

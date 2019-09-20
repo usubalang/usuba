@@ -24,6 +24,7 @@ let default_conf : config =
     fold_const   = true;
     cse          = true;
     copy_prop    = true;
+    loop_fusion  = true;
     scheduling   = true;
     schedule_n   = 10;
     share_var    = false;
@@ -43,6 +44,7 @@ let default_conf : config =
     m_val        = 1;
     tightPROVE   = false;
     masked       = false;
+    ua_masked    = false;
     shares       = 1;
     gen_bench    = false;
     keep_tables  = false;
@@ -176,10 +178,10 @@ let build_env_var (p_in:p) (p_out:p) (vars:p) : (ident, typ) Hashtbl.t =
 
   env
 
-let rec typ_size (t:typ) : int =
+let rec typ_size ?(env=Hashtbl.create 10) (t:typ) : int =
   match t with
   | Uint(_,_,n) -> n
-  | Array(t',s) -> (typ_size t') * s
+  | Array(t',s) -> (typ_size ~env:env t') * (eval_arith env s)
   | Nat -> 1
 
 let rec reg_size (t:typ) : int =
@@ -289,7 +291,7 @@ let rec expand_typ (typ:typ) : typ list =
   match typ with
   | Nat -> [ Nat ]
   | Uint(d,m,n) -> List.map (fun _ -> Uint(d,m,1))  (gen_list_int n)
-  | Array(t, n) -> flat_map (fun _ -> expand_typ t) (gen_list_int n)
+  | Array(t, n) -> flat_map (fun _ -> expand_typ t) (gen_list_int (eval_arith_ne n))
 
 let rec expand_var env_var ?(env_it=Hashtbl.create 100) ?(bitslice=false) ?(partial=false) (v:var) : var list =
   let typ = get_var_type env_var v in
@@ -300,13 +302,18 @@ let rec expand_var env_var ?(env_it=Hashtbl.create 100) ?(bitslice=false) ?(part
        List.map (fun i -> Index(v, Const_e i)) (gen_list_0_int m)
      else [ v ]
   | Uint(_,_,1) -> [ v ]
-  | Uint(_,_,n) -> flat_map (fun i -> expand_var env_var ~env_it:env_it ~bitslice:bitslice ~partial:partial (Index(v,Const_e i))) (gen_list_0_int n)
-  | Array(_,s)  -> if partial then
-                     List.map (fun i -> Index(v,Const_e i))
-                              (gen_list_0_int s)
-                   else
-                     flat_map (fun i -> expand_var env_var ~env_it:env_it ~bitslice:bitslice (Index(v,Const_e i)))
-                              (gen_list_0_int s)
+  | Uint(_,_,n) -> flat_map (fun i -> expand_var env_var ~env_it:env_it
+                                                 ~bitslice:bitslice ~partial:partial
+                                                 (Index(v,Const_e i))) (gen_list_0_int n)
+  | Array(_,s)  ->
+     if partial then
+       List.map (fun i -> Index(v,Const_e i))
+                (gen_list_0_int (eval_arith env_it s))
+     else
+       flat_map (fun i -> expand_var env_var ~env_it:env_it
+                                     ~bitslice:bitslice
+                                     (Index(v,Const_e i)))
+                (gen_list_0_int (eval_arith env_it s))
 
 let rec expand_var_partial env_var ?(env_it=Hashtbl.create 100) (v:var) : var list =
   expand_var env_var ~env_it:env_it ~partial:true v

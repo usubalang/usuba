@@ -3,6 +3,7 @@ open Usuba_AST
 open Printf
 open Basic_utils
 open Utils
+(* open Parser_api_tp *)
 
 let warnings    = ref false
 let verbose     = ref 1
@@ -17,6 +18,7 @@ let light_inline  = ref false
 let fold_const    = ref true
 let cse           = ref true
 let copy_prop     = ref true
+let loop_fusion   = ref true
 let scheduling    = ref true
 let schedule_n    = ref 10
 let share_var     = ref false
@@ -37,6 +39,7 @@ let lazylift     = ref false
 
 let tightPROVE   = ref false
 let masked       = ref false
+let ua_masked    = ref false
 let shares       = ref 1
 let gen_bench    = ref false
 
@@ -111,6 +114,7 @@ let main () =
       "-no-fold-const", Arg.Clear fold_const, "Deactive Constant Folding";
       "-no-CSE", Arg.Clear cse, "Deactive CSE";
       "-no-copy-prop", Arg.Clear copy_prop, "Deactive Copy Propagation";
+      "-no-loop-fusion", Arg.Clear loop_fusion, "Deactivate Loop Fusion";
       "-no-CSE-CP-CF", Arg.Unit (fun () ->
                            fold_const := false;
                            cse := false;
@@ -137,6 +141,7 @@ let main () =
       "-m", Arg.Int (fun n -> m_set := true; m_val := n), "Set 'm value";
       "-tp", Arg.Set tightPROVE, "Generate tightPROVE circuits";
       "-masked", Arg.Set masked, "Generate masked implementation";
+      "-ua-masked", Arg.Unit (fun () -> ua_masked := true; (* linearize_arr := false *)), "Generate masked implementation, where masking is done is Usuba rather than solely with C macros. This allows for some optimizations, like loop fusion.";
       "-shares", Arg.Int (fun n -> shares := n; masked := true), "Set the number of shares";
       "-gen-bench", Arg.Set gen_bench, "Generate speed benchmark";
       "-keep-tables", Arg.Set keep_tables, "Keep lookup tables (can't use SIMD)";
@@ -170,6 +175,7 @@ let main () =
         fold_const     =   !fold_const;
         cse            =   !cse;
         copy_prop      =   !copy_prop;
+        loop_fusion    =   !loop_fusion;
         scheduling     =   !scheduling;
         schedule_n     =   !schedule_n;
         share_var      =   !share_var;
@@ -189,6 +195,7 @@ let main () =
         m_val          =   !m_val;
         tightPROVE     =   !tightPROVE;
         masked         =   !masked;
+        ua_masked      =   !ua_masked;
         shares         =   !shares;
         gen_bench      =   !gen_bench;
         keep_tables    =   !keep_tables;

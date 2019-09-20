@@ -21,7 +21,10 @@ let gen_runtime (orig:prog) (prog:prog) (conf:config) (filename:string) : string
                         conf.arr_entry conf)
               else if conf.masked then
                 List.(Nodes_to_c_masked.def_to_c (nth prog.nodes (length prog.nodes -1))
-                        conf.arr_entry conf)
+                                                 conf.arr_entry conf)
+              else if conf.ua_masked then
+                List.(Nodes_to_c_ua_masked.def_to_c (nth prog.nodes (length prog.nodes -1))
+                                                    conf.arr_entry conf)
               else
                 List.(Nodes_to_c.def_to_c (nth prog.nodes (length prog.nodes -1))
                         conf.arr_entry conf) in
@@ -29,11 +32,13 @@ let gen_runtime (orig:prog) (prog:prog) (conf:config) (filename:string) : string
                  map_no_end (fun x -> Nodes_to_c_fdti.def_to_c x false conf) prog.nodes
                else if conf.masked then
                  map_no_end (fun x -> Nodes_to_c_masked.def_to_c x false conf) prog.nodes
+               else if conf.ua_masked then
+                 map_no_end (fun x -> Nodes_to_c_ua_masked.def_to_c x false conf) prog.nodes
                else
                  map_no_end (fun x -> Nodes_to_c.def_to_c x false conf) prog.nodes in
 
   let bench_fun = if conf.gen_bench then
-                    if conf.masked then
+                    if conf.masked || conf.ua_masked then
                       Nodes_to_c_masked.gen_bench (last prog.nodes) conf
                     else
                       Nodes_to_c.gen_bench (last prog.nodes) conf
@@ -78,6 +83,7 @@ Printf.sprintf
   (bits_per_reg prog conf)
   (if conf.fdti <> "" then Nodes_to_c_fdti.c_header conf.archi
    else if conf.masked then Nodes_to_c_masked.c_header conf.archi
+   else if conf.ua_masked then Nodes_to_c_ua_masked.c_header conf.archi
    else Nodes_to_c.c_header conf.archi)
   (join "\n\n" prog_c)
   entry

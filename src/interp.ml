@@ -24,7 +24,8 @@ module Usuba0 = struct
                       | Xor  -> List.map2 (fun x y -> (x && (not y)) || ((not x) && y))
                                           (interp_expr_rec x) (interp_expr_rec y)
                       | Andn -> List.map2 (fun x y -> (not x) && y)
-                                          (interp_expr_rec x) (interp_expr_rec y))
+                                          (interp_expr_rec x) (interp_expr_rec y)
+                      | _    -> assert false)
     | Fun(f,l) -> let l' = List.flatten (List.map interp_expr_rec l) in
                   let f' = Hashtbl.find env_fun f in
                   interp_node env_fun f' l'

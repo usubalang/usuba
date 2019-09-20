@@ -138,10 +138,13 @@ let rec collapse_inner_arrays (t:typ) : typ * int =
   match t with
   (* End found: Array of Array of bool *)
   | Array( Array( Uint(d,m,1), es2 ), es1 ) ->
-     Array( Uint(d,m,1), es2 * es1 ), es2
+     let es1 = eval_arith_ne es1 in
+     let es2 = eval_arith_ne es2 in
+     Array( Uint(d,m,1), Const_e (es2 * es1) ), es2
   (* End found: Array of bm *)
   | Array( Uint(d,m,n), es1 ) when n > 1 ->
-     Array( Uint(d,m,1), es1 * n ), n
+     let es1 = eval_arith_ne es1 in
+     Array( Uint(d,m,1), Const_e (es1 * n) ), n
   (* Not the end, going deeper *)
   | Array(t',es1) ->
      let (t',size) = collapse_inner_arrays t' in

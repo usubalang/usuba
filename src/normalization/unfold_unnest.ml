@@ -138,7 +138,7 @@ let rec remove_call env_var env_fun (dir,mtyp:dir*mtyp) (ltyp:typ list) (e:expr)
   else
     let expr_typ_l = get_expr_type env_fun env_var ltyp e' in
     let typ = if List.length expr_typ_l > 1
-              then Array(reduce_same_list expr_typ_l,List.length expr_typ_l)
+              then Array(reduce_same_list expr_typ_l,Const_e(List.length expr_typ_l))
               else List.hd expr_typ_l in
     let typ = update_type_m (update_type_dir typ dir) mtyp in
     let new_var = gen_tmp env_var typ in
@@ -164,7 +164,7 @@ and remove_calls env_var env_fun (dir,mtyp:dir*mtyp) (ltyp:typ list)  (l:expr li
                                     raise Not_found in
                 let typ = if List.length expr_typ_l > 1
                           then Array(reduce_same_list expr_typ_l,
-                                     List.length expr_typ_l)
+                                     Const_e(List.length expr_typ_l))
                           else List.hd expr_typ_l in
                 let typ = update_type_m (update_type_dir typ dir) mtyp in
                 let new_var = gen_tmp env_var typ in

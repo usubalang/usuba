@@ -131,7 +131,7 @@ let rec expand_typ (typ:typ) : typ list =
   match typ with
   | Uint(_,_,1) -> [ typ ]
   | Uint(d,m,n) -> List.map (fun _ -> Uint(d,m,1)) (gen_list_int n)
-  | Array(t,n)  -> flat_map (fun _ -> expand_typ t) (gen_list_int n)
+  | Array(t,n)  -> flat_map (fun _ -> expand_typ t) (gen_list_int (eval_arith_ne n))
   | Nat         -> [ Nat ]
 
 (* Helper function to check that |idx| is less than the size |v_size|
@@ -214,7 +214,7 @@ and get_var_type (backtrace:string list)
                with Uncomputable -> None in
      (match get_var_type backtrace env_var env_it v' with
       | Array(t,size) ->
-         check_in_bounds_opt backtrace env_it size idx;
+         check_in_bounds_opt backtrace env_it (eval_arith_ne size) idx;
          t
       | Uint(dir,m,n) when n > 1 ->
          check_in_bounds_opt backtrace env_it n idx;
@@ -237,10 +237,10 @@ and get_var_type (backtrace:string list)
      let ae2 = eval_arith backtrace env_var env_it ae2 in
      let range_size = abs(ae2 - ae1) + 1 in
      check_is_array backtrace env_var env_it v';
-     Array(remove_outer_array backtrace env_var env_it v',range_size)
+     Array(remove_outer_array backtrace env_var env_it v',Const_e range_size)
   | Slice(v',l) ->
      check_is_array backtrace env_var env_it v';
-     Array(remove_outer_array backtrace env_var env_it v',List.length l)
+     Array(remove_outer_array backtrace env_var env_it v',Const_e (List.length l))
 
 (* Removes Slices and Ranges from a var. At the same time, checks for
    out of bounds indices (even though they would be rechecked later as
@@ -278,7 +278,7 @@ let rec expand_slices_ranges (backtrace:string list)
         every elements of |vl| should have the same type. *)
      (* Making sure |vl| contains arrays, that are big enough *)
      (match get_var_type backtrace env_var env_it (List.hd vl) with
-      | Array(_,size) | Uint(_,_,size) ->
+      | Array(_,Const_e size) | Uint(_,_,size) ->
          (* Make sure vl is big enough (no out of bounds) *)
           check_in_bounds backtrace env_it size ae1;
           check_in_bounds backtrace env_it size ae2
@@ -297,7 +297,7 @@ let rec expand_slices_ranges (backtrace:string list)
         every elements of |vl| should have the same type. *)
      (* Making sure |vl| contains arrays, that are big enough *)
      (match get_var_type backtrace env_var env_it (List.hd vl) with
-      | Array(_,size) | Uint(_,_,size) ->
+      | Array(_,Const_e size) | Uint(_,_,size) ->
          (* Make sure vl is big enough (no out of bounds) *)
          List.iter (fun n -> check_in_bounds backtrace env_it size n) aes
       | t ->
@@ -321,7 +321,7 @@ let rec expand_var_usuba0 (backtrace:string list)
      List.map (fun i -> Index(v,Const_e i)) (gen_list_0_int n)
   | Array(_,s) -> flat_map (fun i -> expand_var_usuba0 backtrace env_var env_it
                                        (Index(v,Const_e i)))
-                    (gen_list_0_int s)
+                    (gen_list_0_int (eval_arith_ne s))
 
 
 (* Using a custom 'expand_var' mostly to use a custom get_var_type,

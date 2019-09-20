@@ -25,7 +25,7 @@ let log_op_to_c = function
   | And  -> "AND"
   | Or   -> "OR"
   | Xor  -> "XOR"
-  | Andn -> "ANDN"
+  | _ -> assert false
 
 let shift_op_to_c = function
   | Lshift  -> "L_SHIFT"
@@ -209,7 +209,7 @@ let rec gen_list_typ (x:string) (typ:typ) : string list =
   | Array(t',n) ->
      List.flatten @@
        List.map (fun x -> gen_list_typ x t')
-                (List.map (sprintf "%s'") (gen_list0 x n))
+                (List.map (sprintf "%s'") (gen_list0 x (eval_arith_ne n)))
   | _ -> assert false
 
 
@@ -228,7 +228,7 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
                                   (Printf.sprintf "%s'" y)
                                   (Printf.sprintf "%s[%d][%d]" (rename id) i j))
                      (gen_list0 (Printf.sprintf "%s'" x) n))
-         (gen_list0 id size)
+         (gen_list0 id (eval_arith_ne size))
     | Uint(_,_,1) -> Hashtbl.add inputs id (Printf.sprintf "%s%s" marker (rename id));
     | Uint(_,_,n) -> List.iter2
                     (fun x y ->
@@ -244,7 +244,7 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
           Hashtbl.add inputs x
                       (Printf.sprintf "%s[%d]" (rename id) y))
          (gen_list_typ id vd.vtyp)
-         (gen_list_0_int (size * n))  in
+         (gen_list_0_int (size * (eval_arith_ne n)))  in
 
   List.iter (aux "") def.p_in;
   List.iter (aux "") def.p_out;
@@ -274,7 +274,7 @@ let rec var_decl_to_c conf (vd:var_d) (out:bool) : string =
     | Nat  -> (rename id.name) ^ start
     | Uint(_,_,1) -> (rename id.name) ^ start
     | Uint(_,_,n) -> sprintf "%s%s[%d]" (rename id.name) start n
-    | Array(typ,size) -> aux id typ (sprintf "%s[%d]" start size) in
+    | Array(typ,size) -> aux id typ (sprintf "%s[%s]" start (aexpr_to_c size)) in
   let vname = aux vd.vid vd.vtyp "" in
   let vtype = if conf.lazylift && is_const vd then
                 gen_intn (get_lift_size vd)

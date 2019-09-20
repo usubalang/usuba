@@ -3,14 +3,12 @@ open Basic_utils
 open Utils
 open Printf
 
-
 let make_env () = Hashtbl.create 100
 let env_add env v e = Hashtbl.replace env v e
 let env_update env v e = Hashtbl.replace env v e
 let env_remove env v = Hashtbl.remove env v
 let env_fetch (env:('a,'b) Hashtbl.t) (v:'a) : 'b = try Hashtbl.find env v
                       with Not_found -> raise (Error (__LOC__ ^ ":Not found: " ^ v.name))
-
 
 let get_vars_body (node:def_i) : p * deq list =
   match node with
@@ -20,11 +18,15 @@ let get_vars_body (node:def_i) : p * deq list =
 let rename (name:string) : string =
   Str.global_replace (Str.regexp "'") "__" name
 
+let log_op_to_c_masked = function
+  | Masked And  -> "MASKED_AND"
+  | Masked Or   -> "MASKED_OR"
+  | _ -> assert false
+
 let log_op_to_c = function
   | And  -> "AND"
   | Or   -> "OR"
   | Xor  -> "XOR"
-  | Andn -> "ANDN"
   | _ -> assert false
 
 let shift_op_to_c = function
@@ -55,6 +57,17 @@ let rec aexpr_to_c (e:arith_expr) : string =
   | Op_e(op,x,y) -> sprintf "(%s %s %s)"
                             (aexpr_to_c x) (arith_op_to_c op) (aexpr_to_c y)
 
+let const_to_c (m:mtyp) (n:int) : string =
+  match m with
+  | Mint 1 | Mint (-1) -> (match n with
+                           | 0 -> "SET_ALL_ZERO()"
+                           | 1 -> "SET_ALL_ONE()"
+                           | _ -> assert false)
+  | _ -> match m with
+         | Mint m -> sprintf "LIFT_%d(%d)" m n
+         | Mnat -> sprintf "%d" n
+         | _ -> assert false
+
 let var_to_c (lift_env:(var,int)  Hashtbl.t)
              (env:(string,string) Hashtbl.t) (v:var) : string =
   let rec aux (v:var) : string =
@@ -68,139 +81,114 @@ let var_to_c (lift_env:(var,int)  Hashtbl.t)
   | Some n -> sprintf "LIFT_%d(%s)" n cvar
   | None -> cvar
 
-let rec ret_var_to_c (lift_env:(var,int)  Hashtbl.t)
-                     (env:(string,string) Hashtbl.t)
-                     (env_var:(ident,typ) Hashtbl.t) (v:var) : string =
-  match get_var_type env_var v with
-  | Uint(_,_,1) -> "&" ^ (var_to_c lift_env env v)
-  | Array _ | Uint _ -> var_to_c lift_env env v
-  | _ -> assert false
-
-
-(* TODO: this 64 and 32 shouldn't be hardcoded *)
 let rec expr_to_c (lift_env:(var,int)  Hashtbl.t)
-                  (conf:config) (env:(string,string) Hashtbl.t)
+                  (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t) (e:expr) : string =
   match e with
-  | Const(n,_) -> ( match n with
-                    | 0 -> "SET_ALL_ZERO()"
-                    | 1 -> "SET_ALL_ONE()"
-                    | n -> sprintf "SET(%d,%d)" n 64 )
+  | Const(n,Some typ) -> const_to_c (get_type_m typ) n
   | ExpVar v -> var_to_c lift_env env v
-  | Not e -> sprintf "NOT(%s)" (expr_to_c lift_env conf env env_var e)
-  | Log(op,x,y) -> sprintf "%s(%s,%s)"
-                           (log_op_to_c op)
-                           (expr_to_c lift_env conf env env_var x)
-                           (expr_to_c lift_env conf env env_var y)
-  | Arith(op,x,y) ->
-     (*Printf.fprintf stderr "Hardcoded arith op size\n";*)
-     sprintf "%s(%s,%s,%d)"
-                             (arith_op_to_c_generic op)
-                             (expr_to_c lift_env conf env env_var x)
-                             (expr_to_c lift_env conf env env_var y)
-                             32
-  | Shuffle(v,l) -> sprintf "PERMUT_%d(%s,%s)"
-                                 (List.length l)
-                                 (var_to_c lift_env env v)
-                                 (join "," (List.map string_of_int l))
-  | Shift(op,e,ae) ->
-     (*Printf.fprintf stderr "Hardcoded rotation size\n";*)
-     sprintf "%s(%s,%s,%d)"
-             (shift_op_to_c op)
-             (expr_to_c lift_env conf env env_var e)
-             (aexpr_to_c ae)
-             (get_expr_reg_size env_var e)
-  | Fun(f,[v]) when f.name = "rand" ->
-     sprintf "%s = RAND();" (expr_to_c lift_env conf env env_var v)
-  | _ -> raise (Error (Printf.sprintf "Wrong expr: %s" (Usuba_print.expr_to_str e)))
+  | Arith(op,x,y) -> (* nested arith are allowed (in shifts for instance) *)
+     (match get_normed_expr_m env_var e with
+      | Mint mval ->
+         sprintf "%s(%s,%s,%d)"
+                 (arith_op_to_c_generic op)
+                 (expr_to_c lift_env env env_var x)
+                 (expr_to_c lift_env env env_var y)
+                 mval
+      | Mnat ->
+         sprintf "((%s) %s (%s))"
+                 (expr_to_c lift_env env env_var x)
+                 (arith_op_to_c op)
+                 (expr_to_c lift_env env env_var y)
+      | _ -> assert false)
+  | _ -> raise (Error (Printf.sprintf "Nested expressions not supported: %s.\n"
+                                      (Usuba_print.expr_to_str e)))
 
-
-(* TODO: this 64 and 32 shouldn't be hardcoded *)
 let rec expr_to_c_ret (lift_env:(var,int)  Hashtbl.t)
-                  (conf:config) (env:(string,string) Hashtbl.t)
-                  (env_var:(ident,typ) Hashtbl.t) (ret:string) (e:expr) : string =
+                      (env:(string,string) Hashtbl.t)
+                      (env_var:(ident,typ) Hashtbl.t)
+                      (retvar:var) (e:expr) : string =
+  let ret = var_to_c lift_env env retvar in
   match e with
-  | Const(n,_) -> ( match n with
-                    | 0 -> sprintf "%s = SET_ALL_ONE()" ret
-                    | 1 -> sprintf "%s = SET_ALL_ZERO()" ret
-                    | n -> sprintf "%s = SET(%d,%d)" ret n 64 )
-  | ExpVar v -> sprintf "%s = %s" ret (var_to_c lift_env env v)
-  | Not e -> sprintf "NOT(%s,%s)" ret (expr_to_c lift_env conf env env_var e)
-  | Log(op,x,y) -> sprintf "%s(%s,%s,%s)"
-                           (log_op_to_c op) ret
-                           (expr_to_c lift_env conf env env_var x)
-                           (expr_to_c lift_env conf env env_var y)
+  | Const(n,Some typ) ->
+     sprintf "%s = %s" ret (const_to_c (get_type_m typ) n)
+  | ExpVar v ->
+     sprintf "%s = %s" ret (var_to_c lift_env env v)
+  | Not e -> sprintf "%s = NOT(%s)" ret (expr_to_c lift_env env env_var e)
+  | Log(op,x,y) ->
+     (match op with
+      | And | Or | Xor ->
+                    sprintf "%s = %s(%s,%s)" ret
+                            (log_op_to_c op)
+                            (expr_to_c lift_env env env_var x)
+                            (expr_to_c lift_env env env_var y)
+      | Masked And | Masked Or ->
+                      sprintf "%s(%s,%s,%s)"
+                              (log_op_to_c_masked op) ret
+                              (expr_to_c lift_env env env_var x)
+                              (expr_to_c lift_env env env_var y)
+      | _ -> assert false)
   | Arith(op,x,y) ->
-     (*Printf.fprintf stderr "Hardcoded arith op size\n";*)
-     sprintf "%s(%s,%s,%s,%d)"
-                             (arith_op_to_c_generic op) ret
-                             (expr_to_c lift_env conf env env_var x)
-                             (expr_to_c lift_env conf env env_var y)
-                             32
-  | Shuffle(v,l) -> sprintf "%s = PERMUT_%d(%s,%s)" ret
-                                 (List.length l)
-                                 (var_to_c lift_env env v)
-                                 (join "," (List.map string_of_int l))
+     (match get_normed_expr_m env_var e with
+      | Mint mval ->
+         sprintf "%s(%s,%s,%s,%d)"
+                 (arith_op_to_c_generic op) ret
+                 (expr_to_c lift_env env env_var x)
+                 (expr_to_c lift_env env env_var y)
+                 mval
+      | Mnat ->
+         sprintf "%s = %s" ret (expr_to_c lift_env env env_var e)
+      | _ -> assert false)
   | Shift(op,e,ae) ->
-     (*Printf.fprintf stderr "Hardcoded rotation size\n";*)
-     sprintf "%s(%s,%s,%s,%d)"
-             (shift_op_to_c op) ret
-             (expr_to_c lift_env conf env env_var e)
+     sprintf "%s = %s(%s,%s,%d)"
+             ret
+             (shift_op_to_c op)
+             (expr_to_c lift_env env env_var e)
              (aexpr_to_c ae)
              (get_expr_reg_size env_var e)
-  | Fun(f,[v]) when f.name = "rand" ->
-     sprintf "%s = RAND();" (expr_to_c lift_env conf env env_var v)
   | _ -> raise (Error (Printf.sprintf "Wrong expr: %s" (Usuba_print.expr_to_str e)))
 
 
 let fun_call_to_c (lift_env:(var,int)  Hashtbl.t)
-                  (conf:config)
                   (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t)
                   ?(tabs="  ")
                   (p:var list) (f:ident) (args: expr list) : string =
   sprintf "%s%s(%s,%s);"
           tabs
-          (rename f.name) (join "," (List.map (expr_to_c lift_env conf env env_var) args))
-          (join "," (List.map (fun v -> ret_var_to_c lift_env env env_var v) p))
+          (rename f.name) (join "," (List.map (expr_to_c lift_env env env_var) args))
+          (join "," (List.map (fun v -> var_to_c lift_env env v) p))
 
 let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
                   (env:(string,string) Hashtbl.t)
                   (env_var:(ident,typ) Hashtbl.t)
-                  (deqs: deq list)
                   ?(tabs="  ")
-                  (conf:config) : string =
+                  (deqs: deq list) : string =
   join "\n"
        (List.map
           (fun deq -> match deq with
-            | Eqn([v],Fun(f,[]),_) when f.name = "rand" ->
-               sprintf "%s%s = RAND();" tabs (var_to_c lift_env env v)
-            | Eqn(p,Fun(f,l),_) -> fun_call_to_c lift_env conf env env_var ~tabs:tabs p f l
+            | Eqn([vl],Fun(f,[vr]),_) when f.name = "refresh" ->
+               (* No refresh needed if we are not masking *)
+               sprintf "%sREFRESH(%s,%s);" tabs
+                       (var_to_c lift_env env vl) (expr_to_c lift_env env env_var vr)
+            | Eqn(p,Fun(f,l),_) -> fun_call_to_c lift_env env env_var ~tabs:tabs p f l
             | Eqn([v],e,_) ->
-               sprintf "%s%s;" tabs (expr_to_c_ret lift_env conf env env_var
-                                       (var_to_c lift_env env v) e)
+               (match get_var_m env_var v with
+                | Mnat -> sprintf "%s%s = %s;" tabs (var_to_c lift_env env v)
+                                  (expr_to_c lift_env env env_var e)
+                | _ ->  sprintf "%s%s;" tabs
+                                (expr_to_c_ret lift_env env env_var v e))
             | Loop(i,ei,ef,l,_) ->
                sprintf "%sfor (int %s = %s; %s <= %s; %s++) {\n%s\n%s}"
                        tabs
                        (rename i.name) (aexpr_to_c ei)
                        (rename i.name) (aexpr_to_c ef)
                        (rename i.name)
-                       (deqs_to_c lift_env env env_var l ~tabs:(tabs ^ "  ") conf)
+                       (deqs_to_c lift_env env env_var ~tabs:(tabs ^ "  ") l)
                        tabs
             | _ -> print_endline (Usuba_print.deq_to_str deq);
                    assert false) deqs)
 
-let params_to_arr (params: p) (marker:string) : string list =
-  let rec typ_to_arr typ l =
-    match typ with
-    | Uint(_,_,1) -> l
-    | Uint(_,_,n) -> (l @ [sprintf "[%d]" n])
-    | Array(t,n) -> typ_to_arr t ((sprintf "[%s]" (aexpr_to_c n)) :: l)
-    | _ -> raise (Not_implemented "Invalid input") in
-  List.map (fun vd -> match vd.vtyp with
-                      | Uint(_,_,1) -> sprintf "%s%s" marker vd.vid.name
-                      | _ -> sprintf "%s%s" vd.vid.name
-                                     (join "" (typ_to_arr vd.vtyp []))) params
 
 let rec gen_list_typ (x:string) (typ:typ) : string list =
   match typ with
@@ -217,6 +205,7 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
   let aux (marker:string) vd =
     let id = vd.vid.name in
     match vd.vtyp with
+    | Nat -> Hashtbl.add inputs id (Printf.sprintf "%s%s" marker (rename id))
     (* Hard-coding the case ukxn[m] for now *)
     | Array(Uint(_,_,n),size) ->
        List.iteri
@@ -242,23 +231,11 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
           Hashtbl.add inputs x
                       (Printf.sprintf "%s[%d]" (rename id) y))
          (gen_list_typ id vd.vtyp)
-         (gen_list_0_int (size * (eval_arith_ne n)))
-    | _ -> Printf.printf "%s => %s:%s\n" def.id.name id
-                         (Usuba_print.typ_to_str vd.vtyp);
-           raise (Not_implemented "Arrays as input") in
+         (gen_list_0_int (size * (eval_arith_ne n)))  in
 
   List.iter (aux "") def.p_in;
-  List.iter (aux "*") def.p_out;
+  List.iter (aux "") def.p_out;
   inputs
-
-let outputs_to_ptr (def:def) : (string, string) Hashtbl.t =
-  let outputs = make_env () in
-  List.iter (fun vd ->
-             let id = vd.vid.name in
-             match vd.vtyp with
-             | Uint(_,_,1) -> env_add outputs id ("*"^(rename id))
-             | _ -> ()) def.p_out;
-  outputs
 
 let gen_intn (n:int) : string =
   match n with
@@ -284,21 +261,18 @@ let rec var_decl_to_c conf (vd:var_d) (out:bool) : string =
     | Nat  -> (rename id.name) ^ start
     | Uint(_,_,1) -> (rename id.name) ^ start
     | Uint(_,_,n) -> sprintf "%s%s[%d]" (rename id.name) start n
-    | Array(typ,size) -> aux id typ (sprintf "[%s]" (aexpr_to_c size)) in
+    | Array(typ,size) -> aux id typ (sprintf "%s[%s]" start (aexpr_to_c size)) in
   let vname = aux vd.vid vd.vtyp "" in
   let vtype = if conf.lazylift && is_const vd then
                 gen_intn (get_lift_size vd)
               else "DATATYPE" in
-  let pointer = match out with
-    | false -> ""
-    | true  -> match vd.vtyp with
-               | Uint(_,_,1) -> "*"
-               | _ -> "" in
-  sprintf "%s%s %s" vtype pointer vname
+  match get_type_m vd.vtyp with
+  | Mnat -> sprintf "unsigned int %s" vname
+  | _    -> sprintf "%s %s" vtype vname
 
 let c_header (arch:arch) : string =
   match arch with
-  | Std -> "FAME.h"
+  | Std -> "MASKED_UA.h"
   | MMX -> "MMX.h"
   | SSE -> "SSE.h"
   | AVX -> "AVX.h"
@@ -338,11 +312,38 @@ let single_to_c (def:def) (array:bool) (vars:p)
 
   (* body *)
   (deqs_to_c lift_env
-             (if array then inputs_to_arr def else outputs_to_ptr def)
-             (build_env_var def.p_in def.p_out vars) body conf)
+             ((* if array then inputs_to_arr def else *) (make_env ()))
+             (build_env_var def.p_in def.p_out vars) body)
 
 
 let def_to_c (def:def) (array:bool) (conf:config) : string =
   match def.node with
   | Single(vars,body) -> single_to_c def array vars body conf
   | _ -> assert false
+
+
+let gen_bench (node:def) (conf:config) : string =
+
+  sprintf
+"uint32_t bench_speed() {
+  /* inputs */
+  %s
+  /* outputs */
+  %s
+  /* fun call */
+  %s(%s,%s);
+
+  /* Returning the number of encrypted bytes */
+  return %d;
+}"
+  (join "\n  " (List.map (fun s -> s ^ " = { 0 };")
+                         (List.map (fun vd -> var_decl_to_c conf vd false) node.p_in)))
+  (join "\n  " (List.map (fun s -> s ^ " = { 0 };")
+                         (List.map (fun vd -> var_decl_to_c conf vd true) node.p_out)))
+  (rename node.id.name)
+  (join ", " (List.map (fun vd -> rename vd.vid.name) node.p_in))
+  (join ", " (List.map (fun vd ->
+                        match vd.vtyp with
+                        | Nat | Uint(_,_,1) -> "&" ^ (rename vd.vid.name)
+                        | _ -> rename vd.vid.name) node.p_out))
+  ((List.fold_left (fun sum vd -> sum + (Nodes_to_c.get_typ_size conf vd.vtyp)) 0 node.p_out) / 8)

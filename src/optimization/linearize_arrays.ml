@@ -17,6 +17,23 @@ open Utils
 exception Keep_it
 
 
+(* Using this rather than eval_arith, to give a value to MASKING_ORDER
+   if it appears. *)
+let rec eval_loop_bound (env_it:(ident,int) Hashtbl.t) (ae:arith_expr) : int =
+  match ae with
+  | Const_e n -> n
+  | Var_e id  -> if id.name = "MASKING_ORDER" then 2 else Hashtbl.find env_it id
+  | Op_e(op,x,y) -> let x' = eval_loop_bound env_it x in
+                    let y' = eval_loop_bound env_it y in
+                    match op with
+                    | Add -> x' + y'
+                    | Mul -> x' * y'
+                    | Sub -> x' - y'
+                    | Div -> x' / y'
+                    | Mod -> if x' >= 0 then x' mod y' else y' + (x' mod y')
+
+
+
 (* Simplifies the array indices in the variable |v|.
 
    Used typically to simplify a variable like x[i] inside a loop: the
@@ -110,7 +127,8 @@ let rec remove_deepest_index (v:var) : var =
 (* TODO: this code is pretty much the same as can_linearize. Would be
    cleaner to merge the 2.  *)
 let rec can_linearize_def (env_fun:(ident,def) Hashtbl.t)
-          (def:def) (v_in:var_d) (v_out:var_d) : unit =
+                          (env_it:(ident,int) Hashtbl.t)
+                          (def:def) (v_in:var_d) (v_out:var_d) : unit =
   match def.node with
   | Single(vars,body) ->
      let env_var = build_env_var def.p_in def.p_out vars in
@@ -123,20 +141,20 @@ let rec can_linearize_def (env_fun:(ident,def) Hashtbl.t)
         |defined|. *)
      let defined = Hashtbl.create 10 in
      (* Initialize |defined|: |v_in| points to |v_in|. *)
-     List.iter (fun v -> Hashtbl.add defined v v) (expand_var env_var (Var v_in.vid));
-
-     can_linearize_def_body env_fun env_var defined body v_in v_out
+     List.iter (fun v -> Hashtbl.add defined v v)
+               (expand_var env_var ~env_it:env_it (Var v_in.vid));
+     can_linearize_def_body env_fun env_it env_var defined body v_in v_out
   | _ -> (* The only case we can get here is if there is a |Table|
             that wasn't expanded due to --keep-tables flag. Nothing to
             do in that case. *)
      ()
 
 and can_linearize_def_body
-(env_fun:(ident,def) Hashtbl.t)
-(env_var:(ident,typ) Hashtbl.t)
-(defined:(var,var) Hashtbl.t)
-?(env_it=Hashtbl.create 10)
-(deqs:deq list) (v_in:var_d) (v_out:var_d) : unit =
+      (env_fun:(ident,def) Hashtbl.t)
+      (env_it:(ident,int) Hashtbl.t)
+      (env_var:(ident,typ) Hashtbl.t)
+      (defined:(var,var) Hashtbl.t)
+      (deqs:deq list) (v_in:var_d) (v_out:var_d) : unit =
   List.iter (
       function
       | Eqn(lhs,e,_) ->
@@ -156,7 +174,7 @@ and can_linearize_def_body
                 let return_idx =
                   find_get_i (fun v -> get_base_name v = v_out.vid) lhs in
                 let v_out' = List.nth def_called.p_out return_idx in
-                can_linearize_def env_fun def_called v_in' v_out'
+                can_linearize_def env_fun env_it def_called v_in' v_out'
               with Not_found ->
                 (* Means that |id| is either not in p_in, or not in
                       p_out -> do nothing. *)
@@ -171,10 +189,9 @@ and can_linearize_def_body
              | true -> (* This expression uses |v_in| -> need to make
                           sure that |v_in| is available. *)
                 List.iter (fun v ->
-                    if Hashtbl.find defined v <> v then
-                      raise Keep_it
-                  )
-                  (expand_var env_var ~env_it:env_it v)
+                           if Hashtbl.find defined v <> v then
+                             raise Keep_it)
+                          (expand_var env_var ~env_it:env_it v)
              | false -> () (* Does not use |v_in| -> do nothing *)
            )
            (List.map (simpl_var env_it) (get_used_vars e));
@@ -199,8 +216,8 @@ and can_linearize_def_body
          let ei = eval_arith env_it ei in
          let ef = eval_arith env_it ef in
          List.iter (fun i -> Hashtbl.add env_it x i;
-                             can_linearize_def_body env_fun env_var defined
-                               ~env_it:env_it dl v_in v_out;
+                             can_linearize_def_body env_fun env_it env_var
+                                                    defined dl v_in v_out;
                              Hashtbl.remove env_it x) (gen_list_bounds ei ef)
 
     ) deqs
@@ -223,7 +240,7 @@ and can_linearize_def_body
    |defined|: see paragraph above *)
 let rec can_linearize
           (env_fun:(ident,def) Hashtbl.t)
-          ?(env_it=Hashtbl.create 10)
+          ?(env_it:(ident,int) Hashtbl.t=Hashtbl.create 10)
           ?(defined:(var,var) Hashtbl.t = Hashtbl.create 100)
           (deqs:deq list)
           (id:ident)
@@ -248,7 +265,7 @@ let rec can_linearize
                 let return_idx =
                   find_get_i (fun v -> get_base_name v = id) lhs in
                 let v_out = List.nth def.p_out return_idx in
-                can_linearize_def env_fun def v_in v_out
+                can_linearize_def env_fun env_it def v_in v_out
               with Not_found ->
                     (* Means that |id| is either not in p_in, or not in
                       p_out -> do nothing. *)
@@ -262,9 +279,9 @@ let rec can_linearize
              match get_base_name v = id with
              | true -> (* Need to make sure the index accessed are accessible *)
                 List.iter (fun v ->
-                    let v' = remove_deepest_index v in
-                    if Hashtbl.find defined v' <> v then
-                      raise Keep_it
+                           let v' = remove_deepest_index v in
+                             if Hashtbl.find defined v' <> v then
+                               raise Keep_it
                   )
                   (expand_var env_var ~env_it:env_it v)
              | false -> () (* not the variable we are interested into -> do nothing *)
@@ -308,17 +325,19 @@ let get_arrays (vars:p) : p =
 (* To determine if an array can be linearized, we kinda simulate what
    would happen after linearization, thanks to the function
    "can_linearize". Refer to its comments to see how this is done. *)
-let linearize_def (env_fun:(ident,def) Hashtbl.t) (def:def) : def =
+let linearize_def (conf:config) (env_fun:(ident,def) Hashtbl.t) (def:def) : def =
   match def.node with
   | Single(vars,body) ->
      (* Building variable environment. It is only use to expand
         variables we wish to expand (p_in and p_out can therefore be
         omitted. *)
      let env_var = build_env_var [] [] vars in
+     let env_it  = Hashtbl.create 10 in
+     if conf.ua_masked then Hashtbl.add env_it Mask.masking_order 2;
      (* |to_linearize|: the set of variables to linearize *)
      let to_linearize = Hashtbl.create 100 in
      List.iter (fun vd ->
-         try can_linearize env_fun body vd.vid env_var;
+         try can_linearize env_fun ~env_it:env_it body vd.vid env_var;
              (* Succeeded -> array can be linearized *)
              Hashtbl.replace to_linearize vd.vid true
          with
@@ -337,5 +356,5 @@ let linearize_def (env_fun:(ident,def) Hashtbl.t) (def:def) : def =
 let linearize_arrays (prog:prog) (conf:config) : prog =
   let env_fun = build_env_fun prog.nodes in
   if conf.linearize_arr then
-    { nodes = List.map (linearize_def env_fun) prog.nodes }
+    { nodes = List.map (linearize_def conf env_fun) prog.nodes }
   else prog
