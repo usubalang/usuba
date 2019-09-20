@@ -25,7 +25,7 @@ say "############################ Gimli Bitslice ###########################";
 chdir "$FindBin::Bin/../..";
 
 # Compiling the compiler.
-unless ($ARGV[0]) { 
+unless ($ARGV[0]) {
     say "Compiling...";
     error if system 'make';
 }
@@ -38,7 +38,7 @@ mkdir $temp_dir;
 
 # Compiling Usuba Gimli.
 say "Compiling Gimli from Usuba to C...";
-error if system "./usubac -B -inline-all -o $temp_dir/gimli.c -arch std -no-share samples/usuba/gimli.ua" ;
+error if system "./usubac -B -inline-all -o $temp_dir/gimli.c -arch std -no-share samples/usuba/gimli_bitslice.ua" ;
 
 chdir $temp_dir;
 copy $_, "." for glob "$FindBin::Bin/gimli/*";

@@ -1,5 +1,5 @@
 ./usubac -masked -no-inline -no-sched -V -o nist/gimli/usuba/ua_masked/gimli_ua_vslice.c nist/gimli/usuba/ua_masked/gimli.ua
-./usubac -masked -inline-all -no-sched -B -o nist/gimli/usuba/ua_masked/gimli_ua_bitslice.c nist/gimli/usuba/ua_masked/gimli.ua
+./usubac -masked -light-inline -no-sched -B -o nist/gimli/usuba/ua_masked/gimli_ua_bitslice.c nist/gimli/usuba/ua_masked/gimli_bitslice.ua
 clang -D UA_V -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main -D MASKING_ORDER=1 && ./main
 clang -D UA_V -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main -D MASKING_ORDER=8 && ./main
 clang -D UA_B -Wall -Wextra -march=native -I../../../../arch main.c -o main -D MASKING_ORDER=8 && ./main
