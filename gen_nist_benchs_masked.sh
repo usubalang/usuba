@@ -35,7 +35,7 @@ INLINING="-light-inline"
 ./usubac -masked -gen-bench $INLINING -bits-per-reg 32 -B -no-sched -o nist/skinny/usuba/bench/masked_skinny_ua_bitslice.c -arch std -no-share nist/skinny/usuba/ua/skinny_bitslice.ua
 
 # Clyde (spook) bitslice
-./usubac -masked -gen-bench $INLINING -bits-per-reg 32 -no-sched -B -o nist/clyde/usuba/bench/masked_clyde_ua_bitslice.c nist/clyde/usuba/ua/clyde.ua
+./usubac -masked -gen-bench $INLINING -bits-per-reg 32 -no-sched -B -o nist/clyde/usuba/bench/masked_clyde_ua_bitslice.c nist/clyde/usuba/ua/clyde_bitslice.ua
 # Clyde (spook) vslice
 ./usubac -masked -gen-bench $INLINING -no-sched -V -o nist/clyde/usuba/bench/masked_clyde_ua_vslice.c nist/clyde/usuba/ua/clyde.ua
 

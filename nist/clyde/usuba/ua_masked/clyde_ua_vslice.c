@@ -13,114 +13,111 @@
 #include "MASKED.h"
 
 /* auxiliary functions */
-void sbox__V32 (/*inputs*/ DATATYPE x0__[MASKING_ORDER],DATATYPE x1__[MASKING_ORDER],DATATYPE x2__[MASKING_ORDER],DATATYPE x3__[MASKING_ORDER], /*outputs*/ DATATYPE y0__[MASKING_ORDER],DATATYPE y1__[MASKING_ORDER],DATATYPE y2__[MASKING_ORDER],DATATYPE y3__[MASKING_ORDER]) {
-
-  // Variables declaration
-  DATATYPE _tmp1_[MASKING_ORDER];
-  DATATYPE _tmp2_[MASKING_ORDER];
-  DATATYPE _tmp3_[MASKING_ORDER];
-  DATATYPE _tmp4_[MASKING_ORDER];
-
-  // Instructions (body)
-  AND(_tmp1_,x0__,x1__);
-  XOR(y1__,_tmp1_,x2__);
-  AND(_tmp2_,x3__,x0__);
-  XOR(y0__,_tmp2_,x1__);
-  AND(_tmp3_,y1__,x3__);
-  XOR(y3__,_tmp3_,x0__);
-  AND(_tmp4_,y0__,y1__);
-  XOR(y2__,_tmp4_,x3__);
-
-}
-
-void sbox_R__V32 (/*inputs*/ DATATYPE x0__[MASKING_ORDER],DATATYPE x1__[MASKING_ORDER],DATATYPE x2__[MASKING_ORDER],DATATYPE x3__[MASKING_ORDER], /*outputs*/ DATATYPE y0__[MASKING_ORDER],DATATYPE y1__[MASKING_ORDER],DATATYPE y2__[MASKING_ORDER],DATATYPE y3__[MASKING_ORDER]) {
-
-  // Variables declaration
-  DATATYPE _tmp5_[MASKING_ORDER];
-  DATATYPE _tmp6_[MASKING_ORDER];
-  DATATYPE _tmp7_[MASKING_ORDER];
-  DATATYPE _tmp8_[MASKING_ORDER];
-  DATATYPE y1_R__[MASKING_ORDER];
-
-  // Instructions (body)
-  AND(_tmp5_,x0__,x1__);
-  XOR(y1__,_tmp5_,x2__);
-  REFRESH(y1_R__,y1__);
-  AND(_tmp6_,x3__,x0__);
-  XOR(y0__,_tmp6_,x1__);
-  AND(_tmp7_,y1_R__,x3__);
-  XOR(y3__,_tmp7_,x0__);
-  AND(_tmp8_,y0__,y1_R__);
-  XOR(y2__,_tmp8_,x3__);
-
-}
-
-void lbox__V32 (/*inputs*/ DATATYPE x__[MASKING_ORDER],DATATYPE y__[MASKING_ORDER], /*outputs*/ DATATYPE xr__[MASKING_ORDER],DATATYPE yr__[MASKING_ORDER]) {
-
-  // Variables declaration
-  DATATYPE _shadow_a__1_[MASKING_ORDER];
-  DATATYPE _shadow_a__3_[MASKING_ORDER];
-  DATATYPE _shadow_a__5_[MASKING_ORDER];
-  DATATYPE _shadow_a__7_[MASKING_ORDER];
-  DATATYPE _shadow_b__2_[MASKING_ORDER];
-  DATATYPE _shadow_b__4_[MASKING_ORDER];
-  DATATYPE _shadow_b__6_[MASKING_ORDER];
-  DATATYPE _shadow_b__8_[MASKING_ORDER];
-  DATATYPE _tmp10_[MASKING_ORDER];
-  DATATYPE _tmp11_[MASKING_ORDER];
-  DATATYPE _tmp12_[MASKING_ORDER];
-  DATATYPE _tmp13_[MASKING_ORDER];
-  DATATYPE _tmp14_[MASKING_ORDER];
-  DATATYPE _tmp15_[MASKING_ORDER];
-  DATATYPE _tmp16_[MASKING_ORDER];
-  DATATYPE _tmp17_[MASKING_ORDER];
-  DATATYPE _tmp18_[MASKING_ORDER];
-  DATATYPE _tmp19_[MASKING_ORDER];
-  DATATYPE _tmp20_[MASKING_ORDER];
-  DATATYPE _tmp9_[MASKING_ORDER];
-  DATATYPE a__[MASKING_ORDER];
-  DATATYPE b__[MASKING_ORDER];
-  DATATYPE c__[MASKING_ORDER];
-  DATATYPE d__[MASKING_ORDER];
-
-  // Instructions (body)
-  R_ROTATE(_tmp9_,x__,12,32);
-  XOR(a__,x__,_tmp9_);
-  R_ROTATE(_tmp10_,y__,12,32);
-  XOR(b__,y__,_tmp10_);
-  R_ROTATE(_tmp11_,a__,3,32);
-  XOR(_shadow_a__1_,a__,_tmp11_);
-  R_ROTATE(_tmp12_,b__,3,32);
-  XOR(_shadow_b__2_,b__,_tmp12_);
-  R_ROTATE(_tmp13_,x__,17,32);
-  XOR(_shadow_a__3_,_shadow_a__1_,_tmp13_);
-  R_ROTATE(_tmp14_,y__,17,32);
-  XOR(_shadow_b__4_,_shadow_b__2_,_tmp14_);
-  R_ROTATE(_tmp15_,_shadow_a__3_,31,32);
-  XOR(c__,_shadow_a__3_,_tmp15_);
-  R_ROTATE(_tmp16_,_shadow_b__4_,31,32);
-  XOR(d__,_shadow_b__4_,_tmp16_);
-  R_ROTATE(_tmp17_,d__,26,32);
-  XOR(_shadow_a__5_,_shadow_a__3_,_tmp17_);
-  R_ROTATE(_tmp18_,c__,25,32);
-  XOR(_shadow_b__6_,_shadow_b__4_,_tmp18_);
-  R_ROTATE(_tmp19_,c__,15,32);
-  XOR(_shadow_a__7_,_shadow_a__5_,_tmp19_);
-  R_ROTATE(_tmp20_,d__,15,32);
-  XOR(_shadow_b__8_,_shadow_b__6_,_tmp20_);
-  ASGN(xr__,_shadow_a__7_);
-  ASGN(yr__,_shadow_b__8_);
-
-}
-
 void lbox_layer__V32 (/*inputs*/ DATATYPE state__[4][MASKING_ORDER], /*outputs*/ DATATYPE stateR__[4][MASKING_ORDER]) {
 
   // Variables declaration
-  ;
+  DATATYPE lbox__V32_1__shadow_a__1_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__shadow_a__3_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__shadow_a__5_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__shadow_a__7_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__shadow_b__2_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__shadow_b__4_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__shadow_b__6_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__shadow_b__8_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__tmp10_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__tmp11_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__tmp12_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__tmp13_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__tmp14_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__tmp15_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__tmp16_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__tmp17_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__tmp18_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__tmp19_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__tmp20_[MASKING_ORDER];
+  DATATYPE lbox__V32_1__tmp9_[MASKING_ORDER];
+  DATATYPE lbox__V32_1_a__[MASKING_ORDER];
+  DATATYPE lbox__V32_1_b__[MASKING_ORDER];
+  DATATYPE lbox__V32_1_c__[MASKING_ORDER];
+  DATATYPE lbox__V32_1_d__[MASKING_ORDER];
+  DATATYPE lbox__V32_2__shadow_a__1_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__shadow_a__3_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__shadow_a__5_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__shadow_a__7_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__shadow_b__2_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__shadow_b__4_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__shadow_b__6_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__shadow_b__8_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__tmp10_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__tmp11_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__tmp12_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__tmp13_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__tmp14_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__tmp15_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__tmp16_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__tmp17_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__tmp18_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__tmp19_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__tmp20_[MASKING_ORDER];
+  DATATYPE lbox__V32_2__tmp9_[MASKING_ORDER];
+  DATATYPE lbox__V32_2_a__[MASKING_ORDER];
+  DATATYPE lbox__V32_2_b__[MASKING_ORDER];
+  DATATYPE lbox__V32_2_c__[MASKING_ORDER];
+  DATATYPE lbox__V32_2_d__[MASKING_ORDER];
 
   // Instructions (body)
-  lbox__V32(state__[0],state__[1],stateR__[0],stateR__[1]);
-  lbox__V32(state__[2],state__[3],stateR__[2],stateR__[3]);
+  R_ROTATE(lbox__V32_1__tmp9_,state__[0],12,32);
+  XOR(lbox__V32_1_a__,state__[0],lbox__V32_1__tmp9_);
+  R_ROTATE(lbox__V32_1__tmp10_,state__[1],12,32);
+  XOR(lbox__V32_1_b__,state__[1],lbox__V32_1__tmp10_);
+  R_ROTATE(lbox__V32_1__tmp11_,lbox__V32_1_a__,3,32);
+  XOR(lbox__V32_1__shadow_a__1_,lbox__V32_1_a__,lbox__V32_1__tmp11_);
+  R_ROTATE(lbox__V32_1__tmp12_,lbox__V32_1_b__,3,32);
+  XOR(lbox__V32_1__shadow_b__2_,lbox__V32_1_b__,lbox__V32_1__tmp12_);
+  R_ROTATE(lbox__V32_1__tmp13_,state__[0],17,32);
+  XOR(lbox__V32_1__shadow_a__3_,lbox__V32_1__shadow_a__1_,lbox__V32_1__tmp13_);
+  R_ROTATE(lbox__V32_1__tmp14_,state__[1],17,32);
+  XOR(lbox__V32_1__shadow_b__4_,lbox__V32_1__shadow_b__2_,lbox__V32_1__tmp14_);
+  R_ROTATE(lbox__V32_1__tmp15_,lbox__V32_1__shadow_a__3_,31,32);
+  XOR(lbox__V32_1_c__,lbox__V32_1__shadow_a__3_,lbox__V32_1__tmp15_);
+  R_ROTATE(lbox__V32_1__tmp16_,lbox__V32_1__shadow_b__4_,31,32);
+  XOR(lbox__V32_1_d__,lbox__V32_1__shadow_b__4_,lbox__V32_1__tmp16_);
+  R_ROTATE(lbox__V32_1__tmp17_,lbox__V32_1_d__,26,32);
+  XOR(lbox__V32_1__shadow_a__5_,lbox__V32_1__shadow_a__3_,lbox__V32_1__tmp17_);
+  R_ROTATE(lbox__V32_1__tmp18_,lbox__V32_1_c__,25,32);
+  XOR(lbox__V32_1__shadow_b__6_,lbox__V32_1__shadow_b__4_,lbox__V32_1__tmp18_);
+  R_ROTATE(lbox__V32_1__tmp19_,lbox__V32_1_c__,15,32);
+  XOR(lbox__V32_1__shadow_a__7_,lbox__V32_1__shadow_a__5_,lbox__V32_1__tmp19_);
+  R_ROTATE(lbox__V32_1__tmp20_,lbox__V32_1_d__,15,32);
+  XOR(lbox__V32_1__shadow_b__8_,lbox__V32_1__shadow_b__6_,lbox__V32_1__tmp20_);
+  ASGN(stateR__[0],lbox__V32_1__shadow_a__7_);
+  ASGN(stateR__[1],lbox__V32_1__shadow_b__8_);
+  R_ROTATE(lbox__V32_2__tmp9_,state__[2],12,32);
+  XOR(lbox__V32_2_a__,state__[2],lbox__V32_2__tmp9_);
+  R_ROTATE(lbox__V32_2__tmp10_,state__[3],12,32);
+  XOR(lbox__V32_2_b__,state__[3],lbox__V32_2__tmp10_);
+  R_ROTATE(lbox__V32_2__tmp11_,lbox__V32_2_a__,3,32);
+  XOR(lbox__V32_2__shadow_a__1_,lbox__V32_2_a__,lbox__V32_2__tmp11_);
+  R_ROTATE(lbox__V32_2__tmp12_,lbox__V32_2_b__,3,32);
+  XOR(lbox__V32_2__shadow_b__2_,lbox__V32_2_b__,lbox__V32_2__tmp12_);
+  R_ROTATE(lbox__V32_2__tmp13_,state__[2],17,32);
+  XOR(lbox__V32_2__shadow_a__3_,lbox__V32_2__shadow_a__1_,lbox__V32_2__tmp13_);
+  R_ROTATE(lbox__V32_2__tmp14_,state__[3],17,32);
+  XOR(lbox__V32_2__shadow_b__4_,lbox__V32_2__shadow_b__2_,lbox__V32_2__tmp14_);
+  R_ROTATE(lbox__V32_2__tmp15_,lbox__V32_2__shadow_a__3_,31,32);
+  XOR(lbox__V32_2_c__,lbox__V32_2__shadow_a__3_,lbox__V32_2__tmp15_);
+  R_ROTATE(lbox__V32_2__tmp16_,lbox__V32_2__shadow_b__4_,31,32);
+  XOR(lbox__V32_2_d__,lbox__V32_2__shadow_b__4_,lbox__V32_2__tmp16_);
+  R_ROTATE(lbox__V32_2__tmp17_,lbox__V32_2_d__,26,32);
+  XOR(lbox__V32_2__shadow_a__5_,lbox__V32_2__shadow_a__3_,lbox__V32_2__tmp17_);
+  R_ROTATE(lbox__V32_2__tmp18_,lbox__V32_2_c__,25,32);
+  XOR(lbox__V32_2__shadow_b__6_,lbox__V32_2__shadow_b__4_,lbox__V32_2__tmp18_);
+  R_ROTATE(lbox__V32_2__tmp19_,lbox__V32_2_c__,15,32);
+  XOR(lbox__V32_2__shadow_a__7_,lbox__V32_2__shadow_a__5_,lbox__V32_2__tmp19_);
+  R_ROTATE(lbox__V32_2__tmp20_,lbox__V32_2_d__,15,32);
+  XOR(lbox__V32_2__shadow_b__8_,lbox__V32_2__shadow_b__6_,lbox__V32_2__tmp20_);
+  ASGN(stateR__[2],lbox__V32_2__shadow_a__7_);
+  ASGN(stateR__[3],lbox__V32_2__shadow_b__8_);
 
 }
 
@@ -181,6 +178,15 @@ void clyde128__ (/*inputs*/ DATATYPE state__[4][MASKING_ORDER],DATATYPE key__[4]
   DATATYPE _tmp76_[4][MASKING_ORDER];
   DATATYPE rc__[12][4][MASKING_ORDER];
   DATATYPE round__[4][MASKING_ORDER];
+  DATATYPE sbox__V32_1__tmp1_[MASKING_ORDER];
+  DATATYPE sbox__V32_1__tmp2_[MASKING_ORDER];
+  DATATYPE sbox__V32_1__tmp3_[MASKING_ORDER];
+  DATATYPE sbox__V32_1__tmp4_[MASKING_ORDER];
+  DATATYPE sbox_R__V32_1__tmp5_[MASKING_ORDER];
+  DATATYPE sbox_R__V32_1__tmp6_[MASKING_ORDER];
+  DATATYPE sbox_R__V32_1__tmp7_[MASKING_ORDER];
+  DATATYPE sbox_R__V32_1__tmp8_[MASKING_ORDER];
+  DATATYPE sbox_R__V32_1_y1_R__[MASKING_ORDER];
   DATATYPE tk__[3][4][MASKING_ORDER];
 
   // Instructions (body)
@@ -238,10 +244,25 @@ void clyde128__ (/*inputs*/ DATATYPE state__[4][MASKING_ORDER],DATATYPE key__[4]
   XOR(round__[2],state__[2],tk__[0][2]);
   XOR(round__[3],state__[3],tk__[0][3]);
   for (int s__ = 0; s__ <= 5; s__++) {
-    sbox_R__V32(round__[0],round__[1],round__[2],round__[3],_tmp73_[0],_tmp73_[1],_tmp73_[2],_tmp73_[3]);
+    AND(sbox_R__V32_1__tmp5_,round__[0],round__[1]);
+    XOR(_tmp73_[1],sbox_R__V32_1__tmp5_,round__[2]);
+    REFRESH(sbox_R__V32_1_y1_R__,_tmp73_[1]);
+    AND(sbox_R__V32_1__tmp6_,round__[3],round__[0]);
+    XOR(_tmp73_[0],sbox_R__V32_1__tmp6_,round__[1]);
+    AND(sbox_R__V32_1__tmp7_,sbox_R__V32_1_y1_R__,round__[3]);
+    XOR(_tmp73_[3],sbox_R__V32_1__tmp7_,round__[0]);
+    AND(sbox_R__V32_1__tmp8_,_tmp73_[0],sbox_R__V32_1_y1_R__);
+    XOR(_tmp73_[2],sbox_R__V32_1__tmp8_,round__[3]);
     lbox_layer__V32(_tmp73_,_tmp74_);
     add_rc__V32(_tmp74_,rc__[(s__ * 2)],round__);
-    sbox__V32(round__[0],round__[1],round__[2],round__[3],_tmp75_[0],_tmp75_[1],_tmp75_[2],_tmp75_[3]);
+    AND(sbox__V32_1__tmp1_,round__[0],round__[1]);
+    XOR(_tmp75_[1],sbox__V32_1__tmp1_,round__[2]);
+    AND(sbox__V32_1__tmp2_,round__[3],round__[0]);
+    XOR(_tmp75_[0],sbox__V32_1__tmp2_,round__[1]);
+    AND(sbox__V32_1__tmp3_,_tmp75_[1],round__[3]);
+    XOR(_tmp75_[3],sbox__V32_1__tmp3_,round__[0]);
+    AND(sbox__V32_1__tmp4_,_tmp75_[0],_tmp75_[1]);
+    XOR(_tmp75_[2],sbox__V32_1__tmp4_,round__[3]);
     lbox_layer__V32(_tmp75_,_tmp76_);
     add_rc__V32(_tmp76_,rc__[((s__ * 2) + 1)],round__);
     XOR(round__[0],round__[0],tk__[((s__ + 1) % 3)][0]);
