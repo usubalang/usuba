@@ -40,7 +40,8 @@ for my $slicing ('vslice', 'bitslice') {
     # Compiling Usuba Gimli.
     say "Compiling Gimli from Usuba to C...";
     my $slicing_flag = $slicing eq 'vslice' ? '-V' : '-B -inline-all';
-    error if system "./usubac -masked $slicing_flag -o $temp_dir/gimli_ua_$slicing.c -arch std -no-share samples/usuba/gimli.ua" ;
+    my $file_end = $slicing eq 'vslice' ? '' : '_bitslice';
+    error if system "./usubac -masked $slicing_flag -o $temp_dir/gimli_ua_$slicing.c -arch std -no-share samples/usuba/gimli$file_end.ua" ;
 
     chdir $temp_dir;
     copy $_, "." for glob "$FindBin::Bin/gimli_masked/*";
