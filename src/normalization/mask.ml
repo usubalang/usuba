@@ -168,17 +168,20 @@ let mask_and_or (env_var:(ident,typ) Hashtbl.t)
 
 let mask_eqn (env_var:(ident,typ) Hashtbl.t)
              (env_const:(ident,bool) Hashtbl.t) (vl:var) (e:expr) : deq list =
-  match e with
-  | Const(c,typ) -> mask_cst vl c typ
-  | ExpVar v     -> mask_var vl v
-  | Shift(op,ExpVar v,ae)      -> mask_shift vl op v ae
-  | Not(ExpVar v) -> mask_not vl v
-  | Log(Xor,ExpVar x,ExpVar y) -> mask_xor vl x y
-  | Log(And as op,ExpVar x,ExpVar y)
-  | Log(Or as op,ExpVar x,ExpVar y)  -> mask_and_or env_var env_const vl op x y
-  | _ -> Printf.eprintf "Cannot mask expression: %s.\n"
-                        (Usuba_print.expr_to_str e);
-         assert false
+  match get_var_m env_var vl with
+  | Mnat -> (* not masking nats *) [ Eqn([vl],e,false) ]
+  | _ ->
+     match e with
+     | Const(c,typ) -> mask_cst vl c typ
+     | ExpVar v     -> mask_var vl v
+     | Shift(op,ExpVar v,ae)      -> mask_shift vl op v ae
+     | Not(ExpVar v) -> mask_not vl v
+     | Log(Xor,ExpVar x,ExpVar y) -> mask_xor vl x y
+     | Log(And as op,ExpVar x,ExpVar y)
+     | Log(Or as op,ExpVar x,ExpVar y)  -> mask_and_or env_var env_const vl op x y
+     | _ -> Printf.eprintf "Cannot mask expression: %s.\n"
+                           (Usuba_print.expr_to_str e);
+            assert false
 
 let rec mask_deqs (env_var:(ident,typ) Hashtbl.t)
                   (env_const:(ident,bool) Hashtbl.t)
