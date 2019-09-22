@@ -10,7 +10,7 @@
 #define BITS_PER_REG 32
 #endif
 /* including the architecture specific .h */
-#include "MASKED.h"
+#include "MASKED_UA.h"
 
 /* auxiliary functions */
 void theta__V32 (/*inputs*/ DATATYPE A__[3][4][MASKING_ORDER], /*outputs*/ DATATYPE R__[3][4][MASKING_ORDER]) {
@@ -19,28 +19,34 @@ void theta__V32 (/*inputs*/ DATATYPE A__[3][4][MASKING_ORDER], /*outputs*/ DATAT
   DATATYPE E__[4][MASKING_ORDER];
   DATATYPE P__[4][MASKING_ORDER];
   DATATYPE _tmp1_[4][MASKING_ORDER];
-  DATATYPE _tmp2_[MASKING_ORDER];
-  DATATYPE _tmp3_[MASKING_ORDER];
+  DATATYPE _tmp2_;
+  DATATYPE _tmp3_;
 
   // Instructions (body)
-  XOR(_tmp1_[0],A__[0][0],A__[1][0]);
-  XOR(_tmp1_[1],A__[0][1],A__[1][1]);
-  XOR(_tmp1_[2],A__[0][2],A__[1][2]);
-  XOR(_tmp1_[3],A__[0][3],A__[1][3]);
-  XOR(P__[0],_tmp1_[0],A__[2][0]);
-  XOR(P__[1],_tmp1_[1],A__[2][1]);
-  XOR(P__[2],_tmp1_[2],A__[2][2]);
-  XOR(P__[3],_tmp1_[3],A__[2][3]);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp1_[0][_mask_idx] = XOR(A__[0][0][_mask_idx],A__[1][0][_mask_idx]);
+    _tmp1_[1][_mask_idx] = XOR(A__[0][1][_mask_idx],A__[1][1][_mask_idx]);
+    _tmp1_[2][_mask_idx] = XOR(A__[0][2][_mask_idx],A__[1][2][_mask_idx]);
+    _tmp1_[3][_mask_idx] = XOR(A__[0][3][_mask_idx],A__[1][3][_mask_idx]);
+    P__[0][_mask_idx] = XOR(_tmp1_[0][_mask_idx],A__[2][0][_mask_idx]);
+    P__[1][_mask_idx] = XOR(_tmp1_[1][_mask_idx],A__[2][1][_mask_idx]);
+    P__[2][_mask_idx] = XOR(_tmp1_[2][_mask_idx],A__[2][2][_mask_idx]);
+    P__[3][_mask_idx] = XOR(_tmp1_[3][_mask_idx],A__[2][3][_mask_idx]);
+  }
   for (int i__ = 0; i__ <= 3; i__++) {
-    L_ROTATE(_tmp2_,P__[((i__ + 3) % 4)],5,32);
-    L_ROTATE(_tmp3_,P__[((i__ + 3) % 4)],14,32);
-    XOR(E__[i__],_tmp2_,_tmp3_);
+    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      _tmp2_ = L_ROTATE(P__[((i__ + 3) % 4)][_mask_idx],5,32);
+      _tmp3_ = L_ROTATE(P__[((i__ + 3) % 4)][_mask_idx],14,32);
+      E__[i__][_mask_idx] = XOR(_tmp2_,_tmp3_);
+    }
   }
   for (int i__ = 0; i__ <= 2; i__++) {
-    XOR(R__[i__][0],A__[i__][0],E__[0]);
-    XOR(R__[i__][1],A__[i__][1],E__[1]);
-    XOR(R__[i__][2],A__[i__][2],E__[2]);
-    XOR(R__[i__][3],A__[i__][3],E__[3]);
+    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      R__[i__][0][_mask_idx] = XOR(A__[i__][0][_mask_idx],E__[0][_mask_idx]);
+      R__[i__][1][_mask_idx] = XOR(A__[i__][1][_mask_idx],E__[1][_mask_idx]);
+      R__[i__][2][_mask_idx] = XOR(A__[i__][2][_mask_idx],E__[2][_mask_idx]);
+      R__[i__][3][_mask_idx] = XOR(A__[i__][3][_mask_idx],E__[3][_mask_idx]);
+    }
   }
 
 }
@@ -51,16 +57,20 @@ void rho_west__V32 (/*inputs*/ DATATYPE A__[3][4][MASKING_ORDER], /*outputs*/ DA
   ;
 
   // Instructions (body)
-  ASGN(R__[0][0],A__[0][0]);
-  ASGN(R__[0][1],A__[0][1]);
-  ASGN(R__[0][2],A__[0][2]);
-  ASGN(R__[0][3],A__[0][3]);
-  ASGN(R__[1][0],A__[1][3]);
-  ASGN(R__[1][1],A__[1][0]);
-  ASGN(R__[1][2],A__[1][1]);
-  ASGN(R__[1][3],A__[1][2]);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    R__[0][0][_mask_idx] = A__[0][0][_mask_idx];
+    R__[0][1][_mask_idx] = A__[0][1][_mask_idx];
+    R__[0][2][_mask_idx] = A__[0][2][_mask_idx];
+    R__[0][3][_mask_idx] = A__[0][3][_mask_idx];
+    R__[1][0][_mask_idx] = A__[1][3][_mask_idx];
+    R__[1][1][_mask_idx] = A__[1][0][_mask_idx];
+    R__[1][2][_mask_idx] = A__[1][1][_mask_idx];
+    R__[1][3][_mask_idx] = A__[1][2][_mask_idx];
+  }
   for (int i__ = 0; i__ <= 3; i__++) {
-    L_ROTATE(R__[2][i__],A__[2][i__],11,32);
+    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      R__[2][i__][_mask_idx] = L_ROTATE(A__[2][i__][_mask_idx],11,32);
+    }
   }
 
 }
@@ -71,18 +81,20 @@ void iota__V32 (/*inputs*/ DATATYPE A__[3][4][MASKING_ORDER],DATATYPE rc__[MASKI
   ;
 
   // Instructions (body)
-  XOR(R__[0][0],A__[0][0],rc__);
-  ASGN(R__[0][1],A__[0][1]);
-  ASGN(R__[0][2],A__[0][2]);
-  ASGN(R__[0][3],A__[0][3]);
-  ASGN(R__[1][0],A__[1][0]);
-  ASGN(R__[1][1],A__[1][1]);
-  ASGN(R__[1][2],A__[1][2]);
-  ASGN(R__[1][3],A__[1][3]);
-  ASGN(R__[2][0],A__[2][0]);
-  ASGN(R__[2][1],A__[2][1]);
-  ASGN(R__[2][2],A__[2][2]);
-  ASGN(R__[2][3],A__[2][3]);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    R__[0][0][_mask_idx] = XOR(A__[0][0][_mask_idx],rc__[_mask_idx]);
+    R__[0][1][_mask_idx] = A__[0][1][_mask_idx];
+    R__[0][2][_mask_idx] = A__[0][2][_mask_idx];
+    R__[0][3][_mask_idx] = A__[0][3][_mask_idx];
+    R__[1][0][_mask_idx] = A__[1][0][_mask_idx];
+    R__[1][1][_mask_idx] = A__[1][1][_mask_idx];
+    R__[1][2][_mask_idx] = A__[1][2][_mask_idx];
+    R__[1][3][_mask_idx] = A__[1][3][_mask_idx];
+    R__[2][0][_mask_idx] = A__[2][0][_mask_idx];
+    R__[2][1][_mask_idx] = A__[2][1][_mask_idx];
+    R__[2][2][_mask_idx] = A__[2][2][_mask_idx];
+    R__[2][3][_mask_idx] = A__[2][3][_mask_idx];
+  }
 
 }
 
@@ -95,42 +107,58 @@ void chi__V32 (/*inputs*/ DATATYPE A__[3][4][MASKING_ORDER], /*outputs*/ DATATYP
   DATATYPE _tmp6_[4][MASKING_ORDER];
 
   // Instructions (body)
-  NOT(_tmp4_[0],A__[1][0]);
-  NOT(_tmp4_[1],A__[1][1]);
-  NOT(_tmp4_[2],A__[1][2]);
-  NOT(_tmp4_[3],A__[1][3]);
-  AND(B__[0][0],_tmp4_[0],A__[2][0]);
-  AND(B__[0][1],_tmp4_[1],A__[2][1]);
-  AND(B__[0][2],_tmp4_[2],A__[2][2]);
-  AND(B__[0][3],_tmp4_[3],A__[2][3]);
-  NOT(_tmp5_[0],A__[2][0]);
-  NOT(_tmp5_[1],A__[2][1]);
-  NOT(_tmp5_[2],A__[2][2]);
-  NOT(_tmp5_[3],A__[2][3]);
-  AND(B__[1][0],_tmp5_[0],A__[0][0]);
-  AND(B__[1][1],_tmp5_[1],A__[0][1]);
-  AND(B__[1][2],_tmp5_[2],A__[0][2]);
-  AND(B__[1][3],_tmp5_[3],A__[0][3]);
-  NOT(_tmp6_[0],A__[0][0]);
-  NOT(_tmp6_[1],A__[0][1]);
-  NOT(_tmp6_[2],A__[0][2]);
-  NOT(_tmp6_[3],A__[0][3]);
-  AND(B__[2][0],_tmp6_[0],A__[1][0]);
-  AND(B__[2][1],_tmp6_[1],A__[1][1]);
-  AND(B__[2][2],_tmp6_[2],A__[1][2]);
-  AND(B__[2][3],_tmp6_[3],A__[1][3]);
-  XOR(R__[0][0],A__[0][0],B__[0][0]);
-  XOR(R__[0][1],A__[0][1],B__[0][1]);
-  XOR(R__[0][2],A__[0][2],B__[0][2]);
-  XOR(R__[0][3],A__[0][3],B__[0][3]);
-  XOR(R__[1][0],A__[1][0],B__[1][0]);
-  XOR(R__[1][1],A__[1][1],B__[1][1]);
-  XOR(R__[1][2],A__[1][2],B__[1][2]);
-  XOR(R__[1][3],A__[1][3],B__[1][3]);
-  XOR(R__[2][0],A__[2][0],B__[2][0]);
-  XOR(R__[2][1],A__[2][1],B__[2][1]);
-  XOR(R__[2][2],A__[2][2],B__[2][2]);
-  XOR(R__[2][3],A__[2][3],B__[2][3]);
+  _tmp4_[0][0] = NOT(A__[1][0][0]);
+  for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp4_[0][_mask_idx] = A__[1][0][_mask_idx];
+    _tmp4_[1][_mask_idx] = A__[1][1][_mask_idx];
+    _tmp4_[2][_mask_idx] = A__[1][2][_mask_idx];
+    _tmp4_[3][_mask_idx] = A__[1][3][_mask_idx];
+    _tmp5_[0][_mask_idx] = A__[2][0][_mask_idx];
+    _tmp5_[1][_mask_idx] = A__[2][1][_mask_idx];
+    _tmp5_[2][_mask_idx] = A__[2][2][_mask_idx];
+    _tmp5_[3][_mask_idx] = A__[2][3][_mask_idx];
+    _tmp6_[0][_mask_idx] = A__[0][0][_mask_idx];
+    _tmp6_[1][_mask_idx] = A__[0][1][_mask_idx];
+    _tmp6_[2][_mask_idx] = A__[0][2][_mask_idx];
+    _tmp6_[3][_mask_idx] = A__[0][3][_mask_idx];
+  }
+  _tmp4_[1][0] = NOT(A__[1][1][0]);
+  _tmp4_[2][0] = NOT(A__[1][2][0]);
+  _tmp4_[3][0] = NOT(A__[1][3][0]);
+  MASKED_AND(B__[0][0],_tmp4_[0],A__[2][0]);
+  MASKED_AND(B__[0][1],_tmp4_[1],A__[2][1]);
+  MASKED_AND(B__[0][2],_tmp4_[2],A__[2][2]);
+  MASKED_AND(B__[0][3],_tmp4_[3],A__[2][3]);
+  _tmp5_[0][0] = NOT(A__[2][0][0]);
+  _tmp5_[1][0] = NOT(A__[2][1][0]);
+  _tmp5_[2][0] = NOT(A__[2][2][0]);
+  _tmp5_[3][0] = NOT(A__[2][3][0]);
+  MASKED_AND(B__[1][0],_tmp5_[0],A__[0][0]);
+  MASKED_AND(B__[1][1],_tmp5_[1],A__[0][1]);
+  MASKED_AND(B__[1][2],_tmp5_[2],A__[0][2]);
+  MASKED_AND(B__[1][3],_tmp5_[3],A__[0][3]);
+  _tmp6_[0][0] = NOT(A__[0][0][0]);
+  _tmp6_[1][0] = NOT(A__[0][1][0]);
+  _tmp6_[2][0] = NOT(A__[0][2][0]);
+  _tmp6_[3][0] = NOT(A__[0][3][0]);
+  MASKED_AND(B__[2][0],_tmp6_[0],A__[1][0]);
+  MASKED_AND(B__[2][1],_tmp6_[1],A__[1][1]);
+  MASKED_AND(B__[2][2],_tmp6_[2],A__[1][2]);
+  MASKED_AND(B__[2][3],_tmp6_[3],A__[1][3]);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    R__[0][0][_mask_idx] = XOR(A__[0][0][_mask_idx],B__[0][0][_mask_idx]);
+    R__[0][1][_mask_idx] = XOR(A__[0][1][_mask_idx],B__[0][1][_mask_idx]);
+    R__[0][2][_mask_idx] = XOR(A__[0][2][_mask_idx],B__[0][2][_mask_idx]);
+    R__[0][3][_mask_idx] = XOR(A__[0][3][_mask_idx],B__[0][3][_mask_idx]);
+    R__[1][0][_mask_idx] = XOR(A__[1][0][_mask_idx],B__[1][0][_mask_idx]);
+    R__[1][1][_mask_idx] = XOR(A__[1][1][_mask_idx],B__[1][1][_mask_idx]);
+    R__[1][2][_mask_idx] = XOR(A__[1][2][_mask_idx],B__[1][2][_mask_idx]);
+    R__[1][3][_mask_idx] = XOR(A__[1][3][_mask_idx],B__[1][3][_mask_idx]);
+    R__[2][0][_mask_idx] = XOR(A__[2][0][_mask_idx],B__[2][0][_mask_idx]);
+    R__[2][1][_mask_idx] = XOR(A__[2][1][_mask_idx],B__[2][1][_mask_idx]);
+    R__[2][2][_mask_idx] = XOR(A__[2][2][_mask_idx],B__[2][2][_mask_idx]);
+    R__[2][3][_mask_idx] = XOR(A__[2][3][_mask_idx],B__[2][3][_mask_idx]);
+  }
 
 }
 
@@ -140,15 +168,21 @@ void rho_east__V32 (/*inputs*/ DATATYPE A__[3][4][MASKING_ORDER], /*outputs*/ DA
   ;
 
   // Instructions (body)
-  ASGN(R__[0][0],A__[0][0]);
-  ASGN(R__[0][1],A__[0][1]);
-  ASGN(R__[0][2],A__[0][2]);
-  ASGN(R__[0][3],A__[0][3]);
-  for (int i__ = 0; i__ <= 3; i__++) {
-    L_ROTATE(R__[1][i__],A__[1][i__],1,32);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    R__[0][0][_mask_idx] = A__[0][0][_mask_idx];
+    R__[0][1][_mask_idx] = A__[0][1][_mask_idx];
+    R__[0][2][_mask_idx] = A__[0][2][_mask_idx];
+    R__[0][3][_mask_idx] = A__[0][3][_mask_idx];
   }
   for (int i__ = 0; i__ <= 3; i__++) {
-    L_ROTATE(R__[2][i__],A__[2][((i__ + 2) % 4)],8,32);
+    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      R__[1][i__][_mask_idx] = L_ROTATE(A__[1][i__][_mask_idx],1,32);
+    }
+  }
+  for (int i__ = 0; i__ <= 3; i__++) {
+    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      R__[2][i__][_mask_idx] = L_ROTATE(A__[2][((i__ + 2) % 4)][_mask_idx],8,32);
+    }
   }
 
 }
@@ -178,59 +212,77 @@ void xoodoo__ (/*inputs*/ DATATYPE input__[3][4][MASKING_ORDER], /*outputs*/ DAT
   DATATYPE state__[3][4][MASKING_ORDER];
 
   // Instructions (body)
-  ASGN_CST(RC__[0], LIFT_32(88));
-  ASGN_CST(RC__[1], LIFT_32(56));
-  ASGN_CST(RC__[2], LIFT_32(960));
-  ASGN_CST(RC__[3], LIFT_32(208));
-  ASGN_CST(RC__[4], LIFT_32(288));
-  ASGN_CST(RC__[5], LIFT_32(20));
-  ASGN_CST(RC__[6], LIFT_32(96));
-  ASGN_CST(RC__[7], LIFT_32(44));
-  ASGN_CST(RC__[8], LIFT_32(896));
-  ASGN_CST(RC__[9], LIFT_32(240));
-  ASGN_CST(RC__[10], LIFT_32(416));
-  ASGN_CST(RC__[11], LIFT_32(18));
-  ASGN(state__[0][0],input__[0][0]);
-  ASGN(state__[0][1],input__[0][1]);
-  ASGN(state__[0][2],input__[0][2]);
-  ASGN(state__[0][3],input__[0][3]);
-  ASGN(state__[1][0],input__[1][0]);
-  ASGN(state__[1][1],input__[1][1]);
-  ASGN(state__[1][2],input__[1][2]);
-  ASGN(state__[1][3],input__[1][3]);
-  ASGN(state__[2][0],input__[2][0]);
-  ASGN(state__[2][1],input__[2][1]);
-  ASGN(state__[2][2],input__[2][2]);
-  ASGN(state__[2][3],input__[2][3]);
+  RC__[0][0] = LIFT_32(88);
+  for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    RC__[0][_mask_idx] = LIFT_32(0);
+    RC__[1][_mask_idx] = LIFT_32(0);
+    RC__[2][_mask_idx] = LIFT_32(0);
+    RC__[3][_mask_idx] = LIFT_32(0);
+    RC__[4][_mask_idx] = LIFT_32(0);
+    RC__[5][_mask_idx] = LIFT_32(0);
+    RC__[6][_mask_idx] = LIFT_32(0);
+    RC__[7][_mask_idx] = LIFT_32(0);
+    RC__[8][_mask_idx] = LIFT_32(0);
+    RC__[9][_mask_idx] = LIFT_32(0);
+    RC__[10][_mask_idx] = LIFT_32(0);
+    RC__[11][_mask_idx] = LIFT_32(0);
+  }
+  RC__[1][0] = LIFT_32(56);
+  RC__[2][0] = LIFT_32(960);
+  RC__[3][0] = LIFT_32(208);
+  RC__[4][0] = LIFT_32(288);
+  RC__[5][0] = LIFT_32(20);
+  RC__[6][0] = LIFT_32(96);
+  RC__[7][0] = LIFT_32(44);
+  RC__[8][0] = LIFT_32(896);
+  RC__[9][0] = LIFT_32(240);
+  RC__[10][0] = LIFT_32(416);
+  RC__[11][0] = LIFT_32(18);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    state__[0][0][_mask_idx] = input__[0][0][_mask_idx];
+    state__[0][1][_mask_idx] = input__[0][1][_mask_idx];
+    state__[0][2][_mask_idx] = input__[0][2][_mask_idx];
+    state__[0][3][_mask_idx] = input__[0][3][_mask_idx];
+    state__[1][0][_mask_idx] = input__[1][0][_mask_idx];
+    state__[1][1][_mask_idx] = input__[1][1][_mask_idx];
+    state__[1][2][_mask_idx] = input__[1][2][_mask_idx];
+    state__[1][3][_mask_idx] = input__[1][3][_mask_idx];
+    state__[2][0][_mask_idx] = input__[2][0][_mask_idx];
+    state__[2][1][_mask_idx] = input__[2][1][_mask_idx];
+    state__[2][2][_mask_idx] = input__[2][2][_mask_idx];
+    state__[2][3][_mask_idx] = input__[2][3][_mask_idx];
+  }
   for (int i__ = 0; i__ <= 11; i__++) {
     round__V32(state__,RC__[i__],state__);
   }
-  ASGN(output__[0][0],state__[0][0]);
-  ASGN(output__[0][1],state__[0][1]);
-  ASGN(output__[0][2],state__[0][2]);
-  ASGN(output__[0][3],state__[0][3]);
-  ASGN(output__[1][0],state__[1][0]);
-  ASGN(output__[1][1],state__[1][1]);
-  ASGN(output__[1][2],state__[1][2]);
-  ASGN(output__[1][3],state__[1][3]);
-  ASGN(output__[2][0],state__[2][0]);
-  ASGN(output__[2][1],state__[2][1]);
-  ASGN(output__[2][2],state__[2][2]);
-  ASGN(output__[2][3],state__[2][3]);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    output__[0][0][_mask_idx] = state__[0][0][_mask_idx];
+    output__[0][1][_mask_idx] = state__[0][1][_mask_idx];
+    output__[0][2][_mask_idx] = state__[0][2][_mask_idx];
+    output__[0][3][_mask_idx] = state__[0][3][_mask_idx];
+    output__[1][0][_mask_idx] = state__[1][0][_mask_idx];
+    output__[1][1][_mask_idx] = state__[1][1][_mask_idx];
+    output__[1][2][_mask_idx] = state__[1][2][_mask_idx];
+    output__[1][3][_mask_idx] = state__[1][3][_mask_idx];
+    output__[2][0][_mask_idx] = state__[2][0][_mask_idx];
+    output__[2][1][_mask_idx] = state__[2][1][_mask_idx];
+    output__[2][2][_mask_idx] = state__[2][2][_mask_idx];
+    output__[2][3][_mask_idx] = state__[2][3][_mask_idx];
+  }
 
 }
 
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE input__[3][4][MASKING_ORDER] = { 0 };
+  DATATYPE input__[3][4][MASKING_ORDER][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE output__[3][4][MASKING_ORDER] = { 0 };
+  DATATYPE output__[3][4][MASKING_ORDER][MASKING_ORDER] = { 0 };
   /* fun call */
   xoodoo__(input__,output__);
 
   /* Returning the number of encrypted bytes */
-  return 48;
+  return 1;
 }
 
 /* **************************************************************** */

@@ -10,7 +10,7 @@
 #define BITS_PER_REG 32
 #endif
 /* including the architecture specific .h */
-#include "MASKED.h"
+#include "MASKED_UA.h"
 
 /* auxiliary functions */
 void SubCells__V32 (/*inputs*/ DATATYPE S0__[MASKING_ORDER],DATATYPE S1__[MASKING_ORDER],DATATYPE S2__[MASKING_ORDER],DATATYPE S3__[MASKING_ORDER], /*outputs*/ DATATYPE S____[4][MASKING_ORDER]) {
@@ -20,7 +20,7 @@ void SubCells__V32 (/*inputs*/ DATATYPE S0__[MASKING_ORDER],DATATYPE S1__[MASKIN
   DATATYPE _shadow_S1__1_[MASKING_ORDER];
   DATATYPE _shadow_S1__5_[MASKING_ORDER];
   DATATYPE _shadow_S2__3_[MASKING_ORDER];
-  DATATYPE _shadow_S2__7_[MASKING_ORDER];
+  DATATYPE _shadow_S2__7_;
   DATATYPE _shadow_S3__4_[MASKING_ORDER];
   DATATYPE _shadow_S3__6_[MASKING_ORDER];
   DATATYPE _tmp1_[MASKING_ORDER];
@@ -29,21 +29,32 @@ void SubCells__V32 (/*inputs*/ DATATYPE S0__[MASKING_ORDER],DATATYPE S1__[MASKIN
   DATATYPE _tmp4_[MASKING_ORDER];
 
   // Instructions (body)
-  AND(_tmp1_,S0__,S2__);
-  XOR(_shadow_S1__1_,S1__,_tmp1_);
-  AND(_tmp2_,_shadow_S1__1_,S3__);
-  XOR(_shadow_S0__2_,S0__,_tmp2_);
-  OR(_tmp3_,_shadow_S0__2_,_shadow_S1__1_);
-  XOR(_shadow_S2__3_,S2__,_tmp3_);
-  XOR(_shadow_S3__4_,S3__,_shadow_S2__3_);
-  XOR(_shadow_S1__5_,_shadow_S1__1_,_shadow_S3__4_);
-  NOT(_shadow_S3__6_,_shadow_S3__4_);
-  AND(_tmp4_,_shadow_S0__2_,_shadow_S1__5_);
-  XOR(_shadow_S2__7_,_shadow_S2__3_,_tmp4_);
-  ASGN(S____[0],_shadow_S3__6_);
-  ASGN(S____[1],_shadow_S1__5_);
-  ASGN(S____[2],_shadow_S2__7_);
-  ASGN(S____[3],_shadow_S0__2_);
+  MASKED_AND(_tmp1_,S0__,S2__);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _shadow_S1__1_[_mask_idx] = XOR(S1__[_mask_idx],_tmp1_[_mask_idx]);
+  }
+  MASKED_AND(_tmp2_,_shadow_S1__1_,S3__);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _shadow_S0__2_[_mask_idx] = XOR(S0__[_mask_idx],_tmp2_[_mask_idx]);
+    S____[3][_mask_idx] = _shadow_S0__2_[_mask_idx];
+  }
+  MASKED_OR(_tmp3_,_shadow_S0__2_,_shadow_S1__1_);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _shadow_S2__3_[_mask_idx] = XOR(S2__[_mask_idx],_tmp3_[_mask_idx]);
+    _shadow_S3__4_[_mask_idx] = XOR(S3__[_mask_idx],_shadow_S2__3_[_mask_idx]);
+    _shadow_S1__5_[_mask_idx] = XOR(_shadow_S1__1_[_mask_idx],_shadow_S3__4_[_mask_idx]);
+    S____[1][_mask_idx] = _shadow_S1__5_[_mask_idx];
+  }
+  _shadow_S3__6_[0] = NOT(_shadow_S3__4_[0]);
+  for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _shadow_S3__6_[_mask_idx] = _shadow_S3__4_[_mask_idx];
+  }
+  MASKED_AND(_tmp4_,_shadow_S0__2_,_shadow_S1__5_);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _shadow_S2__7_ = XOR(_shadow_S2__3_[_mask_idx],_tmp4_[_mask_idx]);
+    S____[0][_mask_idx] = _shadow_S3__6_[_mask_idx];
+    S____[2][_mask_idx] = _shadow_S2__7_;
+  }
 
 }
 
@@ -52,50 +63,71 @@ void rowperm__V_Natnat_32 (/*inputs*/ DATATYPE S__[MASKING_ORDER],unsigned int B
   // Variables declaration
   DATATYPE T__[MASKING_ORDER];
   DATATYPE _tmp10_[MASKING_ORDER];
-  DATATYPE _tmp12_[MASKING_ORDER];
-  DATATYPE _tmp13_[MASKING_ORDER];
+  DATATYPE _tmp12_;
+  DATATYPE _tmp13_;
   DATATYPE _tmp14_[MASKING_ORDER];
   DATATYPE _tmp15_[MASKING_ORDER];
-  DATATYPE _tmp17_[MASKING_ORDER];
-  DATATYPE _tmp18_[MASKING_ORDER];
+  DATATYPE _tmp17_;
+  DATATYPE _tmp18_;
   DATATYPE _tmp19_[MASKING_ORDER];
   DATATYPE _tmp20_[MASKING_ORDER];
-  DATATYPE _tmp22_[MASKING_ORDER];
-  DATATYPE _tmp23_[MASKING_ORDER];
+  DATATYPE _tmp22_;
+  DATATYPE _tmp23_;
   DATATYPE _tmp5_[MASKING_ORDER];
-  DATATYPE _tmp7_[MASKING_ORDER];
-  DATATYPE _tmp8_[MASKING_ORDER];
+  DATATYPE _tmp7_;
+  DATATYPE _tmp8_;
   DATATYPE _tmp9_[MASKING_ORDER];
-  DATATYPE _tmp99_[MASKING_ORDER];
-  DATATYPE _tmp98_[MASKING_ORDER];
-  DATATYPE _tmp97_[MASKING_ORDER];
+  DATATYPE _tmp99_;
+  DATATYPE _tmp98_;
+  DATATYPE _tmp97_;
   DATATYPE _tmp96_[MASKING_ORDER];
 
   // Instructions (body)
-  ASGN_CST(T__, LIFT_32(0));
-  for (int b__ = 0; b__ <= 7; b__++) {
-    R_SHIFT(_tmp5_,S__,((4 * b__) + 0),32);
-    ASGN_CST(_tmp96_, LIFT_32(1));
-    AND_CST(_tmp7_,_tmp5_,_tmp96_);
-    L_SHIFT(_tmp8_,_tmp7_,(b__ + (8 * B0_pos__)),32);
-    XOR_CST(_tmp9_,_tmp8_,T__);
-    R_SHIFT(_tmp10_,S__,((4 * b__) + 1),32);
-    ASGN_CST(_tmp97_, LIFT_32(1));
-    AND_CST(_tmp12_,_tmp10_,_tmp97_);
-    L_SHIFT(_tmp13_,_tmp12_,(b__ + (8 * B1_pos__)),32);
-    XOR(_tmp14_,_tmp9_,_tmp13_);
-    R_SHIFT(_tmp15_,S__,((4 * b__) + 2),32);
-    ASGN_CST(_tmp98_, LIFT_32(1));
-    AND_CST(_tmp17_,_tmp15_,_tmp98_);
-    L_SHIFT(_tmp18_,_tmp17_,(b__ + (8 * B2_pos__)),32);
-    XOR(_tmp19_,_tmp14_,_tmp18_);
-    R_SHIFT(_tmp20_,S__,((4 * b__) + 3),32);
-    ASGN_CST(_tmp99_, LIFT_32(1));
-    AND_CST(_tmp22_,_tmp20_,_tmp99_);
-    L_SHIFT(_tmp23_,_tmp22_,(b__ + (8 * B3_pos__)),32);
-    XOR(T__,_tmp19_,_tmp23_);
+  T__[0] = LIFT_32(0);
+  for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    T__[_mask_idx] = LIFT_32(0);
   }
-  ASGN(S____,T__);
+  for (int b__ = 0; b__ <= 7; b__++) {
+    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      _tmp5_[_mask_idx] = R_SHIFT(S__[_mask_idx],((4 * b__) + 0),32);
+      _tmp10_[_mask_idx] = R_SHIFT(S__[_mask_idx],((4 * b__) + 1),32);
+      _tmp15_[_mask_idx] = R_SHIFT(S__[_mask_idx],((4 * b__) + 2),32);
+      _tmp20_[_mask_idx] = R_SHIFT(S__[_mask_idx],((4 * b__) + 3),32);
+    }
+    _tmp96_[0] = LIFT_32(1);
+    for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      _tmp96_[_mask_idx] = LIFT_32(0);
+      _tmp97_ = LIFT_32(0);
+      _tmp98_ = LIFT_32(0);
+      _tmp99_ = LIFT_32(0);
+    }
+    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      _tmp7_ = AND(_tmp5_[_mask_idx],_tmp96_[0]);
+      _tmp8_ = L_SHIFT(_tmp7_,(b__ + (8 * B0_pos__)),32);
+      _tmp9_[_mask_idx] = XOR(T__[_mask_idx],_tmp8_);
+    }
+    _tmp97_ = LIFT_32(1);
+    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      _tmp12_ = AND(_tmp10_[_mask_idx],_tmp97_);
+      _tmp13_ = L_SHIFT(_tmp12_,(b__ + (8 * B1_pos__)),32);
+      _tmp14_[_mask_idx] = XOR(_tmp9_[_mask_idx],_tmp13_);
+    }
+    _tmp98_ = LIFT_32(1);
+    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      _tmp17_ = AND(_tmp15_[_mask_idx],_tmp98_);
+      _tmp18_ = L_SHIFT(_tmp17_,(b__ + (8 * B2_pos__)),32);
+      _tmp19_[_mask_idx] = XOR(_tmp14_[_mask_idx],_tmp18_);
+    }
+    _tmp99_ = LIFT_32(1);
+    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      _tmp22_ = AND(_tmp20_[_mask_idx],_tmp99_);
+      _tmp23_ = L_SHIFT(_tmp22_,(b__ + (8 * B3_pos__)),32);
+      T__[_mask_idx] = XOR(_tmp19_[_mask_idx],_tmp23_);
+    }
+  }
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    S____[_mask_idx] = T__[_mask_idx];
+  }
 
 }
 
@@ -146,56 +178,73 @@ void PermBits__V32 (/*inputs*/ DATATYPE S__[4][MASKING_ORDER], /*outputs*/ DATAT
 void AddRoundKey__V32 (/*inputs*/ DATATYPE S__[4][MASKING_ORDER],DATATYPE W__[8][MASKING_ORDER],DATATYPE rc__[MASKING_ORDER], /*outputs*/ DATATYPE S____[4][MASKING_ORDER]) {
 
   // Variables declaration
-  DATATYPE _tmp40_[MASKING_ORDER];
-  DATATYPE _tmp41_[MASKING_ORDER];
-  DATATYPE _tmp42_[MASKING_ORDER];
-  DATATYPE _tmp43_[MASKING_ORDER];
-  DATATYPE _tmp45_[MASKING_ORDER];
+  DATATYPE _tmp40_;
+  DATATYPE _tmp41_;
+  DATATYPE _tmp42_;
+  DATATYPE _tmp43_;
+  DATATYPE _tmp45_;
   DATATYPE _tmp116_[MASKING_ORDER];
 
   // Instructions (body)
-  L_SHIFT(_tmp40_,W__[2],16,32);
-  XOR(_tmp41_,_tmp40_,W__[3]);
-  XOR(S____[2],S__[2],_tmp41_);
-  L_SHIFT(_tmp42_,W__[6],16,32);
-  XOR(_tmp43_,_tmp42_,W__[7]);
-  XOR(S____[1],S__[1],_tmp43_);
-  ASGN_CST(_tmp116_, LIFT_32(2147483648));
-  XOR_CST(_tmp45_,S__[3],_tmp116_);
-  XOR(S____[3],_tmp45_,rc__);
-  ASGN(S____[0],S__[0]);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp40_ = L_SHIFT(W__[2][_mask_idx],16,32);
+    _tmp41_ = XOR(_tmp40_,W__[3][_mask_idx]);
+    S____[2][_mask_idx] = XOR(S__[2][_mask_idx],_tmp41_);
+    _tmp42_ = L_SHIFT(W__[6][_mask_idx],16,32);
+    _tmp43_ = XOR(_tmp42_,W__[7][_mask_idx]);
+    S____[1][_mask_idx] = XOR(S__[1][_mask_idx],_tmp43_);
+    S____[0][_mask_idx] = S__[0][_mask_idx];
+  }
+  _tmp116_[0] = LIFT_32(2147483648);
+  for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp116_[_mask_idx] = LIFT_32(0);
+  }
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp45_ = XOR(S__[3][_mask_idx],_tmp116_[_mask_idx]);
+    S____[3][_mask_idx] = XOR(_tmp45_,rc__[_mask_idx]);
+  }
 
 }
 
 void KeyUpdate__V32 (/*inputs*/ DATATYPE W__[8][MASKING_ORDER], /*outputs*/ DATATYPE W____[8][MASKING_ORDER]) {
 
   // Variables declaration
-  DATATYPE _tmp46_[MASKING_ORDER];
-  DATATYPE _tmp47_[MASKING_ORDER];
+  DATATYPE _tmp46_;
+  DATATYPE _tmp47_;
   DATATYPE _tmp48_[MASKING_ORDER];
-  DATATYPE _tmp50_[MASKING_ORDER];
-  DATATYPE _tmp51_[MASKING_ORDER];
+  DATATYPE _tmp50_;
+  DATATYPE _tmp51_;
   DATATYPE _tmp52_[MASKING_ORDER];
-  DATATYPE _tmp118_[MASKING_ORDER];
+  DATATYPE _tmp118_;
   DATATYPE _tmp117_[MASKING_ORDER];
 
   // Instructions (body)
-  R_SHIFT(_tmp46_,W__[6],2,32);
-  L_SHIFT(_tmp47_,W__[6],14,32);
-  XOR(_tmp48_,_tmp46_,_tmp47_);
-  ASGN_CST(_tmp117_, LIFT_32(65535));
-  AND_CST(W____[0],_tmp48_,_tmp117_);
-  R_SHIFT(_tmp50_,W__[7],12,32);
-  L_SHIFT(_tmp51_,W__[7],4,32);
-  XOR(_tmp52_,_tmp50_,_tmp51_);
-  ASGN_CST(_tmp118_, LIFT_32(65535));
-  AND_CST(W____[1],_tmp52_,_tmp118_);
-  ASGN(W____[7],W__[5]);
-  ASGN(W____[6],W__[4]);
-  ASGN(W____[5],W__[3]);
-  ASGN(W____[4],W__[2]);
-  ASGN(W____[3],W__[1]);
-  ASGN(W____[2],W__[0]);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp46_ = R_SHIFT(W__[6][_mask_idx],2,32);
+    _tmp47_ = L_SHIFT(W__[6][_mask_idx],14,32);
+    _tmp48_[_mask_idx] = XOR(_tmp46_,_tmp47_);
+    _tmp50_ = R_SHIFT(W__[7][_mask_idx],12,32);
+    _tmp51_ = L_SHIFT(W__[7][_mask_idx],4,32);
+    _tmp52_[_mask_idx] = XOR(_tmp50_,_tmp51_);
+    W____[7][_mask_idx] = W__[5][_mask_idx];
+    W____[6][_mask_idx] = W__[4][_mask_idx];
+    W____[5][_mask_idx] = W__[3][_mask_idx];
+    W____[4][_mask_idx] = W__[2][_mask_idx];
+    W____[3][_mask_idx] = W__[1][_mask_idx];
+    W____[2][_mask_idx] = W__[0][_mask_idx];
+  }
+  _tmp117_[0] = LIFT_32(65535);
+  for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp117_[_mask_idx] = LIFT_32(0);
+    _tmp118_ = LIFT_32(0);
+  }
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    W____[0][_mask_idx] = AND(_tmp48_[_mask_idx],_tmp117_[0]);
+  }
+  _tmp118_ = LIFT_32(65535);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    W____[1][_mask_idx] = AND(_tmp52_[_mask_idx],_tmp118_);
+  }
 
 }
 
@@ -204,89 +253,135 @@ void gift__ (/*inputs*/ DATATYPE P__[4][MASKING_ORDER],DATATYPE K__[8][MASKING_O
 
   // Variables declaration
   DATATYPE GIFT_RC__[40][MASKING_ORDER];
-  DATATYPE W__[41][8][MASKING_ORDER];
+  DATATYPE W__[8][MASKING_ORDER];
   DATATYPE _tmp94_[4][MASKING_ORDER];
   DATATYPE _tmp95_[4][MASKING_ORDER];
   DATATYPE round__[4][MASKING_ORDER];
 
   // Instructions (body)
-  ASGN(round__[0],P__[0]);
-  ASGN(round__[1],P__[1]);
-  ASGN(round__[2],P__[2]);
-  ASGN(round__[3],P__[3]);
-  ASGN(W__[0][0],K__[0]);
-  ASGN(W__[0][1],K__[1]);
-  ASGN(W__[0][2],K__[2]);
-  ASGN(W__[0][3],K__[3]);
-  ASGN(W__[0][4],K__[4]);
-  ASGN(W__[0][5],K__[5]);
-  ASGN(W__[0][6],K__[6]);
-  ASGN(W__[0][7],K__[7]);
-  ASGN_CST(GIFT_RC__[0], LIFT_32(1));
-  ASGN_CST(GIFT_RC__[1], LIFT_32(3));
-  ASGN_CST(GIFT_RC__[2], LIFT_32(7));
-  ASGN_CST(GIFT_RC__[3], LIFT_32(15));
-  ASGN_CST(GIFT_RC__[4], LIFT_32(31));
-  ASGN_CST(GIFT_RC__[5], LIFT_32(62));
-  ASGN_CST(GIFT_RC__[6], LIFT_32(61));
-  ASGN_CST(GIFT_RC__[7], LIFT_32(59));
-  ASGN_CST(GIFT_RC__[8], LIFT_32(55));
-  ASGN_CST(GIFT_RC__[9], LIFT_32(47));
-  ASGN_CST(GIFT_RC__[10], LIFT_32(30));
-  ASGN_CST(GIFT_RC__[11], LIFT_32(60));
-  ASGN_CST(GIFT_RC__[12], LIFT_32(57));
-  ASGN_CST(GIFT_RC__[13], LIFT_32(51));
-  ASGN_CST(GIFT_RC__[14], LIFT_32(39));
-  ASGN_CST(GIFT_RC__[15], LIFT_32(14));
-  ASGN_CST(GIFT_RC__[16], LIFT_32(29));
-  ASGN_CST(GIFT_RC__[17], LIFT_32(58));
-  ASGN_CST(GIFT_RC__[18], LIFT_32(53));
-  ASGN_CST(GIFT_RC__[19], LIFT_32(43));
-  ASGN_CST(GIFT_RC__[20], LIFT_32(22));
-  ASGN_CST(GIFT_RC__[21], LIFT_32(44));
-  ASGN_CST(GIFT_RC__[22], LIFT_32(24));
-  ASGN_CST(GIFT_RC__[23], LIFT_32(48));
-  ASGN_CST(GIFT_RC__[24], LIFT_32(33));
-  ASGN_CST(GIFT_RC__[25], LIFT_32(2));
-  ASGN_CST(GIFT_RC__[26], LIFT_32(5));
-  ASGN_CST(GIFT_RC__[27], LIFT_32(11));
-  ASGN_CST(GIFT_RC__[28], LIFT_32(23));
-  ASGN_CST(GIFT_RC__[29], LIFT_32(46));
-  ASGN_CST(GIFT_RC__[30], LIFT_32(28));
-  ASGN_CST(GIFT_RC__[31], LIFT_32(56));
-  ASGN_CST(GIFT_RC__[32], LIFT_32(49));
-  ASGN_CST(GIFT_RC__[33], LIFT_32(35));
-  ASGN_CST(GIFT_RC__[34], LIFT_32(6));
-  ASGN_CST(GIFT_RC__[35], LIFT_32(13));
-  ASGN_CST(GIFT_RC__[36], LIFT_32(27));
-  ASGN_CST(GIFT_RC__[37], LIFT_32(54));
-  ASGN_CST(GIFT_RC__[38], LIFT_32(45));
-  ASGN_CST(GIFT_RC__[39], LIFT_32(26));
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    round__[0][_mask_idx] = P__[0][_mask_idx];
+    round__[1][_mask_idx] = P__[1][_mask_idx];
+    round__[2][_mask_idx] = P__[2][_mask_idx];
+    round__[3][_mask_idx] = P__[3][_mask_idx];
+    W__[0][_mask_idx] = K__[0][_mask_idx];
+    W__[1][_mask_idx] = K__[1][_mask_idx];
+    W__[2][_mask_idx] = K__[2][_mask_idx];
+    W__[3][_mask_idx] = K__[3][_mask_idx];
+    W__[4][_mask_idx] = K__[4][_mask_idx];
+    W__[5][_mask_idx] = K__[5][_mask_idx];
+    W__[6][_mask_idx] = K__[6][_mask_idx];
+    W__[7][_mask_idx] = K__[7][_mask_idx];
+  }
+  GIFT_RC__[0][0] = LIFT_32(1);
+  for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    GIFT_RC__[0][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[1][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[2][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[3][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[4][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[5][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[6][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[7][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[8][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[9][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[10][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[11][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[12][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[13][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[14][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[15][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[16][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[17][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[18][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[19][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[20][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[21][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[22][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[23][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[24][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[25][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[26][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[27][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[28][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[29][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[30][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[31][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[32][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[33][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[34][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[35][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[36][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[37][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[38][_mask_idx] = LIFT_32(0);
+    GIFT_RC__[39][_mask_idx] = LIFT_32(0);
+  }
+  GIFT_RC__[1][0] = LIFT_32(3);
+  GIFT_RC__[2][0] = LIFT_32(7);
+  GIFT_RC__[3][0] = LIFT_32(15);
+  GIFT_RC__[4][0] = LIFT_32(31);
+  GIFT_RC__[5][0] = LIFT_32(62);
+  GIFT_RC__[6][0] = LIFT_32(61);
+  GIFT_RC__[7][0] = LIFT_32(59);
+  GIFT_RC__[8][0] = LIFT_32(55);
+  GIFT_RC__[9][0] = LIFT_32(47);
+  GIFT_RC__[10][0] = LIFT_32(30);
+  GIFT_RC__[11][0] = LIFT_32(60);
+  GIFT_RC__[12][0] = LIFT_32(57);
+  GIFT_RC__[13][0] = LIFT_32(51);
+  GIFT_RC__[14][0] = LIFT_32(39);
+  GIFT_RC__[15][0] = LIFT_32(14);
+  GIFT_RC__[16][0] = LIFT_32(29);
+  GIFT_RC__[17][0] = LIFT_32(58);
+  GIFT_RC__[18][0] = LIFT_32(53);
+  GIFT_RC__[19][0] = LIFT_32(43);
+  GIFT_RC__[20][0] = LIFT_32(22);
+  GIFT_RC__[21][0] = LIFT_32(44);
+  GIFT_RC__[22][0] = LIFT_32(24);
+  GIFT_RC__[23][0] = LIFT_32(48);
+  GIFT_RC__[24][0] = LIFT_32(33);
+  GIFT_RC__[25][0] = LIFT_32(2);
+  GIFT_RC__[26][0] = LIFT_32(5);
+  GIFT_RC__[27][0] = LIFT_32(11);
+  GIFT_RC__[28][0] = LIFT_32(23);
+  GIFT_RC__[29][0] = LIFT_32(46);
+  GIFT_RC__[30][0] = LIFT_32(28);
+  GIFT_RC__[31][0] = LIFT_32(56);
+  GIFT_RC__[32][0] = LIFT_32(49);
+  GIFT_RC__[33][0] = LIFT_32(35);
+  GIFT_RC__[34][0] = LIFT_32(6);
+  GIFT_RC__[35][0] = LIFT_32(13);
+  GIFT_RC__[36][0] = LIFT_32(27);
+  GIFT_RC__[37][0] = LIFT_32(54);
+  GIFT_RC__[38][0] = LIFT_32(45);
+  GIFT_RC__[39][0] = LIFT_32(26);
   for (int i__ = 0; i__ <= 39; i__++) {
     SubCells__V32(round__[0],round__[1],round__[2],round__[3],_tmp94_);
     PermBits__V32(_tmp94_,_tmp95_);
-    AddRoundKey__V32(_tmp95_,W__[i__],GIFT_RC__[i__],round__);
-    KeyUpdate__V32(W__[i__],W__[(i__ + 1)]);
+    AddRoundKey__V32(_tmp95_,W__,GIFT_RC__[i__],round__);
+    KeyUpdate__V32(W__,W__);
   }
-  ASGN(C__[0],round__[0]);
-  ASGN(C__[1],round__[1]);
-  ASGN(C__[2],round__[2]);
-  ASGN(C__[3],round__[3]);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    C__[0][_mask_idx] = round__[0][_mask_idx];
+    C__[1][_mask_idx] = round__[1][_mask_idx];
+    C__[2][_mask_idx] = round__[2][_mask_idx];
+    C__[3][_mask_idx] = round__[3][_mask_idx];
+  }
 
 }
 
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE P__[4][MASKING_ORDER] = { 0 };
-  DATATYPE K__[8][MASKING_ORDER] = { 0 };
+  DATATYPE P__[4][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE K__[8][MASKING_ORDER][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE C__[4][MASKING_ORDER] = { 0 };
+  DATATYPE C__[4][MASKING_ORDER][MASKING_ORDER] = { 0 };
   /* fun call */
   gift__(P__, K__,C__);
 
   /* Returning the number of encrypted bytes */
-  return 16;
+  return 0;
 }
 
 /* **************************************************************** */

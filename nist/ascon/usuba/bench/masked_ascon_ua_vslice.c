@@ -10,7 +10,7 @@
 #define BITS_PER_REG 64
 #endif
 /* including the architecture specific .h */
-#include "MASKED.h"
+#include "MASKED_UA.h"
 
 /* auxiliary functions */
 void Sbox__V64 (/*inputs*/ DATATYPE x[5][MASKING_ORDER], /*outputs*/ DATATYPE xr[5][MASKING_ORDER]) {
@@ -21,17 +21,17 @@ void Sbox__V64 (/*inputs*/ DATATYPE x[5][MASKING_ORDER], /*outputs*/ DATATYPE xr
   DATATYPE _shadow_t26_[MASKING_ORDER];
   DATATYPE _shadow_t37_[MASKING_ORDER];
   DATATYPE _shadow_t48_[MASKING_ORDER];
-  DATATYPE _shadow_x015_[MASKING_ORDER];
+  DATATYPE _shadow_x015_;
   DATATYPE _shadow_x01_[MASKING_ORDER];
-  DATATYPE _shadow_x09_[MASKING_ORDER];
-  DATATYPE _shadow_x110_[MASKING_ORDER];
-  DATATYPE _shadow_x114_[MASKING_ORDER];
+  DATATYPE _shadow_x09_;
+  DATATYPE _shadow_x110_;
+  DATATYPE _shadow_x114_;
   DATATYPE _shadow_x211_[MASKING_ORDER];
   DATATYPE _shadow_x217_[MASKING_ORDER];
   DATATYPE _shadow_x23_[MASKING_ORDER];
-  DATATYPE _shadow_x312_[MASKING_ORDER];
-  DATATYPE _shadow_x316_[MASKING_ORDER];
-  DATATYPE _shadow_x413_[MASKING_ORDER];
+  DATATYPE _shadow_x312_;
+  DATATYPE _shadow_x316_;
+  DATATYPE _shadow_x413_;
   DATATYPE _shadow_x42_[MASKING_ORDER];
   DATATYPE t0[MASKING_ORDER];
   DATATYPE t1[MASKING_ORDER];
@@ -40,91 +40,111 @@ void Sbox__V64 (/*inputs*/ DATATYPE x[5][MASKING_ORDER], /*outputs*/ DATATYPE xr
   DATATYPE t4[MASKING_ORDER];
 
   // Instructions (body)
-  XOR(_shadow_x01_,x[0],x[4]);
-  XOR(_shadow_x42_,x[4],x[3]);
-  XOR(_shadow_x23_,x[2],x[1]);
-  NOT(t0,_shadow_x01_);
-  NOT(t1,x[1]);
-  NOT(t2,_shadow_x23_);
-  NOT(t3,x[3]);
-  NOT(t4,_shadow_x42_);
-  AND(_shadow_t04_,t0,x[1]);
-  AND(_shadow_t15_,t1,_shadow_x23_);
-  AND(_shadow_t26_,t2,x[3]);
-  AND(_shadow_t37_,t3,_shadow_x42_);
-  AND(_shadow_t48_,t4,_shadow_x01_);
-  XOR(_shadow_x09_,_shadow_x01_,_shadow_t15_);
-  XOR(_shadow_x110_,x[1],_shadow_t26_);
-  XOR(_shadow_x211_,_shadow_x23_,_shadow_t37_);
-  XOR(_shadow_x312_,x[3],_shadow_t48_);
-  XOR(_shadow_x413_,_shadow_x42_,_shadow_t04_);
-  XOR(_shadow_x114_,_shadow_x110_,_shadow_x09_);
-  XOR(_shadow_x015_,_shadow_x09_,_shadow_x413_);
-  XOR(_shadow_x316_,_shadow_x312_,_shadow_x211_);
-  NOT(_shadow_x217_,_shadow_x211_);
-  ASGN(xr[0],_shadow_x015_);
-  ASGN(xr[1],_shadow_x114_);
-  ASGN(xr[2],_shadow_x217_);
-  ASGN(xr[3],_shadow_x316_);
-  ASGN(xr[4],_shadow_x413_);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _shadow_x01_[_mask_idx] = XOR(x[0][_mask_idx],x[4][_mask_idx]);
+    _shadow_x42_[_mask_idx] = XOR(x[4][_mask_idx],x[3][_mask_idx]);
+    _shadow_x23_[_mask_idx] = XOR(x[2][_mask_idx],x[1][_mask_idx]);
+  }
+  t0[0] = NOT(_shadow_x01_[0]);
+  for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    t0[_mask_idx] = _shadow_x01_[_mask_idx];
+    t1[_mask_idx] = x[1][_mask_idx];
+    t2[_mask_idx] = _shadow_x23_[_mask_idx];
+    t3[_mask_idx] = x[3][_mask_idx];
+    t4[_mask_idx] = _shadow_x42_[_mask_idx];
+  }
+  t1[0] = NOT(x[1][0]);
+  t2[0] = NOT(_shadow_x23_[0]);
+  t3[0] = NOT(x[3][0]);
+  t4[0] = NOT(_shadow_x42_[0]);
+  MASKED_AND(_shadow_t04_,t0,x[1]);
+  MASKED_AND(_shadow_t15_,t1,_shadow_x23_);
+  MASKED_AND(_shadow_t26_,t2,x[3]);
+  MASKED_AND(_shadow_t37_,t3,_shadow_x42_);
+  MASKED_AND(_shadow_t48_,t4,_shadow_x01_);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _shadow_x09_ = XOR(_shadow_x01_[_mask_idx],_shadow_t15_[_mask_idx]);
+    _shadow_x110_ = XOR(x[1][_mask_idx],_shadow_t26_[_mask_idx]);
+    _shadow_x211_[_mask_idx] = XOR(_shadow_x23_[_mask_idx],_shadow_t37_[_mask_idx]);
+    _shadow_x312_ = XOR(x[3][_mask_idx],_shadow_t48_[_mask_idx]);
+    _shadow_x413_ = XOR(_shadow_x42_[_mask_idx],_shadow_t04_[_mask_idx]);
+    _shadow_x114_ = XOR(_shadow_x110_,_shadow_x09_);
+    _shadow_x015_ = XOR(_shadow_x09_,_shadow_x413_);
+    _shadow_x316_ = XOR(_shadow_x312_,_shadow_x211_[_mask_idx]);
+    xr[0][_mask_idx] = _shadow_x015_;
+    xr[1][_mask_idx] = _shadow_x114_;
+    xr[3][_mask_idx] = _shadow_x316_;
+    xr[4][_mask_idx] = _shadow_x413_;
+  }
+  _shadow_x217_[0] = NOT(_shadow_x211_[0]);
+  for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _shadow_x217_[_mask_idx] = _shadow_x211_[_mask_idx];
+  }
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    xr[2][_mask_idx] = _shadow_x217_[_mask_idx];
+  }
 
 }
 
 void AddConstant__V64 (/*inputs*/ DATATYPE state__[5][MASKING_ORDER],DATATYPE c__[MASKING_ORDER], /*outputs*/ DATATYPE stateR__[5][MASKING_ORDER]) {
 
   // Variables declaration
-  DATATYPE _tmp1_[MASKING_ORDER];
+  DATATYPE _tmp1_;
 
   // Instructions (body)
-  XOR(_tmp1_,state__[2],c__);
-  ASGN(stateR__[0],state__[0]);
-  ASGN(stateR__[1],state__[1]);
-  ASGN(stateR__[2],_tmp1_);
-  ASGN(stateR__[3],state__[3]);
-  ASGN(stateR__[4],state__[4]);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp1_ = XOR(state__[2][_mask_idx],c__[_mask_idx]);
+    stateR__[0][_mask_idx] = state__[0][_mask_idx];
+    stateR__[1][_mask_idx] = state__[1][_mask_idx];
+    stateR__[2][_mask_idx] = _tmp1_;
+    stateR__[3][_mask_idx] = state__[3][_mask_idx];
+    stateR__[4][_mask_idx] = state__[4][_mask_idx];
+  }
 
 }
 
 void LinearLayer__V64 (/*inputs*/ DATATYPE state__[5][MASKING_ORDER], /*outputs*/ DATATYPE stateR__[5][MASKING_ORDER]) {
 
   // Variables declaration
-  DATATYPE _tmp10_[MASKING_ORDER];
-  DATATYPE _tmp11_[MASKING_ORDER];
-  DATATYPE _tmp12_[MASKING_ORDER];
-  DATATYPE _tmp13_[MASKING_ORDER];
-  DATATYPE _tmp14_[MASKING_ORDER];
-  DATATYPE _tmp15_[MASKING_ORDER];
-  DATATYPE _tmp16_[MASKING_ORDER];
-  DATATYPE _tmp2_[MASKING_ORDER];
-  DATATYPE _tmp3_[MASKING_ORDER];
-  DATATYPE _tmp4_[MASKING_ORDER];
-  DATATYPE _tmp5_[MASKING_ORDER];
-  DATATYPE _tmp6_[MASKING_ORDER];
-  DATATYPE _tmp7_[MASKING_ORDER];
-  DATATYPE _tmp8_[MASKING_ORDER];
-  DATATYPE _tmp9_[MASKING_ORDER];
+  DATATYPE _tmp10_;
+  DATATYPE _tmp11_;
+  DATATYPE _tmp12_;
+  DATATYPE _tmp13_;
+  DATATYPE _tmp14_;
+  DATATYPE _tmp15_;
+  DATATYPE _tmp16_;
+  DATATYPE _tmp2_;
+  DATATYPE _tmp3_;
+  DATATYPE _tmp4_;
+  DATATYPE _tmp5_;
+  DATATYPE _tmp6_;
+  DATATYPE _tmp7_;
+  DATATYPE _tmp8_;
+  DATATYPE _tmp9_;
 
   // Instructions (body)
-  R_ROTATE(_tmp2_,state__[0],19,64);
-  XOR(_tmp3_,state__[0],_tmp2_);
-  R_ROTATE(_tmp4_,state__[0],28,64);
-  XOR(stateR__[0],_tmp3_,_tmp4_);
-  R_ROTATE(_tmp5_,state__[1],61,64);
-  XOR(_tmp6_,state__[1],_tmp5_);
-  R_ROTATE(_tmp7_,state__[1],39,64);
-  XOR(stateR__[1],_tmp6_,_tmp7_);
-  R_ROTATE(_tmp8_,state__[2],1,64);
-  XOR(_tmp9_,state__[2],_tmp8_);
-  R_ROTATE(_tmp10_,state__[2],6,64);
-  XOR(stateR__[2],_tmp9_,_tmp10_);
-  R_ROTATE(_tmp11_,state__[3],10,64);
-  XOR(_tmp12_,state__[3],_tmp11_);
-  R_ROTATE(_tmp13_,state__[3],17,64);
-  XOR(stateR__[3],_tmp12_,_tmp13_);
-  R_ROTATE(_tmp14_,state__[4],7,64);
-  XOR(_tmp15_,state__[4],_tmp14_);
-  R_ROTATE(_tmp16_,state__[4],41,64);
-  XOR(stateR__[4],_tmp15_,_tmp16_);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp2_ = R_ROTATE(state__[0][_mask_idx],19,64);
+    _tmp3_ = XOR(state__[0][_mask_idx],_tmp2_);
+    _tmp4_ = R_ROTATE(state__[0][_mask_idx],28,64);
+    stateR__[0][_mask_idx] = XOR(_tmp3_,_tmp4_);
+    _tmp5_ = R_ROTATE(state__[1][_mask_idx],61,64);
+    _tmp6_ = XOR(state__[1][_mask_idx],_tmp5_);
+    _tmp7_ = R_ROTATE(state__[1][_mask_idx],39,64);
+    stateR__[1][_mask_idx] = XOR(_tmp6_,_tmp7_);
+    _tmp8_ = R_ROTATE(state__[2][_mask_idx],1,64);
+    _tmp9_ = XOR(state__[2][_mask_idx],_tmp8_);
+    _tmp10_ = R_ROTATE(state__[2][_mask_idx],6,64);
+    stateR__[2][_mask_idx] = XOR(_tmp9_,_tmp10_);
+    _tmp11_ = R_ROTATE(state__[3][_mask_idx],10,64);
+    _tmp12_ = XOR(state__[3][_mask_idx],_tmp11_);
+    _tmp13_ = R_ROTATE(state__[3][_mask_idx],17,64);
+    stateR__[3][_mask_idx] = XOR(_tmp12_,_tmp13_);
+    _tmp14_ = R_ROTATE(state__[4][_mask_idx],7,64);
+    _tmp15_ = XOR(state__[4][_mask_idx],_tmp14_);
+    _tmp16_ = R_ROTATE(state__[4][_mask_idx],41,64);
+    stateR__[4][_mask_idx] = XOR(_tmp15_,_tmp16_);
+  }
 
 }
 
@@ -138,47 +158,65 @@ void ascon12__ (/*inputs*/ DATATYPE input__[5][MASKING_ORDER], /*outputs*/ DATAT
   DATATYPE state__[5][MASKING_ORDER];
 
   // Instructions (body)
-  ASGN_CST(consts__[0], LIFT_64(240));
-  ASGN_CST(consts__[1], LIFT_64(225));
-  ASGN_CST(consts__[2], LIFT_64(210));
-  ASGN_CST(consts__[3], LIFT_64(195));
-  ASGN_CST(consts__[4], LIFT_64(180));
-  ASGN_CST(consts__[5], LIFT_64(165));
-  ASGN_CST(consts__[6], LIFT_64(150));
-  ASGN_CST(consts__[7], LIFT_64(135));
-  ASGN_CST(consts__[8], LIFT_64(120));
-  ASGN_CST(consts__[9], LIFT_64(105));
-  ASGN_CST(consts__[10], LIFT_64(90));
-  ASGN_CST(consts__[11], LIFT_64(75));
-  ASGN(state__[0],input__[0]);
-  ASGN(state__[1],input__[1]);
-  ASGN(state__[2],input__[2]);
-  ASGN(state__[3],input__[3]);
-  ASGN(state__[4],input__[4]);
+  consts__[0][0] = LIFT_64(240);
+  for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    consts__[0][_mask_idx] = LIFT_64(0);
+    consts__[1][_mask_idx] = LIFT_64(0);
+    consts__[2][_mask_idx] = LIFT_64(0);
+    consts__[3][_mask_idx] = LIFT_64(0);
+    consts__[4][_mask_idx] = LIFT_64(0);
+    consts__[5][_mask_idx] = LIFT_64(0);
+    consts__[6][_mask_idx] = LIFT_64(0);
+    consts__[7][_mask_idx] = LIFT_64(0);
+    consts__[8][_mask_idx] = LIFT_64(0);
+    consts__[9][_mask_idx] = LIFT_64(0);
+    consts__[10][_mask_idx] = LIFT_64(0);
+    consts__[11][_mask_idx] = LIFT_64(0);
+  }
+  consts__[1][0] = LIFT_64(225);
+  consts__[2][0] = LIFT_64(210);
+  consts__[3][0] = LIFT_64(195);
+  consts__[4][0] = LIFT_64(180);
+  consts__[5][0] = LIFT_64(165);
+  consts__[6][0] = LIFT_64(150);
+  consts__[7][0] = LIFT_64(135);
+  consts__[8][0] = LIFT_64(120);
+  consts__[9][0] = LIFT_64(105);
+  consts__[10][0] = LIFT_64(90);
+  consts__[11][0] = LIFT_64(75);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    state__[0][_mask_idx] = input__[0][_mask_idx];
+    state__[1][_mask_idx] = input__[1][_mask_idx];
+    state__[2][_mask_idx] = input__[2][_mask_idx];
+    state__[3][_mask_idx] = input__[3][_mask_idx];
+    state__[4][_mask_idx] = input__[4][_mask_idx];
+  }
   for (int i__ = 0; i__ <= 11; i__++) {
     AddConstant__V64(state__,consts__[i__],_tmp29_);
     Sbox__V64(_tmp29_,_tmp30_);
     LinearLayer__V64(_tmp30_,state__);
   }
-  ASGN(output__[0],state__[0]);
-  ASGN(output__[1],state__[1]);
-  ASGN(output__[2],state__[2]);
-  ASGN(output__[3],state__[3]);
-  ASGN(output__[4],state__[4]);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    output__[0][_mask_idx] = state__[0][_mask_idx];
+    output__[1][_mask_idx] = state__[1][_mask_idx];
+    output__[2][_mask_idx] = state__[2][_mask_idx];
+    output__[3][_mask_idx] = state__[3][_mask_idx];
+    output__[4][_mask_idx] = state__[4][_mask_idx];
+  }
 
 }
 
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE input__[5][MASKING_ORDER] = { 0 };
+  DATATYPE input__[5][MASKING_ORDER][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE output__[5][MASKING_ORDER] = { 0 };
+  DATATYPE output__[5][MASKING_ORDER][MASKING_ORDER] = { 0 };
   /* fun call */
   ascon12__(input__,output__);
 
   /* Returning the number of encrypted bytes */
-  return 40;
+  return 0;
 }
 
 /* **************************************************************** */
