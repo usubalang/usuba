@@ -203,7 +203,10 @@ and get_var_type (backtrace:string list)
   match v with
   | Var x -> (match Hashtbl.find_opt env_var x with
               | Some typ -> typ
-              | None -> eprintf "[Type error] variable `%s' undeclared.\n" x.name;
+              | None ->
+                 match Hashtbl.find_opt env_it x with
+                 | Some _ -> Nat
+                 | _ -> eprintf "[Type error] variable `%s' undeclared.\n" x.name;
                         print_backtrace backtrace;
                         raise Fatal_type_error)
   | Index(v',idx) ->

@@ -216,8 +216,10 @@ and can_linearize_def_body
          let ei = eval_arith env_it ei in
          let ef = eval_arith env_it ef in
          List.iter (fun i -> Hashtbl.add env_it x i;
+                             Hashtbl.add env_var x Nat;
                              can_linearize_def_body env_fun env_it env_var
                                                     defined dl v_in v_out;
+                             Hashtbl.remove env_var x;
                              Hashtbl.remove env_it x) (gen_list_bounds ei ef)
 
     ) deqs
@@ -308,8 +310,10 @@ let rec can_linearize
          let ei = eval_arith env_it ei in
          let ef = eval_arith env_it ef in
          List.iter (fun i -> Hashtbl.add env_it x i;
+                             Hashtbl.add env_var x Nat;
                              can_linearize env_fun ~env_it:env_it
-                               ~defined:defined dl id env_var;
+                                           ~defined:defined dl id env_var;
+                             Hashtbl.remove env_var x;
                              Hashtbl.remove env_it x) (gen_list_bounds ei ef)
 
     ) deqs
