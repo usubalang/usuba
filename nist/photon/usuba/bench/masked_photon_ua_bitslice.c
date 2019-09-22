@@ -1062,14 +1062,14 @@ void Photon__ (/*inputs*/ DATATYPE plain__[8][8][4][MASKING_ORDER], /*outputs*/ 
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE plain__[8][8][4][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE plain__[8][8][4][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE cipher__[8][8][4][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE cipher__[8][8][4][MASKING_ORDER] = { 0 };
   /* fun call */
   Photon__(plain__,cipher__);
 
   /* Returning the number of encrypted bytes */
-  return 32;
+  return 1024;
 }
 
 /* **************************************************************** */

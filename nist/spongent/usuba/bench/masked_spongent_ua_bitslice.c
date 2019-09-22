@@ -675,14 +675,14 @@ void permutation__ (/*inputs*/ DATATYPE input__[20][8][MASKING_ORDER], /*outputs
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE input__[20][8][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE input__[20][8][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE output__[20][8][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE output__[20][8][MASKING_ORDER] = { 0 };
   /* fun call */
   permutation__(input__,output__);
 
   /* Returning the number of encrypted bytes */
-  return 20;
+  return 640;
 }
 
 /* **************************************************************** */

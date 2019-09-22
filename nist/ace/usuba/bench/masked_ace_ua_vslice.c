@@ -558,14 +558,14 @@ void ACE__ (/*inputs*/ DATATYPE input__[5][2][MASKING_ORDER], /*outputs*/ DATATY
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE input__[5][2][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE input__[5][2][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE output__[5][2][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE output__[5][2][MASKING_ORDER] = { 0 };
   /* fun call */
   ACE__(input__,output__);
 
   /* Returning the number of encrypted bytes */
-  return 1;
+  return 40;
 }
 
 /* **************************************************************** */

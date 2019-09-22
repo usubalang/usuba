@@ -2479,15 +2479,15 @@ void Skinny__ (/*inputs*/ DATATYPE input__[4][4][8][MASKING_ORDER],DATATYPE twea
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE input__[4][4][8][MASKING_ORDER][MASKING_ORDER] = { 0 };
-  DATATYPE tweaky__[32][8][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE input__[4][4][8][MASKING_ORDER] = { 0 };
+  DATATYPE tweaky__[32][8][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE output__[4][4][8][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE output__[4][4][8][MASKING_ORDER] = { 0 };
   /* fun call */
   Skinny__(input__, tweaky__,output__);
 
   /* Returning the number of encrypted bytes */
-  return 16;
+  return 512;
 }
 
 /* **************************************************************** */

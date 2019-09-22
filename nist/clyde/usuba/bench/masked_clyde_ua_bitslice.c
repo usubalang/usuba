@@ -5827,16 +5827,16 @@ void clyde128__ (/*inputs*/ DATATYPE state__[128][MASKING_ORDER],DATATYPE key__[
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE state__[128][MASKING_ORDER][MASKING_ORDER] = { 0 };
-  DATATYPE key__[128][MASKING_ORDER][MASKING_ORDER] = { 0 };
-  DATATYPE tweak__[128][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE state__[128][MASKING_ORDER] = { 0 };
+  DATATYPE key__[128][MASKING_ORDER] = { 0 };
+  DATATYPE tweak__[128][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE cipher__[128][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE cipher__[128][MASKING_ORDER] = { 0 };
   /* fun call */
   clyde128__(state__, key__, tweak__,cipher__);
 
   /* Returning the number of encrypted bytes */
-  return 16;
+  return 512;
 }
 
 /* **************************************************************** */

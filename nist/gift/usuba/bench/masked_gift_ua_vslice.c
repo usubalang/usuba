@@ -373,15 +373,15 @@ void gift__ (/*inputs*/ DATATYPE P__[4][MASKING_ORDER],DATATYPE K__[8][MASKING_O
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE P__[4][MASKING_ORDER][MASKING_ORDER] = { 0 };
-  DATATYPE K__[8][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE P__[4][MASKING_ORDER] = { 0 };
+  DATATYPE K__[8][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE C__[4][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE C__[4][MASKING_ORDER] = { 0 };
   /* fun call */
   gift__(P__, K__,C__);
 
   /* Returning the number of encrypted bytes */
-  return 0;
+  return 16;
 }
 
 /* **************************************************************** */
