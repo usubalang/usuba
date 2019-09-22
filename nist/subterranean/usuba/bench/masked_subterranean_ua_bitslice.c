@@ -914,14 +914,14 @@ void blank__ (/*inputs*/ DATATYPE state__[257][MASKING_ORDER], /*outputs*/ DATAT
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE state__[257][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE state__[257][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE stateR__[257][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE stateR__[257][MASKING_ORDER] = { 0 };
   /* fun call */
   blank__(state__,stateR__);
 
   /* Returning the number of encrypted bytes */
-  return 32;
+  return 1028;
 }
 
 /* **************************************************************** */

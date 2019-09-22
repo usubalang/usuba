@@ -2733,14 +2733,14 @@ void gimli__ (/*inputs*/ DATATYPE state__[3][4][32][MASKING_ORDER], /*outputs*/ 
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE state__[3][4][32][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE state__[3][4][32][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE stateR__[3][4][32][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE stateR__[3][4][32][MASKING_ORDER] = { 0 };
   /* fun call */
   gimli__(state__,stateR__);
 
   /* Returning the number of encrypted bytes */
-  return 48;
+  return 1536;
 }
 
 /* **************************************************************** */

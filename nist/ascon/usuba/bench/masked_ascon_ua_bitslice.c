@@ -5418,14 +5418,14 @@ void ascon12__ (/*inputs*/ DATATYPE input__[320][MASKING_ORDER], /*outputs*/ DAT
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE input__[320][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE input__[320][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE output__[320][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE output__[320][MASKING_ORDER] = { 0 };
   /* fun call */
   ascon12__(input__,output__);
 
   /* Returning the number of encrypted bytes */
-  return 40;
+  return 1280;
 }
 
 /* **************************************************************** */

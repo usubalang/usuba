@@ -857,15 +857,15 @@ void pyjamask__ (/*inputs*/ DATATYPE plaintext__[128][MASKING_ORDER],DATATYPE ke
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE plaintext__[128][MASKING_ORDER][MASKING_ORDER] = { 0 };
-  DATATYPE key__[15][128][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE plaintext__[128][MASKING_ORDER] = { 0 };
+  DATATYPE key__[15][128][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE ciphertext__[128][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE ciphertext__[128][MASKING_ORDER] = { 0 };
   /* fun call */
   pyjamask__(plaintext__, key__,ciphertext__);
 
   /* Returning the number of encrypted bytes */
-  return 16;
+  return 512;
 }
 
 /* **************************************************************** */

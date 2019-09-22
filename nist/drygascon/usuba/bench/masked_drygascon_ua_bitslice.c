@@ -6147,15 +6147,15 @@ void drysponge_g__ (/*inputs*/ DATATYPE c__[320][MASKING_ORDER], /*outputs*/ DAT
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE c__[320][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE c__[320][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE cR__[320][MASKING_ORDER][MASKING_ORDER] = { 0 };
-  DATATYPE r__[128][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE cR__[320][MASKING_ORDER] = { 0 };
+  DATATYPE r__[128][MASKING_ORDER] = { 0 };
   /* fun call */
   drysponge_g__(c__,cR__, r__);
 
   /* Returning the number of encrypted bytes */
-  return 56;
+  return 1792;
 }
 
 /* **************************************************************** */

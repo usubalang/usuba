@@ -38,8 +38,10 @@ let gen_runtime (orig:prog) (prog:prog) (conf:config) (filename:string) : string
                  map_no_end (fun x -> Nodes_to_c.def_to_c x false conf) prog.nodes in
 
   let bench_fun = if conf.gen_bench then
-                    if conf.masked || conf.ua_masked then
+                    if conf.masked then
                       Nodes_to_c_masked.gen_bench (last prog.nodes) conf
+                    else if conf.ua_masked then
+                      Nodes_to_c_ua_masked.gen_bench (last prog.nodes) conf
                     else
                       Nodes_to_c.gen_bench (last prog.nodes) conf
                   else "" in

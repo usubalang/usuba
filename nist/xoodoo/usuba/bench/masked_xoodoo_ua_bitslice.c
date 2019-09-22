@@ -4553,14 +4553,14 @@ void xoodoo__ (/*inputs*/ DATATYPE input__[3][4][32][MASKING_ORDER], /*outputs*/
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE input__[3][4][32][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE input__[3][4][32][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE output__[3][4][32][MASKING_ORDER][MASKING_ORDER] = { 0 };
+  DATATYPE output__[3][4][32][MASKING_ORDER] = { 0 };
   /* fun call */
   xoodoo__(input__,output__);
 
   /* Returning the number of encrypted bytes */
-  return 48;
+  return 1536;
 }
 
 /* **************************************************************** */
