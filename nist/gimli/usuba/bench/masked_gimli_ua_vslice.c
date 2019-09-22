@@ -10,20 +10,20 @@
 #define BITS_PER_REG 32
 #endif
 /* including the architecture specific .h */
-#include "MASKED.h"
+#include "MASKED_UA.h"
 
 /* auxiliary functions */
 void SPbox_Rx__V32 (/*inputs*/ DATATYPE col__0__[MASKING_ORDER],DATATYPE col__1__[MASKING_ORDER],DATATYPE col__2__[MASKING_ORDER], /*outputs*/ DATATYPE colR__0__[MASKING_ORDER],DATATYPE colR__1__[MASKING_ORDER],DATATYPE colR__2__[MASKING_ORDER]) {
 
   // Variables declaration
-  DATATYPE _tmp10_[MASKING_ORDER];
-  DATATYPE _tmp1_[MASKING_ORDER];
+  DATATYPE _tmp10_;
+  DATATYPE _tmp1_;
   DATATYPE _tmp2_[MASKING_ORDER];
   DATATYPE _tmp3_[MASKING_ORDER];
-  DATATYPE _tmp4_[MASKING_ORDER];
+  DATATYPE _tmp4_;
   DATATYPE _tmp5_[MASKING_ORDER];
   DATATYPE _tmp6_[MASKING_ORDER];
-  DATATYPE _tmp7_[MASKING_ORDER];
+  DATATYPE _tmp7_;
   DATATYPE _tmp8_[MASKING_ORDER];
   DATATYPE _tmp9_[MASKING_ORDER];
   DATATYPE x__[MASKING_ORDER];
@@ -31,61 +31,77 @@ void SPbox_Rx__V32 (/*inputs*/ DATATYPE col__0__[MASKING_ORDER],DATATYPE col__1_
   DATATYPE y__[MASKING_ORDER];
 
   // Instructions (body)
-  L_ROTATE(x__,col__0__,24,32);
-  L_ROTATE(y__,col__1__,9,32);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    x__[_mask_idx] = L_ROTATE(col__0__[_mask_idx],24,32);
+    y__[_mask_idx] = L_ROTATE(col__1__[_mask_idx],9,32);
+    _tmp1_ = L_SHIFT(col__2__[_mask_idx],1,32);
+    _tmp2_[_mask_idx] = XOR(x__[_mask_idx],_tmp1_);
+    _tmp5_[_mask_idx] = XOR(y__[_mask_idx],x__[_mask_idx]);
+    _tmp8_[_mask_idx] = XOR(col__2__[_mask_idx],y__[_mask_idx]);
+  }
   REFRESH(x_R__,x__);
-  L_SHIFT(_tmp1_,col__2__,1,32);
-  XOR(_tmp2_,x__,_tmp1_);
-  AND(_tmp3_,y__,col__2__);
-  L_SHIFT(_tmp4_,_tmp3_,2,32);
-  XOR(colR__2__,_tmp2_,_tmp4_);
-  XOR(_tmp5_,y__,x__);
-  OR(_tmp6_,x_R__,col__2__);
-  L_SHIFT(_tmp7_,_tmp6_,1,32);
-  XOR(colR__1__,_tmp5_,_tmp7_);
-  XOR(_tmp8_,col__2__,y__);
-  AND(_tmp9_,x_R__,y__);
-  L_SHIFT(_tmp10_,_tmp9_,3,32);
-  XOR(colR__0__,_tmp8_,_tmp10_);
+  MASKED_AND(_tmp3_,y__,col__2__);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp4_ = L_SHIFT(_tmp3_[_mask_idx],2,32);
+    colR__2__[_mask_idx] = XOR(_tmp2_[_mask_idx],_tmp4_);
+  }
+  MASKED_OR(_tmp6_,x_R__,col__2__);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp7_ = L_SHIFT(_tmp6_[_mask_idx],1,32);
+    colR__1__[_mask_idx] = XOR(_tmp5_[_mask_idx],_tmp7_);
+  }
+  MASKED_AND(_tmp9_,x_R__,y__);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp10_ = L_SHIFT(_tmp9_[_mask_idx],3,32);
+    colR__0__[_mask_idx] = XOR(_tmp8_[_mask_idx],_tmp10_);
+  }
 
 }
 
 void SPbox_Rxy__V32 (/*inputs*/ DATATYPE col__0__[MASKING_ORDER],DATATYPE col__1__[MASKING_ORDER],DATATYPE col__2__[MASKING_ORDER], /*outputs*/ DATATYPE colR__0__[MASKING_ORDER],DATATYPE colR__1__[MASKING_ORDER],DATATYPE colR__2__[MASKING_ORDER]) {
 
   // Variables declaration
-  DATATYPE _tmp11_[MASKING_ORDER];
+  DATATYPE _tmp11_;
   DATATYPE _tmp12_[MASKING_ORDER];
   DATATYPE _tmp13_[MASKING_ORDER];
-  DATATYPE _tmp14_[MASKING_ORDER];
+  DATATYPE _tmp14_;
   DATATYPE _tmp15_[MASKING_ORDER];
   DATATYPE _tmp16_[MASKING_ORDER];
-  DATATYPE _tmp17_[MASKING_ORDER];
+  DATATYPE _tmp17_;
   DATATYPE _tmp18_[MASKING_ORDER];
   DATATYPE _tmp19_[MASKING_ORDER];
-  DATATYPE _tmp20_[MASKING_ORDER];
+  DATATYPE _tmp20_;
   DATATYPE x__[MASKING_ORDER];
   DATATYPE x_R__[MASKING_ORDER];
   DATATYPE y__[MASKING_ORDER];
   DATATYPE y_R__[MASKING_ORDER];
 
   // Instructions (body)
-  L_ROTATE(x__,col__0__,24,32);
-  L_ROTATE(y__,col__1__,9,32);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    x__[_mask_idx] = L_ROTATE(col__0__[_mask_idx],24,32);
+    y__[_mask_idx] = L_ROTATE(col__1__[_mask_idx],9,32);
+    _tmp11_ = L_SHIFT(col__2__[_mask_idx],1,32);
+    _tmp12_[_mask_idx] = XOR(x__[_mask_idx],_tmp11_);
+    _tmp15_[_mask_idx] = XOR(y__[_mask_idx],x__[_mask_idx]);
+    _tmp18_[_mask_idx] = XOR(col__2__[_mask_idx],y__[_mask_idx]);
+  }
   REFRESH(x_R__,x__);
   REFRESH(y_R__,y__);
-  L_SHIFT(_tmp11_,col__2__,1,32);
-  XOR(_tmp12_,x__,_tmp11_);
-  AND(_tmp13_,y_R__,col__2__);
-  L_SHIFT(_tmp14_,_tmp13_,2,32);
-  XOR(colR__2__,_tmp12_,_tmp14_);
-  XOR(_tmp15_,y__,x__);
-  OR(_tmp16_,x_R__,col__2__);
-  L_SHIFT(_tmp17_,_tmp16_,1,32);
-  XOR(colR__1__,_tmp15_,_tmp17_);
-  XOR(_tmp18_,col__2__,y__);
-  AND(_tmp19_,x_R__,y_R__);
-  L_SHIFT(_tmp20_,_tmp19_,3,32);
-  XOR(colR__0__,_tmp18_,_tmp20_);
+  MASKED_AND(_tmp13_,y_R__,col__2__);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp14_ = L_SHIFT(_tmp13_[_mask_idx],2,32);
+    colR__2__[_mask_idx] = XOR(_tmp12_[_mask_idx],_tmp14_);
+  }
+  MASKED_OR(_tmp16_,x_R__,col__2__);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp17_ = L_SHIFT(_tmp16_[_mask_idx],1,32);
+    colR__1__[_mask_idx] = XOR(_tmp15_[_mask_idx],_tmp17_);
+  }
+  MASKED_AND(_tmp19_,x_R__,y_R__);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp20_ = L_SHIFT(_tmp19_[_mask_idx],3,32);
+    colR__0__[_mask_idx] = XOR(_tmp18_[_mask_idx],_tmp20_);
+  }
 
 }
 
@@ -119,18 +135,20 @@ void SmallSwap__V32 (/*inputs*/ DATATYPE state__[3][4][MASKING_ORDER], /*outputs
   ;
 
   // Instructions (body)
-  ASGN(stateR__[0][0],state__[0][1]);
-  ASGN(stateR__[0][1],state__[0][0]);
-  ASGN(stateR__[0][2],state__[0][3]);
-  ASGN(stateR__[0][3],state__[0][2]);
-  ASGN(stateR__[1][0],state__[1][0]);
-  ASGN(stateR__[1][1],state__[1][1]);
-  ASGN(stateR__[1][2],state__[1][2]);
-  ASGN(stateR__[1][3],state__[1][3]);
-  ASGN(stateR__[2][0],state__[2][0]);
-  ASGN(stateR__[2][1],state__[2][1]);
-  ASGN(stateR__[2][2],state__[2][2]);
-  ASGN(stateR__[2][3],state__[2][3]);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    stateR__[0][0][_mask_idx] = state__[0][1][_mask_idx];
+    stateR__[0][1][_mask_idx] = state__[0][0][_mask_idx];
+    stateR__[0][2][_mask_idx] = state__[0][3][_mask_idx];
+    stateR__[0][3][_mask_idx] = state__[0][2][_mask_idx];
+    stateR__[1][0][_mask_idx] = state__[1][0][_mask_idx];
+    stateR__[1][1][_mask_idx] = state__[1][1][_mask_idx];
+    stateR__[1][2][_mask_idx] = state__[1][2][_mask_idx];
+    stateR__[1][3][_mask_idx] = state__[1][3][_mask_idx];
+    stateR__[2][0][_mask_idx] = state__[2][0][_mask_idx];
+    stateR__[2][1][_mask_idx] = state__[2][1][_mask_idx];
+    stateR__[2][2][_mask_idx] = state__[2][2][_mask_idx];
+    stateR__[2][3][_mask_idx] = state__[2][3][_mask_idx];
+  }
 
 }
 
@@ -140,40 +158,44 @@ void BigSwap__V32 (/*inputs*/ DATATYPE state__[3][4][MASKING_ORDER], /*outputs*/
   ;
 
   // Instructions (body)
-  ASGN(stateR__[0][0],state__[0][2]);
-  ASGN(stateR__[0][1],state__[0][3]);
-  ASGN(stateR__[0][2],state__[0][0]);
-  ASGN(stateR__[0][3],state__[0][1]);
-  ASGN(stateR__[1][0],state__[1][0]);
-  ASGN(stateR__[1][1],state__[1][1]);
-  ASGN(stateR__[1][2],state__[1][2]);
-  ASGN(stateR__[1][3],state__[1][3]);
-  ASGN(stateR__[2][0],state__[2][0]);
-  ASGN(stateR__[2][1],state__[2][1]);
-  ASGN(stateR__[2][2],state__[2][2]);
-  ASGN(stateR__[2][3],state__[2][3]);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    stateR__[0][0][_mask_idx] = state__[0][2][_mask_idx];
+    stateR__[0][1][_mask_idx] = state__[0][3][_mask_idx];
+    stateR__[0][2][_mask_idx] = state__[0][0][_mask_idx];
+    stateR__[0][3][_mask_idx] = state__[0][1][_mask_idx];
+    stateR__[1][0][_mask_idx] = state__[1][0][_mask_idx];
+    stateR__[1][1][_mask_idx] = state__[1][1][_mask_idx];
+    stateR__[1][2][_mask_idx] = state__[1][2][_mask_idx];
+    stateR__[1][3][_mask_idx] = state__[1][3][_mask_idx];
+    stateR__[2][0][_mask_idx] = state__[2][0][_mask_idx];
+    stateR__[2][1][_mask_idx] = state__[2][1][_mask_idx];
+    stateR__[2][2][_mask_idx] = state__[2][2][_mask_idx];
+    stateR__[2][3][_mask_idx] = state__[2][3][_mask_idx];
+  }
 
 }
 
 void AddRC__V32 (/*inputs*/ DATATYPE state__[3][4][MASKING_ORDER],DATATYPE rc__[MASKING_ORDER], /*outputs*/ DATATYPE stateR__[3][4][MASKING_ORDER]) {
 
   // Variables declaration
-  DATATYPE _tmp21_[MASKING_ORDER];
+  DATATYPE _tmp21_;
 
   // Instructions (body)
-  XOR(_tmp21_,state__[0][0],rc__);
-  ASGN(stateR__[0][0],_tmp21_);
-  ASGN(stateR__[0][1],state__[0][1]);
-  ASGN(stateR__[0][2],state__[0][2]);
-  ASGN(stateR__[0][3],state__[0][3]);
-  ASGN(stateR__[1][0],state__[1][0]);
-  ASGN(stateR__[1][1],state__[1][1]);
-  ASGN(stateR__[1][2],state__[1][2]);
-  ASGN(stateR__[1][3],state__[1][3]);
-  ASGN(stateR__[2][0],state__[2][0]);
-  ASGN(stateR__[2][1],state__[2][1]);
-  ASGN(stateR__[2][2],state__[2][2]);
-  ASGN(stateR__[2][3],state__[2][3]);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp21_ = XOR(state__[0][0][_mask_idx],rc__[_mask_idx]);
+    stateR__[0][0][_mask_idx] = _tmp21_;
+    stateR__[0][1][_mask_idx] = state__[0][1][_mask_idx];
+    stateR__[0][2][_mask_idx] = state__[0][2][_mask_idx];
+    stateR__[0][3][_mask_idx] = state__[0][3][_mask_idx];
+    stateR__[1][0][_mask_idx] = state__[1][0][_mask_idx];
+    stateR__[1][1][_mask_idx] = state__[1][1][_mask_idx];
+    stateR__[1][2][_mask_idx] = state__[1][2][_mask_idx];
+    stateR__[1][3][_mask_idx] = state__[1][3][_mask_idx];
+    stateR__[2][0][_mask_idx] = state__[2][0][_mask_idx];
+    stateR__[2][1][_mask_idx] = state__[2][1][_mask_idx];
+    stateR__[2][2][_mask_idx] = state__[2][2][_mask_idx];
+    stateR__[2][3][_mask_idx] = state__[2][3][_mask_idx];
+  }
 
 }
 
@@ -186,24 +208,34 @@ void gimli__ (/*inputs*/ DATATYPE state__[3][4][MASKING_ORDER], /*outputs*/ DATA
   DATATYPE round__[37][3][4][MASKING_ORDER];
 
   // Instructions (body)
-  ASGN_CST(rc__[0], LIFT_32(2654435608));
-  ASGN_CST(rc__[1], LIFT_32(2654435604));
-  ASGN_CST(rc__[2], LIFT_32(2654435600));
-  ASGN_CST(rc__[3], LIFT_32(2654435596));
-  ASGN_CST(rc__[4], LIFT_32(2654435592));
-  ASGN_CST(rc__[5], LIFT_32(2654435588));
-  ASGN(round__[0][0][0],state__[0][0]);
-  ASGN(round__[0][0][1],state__[0][1]);
-  ASGN(round__[0][0][2],state__[0][2]);
-  ASGN(round__[0][0][3],state__[0][3]);
-  ASGN(round__[0][1][0],state__[1][0]);
-  ASGN(round__[0][1][1],state__[1][1]);
-  ASGN(round__[0][1][2],state__[1][2]);
-  ASGN(round__[0][1][3],state__[1][3]);
-  ASGN(round__[0][2][0],state__[2][0]);
-  ASGN(round__[0][2][1],state__[2][1]);
-  ASGN(round__[0][2][2],state__[2][2]);
-  ASGN(round__[0][2][3],state__[2][3]);
+  rc__[0][0] = LIFT_32(2654435608);
+  for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    rc__[0][_mask_idx] = LIFT_32(0);
+    rc__[1][_mask_idx] = LIFT_32(0);
+    rc__[2][_mask_idx] = LIFT_32(0);
+    rc__[3][_mask_idx] = LIFT_32(0);
+    rc__[4][_mask_idx] = LIFT_32(0);
+    rc__[5][_mask_idx] = LIFT_32(0);
+  }
+  rc__[1][0] = LIFT_32(2654435604);
+  rc__[2][0] = LIFT_32(2654435600);
+  rc__[3][0] = LIFT_32(2654435596);
+  rc__[4][0] = LIFT_32(2654435592);
+  rc__[5][0] = LIFT_32(2654435588);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    round__[0][0][0][_mask_idx] = state__[0][0][_mask_idx];
+    round__[0][0][1][_mask_idx] = state__[0][1][_mask_idx];
+    round__[0][0][2][_mask_idx] = state__[0][2][_mask_idx];
+    round__[0][0][3][_mask_idx] = state__[0][3][_mask_idx];
+    round__[0][1][0][_mask_idx] = state__[1][0][_mask_idx];
+    round__[0][1][1][_mask_idx] = state__[1][1][_mask_idx];
+    round__[0][1][2][_mask_idx] = state__[1][2][_mask_idx];
+    round__[0][1][3][_mask_idx] = state__[1][3][_mask_idx];
+    round__[0][2][0][_mask_idx] = state__[2][0][_mask_idx];
+    round__[0][2][1][_mask_idx] = state__[2][1][_mask_idx];
+    round__[0][2][2][_mask_idx] = state__[2][2][_mask_idx];
+    round__[0][2][3][_mask_idx] = state__[2][3][_mask_idx];
+  }
   for (int r__ = 0; r__ <= 5; r__++) {
     NonlinearLayer_Rx__V32(round__[(r__ * 6)],round__[((r__ * 6) + 1)]);
     SmallSwap__V32(round__[((r__ * 6) + 1)],_tmp28_);
@@ -213,32 +245,34 @@ void gimli__ (/*inputs*/ DATATYPE state__[3][4][MASKING_ORDER], /*outputs*/ DATA
     BigSwap__V32(round__[((r__ * 6) + 4)],round__[((r__ * 6) + 5)]);
     NonlinearLayer_Rx__V32(round__[((r__ * 6) + 5)],round__[((r__ * 6) + 6)]);
   }
-  ASGN(stateR__[0][0],round__[36][0][0]);
-  ASGN(stateR__[0][1],round__[36][0][1]);
-  ASGN(stateR__[0][2],round__[36][0][2]);
-  ASGN(stateR__[0][3],round__[36][0][3]);
-  ASGN(stateR__[1][0],round__[36][1][0]);
-  ASGN(stateR__[1][1],round__[36][1][1]);
-  ASGN(stateR__[1][2],round__[36][1][2]);
-  ASGN(stateR__[1][3],round__[36][1][3]);
-  ASGN(stateR__[2][0],round__[36][2][0]);
-  ASGN(stateR__[2][1],round__[36][2][1]);
-  ASGN(stateR__[2][2],round__[36][2][2]);
-  ASGN(stateR__[2][3],round__[36][2][3]);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    stateR__[0][0][_mask_idx] = round__[36][0][0][_mask_idx];
+    stateR__[0][1][_mask_idx] = round__[36][0][1][_mask_idx];
+    stateR__[0][2][_mask_idx] = round__[36][0][2][_mask_idx];
+    stateR__[0][3][_mask_idx] = round__[36][0][3][_mask_idx];
+    stateR__[1][0][_mask_idx] = round__[36][1][0][_mask_idx];
+    stateR__[1][1][_mask_idx] = round__[36][1][1][_mask_idx];
+    stateR__[1][2][_mask_idx] = round__[36][1][2][_mask_idx];
+    stateR__[1][3][_mask_idx] = round__[36][1][3][_mask_idx];
+    stateR__[2][0][_mask_idx] = round__[36][2][0][_mask_idx];
+    stateR__[2][1][_mask_idx] = round__[36][2][1][_mask_idx];
+    stateR__[2][2][_mask_idx] = round__[36][2][2][_mask_idx];
+    stateR__[2][3][_mask_idx] = round__[36][2][3][_mask_idx];
+  }
 
 }
 
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE state__[3][4][MASKING_ORDER] = { 0 };
+  DATATYPE state__[3][4][MASKING_ORDER][MASKING_ORDER] = { 0 };
   /* outputs */
-  DATATYPE stateR__[3][4][MASKING_ORDER] = { 0 };
+  DATATYPE stateR__[3][4][MASKING_ORDER][MASKING_ORDER] = { 0 };
   /* fun call */
   gimli__(state__,stateR__);
 
   /* Returning the number of encrypted bytes */
-  return 48;
+  return 1;
 }
 
 /* **************************************************************** */
