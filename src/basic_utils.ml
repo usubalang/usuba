@@ -119,7 +119,8 @@ let replace_key_2nd_layer hash1 k1 k2 v : unit =
             Hashtbl.replace hash2 k2 v;
             Hashtbl.replace hash1 k1 hash2
 
-(* Generates the list of integers between i and f *)
+(* Generates the list of integers between |i| and |f| included.
+   For instance: (gen_list_bounds 1 5) ===> [1; 2; 3; 4; 5] *)
 let rec gen_list_bounds (i:int) (f:int) : int list =
   if i < f then
     i :: (gen_list_bounds (i+1) f)

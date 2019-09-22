@@ -364,7 +364,9 @@ let def_to_c (def:def) (array:bool) (conf:config) : string =
 
 let rec get_typ_size (conf:config) (typ:typ) : int =
   match typ with
-  | Array(t,s)         -> (get_typ_size conf t) * (eval_arith_ne s)
+  | Array(t,s)         ->
+     if s = Var_e Mask.masking_order then 1
+     else (get_typ_size conf t) * (eval_arith_ne s)
   | Uint(dir,Mint m,n) ->
      n * m *
        (match dir with
