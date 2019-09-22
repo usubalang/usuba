@@ -329,8 +329,11 @@ and specialize_deqs (all_nodes:(ident,def) Hashtbl.t)
             | Eqn(vs,e,sync) -> specialize_expr all_nodes specialized_nodes
                                                 env_dir env_m env_var vs e sync
             | Loop(e,ei,ef,l,opts) ->
-               Loop(e,ei,ef,specialize_deqs all_nodes specialized_nodes
-                              env_dir env_m env_var l,opts))
+               Hashtbl.add env_var e Nat;
+               let x' = Loop(e,ei,ef,specialize_deqs all_nodes specialized_nodes
+                                                     env_dir env_m env_var l,opts) in
+               Hashtbl.remove env_var e;
+               x')
            deqs
 
 (* Called by either specialize_entry of specialize_fun_call.

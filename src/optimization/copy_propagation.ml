@@ -163,9 +163,11 @@ module Compute_keeps = struct
              compute_keep_expr env_keep env_var e;
              compute_keep_var  env_keep env_var v
            )
-        | Loop(_,_,_,dl,_) ->
+        | Loop(i,_,_,dl,_) ->
            (* Just reccursive call with |in_loop|=true *)
-           compute_keep_deqs env_keep env_var ~in_loop:true dl
+           Hashtbl.add env_var i Nat;
+           compute_keep_deqs env_keep env_var ~in_loop:true dl;
+           Hashtbl.remove env_var i
         | deq -> Printf.eprintf "compute_keep_deqs: invalid deq: %s.\n"
                    (Usuba_print.deq_to_str deq);
                  assert false)
@@ -296,7 +298,10 @@ let rec cp_deqs (env_var:(ident,typ) Hashtbl.t)
          deq @ [ Eqn(lhs,e',sync) ]
       | Loop(i,ei,ef,dl,opts)  ->
          (* A loop -> reccursive call *)
-         [ Loop(i,ei,ef, cp_deqs env_var keep_env optimized_away dl,opts) ])
+         Hashtbl.add env_var i Nat;
+         let deq' = Loop(i,ei,ef, cp_deqs env_var keep_env optimized_away dl,opts) in
+         Hashtbl.remove env_var i;
+         [ deq' ])
     deqs
 
 let cp_def (def:def) : def =
