@@ -97,7 +97,7 @@ void AddConstant__B1 (/*inputs*/ DATATYPE x__[8][8][4][MASKING_ORDER],DATATYPE r
 
   // Variables declaration
   DATATYPE IC__[8][4][MASKING_ORDER];
-  DATATYPE _tmp10_[4][MASKING_ORDER];
+  DATATYPE _tmp10_[8][4][MASKING_ORDER];
 
   // Instructions (body)
   IC__[0][0][0] = SET_ALL_ZERO();
@@ -168,14 +168,14 @@ void AddConstant__B1 (/*inputs*/ DATATYPE x__[8][8][4][MASKING_ORDER],DATATYPE r
   IC__[7][3][0] = SET_ALL_ZERO();
   for (int i__ = 0; i__ <= 7; i__++) {
     for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      _tmp10_[0][_mask_idx] = XOR(x__[i__][0][0][_mask_idx],rc__[0][_mask_idx]);
-      _tmp10_[1][_mask_idx] = XOR(x__[i__][0][1][_mask_idx],rc__[1][_mask_idx]);
-      _tmp10_[2][_mask_idx] = XOR(x__[i__][0][2][_mask_idx],rc__[2][_mask_idx]);
-      _tmp10_[3][_mask_idx] = XOR(x__[i__][0][3][_mask_idx],rc__[3][_mask_idx]);
-      y__[i__][0][0][_mask_idx] = XOR(_tmp10_[0][_mask_idx],IC__[i__][0][_mask_idx]);
-      y__[i__][0][1][_mask_idx] = XOR(_tmp10_[1][_mask_idx],IC__[i__][1][_mask_idx]);
-      y__[i__][0][2][_mask_idx] = XOR(_tmp10_[2][_mask_idx],IC__[i__][2][_mask_idx]);
-      y__[i__][0][3][_mask_idx] = XOR(_tmp10_[3][_mask_idx],IC__[i__][3][_mask_idx]);
+      _tmp10_[i__][0][_mask_idx] = XOR(x__[i__][0][0][_mask_idx],rc__[0][_mask_idx]);
+      _tmp10_[i__][1][_mask_idx] = XOR(x__[i__][0][1][_mask_idx],rc__[1][_mask_idx]);
+      _tmp10_[i__][2][_mask_idx] = XOR(x__[i__][0][2][_mask_idx],rc__[2][_mask_idx]);
+      _tmp10_[i__][3][_mask_idx] = XOR(x__[i__][0][3][_mask_idx],rc__[3][_mask_idx]);
+      y__[i__][0][0][_mask_idx] = XOR(_tmp10_[i__][0][_mask_idx],IC__[i__][0][_mask_idx]);
+      y__[i__][0][1][_mask_idx] = XOR(_tmp10_[i__][1][_mask_idx],IC__[i__][1][_mask_idx]);
+      y__[i__][0][2][_mask_idx] = XOR(_tmp10_[i__][2][_mask_idx],IC__[i__][2][_mask_idx]);
+      y__[i__][0][3][_mask_idx] = XOR(_tmp10_[i__][3][_mask_idx],IC__[i__][3][_mask_idx]);
       y__[i__][1][0][_mask_idx] = x__[i__][1][0][_mask_idx];
       y__[i__][1][1][_mask_idx] = x__[i__][1][1][_mask_idx];
       y__[i__][1][2][_mask_idx] = x__[i__][1][2][_mask_idx];
@@ -430,9 +430,9 @@ void Photon__ (/*inputs*/ DATATYPE plain__[8][8][4][MASKING_ORDER], /*outputs*/ 
 
   // Variables declaration
   DATATYPE RC__[12][4][MASKING_ORDER];
-  DATATYPE _tmp36_[8][8][4][MASKING_ORDER];
-  DATATYPE _tmp37_[8][8][4][MASKING_ORDER];
-  DATATYPE _tmp38_[8][8][4][MASKING_ORDER];
+  DATATYPE _tmp36_[12][8][8][4][MASKING_ORDER];
+  DATATYPE _tmp37_[12][8][8][4][MASKING_ORDER];
+  DATATYPE _tmp38_[12][8][8][4][MASKING_ORDER];
   DATATYPE state__[13][8][8][4][MASKING_ORDER];
 
   // Instructions (body)
@@ -793,10 +793,10 @@ void Photon__ (/*inputs*/ DATATYPE plain__[8][8][4][MASKING_ORDER], /*outputs*/ 
     state__[0][7][7][3][_mask_idx] = plain__[7][7][3][_mask_idx];
   }
   for (int i__ = 0; i__ <= 11; i__++) {
-    AddConstant__B1(state__[i__],RC__[i__],_tmp36_);
-    SubCells__B1(_tmp36_,_tmp37_);
-    ShiftRows__B1(_tmp37_,_tmp38_);
-    MixColumnSerial__B1(_tmp38_,state__[(i__ + 1)]);
+    AddConstant__B1(state__[i__],RC__[i__],_tmp36_[i__]);
+    SubCells__B1(_tmp36_[i__],_tmp37_[i__]);
+    ShiftRows__B1(_tmp37_[i__],_tmp38_[i__]);
+    MixColumnSerial__B1(_tmp38_[i__],state__[(i__ + 1)]);
   }
   for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
     cipher__[0][0][0][_mask_idx] = state__[12][0][0][0][_mask_idx];

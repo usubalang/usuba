@@ -52,46 +52,46 @@ void rowperm__V_Natnat_32 (/*inputs*/ DATATYPE S__,int B0_pos__,int B1_pos__,int
   // Variables declaration
   DATATYPE T__;
   DATATYPE _tmp10_;
+  DATATYPE _tmp11_;
   DATATYPE _tmp12_;
   DATATYPE _tmp13_;
   DATATYPE _tmp14_;
   DATATYPE _tmp15_;
+  DATATYPE _tmp16_;
   DATATYPE _tmp17_;
   DATATYPE _tmp18_;
   DATATYPE _tmp19_;
   DATATYPE _tmp20_;
+  DATATYPE _tmp21_;
   DATATYPE _tmp22_;
   DATATYPE _tmp23_;
   DATATYPE _tmp5_;
+  DATATYPE _tmp6_;
   DATATYPE _tmp7_;
   DATATYPE _tmp8_;
   DATATYPE _tmp9_;
-  DATATYPE _tmp99_;
-  DATATYPE _tmp98_;
-  DATATYPE _tmp97_;
-  DATATYPE _tmp96_;
 
   // Instructions (body)
   T__ = LIFT_32(0);
   for (int b__ = 0; b__ <= 7; b__++) {
     _tmp5_ = R_SHIFT(S__,((4 * b__) + 0),32);
-    _tmp96_ = LIFT_32(1);
-    _tmp7_ = AND(_tmp5_,_tmp96_);
+    _tmp6_ = LIFT_32(1);
+    _tmp7_ = AND(_tmp5_,_tmp6_);
     _tmp8_ = L_SHIFT(_tmp7_,(b__ + (8 * B0_pos__)),32);
     _tmp9_ = XOR(T__,_tmp8_);
     _tmp10_ = R_SHIFT(S__,((4 * b__) + 1),32);
-    _tmp97_ = LIFT_32(1);
-    _tmp12_ = AND(_tmp10_,_tmp97_);
+    _tmp11_ = LIFT_32(1);
+    _tmp12_ = AND(_tmp10_,_tmp11_);
     _tmp13_ = L_SHIFT(_tmp12_,(b__ + (8 * B1_pos__)),32);
     _tmp14_ = XOR(_tmp9_,_tmp13_);
     _tmp15_ = R_SHIFT(S__,((4 * b__) + 2),32);
-    _tmp98_ = LIFT_32(1);
-    _tmp17_ = AND(_tmp15_,_tmp98_);
+    _tmp16_ = LIFT_32(1);
+    _tmp17_ = AND(_tmp15_,_tmp16_);
     _tmp18_ = L_SHIFT(_tmp17_,(b__ + (8 * B2_pos__)),32);
     _tmp19_ = XOR(_tmp14_,_tmp18_);
     _tmp20_ = R_SHIFT(S__,((4 * b__) + 3),32);
-    _tmp99_ = LIFT_32(1);
-    _tmp22_ = AND(_tmp20_,_tmp99_);
+    _tmp21_ = LIFT_32(1);
+    _tmp22_ = AND(_tmp20_,_tmp21_);
     _tmp23_ = L_SHIFT(_tmp22_,(b__ + (8 * B3_pos__)),32);
     T__ = XOR(_tmp19_,_tmp23_);
   }
@@ -102,10 +102,6 @@ void rowperm__V_Natnat_32 (/*inputs*/ DATATYPE S__,int B0_pos__,int B1_pos__,int
 void PermBits__V32 (/*inputs*/ DATATYPE S__[4], /*outputs*/ DATATYPE S____[4]) {
 
   // Variables declaration
-  int _tmp115_;
-  int _tmp114_;
-  int _tmp113_;
-  int _tmp112_;
   int _tmp111_;
   int _tmp110_;
   int _tmp109_;
@@ -118,28 +114,32 @@ void PermBits__V32 (/*inputs*/ DATATYPE S__[4], /*outputs*/ DATATYPE S____[4]) {
   int _tmp102_;
   int _tmp101_;
   int _tmp100_;
+  int _tmp99_;
+  int _tmp98_;
+  int _tmp97_;
+  int _tmp96_;
 
   // Instructions (body)
-  _tmp100_ = 0;
-  _tmp101_ = 3;
-  _tmp102_ = 2;
-  _tmp103_ = 1;
-  rowperm__V_Natnat_32(S__[0],_tmp100_,_tmp101_,_tmp102_,_tmp103_,&S____[0]);
-  _tmp104_ = 1;
-  _tmp105_ = 0;
-  _tmp106_ = 3;
-  _tmp107_ = 2;
-  rowperm__V_Natnat_32(S__[1],_tmp104_,_tmp105_,_tmp106_,_tmp107_,&S____[1]);
-  _tmp108_ = 2;
-  _tmp109_ = 1;
-  _tmp110_ = 0;
-  _tmp111_ = 3;
-  rowperm__V_Natnat_32(S__[2],_tmp108_,_tmp109_,_tmp110_,_tmp111_,&S____[2]);
-  _tmp112_ = 3;
-  _tmp113_ = 2;
-  _tmp114_ = 1;
-  _tmp115_ = 0;
-  rowperm__V_Natnat_32(S__[3],_tmp112_,_tmp113_,_tmp114_,_tmp115_,&S____[3]);
+  _tmp96_ = 0;
+  _tmp97_ = 3;
+  _tmp98_ = 2;
+  _tmp99_ = 1;
+  rowperm__V_Natnat_32(S__[0],_tmp96_,_tmp97_,_tmp98_,_tmp99_,&S____[0]);
+  _tmp100_ = 1;
+  _tmp101_ = 0;
+  _tmp102_ = 3;
+  _tmp103_ = 2;
+  rowperm__V_Natnat_32(S__[1],_tmp100_,_tmp101_,_tmp102_,_tmp103_,&S____[1]);
+  _tmp104_ = 2;
+  _tmp105_ = 1;
+  _tmp106_ = 0;
+  _tmp107_ = 3;
+  rowperm__V_Natnat_32(S__[2],_tmp104_,_tmp105_,_tmp106_,_tmp107_,&S____[2]);
+  _tmp108_ = 3;
+  _tmp109_ = 2;
+  _tmp110_ = 1;
+  _tmp111_ = 0;
+  rowperm__V_Natnat_32(S__[3],_tmp108_,_tmp109_,_tmp110_,_tmp111_,&S____[3]);
 
 }
 
@@ -151,7 +151,7 @@ void AddRoundKey__V32 (/*inputs*/ DATATYPE S__[4],DATATYPE W__[8],DATATYPE rc__,
   DATATYPE _tmp42_;
   DATATYPE _tmp43_;
   DATATYPE _tmp45_;
-  DATATYPE _tmp116_;
+  DATATYPE _tmp112_;
 
   // Instructions (body)
   _tmp40_ = L_SHIFT(W__[2],16,32);
@@ -160,8 +160,8 @@ void AddRoundKey__V32 (/*inputs*/ DATATYPE S__[4],DATATYPE W__[8],DATATYPE rc__,
   _tmp42_ = L_SHIFT(W__[6],16,32);
   _tmp43_ = XOR(_tmp42_,W__[7]);
   S____[1] = XOR(S__[1],_tmp43_);
-  _tmp116_ = LIFT_32(2147483648);
-  _tmp45_ = XOR(S__[3],_tmp116_);
+  _tmp112_ = LIFT_32(2147483648);
+  _tmp45_ = XOR(S__[3],_tmp112_);
   S____[3] = XOR(_tmp45_,rc__);
   S____[0] = S__[0];
 
@@ -176,20 +176,20 @@ void KeyUpdate__V32 (/*inputs*/ DATATYPE W__[8], /*outputs*/ DATATYPE W____[8]) 
   DATATYPE _tmp50_;
   DATATYPE _tmp51_;
   DATATYPE _tmp52_;
-  DATATYPE _tmp118_;
-  DATATYPE _tmp117_;
+  DATATYPE _tmp114_;
+  DATATYPE _tmp113_;
 
   // Instructions (body)
   _tmp46_ = R_SHIFT(W__[6],2,32);
   _tmp47_ = L_SHIFT(W__[6],14,32);
   _tmp48_ = XOR(_tmp46_,_tmp47_);
-  _tmp117_ = LIFT_32(65535);
-  W____[0] = AND(_tmp48_,_tmp117_);
+  _tmp113_ = LIFT_32(65535);
+  W____[0] = AND(_tmp48_,_tmp113_);
   _tmp50_ = R_SHIFT(W__[7],12,32);
   _tmp51_ = L_SHIFT(W__[7],4,32);
   _tmp52_ = XOR(_tmp50_,_tmp51_);
-  _tmp118_ = LIFT_32(65535);
-  W____[1] = AND(_tmp52_,_tmp118_);
+  _tmp114_ = LIFT_32(65535);
+  W____[1] = AND(_tmp52_,_tmp114_);
   W____[7] = W__[5];
   W____[6] = W__[4];
   W____[5] = W__[3];

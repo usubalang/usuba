@@ -146,8 +146,6 @@ void rho_east__V32 (/*inputs*/ DATATYPE A__[3][4], /*outputs*/ DATATYPE R__[3][4
   R__[0][3] = A__[0][3];
   for (int i__ = 0; i__ <= 3; i__++) {
     R__[1][i__] = L_ROTATE(A__[1][i__],1,32);
-  }
-  for (int i__ = 0; i__ <= 3; i__++) {
     R__[2][i__] = L_ROTATE(A__[2][((i__ + 2) % 4)],8,32);
   }
 

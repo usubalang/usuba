@@ -82,8 +82,8 @@ void AddRoundKey__V32 (/*inputs*/ DATATYPE i__[4][MASKING_ORDER],DATATYPE k__[4]
 void mat_mult__V32 (/*inputs*/ DATATYPE col__[MASKING_ORDER],DATATYPE vec__[MASKING_ORDER], /*outputs*/ DATATYPE res__[MASKING_ORDER]) {
 
   // Variables declaration
-  DATATYPE _tmp5_;
-  DATATYPE _tmp6_;
+  DATATYPE _tmp5_[MASKING_ORDER];
+  DATATYPE _tmp6_[MASKING_ORDER];
   DATATYPE mask__[MASKING_ORDER];
   DATATYPE mat_col__[33][MASKING_ORDER];
   DATATYPE res_tmp__[MASKING_ORDER];
@@ -98,10 +98,10 @@ void mat_mult__V32 (/*inputs*/ DATATYPE col__[MASKING_ORDER],DATATYPE vec__[MASK
   }
   for (int i__ = 0; i__ <= 31; i__++) {
     for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      _tmp5_ = L_SHIFT(vec__[_mask_idx],i__,32);
-      mask__[_mask_idx] = RA_SHIFT(_tmp5_,31,32);
-      _tmp6_ = AND(mask__[_mask_idx],mat_col__[i__][0]);
-      res_tmp__[_mask_idx] = XOR(res_tmp__[_mask_idx],_tmp6_);
+      _tmp5_[_mask_idx] = L_SHIFT(vec__[_mask_idx],i__,32);
+      mask__[_mask_idx] = RA_SHIFT(_tmp5_[_mask_idx],31,32);
+      _tmp6_[_mask_idx] = AND(mask__[_mask_idx],mat_col__[i__][0]);
+      res_tmp__[_mask_idx] = XOR(res_tmp__[_mask_idx],_tmp6_[_mask_idx]);
       mat_col__[(i__ + 1)][_mask_idx] = R_ROTATE(mat_col__[i__][_mask_idx],1,32);
     }
   }

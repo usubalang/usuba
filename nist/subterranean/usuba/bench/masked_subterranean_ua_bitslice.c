@@ -16,6 +16,7 @@
 void chi__B1 (/*inputs*/ DATATYPE state__[257][MASKING_ORDER], /*outputs*/ DATATYPE stateR__[257][MASKING_ORDER]) {
 
   // Variables declaration
+  DATATYPE _tmp1_[MASKING_ORDER];
   DATATYPE _tmp2_[MASKING_ORDER];
   DATATYPE _tmp3_[MASKING_ORDER];
   DATATYPE _tmp5_[MASKING_ORDER];
@@ -25,9 +26,12 @@ void chi__B1 (/*inputs*/ DATATYPE state__[257][MASKING_ORDER], /*outputs*/ DATAT
 
   // Instructions (body)
   for (int i__ = 0; i__ <= 254; i__++) {
-    _tmp2_[0] = NOT(state__[(i__ + 1)][0]);
+    _tmp1_[0] = SET_ALL_ONE();
     for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      _tmp2_[_mask_idx] = state__[(i__ + 1)][_mask_idx];
+      _tmp1_[_mask_idx] = SET_ALL_ZERO();
+    }
+    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      _tmp2_[_mask_idx] = XOR(_tmp1_[_mask_idx],state__[(i__ + 1)][_mask_idx]);
     }
     MASKED_AND(_tmp3_,_tmp2_,state__[(i__ + 2)]);
     for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
@@ -72,13 +76,13 @@ void iota__B1 (/*inputs*/ DATATYPE state__[257][MASKING_ORDER], /*outputs*/ DATA
 void theta__B1 (/*inputs*/ DATATYPE state__[257][MASKING_ORDER], /*outputs*/ DATATYPE stateR__[257][MASKING_ORDER]) {
 
   // Variables declaration
-  DATATYPE _tmp11_;
+  DATATYPE _tmp11_[MASKING_ORDER];
 
   // Instructions (body)
   for (int i__ = 0; i__ <= 256; i__++) {
     for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      _tmp11_ = XOR(state__[i__][_mask_idx],state__[((i__ + 3) % 257)][_mask_idx]);
-      stateR__[i__][_mask_idx] = XOR(_tmp11_,state__[((i__ + 8) % 257)][_mask_idx]);
+      _tmp11_[_mask_idx] = XOR(state__[i__][_mask_idx],state__[((i__ + 3) % 257)][_mask_idx]);
+      stateR__[i__][_mask_idx] = XOR(_tmp11_[_mask_idx],state__[((i__ + 8) % 257)][_mask_idx]);
     }
   }
 

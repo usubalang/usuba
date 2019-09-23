@@ -63,24 +63,24 @@ void rowperm__V_Natnat_32 (/*inputs*/ DATATYPE S__[MASKING_ORDER],unsigned int B
   // Variables declaration
   DATATYPE T__[MASKING_ORDER];
   DATATYPE _tmp10_[MASKING_ORDER];
-  DATATYPE _tmp12_;
-  DATATYPE _tmp13_;
+  DATATYPE _tmp11_[MASKING_ORDER];
+  DATATYPE _tmp12_[MASKING_ORDER];
+  DATATYPE _tmp13_[MASKING_ORDER];
   DATATYPE _tmp14_[MASKING_ORDER];
   DATATYPE _tmp15_[MASKING_ORDER];
-  DATATYPE _tmp17_;
-  DATATYPE _tmp18_;
+  DATATYPE _tmp16_[MASKING_ORDER];
+  DATATYPE _tmp17_[MASKING_ORDER];
+  DATATYPE _tmp18_[MASKING_ORDER];
   DATATYPE _tmp19_[MASKING_ORDER];
   DATATYPE _tmp20_[MASKING_ORDER];
-  DATATYPE _tmp22_;
-  DATATYPE _tmp23_;
+  DATATYPE _tmp21_[MASKING_ORDER];
+  DATATYPE _tmp22_[MASKING_ORDER];
+  DATATYPE _tmp23_[MASKING_ORDER];
   DATATYPE _tmp5_[MASKING_ORDER];
-  DATATYPE _tmp7_;
-  DATATYPE _tmp8_;
+  DATATYPE _tmp6_[MASKING_ORDER];
+  DATATYPE _tmp7_[MASKING_ORDER];
+  DATATYPE _tmp8_[MASKING_ORDER];
   DATATYPE _tmp9_[MASKING_ORDER];
-  DATATYPE _tmp99_;
-  DATATYPE _tmp98_;
-  DATATYPE _tmp97_;
-  DATATYPE _tmp96_[MASKING_ORDER];
 
   // Instructions (body)
   T__[0] = LIFT_32(0);
@@ -94,35 +94,35 @@ void rowperm__V_Natnat_32 (/*inputs*/ DATATYPE S__[MASKING_ORDER],unsigned int B
       _tmp15_[_mask_idx] = R_SHIFT(S__[_mask_idx],((4 * b__) + 2),32);
       _tmp20_[_mask_idx] = R_SHIFT(S__[_mask_idx],((4 * b__) + 3),32);
     }
-    _tmp96_[0] = LIFT_32(1);
+    _tmp6_[0] = LIFT_32(1);
     for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      _tmp96_[_mask_idx] = LIFT_32(0);
-      _tmp97_ = LIFT_32(0);
-      _tmp98_ = LIFT_32(0);
-      _tmp99_ = LIFT_32(0);
+      _tmp6_[_mask_idx] = LIFT_32(0);
+      _tmp11_[_mask_idx] = LIFT_32(0);
+      _tmp16_[_mask_idx] = LIFT_32(0);
+      _tmp21_[_mask_idx] = LIFT_32(0);
     }
     for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      _tmp7_ = AND(_tmp5_[_mask_idx],_tmp96_[0]);
-      _tmp8_ = L_SHIFT(_tmp7_,(b__ + (8 * B0_pos__)),32);
-      _tmp9_[_mask_idx] = XOR(T__[_mask_idx],_tmp8_);
+      _tmp7_[_mask_idx] = AND(_tmp5_[_mask_idx],_tmp6_[0]);
+      _tmp8_[_mask_idx] = L_SHIFT(_tmp7_[_mask_idx],(b__ + (8 * B0_pos__)),32);
+      _tmp9_[_mask_idx] = XOR(T__[_mask_idx],_tmp8_[_mask_idx]);
     }
-    _tmp97_ = LIFT_32(1);
+    _tmp11_[0] = LIFT_32(1);
     for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      _tmp12_ = AND(_tmp10_[_mask_idx],_tmp97_);
-      _tmp13_ = L_SHIFT(_tmp12_,(b__ + (8 * B1_pos__)),32);
-      _tmp14_[_mask_idx] = XOR(_tmp9_[_mask_idx],_tmp13_);
+      _tmp12_[_mask_idx] = AND(_tmp10_[_mask_idx],_tmp11_[0]);
+      _tmp13_[_mask_idx] = L_SHIFT(_tmp12_[_mask_idx],(b__ + (8 * B1_pos__)),32);
+      _tmp14_[_mask_idx] = XOR(_tmp9_[_mask_idx],_tmp13_[_mask_idx]);
     }
-    _tmp98_ = LIFT_32(1);
+    _tmp16_[0] = LIFT_32(1);
     for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      _tmp17_ = AND(_tmp15_[_mask_idx],_tmp98_);
-      _tmp18_ = L_SHIFT(_tmp17_,(b__ + (8 * B2_pos__)),32);
-      _tmp19_[_mask_idx] = XOR(_tmp14_[_mask_idx],_tmp18_);
+      _tmp17_[_mask_idx] = AND(_tmp15_[_mask_idx],_tmp16_[0]);
+      _tmp18_[_mask_idx] = L_SHIFT(_tmp17_[_mask_idx],(b__ + (8 * B2_pos__)),32);
+      _tmp19_[_mask_idx] = XOR(_tmp14_[_mask_idx],_tmp18_[_mask_idx]);
     }
-    _tmp99_ = LIFT_32(1);
+    _tmp21_[0] = LIFT_32(1);
     for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      _tmp22_ = AND(_tmp20_[_mask_idx],_tmp99_);
-      _tmp23_ = L_SHIFT(_tmp22_,(b__ + (8 * B3_pos__)),32);
-      T__[_mask_idx] = XOR(_tmp19_[_mask_idx],_tmp23_);
+      _tmp22_[_mask_idx] = AND(_tmp20_[_mask_idx],_tmp21_[0]);
+      _tmp23_[_mask_idx] = L_SHIFT(_tmp22_[_mask_idx],(b__ + (8 * B3_pos__)),32);
+      T__[_mask_idx] = XOR(_tmp19_[_mask_idx],_tmp23_[_mask_idx]);
     }
   }
   for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
@@ -134,10 +134,6 @@ void rowperm__V_Natnat_32 (/*inputs*/ DATATYPE S__[MASKING_ORDER],unsigned int B
 void PermBits__V32 (/*inputs*/ DATATYPE S__[4][MASKING_ORDER], /*outputs*/ DATATYPE S____[4][MASKING_ORDER]) {
 
   // Variables declaration
-  unsigned int _tmp115_;
-  unsigned int _tmp114_;
-  unsigned int _tmp113_;
-  unsigned int _tmp112_;
   unsigned int _tmp111_;
   unsigned int _tmp110_;
   unsigned int _tmp109_;
@@ -150,28 +146,32 @@ void PermBits__V32 (/*inputs*/ DATATYPE S__[4][MASKING_ORDER], /*outputs*/ DATAT
   unsigned int _tmp102_;
   unsigned int _tmp101_;
   unsigned int _tmp100_;
+  unsigned int _tmp99_;
+  unsigned int _tmp98_;
+  unsigned int _tmp97_;
+  unsigned int _tmp96_;
 
   // Instructions (body)
-  _tmp100_ = 0;
-  _tmp101_ = 3;
-  _tmp102_ = 2;
-  _tmp103_ = 1;
-  rowperm__V_Natnat_32(S__[0],_tmp100_,_tmp101_,_tmp102_,_tmp103_,S____[0]);
-  _tmp104_ = 1;
-  _tmp105_ = 0;
-  _tmp106_ = 3;
-  _tmp107_ = 2;
-  rowperm__V_Natnat_32(S__[1],_tmp104_,_tmp105_,_tmp106_,_tmp107_,S____[1]);
-  _tmp108_ = 2;
-  _tmp109_ = 1;
-  _tmp110_ = 0;
-  _tmp111_ = 3;
-  rowperm__V_Natnat_32(S__[2],_tmp108_,_tmp109_,_tmp110_,_tmp111_,S____[2]);
-  _tmp112_ = 3;
-  _tmp113_ = 2;
-  _tmp114_ = 1;
-  _tmp115_ = 0;
-  rowperm__V_Natnat_32(S__[3],_tmp112_,_tmp113_,_tmp114_,_tmp115_,S____[3]);
+  _tmp96_ = 0;
+  _tmp97_ = 3;
+  _tmp98_ = 2;
+  _tmp99_ = 1;
+  rowperm__V_Natnat_32(S__[0],_tmp96_,_tmp97_,_tmp98_,_tmp99_,S____[0]);
+  _tmp100_ = 1;
+  _tmp101_ = 0;
+  _tmp102_ = 3;
+  _tmp103_ = 2;
+  rowperm__V_Natnat_32(S__[1],_tmp100_,_tmp101_,_tmp102_,_tmp103_,S____[1]);
+  _tmp104_ = 2;
+  _tmp105_ = 1;
+  _tmp106_ = 0;
+  _tmp107_ = 3;
+  rowperm__V_Natnat_32(S__[2],_tmp104_,_tmp105_,_tmp106_,_tmp107_,S____[2]);
+  _tmp108_ = 3;
+  _tmp109_ = 2;
+  _tmp110_ = 1;
+  _tmp111_ = 0;
+  rowperm__V_Natnat_32(S__[3],_tmp108_,_tmp109_,_tmp110_,_tmp111_,S____[3]);
 
 }
 
@@ -183,7 +183,7 @@ void AddRoundKey__V32 (/*inputs*/ DATATYPE S__[4][MASKING_ORDER],DATATYPE W__[8]
   DATATYPE _tmp42_;
   DATATYPE _tmp43_;
   DATATYPE _tmp45_;
-  DATATYPE _tmp116_[MASKING_ORDER];
+  DATATYPE _tmp112_[MASKING_ORDER];
 
   // Instructions (body)
   for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
@@ -195,12 +195,12 @@ void AddRoundKey__V32 (/*inputs*/ DATATYPE S__[4][MASKING_ORDER],DATATYPE W__[8]
     S____[1][_mask_idx] = XOR(S__[1][_mask_idx],_tmp43_);
     S____[0][_mask_idx] = S__[0][_mask_idx];
   }
-  _tmp116_[0] = LIFT_32(2147483648);
+  _tmp112_[0] = LIFT_32(2147483648);
   for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-    _tmp116_[_mask_idx] = LIFT_32(0);
+    _tmp112_[_mask_idx] = LIFT_32(0);
   }
   for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-    _tmp45_ = XOR(S__[3][_mask_idx],_tmp116_[_mask_idx]);
+    _tmp45_ = XOR(S__[3][_mask_idx],_tmp112_[_mask_idx]);
     S____[3][_mask_idx] = XOR(_tmp45_,rc__[_mask_idx]);
   }
 
@@ -215,8 +215,8 @@ void KeyUpdate__V32 (/*inputs*/ DATATYPE W__[8][MASKING_ORDER], /*outputs*/ DATA
   DATATYPE _tmp50_;
   DATATYPE _tmp51_;
   DATATYPE _tmp52_[MASKING_ORDER];
-  DATATYPE _tmp118_;
-  DATATYPE _tmp117_[MASKING_ORDER];
+  DATATYPE _tmp114_;
+  DATATYPE _tmp113_[MASKING_ORDER];
 
   // Instructions (body)
   for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
@@ -233,17 +233,17 @@ void KeyUpdate__V32 (/*inputs*/ DATATYPE W__[8][MASKING_ORDER], /*outputs*/ DATA
     W____[3][_mask_idx] = W__[1][_mask_idx];
     W____[2][_mask_idx] = W__[0][_mask_idx];
   }
-  _tmp117_[0] = LIFT_32(65535);
+  _tmp113_[0] = LIFT_32(65535);
   for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-    _tmp117_[_mask_idx] = LIFT_32(0);
-    _tmp118_ = LIFT_32(0);
+    _tmp113_[_mask_idx] = LIFT_32(0);
+    _tmp114_ = LIFT_32(0);
   }
   for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-    W____[0][_mask_idx] = AND(_tmp48_[_mask_idx],_tmp117_[0]);
+    W____[0][_mask_idx] = AND(_tmp48_[_mask_idx],_tmp113_[0]);
   }
-  _tmp118_ = LIFT_32(65535);
+  _tmp114_ = LIFT_32(65535);
   for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-    W____[1][_mask_idx] = AND(_tmp52_[_mask_idx],_tmp118_);
+    W____[1][_mask_idx] = AND(_tmp52_[_mask_idx],_tmp114_);
   }
 
 }
