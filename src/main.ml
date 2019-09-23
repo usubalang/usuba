@@ -42,6 +42,7 @@ let masked       = ref false
 let ua_masked    = ref false
 let shares       = ref 1
 let gen_bench    = ref false
+let compact      = ref false
 
 let slicing_type = ref B
 let slicing_set  = ref false
@@ -145,6 +146,7 @@ let main () =
       "-shares", Arg.Int (fun n -> shares := n; masked := true), "Set the number of shares";
       "-gen-bench", Arg.Set gen_bench, "Generate speed benchmark";
       "-keep-tables", Arg.Set keep_tables, "Keep lookup tables (can't use SIMD)";
+      "-compact", Arg.Set compact, "Generates more compact code (for bitslicing only)";
       "-tests", Arg.Unit (fun () -> run_tests ()), "Run tests";
     ] in
   let usage_msg = "Usage: usuba [switches] [files]" in
@@ -199,6 +201,7 @@ let main () =
         shares         =   !shares;
         gen_bench      =   !gen_bench;
         keep_tables    =   !keep_tables;
+        compact        =   !compact;
       } in
 
     if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then

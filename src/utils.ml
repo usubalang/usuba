@@ -48,6 +48,7 @@ let default_conf : config =
     shares       = 1;
     gen_bench    = false;
     keep_tables  = false;
+    compact      = false;
   }
 
 let default_dir = Varslice { uid = -1; name = "D" }
