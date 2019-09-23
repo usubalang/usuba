@@ -71,24 +71,24 @@ void AddConstants__V8 (/*inputs*/ DATATYPE state__[4][4],DATATYPE c__, /*outputs
 void AddKey__V8 (/*inputs*/ DATATYPE state__[4][4],DATATYPE keyCells__[2][4][4], /*outputs*/ DATATYPE stateR__[16],DATATYPE keyCellsR__[2][4][4]) {
 
   // Variables declaration
-  DATATYPE _tmp10_;
-  DATATYPE _tmp11_;
-  DATATYPE _tmp13_;
-  DATATYPE _tmp14_;
-  DATATYPE _tmp15_;
-  DATATYPE _tmp17_;
-  DATATYPE _tmp7_;
-  DATATYPE _tmp8_;
+  DATATYPE _tmp10_[4];
+  DATATYPE _tmp11_[4];
+  DATATYPE _tmp12_[4];
+  DATATYPE _tmp13_[4];
+  DATATYPE _tmp14_[4];
+  DATATYPE _tmp15_[4];
+  DATATYPE _tmp16_[4];
+  DATATYPE _tmp17_[4];
+  DATATYPE _tmp7_[4];
+  DATATYPE _tmp8_[4];
+  DATATYPE _tmp9_[4];
   DATATYPE keyCells_tmp__[2][4][4];
-  DATATYPE _tmp74_;
-  DATATYPE _tmp73_;
-  DATATYPE _tmp72_;
 
   // Instructions (body)
   for (int i__ = 0; i__ <= 1; i__++) {
     for (int j__ = 0; j__ <= 3; j__++) {
-      _tmp7_ = XOR(state__[i__][j__],keyCells__[0][i__][j__]);
-      stateR__[((i__ * 4) + j__)] = XOR(_tmp7_,keyCells__[1][i__][j__]);
+      _tmp7_[i__] = XOR(state__[i__][j__],keyCells__[0][i__][j__]);
+      stateR__[((i__ * 4) + j__)] = XOR(_tmp7_[i__],keyCells__[1][i__][j__]);
     }
   }
   stateR__[8] = state__[2][0];
@@ -133,17 +133,17 @@ void AddKey__V8 (/*inputs*/ DATATYPE state__[4][4],DATATYPE keyCells__[2][4][4],
   keyCells_tmp__[1][3][3] = keyCells__[1][1][3];
   for (int i__ = 0; i__ <= 1; i__++) {
     for (int j__ = 0; j__ <= 3; j__++) {
-      _tmp8_ = L_SHIFT(keyCells_tmp__[1][i__][j__],1,8);
-      _tmp72_ = LIFT_8(254);
-      _tmp10_ = AND(_tmp8_,_tmp72_);
-      _tmp11_ = R_SHIFT(keyCells_tmp__[1][i__][j__],7,8);
-      _tmp73_ = LIFT_8(1);
-      _tmp13_ = AND(_tmp11_,_tmp73_);
-      _tmp14_ = XOR(_tmp10_,_tmp13_);
-      _tmp15_ = R_SHIFT(keyCells_tmp__[1][i__][j__],5,8);
-      _tmp74_ = LIFT_8(1);
-      _tmp17_ = AND(_tmp15_,_tmp74_);
-      keyCellsR__[1][i__][j__] = XOR(_tmp14_,_tmp17_);
+      _tmp8_[i__] = L_SHIFT(keyCells_tmp__[1][i__][j__],1,8);
+      _tmp9_[i__] = LIFT_8(254);
+      _tmp10_[i__] = AND(_tmp8_[i__],_tmp9_[i__]);
+      _tmp11_[i__] = R_SHIFT(keyCells_tmp__[1][i__][j__],7,8);
+      _tmp12_[i__] = LIFT_8(1);
+      _tmp13_[i__] = AND(_tmp11_[i__],_tmp12_[i__]);
+      _tmp14_[i__] = XOR(_tmp10_[i__],_tmp13_[i__]);
+      _tmp15_[i__] = R_SHIFT(keyCells_tmp__[1][i__][j__],5,8);
+      _tmp16_[i__] = LIFT_8(1);
+      _tmp17_[i__] = AND(_tmp15_[i__],_tmp16_[i__]);
+      keyCellsR__[1][i__][j__] = XOR(_tmp14_[i__],_tmp17_[i__]);
     }
   }
   keyCellsR__[0][0][0] = keyCells_tmp__[0][0][0];

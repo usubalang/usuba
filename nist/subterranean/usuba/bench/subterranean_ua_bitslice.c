@@ -16,6 +16,7 @@
 void chi__B1 (/*inputs*/ DATATYPE state__[257], /*outputs*/ DATATYPE stateR__[257]) {
 
   // Variables declaration
+  DATATYPE _tmp1_;
   DATATYPE _tmp2_;
   DATATYPE _tmp3_;
   DATATYPE _tmp5_;
@@ -25,7 +26,8 @@ void chi__B1 (/*inputs*/ DATATYPE state__[257], /*outputs*/ DATATYPE stateR__[25
 
   // Instructions (body)
   for (int i__ = 0; i__ <= 254; i__++) {
-    _tmp2_ = NOT(state__[(i__ + 1)]);
+    _tmp1_ = SET_ALL_ONE();
+    _tmp2_ = XOR(_tmp1_,state__[(i__ + 1)]);
     _tmp3_ = AND(_tmp2_,state__[(i__ + 2)]);
     stateR__[i__] = XOR(state__[i__],_tmp3_);
   }

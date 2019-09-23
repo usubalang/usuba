@@ -80,7 +80,7 @@ void AddConstant__B1 (/*inputs*/ DATATYPE x__[8][8][4],DATATYPE rc__[4], /*outpu
 
   // Variables declaration
   DATATYPE IC__[8][4];
-  DATATYPE _tmp10_[4];
+  DATATYPE _tmp10_[8][4];
 
   // Instructions (body)
   IC__[0][0] = SET_ALL_ZERO();
@@ -116,14 +116,14 @@ void AddConstant__B1 (/*inputs*/ DATATYPE x__[8][8][4],DATATYPE rc__[4], /*outpu
   IC__[7][2] = SET_ALL_ZERO();
   IC__[7][3] = SET_ALL_ZERO();
   for (int i__ = 0; i__ <= 7; i__++) {
-    _tmp10_[0] = XOR(x__[i__][0][0],rc__[0]);
-    _tmp10_[1] = XOR(x__[i__][0][1],rc__[1]);
-    _tmp10_[2] = XOR(x__[i__][0][2],rc__[2]);
-    _tmp10_[3] = XOR(x__[i__][0][3],rc__[3]);
-    y__[i__][0][0] = XOR(_tmp10_[0],IC__[i__][0]);
-    y__[i__][0][1] = XOR(_tmp10_[1],IC__[i__][1]);
-    y__[i__][0][2] = XOR(_tmp10_[2],IC__[i__][2]);
-    y__[i__][0][3] = XOR(_tmp10_[3],IC__[i__][3]);
+    _tmp10_[i__][0] = XOR(x__[i__][0][0],rc__[0]);
+    _tmp10_[i__][1] = XOR(x__[i__][0][1],rc__[1]);
+    _tmp10_[i__][2] = XOR(x__[i__][0][2],rc__[2]);
+    _tmp10_[i__][3] = XOR(x__[i__][0][3],rc__[3]);
+    y__[i__][0][0] = XOR(_tmp10_[i__][0],IC__[i__][0]);
+    y__[i__][0][1] = XOR(_tmp10_[i__][1],IC__[i__][1]);
+    y__[i__][0][2] = XOR(_tmp10_[i__][2],IC__[i__][2]);
+    y__[i__][0][3] = XOR(_tmp10_[i__][3],IC__[i__][3]);
     y__[i__][1][0] = x__[i__][1][0];
     y__[i__][1][1] = x__[i__][1][1];
     y__[i__][1][2] = x__[i__][1][2];
@@ -363,9 +363,9 @@ void Photon__ (/*inputs*/ DATATYPE plain__[8][8][4], /*outputs*/ DATATYPE cipher
 
   // Variables declaration
   DATATYPE RC__[12][4];
-  DATATYPE _tmp36_[8][8][4];
-  DATATYPE _tmp37_[8][8][4];
-  DATATYPE _tmp38_[8][8][4];
+  DATATYPE _tmp36_[12][8][8][4];
+  DATATYPE _tmp37_[12][8][8][4];
+  DATATYPE _tmp38_[12][8][8][4];
   DATATYPE state__[13][8][8][4];
 
   // Instructions (body)
@@ -674,10 +674,10 @@ void Photon__ (/*inputs*/ DATATYPE plain__[8][8][4], /*outputs*/ DATATYPE cipher
   state__[0][7][7][2] = plain__[7][7][2];
   state__[0][7][7][3] = plain__[7][7][3];
   for (int i__ = 0; i__ <= 11; i__++) {
-    AddConstant__B1(state__[i__],RC__[i__],_tmp36_);
-    SubCells__B1(_tmp36_,_tmp37_);
-    ShiftRows__B1(_tmp37_,_tmp38_);
-    MixColumnSerial__B1(_tmp38_,state__[(i__ + 1)]);
+    AddConstant__B1(state__[i__],RC__[i__],_tmp36_[i__]);
+    SubCells__B1(_tmp36_[i__],_tmp37_[i__]);
+    ShiftRows__B1(_tmp37_[i__],_tmp38_[i__]);
+    MixColumnSerial__B1(_tmp38_[i__],state__[(i__ + 1)]);
   }
   cipher__[0][0][0] = state__[12][0][0][0];
   cipher__[0][0][1] = state__[12][0][0][1];

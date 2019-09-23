@@ -19,8 +19,8 @@ void theta__V32 (/*inputs*/ DATATYPE A__[3][4][MASKING_ORDER], /*outputs*/ DATAT
   DATATYPE E__[4][MASKING_ORDER];
   DATATYPE P__[4][MASKING_ORDER];
   DATATYPE _tmp1_[4][MASKING_ORDER];
-  DATATYPE _tmp2_;
-  DATATYPE _tmp3_;
+  DATATYPE _tmp2_[MASKING_ORDER];
+  DATATYPE _tmp3_[MASKING_ORDER];
 
   // Instructions (body)
   for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
@@ -35,9 +35,9 @@ void theta__V32 (/*inputs*/ DATATYPE A__[3][4][MASKING_ORDER], /*outputs*/ DATAT
   }
   for (int i__ = 0; i__ <= 3; i__++) {
     for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      _tmp2_ = L_ROTATE(P__[((i__ + 3) % 4)][_mask_idx],5,32);
-      _tmp3_ = L_ROTATE(P__[((i__ + 3) % 4)][_mask_idx],14,32);
-      E__[i__][_mask_idx] = XOR(_tmp2_,_tmp3_);
+      _tmp2_[_mask_idx] = L_ROTATE(P__[((i__ + 3) % 4)][_mask_idx],5,32);
+      _tmp3_[_mask_idx] = L_ROTATE(P__[((i__ + 3) % 4)][_mask_idx],14,32);
+      E__[i__][_mask_idx] = XOR(_tmp2_[_mask_idx],_tmp3_[_mask_idx]);
     }
   }
   for (int i__ = 0; i__ <= 2; i__++) {
@@ -177,10 +177,6 @@ void rho_east__V32 (/*inputs*/ DATATYPE A__[3][4][MASKING_ORDER], /*outputs*/ DA
   for (int i__ = 0; i__ <= 3; i__++) {
     for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
       R__[1][i__][_mask_idx] = L_ROTATE(A__[1][i__][_mask_idx],1,32);
-    }
-  }
-  for (int i__ = 0; i__ <= 3; i__++) {
-    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
       R__[2][i__][_mask_idx] = L_ROTATE(A__[2][((i__ + 2) % 4)][_mask_idx],8,32);
     }
   }
