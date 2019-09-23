@@ -61,7 +61,7 @@ tel
 node gimli (state:u32x4[3]) returns (stateR:u32x4[3])
 vars
     rc:u32[6],
-    round:u32x4[37][3]
+    round:u32x4[7][3]
 let
     rc = (0x9e377918, 0x9e377914, 0x9e377910,
           0x9e37790c, 0x9e377908, 0x9e377904);
@@ -69,13 +69,15 @@ let
     round[0] = state;
 
     forall r in [0,5] {
-       round[r*6+1] = NonlinearLayer_Rx(round[r*6]);
-       round[r*6+2] = AddRC(SmallSwap(round[r*6+1]), rc[r]);
-       round[r*6+3] = NonlinearLayer_Rxy(round[r*6+2]);
-       round[r*6+4] = NonlinearLayer_Rx(round[r*6+3]);
-       round[r*6+5] = BigSwap(round[r*6+4]);
-       round[r*6+6] = NonlinearLayer_Rx(round[r*6+5]);
+      round[r+1] = NonlinearLayer_Rx(
+                     BigSwap(
+                       NonlinearLayer_Rx(
+                         NonlinearLayer_Rxy(
+                           AddRC(
+                             SmallSwap(
+                               NonlinearLayer_Rx(round[r])),
+                              rc[r])))))
     }
 
-    stateR = round[36];
+    stateR = round[6];
 tel

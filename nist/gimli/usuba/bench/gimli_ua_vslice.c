@@ -182,8 +182,13 @@ void gimli__ (/*inputs*/ DATATYPE state__[3][4], /*outputs*/ DATATYPE stateR__[3
 
   // Variables declaration
   DATATYPE _tmp28_[3][4];
+  DATATYPE _tmp29_[3][4];
+  DATATYPE _tmp30_[3][4];
+  DATATYPE _tmp31_[3][4];
+  DATATYPE _tmp32_[3][4];
+  DATATYPE _tmp33_[3][4];
   DATATYPE rc__[6];
-  DATATYPE round__[37][3][4];
+  DATATYPE round__[3][4];
 
   // Instructions (body)
   rc__[0] = LIFT_32(2654435608);
@@ -192,39 +197,39 @@ void gimli__ (/*inputs*/ DATATYPE state__[3][4], /*outputs*/ DATATYPE stateR__[3
   rc__[3] = LIFT_32(2654435596);
   rc__[4] = LIFT_32(2654435592);
   rc__[5] = LIFT_32(2654435588);
-  round__[0][0][0] = state__[0][0];
-  round__[0][0][1] = state__[0][1];
-  round__[0][0][2] = state__[0][2];
-  round__[0][0][3] = state__[0][3];
-  round__[0][1][0] = state__[1][0];
-  round__[0][1][1] = state__[1][1];
-  round__[0][1][2] = state__[1][2];
-  round__[0][1][3] = state__[1][3];
-  round__[0][2][0] = state__[2][0];
-  round__[0][2][1] = state__[2][1];
-  round__[0][2][2] = state__[2][2];
-  round__[0][2][3] = state__[2][3];
+  round__[0][0] = state__[0][0];
+  round__[0][1] = state__[0][1];
+  round__[0][2] = state__[0][2];
+  round__[0][3] = state__[0][3];
+  round__[1][0] = state__[1][0];
+  round__[1][1] = state__[1][1];
+  round__[1][2] = state__[1][2];
+  round__[1][3] = state__[1][3];
+  round__[2][0] = state__[2][0];
+  round__[2][1] = state__[2][1];
+  round__[2][2] = state__[2][2];
+  round__[2][3] = state__[2][3];
   for (int r__ = 0; r__ <= 5; r__++) {
-    NonlinearLayer_Rx__V32(round__[(r__ * 6)],round__[((r__ * 6) + 1)]);
-    SmallSwap__V32(round__[((r__ * 6) + 1)],_tmp28_);
-    AddRC__V32(_tmp28_,rc__[r__],round__[((r__ * 6) + 2)]);
-    NonlinearLayer_Rxy__V32(round__[((r__ * 6) + 2)],round__[((r__ * 6) + 3)]);
-    NonlinearLayer_Rx__V32(round__[((r__ * 6) + 3)],round__[((r__ * 6) + 4)]);
-    BigSwap__V32(round__[((r__ * 6) + 4)],round__[((r__ * 6) + 5)]);
-    NonlinearLayer_Rx__V32(round__[((r__ * 6) + 5)],round__[((r__ * 6) + 6)]);
+    NonlinearLayer_Rx__V32(round__,_tmp28_);
+    SmallSwap__V32(_tmp28_,_tmp29_);
+    AddRC__V32(_tmp29_,rc__[r__],_tmp30_);
+    NonlinearLayer_Rxy__V32(_tmp30_,_tmp31_);
+    NonlinearLayer_Rx__V32(_tmp31_,_tmp32_);
+    BigSwap__V32(_tmp32_,_tmp33_);
+    NonlinearLayer_Rx__V32(_tmp33_,round__);
   }
-  stateR__[0][0] = round__[36][0][0];
-  stateR__[0][1] = round__[36][0][1];
-  stateR__[0][2] = round__[36][0][2];
-  stateR__[0][3] = round__[36][0][3];
-  stateR__[1][0] = round__[36][1][0];
-  stateR__[1][1] = round__[36][1][1];
-  stateR__[1][2] = round__[36][1][2];
-  stateR__[1][3] = round__[36][1][3];
-  stateR__[2][0] = round__[36][2][0];
-  stateR__[2][1] = round__[36][2][1];
-  stateR__[2][2] = round__[36][2][2];
-  stateR__[2][3] = round__[36][2][3];
+  stateR__[0][0] = round__[0][0];
+  stateR__[0][1] = round__[0][1];
+  stateR__[0][2] = round__[0][2];
+  stateR__[0][3] = round__[0][3];
+  stateR__[1][0] = round__[1][0];
+  stateR__[1][1] = round__[1][1];
+  stateR__[1][2] = round__[1][2];
+  stateR__[1][3] = round__[1][3];
+  stateR__[2][0] = round__[2][0];
+  stateR__[2][1] = round__[2][1];
+  stateR__[2][2] = round__[2][2];
+  stateR__[2][3] = round__[2][3];
 
 }
 
@@ -330,19 +335,14 @@ tel
   returns stateR :  u32x4[3] :: base
 vars
   rc :  u32[6] :: base,
-  round :  u32x4[37][3] :: base
+  round :  u32x4[7][3] :: base
 let
   (rc) = (2654435608,2654435604,2654435600,2654435596,2654435592,2654435588);
   (round[0]) = state;
   forall r in [0,5] {
-    (round[((r * 6) + 1)]) = NonlinearLayer_Rx(round[(r * 6)]);
-    (round[((r * 6) + 2)]) = AddRC(SmallSwap(round[((r * 6) + 1)]),rc[r]);
-    (round[((r * 6) + 3)]) = NonlinearLayer_Rxy(round[((r * 6) + 2)]);
-    (round[((r * 6) + 4)]) = NonlinearLayer_Rx(round[((r * 6) + 3)]);
-    (round[((r * 6) + 5)]) = BigSwap(round[((r * 6) + 4)]);
-    (round[((r * 6) + 6)]) = NonlinearLayer_Rx(round[((r * 6) + 5)])
+    (round[(r + 1)]) = NonlinearLayer_Rx(BigSwap(NonlinearLayer_Rx(NonlinearLayer_Rxy(AddRC(SmallSwap(NonlinearLayer_Rx(round[r])),rc[r])))))
   };
-  (stateR) = round[36]
+  (stateR) = round[6]
 tel
 
 */
