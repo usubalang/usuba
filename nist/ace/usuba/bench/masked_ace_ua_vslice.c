@@ -13,69 +13,151 @@
 #include "MASKED_UA.h"
 
 /* auxiliary functions */
+void f__V32 (/*inputs*/ DATATYPE x__[MASKING_ORDER], /*outputs*/ DATATYPE y__[MASKING_ORDER]) {
 
+  // Variables declaration
+  DATATYPE _tmp1_[MASKING_ORDER];
+  DATATYPE _tmp2_[MASKING_ORDER];
+  DATATYPE _tmp3_[MASKING_ORDER];
+  DATATYPE _tmp4_[MASKING_ORDER];
+
+  // Instructions (body)
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp1_[_mask_idx] = L_ROTATE(x__[_mask_idx],5,32);
+    _tmp4_[_mask_idx] = L_ROTATE(x__[_mask_idx],1,32);
+  }
+  REFRESH(_tmp2_,x__);
+  MASKED_AND(_tmp3_,_tmp1_,_tmp2_);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    y__[_mask_idx] = XOR(_tmp3_[_mask_idx],_tmp4_[_mask_idx]);
+  }
+
+}
+
+void simeck_box__V32 (/*inputs*/ DATATYPE input__[2][MASKING_ORDER],DATATYPE rc__[MASKING_ORDER], /*outputs*/ DATATYPE output__[2][MASKING_ORDER]) {
+
+  // Variables declaration
+  DATATYPE _tmp10_[MASKING_ORDER];
+  DATATYPE _tmp11_[MASKING_ORDER];
+  DATATYPE _tmp5_[MASKING_ORDER];
+  DATATYPE _tmp6_[MASKING_ORDER];
+  DATATYPE _tmp7_[MASKING_ORDER];
+  DATATYPE _tmp8_[MASKING_ORDER];
+  DATATYPE _tmp9_[MASKING_ORDER];
+  DATATYPE round__[9][2][MASKING_ORDER];
+  DATATYPE tmp__[MASKING_ORDER];
+
+  // Instructions (body)
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    round__[0][0][_mask_idx] = input__[0][_mask_idx];
+    round__[0][1][_mask_idx] = input__[1][_mask_idx];
+  }
+  for (int i__ = 0; i__ <= 7; i__++) {
+    f__V32(round__[i__][0],_tmp5_);
+    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      _tmp6_[_mask_idx] = XOR(_tmp5_[_mask_idx],round__[i__][1][_mask_idx]);
+      _tmp9_[_mask_idx] = R_SHIFT(rc__[_mask_idx],i__,32);
+    }
+    _tmp7_[0] = LIFT_32(4294967294);
+    for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      _tmp7_[_mask_idx] = LIFT_32(0);
+      _tmp10_[_mask_idx] = LIFT_32(0);
+    }
+    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      _tmp8_[_mask_idx] = XOR(_tmp6_[_mask_idx],_tmp7_[_mask_idx]);
+    }
+    _tmp10_[0] = LIFT_32(1);
+    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      _tmp11_[_mask_idx] = AND(_tmp9_[_mask_idx],_tmp10_[0]);
+      tmp__[_mask_idx] = XOR(_tmp8_[_mask_idx],_tmp11_[_mask_idx]);
+      round__[(i__ + 1)][0][_mask_idx] = tmp__[_mask_idx];
+      round__[(i__ + 1)][1][_mask_idx] = round__[i__][0][_mask_idx];
+    }
+  }
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    output__[0][_mask_idx] = round__[8][0][_mask_idx];
+    output__[1][_mask_idx] = round__[8][1][_mask_idx];
+  }
+
+}
+
+void ACE_step__V32 (/*inputs*/ DATATYPE A__[2][MASKING_ORDER],DATATYPE B__[2][MASKING_ORDER],DATATYPE C__[2][MASKING_ORDER],DATATYPE D__[2][MASKING_ORDER],DATATYPE E__[2][MASKING_ORDER],DATATYPE RC__0__[MASKING_ORDER],DATATYPE RC__1__[MASKING_ORDER],DATATYPE RC__2__[MASKING_ORDER],DATATYPE SC__0__[MASKING_ORDER],DATATYPE SC__1__[MASKING_ORDER],DATATYPE SC__2__[MASKING_ORDER], /*outputs*/ DATATYPE Ar__[2][MASKING_ORDER],DATATYPE Br__[2][MASKING_ORDER],DATATYPE Cr__[2][MASKING_ORDER],DATATYPE Dr__[2][MASKING_ORDER],DATATYPE Er__[2][MASKING_ORDER]) {
+
+  // Variables declaration
+  DATATYPE _shadow_A__1_[2][MASKING_ORDER];
+  DATATYPE _shadow_B__4_[2][MASKING_ORDER];
+  DATATYPE _shadow_C__2_[2][MASKING_ORDER];
+  DATATYPE _shadow_D__5_[2][MASKING_ORDER];
+  DATATYPE _shadow_E__3_[2][MASKING_ORDER];
+  DATATYPE _shadow_E__6_[2][MASKING_ORDER];
+  DATATYPE _tmp12_[2][MASKING_ORDER];
+  DATATYPE _tmp14_[MASKING_ORDER];
+  DATATYPE _tmp17_[2][MASKING_ORDER];
+  DATATYPE _tmp19_[MASKING_ORDER];
+  DATATYPE _tmp22_[2][MASKING_ORDER];
+  DATATYPE _tmp24_[MASKING_ORDER];
+  DATATYPE _tmp125_[MASKING_ORDER];
+  DATATYPE _tmp124_[MASKING_ORDER];
+  DATATYPE _tmp123_[MASKING_ORDER];
+
+  // Instructions (body)
+  simeck_box__V32(A__,RC__0__,_shadow_A__1_);
+  simeck_box__V32(C__,RC__1__,_shadow_C__2_);
+  simeck_box__V32(E__,RC__2__,_shadow_E__3_);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _tmp12_[0][_mask_idx] = XOR(B__[0][_mask_idx],_shadow_C__2_[0][_mask_idx]);
+    _tmp12_[1][_mask_idx] = XOR(B__[1][_mask_idx],_shadow_C__2_[1][_mask_idx]);
+    _tmp14_[_mask_idx] = XOR(_tmp12_[1][_mask_idx],SC__0__[_mask_idx]);
+    _tmp17_[0][_mask_idx] = XOR(D__[0][_mask_idx],_shadow_E__3_[0][_mask_idx]);
+    _tmp17_[1][_mask_idx] = XOR(D__[1][_mask_idx],_shadow_E__3_[1][_mask_idx]);
+    _tmp19_[_mask_idx] = XOR(_tmp17_[1][_mask_idx],SC__1__[_mask_idx]);
+    _tmp22_[0][_mask_idx] = XOR(_shadow_E__3_[0][_mask_idx],_shadow_A__1_[0][_mask_idx]);
+    _tmp22_[1][_mask_idx] = XOR(_shadow_E__3_[1][_mask_idx],_shadow_A__1_[1][_mask_idx]);
+    _tmp24_[_mask_idx] = XOR(_tmp22_[1][_mask_idx],SC__2__[_mask_idx]);
+    Br__[0][_mask_idx] = _shadow_C__2_[0][_mask_idx];
+    Br__[1][_mask_idx] = _shadow_C__2_[1][_mask_idx];
+    Cr__[0][_mask_idx] = _shadow_A__1_[0][_mask_idx];
+    Cr__[1][_mask_idx] = _shadow_A__1_[1][_mask_idx];
+  }
+  _shadow_B__4_[0][0] = NOT(_tmp12_[0][0]);
+  for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _shadow_B__4_[0][_mask_idx] = _tmp12_[0][_mask_idx];
+    _tmp123_[_mask_idx] = LIFT_32(0);
+    _shadow_D__5_[0][_mask_idx] = _tmp17_[0][_mask_idx];
+    _tmp124_[_mask_idx] = LIFT_32(0);
+    _shadow_E__6_[0][_mask_idx] = _tmp22_[0][_mask_idx];
+    _tmp125_[_mask_idx] = LIFT_32(0);
+  }
+  _tmp123_[0] = LIFT_32(4294967040);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _shadow_B__4_[1][_mask_idx] = XOR(_tmp14_[_mask_idx],_tmp123_[_mask_idx]);
+    Er__[0][_mask_idx] = _shadow_B__4_[0][_mask_idx];
+    Er__[1][_mask_idx] = _shadow_B__4_[1][_mask_idx];
+  }
+  _shadow_D__5_[0][0] = NOT(_tmp17_[0][0]);
+  _tmp124_[0] = LIFT_32(4294967040);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _shadow_D__5_[1][_mask_idx] = XOR(_tmp19_[_mask_idx],_tmp124_[_mask_idx]);
+    Ar__[0][_mask_idx] = _shadow_D__5_[0][_mask_idx];
+    Ar__[1][_mask_idx] = _shadow_D__5_[1][_mask_idx];
+  }
+  _shadow_E__6_[0][0] = NOT(_tmp22_[0][0]);
+  _tmp125_[0] = LIFT_32(4294967040);
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+    _shadow_E__6_[1][_mask_idx] = XOR(_tmp24_[_mask_idx],_tmp125_[_mask_idx]);
+    Dr__[0][_mask_idx] = _shadow_E__6_[0][_mask_idx];
+    Dr__[1][_mask_idx] = _shadow_E__6_[1][_mask_idx];
+  }
+
+}
 
 /* main function */
 void ACE__ (/*inputs*/ DATATYPE input__[5][2][MASKING_ORDER], /*outputs*/ DATATYPE output__[5][2][MASKING_ORDER]) {
 
   // Variables declaration
-  DATATYPE ACE_step__V32_1__shadow_A__1_[2][MASKING_ORDER];
-  DATATYPE ACE_step__V32_1__shadow_B__4_[2][MASKING_ORDER];
-  DATATYPE ACE_step__V32_1__shadow_C__2_[2][MASKING_ORDER];
-  DATATYPE ACE_step__V32_1__shadow_D__5_[2][MASKING_ORDER];
-  DATATYPE ACE_step__V32_1__shadow_E__3_[2][MASKING_ORDER];
-  DATATYPE ACE_step__V32_1__shadow_E__6_[2][MASKING_ORDER];
-  DATATYPE ACE_step__V32_1__tmp12_[2][MASKING_ORDER];
-  DATATYPE ACE_step__V32_1__tmp14_[2][MASKING_ORDER];
-  DATATYPE ACE_step__V32_1__tmp17_[2][MASKING_ORDER];
-  DATATYPE ACE_step__V32_1__tmp19_[2][MASKING_ORDER];
-  DATATYPE ACE_step__V32_1__tmp22_[2][MASKING_ORDER];
-  DATATYPE ACE_step__V32_1__tmp24_[2][MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_1__tmp10_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_1__tmp11_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_1__tmp5_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_1__tmp6_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_1__tmp7_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_1__tmp8_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_1__tmp9_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_1_f__V32_1__tmp1_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_1_f__V32_1__tmp2_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_1_f__V32_1__tmp3_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_1_f__V32_1__tmp4_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_1_round__[9][2][MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_1_tmp__[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_2__tmp10_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_2__tmp11_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_2__tmp5_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_2__tmp6_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_2__tmp7_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_2__tmp8_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_2__tmp9_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_2_f__V32_1__tmp1_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_2_f__V32_1__tmp2_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_2_f__V32_1__tmp3_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_2_f__V32_1__tmp4_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_2_round__[9][2][MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_2_tmp__[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_3__tmp10_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_3__tmp11_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_3__tmp5_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_3__tmp6_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_3__tmp7_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_3__tmp8_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_3__tmp9_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_3_f__V32_1__tmp1_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_3_f__V32_1__tmp2_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_3_f__V32_1__tmp3_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_3_f__V32_1__tmp4_[MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_3_round__[9][2][MASKING_ORDER];
-  DATATYPE ACE_step__V32_1_simeck_box__V32_3_tmp__[MASKING_ORDER];
   DATATYPE RC__[3][16][MASKING_ORDER];
   DATATYPE SC__[3][16][MASKING_ORDER];
   DATATYPE tmp__[5][2][MASKING_ORDER];
-  DATATYPE _tmp125_[MASKING_ORDER];
-  DATATYPE _tmp124_[MASKING_ORDER];
-  DATATYPE _tmp123_[MASKING_ORDER];
 
   // Instructions (body)
   SC__[0][0][0] = LIFT_32(80);
@@ -285,158 +367,7 @@ void ACE__ (/*inputs*/ DATATYPE input__[5][2][MASKING_ORDER], /*outputs*/ DATATY
     tmp__[4][1][_mask_idx] = input__[4][1][_mask_idx];
   }
   for (int i__ = 0; i__ <= 15; i__++) {
-    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      ACE_step__V32_1_simeck_box__V32_1_round__[0][0][_mask_idx] = tmp__[0][0][_mask_idx];
-      ACE_step__V32_1_simeck_box__V32_1_round__[0][1][_mask_idx] = tmp__[0][1][_mask_idx];
-      ACE_step__V32_1_simeck_box__V32_2_round__[0][0][_mask_idx] = tmp__[2][0][_mask_idx];
-      ACE_step__V32_1_simeck_box__V32_2_round__[0][1][_mask_idx] = tmp__[2][1][_mask_idx];
-      ACE_step__V32_1_simeck_box__V32_3_round__[0][0][_mask_idx] = tmp__[4][0][_mask_idx];
-      ACE_step__V32_1_simeck_box__V32_3_round__[0][1][_mask_idx] = tmp__[4][1][_mask_idx];
-    }
-    for (int i__14 = 0; i__14 <= 7; i__14++) {
-      for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-        ACE_step__V32_1_simeck_box__V32_1_f__V32_1__tmp1_[_mask_idx] = L_ROTATE(ACE_step__V32_1_simeck_box__V32_1_round__[i__14][0][_mask_idx],5,32);
-        ACE_step__V32_1_simeck_box__V32_1_f__V32_1__tmp4_[_mask_idx] = L_ROTATE(ACE_step__V32_1_simeck_box__V32_1_round__[i__14][0][_mask_idx],1,32);
-        ACE_step__V32_1_simeck_box__V32_1__tmp9_[_mask_idx] = R_SHIFT(RC__[0][i__][_mask_idx],i__14,32);
-      }
-      REFRESH(ACE_step__V32_1_simeck_box__V32_1_f__V32_1__tmp2_,ACE_step__V32_1_simeck_box__V32_1_round__[i__14][0]);
-      MASKED_AND(ACE_step__V32_1_simeck_box__V32_1_f__V32_1__tmp3_,ACE_step__V32_1_simeck_box__V32_1_f__V32_1__tmp1_,ACE_step__V32_1_simeck_box__V32_1_f__V32_1__tmp2_);
-      for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-        ACE_step__V32_1_simeck_box__V32_1__tmp5_[_mask_idx] = XOR(ACE_step__V32_1_simeck_box__V32_1_f__V32_1__tmp3_[_mask_idx],ACE_step__V32_1_simeck_box__V32_1_f__V32_1__tmp4_[_mask_idx]);
-        ACE_step__V32_1_simeck_box__V32_1__tmp6_[_mask_idx] = XOR(ACE_step__V32_1_simeck_box__V32_1__tmp5_[_mask_idx],ACE_step__V32_1_simeck_box__V32_1_round__[i__14][1][_mask_idx]);
-      }
-      ACE_step__V32_1_simeck_box__V32_1__tmp7_[0] = LIFT_32(4294967294);
-      for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-        ACE_step__V32_1_simeck_box__V32_1__tmp7_[_mask_idx] = LIFT_32(0);
-        ACE_step__V32_1_simeck_box__V32_1__tmp10_[_mask_idx] = LIFT_32(0);
-        ACE_step__V32_1_simeck_box__V32_1__tmp11_[_mask_idx] = LIFT_32(0);
-      }
-      for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-        ACE_step__V32_1_simeck_box__V32_1__tmp8_[_mask_idx] = XOR(ACE_step__V32_1_simeck_box__V32_1__tmp6_[_mask_idx],ACE_step__V32_1_simeck_box__V32_1__tmp7_[_mask_idx]);
-      }
-      ACE_step__V32_1_simeck_box__V32_1__tmp10_[0] = LIFT_32(1);
-      ACE_step__V32_1_simeck_box__V32_1__tmp11_[0] = AND(ACE_step__V32_1_simeck_box__V32_1__tmp9_[0],ACE_step__V32_1_simeck_box__V32_1__tmp10_[0]);
-      for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-        ACE_step__V32_1_simeck_box__V32_1_tmp__[_mask_idx] = XOR(ACE_step__V32_1_simeck_box__V32_1__tmp8_[_mask_idx],ACE_step__V32_1_simeck_box__V32_1__tmp11_[_mask_idx]);
-        ACE_step__V32_1_simeck_box__V32_1_round__[(i__14 + 1)][0][_mask_idx] = ACE_step__V32_1_simeck_box__V32_1_tmp__[_mask_idx];
-        ACE_step__V32_1_simeck_box__V32_1_round__[(i__14 + 1)][1][_mask_idx] = ACE_step__V32_1_simeck_box__V32_1_round__[i__14][0][_mask_idx];
-      }
-    }
-    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      ACE_step__V32_1__shadow_A__1_[0][_mask_idx] = ACE_step__V32_1_simeck_box__V32_1_round__[8][0][_mask_idx];
-      ACE_step__V32_1__shadow_A__1_[1][_mask_idx] = ACE_step__V32_1_simeck_box__V32_1_round__[8][1][_mask_idx];
-      tmp__[2][0][_mask_idx] = ACE_step__V32_1__shadow_A__1_[0][_mask_idx];
-      tmp__[2][1][_mask_idx] = ACE_step__V32_1__shadow_A__1_[1][_mask_idx];
-    }
-    for (int i__25 = 0; i__25 <= 7; i__25++) {
-      for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-        ACE_step__V32_1_simeck_box__V32_2_f__V32_1__tmp1_[_mask_idx] = L_ROTATE(ACE_step__V32_1_simeck_box__V32_2_round__[i__25][0][_mask_idx],5,32);
-        ACE_step__V32_1_simeck_box__V32_2_f__V32_1__tmp4_[_mask_idx] = L_ROTATE(ACE_step__V32_1_simeck_box__V32_2_round__[i__25][0][_mask_idx],1,32);
-        ACE_step__V32_1_simeck_box__V32_2__tmp9_[_mask_idx] = R_SHIFT(RC__[1][i__][_mask_idx],i__25,32);
-      }
-      REFRESH(ACE_step__V32_1_simeck_box__V32_2_f__V32_1__tmp2_,ACE_step__V32_1_simeck_box__V32_2_round__[i__25][0]);
-      MASKED_AND(ACE_step__V32_1_simeck_box__V32_2_f__V32_1__tmp3_,ACE_step__V32_1_simeck_box__V32_2_f__V32_1__tmp1_,ACE_step__V32_1_simeck_box__V32_2_f__V32_1__tmp2_);
-      for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-        ACE_step__V32_1_simeck_box__V32_2__tmp5_[_mask_idx] = XOR(ACE_step__V32_1_simeck_box__V32_2_f__V32_1__tmp3_[_mask_idx],ACE_step__V32_1_simeck_box__V32_2_f__V32_1__tmp4_[_mask_idx]);
-        ACE_step__V32_1_simeck_box__V32_2__tmp6_[_mask_idx] = XOR(ACE_step__V32_1_simeck_box__V32_2__tmp5_[_mask_idx],ACE_step__V32_1_simeck_box__V32_2_round__[i__25][1][_mask_idx]);
-      }
-      ACE_step__V32_1_simeck_box__V32_2__tmp7_[0] = LIFT_32(4294967294);
-      for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-        ACE_step__V32_1_simeck_box__V32_2__tmp7_[_mask_idx] = LIFT_32(0);
-        ACE_step__V32_1_simeck_box__V32_2__tmp10_[_mask_idx] = LIFT_32(0);
-        ACE_step__V32_1_simeck_box__V32_2__tmp11_[_mask_idx] = LIFT_32(0);
-      }
-      for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-        ACE_step__V32_1_simeck_box__V32_2__tmp8_[_mask_idx] = XOR(ACE_step__V32_1_simeck_box__V32_2__tmp6_[_mask_idx],ACE_step__V32_1_simeck_box__V32_2__tmp7_[_mask_idx]);
-      }
-      ACE_step__V32_1_simeck_box__V32_2__tmp10_[0] = LIFT_32(1);
-      ACE_step__V32_1_simeck_box__V32_2__tmp11_[0] = AND(ACE_step__V32_1_simeck_box__V32_2__tmp9_[0],ACE_step__V32_1_simeck_box__V32_2__tmp10_[0]);
-      for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-        ACE_step__V32_1_simeck_box__V32_2_tmp__[_mask_idx] = XOR(ACE_step__V32_1_simeck_box__V32_2__tmp8_[_mask_idx],ACE_step__V32_1_simeck_box__V32_2__tmp11_[_mask_idx]);
-        ACE_step__V32_1_simeck_box__V32_2_round__[(i__25 + 1)][0][_mask_idx] = ACE_step__V32_1_simeck_box__V32_2_tmp__[_mask_idx];
-        ACE_step__V32_1_simeck_box__V32_2_round__[(i__25 + 1)][1][_mask_idx] = ACE_step__V32_1_simeck_box__V32_2_round__[i__25][0][_mask_idx];
-      }
-    }
-    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      ACE_step__V32_1__shadow_C__2_[0][_mask_idx] = ACE_step__V32_1_simeck_box__V32_2_round__[8][0][_mask_idx];
-      ACE_step__V32_1__shadow_C__2_[1][_mask_idx] = ACE_step__V32_1_simeck_box__V32_2_round__[8][1][_mask_idx];
-      ACE_step__V32_1__tmp12_[0][_mask_idx] = XOR(tmp__[1][0][_mask_idx],ACE_step__V32_1__shadow_C__2_[0][_mask_idx]);
-      ACE_step__V32_1__tmp12_[1][_mask_idx] = XOR(tmp__[1][1][_mask_idx],ACE_step__V32_1__shadow_C__2_[1][_mask_idx]);
-      ACE_step__V32_1__tmp14_[0][_mask_idx] = ACE_step__V32_1__tmp12_[0][_mask_idx];
-      ACE_step__V32_1__tmp14_[1][_mask_idx] = XOR(ACE_step__V32_1__tmp12_[1][_mask_idx],SC__[0][i__][_mask_idx]);
-      tmp__[1][0][_mask_idx] = ACE_step__V32_1__shadow_C__2_[0][_mask_idx];
-      tmp__[1][1][_mask_idx] = ACE_step__V32_1__shadow_C__2_[1][_mask_idx];
-    }
-    for (int i__36 = 0; i__36 <= 7; i__36++) {
-      for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-        ACE_step__V32_1_simeck_box__V32_3_f__V32_1__tmp1_[_mask_idx] = L_ROTATE(ACE_step__V32_1_simeck_box__V32_3_round__[i__36][0][_mask_idx],5,32);
-        ACE_step__V32_1_simeck_box__V32_3_f__V32_1__tmp4_[_mask_idx] = L_ROTATE(ACE_step__V32_1_simeck_box__V32_3_round__[i__36][0][_mask_idx],1,32);
-        ACE_step__V32_1_simeck_box__V32_3__tmp9_[_mask_idx] = R_SHIFT(RC__[2][i__][_mask_idx],i__36,32);
-      }
-      REFRESH(ACE_step__V32_1_simeck_box__V32_3_f__V32_1__tmp2_,ACE_step__V32_1_simeck_box__V32_3_round__[i__36][0]);
-      MASKED_AND(ACE_step__V32_1_simeck_box__V32_3_f__V32_1__tmp3_,ACE_step__V32_1_simeck_box__V32_3_f__V32_1__tmp1_,ACE_step__V32_1_simeck_box__V32_3_f__V32_1__tmp2_);
-      for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-        ACE_step__V32_1_simeck_box__V32_3__tmp5_[_mask_idx] = XOR(ACE_step__V32_1_simeck_box__V32_3_f__V32_1__tmp3_[_mask_idx],ACE_step__V32_1_simeck_box__V32_3_f__V32_1__tmp4_[_mask_idx]);
-        ACE_step__V32_1_simeck_box__V32_3__tmp6_[_mask_idx] = XOR(ACE_step__V32_1_simeck_box__V32_3__tmp5_[_mask_idx],ACE_step__V32_1_simeck_box__V32_3_round__[i__36][1][_mask_idx]);
-      }
-      ACE_step__V32_1_simeck_box__V32_3__tmp7_[0] = LIFT_32(4294967294);
-      for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-        ACE_step__V32_1_simeck_box__V32_3__tmp7_[_mask_idx] = LIFT_32(0);
-        ACE_step__V32_1_simeck_box__V32_3__tmp10_[_mask_idx] = LIFT_32(0);
-        ACE_step__V32_1_simeck_box__V32_3__tmp11_[_mask_idx] = LIFT_32(0);
-      }
-      for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-        ACE_step__V32_1_simeck_box__V32_3__tmp8_[_mask_idx] = XOR(ACE_step__V32_1_simeck_box__V32_3__tmp6_[_mask_idx],ACE_step__V32_1_simeck_box__V32_3__tmp7_[_mask_idx]);
-      }
-      ACE_step__V32_1_simeck_box__V32_3__tmp10_[0] = LIFT_32(1);
-      ACE_step__V32_1_simeck_box__V32_3__tmp11_[0] = AND(ACE_step__V32_1_simeck_box__V32_3__tmp9_[0],ACE_step__V32_1_simeck_box__V32_3__tmp10_[0]);
-      for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-        ACE_step__V32_1_simeck_box__V32_3_tmp__[_mask_idx] = XOR(ACE_step__V32_1_simeck_box__V32_3__tmp8_[_mask_idx],ACE_step__V32_1_simeck_box__V32_3__tmp11_[_mask_idx]);
-        ACE_step__V32_1_simeck_box__V32_3_round__[(i__36 + 1)][0][_mask_idx] = ACE_step__V32_1_simeck_box__V32_3_tmp__[_mask_idx];
-        ACE_step__V32_1_simeck_box__V32_3_round__[(i__36 + 1)][1][_mask_idx] = ACE_step__V32_1_simeck_box__V32_3_round__[i__36][0][_mask_idx];
-      }
-    }
-    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      ACE_step__V32_1__shadow_E__3_[0][_mask_idx] = ACE_step__V32_1_simeck_box__V32_3_round__[8][0][_mask_idx];
-      ACE_step__V32_1__shadow_E__3_[1][_mask_idx] = ACE_step__V32_1_simeck_box__V32_3_round__[8][1][_mask_idx];
-      ACE_step__V32_1__tmp17_[0][_mask_idx] = XOR(tmp__[3][0][_mask_idx],ACE_step__V32_1__shadow_E__3_[0][_mask_idx]);
-      ACE_step__V32_1__tmp17_[1][_mask_idx] = XOR(tmp__[3][1][_mask_idx],ACE_step__V32_1__shadow_E__3_[1][_mask_idx]);
-      ACE_step__V32_1__tmp19_[0][_mask_idx] = ACE_step__V32_1__tmp17_[0][_mask_idx];
-      ACE_step__V32_1__tmp19_[1][_mask_idx] = XOR(ACE_step__V32_1__tmp17_[1][_mask_idx],SC__[1][i__][_mask_idx]);
-      ACE_step__V32_1__tmp22_[0][_mask_idx] = XOR(ACE_step__V32_1__shadow_E__3_[0][_mask_idx],ACE_step__V32_1__shadow_A__1_[0][_mask_idx]);
-      ACE_step__V32_1__tmp22_[1][_mask_idx] = XOR(ACE_step__V32_1__shadow_E__3_[1][_mask_idx],ACE_step__V32_1__shadow_A__1_[1][_mask_idx]);
-      ACE_step__V32_1__tmp24_[0][_mask_idx] = ACE_step__V32_1__tmp22_[0][_mask_idx];
-      ACE_step__V32_1__tmp24_[1][_mask_idx] = XOR(ACE_step__V32_1__tmp22_[1][_mask_idx],SC__[2][i__][_mask_idx]);
-    }
-    ACE_step__V32_1__shadow_B__4_[0][0] = NOT(ACE_step__V32_1__tmp14_[0][0]);
-    for (int _mask_idx = 1; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      ACE_step__V32_1__shadow_B__4_[0][_mask_idx] = ACE_step__V32_1__tmp14_[0][_mask_idx];
-      _tmp123_[_mask_idx] = LIFT_32(0);
-      ACE_step__V32_1__shadow_D__5_[0][_mask_idx] = ACE_step__V32_1__tmp19_[0][_mask_idx];
-      _tmp124_[_mask_idx] = LIFT_32(0);
-      ACE_step__V32_1__shadow_E__6_[0][_mask_idx] = ACE_step__V32_1__tmp24_[0][_mask_idx];
-      _tmp125_[_mask_idx] = LIFT_32(0);
-    }
-    _tmp123_[0] = LIFT_32(4294967040);
-    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      ACE_step__V32_1__shadow_B__4_[1][_mask_idx] = XOR(ACE_step__V32_1__tmp14_[1][_mask_idx],_tmp123_[_mask_idx]);
-      tmp__[4][0][_mask_idx] = ACE_step__V32_1__shadow_B__4_[0][_mask_idx];
-      tmp__[4][1][_mask_idx] = ACE_step__V32_1__shadow_B__4_[1][_mask_idx];
-    }
-    ACE_step__V32_1__shadow_D__5_[0][0] = NOT(ACE_step__V32_1__tmp19_[0][0]);
-    _tmp124_[0] = LIFT_32(4294967040);
-    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      ACE_step__V32_1__shadow_D__5_[1][_mask_idx] = XOR(ACE_step__V32_1__tmp19_[1][_mask_idx],_tmp124_[_mask_idx]);
-      tmp__[0][0][_mask_idx] = ACE_step__V32_1__shadow_D__5_[0][_mask_idx];
-      tmp__[0][1][_mask_idx] = ACE_step__V32_1__shadow_D__5_[1][_mask_idx];
-    }
-    ACE_step__V32_1__shadow_E__6_[0][0] = NOT(ACE_step__V32_1__tmp24_[0][0]);
-    _tmp125_[0] = LIFT_32(4294967040);
-    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      ACE_step__V32_1__shadow_E__6_[1][_mask_idx] = XOR(ACE_step__V32_1__tmp24_[1][_mask_idx],_tmp125_[_mask_idx]);
-      tmp__[3][0][_mask_idx] = ACE_step__V32_1__shadow_E__6_[0][_mask_idx];
-      tmp__[3][1][_mask_idx] = ACE_step__V32_1__shadow_E__6_[1][_mask_idx];
-    }
+    ACE_step__V32(tmp__[0],tmp__[1],tmp__[2],tmp__[3],tmp__[4],RC__[0][i__],RC__[1][i__],RC__[2][i__],SC__[0][i__],SC__[1][i__],SC__[2][i__],tmp__[0],tmp__[1],tmp__[2],tmp__[3],tmp__[4]);
   }
   for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
     output__[0][0][_mask_idx] = tmp__[0][0][_mask_idx];
