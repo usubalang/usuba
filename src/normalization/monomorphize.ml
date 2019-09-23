@@ -94,6 +94,7 @@ module Bslice = struct
     match t with
     | Nat -> t
     | Uint(Bslice,Mint 1,n) -> t
+    | Uint(Bslice,Mint m,1) -> Uint(Bslice,Mint 1,m)
     | Uint(Bslice,Mint m,n) -> Array(Uint(Bslice,Mint 1,m),Const_e n)
     | Array(t',n) -> Array(refine_type t',n)
     | _ -> Printf.fprintf stderr "Can't refine_type(%s).\n" (Usuba_print.typ_to_str t);
