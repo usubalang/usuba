@@ -41,79 +41,15 @@ typedef uint64_t DRYSPONGE_EXT_t;
 
 #define DRYSPONGE_X_IDX_MASK ((1<<DRYSPONGE_X_IDX_WIDTH)-1)
 
-static void DRYSPONGE_DomainSeparator(
-    DRYSPONGE_EXT_t *const ext,
-    unsigned int dsinfo
-){
-    *ext = dsinfo;
-    *ext = *ext<<((DRYSPONGE_BLOCKSIZE*8)%DRYSPONGE_MPR_INPUT_WIDTH);
-}
-
-static void DRYSPONGE_MixPhaseRound(
-    DRYSPONGE_EXT_t ext,
-    uint8_t *const c,
-    uint8_t *const x,
-    const uint8_t *const in,
-    unsigned int bitidx,
-    unsigned int insize
-){
-    unsigned int bi = bitidx/8;
-    unsigned int shift = bitidx%8;
-    permut_rank_t r=0;
-    for(unsigned int i=0;i<DRYSPONGE_RANK_BYTES;i++){
-        if(bi+i==insize) break;
-        permut_rank_t b = in[bi+i];
-        r|=b<<(8*i);
-    }
-    r = (r>>shift) & DRYSPONGE_MPR_INPUT_MASK;
-    r^=ext;
-
-    for(unsigned int j=0;j<DRYSPONGE_CAPACITYSIZE64;j++){
-        unsigned int i = r & DRYSPONGE_X_IDX_MASK;
-        r = r >> DRYSPONGE_X_IDX_WIDTH;
-        for(unsigned int k=0;k<4;k++){
-            c[j*8+k]^=x[i*4+k];
-        }
-    }
-}
 
 struct DRYSPONGE_struct_t;
 typedef struct DRYSPONGE_struct_t DRYSPONGE_t ;
-static void DRYSPONGE_MixPhase(
-    DRYSPONGE_t *const ctx,
-    const uint8_t *const in
-);
 static void DRYSPONGE_CoreRound(
     DRYSPONGE_t *const ctx,
     unsigned int r
 );
 
 #include "drysponge_ref.h"
-
-static void DRYSPONGE_MixPhase(
-    DRYSPONGE_t *const ctx,
-    const uint8_t *const in
-){
-    unsigned int bitidx=0;
-    #if DRYSPONGE_MPR_ROUNDS > 1
-    for(unsigned int i=0;i<DRYSPONGE_MPR_ROUNDS-1;i++){
-        DRYSPONGE_EXT_t ext=0;
-        #if ((DRYSPONGE_MPR_ROUNDS-1)*(DRYSPONGE_MPR_INPUT_WIDTH))>(DRYSPONGE_BLOCKSIZE*8)
-        if((ctx->ext) && (i==(DRYSPONGE_MPR_ROUNDS-2))){
-            //DS info is split accross this block and the last one
-            ext = ctx->ext;
-            ctx->ext = ctx->ext >> ((DRYSPONGE_BLOCKSIZE*8)%DRYSPONGE_MPR_INPUT_WIDTH);
-            ctx->ext = ctx->ext >> ((((DRYSPONGE_MPR_ROUNDS-1)*DRYSPONGE_MPR_INPUT_WIDTH))-(DRYSPONGE_BLOCKSIZE*8));
-        }
-        #endif
-        DRYSPONGE_MixPhaseRound(ext,ctx->c,ctx->x,in,bitidx,DRYSPONGE_BLOCKSIZE);
-        bitidx+=DRYSPONGE_MPR_INPUT_WIDTH;
-        DRYSPONGE_CoreRound(ctx,0);
-    }
-    #endif
-    DRYSPONGE_MixPhaseRound(ctx->ext,ctx->c,ctx->x,in,bitidx,DRYSPONGE_BLOCKSIZE);
-    ctx->ext=0;
-}
 
 static void gascon_sboxes(uint64_t * const x, unsigned int nw){
     uint64_t t[DRYSPONGE_CAPACITYSIZE64];
@@ -162,23 +98,14 @@ static void gascon_permutation_round(uint8_t* S, unsigned int round) {
         DRYSPONGE_load64(x+i, S + 8*i);
     }
 
-    /* for (int i = 0; i < 5; i++) printf("%016lx ",x[i]); */
-    /* printf("\n"); */
-
     const unsigned int mid = DRYSPONGE_CAPACITYSIZE64 / 2;
     unsigned int rounds=12;
     const unsigned int r = 12-rounds+round;
     // addition of round constant
     x[mid] ^= ((0xfull - r) << 4) | r;
 
-    /* for (int i = 0; i < 5; i++) printf("%016lx ",x[i]); */
-    /* printf("\n"); */
-
     // substitution layer
     gascon_sboxes(x,DRYSPONGE_CAPACITYSIZE64);
-
-    /* for (int i = 0; i < 5; i++) printf("%016lx ",x[i]); */
-    /* printf("\n"); */
 
     // linear diffusion layer
     x[0] ^= gascon_rotr64_interleaved(x[0], 19) ^ gascon_rotr64_interleaved(x[0], 28);
@@ -192,9 +119,6 @@ static void gascon_permutation_round(uint8_t* S, unsigned int round) {
         x[7] ^= gascon_rotr64_interleaved(x[7],  9) ^ gascon_rotr64_interleaved(x[7], 46);
         x[8] ^= gascon_rotr64_interleaved(x[8], 43) ^ gascon_rotr64_interleaved(x[8], 50);
     #endif
-
-    /* for (int i = 0; i < 5; i++) printf("%016lx ",x[i]); */
-    /* printf("\n"); */
 
     for(unsigned int i=0;i<DRYSPONGE_CAPACITYSIZE64;i++){
         DRYSPONGE_store64(S + 8*i,x[i]);
