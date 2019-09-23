@@ -11,7 +11,7 @@ let
 
     round[0] = input;
 
-    _unroll forall i in [0, 7] {
+   _no_unroll forall i in [0, 7] {
       tmp[i] = f(round[i][0]) ^ round[i][1] ^ 0xfffffffe ^ ((rc >> i) & 1);
       round[i+1][0,1] = (tmp[i], round[i][0]) ;
     }

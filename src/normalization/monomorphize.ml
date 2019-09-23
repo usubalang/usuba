@@ -89,12 +89,12 @@ module Vslice = struct
 end
 
 module Bslice = struct
-  (* Uint(_,n,m) needs to be turned into Uint(_,1,n*m) *)
+  (* Uint(_,n,m) needs to be turned into Array(Uint(_,1,m),n) *)
   let rec refine_type (t:typ) : typ =
     match t with
     | Nat -> t
     | Uint(Bslice,Mint 1,n) -> t
-    | Uint(Bslice,Mint m,n) -> Uint(Bslice,Mint 1,n*m)
+    | Uint(Bslice,Mint m,n) -> Array(Uint(Bslice,Mint 1,m),Const_e n)
     | Array(t',n) -> Array(refine_type t',n)
     | _ -> Printf.fprintf stderr "Can't refine_type(%s).\n" (Usuba_print.typ_to_str t);
            assert false
@@ -113,26 +113,21 @@ module Bslice = struct
     | Array(t,_) -> get_base_n t
     | _ -> assert false
 
-  (* The only case in which var needs specialization is the following family:
+  (*
+    OUTDATED COMMENT:
+    The only case in which var needs specialization is the following family:
        Example 1: `x:u8x4` will be transformed into `x:u1x32`.
                   Then, `x[2]` needs to become `x[16 .. 23]`.
        Example 2: `x:u8x1[4]` will be transformed into `x:u1x8[4]`.
                   Then, `x[2]` needs to become `x[2]` (nothing changed).
+    RECENT UPDATE:
+    Previously, Uint(_,n,m) were turned into Uint(_,1,n*m). This was not ideal
+    as is tend to introduce unecessary ranges (as shown above), which in turn
+    causes functions to take too much parameters that needed. Now that Uint
+    are turned into 2d arrays, there is no need to change anything on vars
+    anymore.
    *)
-  (* TODO: test on some examples (nesting arrays, trying different m/n) *)
-  let rec specialize_var env_var (v:var) : var =
-    match v with
-    | Var _ -> v
-    | Index(v',ae) ->
-       (match get_base_n (get_var_type env_var (get_var_base v')) with
-        | 1 -> v (* example 2 *)
-        | _ ->
-           (match get_var_type env_var v' with
-            | Uint(_,Mint m,n) when m > 1 -> (* TODO: is that m > 1 correct? *)
-               (* example 1 *)
-               Range(v',Op_e(Mul,ae,Const_e m),Op_e(Add,Op_e(Mul,ae,Const_e m),Const_e (m-1)))
-            | _ -> Index(specialize_var env_var v',ae)))
-    | _ -> assert false
+  let rec specialize_var env_var (v:var) : var = v
 
   (* Expands a const to a Tuple of 0/1 *)
   (* The tupple is padded with 0s to be of the right size (with make_0_list) *)

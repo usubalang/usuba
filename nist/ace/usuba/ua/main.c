@@ -68,7 +68,9 @@ void ace(unsigned char text[40]) {
   }
 
   uint64_t output_bs[5][64];
-  ACE__(text_bs,output_bs);
+  uint64_t (*input)[2][32]  = (uint64_t (*)[2][32])text_bs;
+  uint64_t (*output)[2][32] = (uint64_t (*)[2][32])output_bs;
+  ACE__(input,output);
 
   for (int i = 0; i < 5; i++) {
     transpose(output_bs[i]);

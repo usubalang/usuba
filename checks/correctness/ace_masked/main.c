@@ -93,7 +93,10 @@ void ace(unsigned char text[40]) {
       MASK_VAL(text_bs[i][j], text_bs_masked[i][j]);
 
   uint64_t output_bs_masked[5][64][MASKING_ORDER];
-  ACE__(text_bs_masked,output_bs_masked);
+
+  uint64_t (*input)[2][32][MASKING_ORDER]  = (uint64_t (*)[2][32][MASKING_ORDER])text_bs_masked;
+  uint64_t (*output)[2][32][MASKING_ORDER] = (uint64_t (*)[2][32][MASKING_ORDER])output_bs_masked;
+  ACE__(input,output);
 
   uint64_t output_bs[5][64];
   for (int i = 0; i < 5; i++)
