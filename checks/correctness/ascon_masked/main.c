@@ -3,19 +3,19 @@
 #include <string.h>
 #include <stdint.h>
 
-#define MASK_VAL(a,x) {                         \
-    uint64_t val = a;                           \
-    for (int j = 1; j < MASKING_ORDER; j++) {   \
-      uint64_t mask = rand();                   \
-      val ^= mask;                              \
-      x[j] = mask;                              \
-    }                                           \
-    x[0] = val;                                 \
+#define MASK_VAL(a,x) {                             \
+    uint64_t val = a;                               \
+    for (int _j = 1; _j < MASKING_ORDER; _j++) {    \
+      uint64_t mask = rand();                       \
+      val ^= mask;                                  \
+      x[_j] = mask;                                 \
+    }                                               \
+    x[0] = val;                                     \
   }
 #define UNMASK_VAL(x,a) {                       \
     a = 0;                                      \
-    for (int j = 0; j < MASKING_ORDER; j++)     \
-      a ^= x[j];                                \
+    for (int _j = 0; _j < MASKING_ORDER; _j++)  \
+      a ^= x[_j];                               \
   }
 
 #ifdef REF
@@ -72,31 +72,34 @@ void transpose(uint64_t data[]) {
 }
 
 void ascon(uint64_t text[5]) {
-  uint64_t text_bs[320];
+  uint64_t text_bs[5][64];
   for (int i = 0; i < 5; i++) {
     for (int j = 0; j < 64; j++)
-      text_bs[i*64+j] = text[i];
-    transpose(&text_bs[i*64]);
+      text_bs[i][j] = text[i];
+    transpose(text_bs[i]);
   }
 
-  uint64_t input_masked[320][MASKING_ORDER];
-  for (int i = 0; i < 320; i++)
-    MASK_VAL(text_bs[i], input_masked[i]);
+  uint64_t input_masked[5][64][MASKING_ORDER];
+  for (int i = 0; i < 5; i++)
+    for (int j = 0; j < 64; j++)
+      MASK_VAL(text_bs[i][j], input_masked[i][j]);
 
-  uint64_t output_masked[320][MASKING_ORDER];
+  uint64_t output_masked[5][64][MASKING_ORDER];
   ascon12__(input_masked,output_masked);
 
-  uint64_t output_bs[320];
-  for (int i = 0; i < 320; i++)
-    UNMASK_VAL(output_masked[i], output_bs[i]);
+  uint64_t output_bs[5][64];
+  for (int i = 0; i < 5; i++)
+    for (int j = 0; j < 64; j++)
+      UNMASK_VAL(output_masked[i][j], output_bs[i][j]);
 
   for (int i = 0; i < 5; i++) {
-    transpose(&output_bs[i*64]);
+    transpose(output_bs[i]);
   }
 
   for (int i = 0; i < 5; i++)
-    text[i] = output_bs[i*64];//__builtin_bswap64(output_bs[i*64]);
+    text[i] = output_bs[i][0];//__builtin_bswap64(output_bs[i*64]);
 }
+
 
 #else
 #error Please define REF or UA_V

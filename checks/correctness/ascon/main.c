@@ -52,22 +52,22 @@ void transpose(uint64_t data[]) {
 }
 
 void ascon(uint64_t text[5]) {
-  uint64_t text_bs[320];
+  uint64_t text_bs[5][64];
   for (int i = 0; i < 5; i++) {
     for (int j = 0; j < 64; j++)
-      text_bs[i*64+j] = text[i];
-    transpose(&text_bs[i*64]);
+      text_bs[i][j] = text[i];
+    transpose(text_bs[i]);
   }
 
-  uint64_t output_bs[320];
+  uint64_t output_bs[5][64];
   ascon12__(text_bs,output_bs);
 
   for (int i = 0; i < 5; i++) {
-    transpose(&output_bs[i*64]);
+    transpose(output_bs[i]);
   }
 
   for (int i = 0; i < 5; i++)
-    text[i] = output_bs[i*64];//__builtin_bswap64(output_bs[i*64]);
+    text[i] = output_bs[i][0];//__builtin_bswap64(output_bs[i*64]);
 }
 
 #else

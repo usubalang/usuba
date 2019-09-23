@@ -60,14 +60,20 @@ void clyde128_encrypt(unsigned char* m, const unsigned char* c,
   for (int i = 0; i < 2; i++)                           \
     for (int j = 0; j < 32; j++)                        \
       swap(var##_bs[i*64+j],var##_bs[i*64+j+32]);       \
-  
+
   /* inputs */
   bitslice(plain);
   bitslice(key);
   bitslice(tweak);
-  
+
   uint64_t cipher_bs[128];
-  clyde128__(plain_bs, key_bs, tweak_bs, cipher_bs);
+
+
+  uint64_t (*_p)[32] = (uint64_t (*)[32])plain_bs;
+  uint64_t (*_k)[32] = (uint64_t (*)[32])key_bs;
+  uint64_t (*_t)[32] = (uint64_t (*)[32])tweak_bs;
+  uint64_t (*_c)[32] = (uint64_t (*)[32])cipher_bs;
+  clyde128__(_p,_k,_t,_c);
 
   /* output */
   for (int i = 0; i < 2; i++)
@@ -77,7 +83,7 @@ void clyde128_encrypt(unsigned char* m, const unsigned char* c,
   transpose(&cipher_bs[64]);
   memcpy(cipher, cipher_bs, 8);
   memcpy(&cipher[1], &cipher_bs[64], 8);
-  
+
 }
 
 
@@ -89,7 +95,7 @@ void clyde128_encrypt(unsigned char* m, const unsigned char* c,
   uint32_t *key    = (uint32_t*)k;
   uint32_t *tweak  = (uint32_t*)t;
   uint32_t *cipher = (uint32_t*)m;
-  
+
   clyde128__(plain, key, tweak, cipher);
 }
 
@@ -115,11 +121,11 @@ void verif_clyde() {
   if (memcmp(cipher, expected, 16) != 0) {
     fprintf(stderr, "Encryption error.\n");
     exit(EXIT_FAILURE);
-  } 
+  }
 }
 
 int main() {
 
   verif_clyde();
 
-} 
+}
