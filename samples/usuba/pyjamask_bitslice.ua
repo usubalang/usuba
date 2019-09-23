@@ -7,10 +7,10 @@ let
     o = i ^ k
 tel
 
-_no_inline node SubBytesAll (input:b128) returns (output:b128)
+_no_inline node SubBytesAll (input:b32[4]) returns (output:b32[4])
 let
     forall i in [0, 31] {
-       output[i,32+i,64+i,96+i] = SubBytes(input[i,32+i,64+i,96+i])
+       output[0..3][i] = SubBytes(input[0..3][i])
     }
 tel
 
@@ -41,9 +41,9 @@ let
     }
 tel
 
-node pyjamask (plaintext:b128, key:b128[15]) returns (ciphertext:b128)
+node pyjamask (plaintext:b32[4], key:b32[15][4]) returns (ciphertext:b32[4])
 vars
-    round: b128[15]
+    round: b32[15][4]
 let
     round[0] = plaintext;
     forall i in [0, 13] {

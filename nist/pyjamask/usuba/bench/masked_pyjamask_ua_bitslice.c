@@ -203,95 +203,41 @@ void AddRoundKey__B1 (/*inputs*/ DATATYPE i__[128][MASKING_ORDER],DATATYPE k__[1
 
 }
 
-void SubBytesAll__B1 (/*inputs*/ DATATYPE input__[128][MASKING_ORDER], /*outputs*/ DATATYPE output__[128][MASKING_ORDER]) {
+void SubBytesAll__B1 (/*inputs*/ DATATYPE input__[128][MASKING_ORDER], /*outputs*/ DATATYPE output__[4][32][MASKING_ORDER]) {
 
   // Variables declaration
   ;
 
   // Instructions (body)
   for (int i__ = 0; i__ <= 31; i__++) {
-    SubBytes__B1(input__[i__],input__[(32 + i__)],input__[(64 + i__)],input__[(96 + i__)],output__[i__],output__[(32 + i__)],output__[(64 + i__)],output__[(96 + i__)]);
+    SubBytes__B1(input__[(0 + i__)],input__[(32 + i__)],input__[(64 + i__)],input__[(96 + i__)],output__[0][i__],output__[1][i__],output__[2][i__],output__[3][i__]);
   }
 
 }
 
-void col_mult__B1 (/*inputs*/ DATATYPE a__0__[MASKING_ORDER],DATATYPE a__1__[MASKING_ORDER],DATATYPE a__2__[MASKING_ORDER],DATATYPE a__3__[MASKING_ORDER],DATATYPE a__4__[MASKING_ORDER],DATATYPE a__5__[MASKING_ORDER],DATATYPE a__6__[MASKING_ORDER],DATATYPE a__7__[MASKING_ORDER],DATATYPE a__8__[MASKING_ORDER],DATATYPE a__9__[MASKING_ORDER],DATATYPE a__10__[MASKING_ORDER],DATATYPE a__11__[MASKING_ORDER],DATATYPE a__12__[MASKING_ORDER],DATATYPE a__13__[MASKING_ORDER],DATATYPE a__14__[MASKING_ORDER],DATATYPE a__15__[MASKING_ORDER],DATATYPE a__16__[MASKING_ORDER],DATATYPE a__17__[MASKING_ORDER],DATATYPE a__18__[MASKING_ORDER],DATATYPE a__19__[MASKING_ORDER],DATATYPE a__20__[MASKING_ORDER],DATATYPE a__21__[MASKING_ORDER],DATATYPE a__22__[MASKING_ORDER],DATATYPE a__23__[MASKING_ORDER],DATATYPE a__24__[MASKING_ORDER],DATATYPE a__25__[MASKING_ORDER],DATATYPE a__26__[MASKING_ORDER],DATATYPE a__27__[MASKING_ORDER],DATATYPE a__28__[MASKING_ORDER],DATATYPE a__29__[MASKING_ORDER],DATATYPE a__30__[MASKING_ORDER],DATATYPE a__31__[MASKING_ORDER],DATATYPE b__[32][MASKING_ORDER], /*outputs*/ DATATYPE r__[MASKING_ORDER]) {
+void col_mult__B1 (/*inputs*/ DATATYPE a__[32][MASKING_ORDER],DATATYPE b__[32][MASKING_ORDER], /*outputs*/ DATATYPE r__[MASKING_ORDER]) {
 
   // Variables declaration
-  DATATYPE _tmp5_;
+  DATATYPE _tmp5_[MASKING_ORDER];
   DATATYPE acc__[MASKING_ORDER];
 
   // Instructions (body)
   for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-    acc__[_mask_idx] = AND(a__0__[_mask_idx],b__[0][0]);
-    _tmp5_ = AND(a__1__[_mask_idx],b__[1][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__2__[_mask_idx],b__[2][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__3__[_mask_idx],b__[3][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__4__[_mask_idx],b__[4][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__5__[_mask_idx],b__[5][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__6__[_mask_idx],b__[6][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__7__[_mask_idx],b__[7][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__8__[_mask_idx],b__[8][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__9__[_mask_idx],b__[9][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__10__[_mask_idx],b__[10][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__11__[_mask_idx],b__[11][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__12__[_mask_idx],b__[12][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__13__[_mask_idx],b__[13][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__14__[_mask_idx],b__[14][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__15__[_mask_idx],b__[15][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__16__[_mask_idx],b__[16][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__17__[_mask_idx],b__[17][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__18__[_mask_idx],b__[18][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__19__[_mask_idx],b__[19][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__20__[_mask_idx],b__[20][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__21__[_mask_idx],b__[21][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__22__[_mask_idx],b__[22][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__23__[_mask_idx],b__[23][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__24__[_mask_idx],b__[24][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__25__[_mask_idx],b__[25][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__26__[_mask_idx],b__[26][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__27__[_mask_idx],b__[27][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__28__[_mask_idx],b__[28][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__29__[_mask_idx],b__[29][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__30__[_mask_idx],b__[30][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
-    _tmp5_ = AND(a__31__[_mask_idx],b__[31][0]);
-    acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_);
+    acc__[_mask_idx] = AND(a__[0][_mask_idx],b__[0][0]);
+  }
+  for (int i__ = 1; i__ <= 31; i__++) {
+    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+      _tmp5_[_mask_idx] = AND(a__[i__][_mask_idx],b__[i__][0]);
+      acc__[_mask_idx] = XOR(acc__[_mask_idx],_tmp5_[_mask_idx]);
+    }
+  }
+  for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
     r__[_mask_idx] = acc__[_mask_idx];
   }
 
 }
 
-void MixRows__B1 (/*inputs*/ DATATYPE input__[128][MASKING_ORDER], /*outputs*/ DATATYPE output__[128][MASKING_ORDER]) {
+void MixRows__B1 (/*inputs*/ DATATYPE input__[4][32][MASKING_ORDER], /*outputs*/ DATATYPE output__[128][MASKING_ORDER]) {
 
   // Variables declaration
   DATATYPE M__[4][33][32][MASKING_ORDER];
@@ -555,295 +501,186 @@ void MixRows__B1 (/*inputs*/ DATATYPE input__[128][MASKING_ORDER], /*outputs*/ D
   M__[3][0][29][0] = SET_ALL_ZERO();
   M__[3][0][30][0] = SET_ALL_ONE();
   M__[3][0][31][0] = SET_ALL_ONE();
-  for (int idx__ = 0; idx__ <= 31; idx__++) {
-    col_mult__B1(input__[0],input__[1],input__[2],input__[3],input__[4],input__[5],input__[6],input__[7],input__[8],input__[9],input__[10],input__[11],input__[12],input__[13],input__[14],input__[15],input__[16],input__[17],input__[18],input__[19],input__[20],input__[21],input__[22],input__[23],input__[24],input__[25],input__[26],input__[27],input__[28],input__[29],input__[30],input__[31],M__[0][idx__],output__[(0 + idx__)]);
-    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      M__[0][(idx__ + 1)][0][_mask_idx] = M__[0][idx__][31][_mask_idx];
-      M__[0][(idx__ + 1)][1][_mask_idx] = M__[0][idx__][0][_mask_idx];
-      M__[0][(idx__ + 1)][2][_mask_idx] = M__[0][idx__][1][_mask_idx];
-      M__[0][(idx__ + 1)][3][_mask_idx] = M__[0][idx__][2][_mask_idx];
-      M__[0][(idx__ + 1)][4][_mask_idx] = M__[0][idx__][3][_mask_idx];
-      M__[0][(idx__ + 1)][5][_mask_idx] = M__[0][idx__][4][_mask_idx];
-      M__[0][(idx__ + 1)][6][_mask_idx] = M__[0][idx__][5][_mask_idx];
-      M__[0][(idx__ + 1)][7][_mask_idx] = M__[0][idx__][6][_mask_idx];
-      M__[0][(idx__ + 1)][8][_mask_idx] = M__[0][idx__][7][_mask_idx];
-      M__[0][(idx__ + 1)][9][_mask_idx] = M__[0][idx__][8][_mask_idx];
-      M__[0][(idx__ + 1)][10][_mask_idx] = M__[0][idx__][9][_mask_idx];
-      M__[0][(idx__ + 1)][11][_mask_idx] = M__[0][idx__][10][_mask_idx];
-      M__[0][(idx__ + 1)][12][_mask_idx] = M__[0][idx__][11][_mask_idx];
-      M__[0][(idx__ + 1)][13][_mask_idx] = M__[0][idx__][12][_mask_idx];
-      M__[0][(idx__ + 1)][14][_mask_idx] = M__[0][idx__][13][_mask_idx];
-      M__[0][(idx__ + 1)][15][_mask_idx] = M__[0][idx__][14][_mask_idx];
-      M__[0][(idx__ + 1)][16][_mask_idx] = M__[0][idx__][15][_mask_idx];
-      M__[0][(idx__ + 1)][17][_mask_idx] = M__[0][idx__][16][_mask_idx];
-      M__[0][(idx__ + 1)][18][_mask_idx] = M__[0][idx__][17][_mask_idx];
-      M__[0][(idx__ + 1)][19][_mask_idx] = M__[0][idx__][18][_mask_idx];
-      M__[0][(idx__ + 1)][20][_mask_idx] = M__[0][idx__][19][_mask_idx];
-      M__[0][(idx__ + 1)][21][_mask_idx] = M__[0][idx__][20][_mask_idx];
-      M__[0][(idx__ + 1)][22][_mask_idx] = M__[0][idx__][21][_mask_idx];
-      M__[0][(idx__ + 1)][23][_mask_idx] = M__[0][idx__][22][_mask_idx];
-      M__[0][(idx__ + 1)][24][_mask_idx] = M__[0][idx__][23][_mask_idx];
-      M__[0][(idx__ + 1)][25][_mask_idx] = M__[0][idx__][24][_mask_idx];
-      M__[0][(idx__ + 1)][26][_mask_idx] = M__[0][idx__][25][_mask_idx];
-      M__[0][(idx__ + 1)][27][_mask_idx] = M__[0][idx__][26][_mask_idx];
-      M__[0][(idx__ + 1)][28][_mask_idx] = M__[0][idx__][27][_mask_idx];
-      M__[0][(idx__ + 1)][29][_mask_idx] = M__[0][idx__][28][_mask_idx];
-      M__[0][(idx__ + 1)][30][_mask_idx] = M__[0][idx__][29][_mask_idx];
-      M__[0][(idx__ + 1)][31][_mask_idx] = M__[0][idx__][30][_mask_idx];
-    }
-  }
-  for (int idx__ = 0; idx__ <= 31; idx__++) {
-    col_mult__B1(input__[32],input__[33],input__[34],input__[35],input__[36],input__[37],input__[38],input__[39],input__[40],input__[41],input__[42],input__[43],input__[44],input__[45],input__[46],input__[47],input__[48],input__[49],input__[50],input__[51],input__[52],input__[53],input__[54],input__[55],input__[56],input__[57],input__[58],input__[59],input__[60],input__[61],input__[62],input__[63],M__[1][idx__],output__[(32 + idx__)]);
-    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      M__[1][(idx__ + 1)][0][_mask_idx] = M__[1][idx__][31][_mask_idx];
-      M__[1][(idx__ + 1)][1][_mask_idx] = M__[1][idx__][0][_mask_idx];
-      M__[1][(idx__ + 1)][2][_mask_idx] = M__[1][idx__][1][_mask_idx];
-      M__[1][(idx__ + 1)][3][_mask_idx] = M__[1][idx__][2][_mask_idx];
-      M__[1][(idx__ + 1)][4][_mask_idx] = M__[1][idx__][3][_mask_idx];
-      M__[1][(idx__ + 1)][5][_mask_idx] = M__[1][idx__][4][_mask_idx];
-      M__[1][(idx__ + 1)][6][_mask_idx] = M__[1][idx__][5][_mask_idx];
-      M__[1][(idx__ + 1)][7][_mask_idx] = M__[1][idx__][6][_mask_idx];
-      M__[1][(idx__ + 1)][8][_mask_idx] = M__[1][idx__][7][_mask_idx];
-      M__[1][(idx__ + 1)][9][_mask_idx] = M__[1][idx__][8][_mask_idx];
-      M__[1][(idx__ + 1)][10][_mask_idx] = M__[1][idx__][9][_mask_idx];
-      M__[1][(idx__ + 1)][11][_mask_idx] = M__[1][idx__][10][_mask_idx];
-      M__[1][(idx__ + 1)][12][_mask_idx] = M__[1][idx__][11][_mask_idx];
-      M__[1][(idx__ + 1)][13][_mask_idx] = M__[1][idx__][12][_mask_idx];
-      M__[1][(idx__ + 1)][14][_mask_idx] = M__[1][idx__][13][_mask_idx];
-      M__[1][(idx__ + 1)][15][_mask_idx] = M__[1][idx__][14][_mask_idx];
-      M__[1][(idx__ + 1)][16][_mask_idx] = M__[1][idx__][15][_mask_idx];
-      M__[1][(idx__ + 1)][17][_mask_idx] = M__[1][idx__][16][_mask_idx];
-      M__[1][(idx__ + 1)][18][_mask_idx] = M__[1][idx__][17][_mask_idx];
-      M__[1][(idx__ + 1)][19][_mask_idx] = M__[1][idx__][18][_mask_idx];
-      M__[1][(idx__ + 1)][20][_mask_idx] = M__[1][idx__][19][_mask_idx];
-      M__[1][(idx__ + 1)][21][_mask_idx] = M__[1][idx__][20][_mask_idx];
-      M__[1][(idx__ + 1)][22][_mask_idx] = M__[1][idx__][21][_mask_idx];
-      M__[1][(idx__ + 1)][23][_mask_idx] = M__[1][idx__][22][_mask_idx];
-      M__[1][(idx__ + 1)][24][_mask_idx] = M__[1][idx__][23][_mask_idx];
-      M__[1][(idx__ + 1)][25][_mask_idx] = M__[1][idx__][24][_mask_idx];
-      M__[1][(idx__ + 1)][26][_mask_idx] = M__[1][idx__][25][_mask_idx];
-      M__[1][(idx__ + 1)][27][_mask_idx] = M__[1][idx__][26][_mask_idx];
-      M__[1][(idx__ + 1)][28][_mask_idx] = M__[1][idx__][27][_mask_idx];
-      M__[1][(idx__ + 1)][29][_mask_idx] = M__[1][idx__][28][_mask_idx];
-      M__[1][(idx__ + 1)][30][_mask_idx] = M__[1][idx__][29][_mask_idx];
-      M__[1][(idx__ + 1)][31][_mask_idx] = M__[1][idx__][30][_mask_idx];
-    }
-  }
-  for (int idx__ = 0; idx__ <= 31; idx__++) {
-    col_mult__B1(input__[64],input__[65],input__[66],input__[67],input__[68],input__[69],input__[70],input__[71],input__[72],input__[73],input__[74],input__[75],input__[76],input__[77],input__[78],input__[79],input__[80],input__[81],input__[82],input__[83],input__[84],input__[85],input__[86],input__[87],input__[88],input__[89],input__[90],input__[91],input__[92],input__[93],input__[94],input__[95],M__[2][idx__],output__[(64 + idx__)]);
-    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      M__[2][(idx__ + 1)][0][_mask_idx] = M__[2][idx__][31][_mask_idx];
-      M__[2][(idx__ + 1)][1][_mask_idx] = M__[2][idx__][0][_mask_idx];
-      M__[2][(idx__ + 1)][2][_mask_idx] = M__[2][idx__][1][_mask_idx];
-      M__[2][(idx__ + 1)][3][_mask_idx] = M__[2][idx__][2][_mask_idx];
-      M__[2][(idx__ + 1)][4][_mask_idx] = M__[2][idx__][3][_mask_idx];
-      M__[2][(idx__ + 1)][5][_mask_idx] = M__[2][idx__][4][_mask_idx];
-      M__[2][(idx__ + 1)][6][_mask_idx] = M__[2][idx__][5][_mask_idx];
-      M__[2][(idx__ + 1)][7][_mask_idx] = M__[2][idx__][6][_mask_idx];
-      M__[2][(idx__ + 1)][8][_mask_idx] = M__[2][idx__][7][_mask_idx];
-      M__[2][(idx__ + 1)][9][_mask_idx] = M__[2][idx__][8][_mask_idx];
-      M__[2][(idx__ + 1)][10][_mask_idx] = M__[2][idx__][9][_mask_idx];
-      M__[2][(idx__ + 1)][11][_mask_idx] = M__[2][idx__][10][_mask_idx];
-      M__[2][(idx__ + 1)][12][_mask_idx] = M__[2][idx__][11][_mask_idx];
-      M__[2][(idx__ + 1)][13][_mask_idx] = M__[2][idx__][12][_mask_idx];
-      M__[2][(idx__ + 1)][14][_mask_idx] = M__[2][idx__][13][_mask_idx];
-      M__[2][(idx__ + 1)][15][_mask_idx] = M__[2][idx__][14][_mask_idx];
-      M__[2][(idx__ + 1)][16][_mask_idx] = M__[2][idx__][15][_mask_idx];
-      M__[2][(idx__ + 1)][17][_mask_idx] = M__[2][idx__][16][_mask_idx];
-      M__[2][(idx__ + 1)][18][_mask_idx] = M__[2][idx__][17][_mask_idx];
-      M__[2][(idx__ + 1)][19][_mask_idx] = M__[2][idx__][18][_mask_idx];
-      M__[2][(idx__ + 1)][20][_mask_idx] = M__[2][idx__][19][_mask_idx];
-      M__[2][(idx__ + 1)][21][_mask_idx] = M__[2][idx__][20][_mask_idx];
-      M__[2][(idx__ + 1)][22][_mask_idx] = M__[2][idx__][21][_mask_idx];
-      M__[2][(idx__ + 1)][23][_mask_idx] = M__[2][idx__][22][_mask_idx];
-      M__[2][(idx__ + 1)][24][_mask_idx] = M__[2][idx__][23][_mask_idx];
-      M__[2][(idx__ + 1)][25][_mask_idx] = M__[2][idx__][24][_mask_idx];
-      M__[2][(idx__ + 1)][26][_mask_idx] = M__[2][idx__][25][_mask_idx];
-      M__[2][(idx__ + 1)][27][_mask_idx] = M__[2][idx__][26][_mask_idx];
-      M__[2][(idx__ + 1)][28][_mask_idx] = M__[2][idx__][27][_mask_idx];
-      M__[2][(idx__ + 1)][29][_mask_idx] = M__[2][idx__][28][_mask_idx];
-      M__[2][(idx__ + 1)][30][_mask_idx] = M__[2][idx__][29][_mask_idx];
-      M__[2][(idx__ + 1)][31][_mask_idx] = M__[2][idx__][30][_mask_idx];
-    }
-  }
-  for (int idx__ = 0; idx__ <= 31; idx__++) {
-    col_mult__B1(input__[96],input__[97],input__[98],input__[99],input__[100],input__[101],input__[102],input__[103],input__[104],input__[105],input__[106],input__[107],input__[108],input__[109],input__[110],input__[111],input__[112],input__[113],input__[114],input__[115],input__[116],input__[117],input__[118],input__[119],input__[120],input__[121],input__[122],input__[123],input__[124],input__[125],input__[126],input__[127],M__[3][idx__],output__[(96 + idx__)]);
-    for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-      M__[3][(idx__ + 1)][0][_mask_idx] = M__[3][idx__][31][_mask_idx];
-      M__[3][(idx__ + 1)][1][_mask_idx] = M__[3][idx__][0][_mask_idx];
-      M__[3][(idx__ + 1)][2][_mask_idx] = M__[3][idx__][1][_mask_idx];
-      M__[3][(idx__ + 1)][3][_mask_idx] = M__[3][idx__][2][_mask_idx];
-      M__[3][(idx__ + 1)][4][_mask_idx] = M__[3][idx__][3][_mask_idx];
-      M__[3][(idx__ + 1)][5][_mask_idx] = M__[3][idx__][4][_mask_idx];
-      M__[3][(idx__ + 1)][6][_mask_idx] = M__[3][idx__][5][_mask_idx];
-      M__[3][(idx__ + 1)][7][_mask_idx] = M__[3][idx__][6][_mask_idx];
-      M__[3][(idx__ + 1)][8][_mask_idx] = M__[3][idx__][7][_mask_idx];
-      M__[3][(idx__ + 1)][9][_mask_idx] = M__[3][idx__][8][_mask_idx];
-      M__[3][(idx__ + 1)][10][_mask_idx] = M__[3][idx__][9][_mask_idx];
-      M__[3][(idx__ + 1)][11][_mask_idx] = M__[3][idx__][10][_mask_idx];
-      M__[3][(idx__ + 1)][12][_mask_idx] = M__[3][idx__][11][_mask_idx];
-      M__[3][(idx__ + 1)][13][_mask_idx] = M__[3][idx__][12][_mask_idx];
-      M__[3][(idx__ + 1)][14][_mask_idx] = M__[3][idx__][13][_mask_idx];
-      M__[3][(idx__ + 1)][15][_mask_idx] = M__[3][idx__][14][_mask_idx];
-      M__[3][(idx__ + 1)][16][_mask_idx] = M__[3][idx__][15][_mask_idx];
-      M__[3][(idx__ + 1)][17][_mask_idx] = M__[3][idx__][16][_mask_idx];
-      M__[3][(idx__ + 1)][18][_mask_idx] = M__[3][idx__][17][_mask_idx];
-      M__[3][(idx__ + 1)][19][_mask_idx] = M__[3][idx__][18][_mask_idx];
-      M__[3][(idx__ + 1)][20][_mask_idx] = M__[3][idx__][19][_mask_idx];
-      M__[3][(idx__ + 1)][21][_mask_idx] = M__[3][idx__][20][_mask_idx];
-      M__[3][(idx__ + 1)][22][_mask_idx] = M__[3][idx__][21][_mask_idx];
-      M__[3][(idx__ + 1)][23][_mask_idx] = M__[3][idx__][22][_mask_idx];
-      M__[3][(idx__ + 1)][24][_mask_idx] = M__[3][idx__][23][_mask_idx];
-      M__[3][(idx__ + 1)][25][_mask_idx] = M__[3][idx__][24][_mask_idx];
-      M__[3][(idx__ + 1)][26][_mask_idx] = M__[3][idx__][25][_mask_idx];
-      M__[3][(idx__ + 1)][27][_mask_idx] = M__[3][idx__][26][_mask_idx];
-      M__[3][(idx__ + 1)][28][_mask_idx] = M__[3][idx__][27][_mask_idx];
-      M__[3][(idx__ + 1)][29][_mask_idx] = M__[3][idx__][28][_mask_idx];
-      M__[3][(idx__ + 1)][30][_mask_idx] = M__[3][idx__][29][_mask_idx];
-      M__[3][(idx__ + 1)][31][_mask_idx] = M__[3][idx__][30][_mask_idx];
+  for (int col__ = 0; col__ <= 3; col__++) {
+    for (int idx__ = 0; idx__ <= 31; idx__++) {
+      col_mult__B1(input__[col__],M__[col__][idx__],output__[((col__ * 32) + idx__)]);
+      for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
+        M__[col__][(idx__ + 1)][0][_mask_idx] = M__[col__][idx__][31][_mask_idx];
+        M__[col__][(idx__ + 1)][1][_mask_idx] = M__[col__][idx__][0][_mask_idx];
+        M__[col__][(idx__ + 1)][2][_mask_idx] = M__[col__][idx__][1][_mask_idx];
+        M__[col__][(idx__ + 1)][3][_mask_idx] = M__[col__][idx__][2][_mask_idx];
+        M__[col__][(idx__ + 1)][4][_mask_idx] = M__[col__][idx__][3][_mask_idx];
+        M__[col__][(idx__ + 1)][5][_mask_idx] = M__[col__][idx__][4][_mask_idx];
+        M__[col__][(idx__ + 1)][6][_mask_idx] = M__[col__][idx__][5][_mask_idx];
+        M__[col__][(idx__ + 1)][7][_mask_idx] = M__[col__][idx__][6][_mask_idx];
+        M__[col__][(idx__ + 1)][8][_mask_idx] = M__[col__][idx__][7][_mask_idx];
+        M__[col__][(idx__ + 1)][9][_mask_idx] = M__[col__][idx__][8][_mask_idx];
+        M__[col__][(idx__ + 1)][10][_mask_idx] = M__[col__][idx__][9][_mask_idx];
+        M__[col__][(idx__ + 1)][11][_mask_idx] = M__[col__][idx__][10][_mask_idx];
+        M__[col__][(idx__ + 1)][12][_mask_idx] = M__[col__][idx__][11][_mask_idx];
+        M__[col__][(idx__ + 1)][13][_mask_idx] = M__[col__][idx__][12][_mask_idx];
+        M__[col__][(idx__ + 1)][14][_mask_idx] = M__[col__][idx__][13][_mask_idx];
+        M__[col__][(idx__ + 1)][15][_mask_idx] = M__[col__][idx__][14][_mask_idx];
+        M__[col__][(idx__ + 1)][16][_mask_idx] = M__[col__][idx__][15][_mask_idx];
+        M__[col__][(idx__ + 1)][17][_mask_idx] = M__[col__][idx__][16][_mask_idx];
+        M__[col__][(idx__ + 1)][18][_mask_idx] = M__[col__][idx__][17][_mask_idx];
+        M__[col__][(idx__ + 1)][19][_mask_idx] = M__[col__][idx__][18][_mask_idx];
+        M__[col__][(idx__ + 1)][20][_mask_idx] = M__[col__][idx__][19][_mask_idx];
+        M__[col__][(idx__ + 1)][21][_mask_idx] = M__[col__][idx__][20][_mask_idx];
+        M__[col__][(idx__ + 1)][22][_mask_idx] = M__[col__][idx__][21][_mask_idx];
+        M__[col__][(idx__ + 1)][23][_mask_idx] = M__[col__][idx__][22][_mask_idx];
+        M__[col__][(idx__ + 1)][24][_mask_idx] = M__[col__][idx__][23][_mask_idx];
+        M__[col__][(idx__ + 1)][25][_mask_idx] = M__[col__][idx__][24][_mask_idx];
+        M__[col__][(idx__ + 1)][26][_mask_idx] = M__[col__][idx__][25][_mask_idx];
+        M__[col__][(idx__ + 1)][27][_mask_idx] = M__[col__][idx__][26][_mask_idx];
+        M__[col__][(idx__ + 1)][28][_mask_idx] = M__[col__][idx__][27][_mask_idx];
+        M__[col__][(idx__ + 1)][29][_mask_idx] = M__[col__][idx__][28][_mask_idx];
+        M__[col__][(idx__ + 1)][30][_mask_idx] = M__[col__][idx__][29][_mask_idx];
+        M__[col__][(idx__ + 1)][31][_mask_idx] = M__[col__][idx__][30][_mask_idx];
+      }
     }
   }
 
 }
 
 /* main function */
-void pyjamask__ (/*inputs*/ DATATYPE plaintext__[128][MASKING_ORDER],DATATYPE key__[15][128][MASKING_ORDER], /*outputs*/ DATATYPE ciphertext__[128][MASKING_ORDER]) {
+void pyjamask__ (/*inputs*/ DATATYPE plaintext__[4][32][MASKING_ORDER],DATATYPE key__[15][128][MASKING_ORDER], /*outputs*/ DATATYPE ciphertext__[128][MASKING_ORDER]) {
 
   // Variables declaration
   DATATYPE _tmp134_[128][MASKING_ORDER];
-  DATATYPE _tmp135_[128][MASKING_ORDER];
+  DATATYPE _tmp135_[4][32][MASKING_ORDER];
   DATATYPE round__[128][MASKING_ORDER];
 
   // Instructions (body)
   for (int _mask_idx = 0; _mask_idx <= (MASKING_ORDER - 1); _mask_idx++) {
-    round__[0][_mask_idx] = plaintext__[0][_mask_idx];
-    round__[1][_mask_idx] = plaintext__[1][_mask_idx];
-    round__[2][_mask_idx] = plaintext__[2][_mask_idx];
-    round__[3][_mask_idx] = plaintext__[3][_mask_idx];
-    round__[4][_mask_idx] = plaintext__[4][_mask_idx];
-    round__[5][_mask_idx] = plaintext__[5][_mask_idx];
-    round__[6][_mask_idx] = plaintext__[6][_mask_idx];
-    round__[7][_mask_idx] = plaintext__[7][_mask_idx];
-    round__[8][_mask_idx] = plaintext__[8][_mask_idx];
-    round__[9][_mask_idx] = plaintext__[9][_mask_idx];
-    round__[10][_mask_idx] = plaintext__[10][_mask_idx];
-    round__[11][_mask_idx] = plaintext__[11][_mask_idx];
-    round__[12][_mask_idx] = plaintext__[12][_mask_idx];
-    round__[13][_mask_idx] = plaintext__[13][_mask_idx];
-    round__[14][_mask_idx] = plaintext__[14][_mask_idx];
-    round__[15][_mask_idx] = plaintext__[15][_mask_idx];
-    round__[16][_mask_idx] = plaintext__[16][_mask_idx];
-    round__[17][_mask_idx] = plaintext__[17][_mask_idx];
-    round__[18][_mask_idx] = plaintext__[18][_mask_idx];
-    round__[19][_mask_idx] = plaintext__[19][_mask_idx];
-    round__[20][_mask_idx] = plaintext__[20][_mask_idx];
-    round__[21][_mask_idx] = plaintext__[21][_mask_idx];
-    round__[22][_mask_idx] = plaintext__[22][_mask_idx];
-    round__[23][_mask_idx] = plaintext__[23][_mask_idx];
-    round__[24][_mask_idx] = plaintext__[24][_mask_idx];
-    round__[25][_mask_idx] = plaintext__[25][_mask_idx];
-    round__[26][_mask_idx] = plaintext__[26][_mask_idx];
-    round__[27][_mask_idx] = plaintext__[27][_mask_idx];
-    round__[28][_mask_idx] = plaintext__[28][_mask_idx];
-    round__[29][_mask_idx] = plaintext__[29][_mask_idx];
-    round__[30][_mask_idx] = plaintext__[30][_mask_idx];
-    round__[31][_mask_idx] = plaintext__[31][_mask_idx];
-    round__[32][_mask_idx] = plaintext__[32][_mask_idx];
-    round__[33][_mask_idx] = plaintext__[33][_mask_idx];
-    round__[34][_mask_idx] = plaintext__[34][_mask_idx];
-    round__[35][_mask_idx] = plaintext__[35][_mask_idx];
-    round__[36][_mask_idx] = plaintext__[36][_mask_idx];
-    round__[37][_mask_idx] = plaintext__[37][_mask_idx];
-    round__[38][_mask_idx] = plaintext__[38][_mask_idx];
-    round__[39][_mask_idx] = plaintext__[39][_mask_idx];
-    round__[40][_mask_idx] = plaintext__[40][_mask_idx];
-    round__[41][_mask_idx] = plaintext__[41][_mask_idx];
-    round__[42][_mask_idx] = plaintext__[42][_mask_idx];
-    round__[43][_mask_idx] = plaintext__[43][_mask_idx];
-    round__[44][_mask_idx] = plaintext__[44][_mask_idx];
-    round__[45][_mask_idx] = plaintext__[45][_mask_idx];
-    round__[46][_mask_idx] = plaintext__[46][_mask_idx];
-    round__[47][_mask_idx] = plaintext__[47][_mask_idx];
-    round__[48][_mask_idx] = plaintext__[48][_mask_idx];
-    round__[49][_mask_idx] = plaintext__[49][_mask_idx];
-    round__[50][_mask_idx] = plaintext__[50][_mask_idx];
-    round__[51][_mask_idx] = plaintext__[51][_mask_idx];
-    round__[52][_mask_idx] = plaintext__[52][_mask_idx];
-    round__[53][_mask_idx] = plaintext__[53][_mask_idx];
-    round__[54][_mask_idx] = plaintext__[54][_mask_idx];
-    round__[55][_mask_idx] = plaintext__[55][_mask_idx];
-    round__[56][_mask_idx] = plaintext__[56][_mask_idx];
-    round__[57][_mask_idx] = plaintext__[57][_mask_idx];
-    round__[58][_mask_idx] = plaintext__[58][_mask_idx];
-    round__[59][_mask_idx] = plaintext__[59][_mask_idx];
-    round__[60][_mask_idx] = plaintext__[60][_mask_idx];
-    round__[61][_mask_idx] = plaintext__[61][_mask_idx];
-    round__[62][_mask_idx] = plaintext__[62][_mask_idx];
-    round__[63][_mask_idx] = plaintext__[63][_mask_idx];
-    round__[64][_mask_idx] = plaintext__[64][_mask_idx];
-    round__[65][_mask_idx] = plaintext__[65][_mask_idx];
-    round__[66][_mask_idx] = plaintext__[66][_mask_idx];
-    round__[67][_mask_idx] = plaintext__[67][_mask_idx];
-    round__[68][_mask_idx] = plaintext__[68][_mask_idx];
-    round__[69][_mask_idx] = plaintext__[69][_mask_idx];
-    round__[70][_mask_idx] = plaintext__[70][_mask_idx];
-    round__[71][_mask_idx] = plaintext__[71][_mask_idx];
-    round__[72][_mask_idx] = plaintext__[72][_mask_idx];
-    round__[73][_mask_idx] = plaintext__[73][_mask_idx];
-    round__[74][_mask_idx] = plaintext__[74][_mask_idx];
-    round__[75][_mask_idx] = plaintext__[75][_mask_idx];
-    round__[76][_mask_idx] = plaintext__[76][_mask_idx];
-    round__[77][_mask_idx] = plaintext__[77][_mask_idx];
-    round__[78][_mask_idx] = plaintext__[78][_mask_idx];
-    round__[79][_mask_idx] = plaintext__[79][_mask_idx];
-    round__[80][_mask_idx] = plaintext__[80][_mask_idx];
-    round__[81][_mask_idx] = plaintext__[81][_mask_idx];
-    round__[82][_mask_idx] = plaintext__[82][_mask_idx];
-    round__[83][_mask_idx] = plaintext__[83][_mask_idx];
-    round__[84][_mask_idx] = plaintext__[84][_mask_idx];
-    round__[85][_mask_idx] = plaintext__[85][_mask_idx];
-    round__[86][_mask_idx] = plaintext__[86][_mask_idx];
-    round__[87][_mask_idx] = plaintext__[87][_mask_idx];
-    round__[88][_mask_idx] = plaintext__[88][_mask_idx];
-    round__[89][_mask_idx] = plaintext__[89][_mask_idx];
-    round__[90][_mask_idx] = plaintext__[90][_mask_idx];
-    round__[91][_mask_idx] = plaintext__[91][_mask_idx];
-    round__[92][_mask_idx] = plaintext__[92][_mask_idx];
-    round__[93][_mask_idx] = plaintext__[93][_mask_idx];
-    round__[94][_mask_idx] = plaintext__[94][_mask_idx];
-    round__[95][_mask_idx] = plaintext__[95][_mask_idx];
-    round__[96][_mask_idx] = plaintext__[96][_mask_idx];
-    round__[97][_mask_idx] = plaintext__[97][_mask_idx];
-    round__[98][_mask_idx] = plaintext__[98][_mask_idx];
-    round__[99][_mask_idx] = plaintext__[99][_mask_idx];
-    round__[100][_mask_idx] = plaintext__[100][_mask_idx];
-    round__[101][_mask_idx] = plaintext__[101][_mask_idx];
-    round__[102][_mask_idx] = plaintext__[102][_mask_idx];
-    round__[103][_mask_idx] = plaintext__[103][_mask_idx];
-    round__[104][_mask_idx] = plaintext__[104][_mask_idx];
-    round__[105][_mask_idx] = plaintext__[105][_mask_idx];
-    round__[106][_mask_idx] = plaintext__[106][_mask_idx];
-    round__[107][_mask_idx] = plaintext__[107][_mask_idx];
-    round__[108][_mask_idx] = plaintext__[108][_mask_idx];
-    round__[109][_mask_idx] = plaintext__[109][_mask_idx];
-    round__[110][_mask_idx] = plaintext__[110][_mask_idx];
-    round__[111][_mask_idx] = plaintext__[111][_mask_idx];
-    round__[112][_mask_idx] = plaintext__[112][_mask_idx];
-    round__[113][_mask_idx] = plaintext__[113][_mask_idx];
-    round__[114][_mask_idx] = plaintext__[114][_mask_idx];
-    round__[115][_mask_idx] = plaintext__[115][_mask_idx];
-    round__[116][_mask_idx] = plaintext__[116][_mask_idx];
-    round__[117][_mask_idx] = plaintext__[117][_mask_idx];
-    round__[118][_mask_idx] = plaintext__[118][_mask_idx];
-    round__[119][_mask_idx] = plaintext__[119][_mask_idx];
-    round__[120][_mask_idx] = plaintext__[120][_mask_idx];
-    round__[121][_mask_idx] = plaintext__[121][_mask_idx];
-    round__[122][_mask_idx] = plaintext__[122][_mask_idx];
-    round__[123][_mask_idx] = plaintext__[123][_mask_idx];
-    round__[124][_mask_idx] = plaintext__[124][_mask_idx];
-    round__[125][_mask_idx] = plaintext__[125][_mask_idx];
-    round__[126][_mask_idx] = plaintext__[126][_mask_idx];
-    round__[127][_mask_idx] = plaintext__[127][_mask_idx];
+    round__[0][_mask_idx] = plaintext__[0][0][_mask_idx];
+    round__[1][_mask_idx] = plaintext__[0][1][_mask_idx];
+    round__[2][_mask_idx] = plaintext__[0][2][_mask_idx];
+    round__[3][_mask_idx] = plaintext__[0][3][_mask_idx];
+    round__[4][_mask_idx] = plaintext__[0][4][_mask_idx];
+    round__[5][_mask_idx] = plaintext__[0][5][_mask_idx];
+    round__[6][_mask_idx] = plaintext__[0][6][_mask_idx];
+    round__[7][_mask_idx] = plaintext__[0][7][_mask_idx];
+    round__[8][_mask_idx] = plaintext__[0][8][_mask_idx];
+    round__[9][_mask_idx] = plaintext__[0][9][_mask_idx];
+    round__[10][_mask_idx] = plaintext__[0][10][_mask_idx];
+    round__[11][_mask_idx] = plaintext__[0][11][_mask_idx];
+    round__[12][_mask_idx] = plaintext__[0][12][_mask_idx];
+    round__[13][_mask_idx] = plaintext__[0][13][_mask_idx];
+    round__[14][_mask_idx] = plaintext__[0][14][_mask_idx];
+    round__[15][_mask_idx] = plaintext__[0][15][_mask_idx];
+    round__[16][_mask_idx] = plaintext__[0][16][_mask_idx];
+    round__[17][_mask_idx] = plaintext__[0][17][_mask_idx];
+    round__[18][_mask_idx] = plaintext__[0][18][_mask_idx];
+    round__[19][_mask_idx] = plaintext__[0][19][_mask_idx];
+    round__[20][_mask_idx] = plaintext__[0][20][_mask_idx];
+    round__[21][_mask_idx] = plaintext__[0][21][_mask_idx];
+    round__[22][_mask_idx] = plaintext__[0][22][_mask_idx];
+    round__[23][_mask_idx] = plaintext__[0][23][_mask_idx];
+    round__[24][_mask_idx] = plaintext__[0][24][_mask_idx];
+    round__[25][_mask_idx] = plaintext__[0][25][_mask_idx];
+    round__[26][_mask_idx] = plaintext__[0][26][_mask_idx];
+    round__[27][_mask_idx] = plaintext__[0][27][_mask_idx];
+    round__[28][_mask_idx] = plaintext__[0][28][_mask_idx];
+    round__[29][_mask_idx] = plaintext__[0][29][_mask_idx];
+    round__[30][_mask_idx] = plaintext__[0][30][_mask_idx];
+    round__[31][_mask_idx] = plaintext__[0][31][_mask_idx];
+    round__[32][_mask_idx] = plaintext__[1][0][_mask_idx];
+    round__[33][_mask_idx] = plaintext__[1][1][_mask_idx];
+    round__[34][_mask_idx] = plaintext__[1][2][_mask_idx];
+    round__[35][_mask_idx] = plaintext__[1][3][_mask_idx];
+    round__[36][_mask_idx] = plaintext__[1][4][_mask_idx];
+    round__[37][_mask_idx] = plaintext__[1][5][_mask_idx];
+    round__[38][_mask_idx] = plaintext__[1][6][_mask_idx];
+    round__[39][_mask_idx] = plaintext__[1][7][_mask_idx];
+    round__[40][_mask_idx] = plaintext__[1][8][_mask_idx];
+    round__[41][_mask_idx] = plaintext__[1][9][_mask_idx];
+    round__[42][_mask_idx] = plaintext__[1][10][_mask_idx];
+    round__[43][_mask_idx] = plaintext__[1][11][_mask_idx];
+    round__[44][_mask_idx] = plaintext__[1][12][_mask_idx];
+    round__[45][_mask_idx] = plaintext__[1][13][_mask_idx];
+    round__[46][_mask_idx] = plaintext__[1][14][_mask_idx];
+    round__[47][_mask_idx] = plaintext__[1][15][_mask_idx];
+    round__[48][_mask_idx] = plaintext__[1][16][_mask_idx];
+    round__[49][_mask_idx] = plaintext__[1][17][_mask_idx];
+    round__[50][_mask_idx] = plaintext__[1][18][_mask_idx];
+    round__[51][_mask_idx] = plaintext__[1][19][_mask_idx];
+    round__[52][_mask_idx] = plaintext__[1][20][_mask_idx];
+    round__[53][_mask_idx] = plaintext__[1][21][_mask_idx];
+    round__[54][_mask_idx] = plaintext__[1][22][_mask_idx];
+    round__[55][_mask_idx] = plaintext__[1][23][_mask_idx];
+    round__[56][_mask_idx] = plaintext__[1][24][_mask_idx];
+    round__[57][_mask_idx] = plaintext__[1][25][_mask_idx];
+    round__[58][_mask_idx] = plaintext__[1][26][_mask_idx];
+    round__[59][_mask_idx] = plaintext__[1][27][_mask_idx];
+    round__[60][_mask_idx] = plaintext__[1][28][_mask_idx];
+    round__[61][_mask_idx] = plaintext__[1][29][_mask_idx];
+    round__[62][_mask_idx] = plaintext__[1][30][_mask_idx];
+    round__[63][_mask_idx] = plaintext__[1][31][_mask_idx];
+    round__[64][_mask_idx] = plaintext__[2][0][_mask_idx];
+    round__[65][_mask_idx] = plaintext__[2][1][_mask_idx];
+    round__[66][_mask_idx] = plaintext__[2][2][_mask_idx];
+    round__[67][_mask_idx] = plaintext__[2][3][_mask_idx];
+    round__[68][_mask_idx] = plaintext__[2][4][_mask_idx];
+    round__[69][_mask_idx] = plaintext__[2][5][_mask_idx];
+    round__[70][_mask_idx] = plaintext__[2][6][_mask_idx];
+    round__[71][_mask_idx] = plaintext__[2][7][_mask_idx];
+    round__[72][_mask_idx] = plaintext__[2][8][_mask_idx];
+    round__[73][_mask_idx] = plaintext__[2][9][_mask_idx];
+    round__[74][_mask_idx] = plaintext__[2][10][_mask_idx];
+    round__[75][_mask_idx] = plaintext__[2][11][_mask_idx];
+    round__[76][_mask_idx] = plaintext__[2][12][_mask_idx];
+    round__[77][_mask_idx] = plaintext__[2][13][_mask_idx];
+    round__[78][_mask_idx] = plaintext__[2][14][_mask_idx];
+    round__[79][_mask_idx] = plaintext__[2][15][_mask_idx];
+    round__[80][_mask_idx] = plaintext__[2][16][_mask_idx];
+    round__[81][_mask_idx] = plaintext__[2][17][_mask_idx];
+    round__[82][_mask_idx] = plaintext__[2][18][_mask_idx];
+    round__[83][_mask_idx] = plaintext__[2][19][_mask_idx];
+    round__[84][_mask_idx] = plaintext__[2][20][_mask_idx];
+    round__[85][_mask_idx] = plaintext__[2][21][_mask_idx];
+    round__[86][_mask_idx] = plaintext__[2][22][_mask_idx];
+    round__[87][_mask_idx] = plaintext__[2][23][_mask_idx];
+    round__[88][_mask_idx] = plaintext__[2][24][_mask_idx];
+    round__[89][_mask_idx] = plaintext__[2][25][_mask_idx];
+    round__[90][_mask_idx] = plaintext__[2][26][_mask_idx];
+    round__[91][_mask_idx] = plaintext__[2][27][_mask_idx];
+    round__[92][_mask_idx] = plaintext__[2][28][_mask_idx];
+    round__[93][_mask_idx] = plaintext__[2][29][_mask_idx];
+    round__[94][_mask_idx] = plaintext__[2][30][_mask_idx];
+    round__[95][_mask_idx] = plaintext__[2][31][_mask_idx];
+    round__[96][_mask_idx] = plaintext__[3][0][_mask_idx];
+    round__[97][_mask_idx] = plaintext__[3][1][_mask_idx];
+    round__[98][_mask_idx] = plaintext__[3][2][_mask_idx];
+    round__[99][_mask_idx] = plaintext__[3][3][_mask_idx];
+    round__[100][_mask_idx] = plaintext__[3][4][_mask_idx];
+    round__[101][_mask_idx] = plaintext__[3][5][_mask_idx];
+    round__[102][_mask_idx] = plaintext__[3][6][_mask_idx];
+    round__[103][_mask_idx] = plaintext__[3][7][_mask_idx];
+    round__[104][_mask_idx] = plaintext__[3][8][_mask_idx];
+    round__[105][_mask_idx] = plaintext__[3][9][_mask_idx];
+    round__[106][_mask_idx] = plaintext__[3][10][_mask_idx];
+    round__[107][_mask_idx] = plaintext__[3][11][_mask_idx];
+    round__[108][_mask_idx] = plaintext__[3][12][_mask_idx];
+    round__[109][_mask_idx] = plaintext__[3][13][_mask_idx];
+    round__[110][_mask_idx] = plaintext__[3][14][_mask_idx];
+    round__[111][_mask_idx] = plaintext__[3][15][_mask_idx];
+    round__[112][_mask_idx] = plaintext__[3][16][_mask_idx];
+    round__[113][_mask_idx] = plaintext__[3][17][_mask_idx];
+    round__[114][_mask_idx] = plaintext__[3][18][_mask_idx];
+    round__[115][_mask_idx] = plaintext__[3][19][_mask_idx];
+    round__[116][_mask_idx] = plaintext__[3][20][_mask_idx];
+    round__[117][_mask_idx] = plaintext__[3][21][_mask_idx];
+    round__[118][_mask_idx] = plaintext__[3][22][_mask_idx];
+    round__[119][_mask_idx] = plaintext__[3][23][_mask_idx];
+    round__[120][_mask_idx] = plaintext__[3][24][_mask_idx];
+    round__[121][_mask_idx] = plaintext__[3][25][_mask_idx];
+    round__[122][_mask_idx] = plaintext__[3][26][_mask_idx];
+    round__[123][_mask_idx] = plaintext__[3][27][_mask_idx];
+    round__[124][_mask_idx] = plaintext__[3][28][_mask_idx];
+    round__[125][_mask_idx] = plaintext__[3][29][_mask_idx];
+    round__[126][_mask_idx] = plaintext__[3][30][_mask_idx];
+    round__[127][_mask_idx] = plaintext__[3][31][_mask_idx];
   }
   for (int i__ = 0; i__ <= 13; i__++) {
     AddRoundKey__B1(round__,key__[i__],_tmp134_);
@@ -857,7 +694,7 @@ void pyjamask__ (/*inputs*/ DATATYPE plaintext__[128][MASKING_ORDER],DATATYPE ke
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE plaintext__[128][MASKING_ORDER] = { 0 };
+  DATATYPE plaintext__[4][32][MASKING_ORDER] = { 0 };
   DATATYPE key__[15][128][MASKING_ORDER] = { 0 };
   /* outputs */
   DATATYPE ciphertext__[128][MASKING_ORDER] = { 0 };
@@ -888,13 +725,13 @@ let
   (o) = (i ^ k)
 tel
 
-_no_inline node SubBytesAll(input :  b128 :: base)
-  returns output :  b128 :: base
+_no_inline node SubBytesAll(input :  b32[4] :: base)
+  returns output :  b32[4] :: base
 vars
 
 let
   forall i in [0,31] {
-    (output[i,(32 + i),(64 + i),(96 + i)]) = SubBytes(input[i,(32 + i),(64 + i),(96 + i)])
+    (output[0 .. 3][i]) = SubBytes(input[0 .. 3][i])
   }
 tel
 
@@ -927,10 +764,10 @@ let
   }
 tel
 
- node pyjamask(plaintext :  b128 :: base,key :  b128[15] :: base)
-  returns ciphertext :  b128 :: base
+ node pyjamask(plaintext :  b32[4] :: base,key :  b32[15][4] :: base)
+  returns ciphertext :  b32[4] :: base
 vars
-  round :  b128[15] :: base
+  round :  b32[15][4] :: base
 let
   (round[0]) = plaintext;
   forall i in [0,13] {

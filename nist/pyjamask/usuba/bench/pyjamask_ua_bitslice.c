@@ -186,93 +186,35 @@ void AddRoundKey__B1 (/*inputs*/ DATATYPE i__[128],DATATYPE k__[128], /*outputs*
 
 }
 
-void SubBytesAll__B1 (/*inputs*/ DATATYPE input__[128], /*outputs*/ DATATYPE output__[128]) {
+void SubBytesAll__B1 (/*inputs*/ DATATYPE input__[128], /*outputs*/ DATATYPE output__[4][32]) {
 
   // Variables declaration
   ;
 
   // Instructions (body)
   for (int i__ = 0; i__ <= 31; i__++) {
-    SubBytes__B1(input__[i__],input__[(32 + i__)],input__[(64 + i__)],input__[(96 + i__)],&output__[i__],&output__[(32 + i__)],&output__[(64 + i__)],&output__[(96 + i__)]);
+    SubBytes__B1(input__[(0 + i__)],input__[(32 + i__)],input__[(64 + i__)],input__[(96 + i__)],&output__[0][i__],&output__[1][i__],&output__[2][i__],&output__[3][i__]);
   }
 
 }
 
-void col_mult__B1 (/*inputs*/ DATATYPE a__0__,DATATYPE a__1__,DATATYPE a__2__,DATATYPE a__3__,DATATYPE a__4__,DATATYPE a__5__,DATATYPE a__6__,DATATYPE a__7__,DATATYPE a__8__,DATATYPE a__9__,DATATYPE a__10__,DATATYPE a__11__,DATATYPE a__12__,DATATYPE a__13__,DATATYPE a__14__,DATATYPE a__15__,DATATYPE a__16__,DATATYPE a__17__,DATATYPE a__18__,DATATYPE a__19__,DATATYPE a__20__,DATATYPE a__21__,DATATYPE a__22__,DATATYPE a__23__,DATATYPE a__24__,DATATYPE a__25__,DATATYPE a__26__,DATATYPE a__27__,DATATYPE a__28__,DATATYPE a__29__,DATATYPE a__30__,DATATYPE a__31__,DATATYPE b__[32], /*outputs*/ DATATYPE* r__) {
+void col_mult__B1 (/*inputs*/ DATATYPE a__[32],DATATYPE b__[32], /*outputs*/ DATATYPE* r__) {
 
   // Variables declaration
   DATATYPE _tmp5_;
   DATATYPE acc__;
 
   // Instructions (body)
-  acc__ = AND(a__0__,b__[0]);
-  _tmp5_ = AND(a__1__,b__[1]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__2__,b__[2]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__3__,b__[3]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__4__,b__[4]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__5__,b__[5]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__6__,b__[6]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__7__,b__[7]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__8__,b__[8]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__9__,b__[9]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__10__,b__[10]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__11__,b__[11]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__12__,b__[12]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__13__,b__[13]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__14__,b__[14]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__15__,b__[15]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__16__,b__[16]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__17__,b__[17]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__18__,b__[18]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__19__,b__[19]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__20__,b__[20]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__21__,b__[21]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__22__,b__[22]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__23__,b__[23]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__24__,b__[24]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__25__,b__[25]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__26__,b__[26]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__27__,b__[27]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__28__,b__[28]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__29__,b__[29]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__30__,b__[30]);
-  acc__ = XOR(acc__,_tmp5_);
-  _tmp5_ = AND(a__31__,b__[31]);
-  acc__ = XOR(acc__,_tmp5_);
+  acc__ = AND(a__[0],b__[0]);
+  for (int i__ = 1; i__ <= 31; i__++) {
+    _tmp5_ = AND(a__[i__],b__[i__]);
+    acc__ = XOR(acc__,_tmp5_);
+  }
   *r__ = acc__;
 
 }
 
-void MixRows__B1 (/*inputs*/ DATATYPE input__[128], /*outputs*/ DATATYPE output__[128]) {
+void MixRows__B1 (/*inputs*/ DATATYPE input__[4][32], /*outputs*/ DATATYPE output__[128]) {
 
   // Variables declaration
   DATATYPE M__[4][33][32];
@@ -406,286 +348,183 @@ void MixRows__B1 (/*inputs*/ DATATYPE input__[128], /*outputs*/ DATATYPE output_
   M__[3][0][29] = SET_ALL_ZERO();
   M__[3][0][30] = SET_ALL_ONE();
   M__[3][0][31] = SET_ALL_ONE();
-  for (int idx__ = 0; idx__ <= 31; idx__++) {
-    col_mult__B1(input__[0],input__[1],input__[2],input__[3],input__[4],input__[5],input__[6],input__[7],input__[8],input__[9],input__[10],input__[11],input__[12],input__[13],input__[14],input__[15],input__[16],input__[17],input__[18],input__[19],input__[20],input__[21],input__[22],input__[23],input__[24],input__[25],input__[26],input__[27],input__[28],input__[29],input__[30],input__[31],M__[0][idx__],&output__[(0 + idx__)]);
-    M__[0][(idx__ + 1)][0] = M__[0][idx__][31];
-    M__[0][(idx__ + 1)][1] = M__[0][idx__][0];
-    M__[0][(idx__ + 1)][2] = M__[0][idx__][1];
-    M__[0][(idx__ + 1)][3] = M__[0][idx__][2];
-    M__[0][(idx__ + 1)][4] = M__[0][idx__][3];
-    M__[0][(idx__ + 1)][5] = M__[0][idx__][4];
-    M__[0][(idx__ + 1)][6] = M__[0][idx__][5];
-    M__[0][(idx__ + 1)][7] = M__[0][idx__][6];
-    M__[0][(idx__ + 1)][8] = M__[0][idx__][7];
-    M__[0][(idx__ + 1)][9] = M__[0][idx__][8];
-    M__[0][(idx__ + 1)][10] = M__[0][idx__][9];
-    M__[0][(idx__ + 1)][11] = M__[0][idx__][10];
-    M__[0][(idx__ + 1)][12] = M__[0][idx__][11];
-    M__[0][(idx__ + 1)][13] = M__[0][idx__][12];
-    M__[0][(idx__ + 1)][14] = M__[0][idx__][13];
-    M__[0][(idx__ + 1)][15] = M__[0][idx__][14];
-    M__[0][(idx__ + 1)][16] = M__[0][idx__][15];
-    M__[0][(idx__ + 1)][17] = M__[0][idx__][16];
-    M__[0][(idx__ + 1)][18] = M__[0][idx__][17];
-    M__[0][(idx__ + 1)][19] = M__[0][idx__][18];
-    M__[0][(idx__ + 1)][20] = M__[0][idx__][19];
-    M__[0][(idx__ + 1)][21] = M__[0][idx__][20];
-    M__[0][(idx__ + 1)][22] = M__[0][idx__][21];
-    M__[0][(idx__ + 1)][23] = M__[0][idx__][22];
-    M__[0][(idx__ + 1)][24] = M__[0][idx__][23];
-    M__[0][(idx__ + 1)][25] = M__[0][idx__][24];
-    M__[0][(idx__ + 1)][26] = M__[0][idx__][25];
-    M__[0][(idx__ + 1)][27] = M__[0][idx__][26];
-    M__[0][(idx__ + 1)][28] = M__[0][idx__][27];
-    M__[0][(idx__ + 1)][29] = M__[0][idx__][28];
-    M__[0][(idx__ + 1)][30] = M__[0][idx__][29];
-    M__[0][(idx__ + 1)][31] = M__[0][idx__][30];
-  }
-  for (int idx__ = 0; idx__ <= 31; idx__++) {
-    col_mult__B1(input__[32],input__[33],input__[34],input__[35],input__[36],input__[37],input__[38],input__[39],input__[40],input__[41],input__[42],input__[43],input__[44],input__[45],input__[46],input__[47],input__[48],input__[49],input__[50],input__[51],input__[52],input__[53],input__[54],input__[55],input__[56],input__[57],input__[58],input__[59],input__[60],input__[61],input__[62],input__[63],M__[1][idx__],&output__[(32 + idx__)]);
-    M__[1][(idx__ + 1)][0] = M__[1][idx__][31];
-    M__[1][(idx__ + 1)][1] = M__[1][idx__][0];
-    M__[1][(idx__ + 1)][2] = M__[1][idx__][1];
-    M__[1][(idx__ + 1)][3] = M__[1][idx__][2];
-    M__[1][(idx__ + 1)][4] = M__[1][idx__][3];
-    M__[1][(idx__ + 1)][5] = M__[1][idx__][4];
-    M__[1][(idx__ + 1)][6] = M__[1][idx__][5];
-    M__[1][(idx__ + 1)][7] = M__[1][idx__][6];
-    M__[1][(idx__ + 1)][8] = M__[1][idx__][7];
-    M__[1][(idx__ + 1)][9] = M__[1][idx__][8];
-    M__[1][(idx__ + 1)][10] = M__[1][idx__][9];
-    M__[1][(idx__ + 1)][11] = M__[1][idx__][10];
-    M__[1][(idx__ + 1)][12] = M__[1][idx__][11];
-    M__[1][(idx__ + 1)][13] = M__[1][idx__][12];
-    M__[1][(idx__ + 1)][14] = M__[1][idx__][13];
-    M__[1][(idx__ + 1)][15] = M__[1][idx__][14];
-    M__[1][(idx__ + 1)][16] = M__[1][idx__][15];
-    M__[1][(idx__ + 1)][17] = M__[1][idx__][16];
-    M__[1][(idx__ + 1)][18] = M__[1][idx__][17];
-    M__[1][(idx__ + 1)][19] = M__[1][idx__][18];
-    M__[1][(idx__ + 1)][20] = M__[1][idx__][19];
-    M__[1][(idx__ + 1)][21] = M__[1][idx__][20];
-    M__[1][(idx__ + 1)][22] = M__[1][idx__][21];
-    M__[1][(idx__ + 1)][23] = M__[1][idx__][22];
-    M__[1][(idx__ + 1)][24] = M__[1][idx__][23];
-    M__[1][(idx__ + 1)][25] = M__[1][idx__][24];
-    M__[1][(idx__ + 1)][26] = M__[1][idx__][25];
-    M__[1][(idx__ + 1)][27] = M__[1][idx__][26];
-    M__[1][(idx__ + 1)][28] = M__[1][idx__][27];
-    M__[1][(idx__ + 1)][29] = M__[1][idx__][28];
-    M__[1][(idx__ + 1)][30] = M__[1][idx__][29];
-    M__[1][(idx__ + 1)][31] = M__[1][idx__][30];
-  }
-  for (int idx__ = 0; idx__ <= 31; idx__++) {
-    col_mult__B1(input__[64],input__[65],input__[66],input__[67],input__[68],input__[69],input__[70],input__[71],input__[72],input__[73],input__[74],input__[75],input__[76],input__[77],input__[78],input__[79],input__[80],input__[81],input__[82],input__[83],input__[84],input__[85],input__[86],input__[87],input__[88],input__[89],input__[90],input__[91],input__[92],input__[93],input__[94],input__[95],M__[2][idx__],&output__[(64 + idx__)]);
-    M__[2][(idx__ + 1)][0] = M__[2][idx__][31];
-    M__[2][(idx__ + 1)][1] = M__[2][idx__][0];
-    M__[2][(idx__ + 1)][2] = M__[2][idx__][1];
-    M__[2][(idx__ + 1)][3] = M__[2][idx__][2];
-    M__[2][(idx__ + 1)][4] = M__[2][idx__][3];
-    M__[2][(idx__ + 1)][5] = M__[2][idx__][4];
-    M__[2][(idx__ + 1)][6] = M__[2][idx__][5];
-    M__[2][(idx__ + 1)][7] = M__[2][idx__][6];
-    M__[2][(idx__ + 1)][8] = M__[2][idx__][7];
-    M__[2][(idx__ + 1)][9] = M__[2][idx__][8];
-    M__[2][(idx__ + 1)][10] = M__[2][idx__][9];
-    M__[2][(idx__ + 1)][11] = M__[2][idx__][10];
-    M__[2][(idx__ + 1)][12] = M__[2][idx__][11];
-    M__[2][(idx__ + 1)][13] = M__[2][idx__][12];
-    M__[2][(idx__ + 1)][14] = M__[2][idx__][13];
-    M__[2][(idx__ + 1)][15] = M__[2][idx__][14];
-    M__[2][(idx__ + 1)][16] = M__[2][idx__][15];
-    M__[2][(idx__ + 1)][17] = M__[2][idx__][16];
-    M__[2][(idx__ + 1)][18] = M__[2][idx__][17];
-    M__[2][(idx__ + 1)][19] = M__[2][idx__][18];
-    M__[2][(idx__ + 1)][20] = M__[2][idx__][19];
-    M__[2][(idx__ + 1)][21] = M__[2][idx__][20];
-    M__[2][(idx__ + 1)][22] = M__[2][idx__][21];
-    M__[2][(idx__ + 1)][23] = M__[2][idx__][22];
-    M__[2][(idx__ + 1)][24] = M__[2][idx__][23];
-    M__[2][(idx__ + 1)][25] = M__[2][idx__][24];
-    M__[2][(idx__ + 1)][26] = M__[2][idx__][25];
-    M__[2][(idx__ + 1)][27] = M__[2][idx__][26];
-    M__[2][(idx__ + 1)][28] = M__[2][idx__][27];
-    M__[2][(idx__ + 1)][29] = M__[2][idx__][28];
-    M__[2][(idx__ + 1)][30] = M__[2][idx__][29];
-    M__[2][(idx__ + 1)][31] = M__[2][idx__][30];
-  }
-  for (int idx__ = 0; idx__ <= 31; idx__++) {
-    col_mult__B1(input__[96],input__[97],input__[98],input__[99],input__[100],input__[101],input__[102],input__[103],input__[104],input__[105],input__[106],input__[107],input__[108],input__[109],input__[110],input__[111],input__[112],input__[113],input__[114],input__[115],input__[116],input__[117],input__[118],input__[119],input__[120],input__[121],input__[122],input__[123],input__[124],input__[125],input__[126],input__[127],M__[3][idx__],&output__[(96 + idx__)]);
-    M__[3][(idx__ + 1)][0] = M__[3][idx__][31];
-    M__[3][(idx__ + 1)][1] = M__[3][idx__][0];
-    M__[3][(idx__ + 1)][2] = M__[3][idx__][1];
-    M__[3][(idx__ + 1)][3] = M__[3][idx__][2];
-    M__[3][(idx__ + 1)][4] = M__[3][idx__][3];
-    M__[3][(idx__ + 1)][5] = M__[3][idx__][4];
-    M__[3][(idx__ + 1)][6] = M__[3][idx__][5];
-    M__[3][(idx__ + 1)][7] = M__[3][idx__][6];
-    M__[3][(idx__ + 1)][8] = M__[3][idx__][7];
-    M__[3][(idx__ + 1)][9] = M__[3][idx__][8];
-    M__[3][(idx__ + 1)][10] = M__[3][idx__][9];
-    M__[3][(idx__ + 1)][11] = M__[3][idx__][10];
-    M__[3][(idx__ + 1)][12] = M__[3][idx__][11];
-    M__[3][(idx__ + 1)][13] = M__[3][idx__][12];
-    M__[3][(idx__ + 1)][14] = M__[3][idx__][13];
-    M__[3][(idx__ + 1)][15] = M__[3][idx__][14];
-    M__[3][(idx__ + 1)][16] = M__[3][idx__][15];
-    M__[3][(idx__ + 1)][17] = M__[3][idx__][16];
-    M__[3][(idx__ + 1)][18] = M__[3][idx__][17];
-    M__[3][(idx__ + 1)][19] = M__[3][idx__][18];
-    M__[3][(idx__ + 1)][20] = M__[3][idx__][19];
-    M__[3][(idx__ + 1)][21] = M__[3][idx__][20];
-    M__[3][(idx__ + 1)][22] = M__[3][idx__][21];
-    M__[3][(idx__ + 1)][23] = M__[3][idx__][22];
-    M__[3][(idx__ + 1)][24] = M__[3][idx__][23];
-    M__[3][(idx__ + 1)][25] = M__[3][idx__][24];
-    M__[3][(idx__ + 1)][26] = M__[3][idx__][25];
-    M__[3][(idx__ + 1)][27] = M__[3][idx__][26];
-    M__[3][(idx__ + 1)][28] = M__[3][idx__][27];
-    M__[3][(idx__ + 1)][29] = M__[3][idx__][28];
-    M__[3][(idx__ + 1)][30] = M__[3][idx__][29];
-    M__[3][(idx__ + 1)][31] = M__[3][idx__][30];
+  for (int col__ = 0; col__ <= 3; col__++) {
+    for (int idx__ = 0; idx__ <= 31; idx__++) {
+      col_mult__B1(input__[col__],M__[col__][idx__],&output__[((col__ * 32) + idx__)]);
+      M__[col__][(idx__ + 1)][0] = M__[col__][idx__][31];
+      M__[col__][(idx__ + 1)][1] = M__[col__][idx__][0];
+      M__[col__][(idx__ + 1)][2] = M__[col__][idx__][1];
+      M__[col__][(idx__ + 1)][3] = M__[col__][idx__][2];
+      M__[col__][(idx__ + 1)][4] = M__[col__][idx__][3];
+      M__[col__][(idx__ + 1)][5] = M__[col__][idx__][4];
+      M__[col__][(idx__ + 1)][6] = M__[col__][idx__][5];
+      M__[col__][(idx__ + 1)][7] = M__[col__][idx__][6];
+      M__[col__][(idx__ + 1)][8] = M__[col__][idx__][7];
+      M__[col__][(idx__ + 1)][9] = M__[col__][idx__][8];
+      M__[col__][(idx__ + 1)][10] = M__[col__][idx__][9];
+      M__[col__][(idx__ + 1)][11] = M__[col__][idx__][10];
+      M__[col__][(idx__ + 1)][12] = M__[col__][idx__][11];
+      M__[col__][(idx__ + 1)][13] = M__[col__][idx__][12];
+      M__[col__][(idx__ + 1)][14] = M__[col__][idx__][13];
+      M__[col__][(idx__ + 1)][15] = M__[col__][idx__][14];
+      M__[col__][(idx__ + 1)][16] = M__[col__][idx__][15];
+      M__[col__][(idx__ + 1)][17] = M__[col__][idx__][16];
+      M__[col__][(idx__ + 1)][18] = M__[col__][idx__][17];
+      M__[col__][(idx__ + 1)][19] = M__[col__][idx__][18];
+      M__[col__][(idx__ + 1)][20] = M__[col__][idx__][19];
+      M__[col__][(idx__ + 1)][21] = M__[col__][idx__][20];
+      M__[col__][(idx__ + 1)][22] = M__[col__][idx__][21];
+      M__[col__][(idx__ + 1)][23] = M__[col__][idx__][22];
+      M__[col__][(idx__ + 1)][24] = M__[col__][idx__][23];
+      M__[col__][(idx__ + 1)][25] = M__[col__][idx__][24];
+      M__[col__][(idx__ + 1)][26] = M__[col__][idx__][25];
+      M__[col__][(idx__ + 1)][27] = M__[col__][idx__][26];
+      M__[col__][(idx__ + 1)][28] = M__[col__][idx__][27];
+      M__[col__][(idx__ + 1)][29] = M__[col__][idx__][28];
+      M__[col__][(idx__ + 1)][30] = M__[col__][idx__][29];
+      M__[col__][(idx__ + 1)][31] = M__[col__][idx__][30];
+    }
   }
 
 }
 
 /* main function */
-void pyjamask__ (/*inputs*/ DATATYPE plaintext__[128],DATATYPE key__[15][128], /*outputs*/ DATATYPE ciphertext__[128]) {
+void pyjamask__ (/*inputs*/ DATATYPE plaintext__[4][32],DATATYPE key__[15][128], /*outputs*/ DATATYPE ciphertext__[128]) {
 
   // Variables declaration
   DATATYPE _tmp134_[128];
-  DATATYPE _tmp135_[128];
+  DATATYPE _tmp135_[4][32];
   DATATYPE round__[128];
 
   // Instructions (body)
-  round__[0] = plaintext__[0];
-  round__[1] = plaintext__[1];
-  round__[2] = plaintext__[2];
-  round__[3] = plaintext__[3];
-  round__[4] = plaintext__[4];
-  round__[5] = plaintext__[5];
-  round__[6] = plaintext__[6];
-  round__[7] = plaintext__[7];
-  round__[8] = plaintext__[8];
-  round__[9] = plaintext__[9];
-  round__[10] = plaintext__[10];
-  round__[11] = plaintext__[11];
-  round__[12] = plaintext__[12];
-  round__[13] = plaintext__[13];
-  round__[14] = plaintext__[14];
-  round__[15] = plaintext__[15];
-  round__[16] = plaintext__[16];
-  round__[17] = plaintext__[17];
-  round__[18] = plaintext__[18];
-  round__[19] = plaintext__[19];
-  round__[20] = plaintext__[20];
-  round__[21] = plaintext__[21];
-  round__[22] = plaintext__[22];
-  round__[23] = plaintext__[23];
-  round__[24] = plaintext__[24];
-  round__[25] = plaintext__[25];
-  round__[26] = plaintext__[26];
-  round__[27] = plaintext__[27];
-  round__[28] = plaintext__[28];
-  round__[29] = plaintext__[29];
-  round__[30] = plaintext__[30];
-  round__[31] = plaintext__[31];
-  round__[32] = plaintext__[32];
-  round__[33] = plaintext__[33];
-  round__[34] = plaintext__[34];
-  round__[35] = plaintext__[35];
-  round__[36] = plaintext__[36];
-  round__[37] = plaintext__[37];
-  round__[38] = plaintext__[38];
-  round__[39] = plaintext__[39];
-  round__[40] = plaintext__[40];
-  round__[41] = plaintext__[41];
-  round__[42] = plaintext__[42];
-  round__[43] = plaintext__[43];
-  round__[44] = plaintext__[44];
-  round__[45] = plaintext__[45];
-  round__[46] = plaintext__[46];
-  round__[47] = plaintext__[47];
-  round__[48] = plaintext__[48];
-  round__[49] = plaintext__[49];
-  round__[50] = plaintext__[50];
-  round__[51] = plaintext__[51];
-  round__[52] = plaintext__[52];
-  round__[53] = plaintext__[53];
-  round__[54] = plaintext__[54];
-  round__[55] = plaintext__[55];
-  round__[56] = plaintext__[56];
-  round__[57] = plaintext__[57];
-  round__[58] = plaintext__[58];
-  round__[59] = plaintext__[59];
-  round__[60] = plaintext__[60];
-  round__[61] = plaintext__[61];
-  round__[62] = plaintext__[62];
-  round__[63] = plaintext__[63];
-  round__[64] = plaintext__[64];
-  round__[65] = plaintext__[65];
-  round__[66] = plaintext__[66];
-  round__[67] = plaintext__[67];
-  round__[68] = plaintext__[68];
-  round__[69] = plaintext__[69];
-  round__[70] = plaintext__[70];
-  round__[71] = plaintext__[71];
-  round__[72] = plaintext__[72];
-  round__[73] = plaintext__[73];
-  round__[74] = plaintext__[74];
-  round__[75] = plaintext__[75];
-  round__[76] = plaintext__[76];
-  round__[77] = plaintext__[77];
-  round__[78] = plaintext__[78];
-  round__[79] = plaintext__[79];
-  round__[80] = plaintext__[80];
-  round__[81] = plaintext__[81];
-  round__[82] = plaintext__[82];
-  round__[83] = plaintext__[83];
-  round__[84] = plaintext__[84];
-  round__[85] = plaintext__[85];
-  round__[86] = plaintext__[86];
-  round__[87] = plaintext__[87];
-  round__[88] = plaintext__[88];
-  round__[89] = plaintext__[89];
-  round__[90] = plaintext__[90];
-  round__[91] = plaintext__[91];
-  round__[92] = plaintext__[92];
-  round__[93] = plaintext__[93];
-  round__[94] = plaintext__[94];
-  round__[95] = plaintext__[95];
-  round__[96] = plaintext__[96];
-  round__[97] = plaintext__[97];
-  round__[98] = plaintext__[98];
-  round__[99] = plaintext__[99];
-  round__[100] = plaintext__[100];
-  round__[101] = plaintext__[101];
-  round__[102] = plaintext__[102];
-  round__[103] = plaintext__[103];
-  round__[104] = plaintext__[104];
-  round__[105] = plaintext__[105];
-  round__[106] = plaintext__[106];
-  round__[107] = plaintext__[107];
-  round__[108] = plaintext__[108];
-  round__[109] = plaintext__[109];
-  round__[110] = plaintext__[110];
-  round__[111] = plaintext__[111];
-  round__[112] = plaintext__[112];
-  round__[113] = plaintext__[113];
-  round__[114] = plaintext__[114];
-  round__[115] = plaintext__[115];
-  round__[116] = plaintext__[116];
-  round__[117] = plaintext__[117];
-  round__[118] = plaintext__[118];
-  round__[119] = plaintext__[119];
-  round__[120] = plaintext__[120];
-  round__[121] = plaintext__[121];
-  round__[122] = plaintext__[122];
-  round__[123] = plaintext__[123];
-  round__[124] = plaintext__[124];
-  round__[125] = plaintext__[125];
-  round__[126] = plaintext__[126];
-  round__[127] = plaintext__[127];
+  round__[0] = plaintext__[0][0];
+  round__[1] = plaintext__[0][1];
+  round__[2] = plaintext__[0][2];
+  round__[3] = plaintext__[0][3];
+  round__[4] = plaintext__[0][4];
+  round__[5] = plaintext__[0][5];
+  round__[6] = plaintext__[0][6];
+  round__[7] = plaintext__[0][7];
+  round__[8] = plaintext__[0][8];
+  round__[9] = plaintext__[0][9];
+  round__[10] = plaintext__[0][10];
+  round__[11] = plaintext__[0][11];
+  round__[12] = plaintext__[0][12];
+  round__[13] = plaintext__[0][13];
+  round__[14] = plaintext__[0][14];
+  round__[15] = plaintext__[0][15];
+  round__[16] = plaintext__[0][16];
+  round__[17] = plaintext__[0][17];
+  round__[18] = plaintext__[0][18];
+  round__[19] = plaintext__[0][19];
+  round__[20] = plaintext__[0][20];
+  round__[21] = plaintext__[0][21];
+  round__[22] = plaintext__[0][22];
+  round__[23] = plaintext__[0][23];
+  round__[24] = plaintext__[0][24];
+  round__[25] = plaintext__[0][25];
+  round__[26] = plaintext__[0][26];
+  round__[27] = plaintext__[0][27];
+  round__[28] = plaintext__[0][28];
+  round__[29] = plaintext__[0][29];
+  round__[30] = plaintext__[0][30];
+  round__[31] = plaintext__[0][31];
+  round__[32] = plaintext__[1][0];
+  round__[33] = plaintext__[1][1];
+  round__[34] = plaintext__[1][2];
+  round__[35] = plaintext__[1][3];
+  round__[36] = plaintext__[1][4];
+  round__[37] = plaintext__[1][5];
+  round__[38] = plaintext__[1][6];
+  round__[39] = plaintext__[1][7];
+  round__[40] = plaintext__[1][8];
+  round__[41] = plaintext__[1][9];
+  round__[42] = plaintext__[1][10];
+  round__[43] = plaintext__[1][11];
+  round__[44] = plaintext__[1][12];
+  round__[45] = plaintext__[1][13];
+  round__[46] = plaintext__[1][14];
+  round__[47] = plaintext__[1][15];
+  round__[48] = plaintext__[1][16];
+  round__[49] = plaintext__[1][17];
+  round__[50] = plaintext__[1][18];
+  round__[51] = plaintext__[1][19];
+  round__[52] = plaintext__[1][20];
+  round__[53] = plaintext__[1][21];
+  round__[54] = plaintext__[1][22];
+  round__[55] = plaintext__[1][23];
+  round__[56] = plaintext__[1][24];
+  round__[57] = plaintext__[1][25];
+  round__[58] = plaintext__[1][26];
+  round__[59] = plaintext__[1][27];
+  round__[60] = plaintext__[1][28];
+  round__[61] = plaintext__[1][29];
+  round__[62] = plaintext__[1][30];
+  round__[63] = plaintext__[1][31];
+  round__[64] = plaintext__[2][0];
+  round__[65] = plaintext__[2][1];
+  round__[66] = plaintext__[2][2];
+  round__[67] = plaintext__[2][3];
+  round__[68] = plaintext__[2][4];
+  round__[69] = plaintext__[2][5];
+  round__[70] = plaintext__[2][6];
+  round__[71] = plaintext__[2][7];
+  round__[72] = plaintext__[2][8];
+  round__[73] = plaintext__[2][9];
+  round__[74] = plaintext__[2][10];
+  round__[75] = plaintext__[2][11];
+  round__[76] = plaintext__[2][12];
+  round__[77] = plaintext__[2][13];
+  round__[78] = plaintext__[2][14];
+  round__[79] = plaintext__[2][15];
+  round__[80] = plaintext__[2][16];
+  round__[81] = plaintext__[2][17];
+  round__[82] = plaintext__[2][18];
+  round__[83] = plaintext__[2][19];
+  round__[84] = plaintext__[2][20];
+  round__[85] = plaintext__[2][21];
+  round__[86] = plaintext__[2][22];
+  round__[87] = plaintext__[2][23];
+  round__[88] = plaintext__[2][24];
+  round__[89] = plaintext__[2][25];
+  round__[90] = plaintext__[2][26];
+  round__[91] = plaintext__[2][27];
+  round__[92] = plaintext__[2][28];
+  round__[93] = plaintext__[2][29];
+  round__[94] = plaintext__[2][30];
+  round__[95] = plaintext__[2][31];
+  round__[96] = plaintext__[3][0];
+  round__[97] = plaintext__[3][1];
+  round__[98] = plaintext__[3][2];
+  round__[99] = plaintext__[3][3];
+  round__[100] = plaintext__[3][4];
+  round__[101] = plaintext__[3][5];
+  round__[102] = plaintext__[3][6];
+  round__[103] = plaintext__[3][7];
+  round__[104] = plaintext__[3][8];
+  round__[105] = plaintext__[3][9];
+  round__[106] = plaintext__[3][10];
+  round__[107] = plaintext__[3][11];
+  round__[108] = plaintext__[3][12];
+  round__[109] = plaintext__[3][13];
+  round__[110] = plaintext__[3][14];
+  round__[111] = plaintext__[3][15];
+  round__[112] = plaintext__[3][16];
+  round__[113] = plaintext__[3][17];
+  round__[114] = plaintext__[3][18];
+  round__[115] = plaintext__[3][19];
+  round__[116] = plaintext__[3][20];
+  round__[117] = plaintext__[3][21];
+  round__[118] = plaintext__[3][22];
+  round__[119] = plaintext__[3][23];
+  round__[120] = plaintext__[3][24];
+  round__[121] = plaintext__[3][25];
+  round__[122] = plaintext__[3][26];
+  round__[123] = plaintext__[3][27];
+  round__[124] = plaintext__[3][28];
+  round__[125] = plaintext__[3][29];
+  round__[126] = plaintext__[3][30];
+  round__[127] = plaintext__[3][31];
   for (int i__ = 0; i__ <= 13; i__++) {
     AddRoundKey__B1(round__,key__[i__],_tmp134_);
     SubBytesAll__B1(_tmp134_,_tmp135_);
@@ -698,7 +537,7 @@ void pyjamask__ (/*inputs*/ DATATYPE plaintext__[128],DATATYPE key__[15][128], /
 /* Additional functions */
 uint32_t bench_speed() {
   /* inputs */
-  DATATYPE plaintext__[128] = { 0 };
+  DATATYPE plaintext__[4][32] = { 0 };
   DATATYPE key__[15][128] = { 0 };
   /* outputs */
   DATATYPE ciphertext__[128] = { 0 };
@@ -729,13 +568,13 @@ let
   (o) = (i ^ k)
 tel
 
-_no_inline node SubBytesAll(input :  b128 :: base)
-  returns output :  b128 :: base
+_no_inline node SubBytesAll(input :  b32[4] :: base)
+  returns output :  b32[4] :: base
 vars
 
 let
   forall i in [0,31] {
-    (output[i,(32 + i),(64 + i),(96 + i)]) = SubBytes(input[i,(32 + i),(64 + i),(96 + i)])
+    (output[0 .. 3][i]) = SubBytes(input[0 .. 3][i])
   }
 tel
 
@@ -768,10 +607,10 @@ let
   }
 tel
 
- node pyjamask(plaintext :  b128 :: base,key :  b128[15] :: base)
-  returns ciphertext :  b128 :: base
+ node pyjamask(plaintext :  b32[4] :: base,key :  b32[15][4] :: base)
+  returns ciphertext :  b32[4] :: base
 vars
-  round :  b128[15] :: base
+  round :  b32[15][4] :: base
 let
   (round[0]) = plaintext;
   forall i in [0,13] {
