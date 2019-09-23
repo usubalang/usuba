@@ -42,7 +42,7 @@ for my $slicing ('bitslice', 'vslice') {
     # Compiling Usuba DES.
     say "Compiling Pyjamask-masked from Usuba to C...";
     my $slicing_flag = $slicing eq 'bitslice' ? '-B' : '-V';
-    error if system "./usubac -ua-masked $slicing_flag -o $temp_dir/pyjamask_ua_$slicing.c -arch std -no-share -no-sched samples/usuba/pyjamask_$slicing.ua" ;
+    error if system "./usubac -ua-masked -light-inline $slicing_flag -o $temp_dir/pyjamask_ua_$slicing.c -arch std -no-share -no-sched samples/usuba/pyjamask_$slicing.ua" ;
 
     chdir $temp_dir;
     copy $_, "." for glob "$FindBin::Bin/pyjamask_masked/*";
