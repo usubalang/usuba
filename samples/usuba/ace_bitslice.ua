@@ -1,4 +1,4 @@
-_inline node f(x:u32) returns (y:u32)
+node f(x:u32) returns (y:u32)
 let
     y = ((x <<< 5) & x) ^ (x <<< 1)
 tel
