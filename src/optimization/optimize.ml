@@ -80,10 +80,12 @@ let opt_prog (prog: Usuba_AST.prog) (conf:config) : Usuba_AST.prog =
   let interleave  = if conf.interleave > 0 then Interleave.interleave      else fun p _ -> p in
   let schedule    = if conf.scheduling     then Scheduler.schedule         else fun p _ -> p in
   let share_var   = if conf.share_var      then Share_var.share_prog       else fun p _ -> p in
+  let fuse_loops  = if conf.loop_fusion    then Fuse_loop_general.fuse_loops else fun p _ -> p in
   (* Simple_opts alreay takes care of checking conf *)
   let simple_opts = Simple_opts.opt_prog in
 
   prog |>
+    (run_pass "Loop fusion" fuse_loops)                              |>
     (run_pass "Interleaving" interleave)                             |>
     (run_pass "Simple_opts" simple_opts)                             |>
     (run_pass "Scheduling" schedule)                                 |>
