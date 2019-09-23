@@ -71,7 +71,7 @@ void drygascon(uint8_t text[40], uint8_t r[16]) {
 
   uint64_t output_bs[5][64];
   uint64_t r_bs[2][64];
-  drysponge_g__((uint64_t*)text_bs,(uint64_t*)output_bs,(uint64_t*)r_bs);
+  drysponge_g__(text_bs,output_bs,r_bs);
 
   for (int i = 0; i < 5; i++)
     transpose(output_bs[i]);

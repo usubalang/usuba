@@ -102,7 +102,11 @@ void clyde128_encrypt(unsigned char* m, const unsigned char* c,
     MASK_VAL64(tweak_bs[i], tweak_masked[i]);
   }
 
-  clyde128__(plain_masked, key_masked, tweak_masked, cipher_masked);
+  uint64_t (*_p)[32][MASKING_ORDER] = (uint64_t (*)[32][MASKING_ORDER])plain_masked;
+  uint64_t (*_k)[32][MASKING_ORDER] = (uint64_t (*)[32][MASKING_ORDER])key_masked;
+  uint64_t (*_t)[32][MASKING_ORDER] = (uint64_t (*)[32][MASKING_ORDER])tweak_masked;
+  uint64_t (*_c)[32][MASKING_ORDER] = (uint64_t (*)[32][MASKING_ORDER])cipher_masked;
+  clyde128__(_p,_k,_t,_c);
 
   uint64_t cipher_bs[128];
   for (int i = 0; i < 128; i++)
