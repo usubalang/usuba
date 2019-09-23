@@ -2,6 +2,7 @@ open Usuba_AST
 open Basic_utils
 open Utils
 
+let compact = ref false
 
 (* Will be used within Hslice/Vslice/Bslice (which is why it's located
    up here) *)
@@ -190,6 +191,50 @@ module Bslice = struct
   let specialize_vars env_var (vs:var list) : var list =
     List.map (specialize_var env_var) vs
 
+  let loop_log_it = fresh_ident "_log_it"
+
+  let apply_loop_it (v:var) : var =
+    Index(v,Var_e loop_log_it)
+
+  let specialize_eqn (env_dir:(dir,dir) Hashtbl.t)
+                     (env_m:(mtyp,mtyp) Hashtbl.t)
+                     (env_var:(ident,typ) Hashtbl.t)
+                     (vs:var list) (e:expr) : deq =
+    let vs = specialize_vars env_var vs in
+    let e  = specialize_expr env_dir env_m env_var e in
+    match e with
+    | ExpVar v ->
+       (match get_var_m env_var v with
+        | Mint m when !compact && m > 1 ->
+           (* We have a ^/&/| between two arrays -> generate a loop *)
+           Loop(loop_log_it,Const_e 0,Op_e (Sub,Const_e m,Const_e 1),
+                [ Eqn(List.map apply_loop_it vs,
+                      ExpVar (apply_loop_it v), false) ], [])
+        | _ -> (* Not between two arrays -> leave it as a simple equation *)
+           Eqn(vs,e,false))
+    | Log(op,ExpVar x,ExpVar y) ->
+       (match get_var_m env_var x with
+        | Mint m when !compact && m > 1 ->
+           (* We have a ^/&/| between two arrays -> generate a loop *)
+           Loop(loop_log_it,Const_e 0,Op_e (Sub,Const_e m,Const_e 1),
+                [ Eqn(List.map apply_loop_it vs,
+                      Log(op,ExpVar (apply_loop_it x),
+                          ExpVar (apply_loop_it y)), false) ], [])
+        | _ -> (* Not between two arrays -> leave it as a simple equation *)
+           Eqn(vs,e,false))
+    | Not (ExpVar v) ->
+       (match get_var_m env_var v with
+        | Mint m when !compact && m > 1 ->
+           (* We have a ^/&/| between two arrays -> generate a loop *)
+           Loop(loop_log_it,Const_e 0,Op_e (Sub,Const_e m,Const_e 1),
+                [ Eqn(List.map apply_loop_it vs,
+                      Not (ExpVar (apply_loop_it v)), false) ], [])
+        | _ -> (* Not between two arrays -> leave it as a simple equation *)
+           Eqn(vs,e,false))
+    | _ -> Eqn(vs,e,false)
+
+
+
   let refine_types (p:p) : p =
     List.map (fun vd -> { vd with vtyp = refine_type vd.vtyp }) p
 end
@@ -308,9 +353,10 @@ and specialize_expr (all_nodes:(ident,def) Hashtbl.t)
   | _ -> match get_var_dir env_var (List.hd vs) with
          | Hslice -> Eqn(vs, Hslice.specialize_expr env_dir env_m env_var e, sync)
          | Vslice -> Eqn(vs, Vslice.specialize_expr env_dir env_m env_var e, sync)
-         | Bslice -> Eqn(Bslice.specialize_vars env_var vs,
-                         Bslice.specialize_expr env_dir env_m env_var e,
-                         sync)
+         | Bslice -> Bslice.specialize_eqn env_dir env_m env_var vs e;
+                     (* Eqn(Bslice.specialize_vars env_var vs, *)
+                     (*     Bslice.specialize_expr env_dir env_m env_var e, *)
+                     (*     sync) *)
          | Natdir -> Eqn(vs,e,sync) (* A Nat, doing nothing *)
          | _ -> assert false
 
@@ -370,6 +416,8 @@ let specialize_entry (all_nodes:(ident,def) Hashtbl.t)
 
 
 let monomorphize (prog:prog) (conf:config) : prog =
+  compact := conf.compact;
+
   (* Getting the default dir (command line parameter) *)
   let spec_dir = match conf.slicing_set with
     | false -> Vslice (* not used *)

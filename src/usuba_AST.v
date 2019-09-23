@@ -158,6 +158,7 @@ Record config := {
   shares       : N;
   gen_bench    : bool;
   keep_tables  : bool;
+  compact      : bool;
 }.
 
 Set Extraction KeepSingleton.
