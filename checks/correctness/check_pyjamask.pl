@@ -51,7 +51,7 @@ for my $slicing ('bitslice', 'vslice') {
         # Compiling the C files
         say "Compiling the test executable with $ARCH...";
         my $slicing_flag = $slicing eq 'bitslice' ? 'UA_B' : 'UA_V';
-        error if system "clang -march=native -I../arch -I . -o main -D $slicing_flag main.c";
+        error if system "clang -Wno-incompatible-pointer-types -march=native -I../arch -I . -o main -D $slicing_flag main.c";
 
         say "Running the test with $ARCH...";
         error if system './main';
