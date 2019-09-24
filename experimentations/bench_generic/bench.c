@@ -3,7 +3,13 @@
 #include <stdint.h>
 #include <x86intrin.h>
 
-#define NB_RUN 1000000
+#ifndef NB_RUN
+#define NB_RUN 1000
+#endif
+
+#ifndef WARMING
+#define WARMING 100
+#endif
 
 extern uint32_t bench_speed();
 
@@ -13,7 +19,7 @@ int main() {
   uint64_t encrypted = bench_speed();
 
   /* Warming up caches */
-  for (int i = 0; i < 1000; i++)
+  for (int i = 0; i < 100; i++)
     bench_speed();
 
   /* The actual benchmark */
