@@ -116,6 +116,7 @@ let main () =
       "-no-CSE", Arg.Clear cse, "Deactive CSE";
       "-no-copy-prop", Arg.Clear copy_prop, "Deactive Copy Propagation";
       "-no-loop-fusion", Arg.Clear loop_fusion, "Deactivate Loop Fusion";
+      "-loop-fusion", Arg.Set loop_fusion, "Enables Loop Fusion";
       "-no-CSE-CP-CF", Arg.Unit (fun () ->
                            fold_const := false;
                            cse := false;

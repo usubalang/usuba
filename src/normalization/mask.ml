@@ -122,6 +122,10 @@ let mask_var (vl:var) (ve:var) : deq list =
 (*                                   (eqn's sync)  (loop's opts)   *)
 
 let mask_cst (vl:var) (c:int) (typ:typ option) : deq list =
+  if c = 0 then
+  [ Loop(loop_idx,Const_e 0,loop_end,
+         [Eqn([make_loop_indexed vl],Const(0,typ),false)],[])]
+  else
   [ Eqn([Index(vl,Const_e 0)],Const(c,typ),false);
     Loop(loop_idx,Const_e 1,loop_end,
          [Eqn([make_loop_indexed vl],Const(0,typ),false)],[])]
