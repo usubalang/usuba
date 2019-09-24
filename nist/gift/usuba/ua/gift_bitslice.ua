@@ -36,7 +36,7 @@ tel
 node gift(P:b32[4], K:const b32[8]) returns (C:b32[4])
 vars
     round:b32[41][4],
-    W:b32[41][8],
+    W:b32[2][8],
     GIFT_RC:b32[40]
 let
     round[0] = P;
@@ -54,8 +54,8 @@ let
 
     forall i in [0, 39] {
         round[i+1] =
-            AddRoundKey(PermBits(SubCells(round[i])),W[i],GIFT_RC[i]);
-        W[i+1] = KeyUpdate(W[i]);
+            AddRoundKey(PermBits(SubCells(round[i])),W[i%2],GIFT_RC[i]);
+        W[(i+1)%2] = KeyUpdate(W[i%2]);
     }
 
     C = round[40]
