@@ -21,7 +21,7 @@
 ./usubac -gen-bench -light-inline -no-sched -V -o nist/gimli/usuba/bench/gimli_ua_vslice.c nist/gimli/usuba/ua/gimli.ua
 
 # Photon bitslice
-./usubac -gen-bench -light-inline -bits-per-reg 32 -B -no-linearize-arr -no-sched -o nist/photon/usuba/bench/photon_ua_bitslice.c -arch std -no-share nist/photon/usuba/ua/photon_bitslice.ua
+./usubac -gen-bench -light-inline -bits-per-reg 32 -B -arr -no-sched -o nist/photon/usuba/bench/photon_ua_bitslice.c -arch std -no-share nist/photon/usuba/ua/photon_bitslice.ua
 # Photon vslice (uses tables)
 ./usubac -gen-bench -light-inline -V -keep-tables -no-sched -o nist/photon/usuba/bench/photon_ua_vslice.c -arch std -no-share nist/photon/usuba/ua/photon_vslice.ua
 

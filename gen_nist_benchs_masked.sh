@@ -29,7 +29,7 @@ echo "Gimli..."
 
 echo "Photon..."
 # Photon bitslice
-./usubac -ua-masked -gen-bench $INLINING -bits-per-reg 32 -B -compact -no-linearize-arr -no-sched -o nist/photon/usuba/bench/masked_photon_ua_bitslice.c -arch std -no-share nist/photon/usuba/ua/photon_bitslice.ua
+./usubac -ua-masked -gen-bench $INLINING -bits-per-reg 32 -B -compact -no-sched -o nist/photon/usuba/bench/masked_photon_ua_bitslice.c -arch std -no-share nist/photon/usuba/ua/photon_bitslice.ua
 
 echo "Pyjamask..."
 # Pyjamask bitslice
