@@ -38,6 +38,7 @@ let fdti         = ref ""
 let lazylift     = ref false
 
 let tightPROVE   = ref false
+let maskVerif    = ref false
 let masked       = ref false
 let ua_masked    = ref false
 let shares       = ref 1
@@ -142,6 +143,7 @@ let main () =
       "-B", Arg.Unit (fun () -> slicing_set := true; slicing_type := B), "Bit slicing.";
       "-m", Arg.Int (fun n -> m_set := true; m_val := n), "Set 'm value";
       "-tp", Arg.Set tightPROVE, "Generate tightPROVE circuits";
+      "-mv", Arg.Set maskVerif, "Generate maskVerif circuits";
       "-masked", Arg.Set masked, "Generate masked implementation";
       "-ua-masked", Arg.Unit (fun () -> ua_masked := true; (* linearize_arr := false *)), "Generate masked implementation, where masking is done is Usuba rather than solely with C macros. This allows for some optimizations, like loop fusion.";
       "-shares", Arg.Int (fun n -> shares := n; masked := true), "Set the number of shares";
@@ -161,8 +163,11 @@ let main () =
     if !tightPROVE then (
       unroll     := true;
       inline_all := true;
-      (* no_arr     := true;
-       * arr_entry  := false *)
+    );
+    if !maskVerif then (
+      unroll    := true;
+      no_arr    := true;
+      arr_entry := false;
     );
 
     let conf = {
@@ -197,6 +202,7 @@ let main () =
         m_set          =   !m_set;
         m_val          =   !m_val;
         tightPROVE     =   !tightPROVE;
+        maskVerif      =   !maskVerif;
         masked         =   !masked;
         ua_masked      =   !ua_masked;
         shares         =   !shares;

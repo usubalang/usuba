@@ -153,6 +153,7 @@ Record config := {
   m_set        : bool;
   m_val        : N;
   tightPROVE   : bool;
+  maskVerif    : bool;
   masked       : bool;
   ua_masked    : bool;
   shares       : N;

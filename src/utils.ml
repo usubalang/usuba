@@ -43,6 +43,7 @@ let default_conf : config =
     m_set        = false;
     m_val        = 1;
     tightPROVE   = false;
+    maskVerif    = false;
     masked       = false;
     ua_masked    = false;
     shares       = 1;
