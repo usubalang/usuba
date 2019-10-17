@@ -123,7 +123,7 @@ let rec expand_expr env_var env_keep env env_it bitslice force (e:expr) : expr =
      Tuple (List.map (fun x ->
                 match x with
                 | Var id -> (match Hashtbl.find_opt env id with
-                             | Some i -> Const(i,Some (get_var_type env_var (Var id)))
+                             | Some i ->  Const(i,Some (get_var_type env_var (Var id)))
                              | None   -> ExpVar x)
                 | _ -> ExpVar x) l)
   | Tuple el -> Tuple(List.map rec_call el)
@@ -241,6 +241,15 @@ let build_env_keep (p_in:p) (p_out:p) =
 
   env
 
+let update_env_var (env_var:(ident,typ) Hashtbl.t) (p_in:p) (p_out:p) (vars:p) : unit =
+  let add_to_env (vd:var_d) : unit =
+    Hashtbl.replace env_var vd.vid vd.vtyp in
+
+  List.iter add_to_env p_in;
+  List.iter add_to_env p_out;
+  List.iter add_to_env vars
+
+
 (* bitslice:
       true: convert un to bn
       false: keep un
@@ -257,19 +266,23 @@ let build_env_keep (p_in:p) (p_out:p) =
  *)
 let expand_def (bitslice:bool) (force:array_fate) (unroll:bool) (keep_param:bool) (def:def) : def =
   let expand_p = if force = Remove then expand_p bitslice else (fun x -> x) in
+  let p_in  = if keep_param then def.p_in  else expand_p def.p_in  in
+  let p_out = if keep_param then def.p_out else expand_p def.p_out in
   { def with
-    p_in  = if keep_param then def.p_in  else expand_p def.p_in;
-    p_out = if keep_param then def.p_out else expand_p def.p_out;
+    p_in  = p_in;
+    p_out = p_out;
     node  = match def.node with
             | Single(vars,body) ->
                (* env_var: contains the variables and their types *)
                let env_var  = build_env_var def.p_in def.p_out vars in
+               let vars = expand_p vars in
+               update_env_var env_var p_in p_out vars;
                (* env_keep: in the main: contains the parameters
                                                   (they should be expanded)
                                      in the other functions: is empty. *)
                let env_keep = if keep_param then build_env_keep def.p_in def.p_out
                               else Hashtbl.create 100 in
-               Single(expand_p vars, expand_deqs env_var env_keep bitslice force unroll body)
+               Single(vars, expand_deqs env_var env_keep bitslice force unroll body)
             | _ -> def.node }
 
 
