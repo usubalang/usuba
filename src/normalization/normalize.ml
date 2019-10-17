@@ -130,6 +130,9 @@ let norm_prog (rename:bool) (prog:prog) (conf:config) : prog =
   if conf.tightPROVE then
     Usuba_to_tightprove.print_prog prog';
 
+  if conf.maskVerif then
+    Usuba_to_maskverif.print_prog prog';
+
   let prog' = if conf.ua_masked then Mask.mask_prog prog' else prog' in
   (* Printf.eprintf "\n\nMASKED:%s\n\n" (Usuba_print.prog_to_str prog'); *)
   let prog' = if conf.loop_fusion then Fuse_loops.fuse_loops prog' conf else prog' in
