@@ -18,15 +18,14 @@ let arith_op_to_str = function
   | Mod -> "%"
 
 let rec arith_to_str = function
-  | Const_e i -> string_of_int i
+  | Const_e i -> sprintf "0x%x" i
   | Var_e v   -> v.name
   | Op_e(op,x,y) -> sprintf "(%s %s %s)" (arith_to_str x) (arith_op_to_str op)
                             (arith_to_str y)
 
 let log_op_to_str = function
-  | And -> "&"
-  | Or  -> "|"
-  | Xor -> "^"
+  | And -> "AND"
+  | Or  -> "OR"
   | _   -> assert false
 
 let shift_op_to_str = function
@@ -39,28 +38,26 @@ let shift_op_to_str = function
 
 let rec var_to_str = function
   | Var v -> ident_to_str v
-  | Index(v,e) -> sprintf "%s[%s]" (var_to_str v) (arith_to_str e)
-  | Range(v,ei,ef) -> Printf.eprintf "Cannot generate range for tightprove (%s).\n"
-                                     (Usuba_print.var_to_str (Range(v,ei,ef)));
-                      assert false
-  | Slice(v,l) -> Printf.eprintf "Cannot generate slice for tightprove (%s).\n"
-                                 (Usuba_print.var_to_str (Slice(v,l)));
-                  assert false
+  | v -> Printf.eprintf "Cannot have arrays for maskverif (%s).\n"
+                        (Usuba_print.var_to_str v);
+         assert false
 
 let rec expr_to_str (env_var:(ident,typ) Hashtbl.t) = function
-  | Const(c,Some (Uint(_,Mint m,_))) -> sprintf "(0x%x:w%d)" c m
+  | Const(c,Some (Uint(_,Mint m,_))) -> sprintf "[0x%x:w%d; 0D]" c m
   | ExpVar v   -> var_to_str v
-  | Log(o,x,y) -> sprintf "%s %sw%d %s"
-                          (expr_to_str env_var x) (log_op_to_str o)
-                          (m_as_int (get_type_m (get_normed_expr_type env_var x)))
-                          (expr_to_str env_var y)
+  | Log(Xor,x,y) -> sprintf "%s ^w%d %s"
+                            (expr_to_str env_var x)
+                            (m_as_int (get_type_m (get_normed_expr_type env_var x)))
+                            (expr_to_str env_var y)
+  | Log(op,x,y) -> sprintf "%s(%s,%s)"
+                           (log_op_to_str op)
+                           (expr_to_str env_var x)
+                           (expr_to_str env_var y)
   | Arith(o,x,y) -> sprintf "%s %s %s"
                             (expr_to_str env_var x) (arith_op_to_str o) (expr_to_str env_var y)
   | Shift(op,e,ae) -> sprintf "%s(%s,%s)"
                     (shift_op_to_str op) (expr_to_str env_var e) (arith_to_str ae)
-  | Not e -> sprintf "~w%d %s"
-                     (m_as_int (get_type_m (get_normed_expr_type env_var e)))
-                     (expr_to_str env_var e)
+  | Not e -> sprintf "NOT(%s)" (expr_to_str env_var e)
   | Fun(f,l) ->
      sprintf "%s(%s)" (ident_to_str f) (join "," (List.map (expr_to_str env_var) l))
   | e -> Printf.eprintf "expr_to_str: invalid expr `%s`\n"
@@ -74,16 +71,13 @@ let pat_to_str pat =
   | l -> "(" ^ (join "," (List.map var_to_str pat)) ^ ")"
 
 let rec deq_to_str (env_var:(ident,typ) Hashtbl.t) = function
-  | Eqn(pat,e,_) -> sprintf "  %s := %s;\n"
-                            (pat_to_str pat)
-                            (expr_to_str env_var e)
-  | _ -> assert false
-
-let rec vd_typ_to_str (typ:typ) (acc:string) : string =
-  match typ with
-  | Uint(_,_,1)   -> sprintf "%s" acc
-  | Uint(_,_,n)   -> sprintf "%s[%d]" acc n
-  | Array(typ',n) -> vd_typ_to_str typ' (sprintf "%s[%s]" acc (arith_to_str n))
+  | Eqn(pat,e,_) ->
+     sprintf "  %s %s= %s;\n"
+             (pat_to_str pat)
+             (match e with
+              | Fun _ | Log(And,_,_) | Log(Or,_,_) -> ""
+              | _ -> ":")
+             (expr_to_str env_var e)
   | _ -> assert false
 
 let vd_to_str (vd:var_d) : string =
