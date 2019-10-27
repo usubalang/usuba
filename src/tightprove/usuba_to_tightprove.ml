@@ -1,4 +1,5 @@
 open Usuba_AST
+open Tp_AST
 open Basic_utils
 open Utils
 open Printf
@@ -9,112 +10,89 @@ let bitslice = ref true
 let ident_to_str id =
   Str.global_replace (Str.regexp "'") "_" id.name
 
-let arith_op_to_str = function
-  | Add -> "+"
-  | Mul -> "*"
-  | Sub -> "-"
-  | Div -> "/"
-  | Mod -> "%"
+let rec arith_to_int (ae:Usuba_AST.arith_expr) : int =
+  eval_arith_ne ae
 
-let rec arith_to_str = function
-  | Const_e i -> string_of_int i
-  | Var_e v   -> v.name
-  | Op_e(op,x,y) -> sprintf "(%s %s %s)" (arith_to_str x) (arith_op_to_str op)
-                            (arith_to_str y)
-
-let log_op_to_str = function
-  | And -> "and"
-  | Or  -> "or"
-  | Xor -> "xor"
+let log_op_to_tp (op:Usuba_AST.log_op) : Tp_AST.log_op =
+  match op with
+  | And -> And
+  | Or  -> Or
+  | Xor -> Xor
   | _   -> assert false
 
-let shift_op_to_str = function
-  | Lshift  -> "<<"
-  | Rshift  -> ">>"
+let shift_op_to_tp (op:Usuba_AST.shift_op) : Tp_AST.shift_op =
+  match op with
+  | Lshift  -> Lshift
+  | Rshift  -> Rshift
+  | Lrotate -> Lrotate
+  | Rrotate -> Rrotate
   | RAshift -> Printf.eprintf "Cannot generate arithmetic shifts for tightprove.\n";
                assert false
-  | Lrotate -> "<<<"
-  | Rrotate -> ">>>"
 
-let rec var_to_str = function
+let rec var_to_tp (v:Usuba_AST.var) : string =
+  match v with
   | Var v -> ident_to_str v
-  | Index(v,e) -> sprintf "%s[%s]" (var_to_str v) (arith_to_str e)
-  | Range(v,ei,ef) -> Printf.eprintf "Cannot generate range for tightprove (%s).\n"
-                                     (Usuba_print.var_to_str (Range(v,ei,ef)));
-                      assert false
-  | Slice(v,l) -> Printf.eprintf "Cannot generate slice for tightprove (%s).\n"
-                                 (Usuba_print.var_to_str (Slice(v,l)));
-                  assert false
-
-let rec expr_to_str = function
-  | Const(c,_) -> if !bitslice then sprintf "setcstall(%d)" c
-               else sprintf "setcst(0x%x)" c
-  | ExpVar v   -> var_to_str v
-  | Log(o,x,y) -> sprintf "%s %s %s"
-                    (log_op_to_str o) (expr_to_str x) (expr_to_str y)
-  | Arith(o,x,y) -> sprintf "%s %s %s"
-                      (arith_op_to_str o) (expr_to_str x) (expr_to_str y)
-  | Shift(op,e,ae) -> sprintf "%s %s %s"
-                    (expr_to_str e) (shift_op_to_str op) (arith_to_str ae)
-  | Not e -> sprintf "not %s" (expr_to_str e)
-  | Fun(f,[ExpVar v]) when f.name = "refresh" ->
-     sprintf "refresh(%s)" (var_to_str v)
-  | e -> Printf.eprintf "expr_to_str: invalid expr `%s`\n"
-           (Usuba_print.expr_to_str e);
+  | Index(v,e) -> sprintf "%s[%d]" (var_to_tp v) (arith_to_int e)
+  | _ -> Printf.eprintf "Invalid var to convert to tp: %s\n"
+                        (Usuba_print.var_to_str v);
          assert false
 
-let pat_to_str pat =
-  match pat with
-  | [] -> assert false
-  | x :: [] -> var_to_str x
-  | l -> "(" ^ (join "," (List.map var_to_str pat)) ^ ")"
+let rec expr_to_tp (e:Usuba_AST.expr) : Tp_AST.expr =
+  match e with
+  | Const(c,_)    -> if !bitslice then ConstAll c else Const c
+  | ExpVar v      -> ExpVar(var_to_tp v)
+  | Not(ExpVar v) -> Not(var_to_tp v)
+  | Log(op,ExpVar x,ExpVar y) ->  Log(log_op_to_tp op, var_to_tp x, var_to_tp y)
+  | Shift(op,ExpVar e,ae)     -> Shift(shift_op_to_tp op, var_to_tp e, arith_to_int ae)
+  | Fun(f,[ExpVar v]) when f.name = "refresh" -> Refresh(var_to_tp v)
+  | e -> Printf.eprintf "expr_to_str: invalid expr `%s`\n"
+                        (Usuba_print.expr_to_str e);
+         assert false
 
-let rec deq_to_str = function
-  | Eqn(pat,e,_) -> sprintf "%s = %s\n"
-                            (pat_to_str pat)
-                            (expr_to_str e)
+let deq_to_tp (deq:Usuba_AST.deq) : Tp_AST.asgn =
+  match deq with
+  | Eqn([lhs],e,_) -> { lhs = var_to_tp lhs; rhs = expr_to_tp e }
   | _ -> assert false
 
-let rec vd_typ_to_str (typ:typ) (acc:string) : string =
+let rec vd_typ_to_tp (typ:Usuba_AST.typ) (acc:string) : string =
   match typ with
   | Uint(_,_,1)   -> sprintf "%s" acc
   | Uint(_,_,n)   -> sprintf "%s[%d]" acc n
-  | Array(typ',n) -> vd_typ_to_str typ' (sprintf "%s[%s]" acc (arith_to_str n))
+  | Array(typ',n) -> vd_typ_to_tp typ' (sprintf "%s[%d]" acc (arith_to_int n))
   | _ -> assert false
 
-let vd_to_str (vd:var_d) : string =
+let vd_to_tp (vd:Usuba_AST.var_d) : string =
   sprintf "%s%s" (ident_to_str vd.vid)
-    (vd_typ_to_str vd.vtyp "")
+          (vd_typ_to_tp vd.vtyp "")
+
+let all_vars_same_m (var_l:Usuba_AST.var_d list) : bool =
+  let first_m = get_type_m (List.hd var_l).vtyp in
+  List.for_all (fun vd -> get_type_m vd.vtyp = first_m) var_l
+
+let get_node_body (def:Usuba_AST.def) : Usuba_AST.deq list =
+  match def.node with
+  | Single(_,body) -> body
+  | _ -> assert false
 
 let m_as_int = function
   | Mint m -> m
   | _ -> assert false
 
-let single_node_to_str (id:ident) (p_in:p) (p_out:p) (vars:p) (deq:deq list) =
-  let m = m_as_int (get_type_m (List.hd p_in).vtyp) in
+let usuba_to_tp (def:Usuba_AST.def) : Tp_AST.def =
+  assert (all_vars_same_m def.p_in);
+  let m = m_as_int (get_type_m (List.hd def.p_in).vtyp) in
   bitslice := m = 1;
-  sprintf
-"rs=%d
 
-in %s
+  { rs     = m;
+    inputs = List.map vd_to_tp def.p_in;
+    body   = List.map deq_to_tp (get_node_body def) }
 
-%s
-"
-(* m *)
-m
-(* inputs *)
-(join " " (List.map vd_to_str p_in))
-(* body *)
-(join "" (List.map deq_to_str deq))
 
-let def_to_str (def:def) =
-  match def.node with
-  | Single(vars,deq) ->
-     single_node_to_str def.id def.p_in def.p_out vars deq
-  | _ -> assert false
+let def_to_str (def:Usuba_AST.def) =
+  Print_tp.def_to_str (usuba_to_tp def)
 
-let prog_to_str (prog:prog) : string=
+let prog_to_str (prog:Usuba_AST.prog) : string=
   join "\n\n" (List.map def_to_str prog.nodes)
 
-let print_prog (prog:prog) : unit =
+let print_prog (prog:Usuba_AST.prog) : unit =
   Printf.printf "%s" (prog_to_str prog)

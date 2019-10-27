@@ -42,12 +42,12 @@
 
 
 (******************************** Entry Point *********************************)
-%start<Tp_AST.prog> prog
+%start<Tp_AST.def> def
 %start<Tp_AST.expr> expr_a
 
 %%
 
-prog:
+def:
   TOK_RS TOK_EQUAL rs=TOK_int
   inputs=list(TOK_IN v=TOK_id { v })
   body=list(v=TOK_id TOK_EQUAL e=expr { { lhs = v; rhs = e } })

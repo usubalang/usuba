@@ -1,6 +1,4 @@
 
-type ident = string
-
 type log_op = And | Or | Xor
 
 type arith_op = Add | Mul | Sub | Div | Mod
@@ -8,18 +6,19 @@ type arith_op = Add | Mul | Sub | Div | Mod
 type shift_op = Lshift | Rshift | Lrotate | Rrotate
 
 type expr =
-  | ExpVar of ident
-  | Const of int
+  | ExpVar   of string
+  | Const    of int
   | ConstAll of int
-  | Not of ident
-  | Log of log_op * ident * ident
-  | Arith of arith_op * ident * ident
-  | Shift of shift_op * ident * int
+  | Refresh  of string
+  | BitToReg of string * int (* useful for Pyjamask: -1 if string.int == 1; 0 otherwise *)
+  | Not      of string
+  | Log      of log_op * string * string
+  | Shift    of shift_op * string * int
 
-type asgn = { lhs : ident; rhs : expr }
+type asgn = { lhs : string; rhs : expr }
 
-type prog = {
+type def = {
   rs : int; (* register size *)
-  inputs : ident list;
+  inputs : string list;
   body : asgn list;
 }
