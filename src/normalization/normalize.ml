@@ -127,8 +127,7 @@ let norm_prog (rename:bool) (prog:prog) (conf:config) : prog =
   if conf.check_tbl then
     Soundness.tables_sound (Rename.rename_prog prog conf) prog';
 
-  if conf.tightPROVE then
-    Usuba_to_tightprove.print_prog prog';
+  let prog' = if conf.tightPROVE then Tightprove.process_prog prog' conf else prog' in
 
   if conf.maskVerif then
     Usuba_to_maskverif.print_prog prog';
