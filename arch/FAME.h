@@ -8,10 +8,32 @@
 #define DATATYPE unsigned int
 #endif
 
+#ifndef FD
+#error FD not defined (should be 1, 2 or 4)
+#endif
+
+#ifndef TI
+#error TI not defined (should be 1, 2 or 4)
+#endif
+
+#if FD == 1
+#define IMM_FTCHK 0 /* no redundancy -> no fault check */
+#elif FD == 2
+#define IMM_FTCHK 0b1011
+#elif FD == 4 && !defined(CORRECT)
+#define IMM_FTCHK 0b1101
+#elif FD == 4 && defined(CORRECT)
+#define IMM_FTCHK 0b11101
+#else
+#error Dunno know what IMM_FTCHK to use...
+#endif
+
 #ifdef X86
 #include <stdio.h>
 #include <stdlib.h>
 #endif
+
+extern int fault_flags;
 
 #if defined(X86) || defined(NO_CUSTOM_INSTR)
 
@@ -29,7 +51,7 @@
   }
 
 /* r1/r2 are actually the destination, and rd/y the source
-   but it makes it clearer to name them that way (since 
+   but it makes it clearer to name them that way (since
    INVTIBS is the inverse of TIBS) */
 #define INVTIBS(r1,r2,rd,y) {                       \
     r1 = 0, r2 = 0;                                 \
@@ -76,55 +98,66 @@
       y  = (((a) & 0xFF000000) >> 24) | ((~(a) & 0xFF000000) >> 16) |   \
       (((a) & 0xFF000000) >> 8) | (~(a) & 0xFF000000);                  \
     }                                                                   \
-    /* else { */                                                        \
-    /* fprintf(stderr, "Invalid RED@%d.\n",i); */                       \
-    /* exit(EXIT_FAILURE); */                                           \
-    /* } */                                                             \
+    else {                                                              \
+      fprintf(stderr, "Invalid RED@%d.\n",i);                           \
+      exit(EXIT_FAILURE);                                               \
+    }                                                                   \
   }
 
 #define FTCHK(rd,i,a) {                                                 \
-    if (i == 0b0010) {                                                  \
-      rd = (((a) >> 16) ^ (a)) & 0xFFFF;                                \
+    if (i == 0b0010 || i == 0b1010) {                                   \
+      int low = a & 0xFFFF, high = a >> 16;                             \
+      int _fault_flags = low ^ high;                                     \
+      if (i == 0b0010) rd = _fault_flags | (_fault_flags << 16);          \
+      if (i == 0b1010) rd = _fault_flags | (~_fault_flags << 16);         \
     }                                                                   \
-    else if (i == 0b1010) {                                             \
-      rd = ((((a) >> 16) ^ (a)) & 0xFFFF) | (~(((a) >> 16) ^ (a)) << 16) ; \
+    else if (i == 0b0011 || i == 0b1011) {                              \
+      int low = a & 0xFFFF, high = a >> 16;                             \
+      int _fault_flags = (~(low ^ high)) & 0xFFFF;                       \
+      if (i == 0b0011) rd = _fault_flags | (_fault_flags << 16);          \
+      if (i == 0b1011) rd = _fault_flags | (~_fault_flags << 16);         \
     }                                                                   \
-    else if (i == 0b0011) {                                             \
-      rd = ~(((a) >> 16) ^ (a)) & 0xFFFF;                               \
+    else if (i == 0b0100 || i == 0b1100) {                              \
+      int q1 = a & 0xff,         q2 = (a >> 8) & 0xff,                  \
+          q3 = (a >> 16) & 0xff, q4 = (a >> 24) & 0xff;                 \
+      int _fault_flags = (q1 ^ q2) | (q1 ^ q3) | (q1 ^ q4);              \
+      if (i == 0b0100) rd = _fault_flags | (_fault_flags << 8) |          \
+                         (_fault_flags << 16) | (_fault_flags << 24);     \
+      if (i == 0b1100) rd = _fault_flags | ((~_fault_flags & 0xff) << 8) | \
+                         (_fault_flags << 16) | ((~_fault_flags & 0xff) << 24); \
     }                                                                   \
-    else if (i == 0b1011) {                                             \
-      rd = (~(((a) >> 16) ^ (a)) & 0xFFFF) | ((((a) >> 16) ^ (a)) << 16); \
+    else if (i == 0b0101 || i == 0b1101) {                              \
+      int q1 = a & 0xff,         q2 = (a >> 8) & 0xff,                  \
+          q3 = (a >> 16) & 0xff, q4 = (a >> 24) & 0xff;                 \
+      int _fault_flags = (~(q1 ^ q2) | (q1 ^ q3) | ~(q1 ^ q4)) & 0xff;   \
+      if (i == 0b0101) rd = _fault_flags | (_fault_flags << 8) |          \
+                         (_fault_flags << 16) | (_fault_flags << 24);     \
+      if (i == 0b1101) rd = _fault_flags | ((~_fault_flags & 0xff) << 8) | \
+                         (_fault_flags << 16) | ((~_fault_flags & 0xff) << 24); \
     }                                                                   \
-    else if (i == 0b0100) {                                             \
-      rd = ((((a) & 0xFF) ^ ((a) >> 8)) |                               \
-            (((a) & 0xFF) ^ ((a) >> 16)) |                              \
-            (((a) & 0xFF) ^ ((a) >> 24))) & 0xFF;                       \
+    else if (i == 0b11100) {                                            \
+      int q1 = a & 0xff,         q2 = (a >> 8) & 0xff,                  \
+          q3 = (a >> 16) & 0xff, q4 = (a >> 24) & 0xff;                 \
+      int _fault_flags = (q1&q2) | (q1&q3) | (q1&q4) | (q2&q3) | (q2&q4) | (q3&q4); \
+      rd = _fault_flags | ((~_fault_flags & 0xff) << 8) |                 \
+        (_fault_flags << 16) | ((~_fault_flags & 0xff) << 24);            \
     }                                                                   \
-    else if (i == 0b1100) {                                             \
-      DATATYPE tmp = ((((a) & 0xFF) ^ ((a) >> 8)) |                     \
-                      (((a) & 0xFF) ^ ((a) >> 16)) |                    \
-                      (((a) & 0xFF) ^ ((a) >> 24))) & 0xFF;             \
-      rd = tmp | ((~tmp & 0xFF) << 8) | (tmp << 16) | ((~tmp & 0xFF) << 24); \
+    else if (i == 0b11101) {                                            \
+      int q1 = a & 0xff,         q2 = (~a >> 8) & 0xff,                 \
+          q3 = (a >> 16) & 0xff, q4 = (~a >> 24) & 0xff;                \
+      int _fault_flags = (q1&q2) | (q1&q3) | (q1&q4) | (q2&q3) | (q2&q4) | (q3&q4); \
+      rd = _fault_flags | ((~_fault_flags & 0xff) << 8) |                 \
+        (_fault_flags << 16) | ((~_fault_flags & 0xff) << 24);            \
     }                                                                   \
-    else if (i == 0b0101) {                                             \
-      rd = (((~(a) & 0xFF) ^ ((a) >> 8)) |                              \
-            (((a) & 0xFF) ^ ((a) >> 16)) |                              \
-            ((~(a) & 0xFF) ^ ((a) >> 24))) & 0xFF;                      \
-    }                                                                   \
-    else if (i == 0b1101) {                                             \
-      DATATYPE tmp = ((~((a) & 0xFF) ^ ((a) >> 8)) |                    \
-                      (((a) & 0xFF) ^ ((a) >> 16)) |                    \
-                      (~((a) & 0xFF) ^ ((a) >> 24))) & 0xFF;            \
-      rd = tmp | ((~tmp & 0xFF) << 8) | (tmp << 16) | ((~tmp & 0xFF) << 24); \
-    }                                                                   \
+                                                                        \
     /* else { */                                                        \
     /* fprintf(stderr, "Invalid FTCHK@%d.\n",i); */                     \
     /* exit(EXIT_FAILURE); */                                           \
     /* } */                                                             \
   }
 
-#define TIBSROT_2(r,a) r = ((a << 1) & 0xAAAAAAAA) | ((a >> 1) & 0x55555555)
-#define TIBSROT_4(r,a) r = ((a << 1) & 0xEEEEEEEE) | ((a >> 3) & 0x11111111)
+#define SUBROT_2(r,a) r = ((a << 1) & 0xAAAAAAAA) | ((a >> 1) & 0x55555555)
+#define SUBROT_4(r,a) r = ((a << 1) & 0xEEEEEEEE) | ((a >> 3) & 0x11111111)
 
 #ifdef ASM_SOFT
 #define ANDC8(r,a,b) {                                          \
@@ -185,7 +218,7 @@
                  "mov %%y, %1\n\t" : "=r" (rd), "=r" (y) : "r" (r1), "r" (r2)); \
   }
 /* r1/r2 are actually the destination, and rd/y the source
-   but it makes it clearer to name them that way (since 
+   but it makes it clearer to name them that way (since
    INVTIBS is the inverse of TIBS) */
 #define INVTIBS(r2,r1,rd,y) {                                           \
     asm volatile("invtibs %2, %3, %0\n\t"                               \
@@ -199,8 +232,8 @@
 
 #define FTCHK(r,i,a)   asm volatile("ftchk %1, %2, %0\n\t" : "=r" (r) : "r" (a), "i" (i) );
 
-#define TIBSROT_2(r,a) asm volatile("tibsrot %1, 2, %0\n\t" : "=r" (r) : "r" (a) :)
-#define TIBSROT_4(r,a) asm volatile("tibsrot %1, 4, %0\n\t" : "=r" (r) : "r" (a) :)
+#define SUBROT_2(r,a) asm volatile("tibsrot %1, 2, %0\n\t" : "=r" (r) : "r" (a) :)
+#define SUBROT_4(r,a) asm volatile("tibsrot %1, 4, %0\n\t" : "=r" (r) : "r" (a) :)
 
 #ifdef CHEATY_CUSTOM
 #ifdef GCC_SUPPORT
@@ -320,7 +353,7 @@ static int __attribute__((noinline)) xorshift_rand() {
 
 #if defined(FD) && FD >= 2
 #if FD == 2
-#define RAND() ({ DATATYPE _tmp = xorshift_rand(); (~_tmp & 0xFFFF) | (_tmp << 16); }) 
+#define RAND() ({ DATATYPE _tmp = xorshift_rand(); (~_tmp & 0xFFFF) | (_tmp << 16); })
 #elif FD == 4
 #define RAND() ({ DATATYPE _tmp = xorshift_rand();                      \
       (~_tmp & 0xFF) | ((_tmp & 0xFF) << 8) | ((~_tmp & 0xFF) << 16) | (_tmp<< 24); })
@@ -337,9 +370,6 @@ static int __attribute__((noinline)) xorshift_rand() {
 #define RAND() (unsigned int) *((volatile unsigned int*)0x80000600)
 #endif
 
-/* #define FD_AND_1(r,a,b) ANDC32(r,a,b) */
-/* #define FD_OR_1(r,a,b)  { DATATYPE _tmp_or; ANDC32(_tmp_or,~a,~b); r = ~_tmp_or; } */
-/* #define FD_XOR_1(r,a,b) XORC32(r,a,b) */
 #define FD_AND_1(r,a,b) (r) = (a) & (b)
 #define FD_OR_1(r,a,b)  (r) = (a) | (b)
 #define FD_XOR_1(r,a,b) (r) = (a) ^ (b)
@@ -373,35 +403,27 @@ static int __attribute__((noinline)) xorshift_rand() {
 #define TI_XOR_1(r,a,b) FD_XOR(r,a,b) /* a = b ^ c */
 #define TI_NOT_1(r,a)   FD_NOT(r,a)   /* a = ~b */
 
-#if defined(X86)
-#define TI_AND_2(a,b,c) {                           \
-    DATATYPE c1, c2, d1, d2, d3;                    \
-    DATATYPE r = RAND();                            \
-    FD_AND(c1,b,c);    /* c1 = b & c */             \
-    DATATYPE c_r1;                                  \
-    TIBSROT_2(c_r1,c);                              \
-    FD_AND(c2,b,c_r1); /* c2 = b & (c <<< 1) */     \
-    FD_XOR(d1,c1,r);   /* d1 = c1 ^ r */            \
-    FD_XOR(d2,d1,c2);  /* d2 = d1 ^ c2 */           \
-    DATATYPE r_r1;                                  \
-    TIBSROT_2(r_r1,r);                              \
-    FD_XOR(d3,d2,r_r1); /* d3 = d2 ^ (r <<< 1) */   \
-    a = d3;             /* a  = d3 */               \
-  }
-#elif defined(NO_CUSTOM_INSTR)
-#define TI_AND_2(a,b,c) {                           \
-    DATATYPE c1, c2, d1, d2;                    \
-    DATATYPE r = RAND();                            \
-    FD_AND(c1,b,c);    /* c1 = b & c */             \
-    DATATYPE c_r1;                                  \
-    TIBSROT_2(c_r1,c);                              \
-    FD_AND(c2,b,c_r1); /* c2 = b & (c <<< 1) */     \
-    FD_XOR(d1,c1,r);   /* d1 = c1 ^ r */            \
-    FD_XOR(d2,d1,c2);  /* d2 = d1 ^ c2 */           \
-    DATATYPE r_r1;                                  \
-    TIBSROT_2(r_r1,r);                              \
-    FD_XOR(a,d2,r_r1); /* d3 = d2 ^ (r <<< 1) */    \
-  }   
+#if defined(X86) || defined(NO_CUSTOM_INSTR)
+#define TI_AND_2(res,a,b) {                           \
+    DATATYPE not_fault_flags, a2;                     \
+    FD_NOT(not_fault_flags,fault_flags);              \
+    a2 = a & not_fault_flags;                         \
+                                                      \
+    DATATYPE r = RAND();                              \
+                                                      \
+    DATATYPE c1, a_r, c2, d1, d2, r_r;                \
+    FD_AND(c1,a2,b);   /* partial product 1 */        \
+    SUBROT_2(a_r,a2);  /* share rotate */             \
+    FD_AND(c2,a_r,b);  /* partial product 2 */        \
+    FD_XOR(d1,r,c1);   /* random + parprod 1 */       \
+    FD_XOR(d2,d1,c2);  /*    + parprod 2 */           \
+    SUBROT_2(r_r,r);   /* parallel refresh */         \
+    XOR(res,r_r,d2);   /* output */                   \
+                                                      \
+    DATATYPE g5 = 0;                                  \
+    FTCHK(g5,IMM_FTCHK,res);                          \
+    FD_OR(fault_flags,fault_flags,g5);                \
+}
 #else
 #if FD == 1
 #define _FD_AND_TI2 "and"
@@ -413,26 +435,38 @@ static int __attribute__((noinline)) xorshift_rand() {
 #define _FD_AND_TI2 "andc8"
 #define _FD_XOR_TI2 "xorc8"
 #endif
-#define TI_AND_2(a,b,c) {                                               \
-    DATATYPE r = RAND();                                                \
-    register DATATYPE c1, c2, d1, d2, c_r1, r_r1;                       \
-    asm volatile(_FD_AND_TI2 " %[b_], %[c_], %[c1_]\n\t"    /* c1 = b & c */ \
-                 "tibsrot %[c_], 2, %[c_r1_]\n\t"           /* [tmp]  c_r1 = c <<< 1 */ \
-                 _FD_AND_TI2 " %[b_], %[c_r1_], %[c2_]\n\t" /* c2 = b & (c <<< 1) */ \
-                 _FD_XOR_TI2 " %[c1_], %[r_], %[d1_]\n\t"   /* d1 = c1 ^ r */ \
-                 _FD_XOR_TI2 " %[d1_], %[c2_], %[d2_]\n\t"  /* d2 = d1 ^ c2 */ \
-                 "tibsrot %[r_], 2, %[r_r1_]\n\t"           /* [tmp] r_r1 = r <<< 1 */ \
-                 _FD_XOR_TI2 " %[d2_], %[r_r1_], %[a_]\n\t" /* a = d2 ^ (r <<< 1) */ \
+
+#define TI_AND_2(res,a,b) {                                             \
+    DATATYPE not_fault_flags, a2;                                       \
+    FD_NOT(not_fault_flags,fault_flags);                                \
+    a2 = a & not_fault_flags;                                           \
                                                                         \
-                 : [a_] "=&r" (a), [c1_] "=&r" (c1), [c2_] "=&r" (c2),  \
-                   [d1_] "=&r" (d1), [d2_] "=&r" (d2),                  \
-                   [c_r1_] "=&r" (c_r1), [r_r1_] "=&r" (r_r1)           \
-                 : [r_] "r" (r), [b_] "r" (b), [c_] "r" (c));           \
-  }
-  
+    DATATYPE r = RAND();                                                \
+                                                                        \
+    DATATYPE c1, c2, d1, d2, r_r, a_r;                                  \
+    asm volatile(                                                       \
+        FD_AND_TI2 " %[b_], %[a2_], %[c1_]\n\t"      /* partial product 1 */ \
+        "tibsrot %[a2_], 2, %[a_r_]\n\t"             /* share rotate */     \
+        FD_AND_TI2 " %[a_r_], %[b_], %[c2_]\n\t"     /* partial product 2 */ \
+        FD_XOR_TI2 " %[r_], %[c1_], %[d1_]\n\t"      /* random + parprod 1 */ \
+        FD_XOR_TI2 " %[d1_], %[c2_], %[d2_]\n\t"     /*    + parprod 2 */   \
+        "tibsrot %[r_], 2, %[r_r_]\n\t"              /* parallel refresh */ \
+        FD_XOR_TI2 " %[r_r_], %[d2_], %[res_]\n\t"   /* output */           \
+                                                                        \
+        : [res_] "=&r" (res), [c1_] "=&r" (c1), [c2_] "=&r" (c2),       \
+          [d1_] "=&r" (d1), [d2_] "=&r" (d2),                           \
+          [a_r_] "=&r" (a_r), [r_r_] "=&r" (r_r)                        \
+        : [r_] "r" (r), [a2_] "r" (a2), [b_] "r" (b));                  \
+                                                                        \
+                                                                        \
+    DATATYPE g5 = 0;                                                    \
+    FTCHK(g5,IMM_FTCHK,res);                                            \
+    FD_OR(fault_flags,fault_flags,g5);                                  \
+}
+
 #endif
 
-#define TI_NOT_2(a,b) a = (b) ^ 0x55555555 
+#define TI_NOT_2(a,b) a = (b) ^ 0x55555555
 #define TI_OR_2(a,b,c) {                        \
     DATATYPE notb, notc, nota;                  \
     TI_NOT_2(notb,b);                           \
@@ -442,50 +476,33 @@ static int __attribute__((noinline)) xorshift_rand() {
   }
 #define TI_XOR_2(a,b,c) FD_XOR(a,b,c)
 
-#if defined(X86)
-#define TI_AND_4(a,b,c) {                           \
-    DATATYPE c1, c2, c3, c4, d1, d2, d3, d4;        \
-    DATATYPE r = RAND();                            \
-    FD_AND(c1,b,c);    /* c1 = b & c */             \
-    DATATYPE c_r1;                                  \
-    TIBSROT_4(c_r1,c);                              \
-    FD_AND(c2,b,c_r1); /* c2 = b & (c <<< 1) */     \
-    DATATYPE b_r1;                                  \
-    TIBSROT_4(b_r1,b);                              \
-    FD_AND(c3,b_r1,c); /* c3 = (b <<< 1) & c */     \
-    DATATYPE c_r2;                                  \
-    TIBSROT_4(c_r2, c_r1);                          \
-    FD_AND(c4,b,c_r2); /* c4 = b & (c <<< 2) */     \
-    FD_XOR(d1,c1,r);   /* d1 = c1 ^ r */            \
-    FD_XOR(d2,d1,c2);  /* d2 = d1 ^ c2 */           \
-    FD_XOR(d3,d2,c3);  /* d3 = d2 ^ c3 */           \
-    DATATYPE r_r1;                                  \
-    TIBSROT_4(r_r1,r);                              \
-    FD_XOR(d4,d3,r_r1); /* d4 = d3 ^ (r <<< 1) */   \
-    FD_XOR(a,d4,c4);    /* a  = d4 ^ c4 */          \
-  }
-#elif defined(NO_CUSTOM_INSTR)
-#define TI_AND_4(a,b,c) {                           \
-    DATATYPE c1, c2, c3, c4, d1, d2, d3, d4;        \
-    DATATYPE r = RAND();                            \
-    FD_AND(c1,b,c);    /* c1 = b & c */             \
-    DATATYPE c_r1;                                  \
-    TIBSROT_4(c_r1,c);                              \
-    FD_AND(c2,b,c_r1); /* c2 = b & (c <<< 1) */     \
-    DATATYPE b_r1;                                  \
-    TIBSROT_4(b_r1,b);                              \
-    FD_AND(c3,b_r1,c); /* c3 = (b <<< 1) & c */     \
-    DATATYPE c_r2;                                  \
-    TIBSROT_4(c_r2, c_r1);                          \
-    FD_AND(c4,b,c_r2); /* c4 = b & (c <<< 2) */     \
-    FD_XOR(d1,c1,r);   /* d1 = c1 ^ r */            \
-    FD_XOR(d2,d1,c2);  /* d2 = d1 ^ c2 */           \
-    FD_XOR(d3,d2,c3);  /* d3 = d2 ^ c3 */           \
-    DATATYPE r_r1;                                  \
-    TIBSROT_4(r_r1,r);                              \
-    FD_XOR(d4,d3,r_r1); /* d4 = d3 ^ (r <<< 1) */   \
-    FD_XOR(a,d4,c4);    /* a  = d4 ^ c4 */          \
-  }
+#if defined(X86) || defined(NO_CUSTOM_INSTR)
+#define TI_AND_4(res,a,b) {                                         \
+    DATATYPE not_fault_flags, a2;                                   \
+    FD_NOT(not_fault_flags,fault_flags);                            \
+    a2 = a & not_fault_flags;                                       \
+                                                                    \
+    DATATYPE r = RAND();                                            \
+                                                                    \
+    DATATYPE c1, c2, c3, c4, a_r1, a_r2, b_r, r_r, d1, d2, d3, d4;  \
+    FD_AND(c1,a2,b);    /* partial product 1 */                     \
+    SUBROT_4(a_r1,a2);  /* share rotate */                          \
+    FD_AND(c2,a_r1,b);  /* partial product 2 */                     \
+    SUBROT_4(b_r,b);    /* share rotate */                          \
+    FD_AND(c3,b_r,a);   /* partial product 3 */                     \
+    SUBROT_4(a_r2,a_r1); /* share rotate */                         \
+    FD_AND(c4,a_r2,b);  /* partial product 4 */                     \
+    FD_XOR(d1,r,c1);   /* random + parprod 1 */                     \
+    FD_XOR(d2,d1,c2);  /*    + parprod 2 */                         \
+    FD_XOR(d3,d2,c3);  /*    + parprod 3 */                         \
+    SUBROT_2(r_r,r);   /* parallel refresh */                       \
+    FD_XOR(d4, d3, r_r);                                            \
+    XOR(res,d4,c4);   /* output */                                  \
+                                                                    \
+    DATATYPE g5 = 0;                                                \
+    FTCHK(g5,IMM_FTCHK,res);                                        \
+    FD_OR(fault_flags,fault_flags,g5);                              \
+}
 #else
 #if FD == 1
 #define _FD_AND_TI4 "and"
@@ -497,33 +514,43 @@ static int __attribute__((noinline)) xorshift_rand() {
 #define _FD_AND_TI4 "andc8"
 #define _FD_XOR_TI4 "xorc8"
 #endif
-#define TI_AND_4(a,b,c) {                                               \
-    DATATYPE r = RAND();                                                \
-    register DATATYPE c1, c2, c3, c4, d1, d2, d3, d4, c_r1, b_r1, c_r2, r_r1; \
-    asm volatile(_FD_AND_TI4 " %[c_], %[b_], %[c1_]\n\t"     /* c1 = b & c */ \
-                 "tibsrot %[c_], 4, %[c_r1_]\n\t"            /* [tmp] c_r1 = c <<< 1 */ \
-                 _FD_AND_TI4 " %[b_], %[c_r1_], %[c2_]\n\t"  /* c2 = b & (c <<< 1) */ \
-                 "tibsrot %[b_], 4, %[b_r1_]\n\t"            /* [tmp] b_r1 = b <<< 1 */ \
-                 _FD_AND_TI4 " %[b_r1_], %[c_], %[c3_]\n\t"  /* c3 = (b <<< 1) & c */ \
-                 "tibsrot %[c_r1_], 4, %[c_r2_]\n\t"         /* [tmp] c_r2 = c_r1 <<< 1 */ \
-                 _FD_AND_TI4 " %[b_], %[c_r2_], %[c4_]\n\t"  /* c4 = b & (c <<< 2) */ \
-                 _FD_XOR_TI4 " %[c1_], %[r_], %[d1_]\n\t"    /* d1 = c1 ^ r */ \
-                 _FD_XOR_TI4 " %[d1_], %[c2_], %[d2_]\n\t"   /* d2 = d1 ^ c2 */ \
-                 _FD_XOR_TI4 " %[d2_], %[c3_], %[d3_]\n\t"   /* d3 = d2 ^ c3 */ \
-                 "tibsrot %[r_], 4, %[r_r1_]\n\t"            /* [tmp] r_r1 = r <<< 1 */ \
-                 _FD_XOR_TI4 " %[d3_], %[r_r1_], %[d4_]\n\t" /* d4 = d3 ^ (r <<< 1) */ \
-                 _FD_XOR_TI4 " %[d4_], %[c4_], %[a_]\n\t"    /* a = d4 ^ c4 */ \
+#define TI_AND_4(res,a,b) {                                         \
+    DATATYPE not_fault_flags, a2;                                   \
+    FD_NOT(not_fault_flags,fault_flags);                            \
+    a2 = a & not_fault_flags;                                       \
+                                                                    \
+    DATATYPE r = RAND();                                            \
+                                                                    \
+    DATATYPE c1, c2, c3, c4, a_r1, a_r2, b_r, r_r, d1, d2, d3, d4;  \
+    asm volatile(                                                   \
+        _FD_AND_TI4 " %[a2_], %[b_], %[c1_]\n\t"   /* partial product 1 */ \
+        "tibsrot %[a2_], 4, %[a_r1_]\n\t"          /* share rotate */   \
+        _FD_AND_TI4 " %[a_r1_], %[b_], %[c2_]\n\t" /* partial product 2 */ \
+        "tibsrot %[b_], 4, %[b_r_]\n\t"            /* share rotate */   \
+        _FD_AND_TI4 " %[b_r_], %[a_], %[c3_]\n\t"  /* partial product 3 */ \
+        "tibsrot %[a_r1_], 4, %[a_r2_]\n\t"        /* share rotate */   \
+        _FD_AND_TI4 " %[a_r2_], %[b_], %[c4_]\n\t" /* partial product 4 */ \
+        _FD_XOR_TI4 " %[r_], %[c1_], %[d1_]\n\t"   /* random + parprod 1 */ \
+        _FD_XOR_TI4 " %[d1_], %[c2_], %[d2_]\n\t"  /*    + parprod 2 */ \
+        _FD_XOR_TI4 " %[d2_], %[c3_], %[d3_]\n\t"  /*    + parprod 3 */ \
+        "tibsrot %[r_], 4, %[r_r_]\n\t"            /* parallel refresh */ \
+        _FD_XOR_TI4 " %[d3_], %[r_r_], %[d4_]\n\t"                      \
+        _FD_XOR_TI4 " %[d4_], %[c4_], %[res_]\n\t" /* output */       \
+                                                                      \
+        : [res_] "=&r" (res),                                         \
+          [c1_] "=&r" (c1), [c2_] "=&r" (c2), [c3_] "=&r" (c3), [c4_] "=&r" (c4), \
+          [d1_] "=&r" (d1), [d2_] "=&r" (d2), [d3_] "=&r" (d3), [d4_] "=&r" (d4), \
+          [a_r1_] "=&r" (a_r1), [a_r2_] "=&r" (a_r2),                   \
+          [b_r_] "=&r" (b_r),  [r_r_] "=&r" (r_r),                      \
+        : [r_] "r" (r), [a2_] "r" (a2), [b_] "r" (b));                  \
                                                                         \
-                 : [a_] "=&r" (a), [c1_] "=&r" (c1), [c2_] "=&r" (c2),  \
-                   [c3_] "=&r" (c3), [c4_] "=&r" (c4), [d1_] "=&r" (d1), \
-                   [d2_] "=&r" (d2), [d3_] "=&r" (d3), [d4_] "=&r" (d4), \
-                   [c_r1_] "=&r" (c_r1), [b_r1_] "=&r" (b_r1),          \
-                   [c_r2_] "=&r" (c_r2), [r_r1_] "=&r" (r_r1)           \
-                 : [r_] "r" (r), [b_] "r" (b), [c_] "r" (c));           \
-  }
-  
+    DATATYPE g5 = 0;                                                    \
+    FTCHK(g5,IMM_FTCHK,res);                                            \
+    FD_OR(fault_flags,fault_flags,g5);                                  \
+}
+
 #endif
-    
+
 #define TI_NOT_4(a,b) a = (b) ^ 0x11111111
 #define TI_OR_4(a,b,c) {                        \
     DATATYPE notb, notc, nota;                  \
