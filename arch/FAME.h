@@ -450,6 +450,7 @@ static int __attribute__((noinline)) xorshift_rand() {
         _FD_AND_TI2 " %[b_], %[a2_], %[c1_]\n\t"      /* partial product 1 */ \
         "tibsrot %[a2_], 2, %[a_r_]\n\t"             /* share rotate */     \
         _FD_AND_TI2 " %[a_r_], %[b_], %[c2_]\n\t"     /* partial product 2 */ \
+        "xor %[a_r_], %[a_r_], %[a_r_]\n\t"           /* clean subrot output */\
         _FD_XOR_TI2 " %[r_], %[c1_], %[d1_]\n\t"      /* random + parprod 1 */ \
         _FD_XOR_TI2 " %[d1_], %[c2_], %[d2_]\n\t"     /*    + parprod 2 */   \
         "tibsrot %[r_], 2, %[r_r_]\n\t"              /* parallel refresh */ \
@@ -536,6 +537,9 @@ static int __attribute__((noinline)) xorshift_rand() {
         _FD_AND_TI4 " %[b_r_], %[a2_], %[c3_]\n\t"  /* partial product 3 */ \
         "tibsrot %[a_r1_], 4, %[a_r2_]\n\t"        /* share rotate */   \
         _FD_AND_TI4 " %[a_r2_], %[b_], %[c4_]\n\t" /* partial product 4 */ \
+        "xor %[a_r1_], %[a_r1_], %[a_r1_]\n\t"     /* clear subrot output */ \
+        "xor %[b_r_], %[b_r_], %[b_r_]\n\t"        /* clear subrot output */ \
+        "xor %[a_r2_], %[a_r2_], %[a_r2_]\n\t"     /* clear subrot output */ \
         _FD_XOR_TI4 " %[r_], %[c1_], %[d1_]\n\t"   /* random + parprod 1 */ \
         _FD_XOR_TI4 " %[d1_], %[c2_], %[d2_]\n\t"  /*    + parprod 2 */ \
         _FD_XOR_TI4 " %[d2_], %[c3_], %[d3_]\n\t"  /*    + parprod 3 */ \
