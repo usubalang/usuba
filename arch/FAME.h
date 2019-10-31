@@ -19,9 +19,9 @@
 #if FD == 1
 #define IMM_FTCHK 0 /* no redundancy -> no fault check */
 #elif FD == 2
-#define IMM_FTCHK 0b1011
+#define IMM_FTCHK 0b0011
 #elif FD == 4 && !defined(CORRECT)
-#define IMM_FTCHK 0b1101
+#define IMM_FTCHK 0b0101
 #elif FD == 4 && defined(CORRECT)
 #define IMM_FTCHK 0b11101
 #else
@@ -310,7 +310,7 @@ static int xorshift_rand() {
   return state; // Not quite correct, should depend on TI, FD and PIPELINED
 }
 #define RAND() xorshift_rand()
-#else
+#else // #ifdef COPROC_RAND
 /* The following algorithm is attritubed by Wikipedia (https://en.wikipedia.org/wiki/Xorshift)
    to p. 4 of Marsaglia, "Xorshift RNGs" */
 static int state = 0x8e20a6e5;
@@ -420,9 +420,11 @@ static int __attribute__((noinline)) xorshift_rand() {
     SUBROT_2(r_r,r);   /* parallel refresh */         \
     XOR(res,r_r,d2);   /* output */                   \
                                                       \
-    DATATYPE g5 = 0;                                  \
-    FTCHK(g5,IMM_FTCHK,res);                          \
-    FD_OR(fault_flags,fault_flags,g5);                \
+    if (FD != 1) {                                    \
+      DATATYPE g5 = 0;                                \
+      FTCHK(g5,IMM_FTCHK,res);                        \
+      FD_OR(fault_flags,fault_flags,g5);              \
+    }                                                 \
 }
 #else
 #if FD == 1
@@ -460,8 +462,10 @@ static int __attribute__((noinline)) xorshift_rand() {
                                                                         \
                                                                         \
     DATATYPE g5 = 0;                                                    \
-    FTCHK(g5,IMM_FTCHK,res);                                            \
-    FD_OR(fault_flags,fault_flags,g5);                                  \
+    if (FD != 1) {                                                      \
+      FTCHK(g5,IMM_FTCHK,res);                                          \
+      FD_OR(fault_flags,fault_flags,g5);                                \
+    }                                                                   \
 }
 
 #endif
@@ -499,9 +503,11 @@ static int __attribute__((noinline)) xorshift_rand() {
     FD_XOR(d4, d3, r_r);                                            \
     XOR(res,d4,c4);   /* output */                                  \
                                                                     \
-    DATATYPE g5 = 0;                                                \
-    FTCHK(g5,IMM_FTCHK,res);                                        \
-    FD_OR(fault_flags,fault_flags,g5);                              \
+    if (FD != 1) {                                                  \
+      DATATYPE g5 = 0;                                              \
+      FTCHK(g5,IMM_FTCHK,res);                                      \
+      FD_OR(fault_flags,fault_flags,g5);                            \
+    }                                                               \
 }
 #else
 #if FD == 1
@@ -544,9 +550,11 @@ static int __attribute__((noinline)) xorshift_rand() {
           [b_r_] "=&r" (b_r),  [r_r_] "=&r" (r_r)                       \
         : [r_] "r" (r), [a2_] "r" (a2), [b_] "r" (b));                  \
                                                                         \
-    DATATYPE g5 = 0;                                                    \
-    FTCHK(g5,IMM_FTCHK,res);                                            \
-    FD_OR(fault_flags,fault_flags,g5);                                  \
+    if (FD != 1) {                                                      \
+      DATATYPE g5 = 0;                                                  \
+      FTCHK(g5,IMM_FTCHK,res);                                          \
+      FD_OR(fault_flags,fault_flags,g5);                                \
+    }                                                                   \
 }
 
 #endif
