@@ -4,16 +4,33 @@
 
 #include "FAME.h"
 
+#if FD == 1
 int fault_flags = 0;
+#elif FD == 2
+int fault_flags = 0xffff0000;
+#elif FD == 4
+int fault_flags = 0xff00ff00;
+#endif
 
-#define assert_eq(got,expected) {                                       \
-    if (got != expected) {                                              \
-      fprintf(stderr, "%s:%d: Assertion `" #expected " = " #got         \
-              "' failed: expected %08x, got %08x.\n",                   \
-              __FILE__, __LINE__, expected, got);                       \
-      exit(EXIT_FAILURE);                                               \
-    }                                                                   \
+#ifdef X86
+#define assert_eq(got,expected) {                               \
+    if (got != expected) {                                      \
+      fprintf(stderr, "%s:%d: Assertion `" #expected " = " #got \
+              "' failed: expected %08x, got %08x.\n",           \
+              __FILE__, __LINE__, expected, got);               \
+      exit(EXIT_FAILURE);                                       \
+    }                                                           \
   }
+#else
+#define assert_eq(got,expected) {                               \
+    if (got != expected) {                                      \
+      printf("%s:%x: Assertion `" #expected " = " #got          \
+             "' failed: expected %x, got %x.\n",                \
+             __FILE__, __LINE__, expected, got);                \
+      exit(EXIT_FAILURE);                                       \
+    }                                                           \
+  }
+#endif
 
 /* Checks that OP(v1,v2) == expected */
 #define CHECK_BIN(OP,expected,v1,v2) {          \
@@ -154,15 +171,16 @@ void test_custom_instr() {
   CHECK_FTCHK(0x00ff00ff,0b1101,0xffffff00);
   CHECK_FTCHK(0xff00ff00,0b1101,0x0ff00ff0);
   // FTCHK 0b11100
-  CHECK_FTCHK(0xff00ff00,0b11100,0x00000000);
-  CHECK_FTCHK(0x00ff00ff,0b11100,0xffffffff);
-  CHECK_FTCHK(0xff00ff00,0b11100,0x00ff0000);
-  CHECK_FTCHK(0x00ff00ff,0b11100,0xffffff00);
+  CHECK_FTCHK(0x00000000,0b11100,0x00000000);
+  CHECK_FTCHK(0xffffffff,0b11100,0xffffffff);
+  CHECK_FTCHK(0x00000000,0b11100,0x00ff0000);
+  CHECK_FTCHK(0xffffffff,0b11100,0xffffff00);
   // FTCHK 0b11101
-  CHECK_FTCHK(0xff00ff00,0b11100,0xff000000);
-  CHECK_FTCHK(0x00ff00ff,0b11100,0xffffff00);
-  CHECK_FTCHK(0xff00ff00,0b11100,0x00ff0000);
-  CHECK_FTCHK(0x00ff00ff,0b11100,0xffffff00);
+  CHECK_FTCHK(0xff00ff00,0b11101,0xff000000);
+  CHECK_FTCHK(0xff00ff00,0b11101,0xffffff00);
+  CHECK_FTCHK(0x00ff00ff,0b11101,0x00ff0000);
+  CHECK_FTCHK(0x00ff00ff,0b11101,0x00ff0000);
+  CHECK_FTCHK(0xaa55aa55,0b11101,0xaa55aa5d);
 
   // SUBROT_2
   CHECK_UN(SUBROT_2,0x5555aaaa,0xaaaa5555);
@@ -495,6 +513,9 @@ void test_ti() {
 }
 
 int main() {
+
+  printf("Starting test.\n");
+
   test_custom_instr();
 
   test_fd();

@@ -139,8 +139,8 @@ extern int fault_flags;
       int q1 = a & 0xff,         q2 = (a >> 8) & 0xff,                  \
           q3 = (a >> 16) & 0xff, q4 = (a >> 24) & 0xff;                 \
       int _fault_flags = (q1&q2) | (q1&q3) | (q1&q4) | (q2&q3) | (q2&q4) | (q3&q4); \
-      rd = _fault_flags | ((~_fault_flags & 0xff) << 8) |                 \
-        (_fault_flags << 16) | ((~_fault_flags & 0xff) << 24);            \
+      rd = _fault_flags | (_fault_flags << 8) |                         \
+        (_fault_flags << 16) | (_fault_flags << 24);                    \
     }                                                                   \
     else if (i == 0b11101) {                                            \
       int q1 = a & 0xff,         q2 = (~a >> 8) & 0xff,                 \
@@ -443,15 +443,15 @@ static int __attribute__((noinline)) xorshift_rand() {
                                                                         \
     DATATYPE r = RAND();                                                \
                                                                         \
-    DATATYPE c1, c2, d1, d2, r_r, a_r;                                  \
+    register DATATYPE c1, c2, d1, d2, r_r, a_r;                         \
     asm volatile(                                                       \
-        FD_AND_TI2 " %[b_], %[a2_], %[c1_]\n\t"      /* partial product 1 */ \
+        _FD_AND_TI2 " %[b_], %[a2_], %[c1_]\n\t"      /* partial product 1 */ \
         "tibsrot %[a2_], 2, %[a_r_]\n\t"             /* share rotate */     \
-        FD_AND_TI2 " %[a_r_], %[b_], %[c2_]\n\t"     /* partial product 2 */ \
-        FD_XOR_TI2 " %[r_], %[c1_], %[d1_]\n\t"      /* random + parprod 1 */ \
-        FD_XOR_TI2 " %[d1_], %[c2_], %[d2_]\n\t"     /*    + parprod 2 */   \
+        _FD_AND_TI2 " %[a_r_], %[b_], %[c2_]\n\t"     /* partial product 2 */ \
+        _FD_XOR_TI2 " %[r_], %[c1_], %[d1_]\n\t"      /* random + parprod 1 */ \
+        _FD_XOR_TI2 " %[d1_], %[c2_], %[d2_]\n\t"     /*    + parprod 2 */   \
         "tibsrot %[r_], 2, %[r_r_]\n\t"              /* parallel refresh */ \
-        FD_XOR_TI2 " %[r_r_], %[d2_], %[res_]\n\t"   /* output */           \
+        _FD_XOR_TI2 " %[r_r_], %[d2_], %[res_]\n\t"   /* output */           \
                                                                         \
         : [res_] "=&r" (res), [c1_] "=&r" (c1), [c2_] "=&r" (c2),       \
           [d1_] "=&r" (d1), [d2_] "=&r" (d2),                           \
@@ -521,13 +521,13 @@ static int __attribute__((noinline)) xorshift_rand() {
                                                                     \
     DATATYPE r = RAND();                                            \
                                                                     \
-    DATATYPE c1, c2, c3, c4, a_r1, a_r2, b_r, r_r, d1, d2, d3, d4;  \
+    register DATATYPE c1, c2, c3, c4, a_r1, a_r2, b_r, r_r, d1, d2, d3, d4; \
     asm volatile(                                                   \
         _FD_AND_TI4 " %[a2_], %[b_], %[c1_]\n\t"   /* partial product 1 */ \
         "tibsrot %[a2_], 4, %[a_r1_]\n\t"          /* share rotate */   \
         _FD_AND_TI4 " %[a_r1_], %[b_], %[c2_]\n\t" /* partial product 2 */ \
         "tibsrot %[b_], 4, %[b_r_]\n\t"            /* share rotate */   \
-        _FD_AND_TI4 " %[b_r_], %[a_], %[c3_]\n\t"  /* partial product 3 */ \
+        _FD_AND_TI4 " %[b_r_], %[a2_], %[c3_]\n\t"  /* partial product 3 */ \
         "tibsrot %[a_r1_], 4, %[a_r2_]\n\t"        /* share rotate */   \
         _FD_AND_TI4 " %[a_r2_], %[b_], %[c4_]\n\t" /* partial product 4 */ \
         _FD_XOR_TI4 " %[r_], %[c1_], %[d1_]\n\t"   /* random + parprod 1 */ \
@@ -541,7 +541,7 @@ static int __attribute__((noinline)) xorshift_rand() {
           [c1_] "=&r" (c1), [c2_] "=&r" (c2), [c3_] "=&r" (c3), [c4_] "=&r" (c4), \
           [d1_] "=&r" (d1), [d2_] "=&r" (d2), [d3_] "=&r" (d3), [d4_] "=&r" (d4), \
           [a_r1_] "=&r" (a_r1), [a_r2_] "=&r" (a_r2),                   \
-          [b_r_] "=&r" (b_r),  [r_r_] "=&r" (r_r),                      \
+          [b_r_] "=&r" (b_r),  [r_r_] "=&r" (r_r)                       \
         : [r_] "r" (r), [a2_] "r" (a2), [b_] "r" (b));                  \
                                                                         \
     DATATYPE g5 = 0;                                                    \
