@@ -1,0 +1,26 @@
+reset
+set terminal postscript eps enhanced 14
+
+set datafile separator ";"
+
+set output 'stacked_boxes.eps'
+
+set auto x
+set yrange [0:40]
+#set xtics 1
+
+set style fill solid border -1
+
+# num_of_categories=4
+# set boxwidth 0.3/num_of_categories
+# dx=0.5/num_of_categories
+# offset=-0.1
+
+
+plot newhistogram "test", 't.dat' using 3:xticlabels(2)
+
+# plot 't.dat' using 1:3 title "Category 1 A" linecolor rgb "#cc0000" with boxes
+#, \
+     #''                   using ($1+offset):3 title "Category 2 B" linecolor rgb "#ff0000" with boxes#, \
+     #'data_sse.dat' using ($1+offset+dx):($3+$4) title "Category 2 A" linecolor rgb "#00cc00" with boxes, \
+     #''                   using ($1+offset+dx):3 title "Category 2 B" linecolor rgb "#00ff00" with boxes
