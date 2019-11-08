@@ -19,7 +19,7 @@ int main() {
   uint64_t encrypted = bench_speed();
 
   /* Warming up caches */
-  for (int i = 0; i < 100; i++)
+  for (int i = 0; i < WARMING; i++)
     bench_speed();
 
   /* The actual benchmark */
