@@ -11,8 +11,12 @@
 - Fix Pre-schedule
 - Rewrite predicate to check is_usuba0
 - Make type-checker check if var is written twice
+- Add Present to checks
 
-
+- Major work:
+  * automatically generate non-trivial vectorized code (Gimli, Chacha)
+  * lower stack usage
+  * efficient generation of Sboxes
 
 Expand_parameters / Monomorphize interaction issues
 
