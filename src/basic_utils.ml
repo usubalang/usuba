@@ -159,3 +159,21 @@ let rec first_n l n =
 let rec gen_minus_one (s:int) =
   if s <= 0 then 0
   else (1 lsl (s-1)) lor (gen_minus_one (s-1))
+
+(* Like fold_left, but with an index as well.
+   Default start index is 0.
+   If |start| is provided, then starts at this index. *)
+let fold_left_i ?(start:int=0) (f:int -> 'a -> 'b -> 'a) (init:'a) (l:'b list) : 'a =
+  let i = ref start in
+  List.fold_left (fun a b -> let res = f !i a b in
+                             incr i;
+                             res) init l
+
+(* Like fold_right, but with an index as well.
+   Default start index is 0.
+   If |start| is provided, then starts at this index. *)
+let fold_right_i ?(start:int=0) (f:int -> 'a -> 'b -> 'b) (l:'a list) (init:'b) : 'b =
+  let i = ref start in
+  List.fold_right (fun a b -> let res = f !i a b in
+                              incr i;
+                              res) l init
