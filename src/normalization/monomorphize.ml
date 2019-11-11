@@ -75,13 +75,45 @@ module Hslice = struct
   let refine_types (p:p) : p = p
 end
 
+
 module Vslice = struct
-  (* Just specialize the types of Consts within this expr *)
+
+  let get_type_m_as_int (t:typ) : int =
+    match get_type_m t with
+    | Mint m -> m
+    | _ -> assert false
+
+  (* Converts a shuffle into shifts/xors *)
+  let specialize_shuffle (env_var:(ident,typ) Hashtbl.t)
+                         (v:var) (l:int list) : expr =
+    let v_typ = get_var_type env_var v in
+    let size = get_type_m_as_int v_typ in
+
+    (* Extracts the |orig|-th bit of |v| to index |dst|. *)
+    let extract_bit (orig:int) (dst:int) : expr =
+      if orig-dst = 0 then
+        Log(And,ExpVar v,Const(1 lsl (size-1-dst),Some v_typ))
+      else
+        let shift_by = abs (orig - dst) in
+        let shift_op = if orig-dst > 0 then Lshift else Rshift in
+        Log(And,Shift(shift_op,ExpVar v,Const_e shift_by),
+            Const(1 lsl (size-1-dst),Some v_typ)) in
+
+    match l with
+    | hd :: tl ->
+       fold_left_i ~start:1
+                   (fun (i:int) (e:expr) (n:int) -> Log(Xor,e,extract_bit n i))
+                   (extract_bit hd 0) tl
+    | [] -> assert false (* Shuffle pattern cannot be empty. *)
+
+  (* Just specialize the types of Consts within this expr,
+     and turn Shuffles into shift/xors. *)
   let specialize_expr (env_dir:(dir,dir) Hashtbl.t)
         (env_m:(mtyp,mtyp) Hashtbl.t)
         (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
     match e with
     | Const(n,Some typ) -> Const(n,Some (specialize_typ env_dir env_m typ))
+    | Shuffle(v,l) -> specialize_shuffle env_var v l
     | _ -> e
 
   let specialize_var env_var (v:var) : var = v
