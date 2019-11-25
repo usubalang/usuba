@@ -43,6 +43,7 @@ let default_conf : config =
     m_set        = false;
     m_val        = 1;
     tightPROVE   = false;
+    tightprove_dir = "tightprove";
     maskVerif    = false;
     masked       = false;
     ua_masked    = false;
@@ -152,6 +153,7 @@ let make_var_d (id:ident) (typ:typ) (ck:clock) (opts:var_d_opt list) =
     vopts = opts }
 
 let simple_var_d (id:ident) = make_var_d id bool Defclock []
+let simple_typed_var_d (id:ident) (typ:typ) = make_var_d id typ Defclock []
 
 let env_fetch env v =
   (* try *)
