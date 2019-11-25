@@ -45,3 +45,8 @@ def.rs
 
 let print_def (def:def) : unit =
   Printf.printf "%s" (def_to_str def)
+
+let print_def_to_file (def:def) (filename:string) : unit =
+  let out = open_out filename in
+  Printf.fprintf out "%s" (def_to_str def);
+  flush out

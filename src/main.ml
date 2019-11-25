@@ -3,7 +3,7 @@ open Usuba_AST
 open Printf
 open Basic_utils
 open Utils
-(* open Parser_api_tp *)
+open Tightprove_to_usuba
 
 let warnings    = ref false
 let verbose     = ref 1
@@ -38,6 +38,7 @@ let fdti         = ref ""
 let lazylift     = ref false
 
 let tightPROVE   = ref false
+let tightprove_dir = ref "tightprove"
 let maskVerif    = ref false
 let masked       = ref false
 let ua_masked    = ref false
@@ -144,6 +145,7 @@ let main () =
       "-B", Arg.Unit (fun () -> slicing_set := true; slicing_type := B), "Bit slicing.";
       "-m", Arg.Int (fun n -> m_set := true; m_val := n), "Set 'm value";
       "-tp", Arg.Set tightPROVE, "Generate tightPROVE circuits";
+      "-tp-dir", Arg.String (fun s -> tightprove_dir := s), "Set directory output for tightPROVE";
       "-mv", Arg.Set maskVerif, "Generate maskVerif circuits";
       "-masked", Arg.Set masked, "Generate masked implementation";
       "-ua-masked", Arg.Unit (fun () -> ua_masked := true; (* linearize_arr := false *)), "Generate masked implementation, where masking is done is Usuba rather than solely with C macros. This allows for some optimizations, like loop fusion.";
@@ -203,6 +205,7 @@ let main () =
         m_set          =   !m_set;
         m_val          =   !m_val;
         tightPROVE     =   !tightPROVE;
+        tightprove_dir =   !tightprove_dir;
         maskVerif      =   !maskVerif;
         masked         =   !masked;
         ua_masked      =   !ua_masked;

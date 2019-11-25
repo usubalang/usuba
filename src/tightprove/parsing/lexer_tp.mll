@@ -21,6 +21,7 @@ let _ =
       "not",       TOK_NOT;
       "setcst",    TOK_SETCST;
       "setcstall", TOK_SETCSTALL;
+      "refresh",   TOK_REFRESH;
     ]
 
 let next_line lexbuf =
@@ -39,6 +40,8 @@ rule token = parse
 (* spaces *)
 | [' ' '\t']+  { token lexbuf; }
 | ['\n']       { next_line lexbuf; token lexbuf; }
+| '#' [^ '\n' '\r']*     { token lexbuf; }
+| "//" [^ '\n' '\r']*    { token lexbuf; }
 
 
 (* identifiers / keywords *)
@@ -53,11 +56,6 @@ rule token = parse
 | "<<"   { TOK_LSHIFT    }
 | ">>>"  { TOK_RROTATE   }
 | ">>"   { TOK_RSHIFT    }
-| "+"    { TOK_PLUS      }
-| "*"    { TOK_STAR      }
-| "-"    { TOK_DASH      }
-| "/"    { TOK_SLASH     }
-| "%"    { TOK_MOD       }
 
 (* integers *)
 | ['0'-'9']+ as i { TOK_int (int_of_string i) }
