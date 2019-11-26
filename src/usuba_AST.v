@@ -84,6 +84,7 @@ Record var_d := {
   vtyp  : typ;
   vck   : clock;
   vopts : list var_d_opt;
+  vorig : list ident; (* A list of functions from where this variable was inlined *)
 }.
 
 Definition p := list var_d.
