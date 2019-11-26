@@ -147,7 +147,7 @@ let gen_list_0_int (n: int) : int list =
   in aux n []
 
 let make_var_d (id:ident) (typ:typ) (ck:clock)
-               (opts:var_d_opt list) (orig:ident list) : var_d =
+               (opts:var_d_opt list) (orig:(ident*var_d) list) : var_d =
   { vid   = id;
     vtyp  = typ;
     vck   = ck;
