@@ -146,14 +146,16 @@ let gen_list_0_int (n: int) : int list =
     else aux (n-1) ((n-1) :: acc)
   in aux n []
 
-let make_var_d (id:ident) (typ:typ) (ck:clock) (opts:var_d_opt list) =
+let make_var_d (id:ident) (typ:typ) (ck:clock)
+               (opts:var_d_opt list) (orig:ident list) : var_d =
   { vid   = id;
     vtyp  = typ;
     vck   = ck;
-    vopts = opts }
+    vopts = opts;
+    vorig = orig }
 
-let simple_var_d (id:ident) = make_var_d id bool Defclock []
-let simple_typed_var_d (id:ident) (typ:typ) = make_var_d id typ Defclock []
+let simple_var_d (id:ident) = make_var_d id bool Defclock [] []
+let simple_typed_var_d (id:ident) (typ:typ) = make_var_d id typ Defclock [] []
 
 let env_fetch env v =
   (* try *)

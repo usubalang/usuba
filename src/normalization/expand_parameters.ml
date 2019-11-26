@@ -258,7 +258,7 @@ let expand_in_node (env_fun:(ident,def) Hashtbl.t) (f:def) (vd:var_d)
     List.map
       (fun i -> let id' = fresh_suffix vd.vid (sprintf "%d'" i) in
                 Hashtbl.replace expand_env (Index(Var vd.vid,Const_e i)) [ Var id' ];
-                make_var_d id' new_typ vd.vck vd.vopts)
+                make_var_d id' new_typ vd.vck vd.vopts vd.vorig)
       (gen_list_0_int size) in
 
   (* propagating thoughout |f|'s body *)
@@ -269,10 +269,12 @@ let expand_in_node (env_fun:(ident,def) Hashtbl.t) (f:def) (vd:var_d)
   let replace l e e' = flat_map (fun x -> if x = e then e' else [x]) l in
   let new_node =
     if is_p_in then
-      { f with p_in = replace f.p_in (make_var_d vd.vid vd.vtyp vd.vck vd.vopts) new_p;
+      { f with p_in = replace f.p_in (make_var_d vd.vid vd.vtyp vd.vck
+                                                 vd.vopts vd.vorig) new_p;
                node = Single(get_vars f.node,body); }
     else
-      { f with p_out = replace f.p_out (make_var_d vd.vid vd.vtyp vd.vck vd.vopts) new_p;
+      { f with p_out = replace f.p_out (make_var_d vd.vid vd.vtyp vd.vck
+                                                   vd.vopts vd.vorig) new_p;
                node = Single(get_vars f.node,body); } in
   Hashtbl.replace env_fun new_node.id new_node
 

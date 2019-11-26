@@ -162,7 +162,7 @@ let rec remove_call env_var env_fun (its:(ident*int) list)
               else List.hd expr_typ_l in
     let typ = update_type_m (update_type_dir typ dir) mtyp in
     let (new_id,new_var,new_typ) = gen_tmp env_var its typ in
-    new_vars := (make_var_d new_id new_typ Defclock []) :: !new_vars;
+    new_vars := (simple_typed_var_d new_id new_typ) :: !new_vars;
 
     deq @ [Eqn([new_var],e',false)], ExpVar new_var
 
@@ -189,7 +189,7 @@ and remove_calls env_var env_fun (its:(ident*int) list)
                           else List.hd expr_typ_l in
                 let typ = update_type_m (update_type_dir typ dir) mtyp in
                 let (new_id,new_var,new_typ) = gen_tmp env_var its typ in
-                new_vars := (make_var_d new_id new_typ Defclock []) :: !new_vars;
+                new_vars := (simple_typed_var_d new_id new_typ) :: !new_vars;
                 pre_deqs := !pre_deqs @ [(Eqn([new_var],e',false))];
 
                 [ExpVar new_var])

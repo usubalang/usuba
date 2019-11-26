@@ -228,7 +228,8 @@ let inline_call (to_inl:def) (args:expr list) (lhs:var list) (cpt:int) :
   (* p_in replaced by the expressions of arguments *)
   List.iter2 ( fun vd e -> Hashtbl.add expr_env (Var vd.vid) e) p_in args;
   (* Create a list containing the new variables names *)
-  let vars = List.map (fun vd -> { vd with vid = conv_name vd.vid }) vars_inl in
+  let vars = List.map (fun vd -> { vd with vid = conv_name vd.vid;
+                                           vorig = to_inl.id :: vd.vorig}) vars_inl in
   (* nodes variables alpha-converted *)
   List.iter2 ( fun vd vd' ->
                Hashtbl.add var_env (Var vd.vid) (Var vd'.vid)) vars_inl vars;

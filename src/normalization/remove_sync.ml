@@ -10,7 +10,7 @@ let gen_tmp =
     incr cpt;
     let var = fresh_ident (Printf.sprintf "_shadow_%s%d_" id !cpt) in
     Hashtbl.add env_var var typ;
-    new_vars := (make_var_d var typ Defclock []) :: !new_vars;
+    new_vars := (simple_typed_var_d var typ) :: !new_vars;
     Var var
 
 
