@@ -6,12 +6,17 @@ open Printf
 (* More like "update envs" than "gen_var": given a TP variable (ie, a
    string), generates a Usuba variable, and updates |new_vars| and
    |vars_corres| accordingly. *)
-let gen_var (new_vars:(Usuba_AST.ident,bool) Hashtbl.t)
+let gen_var (new_vars:(Usuba_AST.var,Usuba_AST.var) Hashtbl.t)
             (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
-            (v:string) : unit =
-  let new_v = Utils.fresh_ident v in
-  Hashtbl.add new_vars new_v true;
-  Hashtbl.add vars_corres v (Var new_v)
+            (v:string) (rv:var) : unit =
+  let new_v = Var (Utils.fresh_ident v) in
+  Hashtbl.add vars_corres v new_v;
+  (* |rv| might be already a refresh-generated variable; in that case,
+     we want to add the refreshed variable to |new_vars|, in order to
+     be able to reconstruct deqs. *)
+  match Hashtbl.find_opt new_vars rv with
+  | Some old_v -> Hashtbl.add new_vars new_v old_v
+  | None       -> Hashtbl.add new_vars new_v rv
 
 let var_to_ua (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
               (v:string) : Usuba_AST.var =
@@ -30,8 +35,53 @@ let shift_op_to_ua (op:Tp_AST.shift_op) : Usuba_AST.shift_op =
   | Tp_AST.Lrotate -> Usuba_AST.Lrotate
   | Tp_AST.Rrotate -> Usuba_AST.Rrotate
 
+(* Finds |deq| inside |deqs_origins| and returns the associated origin
+   list. We need |new_vars| because |deq| might contain variable that
+   have been introduced by refreshes and therefore need to be
+   replaced by the variables they refresh.
+
+   This function also updates |deqs_corres| with a correspondance
+   between the new deq_i and the old one. (eg, the one with refreshes
+   and the one without) *)
+let find_orig (new_vars:(Usuba_AST.var,Usuba_AST.var) Hashtbl.t)
+              (deqs_origins:(Usuba_AST.deq_i,Usuba_AST.ident list) Hashtbl.t)
+              (deqs_corres:(Usuba_AST.deq_i,Usuba_AST.deq_i) Hashtbl.t)
+              (deqi:Usuba_AST.deq_i) : ident list =
+  let replace_var (v:Usuba_AST.var) : Usuba_AST.var =
+    match Hashtbl.find_opt new_vars v with
+    | Some old_v -> old_v
+    | None -> v in
+  let rec replace_expr (e:Usuba_AST.expr) : Usuba_AST.expr =
+    match e with
+    | Const _         -> e
+    | ExpVar v        -> ExpVar (replace_var v)
+    | Tuple l         -> Tuple (List.map replace_expr l)
+    | Not e'          -> Not (replace_expr e')
+    | Shift(op,e',ae) -> Shift(op,replace_expr e',ae)
+    | Log(op,x,y)     -> Log(op,replace_expr x,replace_expr y)
+    | Shuffle(v,l)    -> Shuffle(replace_var v,l)
+    | Arith(op,x,y)   -> Arith(op,replace_expr x,replace_expr y)
+    | Fun(f,l)        -> Fun(f,List.map replace_expr l)
+    | _ -> assert false in
+  match deqi with
+  | Eqn([v],e,false) ->
+     let v' = replace_var v in
+     let e' = replace_expr e in
+     let old_deqi = Eqn([v'],e',false) in
+     Hashtbl.add deqs_corres old_deqi deqi;
+     (match Hashtbl.find_opt deqs_origins old_deqi with
+      | Some origin -> origin
+      | None -> match e' with
+                | Fun(f,_) when f.name = "refresh" -> []
+                | _ -> assert false)
+  | _ -> assert false
+
+
+
 let asgn_to_ua (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
-               (new_vars:(Usuba_AST.ident,bool) Hashtbl.t)
+               (new_vars:(Usuba_AST.var,Usuba_AST.var) Hashtbl.t)
+               (deqs_origins:(Usuba_AST.deq_i,Usuba_AST.ident list) Hashtbl.t)
+               (deqs_corres:(Usuba_AST.deq_i,Usuba_AST.deq_i) Hashtbl.t)
                (base_type:Usuba_AST.typ)
                (asgn:Tp_AST.asgn) : deq =
   let ua_rhs =
@@ -48,32 +98,43 @@ let asgn_to_ua (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
        let x = Usuba_AST.ExpVar (var_to_ua vars_corres x) in
        Usuba_AST.Shift(shift_op_to_ua op, x, Usuba_AST.Const_e n)
     | Tp_AST.Refresh v     ->
-       gen_var new_vars vars_corres asgn.lhs;
+       gen_var new_vars vars_corres asgn.lhs (var_to_ua vars_corres v);
        Usuba_AST.Fun(Utils.fresh_ident "refresh",
                      [Usuba_AST.ExpVar (var_to_ua vars_corres v)])
     | Tp_AST.BitToReg _    -> Printf.fprintf stderr "Not implemented: bit_to_reg.\n";
                               assert false
   in
-  { orig=[];
-    content=Usuba_AST.Eqn([var_to_ua vars_corres asgn.lhs], ua_rhs, false) }
+  let content = Usuba_AST.Eqn([var_to_ua vars_corres asgn.lhs], ua_rhs, false) in
+  let orig    = find_orig new_vars deqs_origins deqs_corres content in
+  { orig=orig; content=content }
 
 let body_to_ua (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
-               (new_vars:(Usuba_AST.ident,bool) Hashtbl.t)
+               (new_vars:(Usuba_AST.var,Usuba_AST.var) Hashtbl.t)
+               (deqs_origins:(Usuba_AST.deq_i,Usuba_AST.ident list) Hashtbl.t)
+               (deqs_corres:(Usuba_AST.deq_i,Usuba_AST.deq_i) Hashtbl.t)
                (base_type:Usuba_AST.typ)
                (body:Tp_AST.asgn list) : deq list =
-  List.map (asgn_to_ua vars_corres new_vars base_type) body
+  List.map (asgn_to_ua vars_corres new_vars deqs_origins deqs_corres base_type) body
+
 
 (* |ua_def| is the initial Usuba def that produces |tp_def|. It's
    taken as parameters as it simplifies getting the
-   input/output/variables with the right types for Usuba. *)
+   input/output/variables with the right types for Usuba, as well as
+   each deq's origin. *)
 let tp_to_usuba (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
-                (ua_def:Usuba_AST.def) (tp_def:Tp_AST.def) : Usuba_AST.def =
+                (ua_def:Usuba_AST.def) (tp_def:Tp_AST.def) :
+      Usuba_AST.def * ((Usuba_AST.deq_i,Usuba_AST.deq_i) Hashtbl.t) =
   match ua_def.node with
   | Single(vars,body) ->
-     let new_vars  = Hashtbl.create 10 in
-     let base_type = Utils.get_base_type (List.hd (ua_def.p_in)).vtyp in
-     let new_body  = body_to_ua vars_corres new_vars base_type tp_def.body in
-     let new_vars  = vars @ (List.map (fun v -> Utils.simple_typed_var_d v base_type)
+     let deqs_origins = Hashtbl.create 100 in
+     List.iter (fun d -> Hashtbl.add deqs_origins d.content d.orig) body;
+     let deqs_corres = Hashtbl.create 100 in
+     let new_vars    = Hashtbl.create 10 in
+     let base_type   = Utils.get_base_type (List.hd (ua_def.p_in)).vtyp in
+     let new_body    = body_to_ua vars_corres new_vars deqs_origins deqs_corres
+                                  base_type tp_def.body in
+     let new_vars    = vars @ (List.map (fun v -> Utils.simple_typed_var_d
+                                                    (Utils.get_base_name v) base_type)
                                       (keys new_vars)) in
-     { ua_def with node = Single(new_vars,new_body) }
+     { ua_def with node = Single(new_vars,new_body) }, deqs_corres
   | _ -> assert false
