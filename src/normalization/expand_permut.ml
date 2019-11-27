@@ -1,12 +1,12 @@
 (***************************************************************************** )
-                              expand_permut.ml                                 
+                              expand_permut.ml
 
     This module first converts permutation tables list into permutation tables.
     Then, it converts permutation tables into regular nodes.
-   
+
     This is actually a temporary solution, as we'd rather like the permutation
     tables to just rename registers.
-    
+
     After this module has ran, there souldn't be any "MultiplePerm" left.
 
 ( *****************************************************************************)
@@ -14,11 +14,11 @@
 open Usuba_AST
 open Basic_utils
 open Utils
-               
+
 let list_from_perm env_var (perm:int list) (l:expr list) : expr list =
   let args = Array.of_list (flat_map (Unfold_unnest.expand_expr env_var) l) in
   List.map (fun i -> args.(i-1)) perm
-            
+
 let rec apply_perm_e env_fun env_var (e:expr) : expr =
   match e with
   | Const _ | ExpVar _ | Shuffle _ -> e
@@ -35,13 +35,14 @@ let rec apply_perm_e env_fun env_var (e:expr) : expr =
   | When(e,c,x)  -> When(apply_perm_e env_fun env_var e, c, x)
   | Merge(x,l)   -> Merge(x,List.map (fun (c,e) -> c,apply_perm_e env_fun env_var e) l)
   | Fun_v(_,_,_) -> assert false
-                        
-            
+
+
 let apply_perm env_fun env_var (deqs: deq list) : deq list =
-  List.map (fun x -> match x with
-                     | Eqn(p,e,sync) -> Eqn(p,apply_perm_e env_fun env_var e,sync)
-                     | _ -> x) deqs
-            
+  List.map (fun d -> match d.content with
+                     | Eqn(p,e,sync) ->
+                        { d with content=Eqn(p,apply_perm_e env_fun env_var e,sync) }
+                     | _ -> d) deqs
+
 let rec rewrite_defs (l: def list) : def list =
   let env_fun = Hashtbl.create 10 in
   List.iter (fun x -> match x.node with
@@ -53,7 +54,7 @@ let rec rewrite_defs (l: def list) : def list =
                         { x with node = Single(vars,apply_perm env_fun env_var body) }
                      | _ -> x) l
 
-           
+
 let expand_permut (p: prog) (conf:config) : prog =
   { nodes = List.filter (fun x -> match x.node with
                                   | Perm _ -> false

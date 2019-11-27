@@ -19,7 +19,7 @@ type loop = { id : ident;
               mutable dl : deq list;
               opts: stmt_opt list }
 let loop_rec_of_sum (loop:deq) : loop =
-  match loop with
+  match loop.content with
   | Eqn _ -> assert false
   | Loop(i,ei,ef,dl,opts) -> { id=i; ei=ei; ef=ef; dl=dl; opts=opts }
 
@@ -30,7 +30,7 @@ let loop_rec_of_sum (loop:deq) : loop =
 (* Returns true if |deqs| doesn't use variables that were skipped. *)
 let rec is_mergeable (skipped:(ident,bool) Hashtbl.t)
                      (deqs:deq list) : bool =
-  List.for_all (function
+  List.for_all (fun d -> match d.content with
                  | Eqn(_,e,_) -> List.for_all (fun id -> not (Hashtbl.mem skipped id))
                                               (List.map get_base_name (get_used_vars e))
                  | Loop(_,_,_,dl,_) -> is_mergeable skipped dl)
@@ -40,7 +40,7 @@ let rec is_mergeable (skipped:(ident,bool) Hashtbl.t)
 (* Marks all variables defined by |deq| as 'skipped'. *)
 let rec add_to_skipped (skipped:(ident,bool) Hashtbl.t)
                        (deq:deq) : unit =
-  match deq with
+  match deq.content with
   | Eqn(lhs,_,_) ->
      List.iter (fun v -> Hashtbl.replace skipped (get_base_name v) true) lhs
   | Loop(i,ei,ef,dl,_) ->
@@ -57,8 +57,10 @@ let rec partition_deqs ?(skipped:(ident,bool) Hashtbl.t=Hashtbl.create 10)
        only fuses that are right next to each others. *)
   match nexts with
   | [] -> []
-  | (Eqn _) :: _ -> nexts
-  | (Loop(i,ei,ef,dl,_)) :: tl ->
+  | hd :: tl ->
+     match hd.content with
+     | Eqn _ -> nexts
+     | Loop(i,ei,ef,dl,_) ->
      if (* For now, ignoring any loop that doesn't use
                           the same iterator. An improvement would be
                           to check the size of the loop instead, and
@@ -80,7 +82,7 @@ let rec partition_deqs ?(skipped:(ident,bool) Hashtbl.t=Hashtbl.create 10)
        nexts
   else
     flat_map (fun deq ->
-              match deq with
+              match deq.content with
               | Eqn(lhs,_,_) ->
                  add_to_skipped skipped deq;
                  [ deq ]
@@ -112,16 +114,18 @@ let rec fuse_loops_deqs (deqs:deq list) : deq list =
   match deqs with
   | [] -> []
   | hd :: nexts ->
-     match hd with
+     match hd.content with
      | Eqn _ ->
         hd :: (fuse_loops_deqs nexts)
      | Loop(i,ei,ef,dl,opts) ->
         if i = Mask.loop_idx then
           let loop = loop_rec_of_sum hd in
           let after = partition_deqs loop nexts in
-          (Loop(i,ei,ef,loop.dl,opts)) :: (fuse_loops_deqs after)
+          ({ hd with content=Loop(i,ei,ef,loop.dl,opts)})
+            :: (fuse_loops_deqs after)
         else
-          (Loop(i,ei,ef,fuse_loops_deqs dl,opts)) :: (fuse_loops_deqs nexts)
+          ({ hd with content=Loop(i,ei,ef,fuse_loops_deqs dl,opts)})
+            :: (fuse_loops_deqs nexts)
 
 
 let fuse_loops_def (def:def) : def =

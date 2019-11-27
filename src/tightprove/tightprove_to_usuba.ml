@@ -54,7 +54,8 @@ let asgn_to_ua (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
     | Tp_AST.BitToReg _    -> Printf.fprintf stderr "Not implemented: bit_to_reg.\n";
                               assert false
   in
-  Usuba_AST.Eqn([var_to_ua vars_corres asgn.lhs], ua_rhs, false)
+  { orig=[];
+    content=Usuba_AST.Eqn([var_to_ua vars_corres asgn.lhs], ua_rhs, false) }
 
 let body_to_ua (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
                (new_vars:(Usuba_AST.ident,bool) Hashtbl.t)

@@ -93,10 +93,10 @@ let rec replace_expr to_linearize (e:expr) : expr =
 
 (* Linearize each equation/loop of |deqs|. *)
 let rec linearize to_linearize (deqs:deq list) : deq list =
-  List.map (function
+  List.map (fun d -> { d with content = match d.content with
       | Eqn(v,e,sync) -> Eqn(List.map (replace_var to_linearize) v,
                              replace_expr to_linearize e, sync)
-      | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,linearize to_linearize dl,opts)) deqs
+      | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,linearize to_linearize dl,opts) }) deqs
 
 (* |v| must be an Index(...). This function will remove the innermost
    Index(...) (which is therefore an Index(Var _, ...)). *)
@@ -156,7 +156,7 @@ and can_linearize_def_body
       (defined:(var,var) Hashtbl.t)
       (deqs:deq list) (v_in:var_d) (v_out:var_d) : unit =
   List.iter (
-      function
+      fun d -> match d.content with
       | Eqn(lhs,e,_) ->
          (* First, if |e| is a funcall, the we must check that if
             |v_in| and |v_out| are respectively in the parameters and
@@ -249,7 +249,7 @@ let rec can_linearize
           (env_var:(ident,typ) Hashtbl.t) =
 
   List.iter (
-      function
+      fun d -> match d.content with
       | Eqn(lhs,e,_) ->
          (* First, if |e| is a funcall, the we must check that if |id|
             is in both the params and returns of the function

@@ -121,12 +121,13 @@ let rec dim_expr (v_tgt:var) (dim:int) (size:int) (e:expr) : expr =
 
 (* Updates |v_tgt| (for 'var_target') by merging its two innermost arrays *)
 let rec dim_deq (v_tgt:var) (dim:int) (size:int) (deq:deq) : deq =
-  match deq with
+  { deq with content =
+  match deq.content with
   | Eqn(vs,e,sync) ->
      Eqn(List.map (dim_var v_tgt dim size) vs,
          dim_expr v_tgt dim size e,sync)
   | Loop(i,ei,ef,dl,opts) ->
-     Loop(i,ei,ef,List.map (dim_deq v_tgt dim size) dl,opts)
+     Loop(i,ei,ef,List.map (dim_deq v_tgt dim size) dl,opts) }
 
 (* Merges the two innermost dimensions of |t|. For instance:
       u1[2][3]    -> u1[6]
@@ -212,7 +213,8 @@ module Dir_params = struct
   let rec fix_deqs env_fun env_var (def:def) (deqs:deq list) : deq list =
     List.map
       (fun deq ->
-       match deq with
+       { deq with content =
+       match deq.content with
        | Eqn(ret_vars,Fun(f,args),sync) when not (is_builtin f) ->
           (* A funcall -> need to:
               - iterate over arguments to make sure they have the correct types
@@ -266,15 +268,15 @@ module Dir_params = struct
                 raise Updated
               ) else ()
             ) ret_vars;
-          deq
+          deq.content
        (* A simple equation can't contain funcall -> ignore *)
-       | Eqn(vs,e,sync) -> deq
+       | Eqn(vs,e,sync) -> deq.content
        (* Reccursive call on loops *)
        | Loop(i,ei,ef,dl,opts) ->
           Hashtbl.add env_var i Nat;
           let res = Loop(i,ei,ef,fix_deqs env_fun env_var def dl,opts) in
           Hashtbl.remove env_var i;
-          res) deqs
+          res }) deqs
 
   let rec fix_def env_fun (def:def) : unit =
       match def.node with
@@ -329,7 +331,8 @@ module Dir_inner = struct
   let rec fix_deqs env_fun env_var (def:def) (deqs:deq list) : deq list =
     List.map
       (fun deq ->
-       match deq with
+       { deq with content =
+       match deq.content with
        | Eqn(ret_vars,Fun(f,args),sync) when not (is_builtin f) ->
           (* A funcall -> need to:
               - iterate over arguments to make sure they have the correct types
@@ -380,15 +383,15 @@ module Dir_inner = struct
                 raise Updated
               ) else ()
             ) ret_vars;
-          deq
+          deq.content
        (* A simple equation can't contain funcall -> ignore *)
-       | Eqn(vs,e,sync) -> deq
+       | Eqn(vs,e,sync) -> deq.content
        (* Reccursive call on loops *)
        | Loop(i,ei,ef,dl,opts) ->
           Hashtbl.add env_var i Nat;
           let res = Loop(i,ei,ef,fix_deqs env_fun env_var def dl,opts) in
           Hashtbl.remove env_var i;
-          res) deqs
+          res }) deqs
 
   let rec fix_def env_fun (def:def) : unit =
       match def.node with

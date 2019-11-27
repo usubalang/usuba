@@ -2,18 +2,18 @@ open Usuba_AST
 open Basic_utils
 open Utils
 
-       
+
 module Dup3 = struct
 
   let dup_id id = { id with name = id.name ^ "__2" }
   let dup3_id id = { id with name = id.name ^ "__3" }
-                     
+
   let rec dup3_var (v:var) : var =
     match v with
     | Var id -> Var (dup3_id id)
     | Index(v,i) -> Index(dup3_var v,i)
     | _ -> assert false
-                  
+
   let rec dup3_expr (e:expr) : expr =
     match e with
     | Const _ -> e
@@ -26,13 +26,13 @@ module Dup3 = struct
     | Arith(op,x,y)  -> Arith(op,dup3_expr x,dup3_expr y)
     | Fun(f,l)       -> Fun(f,List.map dup3_expr l)
     | _ -> assert false
-                  
+
   let rec dup_var (v:var) : var =
     match v with
     | Var id -> Var (dup_id id)
     | Index(v,i) -> Index(dup_var v,i)
     | _ -> assert false
-                  
+
   let rec dup_expr (e:expr) : expr =
     match e with
     | Const _ -> e
@@ -48,32 +48,36 @@ module Dup3 = struct
 
   let rec interleave_deqs (deqs:deq list) : deq list =
     flat_map (fun d ->
-              match d with
-              | Eqn(lhs,e,sync) -> [ d ; Eqn(List.map dup_var lhs,dup_expr e,sync);
-                                     Eqn(List.map dup3_var lhs,dup3_expr e,sync) ]
-              | Loop(i,ei,ef,l,opts) -> [ Loop(i,ei,ef,interleave_deqs l,opts) ]) deqs
+              match d.content with
+              | Eqn(lhs,e,sync) ->
+                 [ d ; { orig=d.orig;
+                         content=Eqn(List.map dup_var lhs,dup_expr e,sync)};
+                   { orig=d.orig;
+                     content=Eqn(List.map dup3_var lhs,dup3_expr e,sync)} ]
+              | Loop(i,ei,ef,l,opts) ->
+                 [ { d with content=Loop(i,ei,ef,interleave_deqs l,opts) } ]) deqs
 
   let dup_p (p:p) : p =
     flat_map (fun vd -> [ vd;
                           { vd with vid = dup_id vd.vid };
                           { vd with vid = dup3_id vd.vid } ]) p
-             
+
   let interleave_def (def:def) : def =
     match def.node with
     | Single(vars,body) ->
        { def with p_in  = dup_p def.p_in;
                   p_out = dup_p def.p_out;
-                  node  = Single(dup_p vars,interleave_deqs body) }     
-    | _ -> assert false 
-                  
+                  node  = Single(dup_p vars,interleave_deqs body) }
+    | _ -> assert false
+
   let interleave (prog:prog) (conf:config) : prog =
     { nodes = apply_last prog.nodes interleave_def }
 
 end
 
 
-                
-(* GP-64: 37.05 -> 27.35  cycles/byte 
+
+(* GP-64: 37.05 -> 27.35  cycles/byte
    SSE  : 16.35 -> 14.70  cycles/byte
    AVX  : 13.40 -> 10.43  cycles/byte
    AVX2 : 7.70  -> 6.00   cycles/byte
@@ -81,13 +85,13 @@ end
 module Dup2 = struct
 
   let dup_id id = { id with name = id.name ^ "__2" }
-                    
+
   let rec dup_var (v:var) : var =
     match v with
     | Var id -> Var (dup_id id)
     | Index(v,i) -> Index(dup_var v,i)
     | _ -> assert false
-                  
+
   let rec dup_expr (e:expr) : expr =
     match e with
     | Const _ -> e
@@ -103,29 +107,34 @@ module Dup2 = struct
 
   let rec interleave_deqs (deqs:deq list) : deq list =
     flat_map (fun d ->
-              match d with
-              | Eqn(lhs,e,sync) -> [ d ; Eqn(List.map dup_var lhs,dup_expr e,sync) ]
-              | Loop(i,ei,ef,l,opts) -> [ Loop(i,ei,ef,interleave_deqs l,opts) ]) deqs
+              match d.content with
+              | Eqn(lhs,e,sync) ->
+                 [ d ;
+                   { orig=d.orig;
+                     content=Eqn(List.map dup_var lhs,dup_expr e,sync)} ]
+              | Loop(i,ei,ef,l,opts) ->
+                 [ {orig=d.orig;
+                    content=Loop(i,ei,ef,interleave_deqs l,opts)} ]) deqs
 
   let dup_p (p:p) : p =
     flat_map (fun vd -> [ vd; { vd with vid = dup_id vd.vid } ] ) p
-             
+
   let interleave_def (def:def) : def =
     match def.node with
     | Single(vars,body) ->
        { def with p_in  = dup_p def.p_in;
                   p_out = dup_p def.p_out;
-                  node  = Single(dup_p vars,interleave_deqs body) }     
-    | _ -> assert false 
-                  
+                  node  = Single(dup_p vars,interleave_deqs body) }
+    | _ -> assert false
+
   let interleave (prog:prog) (conf:config) : prog =
     { nodes = apply_last prog.nodes interleave_def }
 
 end
 
-                
 
-(* GP-64: 37.05 -> 28.65  cycles/byte 
+
+(* GP-64: 37.05 -> 28.65  cycles/byte
    SSE  : 16.35 -> 13.83  cycles/byte
    AVX  : 13.40 -> 10.30  cycles/byte
    AVX2 : 7.70  -> 5.95   cycles/byte
@@ -133,13 +142,13 @@ end
 module Dup2_nofunc = struct
 
   let make_2nd_id id = { id with name = id.name ^ "__2" }
-                    
+
   let rec make_2nd_var (v:var) : var =
     match v with
     | Var id -> Var (make_2nd_id id)
     | Index(v,i) -> Index(make_2nd_var v,i)
     | _ -> assert false
-                  
+
   let rec make_2nd_expr (e:expr) : expr =
     match e with
     | Const _ -> e
@@ -159,36 +168,40 @@ module Dup2_nofunc = struct
 
   let rec dup_expr (e:expr) : expr list =
     [ e ; make_2nd_expr e ]
-                  
+
   let rec interleave_deqs (deqs:deq list) : deq list =
     flat_map (fun d ->
-              match d with
+              match d.content with
               | Eqn(lhs,e,sync) ->
                  begin match e with
-                       | Fun(f,l) -> [ Eqn(flat_map dup_var lhs,
-                                           Fun(f,flat_map dup_expr l), sync) ]
-                       | _ -> [ d ; Eqn(List.map make_2nd_var lhs,make_2nd_expr e,sync) ]
+                       | Fun(f,l) ->
+                          [ {d with content=Eqn(flat_map dup_var lhs,
+                                               Fun(f,flat_map dup_expr l), sync)} ]
+                       | _ -> [ d ;
+                                { d with content=Eqn(List.map make_2nd_var lhs,
+                                                     make_2nd_expr e,sync)} ]
                  end
-              | Loop(i,ei,ef,l,opts) -> [ Loop(i,ei,ef,interleave_deqs l,opts) ]) deqs
+              | Loop(i,ei,ef,l,opts) ->
+                 [ { d with content=Loop(i,ei,ef,interleave_deqs l,opts) } ]) deqs
 
   let dup_p (p:p) : p =
     flat_map (fun vd -> [ vd; { vd with vid = make_2nd_id vd.vid } ]) p
-             
+
   let interleave_def (def:def) : def =
     match def.node with
     | Single(vars,body) ->
        { def with p_in  = dup_p def.p_in;
                   p_out = dup_p def.p_out;
-                  node  = Single(dup_p vars,interleave_deqs body) }     
-    | _ -> assert false 
-                  
+                  node  = Single(dup_p vars,interleave_deqs body) }
+    | _ -> assert false
+
   let interleave (prog:prog) (conf:config) : prog =
     { nodes = List.map interleave_def prog.nodes }
 
 end
 
 
-(* GP-64: 37.05 ->    cycles/byte 
+(* GP-64: 37.05 ->    cycles/byte
    SSE  : 16.35 ->    cycles/byte
    AVX  : 13.40 ->    cycles/byte
    AVX2 : 7.70  ->    cycles/byte
@@ -213,15 +226,15 @@ module Dup2_nofunc_param = struct
 
     let add_to_env (vd:var_d) : unit =
       Hashtbl.add env (Var vd.vid) vd in
-    
+
     List.iter add_to_env p_in;
     List.iter add_to_env p_out;
     List.iter add_to_env vars;
 
     env
-  
+
   let make_2nd_id id = { id with name = id.name ^ "__2" }
-                    
+
   let rec make_2nd_var env_var (v:var) : var =
     match v with
     | Var id -> ( match List.mem Pconst (Hashtbl.find env_var (get_var_base v)).vopts with
@@ -229,7 +242,7 @@ module Dup2_nofunc_param = struct
                   | true -> v )
     | Index(v,i) -> Index(make_2nd_var env_var v,i)
     | _ -> assert false
-                  
+
   let rec make_2nd_expr env_var (e:expr) : expr =
     match e with
     | Const _ -> e
@@ -274,25 +287,28 @@ module Dup2_nofunc_param = struct
     map_n n f l [] []
   let rec interleave_deqs env_var (g:int) (deqs:deq list) : deq list =
     map_n g (fun d ->
-             match d with
+             match d.content with
              | Eqn(lhs,e,sync) ->
                 begin match e with
-                      | Fun(f,l) -> ( None,
-                                      Some (Eqn(flat_map (dup_var env_var) lhs,
-                                                  Fun(f,flat_map (dup_expr env_var) l), sync)))
+                      | Fun(f,l) ->
+                         ( None,
+                           Some ({d with
+                                   content=Eqn(flat_map (dup_var env_var) lhs,
+                                               Fun(f,flat_map (dup_expr env_var) l), sync)}))
                       | _ -> ( Some d,
-                               Some(Eqn(List.map (make_2nd_var env_var) lhs,
-                                        make_2nd_expr env_var e, sync)) )
+                               Some({d with
+                                      content=Eqn(List.map (make_2nd_var env_var) lhs,
+                                                  make_2nd_expr env_var e, sync)}) )
                 end
              | Loop(i,ei,ef,l,opts) ->
                 ( None,
-                  Some (Loop(i,ei,ef,interleave_deqs env_var g l,opts)))) deqs
+                  Some ({d with content=Loop(i,ei,ef,interleave_deqs env_var g l,opts)}))) deqs
 
   let dup_p (p:p) : p =
     flat_map (fun vd -> match List.mem Pconst vd.vopts with
                         | true  -> [ vd ]
                         | false -> [ vd; { vd with vid = make_2nd_id vd.vid } ]) p
-             
+
   let interleave_def (g:int) (def:def) : def =
     match def.node with
     | Single(vars,body) ->
@@ -302,15 +318,15 @@ module Dup2_nofunc_param = struct
        let env_var = build_complete_env_var p_in p_out vars in
        { def with p_in  = p_in;
                   p_out = p_out;
-                  node  = Single(vars,interleave_deqs env_var g body) }     
-    | _ -> assert false 
-                  
+                  node  = Single(vars,interleave_deqs env_var g body) }
+    | _ -> assert false
+
   let interleave (g:int) (prog:prog) (conf:config) : prog =
     { nodes = List.map (interleave_def g) prog.nodes }
 
-end                       
-                       
-                       
+end
+
+
 
 let interleave (prog:prog) (conf:config) =
   Dup2_nofunc_param.interleave conf.interleave prog conf

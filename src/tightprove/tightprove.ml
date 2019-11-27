@@ -39,9 +39,11 @@ module Refresh = struct
       | _ -> assert false in
 
     let norm_deq (deq:deq) : deq =
-      match deq with
-      | Eqn(lhs,e,sync) -> Eqn(List.map norm_var lhs, norm_expr e, sync)
-      | _ -> assert false in
+      { deq with
+        content =
+          match deq.content with
+          | Eqn(lhs,e,sync) -> Eqn(List.map norm_var lhs, norm_expr e, sync)
+          | _ -> assert false } in
 
     List.map norm_deq deqs
 
@@ -52,10 +54,10 @@ module Refresh = struct
     let new_var = Var vd.vid in
 
     (* Step 1: find |vd|'s initialisation in |full_prog|. *)
-    let rec find_vd_init l =
+    let rec find_vd_init (l:deq list) =
       match l with
       | [] -> assert false
-      | hd :: tl -> match hd with
+      | hd :: tl -> match hd.content with
                     | Eqn([v],_,_) when v = new_var -> l
                     | _ -> find_vd_init tl in
     let full_prog = norm_after_inlining env_corres
@@ -64,15 +66,15 @@ module Refresh = struct
 
     (* Step 2: find out the variable |rv| refreshed by |vd| (based on
        the result of Step 1) *)
-    let rv = match vd_init with
+    let rv = match vd_init.content with
       | Eqn(_,Fun(_,[ExpVar v]),_) -> v
       | _ -> assert false in
 
     (* Step 3: iterate |full_prog| up to where |vd| is first used. *)
-    let rec find_first_vd_use l =
+    let rec find_first_vd_use (l:deq list) =
       match l with
       | [] -> assert false
-      | hd :: tl -> match hd with
+      | hd :: tl -> match hd.content with
                     | Eqn(_,e,_) ->
                        if List.exists (fun v -> v = new_var)
                                       (get_used_vars e) then l
@@ -99,7 +101,7 @@ module Refresh = struct
       | Arith(op,x,y)  -> Arith(op,replace_vd_by_v_expr x,replace_vd_by_v_expr y)
       | Fun(f,l)       -> Fun(f,List.map replace_vd_by_v_expr l)
       | _ -> assert false in
-    let old_first_use_deq = match first_use_deq with
+    let old_first_use_deq = match first_use_deq.content with
       | Eqn(lhs,e,sync) -> Eqn(lhs,replace_vd_by_v_expr e,sync)
       | _ -> assert false in
 
@@ -107,7 +109,7 @@ module Refresh = struct
     let old_body = ref (get_body f.node) in
     let new_body = ref [] in
     let rec find_deq_in_f () =
-      if List.hd !old_body = old_first_use_deq then ()
+      if (List.hd !old_body).content = old_first_use_deq then ()
       else (new_body := (List.hd !old_body) :: !new_body;
             old_body := List.tl !old_body;
             find_deq_in_f ()) in
@@ -138,11 +140,13 @@ module Refresh = struct
       | [] -> ()
       | hd :: tl ->
          let next_deq_full_prog = List.hd !full_prog in
-         match hd with
+         match hd.content with
          | Eqn(lhs,e_old_body,sync) ->
-            (match next_deq_full_prog with
+            (match next_deq_full_prog.content with
              | Eqn(_,e_full_prog,_) ->
-                new_body := Eqn(lhs,merge_expr e_full_prog e_old_body,sync) :: !new_body;
+                new_body  := { hd with
+                               content = Eqn(lhs,merge_expr e_full_prog e_old_body,sync) }
+                             :: !new_body;
                 old_body  := List.tl !old_body;
                 full_prog := List.tl !full_prog;
                 update_f_body ()
@@ -164,12 +168,12 @@ module Refresh = struct
     (* Step 1: find out which node to refresh: find which variable
        |vd| refreshes, and which node this variable comes from *)
     let refreshed_deq =
-      try List.find (function
+      try List.find (fun d -> match d.content with
                       | Eqn([Var v],Fun(_,[ExpVar _]),sync) when v = vd.vid -> true
                       | _ -> false) (get_body def.node)
       with Not_found -> Printf.fprintf stderr "Couldn't find %s's definition...\n" vd.vid.name;
                         assert false in
-    let refreshed_var = match refreshed_deq with
+    let refreshed_var = match refreshed_deq.content with
       | Eqn(_,Fun(_,[ExpVar v]),_) -> (Hashtbl.find env_var (get_base_name v))
       | _ -> assert false in
     let refreshed_fun = match refreshed_var.vorig with
@@ -213,12 +217,12 @@ module Refresh = struct
          List.iter add_to_env def.p_out;
          List.iter add_to_env vars;
 
-         norm_after_inlining env
-                             (List.filter (function
-                                            | Eqn(_,e,_) ->
-                                               List.exists (fun v -> (get_base_name v) = vd.vid)
-                                                           (get_used_vars e)
-                                            | _ -> assert false) body)
+         norm_after_inlining
+           env (List.filter (fun d -> match d.content with
+                              | Eqn(_,e,_) ->
+                                 List.exists (fun v -> (get_base_name v) = vd.vid)
+                                             (get_used_vars e)
+                              | _ -> assert false) body)
       | _ -> assert false in
 
     let refresh_graph = Hashtbl.create 100 in
@@ -256,7 +260,7 @@ end
    doesn't care about _no_inline functions. *)
 let is_call_free (def:def) : bool =
   let rec deq_call_free (deq:deq) : bool =
-    match deq with
+    match deq.content with
     | Eqn(_,Fun(f,_),_) ->
        if f.name = "refresh" then true
        else false

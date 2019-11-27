@@ -35,9 +35,10 @@ let rec clean_expr (e:expr) : expr =
   | _ -> assert false
 
 let rec clean_deq (deq:deq) : deq =
-  match deq with
+  { deq with content =
+  match deq.content with
   | Eqn(lhs,e,sync) -> Eqn(lhs,clean_expr e,sync)
-  | Loop(x,ei,ef,dl,opts) -> Loop(x,ei,ef,List.map clean_deq dl,opts)
+  | Loop(x,ei,ef,dl,opts) -> Loop(x,ei,ef,List.map clean_deq dl,opts) }
 
 let clean_def (def:def) : def =
   match def.node with

@@ -164,7 +164,7 @@ let rec remove_call env_var env_fun (its:(ident*int) list)
     let (new_id,new_var,new_typ) = gen_tmp env_var its typ in
     new_vars := (simple_typed_var_d new_id new_typ) :: !new_vars;
 
-    deq @ [Eqn([new_var],e',false)], ExpVar new_var
+    deq @ [{ content = Eqn([new_var],e',false); orig = [] }], ExpVar new_var
 
 and remove_calls env_var env_fun (its:(ident*int) list)
                  (dir,mtyp:dir*mtyp) (ltyp:typ list)  (l:expr list)
@@ -190,7 +190,7 @@ and remove_calls env_var env_fun (its:(ident*int) list)
                 let typ = update_type_m (update_type_dir typ dir) mtyp in
                 let (new_id,new_var,new_typ) = gen_tmp env_var its typ in
                 new_vars := (simple_typed_var_d new_id new_typ) :: !new_vars;
-                pre_deqs := !pre_deqs @ [(Eqn([new_var],e',false))];
+                pre_deqs := !pre_deqs @ [{ content = (Eqn([new_var],e',false)); orig = [] }];
 
                 [ExpVar new_var])
              l in
@@ -251,19 +251,20 @@ and norm_expr env_var env_fun (its:(ident*int) list)
 
 let rec norm_deq env_var env_fun (its:(ident*int) list) (body: deq list) : deq list =
   flat_map
-    (function
+    (fun d -> match d.content with
      | Eqn (lhs,e,sync) ->
         let ltyp = flat_map (fun v -> expand_typ (get_var_type env_var v)) lhs in
         (match List.hd ltyp with
-         | Nat -> [Eqn(lhs,e,sync)]
+         | Nat -> [{ d with content = Eqn(lhs,e,sync) }]
          | t   ->
             let dir = get_type_dir t in
             let m   = get_type_m   t in
             let (expr_l, e') = norm_expr env_var env_fun its (dir,m) ltyp e in
-            expr_l @ [Eqn(lhs,e',sync)])
+            expr_l @ [{ d with content = Eqn(lhs,e',sync) }])
      | Loop(x,ei,ef,dl,opts) ->
         let size = (abs ((eval_arith_ne ei) - (eval_arith_ne ef))) + 1 in
-        [ Loop(x,ei,ef,norm_deq env_var env_fun ((x,size)::its) dl,opts) ]) body
+        [ { d with
+            content = Loop(x,ei,ef,norm_deq env_var env_fun ((x,size)::its) dl,opts) }]) body
 
 let norm_def env_fun (def: def) : def =
   match def.node with

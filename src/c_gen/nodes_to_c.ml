@@ -146,7 +146,7 @@ let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
                   (deqs: deq list) : string =
   join "\n"
        (List.map
-          (fun deq -> match deq with
+          (fun deq -> match deq.content with
             | Eqn([v],Fun(f,[]),_) when f.name = "rand" ->
                sprintf "%s%s = RAND();" tabs (var_to_c lift_env env v)
             | Eqn([vl],Fun(f,[vr]),_) when f.name = "refresh" ->

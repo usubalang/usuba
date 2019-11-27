@@ -179,9 +179,11 @@ let rec fold_expr (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
          assert false
 
 let rec fold_deqs (env_var:(ident,typ) Hashtbl.t) (deqs:deq list) : deq list =
-  List.map (function
-             | Eqn(lhs,e,sync) -> Eqn(lhs,fold_expr env_var e,sync)
-             | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,fold_deqs env_var dl,opts)) deqs
+  List.map (fun d -> match d.content with
+             | Eqn(lhs,e,sync) ->
+                { d with content = Eqn(lhs,fold_expr env_var e,sync) }
+             | Loop(i,ei,ef,dl,opts) ->
+                { d with content = Loop(i,ei,ef,fold_deqs env_var dl,opts) }) deqs
 
 let fold_def (def:def) : def =
   match def.node with

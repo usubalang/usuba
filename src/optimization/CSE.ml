@@ -75,7 +75,7 @@ let rec cse_expr (env_expr:(expr,var list) Hashtbl.t) (e:expr) : expr =
 
 let rec cse_deqs (env_expr:(expr,var list) Hashtbl.t) (deqs:deq list)
         : deq list =
-  List.map (function
+  List.map (fun d -> match d.content with
       | Eqn(lhs,e,sync) ->
          let e' = cse_expr env_expr e in
          (* Only adding |e'| to |env_expr| if it's not already in it,
@@ -97,12 +97,12 @@ let rec cse_deqs (env_expr:(expr,var list) Hashtbl.t) (deqs:deq list)
           | None -> match e' with
                     | Const _ -> () (* Don't replace Consts by variables *)
                     | _-> Hashtbl.add env_expr e' lhs);
-         Eqn(lhs,e',sync)
+         { d with content = Eqn(lhs,e',sync) }
       | Loop(i,ei,ef,dl,opts) ->
          (* Passing a copy of |env_expr| to the loop, so that nothing
             from the loop's body leaks outside. *)
          let env_expr_copy = Hashtbl.copy env_expr in
-         Loop(i,ei,ef,cse_deqs env_expr_copy dl,opts)) deqs
+         { d with content = Loop(i,ei,ef,cse_deqs env_expr_copy dl,opts) }) deqs
 
 let cse_def (def:def) : def =
   match def.node with

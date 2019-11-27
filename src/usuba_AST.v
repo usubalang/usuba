@@ -73,9 +73,16 @@ Inductive expr :=
 
 Inductive stmt_opt := Unroll | No_unroll | Pipelined | Safe_exit.
 
-Inductive deq :=
+Inductive _deq_i (X:Type) : Type :=
   | Eqn (vs: list var)(e: expr)(sync:bool)
-  | Loop (x: ident)(ae1 ae2: arith_expr)(dl: list deq) (opts:list stmt_opt).
+  | Loop (x: ident)(ae1 ae2: arith_expr)(dl: list X) (opts:list stmt_opt).
+
+Inductive deq := {
+  content : _deq_i deq;
+  orig : list ident (* A list of functions from which this deq was inlined *)
+}.
+
+Definition deq_i := _deq_i deq.
 
 Inductive var_d_opt := Pconst | PlazyLift.
 
@@ -167,5 +174,5 @@ Record config := {
 Set Extraction KeepSingleton.
 Extraction "usuba_AST.ml"
            config prog def def_opt def_i p var_d var_d_opt
-           deq expr var typ arith_expr shift_op
+           deq deq_i expr var typ arith_expr shift_op
            arith_op log_op clock ident arch.

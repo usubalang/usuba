@@ -170,9 +170,11 @@ and expand_deqs env_var env_keep ?(env=make_env ())
                 (bitslice:bool) (force:array_fate) (unroll:bool) (deqs:deq list) : deq list =
   flat_map
     (fun deq ->
-     match deq with
-     | Eqn(lhs,e,sync) -> [ Eqn(expand_vars env_var env_keep env bitslice force lhs,
-                                expand_expr env_var env_keep env env_it bitslice force e, sync) ]
+     match deq.content with
+     | Eqn(lhs,e,sync) ->
+        [ { deq with content =
+            Eqn(expand_vars env_var env_keep env bitslice force lhs,
+                expand_expr env_var env_keep env env_it bitslice force e, sync) } ]
      | Loop(x,ei,ef,deqs,opts) ->
         Hashtbl.add env_var x Nat;
         Hashtbl.add env_it x true;
@@ -181,7 +183,9 @@ and expand_deqs env_var env_keep ?(env=make_env ())
             do_unroll env_var env_keep env bitslice force unroll x ei ef deqs
           else
             try
-              [ Loop(x,ei,ef,expand_deqs env_var env_keep ~env:env ~env_it:env_it bitslice force unroll deqs,opts) ]
+              [ { deq with content =
+                  Loop(x,ei,ef,expand_deqs env_var env_keep ~env:env ~env_it:env_it
+                                           bitslice force unroll deqs,opts) } ]
             with Need_unroll id ->
               if id = x then (
                 try

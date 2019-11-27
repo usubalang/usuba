@@ -28,7 +28,7 @@ module Clean = struct
 
   let clean_in_deqs (vars:p) (deqs:deq list) : p =
     let env = Hashtbl.create 100 in
-    let rec aux = function
+    let rec aux d = match d.content with
       | Eqn(l,e,_) -> List.iter (clean_var env) l;
                       clean_expr env e
       | Loop(_,_,_,d,_) -> List.iter aux d in

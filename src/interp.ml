@@ -50,7 +50,7 @@ module Usuba0 = struct
     begin
       match f.node with
       | Single(_,deqs) -> List.iter
-                            (function
+                            (fun d -> match d.content with
                               | Eqn(vars,e,_) -> interp_asgn env_fun env_params env_var vars e
                               | _ -> raise (Error "Invalid 'Loop'")) deqs
       | _ -> raise (Error ("Invalid node: " ^ (Usuba_print.def_to_str f)))

@@ -80,7 +80,7 @@ let rec clean_deqs (env_var : (ident,typ) Hashtbl.t)
                    (env_replace: (var,var) Hashtbl.t)
                    (deqs:deq list) : deq list =
   List.map (
-      function
+      fun d -> { d with content = match d.content with
       | Loop(x,ei,ef,dl,opts) ->
          Hashtbl.add env_var x Nat;
          let res = Loop(x,ei,ef,clean_deqs env_var env_replace dl,opts) in
@@ -97,7 +97,7 @@ let rec clean_deqs (env_var : (ident,typ) Hashtbl.t)
                                  Hashtbl.add env_replace v v';
                                  v') lhs in
             Eqn(tmps,e',false)
-
+               }
     ) deqs
 
 let clean_def (def:def) : def =

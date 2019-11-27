@@ -199,7 +199,8 @@ let optstmt_to_str = function
   | Pipelined -> "_pipelined"
   | Safe_exit -> "_safe_exit"
 
-let rec deq_to_str ?(indent="") = function
+let rec deq_to_str ?(indent="") (deq:deq) =
+  match deq.content with
   | Eqn(pat,e,sync) -> sprintf "%s%s %s= %s" indent (pat_to_str pat)
                          (if sync then ":" else "")
                          (expr_to_str e)
@@ -213,7 +214,8 @@ let rec deq_to_str ?(indent="") = function
        indent
 let deq_to_str_l = lift_comma deq_to_str
 
-let rec deq_to_str_types ?(indent="") = function
+let rec deq_to_str_types ?(indent="") (deq:deq) =
+  match deq.content with
   | Eqn(pat,e,sync) -> sprintf "%s%s %s= %s" indent (pat_to_str_types pat)
                          (if sync then ":" else "")
                          (expr_to_str_types e)

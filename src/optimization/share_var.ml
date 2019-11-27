@@ -71,7 +71,7 @@ let rec get_last_used
 
 
   List.iter (fun d ->
-             match d with
+             match d.content with
              | Eqn(_,e,_) ->
                 incr cpt;
                 List.iter (update_used env_var env_it last_used)
@@ -108,7 +108,8 @@ let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) (no_arr:bool) : deq l
     let cpt = ref cpt_start in
     List.map (
         fun deq ->
-        match deq with
+        { deq with content=
+        match deq.content with
         | Eqn(lhs,e,sync) ->
            let e = replace_expr env_replace e in
            let lhs = List.map (replace_var env_replace) lhs in
@@ -146,7 +147,7 @@ let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) (no_arr:bool) : deq l
         | Loop(i,ei,ef,dl,opts) ->
            let r = Loop(i,ei,ef,do_it ~cpt_start:!cpt dl,opts) in
            cpt := !cpt + (List.length dl);
-           r
+           r }
       ) deqs
 
   in

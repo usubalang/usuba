@@ -37,7 +37,7 @@ module Find_used_variables = struct
 
   let rec find_used_in_deqs (used_vars:(ident,bool) Hashtbl.t)
             (deqs:deq list) : unit =
-    List.iter (function
+    List.iter (fun d -> match d.content with
         | Eqn(lhs,e,_) ->
            (* Checking if any of the variables defined is used anywhere *)
            if List.exists (fun v -> Hashtbl.mem used_vars
@@ -81,12 +81,12 @@ end
 
 let rec remove_dead_deqs (used_vars:(ident,bool) Hashtbl.t) (deqs:deq list)
         : deq list =
-  flat_map (function
+  flat_map (fun d -> match d.content with
       | Eqn(lhs,e,sync) ->
          if List.exists (fun v -> Hashtbl.mem used_vars
                                     (get_base_name v)) lhs then
            (* Useful equation, keeping it *)
-           [ Eqn(lhs,e,sync) ]
+           [ { d with content = Eqn(lhs,e,sync) } ]
          else
            (* Unused equation, removing it *)
            []
@@ -97,7 +97,7 @@ let rec remove_dead_deqs (used_vars:(ident,bool) Hashtbl.t) (deqs:deq list)
            []
          else
            (* |dl'| not empty, keeping the loop *)
-           [ Loop(i,ei,ef,dl',opts) ]
+           [ { d with content=Loop(i,ei,ef,dl',opts) } ]
     ) deqs
 
 let remove_dead_code_def (def:def) : def =
