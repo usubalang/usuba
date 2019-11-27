@@ -10,6 +10,7 @@ exception Undeclared of ident
 exception Invalid_param_size
 exception Invalid_operator_call
 exception Break
+exception Skip
 
 let default_conf : config =
   { warnings     = true;
@@ -451,6 +452,10 @@ let rec get_used_vars (e:expr) : var list =
   | Log(_,x,y) | Arith(_,x,y) -> (get_used_vars x) @ (get_used_vars y)
   | Fun(_,l) -> List.flatten @@ List.map get_used_vars l
   | _ -> assert false
+let rec get_used_vars_deq (deq:deq) : var list =
+  match deq.content with
+  | Eqn(_,e,_) -> get_used_vars e
+  | Loop(_,_,_,dl,_) -> flat_map get_used_vars_deq dl
 
 let rec get_var_name (v:var) : ident =
   match v with
@@ -549,3 +554,10 @@ let rec simpl_var_indices (v:var) : var =
 
 let is_builtin (f:ident) : bool =
   List.mem f.name [ "print"; "rand"; "refresh" ]
+
+
+let get_vars_body = function
+  | Single(vars,body) -> vars, body
+  | _ -> assert false
+let get_vars x = fst (get_vars_body x)
+let get_body x = snd (get_vars_body x)
