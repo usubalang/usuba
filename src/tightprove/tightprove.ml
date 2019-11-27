@@ -47,21 +47,25 @@ module Refresh = struct
 
   (* |vd| is a new variable (created using "refresh"), which should be
      added into |f|'s body based on the content of |full_prog|. *)
-  let refresh_function (f:def) (full_prog:def) (vd:var_d) : deq list =
+  let refresh_function (env_corres:(ident,ident) Hashtbl.t) (f:def)
+                       (full_prog:def) (vd:var_d) : deq list =
+    let new_var = Var vd.vid in
+
     (* Step 1: find |vd|'s initialisation in |full_prog|. *)
     let rec find_vd_init l =
       match l with
       | [] -> assert false
       | hd :: tl -> match hd with
-                    | Eqn([Var v],_,_) when v = vd.vid -> l
+                    | Eqn([v],_,_) when v = new_var -> l
                     | _ -> find_vd_init tl in
-    let full_prog = find_vd_init (get_body full_prog.node) in
+    let full_prog = norm_after_inlining env_corres
+                     (find_vd_init (get_body full_prog.node)) in
+    let vd_init = List.hd full_prog in
 
     (* Step 2: find out the variable |rv| refreshed by |vd| (based on
        the result of Step 1) *)
-    let vd_init = List.hd full_prog in
     let rv = match vd_init with
-      | Eqn(_,Fun(_,[ExpVar v]),_) -> (get_base_name v)
+      | Eqn(_,Fun(_,[ExpVar v]),_) -> v
       | _ -> assert false in
 
     (* Step 3: iterate |full_prog| up to where |vd| is first used. *)
@@ -70,20 +74,19 @@ module Refresh = struct
       | [] -> assert false
       | hd :: tl -> match hd with
                     | Eqn(_,e,_) ->
-                       if List.exists (fun id -> id = vd.vid)
-                                      (List.map get_base_name
-                                                (get_used_vars e)) then l
+                       if List.exists (fun v -> v = new_var)
+                                      (get_used_vars e) then l
                        else find_first_vd_use tl
                     | _ -> assert false in
     let full_prog = find_first_vd_use full_prog in
+    let first_use_deq = List.hd full_prog in
+
 
     (* Step 4: generate a deq from Step 3's result, where |vd| is
-       replaced by |rv|.*)
+       replaced by |rv|, and all variables are replaced with their
+       names before inlining. *)
     let rec replace_vd_by_v_var (v:var) =
-      match v with
-      | Var id -> if id = vd.vid then Var rv else v
-      | Index(v',idx) -> Index(replace_vd_by_v_var v',idx)
-      | _ -> assert false in
+      if v = new_var then rv else v in
     let rec replace_vd_by_v_expr (e:expr) : expr =
       match e with
       | Const _        -> e
@@ -96,7 +99,7 @@ module Refresh = struct
       | Arith(op,x,y)  -> Arith(op,replace_vd_by_v_expr x,replace_vd_by_v_expr y)
       | Fun(f,l)       -> Fun(f,List.map replace_vd_by_v_expr l)
       | _ -> assert false in
-    let deq = match vd_init with
+    let old_first_use_deq = match first_use_deq with
       | Eqn(lhs,e,sync) -> Eqn(lhs,replace_vd_by_v_expr e,sync)
       | _ -> assert false in
 
@@ -104,7 +107,7 @@ module Refresh = struct
     let old_body = ref (get_body f.node) in
     let new_body = ref [] in
     let rec find_deq_in_f () =
-      if List.hd !old_body = deq then ()
+      if List.hd !old_body = old_first_use_deq then ()
       else (new_body := (List.hd !old_body) :: !new_body;
             old_body := List.tl !old_body;
             find_deq_in_f ()) in
@@ -117,7 +120,7 @@ module Refresh = struct
        |rv| by |vd| as needed. Stop when reaching the end of |f| *)
     let full_prog = ref full_prog in
     let merge_vars (vf:var) (vo:var) : var =
-      if get_base_name vf = vd.vid then vf else vo in
+      if vf = new_var then vf else vo in
     let rec merge_expr (ef:expr) (eo:expr): expr =
       match ef, eo with
       | Const _, Const _                 -> eo
@@ -151,7 +154,8 @@ module Refresh = struct
 
   (* |vd| is a new variable (created using "refresh"), which appears
      in |def| and need to be propagated back to a node in |prog_nodes|. *)
-  let insert_refresh (prog_nodes:(ident,def) Hashtbl.t) (def:def) (vd:var_d) : unit =
+  let insert_refresh (prog_nodes:(ident,def) Hashtbl.t) (entry_node:ident)
+                     (def:def) (vd:var_d) : unit =
     let env_var = Hashtbl.create 100 in
     List.iter (fun vd -> Hashtbl.add env_var vd.vid vd) def.p_in;
     List.iter (fun vd -> Hashtbl.add env_var vd.vid vd) def.p_out;
@@ -165,13 +169,20 @@ module Refresh = struct
                       | _ -> false) (get_body def.node)
       with Not_found -> Printf.fprintf stderr "Couldn't find %s's definition...\n" vd.vid.name;
                         assert false in
-    let refreshed_fun = match refreshed_deq with
-      | Eqn(_,Fun(_,[ExpVar v]),_) -> (Hashtbl.find env_var (get_base_name v)).vid
+    let refreshed_var = match refreshed_deq with
+      | Eqn(_,Fun(_,[ExpVar v]),_) -> (Hashtbl.find env_var (get_base_name v))
       | _ -> assert false in
+    let refreshed_fun = match refreshed_var.vorig with
+      | [] -> entry_node
+      | l -> fst (last l) in
     let f = Hashtbl.find prog_nodes refreshed_fun in
 
     (* Step 2: update |f| by adding refresh *)
-    let new_body = refresh_function f def vd in
+    let env_corres = Hashtbl.create 100 in
+    Hashtbl.iter (fun id vd -> match vd.vorig with
+                               | [] -> Hashtbl.add env_corres id id
+                               | l  -> Hashtbl.add env_corres id (snd (last l)).vid) env_var;
+    let new_body = refresh_function env_corres f def vd in
     let new_vars = vd :: (get_vars f.node) in
 
     Hashtbl.replace prog_nodes f.id { f with node = Single(new_vars, new_body) }
@@ -232,7 +243,8 @@ module Refresh = struct
     List.iter (fun d -> Hashtbl.add prog_nodes d.id d) init_prog.nodes;
 
     (* Now inserting the refreshes in the initial functions *)
-    List.iter (fun vd -> insert_refresh prog_nodes def vd) refreshed;
+    let entry_node = last init_prog.nodes in
+    List.iter (fun vd -> insert_refresh prog_nodes entry_node.id def vd) refreshed;
 
     (* Returning the new nodes by looking them up in the Hashtbl (but
        keeping the original order by maping over |init_prog|. *)
@@ -261,7 +273,10 @@ let is_call_free (def:def) : bool =
    there is no function that inlines everything _and_ normalized the
    program after, we define it here.*)
 let clean_inline (prog:prog) (conf:config) : prog =
-  let conf = { conf with inline_all = true; light_inline = false } in
+  let conf = { conf with inlining = true;
+                         inline_all = true;
+                         light_inline = false;
+             } in
   let prog = Inline.inline prog conf in
   let prog = Unfold_unnest.norm_prog     prog conf in
   let prog = Expand_array.expand_array   prog conf in
