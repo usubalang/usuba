@@ -3,13 +3,6 @@ open Basic_utils
 open Utils
 open Printf
 
-let get_vars_body = function
-  | Single(vars,body) -> vars, body
-  | _ -> assert false
-let get_vars x = fst (get_vars_body x)
-let get_body x = snd (get_vars_body x)
-
-
 
 module Refresh = struct
 
@@ -49,8 +42,10 @@ module Refresh = struct
 
   (* |vd| is a new variable (created using "refresh"), which should be
      added into |f|'s body based on the content of |full_prog|. *)
-  let refresh_function (env_corres:(ident,ident) Hashtbl.t) (f:def)
-                       (full_prog:def) (vd:var_d) : deq list =
+  let refresh_function (env_corres:(ident,ident) Hashtbl.t)
+                       (refreshes_created:(ident,(var,var) Hashtbl.t) Hashtbl.t)
+                       (f:def) (full_prog:def) (vd:var_d)
+      : deq list =
     let new_var = Var vd.vid in
 
     (* Step 1: find |vd|'s initialisation in |full_prog|. *)
@@ -69,6 +64,7 @@ module Refresh = struct
     let rv = match vd_init.content with
       | Eqn(_,Fun(_,[ExpVar v]),_) -> v
       | _ -> assert false in
+    add_key_2nd_layer refreshes_created f.id new_var rv;
 
     (* Step 3: iterate |full_prog| up to where |vd| is first used. *)
     let rec find_first_vd_use (l:deq list) =
@@ -83,12 +79,14 @@ module Refresh = struct
     let full_prog = find_first_vd_use full_prog in
     let first_use_deq = List.hd full_prog in
 
-
     (* Step 4: generate a deq from Step 3's result, where |vd| is
        replaced by |rv|, and all variables are replaced with their
        names before inlining. *)
     let rec replace_vd_by_v_var (v:var) =
-      if v = new_var then rv else v in
+      let v = if v = new_var then rv else v in
+      match find_opt_2nd_layer refreshes_created f.id v with
+      | Some v' -> v'
+      | None -> v in
     let rec replace_vd_by_v_expr (e:expr) : expr =
       match e with
       | Const _        -> e
@@ -118,8 +116,8 @@ module Refresh = struct
     (* Step 6: insert |vd|'s definition *)
     new_body := vd_init :: !new_body;
 
-    (* Step 7: iterate simultaneously |f| and |full_prog|, replacing
-       |rv| by |vd| as needed. Stop when reaching the end of |f| *)
+    (* Step 7: iterate |f|, and replace |rv| by |vd| when needed. Stop
+       when reaching the end of |f| *)
     let full_prog = ref full_prog in
     let merge_vars (vf:var) (vo:var) : var =
       if vf = new_var then vf else vo in
@@ -134,6 +132,7 @@ module Refresh = struct
       | Shuffle(vf,_),Shuffle(vo,l)      -> Shuffle(merge_vars vf vo,l)
       | Arith(_,xf,yf),Arith(op,xo,yo)   -> Arith(op,merge_expr xf xo,merge_expr yf yo)
       | Fun(_,lf),Fun(f,lo)              -> Fun(f,List.map2 merge_expr lf lo)
+      | Fun(f,_),_ when f.name = "refresh" -> raise Skip
       | _ -> assert false in
     let rec update_f_body () =
       match !old_body with
@@ -144,10 +143,12 @@ module Refresh = struct
          | Eqn(lhs,e_old_body,sync) ->
             (match next_deq_full_prog.content with
              | Eqn(_,e_full_prog,_) ->
-                new_body  := { hd with
-                               content = Eqn(lhs,merge_expr e_full_prog e_old_body,sync) }
-                             :: !new_body;
-                old_body  := List.tl !old_body;
+                (try
+                    new_body  := { hd with
+                                   content = Eqn(lhs,merge_expr e_full_prog e_old_body,sync) }
+                                 :: !new_body;
+                    old_body  := List.tl !old_body;
+                  with Skip -> ());
                 full_prog := List.tl !full_prog;
                 update_f_body ()
              | _ -> assert false)
@@ -156,37 +157,43 @@ module Refresh = struct
 
     List.rev !new_body
 
+  (* Finds which the first deq of |def| that is using |vd|, and get
+     its origin: this is the def where the refresh needs to go *)
+  let find_node_to_refresh (prog_nodes:(ident,def) Hashtbl.t) (entry_node:ident)
+                           (def:def) (vd:var_d) : def =
+    (* Step 1: get list of deqs which use |vd|. *)
+    let using_deq = List.find
+                      (fun deq ->
+                       match deq.content with
+                       | Eqn(_,Fun _,_) -> false (* a refresh -> won't have an origin *)
+                       | Eqn(_,e,_) ->  List.mem (Var vd.vid) (get_used_vars e)
+                       | _ -> assert false)
+                      (get_body def.node) in
+    match using_deq.orig with
+    | [] -> Hashtbl.find prog_nodes entry_node
+    | l  -> Hashtbl.find prog_nodes (last using_deq.orig)
+
+
   (* |vd| is a new variable (created using "refresh"), which appears
      in |def| and need to be propagated back to a node in |prog_nodes|. *)
-  let insert_refresh (prog_nodes:(ident,def) Hashtbl.t) (entry_node:ident)
-                     (def:def) (vd:var_d) : unit =
+  let insert_refresh (prog_nodes:(ident,def) Hashtbl.t)
+                     (refreshes_created:(ident,(var,var) Hashtbl.t) Hashtbl.t)
+                     (entry_node:ident) (def:def) (vd:var_d) : unit =
     let env_var = Hashtbl.create 100 in
     List.iter (fun vd -> Hashtbl.add env_var vd.vid vd) def.p_in;
     List.iter (fun vd -> Hashtbl.add env_var vd.vid vd) def.p_out;
     List.iter (fun vd -> Hashtbl.add env_var vd.vid vd) (get_vars def.node);
 
-    (* Step 1: find out which node to refresh: find which variable
-       |vd| refreshes, and which node this variable comes from *)
-    let refreshed_deq =
-      try List.find (fun d -> match d.content with
-                      | Eqn([Var v],Fun(_,[ExpVar _]),sync) when v = vd.vid -> true
-                      | _ -> false) (get_body def.node)
-      with Not_found -> Printf.fprintf stderr "Couldn't find %s's definition...\n" vd.vid.name;
-                        assert false in
-    let refreshed_var = match refreshed_deq.content with
-      | Eqn(_,Fun(_,[ExpVar v]),_) -> (Hashtbl.find env_var (get_base_name v))
-      | _ -> assert false in
-    let refreshed_fun = match refreshed_var.vorig with
-      | [] -> entry_node
-      | l -> fst (last l) in
-    let f = Hashtbl.find prog_nodes refreshed_fun in
+    (* Step 1: find out which node to refresh: find which deqs use
+       |vd|, and where they come from. *)
+    let f = find_node_to_refresh prog_nodes entry_node def vd in
 
     (* Step 2: update |f| by adding refresh *)
     let env_corres = Hashtbl.create 100 in
     Hashtbl.iter (fun id vd -> match vd.vorig with
                                | [] -> Hashtbl.add env_corres id id
                                | l  -> Hashtbl.add env_corres id (snd (last l)).vid) env_var;
-    let new_body = refresh_function env_corres f def vd in
+    let new_body = refresh_function env_corres refreshes_created f def vd in
     let new_vars = vd :: (get_vars f.node) in
 
     Hashtbl.replace prog_nodes f.id { f with node = Single(new_vars, new_body) }
@@ -236,19 +243,29 @@ module Refresh = struct
     (* Computing equations directly impacted by each refresh in order
        to get a list of unique refreshes. *)
     let refresh_graph = compute_refresh_graph def refreshed in
-    (* Filtering |refreshed| in order to keep uniques ones *)
-    let refreshed = List.sort_uniq
-                      (fun a b -> compare (Hashtbl.find refresh_graph a)
-                                          (Hashtbl.find refresh_graph b))
-                      refreshed in
+    (* Keeping only uniq refreshes. Note that it's important to keep
+       them in order. *)
+    let seen_graphs = Hashtbl.create 10 in
+    let refreshed = List.filter (fun r ->
+                                 let graph = Hashtbl.find refresh_graph r in
+                                 match Hashtbl.find_opt seen_graphs graph with
+                                 | Some _ -> false
+                                 | None -> Hashtbl.add seen_graphs graph true;
+                                           true) refreshed in
 
     (* Storing the nodes as a Hashtbl in order to edit them easily *)
     let prog_nodes = Hashtbl.create 10 in
     List.iter (fun d -> Hashtbl.add prog_nodes d.id d) init_prog.nodes;
 
+    (* For each function, creating a hash containing the refreshes
+       inserted in this function already. *)
+    let refreshes_created = Hashtbl.create 10 in
+    List.iter (fun d -> Hashtbl.add refreshes_created d.id (Hashtbl.create 10)) init_prog.nodes;
+
     (* Now inserting the refreshes in the initial functions *)
     let entry_node = last init_prog.nodes in
-    List.iter (fun vd -> insert_refresh prog_nodes entry_node.id def vd) refreshed;
+    List.iter (fun vd -> insert_refresh prog_nodes refreshes_created
+                                        entry_node.id def vd) refreshed;
 
     (* Returning the new nodes by looking them up in the Hashtbl (but
        keeping the original order by maping over |init_prog|. *)
@@ -327,7 +344,8 @@ let refresh_prog (prog:prog) (conf:config) : prog =
   let r_tp_def = Tp_IO.get_refreshed_def tp_def conf in
 
   (* Step 3: reconstruct Usuba node from TP *)
-  let r_ua_def_raw = Tightprove_to_usuba.tp_to_usuba vars_corres ua_def r_tp_def in
+  let (r_ua_def_raw,_) =
+    Tightprove_to_usuba.tp_to_usuba vars_corres ua_def r_tp_def in
 
   (* Step 4: match origin of variables in new program with variables
      in old one, get list of new variables *)
@@ -342,13 +360,13 @@ let refresh_simple_def (conf:config) (def:def) : def =
   if is_call_free def then
     let (vars_corres,tp_def) = Usuba_to_tightprove.usuba_to_tp def in
     let r_tp_def = Tp_IO.get_refreshed_def tp_def conf in
-    Tightprove_to_usuba.tp_to_usuba vars_corres def r_tp_def
+    fst (Tightprove_to_usuba.tp_to_usuba vars_corres def r_tp_def)
   else
     def
 
 (* This is a simplified version that doesn't do inlining/unrolling. To
    improve.*)
 let process_prog (prog:prog) (conf:config) : prog =
-  let prog = { nodes = List.map (refresh_simple_def conf) prog.nodes } in
-  (* let prog = refresh_prog prog conf in *)
+  (* let prog = { nodes = List.map (refresh_simple_def conf) prog.nodes } in *)
+  let prog = refresh_prog prog conf in
   prog

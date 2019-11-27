@@ -88,7 +88,7 @@ let m_as_int = function
   | Mint m -> m
   | _ -> assert false
 
-let usuba_to_tp (def:Usuba_AST.def) : ((string,Usuba_AST.var)Hashtbl.t) * Tp_AST.def =
+let usuba_to_tp (def:Usuba_AST.def) : ((string,Usuba_AST.var) Hashtbl.t) * Tp_AST.def =
   assert (all_vars_same_m def.p_in);
   let m = m_as_int (Utils.get_type_m (List.hd def.p_in).vtyp) in
   bitslice := m = 1;
