@@ -199,8 +199,8 @@ let optstmt_to_str = function
   | Pipelined -> "_pipelined"
   | Safe_exit -> "_safe_exit"
 
-let rec deq_to_str ?(indent="") (deq:deq) =
-  match deq.content with
+let rec deq_i_to_str ?(indent="") (deq_i:deq_i) =
+  match deq_i with
   | Eqn(pat,e,sync) -> sprintf "%s%s %s= %s" indent (pat_to_str pat)
                          (if sync then ":" else "")
                          (expr_to_str e)
@@ -212,6 +212,10 @@ let rec deq_to_str ?(indent="") (deq:deq) =
        id.name  (arith_to_str ei) (arith_to_str ef)
        (join ";\n" (List.map (deq_to_str ~indent:(indent ^ "  ")) d))
        indent
+and deq_to_str ?(indent="") (deq:deq) =
+  deq_i_to_str deq.content
+
+let deq_i_to_str_l = lift_comma deq_i_to_str
 let deq_to_str_l = lift_comma deq_to_str
 
 let rec deq_to_str_types ?(indent="") (deq:deq) =
