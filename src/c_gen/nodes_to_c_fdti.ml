@@ -172,7 +172,7 @@ let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
                   (conf:config) : string =
   join "\n"
        (List.map
-          (fun deq -> match deq with
+          (fun deq -> match deq.content with
             | Eqn([v],Fun(f,[]),_) when f.name = "rand" ->
                sprintf "%s%s = RAND();" tabs (var_to_c lift_env env v)
             | Eqn(p,Fun(f,l),_) -> fun_call_to_c lift_env conf env env_var ~tabs:tabs p f l

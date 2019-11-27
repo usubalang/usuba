@@ -138,7 +138,7 @@ let schedule_deqs (env_var:(ident, typ) Hashtbl.t) (def:def) (deqs:deq list) : d
     match Hashtbl.find_opt sched deq with
     | Some _ -> true
     | None ->
-       match deq with
+       match deq.content with
        | Eqn(lhs,e,sync) ->
           let used_vars : var list = get_used_vars e in
           if List.for_all (is_ready env_var ready) used_vars then

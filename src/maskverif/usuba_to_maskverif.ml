@@ -70,7 +70,8 @@ let pat_to_str pat =
   | x :: [] -> var_to_str x
   | l -> "(" ^ (join "," (List.map var_to_str pat)) ^ ")"
 
-let rec deq_to_str (env_var:(ident,typ) Hashtbl.t) = function
+let rec deq_to_str (env_var:(ident,typ) Hashtbl.t) (d:deq) : string =
+  match d.content with
   | Eqn(pat,e,_) ->
      sprintf "  %s %s= %s;\n"
              (pat_to_str pat)

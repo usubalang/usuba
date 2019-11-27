@@ -166,7 +166,7 @@ let rec deqs_to_c (lift_env:(var,int)  Hashtbl.t)
                   (deqs: deq list) : string =
   join "\n"
        (List.map
-          (fun deq -> match deq with
+          (fun deq -> match deq.content with
             | Eqn([vl],Fun(f,[vr]),_) when f.name = "refresh" ->
                (* No refresh needed if we are not masking *)
                sprintf "%sREFRESH(%s,%s);" tabs

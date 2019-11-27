@@ -747,7 +747,7 @@ let type_eqn (backtrace:string list) (env_fun:(ident,def) Hashtbl.t)
      print_backtrace backtrace;
      error := true);
   (* Finally, returning |deq| with typed |e| *)
-  Eqn(vs,typed_e,sync)
+  { deq with content = Eqn(vs,typed_e,sync) }
 
 (* A regular node; iterating over each deq; but most of the work is
    done by type_eqn above. *)
@@ -758,7 +758,7 @@ let rec type_deqs (backtrace:string list) (env_fun:(ident,def) Hashtbl.t)
   let backtrace = "type_deqs()" :: backtrace in
   List.map
     (fun deq ->
-      match deq with
+      match deq.content with
       | Eqn(vs,e,sync) ->
          type_eqn backtrace env_fun env_var env_it deq vs e sync
       | Loop(x,ei,ef,dl,opts) ->
@@ -778,7 +778,7 @@ let rec type_deqs (backtrace:string list) (env_fun:(ident,def) Hashtbl.t)
              (gen_list_bounds ei_evaled ef_evaled) in
          (* Need to rebuild the loop. Every elements of type_dl should
             be the same. Arbitrarily picking the first one. *)
-         Loop(x,ei,ef,List.hd typed_dl,opts)
+         { deq with content = Loop(x,ei,ef,List.hd typed_dl,opts) }
     )
     body
 

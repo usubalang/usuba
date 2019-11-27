@@ -120,13 +120,14 @@ module Unroll = struct
     | _ -> assert false
 
   let rec unroll_deq (env_it:(ident,int) Hashtbl.t) (deq:deq) : deq =
-    match deq with
-    | Eqn(lhs,e,sync) ->
-       Eqn(List.map (unroll_var env_it) lhs,
-           unroll_expr env_it e, sync)
-    | Loop(i,ei,ef,dl,opts) ->
-       Loop(i,simpl_arith env_it ei,simpl_arith env_it ef,
-            List.map (unroll_deq env_it) dl, opts)
+    { deq with content =
+       match deq.content with
+       | Eqn(lhs,e,sync) ->
+          Eqn(List.map (unroll_var env_it) lhs,
+              unroll_expr env_it e, sync)
+       | Loop(i,ei,ef,dl,opts) ->
+          Loop(i,simpl_arith env_it ei,simpl_arith env_it ef,
+               List.map (unroll_deq env_it) dl, opts) }
 
   (* |i|, |ei|, |ef| and |deqs| are from the loop being expanded,
      which should be like Loop(i, ei, ef, deqs, _)
@@ -214,12 +215,13 @@ let rec propagate_expr (expand_env:(var,var list) Hashtbl.t) (e:expr) : expr =
    and takes care of unrolling loops. *)
 let rec propagate_deqs (expand_env:(var,var list) Hashtbl.t) (deqs:deq list) : deq list =
   flat_map
-    (function
-     | Eqn(l,e,sync) -> [ Eqn(flat_map (propagate_var expand_env) l,
-                              propagate_expr expand_env e, sync) ]
+    (fun d -> match d.content with
+     | Eqn(l,e,sync) ->
+        [ { d with content = Eqn(flat_map (propagate_var expand_env) l,
+                                propagate_expr expand_env e, sync) } ]
      | Loop(i,ei,ef,dl,opts) ->
         try
-          [ Loop(i,ei,ef,propagate_deqs expand_env dl,opts) ]
+          [ { d with content = Loop(i,ei,ef,propagate_deqs expand_env dl,opts) } ]
         with Need_unroll ->
           (* raise one more Need_unroll if ei/ef can't be computed
              because they are in a nested loop and use surrounding
@@ -374,21 +376,22 @@ let rec match_ret (env_fun:(ident,def) Hashtbl.t)
 
 
 let rec expand_deq (env_fun:(ident,def) Hashtbl.t)
-          (env_var:(ident,typ) Hashtbl.t) (deq:deq) : deq =
-  match deq with
-  | Eqn(lhs,Fun(id,args),sync) ->
-     if is_builtin id then deq
-     else
-       let f = Hashtbl.find env_fun id in
-       let args = match_args env_fun env_var f f.p_in args in
-       let ret  = match_ret  env_fun env_var f f.p_out lhs in
-       Eqn(ret,Fun(id,args),sync)
-  | Loop(i,ei,ef,dl,opts) ->
-     Hashtbl.add env_var i Nat;
-     let res = Loop(i,ei,ef,List.map (expand_deq env_fun env_var) dl,opts) in
-     Hashtbl.remove env_var i;
-     res
-  | _ -> deq (* Not a Funcall, not a Loop, ignoring. *)
+                   (env_var:(ident,typ) Hashtbl.t) (deq:deq) : deq =
+  { deq with content =
+    match deq.content with
+    | Eqn(lhs,Fun(id,args),sync) ->
+       if is_builtin id then deq.content
+       else
+         let f = Hashtbl.find env_fun id in
+         let args = match_args env_fun env_var f f.p_in args in
+         let ret  = match_ret  env_fun env_var f f.p_out lhs in
+         Eqn(ret,Fun(id,args),sync)
+    | Loop(i,ei,ef,dl,opts) ->
+       Hashtbl.add env_var i Nat;
+       let res = Loop(i,ei,ef,List.map (expand_deq env_fun env_var) dl,opts) in
+       Hashtbl.remove env_var i;
+       res
+    | _ -> deq.content } (* Not a Funcall, not a Loop, ignoring. *)
 
 
 let rec expand_def (env_fun:(ident,def) Hashtbl.t) (def:def) : unit =

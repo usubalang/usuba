@@ -228,13 +228,16 @@ pat:
   | p=var                      { [ p ] }
   | TOK_LPAREN l=separated_nonempty_list(TOK_COMMA,var) TOK_RPAREN   { l }
 
-norec_deq:
+_norec_deq:
   | p=pat TOK_EQUAL e=exp              { Eqn( p, e, false ) }
   | p=pat op=log_op TOK_EQUAL e=exp    { Eqn( p, Log(op,left_to_right p,e), false) }
   | p=pat op=arith_op TOK_EQUAL e=exp  { Eqn( p, Arith(op,left_to_right p,e), false) }
   | p=pat TOK_COLON TOK_EQUAL e=exp              { Eqn( p, e, true) }
   | p=pat op=log_op TOK_COLON TOK_EQUAL e=exp    { Eqn( p, Log(op,left_to_right p,e), true) }
   | p=pat op=arith_op TOK_COLON TOK_EQUAL e=exp  { Eqn( p, Arith(op,left_to_right p,e), true) }
+
+norec_deq:
+  | d=_norec_deq { { content = d; orig = [] } }
 
 opt_stmt:
    | TOK_UNROLL    { Unroll    }
@@ -245,7 +248,7 @@ opt_stmt:
 deq_forall:
  | opts=list(opt_stmt) TOK_FORALL i=ident TOK_IN TOK_LBRACKET startr=arith_exp
    TOK_COMMA endr=arith_exp TOK_RBRACKET TOK_LCURLY d=deqs TOK_RCURLY
-    { Loop(i, startr, endr, d, opts) }
+    { { content = Loop(i, startr, endr, d, opts); orig = [] } }
 
 (* Doesn't use the |deq| rule because it would make semicolons mandatory after
    foralls. *)

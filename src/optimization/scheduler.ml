@@ -37,33 +37,32 @@ module Basic_scheduler = struct
   let schedule_deqs (deqs:deq list) : deq list =
     let deflist = Hashtbl.create 10 in
     let dep_deqs =
-      List.flatten @@
-        List.map (
+      flat_map (
             fun d ->
-            (match d with
+            (match d.content with
              | Eqn(p,e,_) -> (
                match p with
                | [Var v] ->
                   let used = get_used_vars e in
-                  let pre = List.flatten @@
-                              List.map (fun x -> match Hashtbl.find_opt deflist x with
-                                                 | Some e -> Hashtbl.remove deflist x;
-                                                             [ [x],e ]
-                                                 | None -> []) used in
+                  let pre = flat_map
+                              (fun x -> match Hashtbl.find_opt deflist x with
+                                        | Some(e,orig) -> Hashtbl.remove deflist x;
+                                                    [ [x],e,orig ]
+                                        | None -> []) used in
                   (match pre with
-                   | [] -> Hashtbl.add deflist (Var v) e; []
-                   | _ -> pre @ [ (p,e) ])
+                   | [] -> Hashtbl.add deflist (Var v) (e,d.orig); []
+                   | _ -> pre @ [ (p,e,d.orig) ])
                | _ ->
                   let used = get_used_vars e in
-                  let pre = List.flatten @@
-                              List.map (fun x -> match Hashtbl.find_opt deflist x with
-                                                 | Some e -> Hashtbl.remove deflist x;
-                                                             [ [x],e ]
-                                                 | None -> []) used in
-                  pre @ [p,e])
+                  let pre = flat_map
+                              (fun x -> match Hashtbl.find_opt deflist x with
+                                        | Some(e,orig) -> Hashtbl.remove deflist x;
+                                                    [ [x],e,orig ]
+                                        | None -> []) used in
+                  pre @ [p,e,d.orig])
              | Loop _ -> raise (Error "Invalid Loop"))) deqs in
-    List.map (fun (x,y) -> Eqn(x,y,false))
-             (dep_deqs @ (Hashtbl.fold (fun k v acc -> ([k],v) :: acc) deflist []))
+    List.map (fun (x,y,orig) -> { orig=orig; content=Eqn(x,y,false) })
+             (dep_deqs @ (Hashtbl.fold (fun k (e,orig) acc -> ([k],e,orig) :: acc) deflist []))
 
 
 
@@ -103,7 +102,7 @@ module Random_scheduler = struct
 
     (* Initializing dependance graph *)
     List.iter
-      (fun eq -> match eq with
+      (fun eq -> match eq.content with
                  | Eqn(_,e,_) ->
                     let prec = get_used_vars e in
                     List.iter ( fun x ->
@@ -132,7 +131,7 @@ module Random_scheduler = struct
       let selected = List.nth ready (Random.int (List.length ready)) in
       Hashtbl.remove status selected;
       scheduling := selected :: !scheduling;
-      match selected with
+      match selected.content with
       | Eqn(p,_,_) -> List.iter
                         (fun p ->
                          (match Hashtbl.find_opt imply p with
@@ -184,16 +183,16 @@ module Depth_first_sched = struct
   type node = { current: var list * expr; sons: node list; father: node list }
 
   let build_dep (deqs: deq list) :
-        (var,(var list * expr,bool) Hashtbl.t) Hashtbl.t
-        * (var,(var list * expr)) Hashtbl.t =
+        (var,(var list * expr * (ident list),bool) Hashtbl.t) Hashtbl.t
+        * (var,(var list * expr * (ident list))) Hashtbl.t =
     let using = Hashtbl.create 1000 in
     let decls = Hashtbl.create 1000 in
 
-    List.iter (function
+    List.iter (fun d -> match d.content with
                 | Eqn(l,e,_) ->
                    let used = get_used_vars e in
-                   List.iter (fun x -> update_hoh using x (l,e)) used;
-                   List.iter (fun x -> Hashtbl.add decls x (l,e)) l
+                   List.iter (fun x -> update_hoh using x (l,e,d.orig)) used;
+                   List.iter (fun x -> Hashtbl.add decls x (l,e,d.orig)) l
                 | _ -> assert false) deqs;
 
     using,decls
@@ -209,20 +208,20 @@ module Depth_first_sched = struct
     let ready      = ref [] in
 
     (* Looking for the initially ready instrs (those who depend only on p_in) *)
-    ( List.iter (function
+    ( List.iter (fun d -> match d.content with
                   | Eqn(l,e,_) -> if List.filter (fun x -> not (exists available x))
                                                  (get_used_vars e) = [] then
-                                    ready := (l,e) :: !ready
+                                    ready := (l,e,d.orig) :: !ready
                   | _ -> assert false) deqs );
 
-    let rec do_schedule ((l,e):var list*expr) =
+    let rec do_schedule ((l,e,orig):var list*expr*(ident list)) =
       (* Only if "l" isn't scheduled already *)
       if List.filter (fun x -> not (exists available x)) l <> [] then (
         (* Scheduling the pre-requisite dependencies *)
         List.iter (fun x -> if not (exists available x) then
                               do_schedule (Hashtbl.find decls x)) (get_used_vars e);
         (* Scheduling the instruction *)
-        scheduling := (l,e) :: !scheduling;
+        scheduling := (l,e,orig) :: !scheduling;
         (* Marking it as scheduled *)
         List.iter (fun x -> Hashtbl.add available x true) l;
         (* Adding the sons to the Queue of instructions ready to be scheduled *)
@@ -240,7 +239,7 @@ module Depth_first_sched = struct
       do_schedule current;
     done;
 
-    List.rev_map (fun (l,e) -> Eqn(l,e,false)) !scheduling
+    List.rev_map (fun (l,e,orig) -> { orig=orig; content=Eqn(l,e,false) }) !scheduling
 
   let schedule_def (def:def) : def =
     { def with node = match def.node with
@@ -288,7 +287,7 @@ module Low_pressure_sched = struct
     (flat_map get_up_vars vs) @ (flat_map (get_sub_vars env_var) vs)
 
   let get_def_vars env_var (deq:deq) : var list =
-    match deq with
+    match deq.content with
     | Eqn(vs,e,_) -> uniq (flat_map (get_sub_vars env_var) vs)
     | Loop _ -> []
 
@@ -306,7 +305,7 @@ module Low_pressure_sched = struct
     let exception Loop in
     let next_i = try
         find_get_i
-          (function
+          (fun d -> match d.content with
             | Eqn(vs,e,_) ->
                let used = get_dep_vars env_var (get_used_vars e) in
                let b = (not (common_elem !prev_def used)) &&
@@ -326,9 +325,10 @@ module Low_pressure_sched = struct
     next
 
   let rec inner_sched env_var (parallel_lvl:int) (deq:deq) : deq =
-    match deq with
+    match deq.content with
     | Eqn _ -> deq
-    | Loop(x,ei,ef,dl,opts) -> Loop(x,ei,ef,schedule_deqs env_var parallel_lvl dl,opts)
+    | Loop(x,ei,ef,dl,opts) ->
+       { deq with content=Loop(x,ei,ef,schedule_deqs env_var parallel_lvl dl,opts) }
 
   and schedule_deqs env_var (parallel_lvl:int) (deqs: deq list) : deq list =
     let scheduling = ref [ List.hd deqs ] in

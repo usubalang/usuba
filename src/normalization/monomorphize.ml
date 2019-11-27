@@ -231,7 +231,7 @@ module Bslice = struct
   let specialize_eqn (env_dir:(dir,dir) Hashtbl.t)
                      (env_m:(mtyp,mtyp) Hashtbl.t)
                      (env_var:(ident,typ) Hashtbl.t)
-                     (vs:var list) (e:expr) : deq =
+                     (orig:ident list) (vs:var list) (e:expr) : deq =
     let vs = specialize_vars env_var vs in
     let e  = specialize_expr env_dir env_m env_var e in
     match e with
@@ -239,31 +239,37 @@ module Bslice = struct
        (match get_var_m env_var v with
         | Mint m when !compact && m > 1 ->
            (* We have a ^/&/| between two arrays -> generate a loop *)
-           Loop(loop_log_it,Const_e 0,Op_e (Sub,Const_e m,Const_e 1),
-                [ Eqn(List.map apply_loop_it vs,
-                      ExpVar (apply_loop_it v), false) ], [])
+           { orig=orig;
+             content=Loop(loop_log_it,Const_e 0,Op_e (Sub,Const_e m,Const_e 1),
+                          [ {orig=orig;
+                             content=Eqn(List.map apply_loop_it vs,
+                                         ExpVar (apply_loop_it v), false)} ], [])}
         | _ -> (* Not between two arrays -> leave it as a simple equation *)
-           Eqn(vs,e,false))
+           { orig=orig; content=Eqn(vs,e,false) })
     | Log(op,ExpVar x,ExpVar y) ->
        (match get_var_m env_var x with
         | Mint m when !compact && m > 1 ->
            (* We have a ^/&/| between two arrays -> generate a loop *)
-           Loop(loop_log_it,Const_e 0,Op_e (Sub,Const_e m,Const_e 1),
-                [ Eqn(List.map apply_loop_it vs,
-                      Log(op,ExpVar (apply_loop_it x),
-                          ExpVar (apply_loop_it y)), false) ], [])
+           { orig=orig;
+             content=Loop(loop_log_it,Const_e 0,Op_e (Sub,Const_e m,Const_e 1),
+                          [ {orig=orig;
+                             content=Eqn(List.map apply_loop_it vs,
+                                         Log(op,ExpVar (apply_loop_it x),
+                                             ExpVar (apply_loop_it y)), false)} ], [])}
         | _ -> (* Not between two arrays -> leave it as a simple equation *)
-           Eqn(vs,e,false))
+           {orig=orig;content=Eqn(vs,e,false)})
     | Not (ExpVar v) ->
        (match get_var_m env_var v with
         | Mint m when !compact && m > 1 ->
            (* We have a ^/&/| between two arrays -> generate a loop *)
-           Loop(loop_log_it,Const_e 0,Op_e (Sub,Const_e m,Const_e 1),
-                [ Eqn(List.map apply_loop_it vs,
-                      Not (ExpVar (apply_loop_it v)), false) ], [])
+           { orig=orig;
+             content=Loop(loop_log_it,Const_e 0,Op_e (Sub,Const_e m,Const_e 1),
+                [ {orig=orig;
+                   content=Eqn(List.map apply_loop_it vs,
+                               Not (ExpVar (apply_loop_it v)), false)} ], [])}
         | _ -> (* Not between two arrays -> leave it as a simple equation *)
-           Eqn(vs,e,false))
-    | _ -> Eqn(vs,e,false)
+           {orig=orig; content=Eqn(vs,e,false)})
+    | _ -> {orig=orig; content=Eqn(vs,e,false)}
 
 
 
@@ -336,7 +342,8 @@ let rec specialize_fun_call
           (all_nodes:(ident,def) Hashtbl.t)
           (specialized_nodes:(ident,(ident*(dir list)*(mtyp list),def) Hashtbl.t) Hashtbl.t)
           (env_var:(ident, typ) Hashtbl.t)
-          (vs:var list) (f:ident) (l:expr list) (sync:bool) : deq =
+          (orig:ident list) (vs:var list) (f:ident)
+          (l:expr list) (sync:bool) : deq =
   let env_dir = Hashtbl.create 10 in
   let env_m   = Hashtbl.create 10 in
 
@@ -365,7 +372,7 @@ let rec specialize_fun_call
   let vs = List.map (specialize_var env_var) vs in
   let l  = List.map (specialize_expr_var env_var) l in
 
-  Eqn(vs,Fun(f',l),sync)
+  { orig=orig; content=Eqn(vs,Fun(f',l),sync) }
 
 
 (* Note that expressions have been normalized, and are therefore not reccursive
@@ -375,21 +382,24 @@ and specialize_expr (all_nodes:(ident,def) Hashtbl.t)
                     (env_dir:(dir,dir) Hashtbl.t)
                     (env_m:(mtyp,mtyp) Hashtbl.t)
                     (env_var:(ident, typ) Hashtbl.t)
-                    (vs:var list) (e:expr) (sync:bool) : deq =
+                    (orig:ident list) (vs:var list) (e:expr) (sync:bool)
+    : deq =
   match e with
   (* When a function call happens, we need to specialize the function called *)
-  | Fun(f,l) -> if f.name = "refresh" then Eqn(vs,e,sync)
+  | Fun(f,l) -> if f.name = "refresh" then { orig=orig; content=Eqn(vs,e,sync) }
                 else specialize_fun_call all_nodes specialized_nodes
-                                         env_var vs f l sync
+                                         env_var orig vs f l sync
   (* Otherwise (not a function call), we delegate to the modules of each Slicing *)
   | _ -> match get_var_dir env_var (List.hd vs) with
-         | Hslice -> Eqn(vs, Hslice.specialize_expr env_dir env_m env_var e, sync)
-         | Vslice -> Eqn(vs, Vslice.specialize_expr env_dir env_m env_var e, sync)
-         | Bslice -> Bslice.specialize_eqn env_dir env_m env_var vs e;
+         | Hslice ->
+            { orig=orig; content=Eqn(vs, Hslice.specialize_expr env_dir env_m env_var e, sync) }
+         | Vslice ->
+            { orig=orig; content=Eqn(vs, Vslice.specialize_expr env_dir env_m env_var e, sync) }
+         | Bslice -> Bslice.specialize_eqn env_dir env_m env_var orig vs e;
                      (* Eqn(Bslice.specialize_vars env_var vs, *)
                      (*     Bslice.specialize_expr env_dir env_m env_var e, *)
                      (*     sync) *)
-         | Natdir -> Eqn(vs,e,sync) (* A Nat, doing nothing *)
+         | Natdir -> { orig=orig; content=Eqn(vs,e,sync) } (* A Nat, doing nothing *)
          | _ -> assert false
 
 
@@ -398,16 +408,16 @@ and specialize_deqs (all_nodes:(ident,def) Hashtbl.t)
                     (env_dir:(dir,dir) Hashtbl.t)
                     (env_m:(mtyp,mtyp) Hashtbl.t)
                     (env_var:(ident, typ) Hashtbl.t) (deqs:deq list) : deq list =
-  List.map (fun x ->
-            match x with
+  List.map (fun d ->
+            match d.content with
             | Eqn(vs,e,sync) -> specialize_expr all_nodes specialized_nodes
-                                                env_dir env_m env_var vs e sync
+                                                env_dir env_m env_var d.orig vs e sync
             | Loop(e,ei,ef,l,opts) ->
                Hashtbl.add env_var e Nat;
                let x' = Loop(e,ei,ef,specialize_deqs all_nodes specialized_nodes
                                                      env_dir env_m env_var l,opts) in
                Hashtbl.remove env_var e;
-               x')
+               { d with content = x' })
            deqs
 
 (* Called by either specialize_entry of specialize_fun_call.

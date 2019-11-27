@@ -23,7 +23,7 @@ let init_env (p_in:p) (p_out:p) (vars:p) =
   List.iter (fun vd -> Hashtbl.add env vd.vid vd.vck) p_out;
   List.iter (fun vd -> Hashtbl.add env vd.vid vd.vck) vars;
   env
-    
+
 let rec get_clock env (v: var) : clock =
   match v with
   | Var id -> (try Hashtbl.find env id with
@@ -68,14 +68,14 @@ let rec clock_expr env (e:expr) : clock * bool =
                                                  | Defclock  -> ok1
                                                  | _ -> false)) l in
                   ck, List.fold_left (&&) true l'
-               
+
 let rec check_deq env (deq:deq) : bool =
-  match deq with
+  match deq.content with
   | Eqn(lhs,e,_) -> let l = List.map (get_clock env) lhs in
                     let (ck,is_ok) = clock_expr env e in
                     is_ok && List.for_all (fun x -> x = ck) l
   | Loop(_,_,_,l,_) -> List.for_all (check_deq env) l
-    
+
 let check_def (def:def) : bool =
   match def.node with
   | Single(vars,body) -> let env = init_env def.p_in def.p_out vars in
@@ -91,5 +91,5 @@ let check_def (def:def) : bool =
 
 let check_prog (prog:prog) : bool =
   List.for_all check_def prog.nodes
-       
-let is_clocked = check_prog 
+
+let is_clocked = check_prog

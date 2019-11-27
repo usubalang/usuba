@@ -79,8 +79,10 @@ let rewrite_table (id:ident) (p_in:p) (p_out:p)
     body := Eqn ([exp_p_out.(i-1)], ExpVar(Var var), false) :: !body
 
   done;
+
+  let body = List.rev_map (fun d -> { orig=[]; content=d }) !body in
   { id = id; p_in = p_in; p_out = p_out; opt = opt;
-    node = Single(!vars,List.rev !body) }
+    node = Single(!vars,body) }
 
 (* When a table is replaced by a node, it's param types might be
    different and need to be fixed:

@@ -76,9 +76,11 @@ let rec shift_expr (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
   | _ -> e
 
 let rec shift_deq (env_var:(ident,typ) Hashtbl.t) (deq:deq) : deq =
-  match deq with
-  | Eqn(p,e,sync) -> Eqn(p,shift_expr env_var e,sync)
-  | Loop(id,ei,ef,d,opts) -> Loop(id,ei,ef,List.map (shift_deq env_var) d,opts)
+  { deq with
+    content =
+      match deq.content with
+      | Eqn(p,e,sync) -> Eqn(p,shift_expr env_var e,sync)
+      | Loop(id,ei,ef,d,opts) -> Loop(id,ei,ef,List.map (shift_deq env_var) d,opts) }
 
 
 let shift_def (def:def) : def =

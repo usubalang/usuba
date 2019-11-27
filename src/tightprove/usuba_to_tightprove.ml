@@ -59,7 +59,7 @@ let rec expr_to_tp (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
 
 let deq_to_tp (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
               (deq:Usuba_AST.deq) : Tp_AST.asgn =
-  match deq with
+  match deq.content with
   | Eqn([lhs],e,_) ->
      { lhs = var_to_tp vars_corres lhs; rhs = expr_to_tp vars_corres e }
   | _ -> assert false

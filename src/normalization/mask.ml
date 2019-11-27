@@ -64,7 +64,7 @@ module Get_consts = struct
   let rec get_consts_deqs (env_const:(ident,bool) Hashtbl.t)
                           (env_not_const:(ident,bool) Hashtbl.t)
                           (deqs:deq list) : unit =
-    List.iter (function
+    List.iter (fun d -> match d.content with
                 | Eqn(lhs,e,_) ->
                    if expr_is_const env_const env_not_const e then
                      (* Adding variables that are not in
@@ -114,75 +114,104 @@ let loop_idx      = fresh_ident "_mask_idx"
 let make_loop_indexed (v:var) : var =
   Index(v,Var_e loop_idx)
 
-let mask_var (vl:var) (ve:var) : deq list =
-  [ Loop(loop_idx,Const_e 0,loop_end,
-         [Eqn([make_loop_indexed vl],
-              ExpVar(make_loop_indexed ve),false)],[])]
-(*                                         ^^^^^   ^^ *)
-(*                                   (eqn's sync)  (loop's opts)   *)
+let mask_var (orig:ident list) (vl:var) (ve:var) : deq list =
+  [ { orig=orig;
+      content=
+        Loop(loop_idx,Const_e 0,loop_end,
+             [{orig=orig;
+               content=Eqn([make_loop_indexed vl],
+                           ExpVar(make_loop_indexed ve),false)}],[]) }]
+(*                                                      ^^^^^   ^^ *)
+(*                                                (eqn's sync)  (loop's opts)   *)
 
-let mask_cst (vl:var) (c:int) (typ:typ option) : deq list =
+let mask_cst (orig:ident list) (vl:var) (c:int) (typ:typ option) : deq list =
   if c = 0 then
-  [ Loop(loop_idx,Const_e 0,loop_end,
-         [Eqn([make_loop_indexed vl],Const(0,typ),false)],[])]
+    [ { orig=orig;
+        content=
+          Loop(loop_idx,Const_e 0,loop_end,
+               [{orig=orig;
+                 content=Eqn([make_loop_indexed vl],Const(0,typ),false)}],[]) }]
   else
-  [ Eqn([Index(vl,Const_e 0)],Const(c,typ),false);
-    Loop(loop_idx,Const_e 1,loop_end,
-         [Eqn([make_loop_indexed vl],Const(0,typ),false)],[])]
+  [ { orig=orig; content=Eqn([Index(vl,Const_e 0)],Const(c,typ),false) };
+    { orig=orig;
+      content=Loop(loop_idx,Const_e 1,loop_end,
+                   [{orig=orig;
+                     content=Eqn([make_loop_indexed vl],Const(0,typ),false)}],[])}]
 
-let mask_shift (vl:var) (op:shift_op) (ve:var) (ae:arith_expr) : deq list =
-  [ Loop(loop_idx,Const_e 0,loop_end,
-         [Eqn([make_loop_indexed vl],
-              Shift(op,ExpVar(make_loop_indexed ve),ae), false)],[])]
+let mask_shift (orig:ident list) (vl:var) (op:shift_op) (ve:var) (ae:arith_expr) : deq list =
+  [ { orig=orig;
+      content=
+        Loop(loop_idx,Const_e 0,loop_end,
+             [{orig=orig;
+               content=Eqn([make_loop_indexed vl],
+                           Shift(op,ExpVar(make_loop_indexed ve),ae), false)}],[])}]
 
-let mask_not (vl:var) (ve:var) : deq list =
-  [ Eqn([Index(vl,Const_e 0)],Not(ExpVar(Index(ve,Const_e 0))),false);
-    Loop(loop_idx,Const_e 1,loop_end,
-         [Eqn([make_loop_indexed vl],ExpVar(make_loop_indexed ve),false)],[])]
+let mask_not (orig:ident list) (vl:var) (ve:var) : deq list =
+  [ {orig=orig;
+     content=Eqn([Index(vl,Const_e 0)],Not(ExpVar(Index(ve,Const_e 0))),false)};
+    {orig=orig;
+     content=Loop(loop_idx,Const_e 1,loop_end,
+                  [{orig=orig;
+                    content=Eqn([make_loop_indexed vl],
+                                ExpVar(make_loop_indexed ve),false)}],[])}]
 
-let mask_xor (vl:var) (x:var) (y:var) : deq list =
+let mask_xor (orig:ident list) (vl:var) (x:var) (y:var) : deq list =
   (* TODO: could be optimized if one of the operands is a constant... *)
-  [ Loop(loop_idx,Const_e 0,loop_end,
-         [Eqn([make_loop_indexed vl],
-              Log(Xor,ExpVar(make_loop_indexed x),
-                  ExpVar(make_loop_indexed y)),false)],[])]
+  [ { orig=orig;
+      content=
+        Loop(loop_idx,Const_e 0,loop_end,
+             [{orig=orig;
+               content=Eqn([make_loop_indexed vl],
+                           Log(Xor,ExpVar(make_loop_indexed x),
+                               ExpVar(make_loop_indexed y)),false)}],[])}]
 
 type is_const = Zero | One | Two
 let mask_and_or (env_var:(ident,typ) Hashtbl.t)
                 (env_const:(ident,bool) Hashtbl.t)
-                (vl:var) (op:log_op) (x:var) (y:var) : deq list =
+                (orig:ident list) (vl:var) (op:log_op) (x:var) (y:var) : deq list =
   let (cst,x,y) = if (Hashtbl.mem env_const (get_base_name x)) &&
                        (Hashtbl.mem env_const (get_base_name y)) then (Two,x,y)
                   else if Hashtbl.mem env_const (get_base_name x) then (One,y,x)
                   else if Hashtbl.mem env_const (get_base_name y) then (One,x,y)
                   else (Zero,x,y) in
   match cst with
-  | Zero -> [ Eqn([vl],Log(Masked op,ExpVar x,ExpVar y),false) ]
+  | Zero -> [ {orig=orig; content=Eqn([vl],Log(Masked op,ExpVar x,ExpVar y),false)} ]
   | One  -> (* The second operand is a constant *)
-     [ Loop(loop_idx,Const_e 0,loop_end,
-            [Eqn([make_loop_indexed vl],
-                 Log(op,ExpVar(make_loop_indexed x),
-                     ExpVar(Index(y,Const_e 0))),false)],[])]
+     [ {orig=orig;
+        content=
+          Loop(loop_idx,Const_e 0,loop_end,
+               [{orig=orig;
+                 content=Eqn([make_loop_indexed vl],
+                             Log(op,ExpVar(make_loop_indexed x),
+                                 ExpVar(Index(y,Const_e 0))),false)}],[])}]
   | Two -> (* both operands are constant *)
      let zero_typ = get_var_type env_var x in
-     [ Eqn([Index(vl,Const_e 0)],
-           Log(op,ExpVar(Index(x,Const_e 0)),ExpVar(Index(y,Const_e 0))), false);
-       Loop(loop_idx,Const_e 1,loop_end,
-            [ Eqn([make_loop_indexed vl],Const(0,Some zero_typ),false) ],[])]
+     [ {orig=orig;
+        content=Eqn([Index(vl,Const_e 0)],
+                    Log(op,ExpVar(Index(x,Const_e 0)),
+                        ExpVar(Index(y,Const_e 0))), false)};
+       {orig=orig;
+        content=
+          Loop(loop_idx,Const_e 1,loop_end,
+               [ {orig=orig;
+                  content=Eqn([make_loop_indexed vl],
+                              Const(0,Some zero_typ),false)}],[])}]
 
 let mask_eqn (env_var:(ident,typ) Hashtbl.t)
-             (env_const:(ident,bool) Hashtbl.t) (vl:var) (e:expr) : deq list =
+             (env_const:(ident,bool) Hashtbl.t)
+             (orig:ident list) (vl:var) (e:expr)
+    : deq list =
   match get_var_m env_var vl with
-  | Mnat -> (* not masking nats *) [ Eqn([vl],e,false) ]
+  | Mnat -> (* not masking nats *) [ {orig=orig;content=Eqn([vl],e,false)} ]
   | _ ->
      match e with
-     | Const(c,typ) -> mask_cst vl c typ
-     | ExpVar v     -> mask_var vl v
-     | Shift(op,ExpVar v,ae)      -> mask_shift vl op v ae
-     | Not(ExpVar v) -> mask_not vl v
-     | Log(Xor,ExpVar x,ExpVar y) -> mask_xor vl x y
+     | Const(c,typ) -> mask_cst orig vl c typ
+     | ExpVar v     -> mask_var orig vl v
+     | Shift(op,ExpVar v,ae)      -> mask_shift orig vl op v ae
+     | Not(ExpVar v) -> mask_not orig vl v
+     | Log(Xor,ExpVar x,ExpVar y) -> mask_xor orig vl x y
      | Log(And as op,ExpVar x,ExpVar y)
-     | Log(Or as op,ExpVar x,ExpVar y)  -> mask_and_or env_var env_const vl op x y
+     | Log(Or as op,ExpVar x,ExpVar y)  -> mask_and_or env_var env_const orig vl op x y
      | _ -> Printf.eprintf "Cannot mask expression: %s.\n"
                            (Usuba_print.expr_to_str e);
             assert false
@@ -190,12 +219,12 @@ let mask_eqn (env_var:(ident,typ) Hashtbl.t)
 let rec mask_deqs (env_var:(ident,typ) Hashtbl.t)
                   (env_const:(ident,bool) Hashtbl.t)
                   (deqs:deq list) : deq list =
-  flat_map (function
-             | Eqn(lhs,Fun(f,l),sync) -> [ Eqn(lhs,Fun(f,l),sync) ]
-             | Eqn([lv],e,_) -> mask_eqn env_var env_const lv e
+  flat_map (fun d -> match d.content with
+             | Eqn(lhs,Fun(f,l),sync) -> [ { d with content = Eqn(lhs,Fun(f,l),sync) } ]
+             | Eqn([lv],e,_) -> mask_eqn env_var env_const d.orig lv e
              | Eqn _ -> assert false (* Not normalized *)
              | Loop(i,ei,ef,dl,sync) ->
-                [ Loop(i,ei,ef,mask_deqs env_var env_const dl,sync) ]) deqs
+                [ { d with content = Loop(i,ei,ef,mask_deqs env_var env_const dl,sync) } ]) deqs
 
 let rec mask_typ (typ:typ) : typ =
   match typ with

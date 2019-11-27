@@ -47,9 +47,12 @@ module Simplify_tuples = struct
     | _ -> [ e ]
 
   let rec simpl_deqs (deq:deq list) : deq list =
-    List.map (function
-        | Eqn(p,e,sync) -> Eqn(p,expr_from_list (simpl_tuple e),sync)
-        | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,simpl_deqs dl,opts)) deq
+    List.map (fun d ->
+              { d with
+                content =
+                  match d.content with
+                  | Eqn(p,e,sync) -> Eqn(p,expr_from_list (simpl_tuple e),sync)
+                  | Loop(i,ei,ef,dl,opts) -> Loop(i,ei,ef,simpl_deqs dl,opts) }) deq
 
   let simpl_tuples_def (def: def) : def =
     match def.node with
@@ -76,7 +79,8 @@ end
        x[2] = c;
  *)
 module Split_tuples = struct
-  let real_split_tuple env (p: var list) (e: expr) (sync:bool) : deq list =
+  let real_split_tuple env (orig:ident list) (p: var list)
+                       (e: expr) (sync:bool) : deq list =
     let el = Unfold_unnest.expand_expr env e in
     let pl = flat_map (expand_var env) p in
     (* Need to make sure that |el| and |pl| have the same size. Since
@@ -84,20 +88,20 @@ module Split_tuples = struct
        and |e| don't have the same size yet, in particular because
        Const haven't been expanded. *)
     if List.length el = List.length pl then
-      List.map2 (fun l r -> Eqn([l],r,sync)) pl el
+      List.map2 (fun l r -> { content = Eqn([l],r,sync); orig = orig }) pl el
     else
-      [ Eqn(p,e,sync) ]
+      [ { content = Eqn(p,e,sync); orig = orig } ]
 
   let rec split_tuples_deq env (body: deq list) : deq list =
     flat_map
-      (fun x ->
-       match x with
+      (fun d ->
+       match d.content with
        | Eqn (p,e,sync) ->
-          if contains_fun e then [ x ]
-          else real_split_tuple env p e sync
+          if contains_fun e then [ d ]
+          else real_split_tuple env d.orig p e sync
        | Loop(i,ei,ef,dl,opts) ->
           Hashtbl.add env i Nat;
-          let res = [ Loop(i,ei,ef,split_tuples_deq env dl,opts) ] in
+          let res = [ { d with content = Loop(i,ei,ef,split_tuples_deq env dl,opts) } ] in
           Hashtbl.remove env i;
           res) body
 

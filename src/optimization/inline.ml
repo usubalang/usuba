@@ -67,7 +67,7 @@ module Must_inline = struct
   let rec must_inline_deqs (env_var:(ident,typ) Hashtbl.t)
                            (env_in:(ident,bool) Hashtbl.t)
                            (deqs:deq list) : bool =
-    List.exists (function
+    List.exists (fun d -> match d.content with
                   | Eqn(_,e,_) -> must_inline_expr env_var env_in e
                   | Loop(_,_,_,dl,_) -> must_inline_deqs env_var env_in dl) deqs
 
@@ -194,15 +194,17 @@ let rec update_vars (it_env:(var,var) Hashtbl.t)
                     (var_env : (var,var) Hashtbl.t)
                     (expr_env: (var,expr) Hashtbl.t)
                     (body:deq list) : deq list =
-  List.map (function
-      | Eqn(lhs,e,sync) -> Eqn( List.map (update_var_to_var it_env var_env) lhs,
-                                update_expr it_env var_env expr_env e, sync )
-      | Loop(i,ei,ef,dl,opts) ->
-         let i' = gen_iterator i in
-         Hashtbl.add it_env (Var i) (Var i');
-         let updated = Loop(i',ei,ef,update_vars it_env var_env expr_env dl,opts) in
-         Hashtbl.remove it_env (Var i);
-         updated
+  List.map (
+      fun d -> { d with content =
+       match d.content with
+       | Eqn(lhs,e,sync) -> Eqn( List.map (update_var_to_var it_env var_env) lhs,
+                                 update_expr it_env var_env expr_env e, sync )
+       | Loop(i,ei,ef,dl,opts) ->
+          let i' = gen_iterator i in
+          Hashtbl.add it_env (Var i) (Var i');
+          let updated = Loop(i',ei,ef,update_vars it_env var_env expr_env dl,opts) in
+          Hashtbl.remove it_env (Var i);
+          updated }
            ) body
 
 
@@ -252,14 +254,14 @@ let rec inline_in_node (deqs:deq list) (to_inl:def) : p * deq list =
        This will introduce new variables, which is
        why maps returns a (p * deq list) list. *)
       ( List.map (
-            fun eqn -> match eqn with
+            fun eqn -> match eqn.content with
                        | Eqn(lhs,Fun(f,l),_) when f.name = f_inl ->
                           incr cpt;
                           inline_call to_inl l lhs !cpt
                        | Eqn _ -> [], [eqn]
                        | Loop(i,ei,ef,dl,opts) ->
                           let (vars, deqs) = inline_in_node dl to_inl in
-                          vars, [ Loop(i,ei,ef,deqs,opts) ]
+                          vars, [ { eqn with content = Loop(i,ei,ef,deqs,opts) } ]
           ) deqs ) in
   List.flatten vars, List.flatten deqs
 
@@ -283,7 +285,7 @@ let do_inline (prog:prog) (to_inline:def) : prog =
    to be inlined *)
 let is_call_free env (def:def) : bool =
   let rec deq_call_free (deq:deq) : bool =
-    match deq with
+    match deq.content with
     | Eqn(_,Fun(f,_),_) ->
        if f.name = "refresh" then true
        else

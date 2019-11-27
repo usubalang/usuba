@@ -78,7 +78,7 @@ type loop = { id : ident;
               mutable dl : deq list;
               opts: stmt_opt list }
 let loop_rec_of_sum (loop:deq) : loop =
-  match loop with
+  match loop.content with
   | Eqn _ -> assert false
   | Loop(i,ei,ef,dl,opts) -> { id=i; ei=ei; ef=ef; dl=dl; opts=opts }
 
@@ -110,7 +110,7 @@ let rec is_ready_deq (env_var:(ident,typ) Hashtbl.t)
      a ref to keep track of whether this deq is ready or not (a
      List.map would have been cleaner otherwise). *)
   let is_ready = ref true in
-  (match deq with
+  (match deq.content with
    | Eqn(_,e,_) ->
       is_ready := !is_ready && is_ready_expr env_var env_it env_ready e
    | Loop(i,ei,ef,dl,_) ->
@@ -139,7 +139,7 @@ let is_mergeable (env_var:(ident,typ) Hashtbl.t)
   let rec iter_loop (env_it:(ident,int) Hashtbl.t)
                     (check_ready:bool) (deqs:deq list) : unit =
     List.iter
-      (function
+      (fun d -> match d.content with
         | Eqn(lhs,e,_) ->
            if check_ready then
              List.iter (fun v -> if not (Hashtbl.mem env_ready
@@ -171,7 +171,7 @@ let rec update_env_ready (env_var:(ident,typ) Hashtbl.t)
                          (env_it:it_env_t)
                          (env_ready:(var,bool) Hashtbl.t)
                          (deq:deq) : unit =
-  match deq with
+  match deq.content with
   | Eqn(lhs,_,_) ->
      iter_env_it env_it
        (fun env_it ->
@@ -190,7 +190,7 @@ let rec partition_deqs (env_var:(ident,typ) Hashtbl.t)
                        (nexts:deq list) :
           deq list  =
   flat_map (fun deq ->
-                 match deq with
+                 match deq.content with
                  | Eqn(lhs,_,_) -> [deq]
                  | Loop(i',ei',ef',dl,_) ->
                     let loop = loop_rec_of_sum deq in
@@ -226,7 +226,7 @@ let rec fuse_loops_deqs (env_var:(ident,typ) Hashtbl.t)
   match deqs with
   | [] -> []
   | hd :: nexts ->
-     match hd with
+     match hd.content with
      | Eqn _ ->
         update_env_ready env_var env_it env_ready hd;
         hd :: (fuse_loops_deqs env_var env_it env_ready nexts)
@@ -241,7 +241,8 @@ let rec fuse_loops_deqs (env_var:(ident,typ) Hashtbl.t)
         push_it_env env_it i ei ef;
         List.iter (update_env_ready env_var env_it env_ready) loop.dl;
         pop_it_env env_it;
-        (Loop(i,ei,ef,loop.dl,opts)) :: (fuse_loops_deqs env_var env_it env_ready after)
+        ({hd with content=Loop(i,ei,ef,loop.dl,opts)})
+        :: (fuse_loops_deqs env_var env_it env_ready after)
 
 
 let fuse_loops_def (def:def) : def =

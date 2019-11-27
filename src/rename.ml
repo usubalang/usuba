@@ -62,9 +62,11 @@ let rec rename_pat pat =
   List.map rename_var pat
 
 let rec rename_deq deqs =
-    List.map (function
-               | Eqn(pat,expr,sync) -> Eqn(rename_pat pat,rename_expr expr,sync)
-               | Loop(id,ei,ef,d,opts) -> Loop(fresh_suffix id "'",ei,ef,rename_deq d,opts)) deqs
+    List.map (fun d -> { d with content = match d.content with
+                         | Eqn(pat,expr,sync) ->
+                            Eqn(rename_pat pat,rename_expr expr,sync)
+                         | Loop(id,ei,ef,d,opts) ->
+                            Loop(fresh_suffix id "'",ei,ef,rename_deq d,opts) }) deqs
 
 let rec rename_p (p:p) =
   List.map (fun vd -> { vd with vid = fresh_suffix vd.vid "'" } ) p
