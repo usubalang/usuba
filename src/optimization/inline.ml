@@ -189,23 +189,28 @@ let rec update_expr (it_env:(var,var) Hashtbl.t)
   | _ -> print_endline (Usuba_print.expr_to_str e);
          assert false
 
-(* Convert the variable names *)
-let rec update_vars (it_env:(var,var) Hashtbl.t)
+(* Convert the variable names, and update deq's orig with |f| (since
+   those deqs are being inlined from |f| into another node). *)
+let rec update_vars_and_deqs (it_env:(var,var) Hashtbl.t)
                     (var_env : (var,var) Hashtbl.t)
                     (expr_env: (var,expr) Hashtbl.t)
+                    (f:ident)
                     (body:deq list) : deq list =
   List.map (
-      fun d -> { d with content =
-       match d.content with
-       | Eqn(lhs,e,sync) -> Eqn( List.map (update_var_to_var it_env var_env) lhs,
-                                 update_expr it_env var_env expr_env e, sync )
-       | Loop(i,ei,ef,dl,opts) ->
-          let i' = gen_iterator i in
-          Hashtbl.add it_env (Var i) (Var i');
-          let updated = Loop(i',ei,ef,update_vars it_env var_env expr_env dl,opts) in
-          Hashtbl.remove it_env (Var i);
-          updated }
-           ) body
+      fun d -> {
+        orig = f :: d.orig;
+        content =
+          match d.content with
+          | Eqn(lhs,e,sync) -> Eqn( List.map (update_var_to_var it_env var_env) lhs,
+                                    update_expr it_env var_env expr_env e, sync )
+          | Loop(i,ei,ef,dl,opts) ->
+             let i' = gen_iterator i in
+             Hashtbl.add it_env (Var i) (Var i');
+             let updated = Loop(i',ei,ef,update_vars_and_deqs it_env var_env
+                                                              expr_env f dl,opts) in
+             Hashtbl.remove it_env (Var i);
+             updated }
+    ) body
 
 
 (* Inline a specific call (defined by lhs & args) *)
@@ -236,7 +241,7 @@ let inline_call (to_inl:def) (args:expr list) (lhs:var list) (cpt:int) :
   List.iter2 ( fun vd vd' ->
                Hashtbl.add var_env (Var vd.vid) (Var vd'.vid)) vars_inl vars;
 
-  vars, update_vars (Hashtbl.create 10) var_env expr_env body_inl
+  vars, update_vars_and_deqs (Hashtbl.create 10) var_env expr_env to_inl.id body_inl
 
 
 (* Inline all the calls to "to_inl" in a given node
