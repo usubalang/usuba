@@ -104,6 +104,12 @@ let keys_2nd_layer hash k =
     keys (Hashtbl.find hash k)
   with Not_found -> []
 
+(* Retrieve a given value of a HoH's 2nd layer *)
+let find_opt_2nd_layer hash k1 k2 =
+  match Hashtbl.find_opt hash k1 with
+  | Some hash2 -> Hashtbl.find_opt hash2 k2
+  | None -> None
+
 (* Adds a key/val in the 2nd layer of a HoH *)
 let add_key_2nd_layer hash1 k1 k2 v : unit =
   match Hashtbl.find_opt hash1 k1 with
