@@ -14,11 +14,11 @@ let update_hoh hash k1 k2 =
               Hashtbl.add hash k1 h
 
 
-let make_var_ready (ready:(var,var list * expr * (ident list)) Hashtbl.t)
+let make_var_ready (ready:(var,var list * expr * ((ident*deq_i) list)) Hashtbl.t)
                    (is_sched:(var list*expr,bool) Hashtbl.t)
                    (sched_vars:(var,bool) Hashtbl.t)
-                   (var:var) : (var list * expr * (ident list)) list =
-  let rec aux (var:var) : (var list * expr * (ident list)) list =
+                   (var:var) : (var list * expr * ((ident*deq_i) list)) list =
+  let rec aux (var:var) : (var list * expr * ((ident*deq_i) list)) list =
     match Hashtbl.find_opt ready var with
     | None      -> []
     | Some(l,e,orig) -> match Hashtbl.find_opt is_sched (l,e) with
@@ -31,19 +31,19 @@ let make_var_ready (ready:(var,var list * expr * (ident list)) Hashtbl.t)
   List.rev @@ aux var
 
 
-let schedule_pre (ready:(var,var list * expr * (ident list)) Hashtbl.t)
+let schedule_pre (ready:(var,var list * expr * ((ident*deq_i) list)) Hashtbl.t)
                  (is_sched:(var list*expr,bool) Hashtbl.t)
                  (sched_vars:(var,bool) Hashtbl.t)
-                 (args:var list) : (var list * expr * (ident list)) list =
+                 (args:var list) : (var list * expr * ((ident*deq_i) list)) list =
   List.rev @@
     flat_map (make_var_ready ready is_sched sched_vars) args
 
 
 let schedule_post (deps:(var,(var,bool) Hashtbl.t) Hashtbl.t)
-                  (defs:(var,var list * expr * (ident list)) Hashtbl.t)
+                  (defs:(var,var list * expr * ((ident*deq_i) list)) Hashtbl.t)
                   (is_sched:(var list*expr,bool) Hashtbl.t)
                   (sched_vars:(var,bool) Hashtbl.t)
-                  (vars:var list) : (var list * expr * (ident list)) list =
+                  (vars:var list) : (var list * expr * ((ident*deq_i) list)) list =
   List.rev @@
     flat_map
         (fun x ->
@@ -63,13 +63,13 @@ let schedule_post (deps:(var,(var,bool) Hashtbl.t) Hashtbl.t)
                   (keys_2nd_layer deps x)) vars
 
 
-let schedule_asgn (ready:(var,var list * expr * (ident list)) Hashtbl.t)
+let schedule_asgn (ready:(var,var list * expr * ((ident*deq_i) list)) Hashtbl.t)
                   (is_sched:(var list*expr,bool) Hashtbl.t)
                   (sched_vars:(var,bool) Hashtbl.t)
-                  (schedule:(var list * expr * (ident list)) list ref)
+                  (schedule:(var list * expr * ((ident*deq_i) list)) list ref)
                   (deps:(var,(var,bool) Hashtbl.t) Hashtbl.t)
-                  (defs:(var,var list * expr * (ident list)) Hashtbl.t)
-                  (orig:ident list)
+                  (defs:(var,var list * expr * ((ident*deq_i) list)) Hashtbl.t)
+                  (orig:(ident*deq_i) list)
                   (l:var list) (e:expr) : unit =
   match e with
   | Fun(f,args) -> schedule := (schedule_pre ready is_sched sched_vars

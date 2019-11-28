@@ -198,7 +198,7 @@ let rec update_vars_and_deqs (it_env:(var,var) Hashtbl.t)
                     (body:deq list) : deq list =
   List.map (
       fun d -> {
-        orig = f :: d.orig;
+        orig = (f,d.content) :: d.orig;
         content =
           match d.content with
           | Eqn(lhs,e,sync) -> Eqn( List.map (update_var_to_var it_env var_env) lhs,

@@ -194,7 +194,7 @@ end
 (* This function is a bit weird because |optimized_away| contains Var
    but |ae| contains Var_e, so... Maybe we should consider removing
    arith_expr and keeping only expr. *)
-let rec propagate_in_aexpr (optimized_away:(var,expr*(ident list)) Hashtbl.t)
+let rec propagate_in_aexpr (optimized_away:(var,expr*((ident*deq_i) list)) Hashtbl.t)
                            (ae:arith_expr) =
   match ae with
   | Const_e _    -> ae
@@ -206,8 +206,8 @@ let rec propagate_in_aexpr (optimized_away:(var,expr*(ident list)) Hashtbl.t)
 
 (* Propagates optimized away variables: if |v| has been optimized
    away, it's replaced. *)
-let propagate_in_var (optimized_away:(var,expr*(ident list)) Hashtbl.t) (v:var)
-    : expr * (ident list)=
+let propagate_in_var (optimized_away:(var,expr*((ident*deq_i) list)) Hashtbl.t) (v:var)
+    : expr * ((ident*deq_i) list)=
   match Hashtbl.find_opt optimized_away v with
   | Some(v',orig) -> v', orig
   | None          -> ExpVar v, []
@@ -221,7 +221,7 @@ let propagate_in_var (optimized_away:(var,expr*(ident list)) Hashtbl.t) (v:var)
    end up in a Shuffle. Therefore, we use propagate_in_expr_rec for
    reccursive calls, thus avoiding us to need discarding an empty deq
    list for each reccursive call. *)
-let rec propagate_in_expr  (optimized_away:(var,expr*(ident list)) Hashtbl.t) (e:expr)
+let rec propagate_in_expr  (optimized_away:(var,expr*((ident*deq_i) list)) Hashtbl.t) (e:expr)
         : (deq list) * expr =
   match e with
   | Const _         -> [], e
@@ -245,7 +245,7 @@ let rec propagate_in_expr  (optimized_away:(var,expr*(ident list)) Hashtbl.t) (e
   | _ -> Printf.eprintf "propagate_in_expr: invalid expr: %s.\n"
            (Usuba_print.expr_to_str e);
          assert false
-and propagate_in_expr_rec (optimized_away:(var,expr*(ident list)) Hashtbl.t) (e:expr)
+and propagate_in_expr_rec (optimized_away:(var,expr*((ident*deq_i) list)) Hashtbl.t) (e:expr)
     : expr =
   match e with
   | Const _  -> e
@@ -257,8 +257,8 @@ and propagate_in_expr_rec (optimized_away:(var,expr*(ident list)) Hashtbl.t) (e:
 
 
 let cp_assign (keep_env:(ident,bool) Hashtbl.t)
-              (optimized_away:(var,expr*(ident list)) Hashtbl.t)
-              (orig:ident list) (v:var) (e:expr) (sync:bool)
+              (optimized_away:(var,expr*((ident*deq_i) list)) Hashtbl.t)
+              (orig:(ident*deq_i) list) (v:var) (e:expr) (sync:bool)
     : deq list =
   match Hashtbl.find_opt keep_env (get_base_name v) with
   | Some _ -> (* Need to keep this assignment *)
@@ -284,7 +284,7 @@ let cp_assign (keep_env:(ident,bool) Hashtbl.t)
 
 let rec cp_deqs (env_var:(ident,typ) Hashtbl.t)
           (keep_env:(ident,bool) Hashtbl.t)
-          (optimized_away:(var,expr*(ident list)) Hashtbl.t)
+          (optimized_away:(var,expr*((ident*deq_i) list)) Hashtbl.t)
           (deqs:deq list) : deq list =
   flat_map (fun deq ->
       match deq.content with

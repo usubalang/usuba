@@ -231,7 +231,7 @@ module Bslice = struct
   let specialize_eqn (env_dir:(dir,dir) Hashtbl.t)
                      (env_m:(mtyp,mtyp) Hashtbl.t)
                      (env_var:(ident,typ) Hashtbl.t)
-                     (orig:ident list) (vs:var list) (e:expr) : deq =
+                     (orig:(ident*deq_i) list) (vs:var list) (e:expr) : deq =
     let vs = specialize_vars env_var vs in
     let e  = specialize_expr env_dir env_m env_var e in
     match e with
@@ -342,7 +342,7 @@ let rec specialize_fun_call
           (all_nodes:(ident,def) Hashtbl.t)
           (specialized_nodes:(ident,(ident*(dir list)*(mtyp list),def) Hashtbl.t) Hashtbl.t)
           (env_var:(ident, typ) Hashtbl.t)
-          (orig:ident list) (vs:var list) (f:ident)
+          (orig:(ident*deq_i) list) (vs:var list) (f:ident)
           (l:expr list) (sync:bool) : deq =
   let env_dir = Hashtbl.create 10 in
   let env_m   = Hashtbl.create 10 in
@@ -382,7 +382,7 @@ and specialize_expr (all_nodes:(ident,def) Hashtbl.t)
                     (env_dir:(dir,dir) Hashtbl.t)
                     (env_m:(mtyp,mtyp) Hashtbl.t)
                     (env_var:(ident, typ) Hashtbl.t)
-                    (orig:ident list) (vs:var list) (e:expr) (sync:bool)
+                    (orig:(ident*deq_i) list) (vs:var list) (e:expr) (sync:bool)
     : deq =
   match e with
   (* When a function call happens, we need to specialize the function called *)

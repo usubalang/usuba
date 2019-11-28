@@ -183,8 +183,8 @@ module Depth_first_sched = struct
   type node = { current: var list * expr; sons: node list; father: node list }
 
   let build_dep (deqs: deq list) :
-        (var,(var list * expr * (ident list),bool) Hashtbl.t) Hashtbl.t
-        * (var,(var list * expr * (ident list))) Hashtbl.t =
+        (var,(var list * expr * ((ident*deq_i) list),bool) Hashtbl.t) Hashtbl.t
+        * (var,(var list * expr * ((ident*deq_i) list))) Hashtbl.t =
     let using = Hashtbl.create 1000 in
     let decls = Hashtbl.create 1000 in
 
@@ -214,7 +214,7 @@ module Depth_first_sched = struct
                                     ready := (l,e,d.orig) :: !ready
                   | _ -> assert false) deqs );
 
-    let rec do_schedule ((l,e,orig):var list*expr*(ident list)) =
+    let rec do_schedule ((l,e,orig):var list*expr*((ident*deq_i) list)) =
       (* Only if "l" isn't scheduled already *)
       if List.filter (fun x -> not (exists available x)) l <> [] then (
         (* Scheduling the pre-requisite dependencies *)
