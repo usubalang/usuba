@@ -171,7 +171,7 @@ module Refresh = struct
                       (get_body def.node) in
     match using_deq.orig with
     | [] -> Hashtbl.find prog_nodes entry_node
-    | l  -> Hashtbl.find prog_nodes (last using_deq.orig)
+    | l  -> Hashtbl.find prog_nodes (fst (last using_deq.orig))
 
 
   (* |vd| is a new variable (created using "refresh"), which appears

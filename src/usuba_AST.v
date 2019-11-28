@@ -79,7 +79,9 @@ Inductive _deq_i (X:Type) : Type :=
 
 Inductive deq := {
   content : _deq_i deq;
-  orig : list ident (* A list of functions from which this deq was inlined *)
+  orig : list (ident * (_deq_i deq))
+        (* A list of functions from which this deq was inlined (and
+           the original deqs from those functions) *)
 }.
 
 Definition deq_i := _deq_i deq.

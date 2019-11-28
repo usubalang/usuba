@@ -114,7 +114,7 @@ let loop_idx      = fresh_ident "_mask_idx"
 let make_loop_indexed (v:var) : var =
   Index(v,Var_e loop_idx)
 
-let mask_var (orig:ident list) (vl:var) (ve:var) : deq list =
+let mask_var (orig:(ident*deq_i) list) (vl:var) (ve:var) : deq list =
   [ { orig=orig;
       content=
         Loop(loop_idx,Const_e 0,loop_end,
@@ -124,7 +124,7 @@ let mask_var (orig:ident list) (vl:var) (ve:var) : deq list =
 (*                                                      ^^^^^   ^^ *)
 (*                                                (eqn's sync)  (loop's opts)   *)
 
-let mask_cst (orig:ident list) (vl:var) (c:int) (typ:typ option) : deq list =
+let mask_cst (orig:(ident*deq_i) list) (vl:var) (c:int) (typ:typ option) : deq list =
   if c = 0 then
     [ { orig=orig;
         content=
@@ -138,7 +138,7 @@ let mask_cst (orig:ident list) (vl:var) (c:int) (typ:typ option) : deq list =
                    [{orig=orig;
                      content=Eqn([make_loop_indexed vl],Const(0,typ),false)}],[])}]
 
-let mask_shift (orig:ident list) (vl:var) (op:shift_op) (ve:var) (ae:arith_expr) : deq list =
+let mask_shift (orig:(ident*deq_i) list) (vl:var) (op:shift_op) (ve:var) (ae:arith_expr) : deq list =
   [ { orig=orig;
       content=
         Loop(loop_idx,Const_e 0,loop_end,
@@ -146,7 +146,7 @@ let mask_shift (orig:ident list) (vl:var) (op:shift_op) (ve:var) (ae:arith_expr)
                content=Eqn([make_loop_indexed vl],
                            Shift(op,ExpVar(make_loop_indexed ve),ae), false)}],[])}]
 
-let mask_not (orig:ident list) (vl:var) (ve:var) : deq list =
+let mask_not (orig:(ident*deq_i) list) (vl:var) (ve:var) : deq list =
   [ {orig=orig;
      content=Eqn([Index(vl,Const_e 0)],Not(ExpVar(Index(ve,Const_e 0))),false)};
     {orig=orig;
@@ -155,7 +155,7 @@ let mask_not (orig:ident list) (vl:var) (ve:var) : deq list =
                     content=Eqn([make_loop_indexed vl],
                                 ExpVar(make_loop_indexed ve),false)}],[])}]
 
-let mask_xor (orig:ident list) (vl:var) (x:var) (y:var) : deq list =
+let mask_xor (orig:(ident*deq_i) list) (vl:var) (x:var) (y:var) : deq list =
   (* TODO: could be optimized if one of the operands is a constant... *)
   [ { orig=orig;
       content=
@@ -168,7 +168,7 @@ let mask_xor (orig:ident list) (vl:var) (x:var) (y:var) : deq list =
 type is_const = Zero | One | Two
 let mask_and_or (env_var:(ident,typ) Hashtbl.t)
                 (env_const:(ident,bool) Hashtbl.t)
-                (orig:ident list) (vl:var) (op:log_op) (x:var) (y:var) : deq list =
+                (orig:(ident*deq_i) list) (vl:var) (op:log_op) (x:var) (y:var) : deq list =
   let (cst,x,y) = if (Hashtbl.mem env_const (get_base_name x)) &&
                        (Hashtbl.mem env_const (get_base_name y)) then (Two,x,y)
                   else if Hashtbl.mem env_const (get_base_name x) then (One,y,x)
@@ -199,7 +199,7 @@ let mask_and_or (env_var:(ident,typ) Hashtbl.t)
 
 let mask_eqn (env_var:(ident,typ) Hashtbl.t)
              (env_const:(ident,bool) Hashtbl.t)
-             (orig:ident list) (vl:var) (e:expr)
+             (orig:(ident*deq_i) list) (vl:var) (e:expr)
     : deq list =
   match get_var_m env_var vl with
   | Mnat -> (* not masking nats *) [ {orig=orig;content=Eqn([vl],e,false)} ]

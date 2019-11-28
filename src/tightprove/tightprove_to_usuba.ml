@@ -44,9 +44,9 @@ let shift_op_to_ua (op:Tp_AST.shift_op) : Usuba_AST.shift_op =
    between the new deq_i and the old one. (eg, the one with refreshes
    and the one without) *)
 let find_orig (new_vars:(Usuba_AST.var,Usuba_AST.var) Hashtbl.t)
-              (deqs_origins:(Usuba_AST.deq_i,Usuba_AST.ident list) Hashtbl.t)
+              (deqs_origins:(Usuba_AST.deq_i,(Usuba_AST.ident*Usuba_AST.deq_i) list) Hashtbl.t)
               (deqs_corres:(Usuba_AST.deq_i,Usuba_AST.deq_i) Hashtbl.t)
-              (deqi:Usuba_AST.deq_i) : ident list =
+              (deqi:Usuba_AST.deq_i) : (Usuba_AST.ident*Usuba_AST.deq_i) list =
   let replace_var (v:Usuba_AST.var) : Usuba_AST.var =
     match Hashtbl.find_opt new_vars v with
     | Some old_v -> old_v
@@ -80,7 +80,7 @@ let find_orig (new_vars:(Usuba_AST.var,Usuba_AST.var) Hashtbl.t)
 
 let asgn_to_ua (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
                (new_vars:(Usuba_AST.var,Usuba_AST.var) Hashtbl.t)
-               (deqs_origins:(Usuba_AST.deq_i,Usuba_AST.ident list) Hashtbl.t)
+               (deqs_origins:(Usuba_AST.deq_i,(Usuba_AST.ident*Usuba_AST.deq_i) list) Hashtbl.t)
                (deqs_corres:(Usuba_AST.deq_i,Usuba_AST.deq_i) Hashtbl.t)
                (base_type:Usuba_AST.typ)
                (asgn:Tp_AST.asgn) : deq =
@@ -110,7 +110,7 @@ let asgn_to_ua (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
 
 let body_to_ua (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
                (new_vars:(Usuba_AST.var,Usuba_AST.var) Hashtbl.t)
-               (deqs_origins:(Usuba_AST.deq_i,Usuba_AST.ident list) Hashtbl.t)
+               (deqs_origins:(Usuba_AST.deq_i,(Usuba_AST.ident*Usuba_AST.deq_i) list) Hashtbl.t)
                (deqs_corres:(Usuba_AST.deq_i,Usuba_AST.deq_i) Hashtbl.t)
                (base_type:Usuba_AST.typ)
                (body:Tp_AST.asgn list) : deq list =

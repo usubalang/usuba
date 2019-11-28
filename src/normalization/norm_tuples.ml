@@ -79,7 +79,7 @@ end
        x[2] = c;
  *)
 module Split_tuples = struct
-  let real_split_tuple env (orig:ident list) (p: var list)
+  let real_split_tuple env (orig:(ident * deq_i) list) (p: var list)
                        (e: expr) (sync:bool) : deq list =
     let el = Unfold_unnest.expand_expr env e in
     let pl = flat_map (expand_var env) p in
