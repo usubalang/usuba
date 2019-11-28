@@ -44,6 +44,7 @@ module Refresh = struct
      added into |f|'s body based on the content of |full_prog|. *)
   let refresh_function (env_corres:(ident,ident) Hashtbl.t)
                        (refreshes_created:(ident,(var,var) Hashtbl.t) Hashtbl.t)
+                       (refreshes_created_back:(ident,(var,var) Hashtbl.t) Hashtbl.t)
                        (f:def) (full_prog:def) (vd:var_d)
       : deq list =
     let new_var = Var vd.vid in
@@ -99,9 +100,51 @@ module Refresh = struct
       | Arith(op,x,y)  -> Arith(op,replace_vd_by_v_expr x,replace_vd_by_v_expr y)
       | Fun(f,l)       -> Fun(f,List.map replace_vd_by_v_expr l)
       | _ -> assert false in
-    let old_first_use_deq = match first_use_deq.content with
-      | Eqn(lhs,e,sync) -> Eqn(lhs,replace_vd_by_v_expr e,sync)
+    let old_first_use_deq = match first_use_deq.orig with
+      | [] ->
+         (* Was initially in the main *)
+         (match first_use_deq.content with
+          | Eqn(lhs,e,sync) -> Eqn(lhs,replace_vd_by_v_expr e,sync)
+          | _ -> assert false)
+      | l  ->
+         (* Was inlined from somewhere *)
+         (snd (last first_use_deq.orig)) in
+
+    (* Step 4.5: find out which variable |vd| really refreshes (useful
+       only if |rv| was in |f|'s parameters or returns). *)
+    let comb_option (a:'a option) (b:'a option) : 'a option =
+      match a with
+      | Some _ -> a
+      | None -> b in
+    let iter2_var (oldv:var) (newv:var) : var option =
+      if newv = new_var then
+        match find_opt_2nd_layer refreshes_created_back f.id oldv with
+        | Some r -> Some r
+        | None -> Some oldv
+      else None in
+    let rec iter2_expr (olde:expr) (newe:expr) : var option =
+      match olde, newe with
+      | Const _, Const _                  -> None
+      | ExpVar oldv, ExpVar newv          -> iter2_var oldv newv
+      | Not olde', Not newe'              -> iter2_expr olde' newe'
+      | Shift(_,olde',_),Shift(_,newe',_) -> iter2_expr olde' newe'
+      | Log(_,oldx,oldy),Log(_,newx,newy) -> comb_option (iter2_expr oldx newx)
+                                                         (iter2_expr oldy newy)
+      | Shuffle(oldv,_),Shuffle(newv,_)   -> iter2_var oldv newv
+      | Arith(_,oldx,oldy),Arith(_,newx,newy) -> comb_option (iter2_expr oldx newx)
+                                                             (iter2_expr oldy newy)
+      | Fun _, Fun _ -> None
       | _ -> assert false in
+    let really_refreshed = match old_first_use_deq,first_use_deq.content with
+      | Eqn(_,olde,_),Eqn(_,newe,_) ->
+         (match iter2_expr olde newe with
+          | Some v -> v
+          | None -> assert false)
+      | _ -> assert false in
+    let vd_init = { orig = [];
+                    content = Eqn([new_var],Fun(fresh_ident "refresh",
+                                                [ExpVar really_refreshed]),false) } in
+
 
     (* Step 5: iterate |f|'s body up to the deq |deq| generated in Step 4. *)
     let old_body = ref (get_body f.node) in
@@ -155,6 +198,13 @@ module Refresh = struct
          | _ -> assert false in
     update_f_body ();
 
+    (* Step 8: update |refreshes_created_back| *)
+    let rec get_initial_rv (v:var) : var =
+      match find_opt_2nd_layer refreshes_created f.id v with
+      | Some v' -> get_initial_rv v'
+      | None -> v in
+    replace_key_2nd_layer refreshes_created_back f.id (get_initial_rv rv) new_var;
+
     List.rev !new_body
 
   (* Finds which the first deq of |def| that is using |vd|, and get
@@ -178,6 +228,7 @@ module Refresh = struct
      in |def| and need to be propagated back to a node in |prog_nodes|. *)
   let insert_refresh (prog_nodes:(ident,def) Hashtbl.t)
                      (refreshes_created:(ident,(var,var) Hashtbl.t) Hashtbl.t)
+                     (refreshes_created_back:(ident,(var,var) Hashtbl.t) Hashtbl.t)
                      (entry_node:ident) (def:def) (vd:var_d) : unit =
     let env_var = Hashtbl.create 100 in
     List.iter (fun vd -> Hashtbl.add env_var vd.vid vd) def.p_in;
@@ -193,7 +244,8 @@ module Refresh = struct
     Hashtbl.iter (fun id vd -> match vd.vorig with
                                | [] -> Hashtbl.add env_corres id id
                                | l  -> Hashtbl.add env_corres id (snd (last l)).vid) env_var;
-    let new_body = refresh_function env_corres refreshes_created f def vd in
+    let new_body = refresh_function env_corres refreshes_created refreshes_created_back
+                                    f def vd in
     let new_vars = vd :: (get_vars f.node) in
 
     Hashtbl.replace prog_nodes f.id { f with node = Single(new_vars, new_body) }
@@ -260,11 +312,13 @@ module Refresh = struct
     (* For each function, creating a hash containing the refreshes
        inserted in this function already. *)
     let refreshes_created = Hashtbl.create 10 in
+    let refreshes_created_back = Hashtbl.create 10 in
+    List.iter (fun d -> Hashtbl.add refreshes_created d.id (Hashtbl.create 10)) init_prog.nodes;
     List.iter (fun d -> Hashtbl.add refreshes_created d.id (Hashtbl.create 10)) init_prog.nodes;
 
     (* Now inserting the refreshes in the initial functions *)
     let entry_node = last init_prog.nodes in
-    List.iter (fun vd -> insert_refresh prog_nodes refreshes_created
+    List.iter (fun vd -> insert_refresh prog_nodes refreshes_created refreshes_created_back
                                         entry_node.id def vd) refreshed;
 
     (* Returning the new nodes by looking them up in the Hashtbl (but
