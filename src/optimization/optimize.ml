@@ -34,7 +34,7 @@ module Clean = struct
       | Loop(_,_,_,d,_) -> List.iter aux d in
     List.iter aux deqs;
     List.sort_uniq (fun a b -> compare a b)
-                   ( List.filter (fun vd -> match Hashtbl.find_opt env vd.vid with
+                   ( List.filter (fun vd -> match Hashtbl.find_opt env vd.vd_id with
                                             | Some _ -> true
                                             | None -> false) vars)
 

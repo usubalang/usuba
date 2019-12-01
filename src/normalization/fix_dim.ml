@@ -177,12 +177,12 @@ let rec unnest_var (def:def) (var:var) : def =
      let find_interest_var (p:p) : p =
        List.map
          (fun v ->
-           if Var v.vid = var_base then
-             (let (t',s) = collapse_inner_arrays v.vtyp in
-              old_type := v.vtyp;
+           if Var v.vd_id = var_base then
+             (let (t',s) = collapse_inner_arrays v.vd_typ in
+              old_type := v.vd_typ;
               new_type := t';
               size     := s;
-              { v with vtyp = t' })
+              { v with vd_typ = t' })
            else v) p in
      let vars  = find_interest_var vars in
      let p_in  = find_interest_var def.p_in in
@@ -235,13 +235,13 @@ module Dir_params = struct
                 (* type of the i-th argument *)
                 let arg_type  = get_var_type env_var v  in
                 (* type of the i-th expected parameter *)
-                let exp_type  = (List.nth p_in i).vtyp  in
+                let exp_type  = (List.nth p_in i).vd_typ  in
 
                 if (get_nested_level exp_type) > (get_nested_level arg_type) ||
                      (not_same_dim exp_type arg_type) then (
                   (* Different sizes, need convert arg to a non-nested array *)
                   Hashtbl.replace env_fun f (unnest_var (Hashtbl.find env_fun f)
-                                               (Var (List.nth p_in i).vid));
+                                               (Var (List.nth p_in i).vd_id));
                   raise Updated
 
                 (* < isn't checked here: if dim is < than function
@@ -258,13 +258,13 @@ module Dir_params = struct
               (* type of the i-th lhs variable *)
               let ret_type = get_var_type env_var v  in
               (* type of the i-th returned variable *)
-              let exp_type = (List.nth p_out i).vtyp in
+              let exp_type = (List.nth p_out i).vd_typ in
 
               if (get_nested_level exp_type) > (get_nested_level ret_type)  ||
                      (not_same_dim exp_type ret_type) then (
                 (* Different sizes, need convert arg to a non-nested array *)
                 Hashtbl.replace env_fun f (unnest_var (Hashtbl.find env_fun f)
-                                             (Var (List.nth p_out i).vid));
+                                             (Var (List.nth p_out i).vd_id));
                 raise Updated
               ) else ()
             ) ret_vars;
@@ -353,7 +353,7 @@ module Dir_inner = struct
                 (* type of the i-th argument *)
                 let arg_type  = get_var_type env_var v  in
                 (* type of the i-th expected parameter *)
-                let exp_type  = (List.nth p_in i).vtyp  in
+                let exp_type  = (List.nth p_in i).vd_typ  in
 
                 if (get_nested_level arg_type) > (get_nested_level exp_type)  ||
                      (not_same_dim arg_type exp_type) then (
@@ -375,7 +375,7 @@ module Dir_inner = struct
               (* type of the i-th lhs variable *)
               let ret_type = get_var_type env_var v  in
               (* type of the i-th returned variable *)
-              let exp_type = (List.nth p_out i).vtyp in
+              let exp_type = (List.nth p_out i).vd_typ in
               if (get_nested_level ret_type) > (get_nested_level exp_type)  ||
                    (not_same_dim ret_type exp_type) then (
                 (* Different sizes, need convert arg to a non-nested array *)

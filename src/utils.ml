@@ -149,11 +149,11 @@ let gen_list_0_int (n: int) : int list =
 
 let make_var_d (id:ident) (typ:typ) (ck:clock)
                (opts:var_d_opt list) (orig:(ident*var_d) list) : var_d =
-  { vid   = id;
-    vtyp  = typ;
-    vck   = ck;
-    vopts = opts;
-    vorig = orig }
+  { vd_id   = id;
+    vd_typ  = typ;
+    vd_ck   = ck;
+    vd_opts = opts;
+    vd_orig = orig }
 
 let simple_var_d (id:ident) = make_var_d id bool Defclock [] []
 let simple_typed_var_d (id:ident) (typ:typ) = make_var_d id typ Defclock [] []
@@ -177,7 +177,7 @@ let build_env_var (p_in:p) (p_out:p) (vars:p) : (ident, typ) Hashtbl.t =
   let env = Hashtbl.create 20 in
 
   let add_to_env (vd:var_d) : unit =
-    Hashtbl.replace env vd.vid vd.vtyp in
+    Hashtbl.replace env vd.vd_id vd.vd_typ in
 
   List.iter add_to_env p_in;
   List.iter add_to_env p_out;
@@ -277,7 +277,7 @@ let rec get_expr_type env_fun env_var (e:expr) : typ list =
      if f.name = "rand" then [ Uint(default_dir,Mint 1,1) ]
      else
        let def = Hashtbl.find env_fun f in
-       List.map (fun vd -> vd.vtyp) def.p_out
+       List.map (fun vd -> vd.vd_typ) def.p_out
   | _ -> assert false
 
 let rec get_normed_expr_type env_var (e:expr) : typ =
@@ -391,7 +391,7 @@ let rec update_type_m (typ:typ) (m:mtyp) : typ =
   | Nat           -> Nat
 
 let vd_to_var (vd:var_d) : var =
-  Var vd.vid
+  Var vd.vd_id
 
 let p_to_vars (p:p) : var list =
   List.map vd_to_var p
@@ -485,10 +485,10 @@ let is_perm (def:def) : bool =
   | _ -> false
 
 let is_const (var:var_d) : bool =
-  List.mem Pconst var.vopts
+  List.mem Pconst var.vd_opts
 
 let is_lazyLift (var:var_d) : bool =
-  List.mem PlazyLift var.vopts
+  List.mem PlazyLift var.vd_opts
 
 let default_bits_per_reg (arch:arch) : int =
   match arch with
@@ -502,7 +502,7 @@ let default_bits_per_reg (arch:arch) : int =
 
 
 let p_size (p:p) : int =
-  List.fold_left (fun sum vd -> sum + (typ_size vd.vtyp)) 0 p
+  List.fold_left (fun sum vd -> sum + (typ_size vd.vd_typ)) 0 p
 
 let var_constr_to_str (v:var) : string =
   match v with

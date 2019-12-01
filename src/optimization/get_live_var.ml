@@ -37,7 +37,7 @@ let live_deq env_var live (deq:deq) : int =
 
 let live_deqs env_var (p_out:p) (deqs:deq list) : int =
   let live = Hashtbl.create 50 in
-  List.iter (fun x -> List.iter (fun x -> Hashtbl.add live x true) (expand_var env_var (Var x.vid))) p_out;
+  List.iter (fun x -> List.iter (fun x -> Hashtbl.add live x true) (expand_var env_var (Var x.vd_id))) p_out;
 
   max_l (List.map (live_deq env_var live) (List.rev deqs))
 

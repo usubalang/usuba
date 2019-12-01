@@ -72,13 +72,13 @@ let build_env_var (backtrace:string list) (p_in:p) (p_out:p) (vars:p) : (ident, 
   let env = Hashtbl.create 100 in
 
   let add_to_env vd =
-    match Hashtbl.mem env vd.vid with
+    match Hashtbl.mem env vd.vd_id with
     | true -> eprintf
                 "[Type error] Redeclaration of variable `%s'.\n"
-                vd.vid.name;
+                vd.vd_id.name;
               print_backtrace backtrace;
               error := true;
-    | false -> Hashtbl.add env vd.vid vd.vtyp in
+    | false -> Hashtbl.add env vd.vd_id vd.vd_typ in
 
   List.iter add_to_env p_in;
   List.iter add_to_env p_out;
@@ -519,7 +519,7 @@ let rec get_expr_type
                   raise Fatal_type_error)
         else
           let def = Hashtbl.find env_fun f in
-          List.map (fun vd -> vd.vtyp) def.p_out
+          List.map (fun vd -> vd.vd_typ) def.p_out
      | _ -> eprintf "The type-checker doesn't handle `%s' yet. Exiting.\n" (expr_to_str e);
             assert false)
 
@@ -644,8 +644,8 @@ let rec type_expr (backtrace:string list)
   | Shuffle(v,l) ->
      (* Just matchhing the type(s) of |v| against |lhs_types|. *)
      (* TODO: should make sure that |l| can be applied to |v|. *)
-     let vtyp = expand_typ (get_var_type backtrace env_var env_it v) in
-     match_types_asgn backtrace vtyp lhs_types;
+     let vd_typ = expand_typ (get_var_type backtrace env_var env_it v) in
+     match_types_asgn backtrace vd_typ lhs_types;
      Shuffle(v,l)
   | Fun(f,l) ->
      (* Need to match |l| against the parameters of |f|, and the
@@ -673,7 +673,7 @@ let rec type_expr (backtrace:string list)
         (* First, typing |param_types| according to |f.p_in| *)
         let param_types =
           ref (flat_map expand_typ
-                        (List.map (fun vd -> vd.vtyp) f.p_in)) in
+                        (List.map (fun vd -> vd.vd_typ) f.p_in)) in
         let typed_l = List.map (type_expr backtrace env_fun env_var env_it param_types) l in
         (* if |param_types| is not empty, then |vs| is larger than |e| *)
         if !param_types <> [] then
@@ -684,7 +684,7 @@ let rec type_expr (backtrace:string list)
         (* Then, making sure that |f.p_out| matches with |lhs_types| *)
         let return_types =
           flat_map expand_typ
-                   (List.map (fun vd -> vd.vtyp) f.p_out) in
+                   (List.map (fun vd -> vd.vd_typ) f.p_out) in
         match_types_asgn backtrace return_types lhs_types;
         Fun(f.id,typed_l))
   | Fun_v(f,ae,l) ->
@@ -825,7 +825,7 @@ let type_table (backtrace:string list) (conf:config) (p_in:p) (p_out:p) (l:int l
   (* Using a special p_size if conf.keep_tables *)
   let p_size_keep (p:p) =
     match p with
-    | vd :: [] -> (match get_type_m vd.vtyp with
+    | vd :: [] -> (match get_type_m vd.vd_typ with
                    | Mint c -> c
                    | Mnat   -> begin
                        eprintf "[Type error] Cannot use a Nat in a table's parameters.\n";

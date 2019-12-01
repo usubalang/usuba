@@ -69,7 +69,7 @@ let rec rename_deq deqs =
                             Loop(fresh_suffix id "'",ei,ef,rename_deq d,opts) }) deqs
 
 let rec rename_p (p:p) =
-  List.map (fun vd -> { vd with vid = fresh_suffix vd.vid "'" } ) p
+  List.map (fun vd -> { vd with vd_id = fresh_suffix vd.vd_id "'" } ) p
 
 let rename_def (def:def) : def =
   { id    = fresh_suffix def.id "'";

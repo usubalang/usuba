@@ -6,9 +6,9 @@ open Utils
 let bits_per_reg (prog:prog) (conf:config) : int =
   match conf.archi with
   | Std -> (let main = last prog.nodes in
-            let typ  = (List.hd main.p_in).vtyp in
+            let typ  = (List.hd main.p_in).vd_typ in
             match get_type_dir typ with
-            | Vslice -> (match get_type_m (List.hd main.p_in).vtyp with
+            | Vslice -> (match get_type_m (List.hd main.p_in).vd_typ with
                          | Mint x -> x
                          | _ -> assert false)
             | _ -> conf.bits_per_reg)

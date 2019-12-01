@@ -83,8 +83,8 @@ let rec deq_to_str (env_var:(ident,typ) Hashtbl.t) (d:deq) : string =
 
 let vd_to_str (vd:var_d) : string =
   sprintf "w%d %s[0:D]"
-          (m_as_int (get_type_m vd.vtyp))
-          (ident_to_str vd.vid)
+          (m_as_int (get_type_m vd.vd_typ))
+          (ident_to_str vd.vd_id)
 
 
 let single_node_to_str (id:ident) (p_in:p) (p_out:p) (vars:p) (deq:deq list) =

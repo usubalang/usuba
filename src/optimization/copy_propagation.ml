@@ -182,7 +182,7 @@ module Compute_keeps = struct
         Using a (ident,bool) Hashtbl, but you should see this like a
         Set. *)
        let env_keep = Hashtbl.create 10 in
-       List.iter (fun vd -> Hashtbl.add env_keep vd.vid true) def.p_out;
+       List.iter (fun vd -> Hashtbl.add env_keep vd.vd_id true) def.p_out;
        (* Calling compute_keep_deqs, which will add stuffs to env_keep *)
        compute_keep_deqs env_keep env_var body;
        (* And return env_keep *)

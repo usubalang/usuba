@@ -251,16 +251,16 @@ let expand_in_node (env_fun:(ident,def) Hashtbl.t) (f:def) (vd:var_d)
    *)
   let expand_env = Hashtbl.create 100 in
   (* First, add the binding to expand the whole array into variables. *)
-  Hashtbl.replace expand_env (Var vd.vid)
-    (List.map (fun i -> Var(fresh_suffix vd.vid (sprintf "%d'" i)))
+  Hashtbl.replace expand_env (Var vd.vd_id)
+    (List.map (fun i -> Var(fresh_suffix vd.vd_id (sprintf "%d'" i)))
        (gen_list_0_int size));
   (* Then, add the bindings to expand Index into variables, and
      generate |vd|'s replacement in p_in or p_out *)
   let new_p =
     List.map
-      (fun i -> let id' = fresh_suffix vd.vid (sprintf "%d'" i) in
-                Hashtbl.replace expand_env (Index(Var vd.vid,Const_e i)) [ Var id' ];
-                make_var_d id' new_typ vd.vck vd.vopts vd.vorig)
+      (fun i -> let id' = fresh_suffix vd.vd_id (sprintf "%d'" i) in
+                Hashtbl.replace expand_env (Index(Var vd.vd_id,Const_e i)) [ Var id' ];
+                make_var_d id' new_typ vd.vd_ck vd.vd_opts vd.vd_orig)
       (gen_list_0_int size) in
 
   (* propagating thoughout |f|'s body *)
@@ -271,12 +271,12 @@ let expand_in_node (env_fun:(ident,def) Hashtbl.t) (f:def) (vd:var_d)
   let replace l e e' = flat_map (fun x -> if x = e then e' else [x]) l in
   let new_node =
     if is_p_in then
-      { f with p_in = replace f.p_in (make_var_d vd.vid vd.vtyp vd.vck
-                                                 vd.vopts vd.vorig) new_p;
+      { f with p_in = replace f.p_in (make_var_d vd.vd_id vd.vd_typ vd.vd_ck
+                                                 vd.vd_opts vd.vd_orig) new_p;
                node = Single(get_vars f.node,body); }
     else
-      { f with p_out = replace f.p_out (make_var_d vd.vid vd.vtyp vd.vck
-                                                   vd.vopts vd.vorig) new_p;
+      { f with p_out = replace f.p_out (make_var_d vd.vd_id vd.vd_typ vd.vd_ck
+                                                   vd.vd_opts vd.vd_orig) new_p;
                node = Single(get_vars f.node,body); } in
   Hashtbl.replace env_fun new_node.id new_node
 
@@ -292,7 +292,7 @@ let expand_p (env_fun:(ident,def) Hashtbl.t) (f:def) (vd:var_d) (is_p_in:bool) :
      that we are removing. (note that in practice, we skip the "Range"
      step and expand it directly) *)
   let (size,new_typ) =
-    match vd.vtyp with
+    match vd.vd_typ with
     | Uint(dir,m,n) when n > 1 -> (n, Uint(dir,m,1))
     | Array(typ',size) -> (eval_arith_ne size, typ')
     | _ -> assert false in
@@ -322,7 +322,7 @@ let rec match_args (env_fun:(ident,def) Hashtbl.t)
   | [], [] -> []
   | vd :: tl_p, e :: tl_e ->
      begin
-       match compare (typ_size vd.vtyp) (get_expr_size env_var e) with
+       match compare (typ_size vd.vd_typ) (get_expr_size env_var e) with
        | 0 -> (* The 2 types match *)
           e :: (match_args env_fun env_var f tl_p tl_e)
        | 1 -> (* |vd| (f's param) is bigger than |e| -> expand it *)
@@ -355,7 +355,7 @@ let rec match_ret (env_fun:(ident,def) Hashtbl.t)
   | [], [] -> []
   | (vd :: tl_p), (v :: tl_v) ->
      begin
-       match compare (typ_size vd.vtyp) (get_var_size env_var v) with
+       match compare (typ_size vd.vd_typ) (get_var_size env_var v) with
        | 0 -> (* The 2 types match *)
           v :: (match_ret env_fun env_var f tl_p tl_v)
        | 1 -> (* |vd| (f's returns) is bigger than |v| -> expand it *)

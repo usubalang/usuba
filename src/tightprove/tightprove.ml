@@ -47,7 +47,7 @@ module Refresh = struct
                        (refreshes_created_back:(ident,(var,var) Hashtbl.t) Hashtbl.t)
                        (f:def) (full_prog:def) (vd:var_d)
       : deq list =
-    let new_var = Var vd.vid in
+    let new_var = Var vd.vd_id in
 
     (* Step 1: find |vd|'s initialisation in |full_prog|. *)
     let rec find_vd_init (l:deq list) =
@@ -216,7 +216,7 @@ module Refresh = struct
                       (fun deq ->
                        match deq.content with
                        | Eqn(_,Fun _,_) -> false (* a refresh -> won't have an origin *)
-                       | Eqn(_,e,_) ->  List.mem (Var vd.vid) (get_used_vars e)
+                       | Eqn(_,e,_) ->  List.mem (Var vd.vd_id) (get_used_vars e)
                        | _ -> assert false)
                       (get_body def.node) in
     match using_deq.orig with
@@ -231,9 +231,9 @@ module Refresh = struct
                      (refreshes_created_back:(ident,(var,var) Hashtbl.t) Hashtbl.t)
                      (entry_node:ident) (def:def) (vd:var_d) : unit =
     let env_var = Hashtbl.create 100 in
-    List.iter (fun vd -> Hashtbl.add env_var vd.vid vd) def.p_in;
-    List.iter (fun vd -> Hashtbl.add env_var vd.vid vd) def.p_out;
-    List.iter (fun vd -> Hashtbl.add env_var vd.vid vd) (get_vars def.node);
+    List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd) def.p_in;
+    List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd) def.p_out;
+    List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd) (get_vars def.node);
 
     (* Step 1: find out which node to refresh: find which deqs use
        |vd|, and where they come from. *)
@@ -241,9 +241,9 @@ module Refresh = struct
 
     (* Step 2: update |f| by adding refresh *)
     let env_corres = Hashtbl.create 100 in
-    Hashtbl.iter (fun id vd -> match vd.vorig with
+    Hashtbl.iter (fun id vd -> match vd.vd_orig with
                                | [] -> Hashtbl.add env_corres id id
-                               | l  -> Hashtbl.add env_corres id (snd (last l)).vid) env_var;
+                               | l  -> Hashtbl.add env_corres id (snd (last l)).vd_id) env_var;
     let new_body = refresh_function env_corres refreshes_created refreshes_created_back
                                     f def vd in
     let new_vars = vd :: (get_vars f.node) in
@@ -267,11 +267,11 @@ module Refresh = struct
          (* Using |gen_id| to avoid false positive because two functions
           would be using the same variable names. *)
          let gen_id ((f,vd):ident*var_d) =
-           fresh_ident (sprintf "fun:%s var:%s" f.name vd.vid.name) in
+           fresh_ident (sprintf "fun:%s var:%s" f.name vd.vd_id.name) in
          let add_to_env (vd:var_d) : unit =
-           match vd.vorig with
+           match vd.vd_orig with
            | [] -> ()
-           | l  -> Hashtbl.add env vd.vid (gen_id (last l)) in
+           | l  -> Hashtbl.add env vd.vd_id (gen_id (last l)) in
          List.iter add_to_env def.p_in;
          List.iter add_to_env def.p_out;
          List.iter add_to_env vars;
@@ -279,7 +279,7 @@ module Refresh = struct
          norm_after_inlining
            env (List.filter (fun d -> match d.content with
                               | Eqn(_,e,_) ->
-                                 List.exists (fun v -> (get_base_name v) = vd.vid)
+                                 List.exists (fun v -> (get_base_name v) = vd.vd_id)
                                              (get_used_vars e)
                               | _ -> assert false) body)
       | _ -> assert false in
@@ -371,14 +371,14 @@ let match_variables (new_def:def) (old_def:def) : def * (var_d list) =
   | Single(vars,body) ->
      (* Collecting old vars *)
      let old_vars = Hashtbl.create 100 in
-     List.iter (fun vd -> Hashtbl.add old_vars vd.vid vd) (get_varsd old_def.node);
+     List.iter (fun vd -> Hashtbl.add old_vars vd.vd_id vd) (get_varsd old_def.node);
 
      (* Hashtable for new refreshes *)
      let new_refreshes = Hashtbl.create 10 in
 
      (* Updating new vars *)
      let new_vars =
-       List.map (fun vd -> try Hashtbl.find old_vars vd.vid
+       List.map (fun vd -> try Hashtbl.find old_vars vd.vd_id
                            with Not_found ->
                              Hashtbl.add new_refreshes vd true;
                              vd ) vars in

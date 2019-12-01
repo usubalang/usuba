@@ -259,7 +259,7 @@ let fuse_loops_def (def:def) : def =
        (fun env_it ->
         List.iter (fun vd ->
                    List.iter (fun v -> Hashtbl.add env_ready v true)
-                             (expand_var env_var ~env_it:env_it (Var vd.vid))) def.p_in;
+                             (expand_var env_var ~env_it:env_it (Var vd.vd_id))) def.p_in;
        );
      (* Doing the fusion *)
      { def with node = Single(vars,fuse_loops_deqs env_var env_it env_ready body) }

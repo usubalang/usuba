@@ -59,8 +59,8 @@ module Dup3 = struct
 
   let dup_p (p:p) : p =
     flat_map (fun vd -> [ vd;
-                          { vd with vid = dup_id vd.vid };
-                          { vd with vid = dup3_id vd.vid } ]) p
+                          { vd with vd_id = dup_id vd.vd_id };
+                          { vd with vd_id = dup3_id vd.vd_id } ]) p
 
   let interleave_def (def:def) : def =
     match def.node with
@@ -117,7 +117,7 @@ module Dup2 = struct
                     content=Loop(i,ei,ef,interleave_deqs l,opts)} ]) deqs
 
   let dup_p (p:p) : p =
-    flat_map (fun vd -> [ vd; { vd with vid = dup_id vd.vid } ] ) p
+    flat_map (fun vd -> [ vd; { vd with vd_id = dup_id vd.vd_id } ] ) p
 
   let interleave_def (def:def) : def =
     match def.node with
@@ -185,7 +185,7 @@ module Dup2_nofunc = struct
                  [ { d with content=Loop(i,ei,ef,interleave_deqs l,opts) } ]) deqs
 
   let dup_p (p:p) : p =
-    flat_map (fun vd -> [ vd; { vd with vid = make_2nd_id vd.vid } ]) p
+    flat_map (fun vd -> [ vd; { vd with vd_id = make_2nd_id vd.vd_id } ]) p
 
   let interleave_def (def:def) : def =
     match def.node with
@@ -225,7 +225,7 @@ module Dup2_nofunc_param = struct
     let env = Hashtbl.create 100 in
 
     let add_to_env (vd:var_d) : unit =
-      Hashtbl.add env (Var vd.vid) vd in
+      Hashtbl.add env (Var vd.vd_id) vd in
 
     List.iter add_to_env p_in;
     List.iter add_to_env p_out;
@@ -237,7 +237,7 @@ module Dup2_nofunc_param = struct
 
   let rec make_2nd_var env_var (v:var) : var =
     match v with
-    | Var id -> ( match List.mem Pconst (Hashtbl.find env_var (get_var_base v)).vopts with
+    | Var id -> ( match List.mem Pconst (Hashtbl.find env_var (get_var_base v)).vd_opts with
                   | false -> Var (make_2nd_id id)
                   | true -> v )
     | Index(v,i) -> Index(make_2nd_var env_var v,i)
@@ -258,7 +258,7 @@ module Dup2_nofunc_param = struct
            assert false
 
   let rec dup_var env_var (v:var) : var list =
-    match List.mem Pconst (Hashtbl.find env_var (get_var_base v)).vopts with
+    match List.mem Pconst (Hashtbl.find env_var (get_var_base v)).vd_opts with
     | false -> [ v ; make_2nd_var env_var v ]
     | true -> [ v ]
 
@@ -305,9 +305,9 @@ module Dup2_nofunc_param = struct
                   Some ({d with content=Loop(i,ei,ef,interleave_deqs env_var g l,opts)}))) deqs
 
   let dup_p (p:p) : p =
-    flat_map (fun vd -> match List.mem Pconst vd.vopts with
+    flat_map (fun vd -> match List.mem Pconst vd.vd_opts with
                         | true  -> [ vd ]
-                        | false -> [ vd; { vd with vid = make_2nd_id vd.vid } ]) p
+                        | false -> [ vd; { vd with vd_id = make_2nd_id vd.vd_id } ]) p
 
   let interleave_def (g:int) (def:def) : def =
     match def.node with

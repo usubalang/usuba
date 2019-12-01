@@ -203,8 +203,8 @@ let rec gen_list_typ (x:string) (typ:typ) : string list =
 let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
   let inputs = make_env () in
   let aux (marker:string) vd =
-    let id = vd.vid.name in
-    match vd.vtyp with
+    let id = vd.vd_id.name in
+    match vd.vd_typ with
     | Nat -> Hashtbl.add inputs id (Printf.sprintf "%s%s" marker (rename id))
     (* Hard-coding the case ukxn[m] for now *)
     | Array(Uint(_,_,n),size) ->
@@ -230,7 +230,7 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
          (fun x y ->
           Hashtbl.add inputs x
                       (Printf.sprintf "%s[%d]" (rename id) y))
-         (gen_list_typ id vd.vtyp)
+         (gen_list_typ id vd.vd_typ)
          (gen_list_0_int (size * (eval_arith_ne n)))  in
 
   List.iter (aux "") def.p_in;
@@ -246,10 +246,10 @@ let gen_intn (n:int) : string =
          assert false
 
 let get_lift_size (vd:var_d) : int =
-  match get_base_type vd.vtyp with
+  match get_base_type vd.vd_typ with
   | Uint(_,Mint i,_) -> i
   | _ -> fprintf stderr "Invalid lazy lift with type '%s'.\n"
-                 (Usuba_print.typ_to_str vd.vtyp);
+                 (Usuba_print.typ_to_str vd.vd_typ);
          assert false
 
 
@@ -262,11 +262,11 @@ let rec var_decl_to_c conf (vd:var_d) (out:bool) : string =
     | Uint(_,_,1) -> (rename id.name) ^ start
     | Uint(_,_,n) -> sprintf "%s%s[%d]" (rename id.name) start n
     | Array(typ,size) -> aux id typ (sprintf "%s[%s]" start (aexpr_to_c size)) in
-  let vname = aux vd.vid vd.vtyp "" in
+  let vname = aux vd.vd_id vd.vd_typ "" in
   let vtype = if conf.lazylift && is_const vd then
                 gen_intn (get_lift_size vd)
               else "DATATYPE" in
-  match get_type_m vd.vtyp with
+  match get_type_m vd.vd_typ with
   | Mnat -> sprintf "unsigned int %s" vname
   | _    -> sprintf "%s %s" vtype vname
 
@@ -287,7 +287,7 @@ let single_to_c (def:def) (array:bool) (vars:p)
   if conf.lazylift then
     List.iter (fun vd ->
                if is_const vd then
-                 Hashtbl.add lift_env (Var vd.vid) (get_lift_size vd)) def.p_in;
+                 Hashtbl.add lift_env (Var vd.vd_id) (get_lift_size vd)) def.p_in;
 
 
   sprintf
@@ -341,9 +341,9 @@ let gen_bench (node:def) (conf:config) : string =
   (join "\n  " (List.map (fun s -> s ^ " = { 0 };")
                          (List.map (fun vd -> var_decl_to_c conf vd true) node.p_out)))
   (rename node.id.name)
-  (join ", " (List.map (fun vd -> rename vd.vid.name) node.p_in))
+  (join ", " (List.map (fun vd -> rename vd.vd_id.name) node.p_in))
   (join ", " (List.map (fun vd ->
-                        match vd.vtyp with
-                        | Nat | Uint(_,_,1) -> "&" ^ (rename vd.vid.name)
-                        | _ -> rename vd.vid.name) node.p_out))
-  ((List.fold_left (fun sum vd -> sum + (Nodes_to_c.get_typ_size conf vd.vtyp)) 0 node.p_out) / 8)
+                        match vd.vd_typ with
+                        | Nat | Uint(_,_,1) -> "&" ^ (rename vd.vd_id.name)
+                        | _ -> rename vd.vd_id.name) node.p_out))
+  ((List.fold_left (fun sum vd -> sum + (Nodes_to_c.get_typ_size conf vd.vd_typ)) 0 node.p_out) / 8)

@@ -68,7 +68,7 @@ module Find_used_variables = struct
     (match def.node with
      | Single(vars,body) ->
         (* Adding outputs to used variables *)
-        List.iter (fun vd -> Hashtbl.add used_vars vd.vid true) def.p_out;
+        List.iter (fun vd -> Hashtbl.add used_vars vd.vd_id true) def.p_out;
         (* Iterating through the program to find used variables *)
         while !updated do
           updated := false;
@@ -104,7 +104,7 @@ let remove_dead_code_def (def:def) : def =
   match def.node with
   | Single(vars,body) ->
      let used_vars = Find_used_variables.find_used_variables def in
-     let vars' = List.filter (fun vd -> Hashtbl.mem used_vars vd.vid) vars in
+     let vars' = List.filter (fun vd -> Hashtbl.mem used_vars vd.vd_id) vars in
      let body' = remove_dead_deqs used_vars body in
      { def with node = Single(vars',body') }
   | _ -> def
