@@ -21,7 +21,11 @@ let rec unroll_in_var (env_it:(ident,int) Hashtbl.t) (v:var) : var =
   match v with
   | Var _        -> v
   | Index(v',ae) -> Index(unroll_in_var env_it v',simpl_arith env_it ae)
-  | _ -> assert false
+  | Range(v',ae1,ae2) -> Range(unroll_in_var env_it v',
+                               simpl_arith env_it ae1,
+                               simpl_arith env_it ae2)
+  | Slice(v',aes) -> Slice(unroll_in_var env_it v',
+                           List.map (simpl_arith env_it) aes)
 
 let rec unroll_in_expr (env_it:(ident,int) Hashtbl.t) (e:expr) : expr =
   match e with
