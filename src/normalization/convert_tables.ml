@@ -23,8 +23,8 @@ let bitslice = ref false
 
 let rewrite_p (p:p) : var list =
   let env_var = Hashtbl.create 10 in
-  List.iter (fun vd -> Hashtbl.add env_var vd.vid vd.vtyp) p;
-  flat_map (fun vd -> expand_var env_var ~bitslice:!bitslice (Var vd.vid)) p
+  List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd.vd_typ) p;
+  flat_map (fun vd -> expand_var env_var ~bitslice:!bitslice (Var vd.vd_id)) p
 
 let get_bits (l:int list) (i:int) : int list =
   List.rev @@ List.map (fun x -> x lsr i land 1) l
@@ -38,7 +38,7 @@ let mux c a b = Log(Or,Log(And,Not c,ExpVar(Var a)),Log(And,c,ExpVar(Var b)))
 
 let rewrite_table (id:ident) (p_in:p) (p_out:p)
       (opt:def_opt list) (l:int list) : def =
-  let const_typ = get_base_type (List.hd p_in).vtyp in
+  let const_typ = get_base_type (List.hd p_in).vd_typ in
   let exp_p_in  = Array.of_list @@ rewrite_p p_in in
   let exp_p_out = Array.of_list @@ rewrite_p p_out in
   let size_in = Array.length exp_p_in in
@@ -105,8 +105,8 @@ let fix_p (old_p:p) (new_p:p) : p =
   | _ -> (* first case *)
      (* Assuming that the types of |new_p| all have the same
         word-size, and retrived it. TODO: remove this assumption. *)
-     let m = get_type_m (List.hd old_p).vtyp in
-     List.map (fun x -> { x with vtyp = replace_m x.vtyp m }) new_p
+     let m = get_type_m (List.hd old_p).vd_typ in
+     List.map (fun x -> { x with vd_typ = replace_m x.vd_typ m }) new_p
 
 
 let rewrite_single_table (id:ident) (p_in:p) (p_out:p)

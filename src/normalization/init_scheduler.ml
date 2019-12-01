@@ -221,9 +221,9 @@ let schedule_prog (prog:prog) (conf:config): prog =
 (*   let env = Hashtbl.create 100 in *)
 (*   List.iter (fun vd -> *)
 (*              let env_var = Hashtbl.create 100 in *)
-(*              Hashtbl.add env_var vd.vid vd.vtyp; *)
+(*              Hashtbl.add env_var vd.vd_id vd.vd_typ; *)
 (*              List.iter (fun v -> Hashtbl.add env v true) *)
-(*                        (aux env_var (Var vd.vid))) p; *)
+(*                        (aux env_var (Var vd.vd_id))) p; *)
 (*   env   *)
 
 

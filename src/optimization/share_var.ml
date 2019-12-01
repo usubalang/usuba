@@ -97,10 +97,10 @@ let share_deqs (p_in:p) (p_out:p) (vars:p) (deqs:deq list) (no_arr:bool) : deq l
   get_last_used env_var last_used deqs no_arr;
   (* The inputs (that shouldn't be overused I think) *)
   let env_in = Hashtbl.create 100 in
-  List.iter (fun vd -> Hashtbl.replace env_in (Var vd.vid) true) p_in;
+  List.iter (fun vd -> Hashtbl.replace env_in (Var vd.vd_id) true) p_in;
   (* out variables, should be kept *)
   let env_out = Hashtbl.create 100 in
-  List.iter (fun vd -> Hashtbl.replace env_out (Var vd.vid) true) p_out;
+  List.iter (fun vd -> Hashtbl.replace env_out (Var vd.vd_id) true) p_out;
   (* replacement env for variables that have been replaced *)
   let env_replace = Hashtbl.create 1000 in
 

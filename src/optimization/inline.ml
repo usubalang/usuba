@@ -76,7 +76,7 @@ module Must_inline = struct
     | Single(vars,body) ->
        let env_var = build_env_var def.p_in def.p_out vars in
        let env_in  = Hashtbl.create 10 in
-       List.iter (fun vd -> Hashtbl.add env_in vd.vid true) def.p_in;
+       List.iter (fun vd -> Hashtbl.add env_in vd.vd_id true) def.p_in;
        must_inline_deqs env_var env_in body
     | _ -> false
 
@@ -231,15 +231,15 @@ let inline_call (to_inl:def) (args:expr list) (lhs:var list) (cpt:int) :
   let var_env = Hashtbl.create 100 in
   let expr_env = Hashtbl.create 100 in
   (* p_out replaced by the lhs *)
-  List.iter2 ( fun vd v -> Hashtbl.add var_env (Var vd.vid) v ) p_out lhs;
+  List.iter2 ( fun vd v -> Hashtbl.add var_env (Var vd.vd_id) v ) p_out lhs;
   (* p_in replaced by the expressions of arguments *)
-  List.iter2 ( fun vd e -> Hashtbl.add expr_env (Var vd.vid) e) p_in args;
+  List.iter2 ( fun vd e -> Hashtbl.add expr_env (Var vd.vd_id) e) p_in args;
   (* Create a list containing the new variables names *)
-  let vars = List.map (fun vd -> { vd with vid = conv_name vd.vid;
-                                           vorig = (to_inl.id,vd) :: vd.vorig}) vars_inl in
+  let vars = List.map (fun vd -> { vd with vd_id = conv_name vd.vd_id;
+                                           vd_orig = (to_inl.id,vd) :: vd.vd_orig}) vars_inl in
   (* nodes variables alpha-converted *)
   List.iter2 ( fun vd vd' ->
-               Hashtbl.add var_env (Var vd.vid) (Var vd'.vid)) vars_inl vars;
+               Hashtbl.add var_env (Var vd.vd_id) (Var vd'.vd_id)) vars_inl vars;
 
   vars, update_vars_and_deqs (Hashtbl.create 10) var_env expr_env to_inl.id body_inl
 

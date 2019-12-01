@@ -93,14 +93,14 @@ module Get_consts = struct
        (* Setting up |env_const|. *)
        let add_consts (l:p) =
          List.iter (fun vd -> if is_const vd then
-                                Hashtbl.add env_const vd.vid true) l in
+                                Hashtbl.add env_const vd.vd_id true) l in
        add_consts def.p_in;
        add_consts vars;
        (* Setting up |env_not_const|. Note that parameters are assumed
        not const by default, while nothing is assumed for local
        variables, nor for output variables. *)
        List.iter (fun vd -> if not (is_const vd) then
-                              Hashtbl.add env_not_const vd.vid true) def.p_in;
+                              Hashtbl.add env_not_const vd.vd_id true) def.p_in;
        get_consts_deqs env_const env_not_const body;
        env_const
     | _ -> (* This case should be catched somewhere else (eg, on the caller's side) *)
@@ -234,7 +234,7 @@ let rec mask_typ (typ:typ) : typ =
   | Array(typ',s) -> Array(mask_typ typ',s)
 
 let mask_p (p:p) : p =
-  List.map (fun vd -> { vd with vtyp = mask_typ vd.vtyp}) p
+  List.map (fun vd -> { vd with vd_typ = mask_typ vd.vd_typ}) p
 
 let mask_def (def:def) : def =
   match def.node with

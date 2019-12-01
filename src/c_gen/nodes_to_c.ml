@@ -177,10 +177,10 @@ let params_to_arr (params: p) (marker:string) : string list =
     | Uint(_,_,n) -> (l @ [sprintf "[%d]" n])
     | Array(t,n) -> typ_to_arr t ((sprintf "[%s]" (aexpr_to_c n)) :: l)
     | _ -> raise (Not_implemented "Invalid input") in
-  List.map (fun vd -> match vd.vtyp with
-                      | Uint(_,_,1) -> sprintf "%s%s" marker vd.vid.name
-                      | _ -> sprintf "%s%s" vd.vid.name
-                                     (join "" (typ_to_arr vd.vtyp []))) params
+  List.map (fun vd -> match vd.vd_typ with
+                      | Uint(_,_,1) -> sprintf "%s%s" marker vd.vd_id.name
+                      | _ -> sprintf "%s%s" vd.vd_id.name
+                                     (join "" (typ_to_arr vd.vd_typ []))) params
 
 let rec gen_list_typ (x:string) (typ:typ) : string list =
   match typ with
@@ -195,8 +195,8 @@ let rec gen_list_typ (x:string) (typ:typ) : string list =
 let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
   let inputs = make_env () in
   let aux (marker:string) vd =
-    let id = vd.vid.name in
-    match vd.vtyp with
+    let id = vd.vd_id.name in
+    match vd.vd_typ with
     | Nat -> Hashtbl.add inputs id (Printf.sprintf "%s%s" marker (rename id))
     (* Hard-coding the case ukxn[m] for now *)
     | Array(Uint(_,_,n),size) ->
@@ -222,7 +222,7 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
          (fun x y ->
           Hashtbl.add inputs x
                       (Printf.sprintf "%s[%d]" (rename id) y))
-         (gen_list_typ id vd.vtyp)
+         (gen_list_typ id vd.vd_typ)
          (gen_list_0_int (size * (eval_arith_ne n))) in
 
   List.iter (aux "") def.p_in;
@@ -232,8 +232,8 @@ let inputs_to_arr (def:def) : (string, string) Hashtbl.t =
 let outputs_to_ptr (def:def) : (string, string) Hashtbl.t =
   let outputs = make_env () in
   List.iter (fun vd ->
-             let id = vd.vid.name in
-             match vd.vtyp with
+             let id = vd.vd_id.name in
+             match vd.vd_typ with
              | Uint(_,_,1) -> env_add outputs id ("*"^(rename id))
              | _ -> ()) def.p_out;
   outputs
@@ -247,10 +247,10 @@ let gen_intn (n:int) : string =
          assert false
 
 let get_lift_size (vd:var_d) : int =
-  match get_base_type vd.vtyp with
+  match get_base_type vd.vd_typ with
   | Uint(_,Mint i,_) -> i
   | _ -> fprintf stderr "Invalid lazy lift with type '%s'.\n"
-                 (Usuba_print.typ_to_str vd.vtyp);
+                 (Usuba_print.typ_to_str vd.vd_typ);
          assert false
 
 
@@ -263,16 +263,16 @@ let rec var_decl_to_c conf (vd:var_d) (out:bool) : string =
     | Uint(_,_,1) -> (rename id.name) ^ start
     | Uint(_,_,n) -> sprintf "%s%s[%d]" (rename id.name) start n
     | Array(typ,size) -> aux id typ (sprintf "%s[%s]" start (aexpr_to_c size)) in
-  let vname = aux vd.vid vd.vtyp "" in
+  let vname = aux vd.vd_id vd.vd_typ "" in
   let vtype = if conf.lazylift && is_const vd then
                 gen_intn (get_lift_size vd)
               else
-                match get_type_m vd.vtyp with
+                match get_type_m vd.vd_typ with
                 | Mnat -> "int"
                 | _ -> "DATATYPE" in
   let pointer = match out with
     | false -> ""
-    | true  -> match vd.vtyp with
+    | true  -> match vd.vd_typ with
                | Uint(_,_,1) -> "*"
                | _ -> "" in
   sprintf "%s%s %s" vtype pointer vname
@@ -294,7 +294,7 @@ let single_to_c (def:def) (array:bool) (vars:p)
   if conf.lazylift then
     List.iter (fun vd ->
                if is_const vd then
-                 Hashtbl.add lift_env (Var vd.vid) (get_lift_size vd)) def.p_in;
+                 Hashtbl.add lift_env (Var vd.vd_id) (get_lift_size vd)) def.p_in;
 
 
   sprintf
@@ -350,10 +350,10 @@ let table_to_c (def:def) (l:int list) (conf:config) : string =
   (join "," (List.map string_of_int l))
 
   (* Return value *)
-  (rename (List.hd (def.p_out)).vid.name)
+  (rename (List.hd (def.p_out)).vd_id.name)
 
   (* Index in the table *)
-  (rename (List.hd (def.p_in)).vid.name)
+  (rename (List.hd (def.p_in)).vd_id.name)
 
 let def_to_c (def:def) (array:bool) (conf:config) : string =
   match def.node with
@@ -401,9 +401,9 @@ let gen_bench (node:def) (conf:config) : string =
   (join "\n  " (List.map (fun s -> s ^ " = { 0 };")
                          (List.map (fun vd -> var_decl_to_c conf vd true) node.p_out)))
   (rename node.id.name)
-  (join ", " (List.map (fun vd -> rename vd.vid.name) node.p_in))
+  (join ", " (List.map (fun vd -> rename vd.vd_id.name) node.p_in))
   (join ", " (List.map (fun vd ->
-                        match vd.vtyp with
-                        | Nat | Uint(_,_,1) -> "&" ^ (rename vd.vid.name)
-                        | _ -> rename vd.vid.name) node.p_out))
-  ((List.fold_left (fun sum vd -> sum + (get_typ_size conf vd.vtyp)) 0 node.p_out) / 8)
+                        match vd.vd_typ with
+                        | Nat | Uint(_,_,1) -> "&" ^ (rename vd.vd_id.name)
+                        | _ -> rename vd.vd_id.name) node.p_out))
+  ((List.fold_left (fun sum vd -> sum + (get_typ_size conf vd.vd_typ)) 0 node.p_out) / 8)

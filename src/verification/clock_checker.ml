@@ -19,9 +19,9 @@ let and_ck (x:clock) (y:clock) : clock * bool =
 
 let init_env (p_in:p) (p_out:p) (vars:p) =
   let env = Hashtbl.create 100 in
-  List.iter (fun vd -> Hashtbl.add env vd.vid vd.vck) p_in;
-  List.iter (fun vd -> Hashtbl.add env vd.vid vd.vck) p_out;
-  List.iter (fun vd -> Hashtbl.add env vd.vid vd.vck) vars;
+  List.iter (fun vd -> Hashtbl.add env vd.vd_id vd.vd_ck) p_in;
+  List.iter (fun vd -> Hashtbl.add env vd.vd_id vd.vd_ck) p_out;
+  List.iter (fun vd -> Hashtbl.add env vd.vd_id vd.vd_ck) vars;
   env
 
 let rec get_clock env (v: var) : clock =

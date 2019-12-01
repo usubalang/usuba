@@ -89,11 +89,11 @@ Definition deq_i := _deq_i deq.
 Inductive var_d_opt := Pconst | PlazyLift.
 
 Inductive var_d := {
-  vid   : ident;
-  vtyp  : typ;
-  vck   : clock;
-  vopts : list var_d_opt;
-  vorig : list (ident * var_d); (* A list of functions from where this variable was inlined *)
+  vd_id   : ident;
+  vd_typ  : typ;
+  vd_ck   : clock;
+  vd_opts : list var_d_opt;
+  vd_orig : list (ident * var_d); (* A list of functions from where this variable was inlined *)
 }.
 
 Definition p := list var_d.

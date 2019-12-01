@@ -120,7 +120,7 @@ let schedule_deqs (deqs:deq list) (def:def): deq list =
     match expand_var_partial env_var v with
     | [ x ] when x = v -> ()
     | l -> List.iter init_sched_vars l in
-  List.iter (fun vd -> init_sched_vars (Var vd.vid)) def.p_in;
+  List.iter (fun vd -> init_sched_vars (Var vd.vd_id)) def.p_in;
 
   List.iter (fun d -> match d.content with
               | Eqn(l,e,_) -> schedule_asgn ready is_sched sched_vars

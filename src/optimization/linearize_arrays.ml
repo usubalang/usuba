@@ -59,8 +59,8 @@ let update_vars to_linearize (vars:p) : p =
        Printf.fprintf stderr "update_vars: unexcpected type: %s\n" (Usuba_print.typ_to_str typ);
        assert false in
 
-  List.map (fun vd -> match Hashtbl.find_opt to_linearize vd.vid with
-                      | Some _ -> { vd with vtyp = simpl_type vd.vtyp }
+  List.map (fun vd -> match Hashtbl.find_opt to_linearize vd.vd_id with
+                      | Some _ -> { vd with vd_typ = simpl_type vd.vd_typ }
                       | None -> vd) vars
 
 (* Update a variable: linearize it if is contained in |to_linearize|;
@@ -142,7 +142,7 @@ let rec can_linearize_def (env_fun:(ident,def) Hashtbl.t)
      let defined = Hashtbl.create 10 in
      (* Initialize |defined|: |v_in| points to |v_in|. *)
      List.iter (fun v -> Hashtbl.add defined v v)
-               (expand_var env_var ~env_it:env_it (Var v_in.vid));
+               (expand_var env_var ~env_it:env_it (Var v_in.vd_id));
      can_linearize_def_body env_fun env_it env_var defined body v_in v_out
   | _ -> (* The only case we can get here is if there is a |Table|
             that wasn't expanded due to --keep-tables flag. Nothing to
@@ -168,11 +168,11 @@ and can_linearize_def_body
                 let def_called = Hashtbl.find env_fun f in
                 let param_idx =
                   find_get_i (fun e -> match e with
-                                       | ExpVar v -> get_base_name v = v_in.vid
+                                       | ExpVar v -> get_base_name v = v_in.vd_id
                                        | _ -> false) l in
                 let v_in' = List.nth def_called.p_in param_idx in
                 let return_idx =
-                  find_get_i (fun v -> get_base_name v = v_out.vid) lhs in
+                  find_get_i (fun v -> get_base_name v = v_out.vd_id) lhs in
                 let v_out' = List.nth def_called.p_out return_idx in
                 can_linearize_def env_fun env_it def_called v_in' v_out'
               with Not_found ->
@@ -185,7 +185,7 @@ and can_linearize_def_body
             (e) doesn't use overriten variables *)
          List.iter (
              fun v ->
-             match get_base_name v = v_in.vid with
+             match get_base_name v = v_in.vd_id with
              | true -> (* This expression uses |v_in| -> need to make
                           sure that |v_in| is available. *)
                 List.iter (fun v ->
@@ -199,10 +199,10 @@ and can_linearize_def_body
          (* Updating |defined| variables *)
          List.iter (
              fun v ->
-             match get_base_name v = v_out.vid with
+             match get_base_name v = v_out.vd_id with
              | true -> (* Writes to v_out -> need to update |defined| *)
                 List.iter (fun v ->
-                    let v' = replace_base v v_in.vid in
+                    let v' = replace_base v v_in.vd_id in
                     Hashtbl.replace defined v' v)
                   (expand_var env_var ~env_it:env_it v)
              | false -> () (* Does not write to |v_out| -> do nothing *)
@@ -321,7 +321,7 @@ let rec can_linearize
 (* Returns variables that are arrays *)
 let get_arrays (vars:p) : p =
     List.filter (fun vd ->
-      match vd.vtyp with
+      match vd.vd_typ with
       | Array _ -> true
       | Uint(_,_,n) when n > 1 -> true
       | _ -> false) vars
@@ -341,9 +341,9 @@ let linearize_def (conf:config) (env_fun:(ident,def) Hashtbl.t) (def:def) : def 
      (* |to_linearize|: the set of variables to linearize *)
      let to_linearize = Hashtbl.create 100 in
      List.iter (fun vd ->
-         try can_linearize env_fun ~env_it:env_it body vd.vid env_var;
+         try can_linearize env_fun ~env_it:env_it body vd.vd_id env_var;
              (* Succeeded -> array can be linearized *)
-             Hashtbl.replace to_linearize vd.vid true
+             Hashtbl.replace to_linearize vd.vd_id true
          with
            (* Failed -> do not linearize this array *)
            Keep_it -> ())

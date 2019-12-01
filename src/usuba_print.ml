@@ -179,17 +179,17 @@ let var_d_opt_to_str_l = lift_space var_d_opt_to_str
 
 let full_vd_to_str (vd:var_d) =
   sprintf "%s : %s %s :: %s"
-          vd.vid.name
-          (var_d_opt_to_str_l vd.vopts)
-          (full_typ_to_str vd.vtyp)
-          (clock_to_str vd.vck)
+          vd.vd_id.name
+          (var_d_opt_to_str_l vd.vd_opts)
+          (full_typ_to_str vd.vd_typ)
+          (clock_to_str vd.vd_ck)
 
 let vd_to_str (vd:var_d) =
   sprintf "%s : %s %s :: %s"
-          vd.vid.name
-          (var_d_opt_to_str_l vd.vopts)
-          (typ_to_str vd.vtyp)
-          (clock_to_str vd.vck)
+          vd.vd_id.name
+          (var_d_opt_to_str_l vd.vd_opts)
+          (typ_to_str vd.vd_typ)
+          (clock_to_str vd.vd_ck)
 let p_to_str = lift_comma vd_to_str
 
 

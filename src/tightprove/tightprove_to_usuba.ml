@@ -130,7 +130,7 @@ let tp_to_usuba (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
      List.iter (fun d -> Hashtbl.add deqs_origins d.content d.orig) body;
      let deqs_corres = Hashtbl.create 100 in
      let new_vars    = Hashtbl.create 10 in
-     let base_type   = Utils.get_base_type (List.hd (ua_def.p_in)).vtyp in
+     let base_type   = Utils.get_base_type (List.hd (ua_def.p_in)).vd_typ in
      let new_body    = body_to_ua vars_corres new_vars deqs_origins deqs_corres
                                   base_type tp_def.body in
      let new_vars    = vars @ (List.map (fun v -> Utils.simple_typed_var_d

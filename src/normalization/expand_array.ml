@@ -209,25 +209,25 @@ and expand_deqs env_var env_keep ?(env=make_env ())
 
 let expand_p (bitslice:bool) (p:p) : p =
   let rec aux vd =
-    match vd.vtyp with
+    match vd.vd_typ with
     | Nat -> [ vd ]
     | Array(t,size) ->
        flat_map (fun i ->
-                 aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
-                               vtyp = t })
+                 aux { vd with vd_id  = fresh_suffix vd.vd_id (sprintf "%d'" i);
+                               vd_typ = t })
                 (gen_list_0_int (eval_arith_ne size))
     | Uint(dir,Mint m,1) when m > 1 ->
        if bitslice then
          List.map (fun i ->
-                   { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
-                             vtyp = Uint(dir,Mint 1,1) })
+                   { vd with vd_id  = fresh_suffix vd.vd_id (sprintf "%d'" i);
+                             vd_typ = Uint(dir,Mint 1,1) })
                   (gen_list_0_int m)
        else [ vd ]
     | Uint(_,_,1)   -> [ vd ]
     | Uint(dir,m,n) ->
        flat_map (fun i ->
-                 aux { vd with vid  = fresh_suffix vd.vid (sprintf "%d'" i);
-                               vtyp = Uint(dir,m,1) })
+                 aux { vd with vd_id  = fresh_suffix vd.vd_id (sprintf "%d'" i);
+                               vd_typ = Uint(dir,m,1) })
                 (gen_list_0_int n) in
   flat_map aux p
 
@@ -238,7 +238,7 @@ let expand_p (bitslice:bool) (p:p) : p =
 let build_env_keep (p_in:p) (p_out:p) =
   let env = Hashtbl.create 100 in
 
-  let f (vd:var_d) = Hashtbl.add env vd.vid true in
+  let f (vd:var_d) = Hashtbl.add env vd.vd_id true in
 
   List.iter f p_in;
   List.iter f p_out;
@@ -247,7 +247,7 @@ let build_env_keep (p_in:p) (p_out:p) =
 
 let update_env_var (env_var:(ident,typ) Hashtbl.t) (p_in:p) (p_out:p) (vars:p) : unit =
   let add_to_env (vd:var_d) : unit =
-    Hashtbl.replace env_var vd.vid vd.vtyp in
+    Hashtbl.replace env_var vd.vd_id vd.vd_typ in
 
   List.iter add_to_env p_in;
   List.iter add_to_env p_out;

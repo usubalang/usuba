@@ -274,7 +274,7 @@ module Bslice = struct
 
 
   let refine_types (p:p) : p =
-    List.map (fun vd -> { vd with vtyp = refine_type vd.vtyp }) p
+    List.map (fun vd -> { vd with vd_typ = refine_type vd.vd_typ }) p
 end
 
 
@@ -297,7 +297,7 @@ let gen_fun_name (f:ident) (ldir:dir list) (lmtyp:mtyp list): ident =
 let refine_types (p:p) : p =
   match p with
   | [] -> []
-  | hd::_ ->  match get_type_dir hd.vtyp with
+  | hd::_ ->  match get_type_dir hd.vd_typ with
               | Bslice -> Bslice.refine_types p
               | Hslice -> Hslice.refine_types p
               | Vslice -> Vslice.refine_types p
@@ -307,7 +307,7 @@ let refine_types (p:p) : p =
 let specialize_p (env_dir:(dir,dir) Hashtbl.t)
                  (env_m:(mtyp,mtyp) Hashtbl.t)
                  (p:p) : p =
-  List.map (fun v -> { v with vtyp = specialize_typ env_dir env_m v.vtyp }) p
+  List.map (fun v -> { v with vd_typ = specialize_typ env_dir env_m v.vd_typ }) p
 
 let specialize_var (env_var:(ident, typ) Hashtbl.t) (v:var) : var =
   match get_var_dir env_var v with
@@ -333,9 +333,9 @@ let match_types env_dir env_m (p:p) (typs:typ list) : p =
     | Uint(_,_,n) -> Uint(get_type_dir t_dir_m,get_type_m t_dir_m,n)
     | Array(t,s)  -> Array(update_dir_m t t_dir_m,s) in
   List.map2 (fun vd t ->
-             Hashtbl.replace env_dir (get_type_dir vd.vtyp) (get_type_dir t);
-             Hashtbl.replace env_m (get_type_m vd.vtyp) (get_type_m t);
-             { vd with vtyp = update_dir_m vd.vtyp t }
+             Hashtbl.replace env_dir (get_type_dir vd.vd_typ) (get_type_dir t);
+             Hashtbl.replace env_m (get_type_m vd.vd_typ) (get_type_m t);
+             { vd with vd_typ = update_dir_m vd.vd_typ t }
             ) p typs
 
 let rec specialize_fun_call

@@ -14,7 +14,7 @@ let rec match_lists (env_var:(ident, typ) Hashtbl.t)
                     (expect:p) (given:var list) =
   match expect, given with
   | hd_e::tl_e, hd_g::tl_g ->
-     let typ_e = hd_e.vtyp in
+     let typ_e = hd_e.vd_typ in
      let typ_g = get_var_type env_var hd_g in
      if typ_e = typ_g then
        

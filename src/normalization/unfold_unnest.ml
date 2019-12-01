@@ -3,7 +3,7 @@ open Basic_utils
 open Utils
 
 
-let sum_type = List.fold_left (fun tot vd -> tot + (typ_size vd.vtyp)) 0
+let sum_type = List.fold_left (fun tot vd -> tot + (typ_size vd.vd_typ)) 0
 
 
 (* ************************************************************************** *)
@@ -55,7 +55,7 @@ let rec get_expr_type env_fun env_var (ltyp:typ list) (e:expr) : typ list =
        flat_map (get_expr_type env_fun env_var ltyp) l
      else
        let def = Hashtbl.find env_fun f in
-       List.map (fun vd -> vd.vtyp) def.p_out
+       List.map (fun vd -> vd.vd_typ) def.p_out
   | _ -> assert false
 
 
