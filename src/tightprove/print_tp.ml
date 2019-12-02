@@ -31,14 +31,14 @@ let def_to_str (def:def) : string =
   sprintf
 "rs=%d
 
-in %s
+%s
 
 %s
 "
 (* m *)
 def.rs
 (* inputs *)
-(join " " def.inputs)
+(join "" (List.map (sprintf "in %s\n") def.inputs))
 (* body *)
 (join "" (List.map asgn_to_str def.body))
 
