@@ -19,7 +19,7 @@ let rec expr_to_str (e:expr) : string =
   | Const c        -> sprintf "setcst(0x%x)" c
   | ConstAll c     -> sprintf "setcstall(0x%x)" c
   | BitToReg(id,n) -> sprintf "bit_to_reg(%s,%d)" id n
-  | Refresh id     -> sprintf "refresh(%s)" id
+  | Refresh id     -> sprintf "refresh %s" id
   | Not id         -> sprintf "not %s" id
   | Log(o,x,y)     -> sprintf "%s %s %s" (log_op_to_str o) x y
   | Shift(op,e,n)  -> sprintf "%s %s %d" e (shift_op_to_str op) n
