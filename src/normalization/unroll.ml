@@ -33,7 +33,7 @@ let rec unroll_in_expr (env_it:(ident,int) Hashtbl.t) (e:expr) : expr =
   | ExpVar v        -> ExpVar (unroll_in_var env_it v)
   | Tuple l         -> Tuple (List.map (unroll_in_expr env_it) l)
   | Not e'          -> Not (unroll_in_expr env_it e')
-  | Shift(op,e',ae) -> Shift(op,unroll_in_expr env_it e',ae)
+  | Shift(op,e',ae) -> Shift(op,unroll_in_expr env_it e',simpl_arith env_it ae)
   | Log(op,x,y)     -> Log(op,unroll_in_expr env_it x,unroll_in_expr env_it y)
   | Shuffle(v,l)    -> Shuffle(unroll_in_var env_it v,l)
   | Arith(op,x,y)   -> Arith(op,unroll_in_expr env_it x,unroll_in_expr env_it y)
