@@ -46,8 +46,9 @@ module Refresh = struct
                        (refreshes_created:(ident,(var,var) Hashtbl.t) Hashtbl.t)
                        (refreshes_created_back:(ident,(var,var) Hashtbl.t) Hashtbl.t)
                        (f:def) (full_prog:def) (vd:var_d)
-      : deq list =
+      : deq list * var_d =
     let new_var = Var vd.vd_id in
+    let env_var = build_env_var f.p_in f.p_out (get_vars f.node) in
 
     (* Step 1: find |vd|'s initialisation in |full_prog|. *)
     let rec find_vd_init (l:deq list) =
@@ -141,20 +142,37 @@ module Refresh = struct
           | Some v -> v
           | None -> assert false)
       | _ -> assert false in
+
+    (* Step 6: adjust |vd| and |new_var| based on |rv|'s
+       type. Specifically, if |rv| is a variable index in an array,
+       then |vd| should be an array and |new_var| an index *)
+    let rec ae_contains_var (ae:arith_expr) : bool =
+      match ae with
+      | Const_e _ -> false
+      | Var_e _   -> true
+      | Op_e(_,ae1,ae2) -> (ae_contains_var ae1) || (ae_contains_var ae2) in
+    let (vd, new_var_to_write) =
+      match really_refreshed with
+      | Index(rr',ae) -> if ae_contains_var ae then
+                           (* Contains a variable index *)
+                           let new_var_to_write = Index(new_var,ae) in
+                           let rr_type = get_var_type env_var rr' in
+                           ({ vd with vd_typ = rr_type }, new_var_to_write)
+                       else (vd, new_var)
+      | _ -> (vd, new_var) in
+
     let vd_init = { orig = [];
-                    content = Eqn([new_var],Fun(fresh_ident "refresh",
-                                                [ExpVar really_refreshed]),false) } in
+                    content = Eqn([new_var_to_write],
+                                  Fun(fresh_ident "refresh",
+                                      [ExpVar really_refreshed]),false) } in
 
-    printf "new_var: %s\n" vd.vd_id.name;
-    printf "old_var: %s\n" (Usuba_print.var_to_str really_refreshed);
-    printf "first use: %s\n" (Usuba_print.deq_i_to_str old_first_use_deq);
 
-    (* Step 6 and 7 are combined since Step 6 iterate the begining of
-       |f|, and Step 7 iterates the end; this makes things much
+    (* Step 7 and 8 are combined since Step 7 iterate the begining of
+       |f|, and Step 8 iterates the end; this makes things much
        easier. (ie, more easy than creating a zipper) *)
-    (* Step 6 : iterate |f|'s body up to the deq |old_first_use_deq|
+    (* Step 7 : iterate |f|'s body up to the deq |old_first_use_deq|
        generated in Step 4. *)
-    (* Step 7: iterate the end of |f|, and replace |rv| by |vd| when
+    (* Step 8: iterate the end of |f|, and replace |rv| by |vd| when
        needed. *)
     let full_prog = ref full_prog in
     let is_found = ref false in
@@ -184,9 +202,9 @@ module Refresh = struct
                       find_deq_in_f. *)
                    find_deq_in_f tl)
 
-    (* Step 7's functions *)
+    (* Step 8's functions *)
     and merge_vars (vf:var) (vo:var) : var =
-      if vf = new_var then vf else vo
+      if vf = new_var then new_var_to_write else vo
     and merge_expr (ef:expr) (eo:expr): expr =
       match ef, eo with
       | Const _, Const _                 -> eo
@@ -239,14 +257,14 @@ module Refresh = struct
 
   let new_body = find_deq_in_f (get_body f.node) in
 
-  (* Step 8: update |refreshes_created_back| *)
+  (* Step 9: update |refreshes_created_back| *)
   let rec get_initial_rv (v:var) : var =
     match find_opt_2nd_layer refreshes_created f.id v with
     | Some v' -> get_initial_rv v'
     | None -> v in
   replace_key_2nd_layer refreshes_created_back f.id (get_initial_rv rv) new_var;
 
-  new_body
+  new_body, vd
 
 
   (* Finds which the first deq of |def| that is using |vd|, and get
@@ -288,11 +306,13 @@ module Refresh = struct
 
     (* Step 2: update |f| by adding refresh *)
     let env_corres = Hashtbl.create 100 in
-    Hashtbl.iter (fun id vd -> match vd.vd_orig with
-                               | [] -> Hashtbl.add env_corres id id
-                               | l  -> Hashtbl.add env_corres id (snd (last l)).vd_id) env_var;
-    let new_body = refresh_function env_corres refreshes_created refreshes_created_back
-                                    f def vd in
+    Hashtbl.iter (fun id vd ->
+                  match vd.vd_orig with
+                  | [] -> Hashtbl.add env_corres id id
+                  | l  -> Hashtbl.add env_corres id (snd (last l)).vd_id) env_var;
+    let (new_body, vd) =
+      refresh_function env_corres refreshes_created
+                       refreshes_created_back f def vd in
     let new_vars = vd :: (get_vars f.node) in
 
     Hashtbl.replace prog_nodes f.id { f with node = Single(new_vars, new_body) }
