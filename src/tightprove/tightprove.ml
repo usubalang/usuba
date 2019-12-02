@@ -57,7 +57,7 @@ module Refresh = struct
                     | Eqn([v],_,_) when v = new_var -> l
                     | _ -> find_vd_init tl in
     let full_prog = norm_after_inlining env_corres
-                     (find_vd_init (get_body full_prog.node)) in
+                                        (find_vd_init (get_body full_prog.node)) in
     let vd_init = List.hd full_prog in
 
     (* Step 2: find out the variable |rv| refreshed by |vd| (based on
@@ -110,7 +110,7 @@ module Refresh = struct
          (* Was inlined from somewhere *)
          (snd (last first_use_deq.orig)) in
 
-    (* Step 4.5: find out which variable |vd| really refreshes (useful
+    (* Step 5: find out which variable |vd| really refreshes (useful
        only if |rv| was in |f|'s parameters or returns). *)
     let comb_option (a:'a option) (b:'a option) : 'a option =
       match a with
@@ -145,26 +145,49 @@ module Refresh = struct
                     content = Eqn([new_var],Fun(fresh_ident "refresh",
                                                 [ExpVar really_refreshed]),false) } in
 
+    printf "new_var: %s\n" vd.vd_id.name;
+    printf "old_var: %s\n" (Usuba_print.var_to_str really_refreshed);
+    printf "first use: %s\n" (Usuba_print.deq_i_to_str old_first_use_deq);
 
-    (* Step 5: iterate |f|'s body up to the deq |deq| generated in Step 4. *)
-    let old_body = ref (get_body f.node) in
-    let new_body = ref [] in
-    let rec find_deq_in_f () =
-      if (List.hd !old_body).content = old_first_use_deq then ()
-      else (new_body := (List.hd !old_body) :: !new_body;
-            old_body := List.tl !old_body;
-            find_deq_in_f ()) in
-    find_deq_in_f ();
-
-    (* Step 6: insert |vd|'s definition *)
-    new_body := vd_init :: !new_body;
-
-    (* Step 7: iterate |f|, and replace |rv| by |vd| when needed. Stop
-       when reaching the end of |f| *)
+    (* Step 6 and 7 are combined since Step 6 iterate the begining of
+       |f|, and Step 7 iterates the end; this makes things much
+       easier. (ie, more easy than creating a zipper) *)
+    (* Step 6 : iterate |f|'s body up to the deq |old_first_use_deq|
+       generated in Step 4. *)
+    (* Step 7: iterate the end of |f|, and replace |rv| by |vd| when
+       needed. *)
     let full_prog = ref full_prog in
-    let merge_vars (vf:var) (vo:var) : var =
-      if vf = new_var then vf else vo in
-    let rec merge_expr (ef:expr) (eo:expr): expr =
+    let is_found = ref false in
+    let rec find_deq_in_f (deqs:deq list) : deq list =
+      match deqs with
+      | [] -> []
+      | hd :: tl ->
+         if hd.content = old_first_use_deq then
+           (is_found := true;
+            (* insert |vd|'s definition *)
+            vd_init ::
+              (* Switch to update_f_body to update remaining of |f| *)
+              (update_f_body deqs))
+         else
+           (* Keep searching*)
+           match hd.content with
+           | Eqn _ -> hd :: (find_deq_in_f tl)
+           | Loop(i,ei,ef,dl,opts) ->
+              { hd with
+                content = Loop(i,ei,ef,find_deq_in_f dl, opts) } ::
+                (if !is_found then
+                   (* |old_first_use_deq| was found inside the loop
+                      body; continuing to update_f_body *)
+                   (update_f_body tl)
+                 else
+                   (* |old_first_use_deq| not found, continuing with
+                      find_deq_in_f. *)
+                   find_deq_in_f tl)
+
+    (* Step 7's functions *)
+    and merge_vars (vf:var) (vo:var) : var =
+      if vf = new_var then vf else vo
+    and merge_expr (ef:expr) (eo:expr): expr =
       match ef, eo with
       | Const _, Const _                 -> eo
       | ExpVar vf, ExpVar vo             -> ExpVar (merge_vars vf vo)
@@ -176,36 +199,55 @@ module Refresh = struct
       | Arith(_,xf,yf),Arith(op,xo,yo)   -> Arith(op,merge_expr xf xo,merge_expr yf yo)
       | Fun(_,lf),Fun(f,lo)              -> Fun(f,List.map2 merge_expr lf lo)
       | Fun(f,_),_ when f.name = "refresh" -> raise Skip
-      | _ -> assert false in
-    let rec update_f_body () =
-      match !old_body with
-      | [] -> ()
+      | _ -> assert false
+    and is_same_orig_deq (d1:deq) (d2:deq) : bool =
+      let c1 = match d1.orig with
+        | [] -> d1.content
+        | l  -> snd (last l) in
+      let c2 = match d2.orig with
+        | [] -> d2.content
+        | l  -> snd (last l) in
+      c1 = c2
+    and update_f_body (f_body:deq list) : deq list =
+      match f_body with
+      | [] -> []
       | hd :: tl ->
          let next_deq_full_prog = List.hd !full_prog in
          match hd.content with
-         | Eqn(lhs,e_old_body,sync) ->
-            (match next_deq_full_prog.content with
-             | Eqn(_,e_full_prog,_) ->
-                (try
-                    new_body  := { hd with
-                                   content = Eqn(lhs,merge_expr e_full_prog e_old_body,sync) }
-                                 :: !new_body;
-                    old_body  := List.tl !old_body;
-                  with Skip -> ());
-                full_prog := List.tl !full_prog;
-                update_f_body ()
-             | _ -> assert false)
-         | _ -> assert false in
-    update_f_body ();
+         | Eqn(lhs,e_f_body,sync) ->
+            if is_same_orig_deq hd next_deq_full_prog then
+              (match next_deq_full_prog.content with
+               | Eqn(_,e_full_prog,_) ->
+                  full_prog := List.tl !full_prog;
+                  { hd with
+                    content = Eqn(lhs,merge_expr e_full_prog e_f_body,sync) }
+                  :: (update_f_body tl)
+               | Loop _ ->
+                  assert false (* full_prog cannot contain Loops *))
+            else (
+              (* Not the same orig in |f|'s and |full_prog|'s deq ->
+                 next_deq_full_prog is either a refresh, or an
+                 instruction from a loop iteration that we want to
+                 skip in |f|. *)
+              full_prog := List.tl !full_prog;
+              update_f_body f_body
+            )
+         | Loop(i,ei,ef,dl,opts) ->
+            { hd with
+              content = Loop(i,ei,ef,update_f_body dl,opts) } ::
+              (update_f_body tl) in
 
-    (* Step 8: update |refreshes_created_back| *)
-    let rec get_initial_rv (v:var) : var =
-      match find_opt_2nd_layer refreshes_created f.id v with
-      | Some v' -> get_initial_rv v'
-      | None -> v in
-    replace_key_2nd_layer refreshes_created_back f.id (get_initial_rv rv) new_var;
+  let new_body = find_deq_in_f (get_body f.node) in
 
-    List.rev !new_body
+  (* Step 8: update |refreshes_created_back| *)
+  let rec get_initial_rv (v:var) : var =
+    match find_opt_2nd_layer refreshes_created f.id v with
+    | Some v' -> get_initial_rv v'
+    | None -> v in
+  replace_key_2nd_layer refreshes_created_back f.id (get_initial_rv rv) new_var;
+
+  new_body
+
 
   (* Finds which the first deq of |def| that is using |vd|, and get
      its origin: this is the def where the refresh needs to go *)
@@ -221,7 +263,12 @@ module Refresh = struct
                       (get_body def.node) in
     match using_deq.orig with
     | [] -> Hashtbl.find prog_nodes entry_node
-    | l  -> Hashtbl.find prog_nodes (fst (last using_deq.orig))
+    | hd :: []  when (fst hd).name = "" ->
+       (* When inserting a refresh, the non-refreshed equation is
+          added to the orig list, with an empty function name.
+          (see Tightprove_to_usuba.find_orig) *)
+       Hashtbl.find prog_nodes entry_node
+    | l -> Hashtbl.find prog_nodes (fst (last l))
 
 
   (* |vd| is a new variable (created using "refresh"), which appears
@@ -311,6 +358,15 @@ module Refresh = struct
 
     (* For each function, creating a hash containing the refreshes
        inserted in this function already. *)
+    (* Two hashes to have forward and backward directions:
+        - |refreshes_created| will contain something like
+              { f => { x_R : x, x_R_R : x_R } },
+          meaning that x_R refreshes x, and x_R_R refreshes x_R.
+        - |refreshes_created_back| on the other hand would contain:
+              { f => { x : x_R, x_R : x_R_R } },
+          meaning that x is refreshed by x_R, x_R by x_R_R.
+       (This is usefull in function insert_refresh)
+     *)
     let refreshes_created = Hashtbl.create 10 in
     let refreshes_created_back = Hashtbl.create 10 in
     List.iter (fun d -> Hashtbl.add refreshes_created d.id (Hashtbl.create 10)) init_prog.nodes;
@@ -391,7 +447,12 @@ let refresh_prog (prog:prog) (conf:config) : prog =
   (* Step 1: fully inline prog *)
   let inlined_prog = clean_inline prog conf in
   assert (List.length inlined_prog.nodes = 1);
-  let ua_def = List.hd inlined_prog.nodes in
+  (* Note that:
+      - unrolling an Usuba0 program produces and Usuba0 program
+        (hence, we don't need re-normalize it, unlike inlining)
+      - |conf| in the call to Unroll.unroll_prog is unused *)
+  let unrolled_prog = Unroll.unroll_prog ~force:true inlined_prog conf in
+  let ua_def = List.hd unrolled_prog.nodes in
 
   (* Step 2: call TP *)
   let (vars_corres,tp_def) = Usuba_to_tightprove.usuba_to_tp ua_def in

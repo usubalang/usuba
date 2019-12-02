@@ -38,7 +38,7 @@ let rec unroll_in_expr (env_it:(ident,int) Hashtbl.t) (e:expr) : expr =
   | Shuffle(v,l)    -> Shuffle(unroll_in_var env_it v,l)
   | Arith(op,x,y)   -> Arith(op,unroll_in_expr env_it x,unroll_in_expr env_it y)
   | Fun(f,l)        -> Fun(f,List.map (unroll_in_expr env_it) l)
-  | Fun_v(x,f,l)    -> Fun_v(simpl_arith env_it x, f,
+  | Fun_v(f,x,l)    -> Fun_v(f, simpl_arith env_it x,
                              List.map (unroll_in_expr env_it) l)
   | _ -> assert false
 
