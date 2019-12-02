@@ -163,10 +163,6 @@ let main () =
                        else if !shares <> 1 then 32 else
                          bits_in_arch !arch in
 
-    if !tightPROVE then (
-      unroll     := true;
-      inline_all := true;
-    );
     if !maskVerif then (
       unroll    := true;
       no_arr    := true;

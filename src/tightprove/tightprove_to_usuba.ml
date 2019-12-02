@@ -47,9 +47,11 @@ let find_orig (new_vars:(Usuba_AST.var,Usuba_AST.var) Hashtbl.t)
               (deqs_origins:(Usuba_AST.deq_i,(Usuba_AST.ident*Usuba_AST.deq_i) list) Hashtbl.t)
               (deqs_corres:(Usuba_AST.deq_i,Usuba_AST.deq_i) Hashtbl.t)
               (deqi:Usuba_AST.deq_i) : (Usuba_AST.ident*Usuba_AST.deq_i) list =
+  let contains_refreshed = ref false in
   let replace_var (v:Usuba_AST.var) : Usuba_AST.var =
     match Hashtbl.find_opt new_vars v with
-    | Some old_v -> old_v
+    | Some old_v -> contains_refreshed := true;
+                    old_v
     | None -> v in
   let rec replace_expr (e:Usuba_AST.expr) : Usuba_AST.expr =
     match e with
@@ -70,7 +72,9 @@ let find_orig (new_vars:(Usuba_AST.var,Usuba_AST.var) Hashtbl.t)
      let old_deqi = Eqn([v'],e',false) in
      Hashtbl.add deqs_corres old_deqi deqi;
      (match Hashtbl.find_opt deqs_origins old_deqi with
-      | Some origin -> origin
+      | Some origin -> (if !contains_refreshed then (
+                          (Utils.fresh_ident ""), old_deqi) :: origin
+                        else origin)
       | None -> match e' with
                 | Fun(f,_) when f.name = "refresh" -> []
                 | _ -> assert false)
