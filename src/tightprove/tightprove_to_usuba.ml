@@ -102,7 +102,10 @@ let asgn_to_ua (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
        let x = Usuba_AST.ExpVar (var_to_ua vars_corres x) in
        Usuba_AST.Shift(shift_op_to_ua op, x, Usuba_AST.Const_e n)
     | Tp_AST.Refresh v     ->
-       gen_var new_vars vars_corres asgn.lhs (var_to_ua vars_corres v);
+       if not (Hashtbl.mem vars_corres asgn.lhs) then
+         (* This refresh introduces a new variable (by opposition to
+            already being known) *)
+         gen_var new_vars vars_corres asgn.lhs (var_to_ua vars_corres v);
        Usuba_AST.Fun(Utils.fresh_ident "refresh",
                      [Usuba_AST.ExpVar (var_to_ua vars_corres v)])
     | Tp_AST.BitToReg _    -> Printf.fprintf stderr "Not implemented: bit_to_reg.\n";
