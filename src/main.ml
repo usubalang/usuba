@@ -5,6 +5,9 @@ open Basic_utils
 open Utils
 open Tightprove_to_usuba
 
+open Config
+
+
 let warnings    = ref false
 let verbose     = ref 1
 let verif       = ref false
@@ -38,7 +41,7 @@ let fdti         = ref ""
 let lazylift     = ref false
 
 let tightPROVE   = ref false
-let tightprove_dir = ref "tightprove"
+let tightprove_dir = ref Config.tightprove_cache
 let maskVerif    = ref false
 let masked       = ref false
 let ua_masked    = ref false

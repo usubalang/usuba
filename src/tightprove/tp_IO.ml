@@ -19,6 +19,9 @@ let gen_file_names (def:Tp_AST.def) (conf:Usuba_AST.config) : string * string =
   let source_file    = dir ^ "/source.tp" in
   let refreshed_file = dir ^ "/refreshed.tp" in
 
+  if not (Sys.file_exists conf.tightprove_dir) then
+    Unix.mkdir conf.tightprove_dir 0o755;
+
   if not (Sys.file_exists dir) then
     Unix.mkdir dir 0o755;
 
