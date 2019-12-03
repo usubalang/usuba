@@ -196,7 +196,7 @@ module Refresh = struct
                 (if !is_found then
                    (* |old_first_use_deq| was found inside the loop
                       body; continuing to update_f_body *)
-                   (update_f_body tl)
+                   update_f_body tl
                  else
                    (* |old_first_use_deq| not found, continuing with
                       find_deq_in_f. *)
@@ -237,7 +237,10 @@ module Refresh = struct
               (match next_deq_full_prog.content with
                | Eqn(_,e_full_prog,_) ->
                   full_prog := List.tl !full_prog;
-                  { hd with
+                  let new_eqn = Eqn(lhs,merge_expr e_full_prog e_f_body,sync) in
+                  let orig = if new_eqn <> hd.content then (f.id, hd.content) :: hd.orig
+                             else hd.orig in
+                  { orig = orig;
                     content = Eqn(lhs,merge_expr e_full_prog e_f_body,sync) }
                   :: (update_f_body tl)
                | Loop _ ->
@@ -403,16 +406,14 @@ module Refresh = struct
 
 end
 
-(* Not quite the same "is_call_free" as in the Inline module: that one
-   doesn't care about _no_inline functions. *)
-let is_call_free (def:def) : bool =
+let is_call_and_loop_free (def:def) : bool =
   let rec deq_call_free (deq:deq) : bool =
     match deq.content with
     | Eqn(_,Fun(f,_),_) ->
        if f.name = "refresh" then true
        else false
     | Eqn _ -> true
-    | Loop(_,_,_,dl,_) -> List.for_all deq_call_free dl in
+    | Loop(_,_,_,dl,_) -> false in
   match def.node with
   | Single(_,body) ->
      List.for_all deq_call_free body
@@ -492,7 +493,7 @@ let refresh_prog (prog:prog) (conf:config) : prog =
 
 (* Refreshes a def wich doesnt contain function calls nor loops *)
 let refresh_simple_def (conf:config) (def:def) : def =
-  if is_call_free def then
+  if is_call_and_loop_free def then
     let (vars_corres,tp_def) = Usuba_to_tightprove.usuba_to_tp def in
     let r_tp_def = Tp_IO.get_refreshed_def tp_def conf in
     fst (Tightprove_to_usuba.tp_to_usuba vars_corres def r_tp_def)
@@ -502,6 +503,8 @@ let refresh_simple_def (conf:config) (def:def) : def =
 (* This is a simplified version that doesn't do inlining/unrolling. To
    improve.*)
 let process_prog (prog:prog) (conf:config) : prog =
-  (* let prog = { nodes = List.map (refresh_simple_def conf) prog.nodes } in *)
+  let prog = Clear_origins.clear_origins prog conf in
+  let prog = { nodes = List.map (refresh_simple_def conf) prog.nodes } in
+  let prog = Clear_origins.clear_origins prog conf in
   let prog = refresh_prog prog conf in
   prog
