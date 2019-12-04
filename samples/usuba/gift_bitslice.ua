@@ -1,3 +1,8 @@
+// We use a different source file for the bitsliced and vsliced codes
+// of Gift, because PermBits can be written somewhat more simply when
+// doing bitslicing by using a bit permutation (done through indexing
+// within an array)
+
 node SubCells(S0,S1,S2,S3:b32) returns (S':b128)
 let
     S1 ^:= S0 & S2;

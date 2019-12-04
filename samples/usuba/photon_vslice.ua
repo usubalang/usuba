@@ -1,3 +1,8 @@
+# Note that Photon Vslice is not valid Usuba per-se: it uses a table,
+# which cannot be converted to a circuit given how it's called. (well,
+# it would be doable, but would require a lot of machinery in the
+# like of sbox(a&1,(a>>1)&1,(a>>2)&1,...))
+
 _no_inline table Sbox (x:u4) returns (y:u4) {
     12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2
 }
@@ -6,7 +11,7 @@ node SubCells(x:u4[8][8]) returns (y:u4[8][8])
 let
     forall i in [0, 7] {
         forall j in [0, 7] {
-            y[i][j] = Sbox(x[i][j]) 
+            y[i][j] = Sbox(x[i][j])
         }
     }
 tel
@@ -64,7 +69,7 @@ let
     forall i in [0, 7] { x[0][i] = X[i] & 0xf }
 
     forall i in [0, 7] { x[i+1] = step(x[i]) }
-    
+
     Y = x[8]
 tel
 
@@ -81,7 +86,7 @@ vars
     state:u4[13][8][8]
 let
     RC = (1, 3, 7, 14, 13, 11, 6, 12, 9, 2, 5, 10);
-    
+
     state[0] = plain;
     forall i in [0, 11] {
         state[i+1] =
