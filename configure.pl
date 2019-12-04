@@ -46,10 +46,13 @@ sub gen_config {
 
     open my $FH, '>', 'src/config.ml';
 
+    print "Generating Config.ml...... ";
     say $FH
 "(* This file was automatically generated. Manual edits might be overriten
  whenever the configure script is ran again. *)\n\n";
 
     say $FH qq{let data_dir = "$ua_dir/data"};
     say $FH qq{let tightprove_cache = "$ua_dir/tightprove_cache"};
+
+    say "[done]";
 }
