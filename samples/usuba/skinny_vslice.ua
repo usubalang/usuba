@@ -1,3 +1,7 @@
+# Note that Skinny Vslice is not valid Usuba per-se: it uses a table,
+# which cannot be converted to a circuit given how it's called. (well,
+# it would be doable, but would require a lot of machinery in the
+# like of sbox(a&1,(a>>1)&1,(a>>2)&1,...))
 
 table sbox(a:u8) returns (b:u8) {
    0x65,0x4c,0x6a,0x42,0x4b,0x63,0x43,0x6b,0x55,0x75,0x5a,0x7a,0x53,0x73,0x5b,0x7b,

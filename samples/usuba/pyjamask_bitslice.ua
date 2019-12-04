@@ -1,3 +1,8 @@
+# We use a different source for pyjamask bitslice and vslice because
+# col_mult in Vslicing uses an arithmetic shift to convert a bit into
+# a register full of this bit. This is not doable, nor needed in
+# bitslicing.
+
 _no_inline table SubBytes (i:b4) returns (o:b4) {
   0x2, 0xd, 0x3, 0x9, 0x7, 0xb, 0xa, 0x6, 0xe, 0x0, 0xf, 0x4, 0x8, 0x5, 0x1, 0xc
 }
