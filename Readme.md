@@ -6,10 +6,23 @@ optimized to C code (+ intrinsics).
 
 ---
 
-## References
+## Installation
 
-Paper about Usuba, published at WPMVP'18: [Usuba.pdf](http://dariusmercadier.com/files/Usuba.pdf).  
-Some slides about Usuba from a recent talk: [Slides.pdf](http://dariusmercadier.com/files/slides_usuba_07-18.pdf).  
+Usuba is written in OCaml and Coq. On a Debian system, you should be
+able to install OCaml and Coq, as well as the required modules with:
+
+    ./install_deps.sh
+
+You can then compile Usuba with:
+
+    ./configure.pl
+    make
+
+This will produce a binary named `usubac`, which you can then use to
+compile Usuba programs. You can see the available options by running
+
+    ./usubac --help
+
 
 ## A few examples
 
@@ -26,14 +39,6 @@ If you are familiar with Perl, an easy way to see the compiler an
 action is to look at the scripts in the
 directory [checks/correctness](checks/correctness) that compile a few
 Usuba codes, run them and make sure they produce the expected results.
-
-
-## Installation
-
-The whole thing isn't really packaged yet, so you'll have to get started manually.  
-You'll have to install `opam`, `ocaml` (>= 4.05), `coq` (maybe
-with opam?) and then `opam install menhir`.  
-Then, you should be able to just do `make` inside Usuba directory.
 
 
 ## Compiling
@@ -58,23 +63,20 @@ begining of the C files generated, where `XXX` is one of `STD`, `SSE`,
 headers are located in the directory [arch](arch).
 
 
-## Fault Detection / Threshold Implementation
 
-Usuba can generate code with Fault Detection (by complementary
-redundancy) and secure the code with Threshold Implementation. This is
-controlled by the flags `-fd`, `-ti <2|3|4|8>` (only `-ti 3` works for
-now however!), `-fdti <fdti|tifd>` (to be used when both `-fd` and `-ti`
-are active, to specify if FD or TI should be done first). When generating
-TI code, the default `L_ROTATE` will be wrong. You'll have to update it 
-manually (as explained [here](experimentations/FDTI/README.md).  
-The directories [experimentations/TI](experimentations/TI)
-and [experimentations/FD](experimentations/FD) might share some light
-about how TI and FD work in Usuba. The
-script [check\_fd.pl](checks/correctness/check_fd.pl)
-and [check\_ti.pl](checks/correctness/check_ti.pl) contain the command
-lines used to generates the files `sbox.c` and `sbox_fd.c`.  
-Briefly, to compile AES's sbox:  
-* with FD: `./usubac -o sbox.c -fd -no-arr -no-arr-entry -no-share samples/usuba/sbox_aes_kasper.ua`
-* with TI (3 shares): `./usubac -o sbox.c -ti 3 -no-sched -no-arr -no-arr-entry -no-share samples/usuba/sbox_aes_kasper.ua`
+## Readings / References
 
-(Note that the Usuba file [sbox\_aes\_kasper.ua](samples/usuba/sbox\_aes\_kasper.ua) contain the lookup table version of the Sbox, which Usuba converts to circuit based on its internal [database](data/sboxes) (for AES, it should be Canright's circuit).
+The following two papers have been published about Usuba:
+
+  * Darius Mercadier, Pierre-Evariste Dagand. [Usuba: High-Throughput and Constant-Time Ciphers, by Construction](https://dariusmercadier.com/assets/documents/usuba-pldi19.pdf), PLDI 2019.
+  
+  * Darius Mercadier, Pierre-Évariste Dagand, Lionel Lacassagne, Gilles Muller, [Usuba, Optimizing & Trustworthy Bitslicing Compiler](https://dariusmercadier.com/assets/documents/usuba-wpmvp18.pdf), WPMVP 2018.
+
+
+Some additional resources that could be useful:
+
+  * Timeless: [One-page presentation of Usuba](https://dariusmercadier.com/assets/documents/overview-usuba.pdf)
+  
+  * June 2019: [Technical presentation of Usuba @PLDI'19](https://dariusmercadier.com/assets/documents/slides-pldi-jun19.pdf)
+  
+  * February 2019: [High-level presentation of Usuba @Inria's Junior Seminar](https://dariusmercadier.com/assets/documents/inria-junior-seminar-feb19.pdf)
