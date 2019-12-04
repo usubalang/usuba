@@ -1,8 +1,8 @@
 all:
 	make -C src
 
-check: all
-	perl check_des.pl
+test: all
+	./run_checks.pl
 
 clean:
 	make clean -C src
