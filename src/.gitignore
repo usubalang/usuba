@@ -3,3 +3,4 @@
 *.vo
 *.aux
 usuba_AST.ml
+config.ml
