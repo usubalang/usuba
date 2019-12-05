@@ -16,7 +16,8 @@ let get_vars_body (node:def_i) : p * deq list =
   | _ -> raise (Error "Not a Single")
 
 let rename (name:string) : string =
-  Str.global_replace (Str.regexp "'") "__" name
+  Str.global_replace (Str.regexp "\\[|\\]") "_"
+                     (Str.global_replace (Str.regexp "'") "__" name)
 
 let log_op_to_c_masked = function
   | Masked And  -> "MASKED_AND"
