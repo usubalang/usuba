@@ -22,6 +22,7 @@ let _ =
       "setcst",    TOK_SETCST;
       "setcstall", TOK_SETCSTALL;
       "refresh",   TOK_REFRESH;
+      "ref",       TOK_REFRESH;
     ]
 
 let next_line lexbuf =
