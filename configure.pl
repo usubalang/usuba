@@ -61,7 +61,8 @@ sub gen_config {
         $config->{$_} = $config->{$_} =~ s/\{\{USUBA\}\}/$ua_dir/gr;
     }
 
-    open my $FH, '>', 'src/config.ml';
+    open my $FH, '>', 'src/config.ml'
+        or die "Coudln't generate config.ml: $!";
 
     print "Generating Config.ml...... ";
     say $FH
