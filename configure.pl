@@ -2,10 +2,12 @@
 
 use strict;
 use warnings;
-use feature 'say';
+use v5.14;
 $| = 1;
 
 use FindBin;
+use JSON::PP;
+
 
 check_dependencies();
 
@@ -44,6 +46,21 @@ sub gen_config {
     my $ua_dir = $FindBin::Bin;
     chdir $ua_dir;
 
+    # Reading config
+    my $config = do {
+        local $/ = undef;
+        open my $FH, '<', 'config.json'
+            or die "Cannot read `config.json': $!\nAborting.";
+        <$FH>;
+    };
+    $config = JSON::PP->new->allow_nonref->decode($config);
+
+    # Sanitizing config
+    for (keys %$config) {
+        $config->{$_} = $config->{$_} =~ s/\{\{HOME\}\}/$ENV{HOME}/gr;
+        $config->{$_} = $config->{$_} =~ s/\{\{USUBA\}\}/$ua_dir/gr;
+    }
+
     open my $FH, '>', 'src/config.ml';
 
     print "Generating Config.ml...... ";
@@ -51,8 +68,10 @@ sub gen_config {
 "(* This file was automatically generated. Manual edits might be overriten
  whenever the configure script is ran again. *)\n\n";
 
-    say $FH qq{let data_dir = "$ua_dir/data"};
-    say $FH qq{let tightprove_cache = "$ua_dir/tightprove_cache"};
+    say $FH qq{let data_dir = "$config->{data_dir}"};
+    say $FH qq{let tightprove_cache = "$config->{tightprove_cache}"};
+    say $FH qq{let sage = "$config->{sage}"};
+    say $FH qq{let tightprove = "$config->{tightprove}"};
 
     say "[done]";
 }
