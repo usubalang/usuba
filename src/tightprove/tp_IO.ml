@@ -51,6 +51,22 @@ let get_from_cache (def:Tp_AST.def) (conf:Usuba_AST.config) : Tp_AST.def option 
     else None
   else None
 
+(* Runs tightprove on |source_file| to produce |refreshed_file|.
+
+  |register_size| comes from the Tp_AST.def we are refreshing. It is
+  used to determine whether we are bitslicing or vslicing (if it's 1,
+  then it's bitslicing, otherwise it's vslicing). *)
+let run_tightprove (source_file:string) (refreshed_file:string)
+                   (register_size:int) : unit =
+  let slicing = if register_size = 1 then "b" else "v" in
+
+  let cmd = Printf.sprintf "%s %s %s %s %s"
+                           Config.sage
+                           Config.tightprove
+                           source_file
+                           refreshed_file
+                           slicing in
+  ignore(Unix.system cmd)
 
 
 (* Gets a refreshed version of |def|:
@@ -65,7 +81,6 @@ let get_refreshed_def (def:Tp_AST.def) (conf:Usuba_AST.config) : Tp_AST.def =
      (* Generate tightPROVE's input *)
      Print_tp.print_def_to_file def source_file;
      (* Call tightPROVE *)
-     let cmd = Printf.sprintf "tightprove < %s > %s" source_file refreshed_file in
-     ignore(Unix.system cmd);
+     run_tightprove source_file refreshed_file def.Tp_AST.rs;
      (* Return tightPROVE's output... *)
      Parser_api_tp.parse_file refreshed_file
