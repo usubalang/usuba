@@ -46,7 +46,8 @@ let shift_op_to_ua (op:Tp_AST.shift_op) : Usuba_AST.shift_op =
 let find_orig (new_vars:(Usuba_AST.var,Usuba_AST.var) Hashtbl.t)
               (deqs_origins:(Usuba_AST.deq_i,(Usuba_AST.ident*Usuba_AST.deq_i) list) Hashtbl.t)
               (deqs_corres:(Usuba_AST.deq_i,Usuba_AST.deq_i) Hashtbl.t)
-              (deqi:Usuba_AST.deq_i) : (Usuba_AST.ident*Usuba_AST.deq_i) list =
+              (deqi:Usuba_AST.deq_i)
+    : (Usuba_AST.ident*Usuba_AST.deq_i) list * Usuba_AST.deq_i =
   let contains_refreshed = ref false in
   let replace_var (v:Usuba_AST.var) : Usuba_AST.var =
     match Hashtbl.find_opt new_vars v with
@@ -65,19 +66,37 @@ let find_orig (new_vars:(Usuba_AST.var,Usuba_AST.var) Hashtbl.t)
     | Arith(op,x,y)   -> Arith(op,replace_expr x,replace_expr y)
     | Fun(f,l)        -> Fun(f,List.map replace_expr l)
     | _ -> assert false in
+  let reverse_expr (e:Usuba_AST.expr) : Usuba_AST.expr =
+    match e with
+    | Log(op,a,b)   -> Log(op,b,a)
+    | Arith(op,a,b) -> Arith(op,b,a)
+    | _ -> e in
   match deqi with
   | Eqn([v],e,false) ->
      let v' = replace_var v in
      let e' = replace_expr e in
      let old_deqi = Eqn([v'],e',false) in
-     Hashtbl.add deqs_corres old_deqi deqi;
+     let old_deqi_rev = Eqn([v'],reverse_expr e',false) in
+     let deqi_rev = Eqn([v],reverse_expr e,false) in
      (match Hashtbl.find_opt deqs_origins old_deqi with
-      | Some origin -> (if !contains_refreshed then (
-                          (Utils.fresh_ident ""), old_deqi) :: origin
-                        else origin)
-      | None -> match e' with
-                | Fun(f,_) when f.name = "refresh" -> []
-                | _ -> assert false)
+      | Some origin ->
+         Hashtbl.add deqs_corres old_deqi deqi;
+         (if !contains_refreshed then (
+            ((Utils.fresh_ident ""), old_deqi) :: origin, deqi)
+          else (origin, deqi))
+      | None ->
+         match Hashtbl.find_opt deqs_origins old_deqi_rev with
+         | Some origin ->
+            Hashtbl.add deqs_corres old_deqi_rev deqi_rev;
+            (if !contains_refreshed then (
+               ((Utils.fresh_ident ""), old_deqi_rev) :: origin,deqi_rev)
+             else (origin,deqi_rev))
+         | None ->
+            Hashtbl.add deqs_corres old_deqi deqi;
+            match e' with
+            | Fun(f,_) when f.name = "refresh" || f.name = "ref" -> ([],deqi)
+            | _ -> Printf.printf "%s\n" (Usuba_print.expr_to_str e');
+                   assert false)
   | _ -> assert false
 
 
@@ -111,8 +130,8 @@ let asgn_to_ua (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
     | Tp_AST.BitToReg _    -> Printf.fprintf stderr "Not implemented: bit_to_reg.\n";
                               assert false
   in
-  let content = Usuba_AST.Eqn([var_to_ua vars_corres asgn.lhs], ua_rhs, false) in
-  let orig    = find_orig new_vars deqs_origins deqs_corres content in
+  let content        = Usuba_AST.Eqn([var_to_ua vars_corres asgn.lhs], ua_rhs, false) in
+  let (orig,content) = find_orig new_vars deqs_origins deqs_corres content in
   { orig=orig; content=content }
 
 let body_to_ua (vars_corres: (string, Usuba_AST.var) Hashtbl.t)
