@@ -7,8 +7,10 @@
 
 #if defined(X86) || defined(NO_CUSTOM_INSTR)
 
+// load advanced custom instructions
 #include "custom_instrs_soft.h"
 
+// define ANDCx, XORCx, XNORCx
 #ifdef ASM_SOFT
 #define ANDC8(r,a,b) {                                          \
     DATATYPE tmp;                                               \
@@ -29,13 +31,7 @@
                  : [r_] "=&r" (r)                                       \
                  : [a_] "r" (a), [b_] "r" (b), [mask_] "r" (mask) );    \
   }
-#else // #ifdef ASM_SOFT
-#define ANDC8(r,a,b)   r = ( ((a) | (b)) & 0xFF00FF00) | ( ((a) & (b)) & 0x00FF00FF)
-#define XORC8(r,a,b)   r = (~((a) ^ (b)) & 0xFF00FF00) | ( ((a) ^ (b)) & 0x00FF00FF)
-#endif // #ifdef ASM_SOFT
-#define XNORC8(r,a,b)  r = ( ((a) ^ (b)) & 0xFF00FF00) | (~((a) ^ (b)) & 0x00FF00FF)
 
-#ifdef ASM_SOFT
 #define ANDC16(r,a,b) {                                                 \
   DATATYPE tmp;                                                         \
   DATATYPE lmask = 0xFFFF0000, rmask = 0x0000FFFF;                      \
@@ -55,36 +51,22 @@
                  : [r_] "=&r" (r)                                        \
                  : [a_] "r" (a), [b_] "r" (b), [mask_] "r" (mask) );    \
   }
-#else // #ifdef ASM_SOFT
+#else
+#define ANDC8(r,a,b)   r = ( ((a) | (b)) & 0xFF00FF00) | ( ((a) & (b)) & 0x00FF00FF)
+#define XORC8(r,a,b)   r = (~((a) ^ (b)) & 0xFF00FF00) | ( ((a) ^ (b)) & 0x00FF00FF)
 #define ANDC16(r,a,b)  r = ( ((a) | (b)) & 0xFFFF0000) | ( ((a) & (b)) & 0x0000FFFF)
 #define XORC16(r,a,b)  r = (~((a) ^ (b)) & 0xFFFF0000) | ( ((a) ^ (b)) & 0x0000FFFF)
 #endif // #ifdef ASM_SOFT
+#define XNORC8(r,a,b)  r = ( ((a) ^ (b)) & 0xFF00FF00) | (~((a) ^ (b)) & 0x00FF00FF)
 #define XNORC16(r,a,b) r = ( ((a) ^ (b)) & 0xFFFF0000) | (~((a) ^ (b)) & 0x0000FFFF)
+
 
 #else // #if defined(X86) || defined(NO_CUSTOM_INSTR)
 
-#define TIBS(y,rd,r1,r2) {                                              \
-    asm volatile("tibs %2, %3, %0\n\t"                                  \
-                 "mov %%y, %1\n\t" : "=r" (rd), "=r" (y) : "r" (r1), "r" (r2)); \
-  }
-/* r1/r2 are actually the destination, and rd/y the source
-   but it makes it clearer to name them that way (since
-   INVTIBS is the inverse of TIBS) */
-#define INVTIBS(r2,r1,rd,y) {                                           \
-    asm volatile("invtibs %2, %3, %0\n\t"                               \
-                 "mov %%y, %1\n\t" : "=r" (r1), "=r" (r2) : "r" (rd), "r" (y)); \
-  }
+// load advanced custom instructions
+#include "custom_instrs_hard.h"
 
-#define RED(r,y,i,a)   {                                                \
-    asm volatile("red %2, %3, %0\n\t"                                   \
-                 "mov %%y, %1\n\t" : "=r" (r), "=r" (y) : "r" (a), "i" (i)); \
-  }
-
-#define FTCHK(r,i,a)   asm volatile("ftchk %1, %2, %0\n\t" : "=r" (r) : "r" (a), "i" (i) );
-
-#define SUBROT_2(r,a) asm volatile("tibsrot %1, 2, %0\n\t" : "=r" (r) : "r" (a) :)
-#define SUBROT_4(r,a) asm volatile("tibsrot %1, 4, %0\n\t" : "=r" (r) : "r" (a) :)
-
+// Follows: definition of XORCx, ANDCx and XNORCx when not in X86 mode.
 
 // CHEATY_CUSTOM: not using the real custom instructions, but rather
 // some normal AND/OR/XOR. Useful because on our benchmark machine,
@@ -124,4 +106,6 @@
 #define XORC32(r,a,b)  asm volatile("xor %1, %2, %0\n\t"     : "=r" (r) : "r" (a), "r" (b) :)
 #define XNORC32(r,a,b) asm volatile("xnor %1, %2, %0\n\t"    : "=r" (r) : "r" (a), "r" (b) :)
 #endif // CHEATY_CUSTOM
-#endif
+
+
+#endif // #if defined(X86) || defined(NO_CUSTOM_INSTR)

@@ -1,5 +1,11 @@
-#ifndef _CUSTOM_INSTRS_SOFT_
-#define _CUSTOM_INSTRS_SOFT_
+#pragma once
+
+/* This file only contains "advanced" custom instructed, ie, all
+   custom instructions but ANDCx, XORCx and XNORCx.
+
+ */
+
+#if defined(X86) || defined(NO_CUSTOM_INSTR)
 
 #define TIBS(rd,y,r1,r2) {                          \
     DATATYPE _r1 = r1, _r2 = r2;                    \
@@ -123,5 +129,4 @@
 #define SUBROT_2(r,a) r = ((a << 1) & 0xAAAAAAAA) | ((a >> 1) & 0x55555555)
 #define SUBROT_4(r,a) r = ((a << 1) & 0xEEEEEEEE) | ((a >> 3) & 0x11111111)
 
-
-#endif // _CUSTOM_INSTRS_SOFT_
+#endif // #if defined(X86) || defined(NO_CUSTOM_INSTR)
