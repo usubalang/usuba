@@ -1,6 +1,6 @@
 node f(x:u32) returns (y:u32)
 let
-    y = ((x <<< 5) & refresh(x)) ^ (x <<< 1)
+    y = ((x <<< 5) & x) ^ (x <<< 1)
 tel
 
 node simeck_box(input:u32x2, rc:u32) returns (output:u32x2)
