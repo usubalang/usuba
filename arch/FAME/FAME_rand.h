@@ -108,5 +108,10 @@ static int __attribute__((noinline)) xorshift_rand() {
 
 #ifdef CST_RAND
 #undef RAND
+#ifdef X86
+static volatile int x = 0;
+#define RAND() x
+#else // #ifdef X86
 #define RAND() (unsigned int) *((volatile unsigned int*)0x80000600)
-#endif
+#endif // #ifdef X86
+#endif // #ifdef CST_RAND
