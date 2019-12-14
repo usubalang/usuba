@@ -17,30 +17,38 @@
 #define TI_NOT_1(r,a)   FD_NOT(r,a)   /* a = ~b */
 
 #if defined(X86) || defined(NO_CUSTOM_INSTR)
-#define TI_AND_2(res,a,b) {                           \
-    DATATYPE not_fault_flags, a2;                     \
-    FD_NOT(not_fault_flags,fault_flags);              \
-    a2 = a & not_fault_flags;                         \
-                                                      \
-    DATATYPE r = RAND();                              \
-                                                      \
-    DATATYPE c1, a_r, c2, d1, d2, r_r;                \
-    FD_AND(c1,a2,b);   /* partial product 1 */        \
-    SUBROT_2(a_r,a2);  /* share rotate */             \
-    FD_AND(c2,a_r,b);  /* partial product 2 */        \
-    FD_XOR(d1,r,c1);   /* random + parprod 1 */       \
-    FD_XOR(d2,d1,c2);  /*    + parprod 2 */           \
-    SUBROT_2(r_r,r);   /* parallel refresh */         \
-    XOR(res,r_r,d2);   /* output */                   \
-                                                      \
-    if (FD != 1) {                                    \
-      DATATYPE g5 = 0;                                \
-      FTCHK(g5,IMM_FTCHK,res);                        \
-      FD_OR(fault_flags,fault_flags,g5);              \
-    }                                                 \
+#define TI_AND_2(res,a,b) {                                             \
+    DATATYPE not_fault_flags, a2;                                       \
+    FD_NOT(not_fault_flags,fault_flags);                                \
+    a2 = a & not_fault_flags;                                           \
+                                                                        \
+    DATATYPE r = RAND(), r_input = RAND();                              \
+                                                                        \
+    DATATYPE c1, c2, d1, d2, r_r, a_r, r_input_r, a2_2, a2_3;           \
+    FD_XOR(a2_2, r_input, a2);                /* random + a */          \
+    SUBROT_2(r_input_r, r_input);             /* rotate random */       \
+    FD_XOR(a2_3, a2_2, r_input_r);            /* a + rot(random) */     \
+    r_input_r = 0;                            /* clear subrot output */ \
+    asm volatile("" : "+r" (r_input_r)::);                              \
+    FD_AND(c1, b, a2_3);                      /* partial product 1 */   \
+    SUBROT_2(a_r, a2_3);                      /* share rotate */        \
+    FD_AND(c2, a_r, b);                       /* partial product 2 */   \
+    a_r = 0;                                 /* clear subrot output */  \
+    asm volatile("" : "+r" (a_r)::);                                    \
+    FD_XOR(d1, r, c1);                        /* random + parprod 1 */  \
+    FD_XOR(d2, d1, c2);                       /*    + parprod 2 */      \
+    SUBROT_2(r_r, r);                         /* parallel refresh */    \
+    FD_XOR(res, r_r, d2);                     /* output */              \
+                                                                        \
+    if (FD != 1) {                                                      \
+      DATATYPE g5 = 0;                                                  \
+      FTCHK(g5,IMM_FTCHK,res);                                          \
+      FD_OR(fault_flags,fault_flags,g5);                                \
+    }                                                                   \
 }
 #else
-#if FD == 1
+
+#if FD == 1 || defined(CHEATY_CUSTOM)
 #define _FD_AND_TI2 "and"
 #define _FD_XOR_TI2 "xor"
 #elif FD == 2
@@ -50,6 +58,7 @@
 #define _FD_AND_TI2 "andc8"
 #define _FD_XOR_TI2 "xorc8"
 #endif
+
 
 #define TI_AND_2(res,a,b) {                                             \
     DATATYPE not_fault_flags, a2;                                       \
@@ -100,36 +109,47 @@
 #define TI_XOR_2(a,b,c) FD_XOR(a,b,c)
 
 #if defined(X86) || defined(NO_CUSTOM_INSTR)
-#define TI_AND_4(res,a,b) {                                         \
-    DATATYPE not_fault_flags, a2;                                   \
-    FD_NOT(not_fault_flags,fault_flags);                            \
-    a2 = a & not_fault_flags;                                       \
-                                                                    \
-    DATATYPE r = RAND();                                            \
-                                                                    \
-    DATATYPE c1, c2, c3, c4, a_r1, a_r2, b_r, r_r, d1, d2, d3, d4;  \
-    FD_AND(c1,a2,b);    /* partial product 1 */                     \
-    SUBROT_4(a_r1,a2);  /* share rotate */                          \
-    FD_AND(c2,a_r1,b);  /* partial product 2 */                     \
-    SUBROT_4(b_r,b);    /* share rotate */                          \
-    FD_AND(c3,b_r,a);   /* partial product 3 */                     \
-    SUBROT_4(a_r2,a_r1); /* share rotate */                         \
-    FD_AND(c4,a_r2,b);  /* partial product 4 */                     \
-    FD_XOR(d1,r,c1);   /* random + parprod 1 */                     \
-    FD_XOR(d2,d1,c2);  /*    + parprod 2 */                         \
-    FD_XOR(d3,d2,c3);  /*    + parprod 3 */                         \
-    SUBROT_2(r_r,r);   /* parallel refresh */                       \
-    FD_XOR(d4, d3, r_r);                                            \
-    XOR(res,d4,c4);   /* output */                                  \
-                                                                    \
-    if (FD != 1) {                                                  \
-      DATATYPE g5 = 0;                                              \
-      FTCHK(g5,IMM_FTCHK,res);                                      \
-      FD_OR(fault_flags,fault_flags,g5);                            \
-    }                                                               \
-}
+#define TI_AND_4(res,a,b) {                                             \
+    DATATYPE not_fault_flags, a2;                                       \
+    FD_NOT(not_fault_flags,fault_flags);                                \
+    a2 = a & not_fault_flags;                                           \
+                                                                        \
+    DATATYPE r = RAND(), r_input = RAND();                              \
+                                                                        \
+    DATATYPE c1, c2, c3, c4, a_r1, a_r2, b_r, r_r, d1, d2, d3, d4, a2_2, a2_3, r_input_r; \
+    FD_XOR(a2_2, a2, r_input);       /* random + a */                   \
+    SUBROT_4(r_input_r, r_input);    /* rotate random */                \
+    FD_XOR(a2_3, a2_2, r_input_r);     /* a + rot(random) */            \
+    r_input_r = 0;                   /* clear subrot output */          \
+    asm volatile("" : "+r" (r_input_r)::);                              \
+    FD_AND(c1, a2_3, b);             /* partial product 1 */            \
+    SUBROT_4(a_r1, a2_3);            /* share rotate */                 \
+    FD_AND(c2, a_r1, b);             /* partial product 2 */            \
+    SUBROT_4(b_r, b);                /* share rotate */                 \
+    FD_AND(c3, b_r, a2_3);           /* partial product 3 */            \
+    SUBROT_4(a_r2, a_r1);            /* share rotate */                 \
+    FD_AND(c4, a_r2, b);             /* partial product 4 */            \
+    a_r1 = 0;                        /* clear subrot output */          \
+    asm volatile("" : "+r" (a_r1)::);                                   \
+    b_r = 0;                         /* clear subrot output */          \
+    asm volatile("" : "+r" (b_r)::);                                    \
+    a_r2 = 0;                        /* clear subrot output */          \
+    asm volatile("" : "+r" (a_r2)::);                                   \
+    FD_XOR(d1, r, c1);               /* random + parprod 1 */           \
+    FD_XOR(d2, d1, c2);              /*    + parprod 2 */               \
+    FD_XOR(d3, d2, c3);              /*    + parprod 3 */               \
+    SUBROT_4(r_r, r);                /* parallel refresh */             \
+    FD_XOR(d4, d3, r_r);                                                \
+    FD_XOR(res, d4, c4);             /* output */                       \
+                                                                        \
+    if (FD != 1) {                                                      \
+      DATATYPE g5 = 0;                                                  \
+      FTCHK(g5,IMM_FTCHK,res);                                          \
+      FD_OR(fault_flags,fault_flags,g5);                                \
+    }                                                                   \
+  }
 #else
-#if FD == 1
+#if FD == 1 || defined(CHEATY_CUSTOM)
 #define _FD_AND_TI4 "and"
 #define _FD_XOR_TI4 "xor"
 #elif FD == 2
