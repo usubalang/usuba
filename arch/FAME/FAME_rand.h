@@ -125,5 +125,8 @@ static int __attribute__((noinline)) xorshift_rand() {
 #ifdef CST_RAND
 #undef RAND
 static volatile int x = 0;
+#define seed(x) (void)x
+#define get_seed() 0
+#define seed_prev(x) (void)x
 #define RAND() x
 #endif // #ifdef CST_RAND
