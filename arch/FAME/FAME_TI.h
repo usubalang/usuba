@@ -22,17 +22,12 @@
     FD_NOT(not_fault_flags,fault_flags);                                \
     a2 = a & not_fault_flags;                                           \
                                                                         \
-    DATATYPE r = RAND(), r_input = RAND();                              \
+    DATATYPE r = RAND();                                                \
                                                                         \
-    DATATYPE c1, c2, d1, d2, r_r, a_r, r_input_r, a2_2, a2_3;           \
-    FD_XOR(a2_2, r_input, a2);                /* random + a */          \
-    SUBROT_2(r_input_r, r_input);             /* rotate random */       \
-    FD_XOR(a2_3, a2_2, r_input_r);            /* a + rot(random) */     \
-    r_input_r = 0;                            /* clear subrot output */ \
-    asm volatile("" : "+r" (r_input_r)::);                              \
-    FD_AND(c1, b, a2_3);                      /* partial product 1 */   \
-    SUBROT_2(a_r, a2_3);                      /* share rotate */        \
-    FD_AND(c2, a_r, b);                       /* partial product 2 */   \
+    DATATYPE c1, c2, d1, d2, r_r, a_r;                                  \
+    FD_AND(c1, b, a2);                       /* partial product 1 */    \
+    SUBROT_2(a_r, a2);                       /* share rotate */         \
+    FD_AND(c2, a_r, b);                      /* partial product 2 */    \
     a_r = 0;                                 /* clear subrot output */  \
     asm volatile("" : "+r" (a_r)::);                                    \
     FD_XOR(d1, r, c1);                        /* random + parprod 1 */  \
@@ -65,28 +60,23 @@
     FD_NOT(not_fault_flags,fault_flags);                                \
     a2 = a & not_fault_flags;                                           \
                                                                         \
-    DATATYPE r = RAND(), r_input = RAND();                              \
+    DATATYPE r = RAND();                                                \
                                                                         \
-    register DATATYPE c1, c2, d1, d2, r_r, a_r, r_input_r, a2_2, a2_3;  \
+    register DATATYPE c1, c2, d1, d2, r_r, a_r;                         \
     asm volatile(                                                       \
-        _FD_XOR_TI2 " %[a2_], %[r_input_], %[a2_2_]\n\t"     /* random + a */ \
-        "tibsrot %[r_input_], 2, %[r_input_r_]\n\t"          /* rotate random */ \
-        _FD_XOR_TI2 " %[a2_2_], %[r_input_r_], %[a2_3_]\n\t"  /* a + rot(random) */\
-        "xor %[r_input_r_], %[r_input_r_], %[r_input_r_]\n\t" /* clear subrot output */ \
-        _FD_AND_TI2 " %[b_], %[a2_3_], %[c1_]\n\t"      /* partial product 1 */   \
-        "tibsrot %[a2_3_], 2, %[a_r_]\n\t"             /* share rotate */     \
-        _FD_AND_TI2 " %[a_r_], %[b_], %[c2_]\n\t"     /* partial product 2 */ \
-        "xor %[a_r_], %[a_r_], %[a_r_]\n\t"           /* clear subrot output */\
-        _FD_XOR_TI2 " %[r_], %[c1_], %[d1_]\n\t"      /* random + parprod 1 */ \
-        _FD_XOR_TI2 " %[d1_], %[c2_], %[d2_]\n\t"     /*    + parprod 2 */   \
-        "tibsrot %[r_], 2, %[r_r_]\n\t"              /* parallel refresh */ \
-        _FD_XOR_TI2 " %[r_r_], %[d2_], %[res_]\n\t"   /* output */           \
+        _FD_AND_TI2 " %[b_], %[a2_], %[c1_]\n\t"      /* partial product 1 */   \
+        "tibsrot %[a2_], 2, %[a_r_]\n\t"              /* share rotate */        \
+        _FD_AND_TI2 " %[a_r_], %[b_], %[c2_]\n\t"     /* partial product 2 */   \
+        "xor %[a_r_], %[a_r_], %[a_r_]\n\t"           /* clear subrot output */ \
+        _FD_XOR_TI2 " %[r_], %[c1_], %[d1_]\n\t"      /* random + parprod 1 */  \
+        _FD_XOR_TI2 " %[d1_], %[c2_], %[d2_]\n\t"     /*    + parprod 2 */      \
+        "tibsrot %[r_], 2, %[r_r_]\n\t"               /* parallel refresh */    \
+        _FD_XOR_TI2 " %[r_r_], %[d2_], %[res_]\n\t"   /* output */              \
                                                                         \
         : [res_] "=&r" (res), [c1_] "=&r" (c1), [c2_] "=&r" (c2),       \
           [d1_] "=&r" (d1), [d2_] "=&r" (d2),                           \
-          [a_r_] "=&r" (a_r), [r_r_] "=&r" (r_r),                       \
-          [a2_2_] "=&r" (a2_2), [a2_3_] "=&r" (a2_3), [r_input_r_] "=&r" (r_input_r) \
-        : [r_] "r" (r), [a2_] "r" (a2), [b_] "r" (b), [r_input_] "r" (r_input)); \
+          [a_r_] "=&r" (a_r), [r_r_] "=&r" (r_r)                        \
+        : [r_] "r" (r), [a2_] "r" (a2), [b_] "r" (b));                  \
                                                                         \
                                                                         \
     DATATYPE g5 = 0;                                                    \
@@ -114,19 +104,14 @@
     FD_NOT(not_fault_flags,fault_flags);                                \
     a2 = a & not_fault_flags;                                           \
                                                                         \
-    DATATYPE r = RAND(), r_input = RAND();                              \
+    DATATYPE r = RAND(), r_output = RAND();                             \
                                                                         \
-    DATATYPE c1, c2, c3, c4, a_r1, a_r2, b_r, r_r, d1, d2, d3, d4, a2_2, a2_3, r_input_r; \
-    FD_XOR(a2_2, a2, r_input);       /* random + a */                   \
-    SUBROT_4(r_input_r, r_input);    /* rotate random */                \
-    FD_XOR(a2_3, a2_2, r_input_r);     /* a + rot(random) */            \
-    r_input_r = 0;                   /* clear subrot output */          \
-    asm volatile("" : "+r" (r_input_r)::);                              \
-    FD_AND(c1, a2_3, b);             /* partial product 1 */            \
-    SUBROT_4(a_r1, a2_3);            /* share rotate */                 \
+    DATATYPE c1, c2, c3, c4, a_r1, a_r2, b_r, r_r, d1, d2, d3, d4, res_1, res_2, r_output_r; \
+    FD_AND(c1, a2, b);             /* partial product 1 */              \
+    SUBROT_4(a_r1, a2);            /* share rotate */                   \
     FD_AND(c2, a_r1, b);             /* partial product 2 */            \
     SUBROT_4(b_r, b);                /* share rotate */                 \
-    FD_AND(c3, b_r, a2_3);           /* partial product 3 */            \
+    FD_AND(c3, b_r, a2);           /* partial product 3 */              \
     SUBROT_4(a_r2, a_r1);            /* share rotate */                 \
     FD_AND(c4, a_r2, b);             /* partial product 4 */            \
     a_r1 = 0;                        /* clear subrot output */          \
@@ -140,7 +125,12 @@
     FD_XOR(d3, d2, c3);              /*    + parprod 3 */               \
     SUBROT_4(r_r, r);                /* parallel refresh */             \
     FD_XOR(d4, d3, r_r);                                                \
-    FD_XOR(res, d4, c4);             /* output */                       \
+    FD_XOR(res_1, d4, c4);             /* output */                     \
+    FD_XOR(res_2, res_1, r_output);       /* random + res */            \
+    SUBROT_4(r_output_r, r_output);    /* rotate random */              \
+    FD_XOR(res, res_2, r_output_r);     /* a + rot(random) */            \
+    r_output_r = 0;                   /* clear subrot output */         \
+    asm volatile("" : "+r" (r_output_r)::);                             \
                                                                         \
     if (FD != 1) {                                                      \
       DATATYPE g5 = 0;                                                  \
@@ -165,19 +155,15 @@
     FD_NOT(not_fault_flags,fault_flags);                            \
     a2 = a & not_fault_flags;                                       \
                                                                     \
-    DATATYPE r = RAND(), r_input = RAND();                          \
+    DATATYPE r = RAND(), r_output = RAND();                          \
                                                                     \
-    register DATATYPE c1, c2, c3, c4, a_r1, a_r2, b_r, r_r, d1, d2, d3, d4, a2_2, a2_3, r_input_r; \
+    register DATATYPE c1, c2, c3, c4, a_r1, a_r2, b_r, r_r, d1, d2, d3, d4, res_1, res_2, r_output_r; \
     asm volatile(                                                   \
-        _FD_XOR_TI4 " %[a2_], %[r_input_], %[a2_2_]\n\t"     /* random + a */ \
-        "tibsrot %[r_input_], 4, %[r_input_r_]\n\t"          /* rotate random */ \
-        _FD_XOR_TI4 " %[a2_2_], %[r_input_r_], %[a2_3_]\n\t"  /* a + rot(random) */\
-        "xor %[r_input_r_], %[r_input_r_], %[r_input_r_]\n\t" /* clear subrot output */ \
-        _FD_AND_TI4 " %[a2_3_], %[b_], %[c1_]\n\t"   /* partial product 1 */ \
-        "tibsrot %[a2_3_], 4, %[a_r1_]\n\t"          /* share rotate */   \
+        _FD_AND_TI4 " %[a2_], %[b_], %[c1_]\n\t"   /* partial product 1 */ \
+        "tibsrot %[a2_], 4, %[a_r1_]\n\t"          /* share rotate */   \
         _FD_AND_TI4 " %[a_r1_], %[b_], %[c2_]\n\t" /* partial product 2 */ \
         "tibsrot %[b_], 4, %[b_r_]\n\t"            /* share rotate */   \
-        _FD_AND_TI4 " %[b_r_], %[a2_3_], %[c3_]\n\t"  /* partial product 3 */ \
+        _FD_AND_TI4 " %[b_r_], %[a2_], %[c3_]\n\t"  /* partial product 3 */ \
         "tibsrot %[a_r1_], 4, %[a_r2_]\n\t"        /* share rotate */   \
         _FD_AND_TI4 " %[a_r2_], %[b_], %[c4_]\n\t" /* partial product 4 */ \
         "xor %[a_r1_], %[a_r1_], %[a_r1_]\n\t"     /* clear subrot output */ \
@@ -188,15 +174,19 @@
         _FD_XOR_TI4 " %[d2_], %[c3_], %[d3_]\n\t"  /*    + parprod 3 */ \
         "tibsrot %[r_], 4, %[r_r_]\n\t"            /* parallel refresh */ \
         _FD_XOR_TI4 " %[d3_], %[r_r_], %[d4_]\n\t"                      \
-        _FD_XOR_TI4 " %[d4_], %[c4_], %[res_]\n\t" /* output */       \
+        _FD_XOR_TI4 " %[d4_], %[c4_], %[res_1_]\n\t" /* output */       \
+        _FD_XOR_TI4 " %[res_1_], %[r_output_], %[res_2_]\n\t"     /* random + a */ \
+        "tibsrot %[r_output_], 4, %[r_output_r_]\n\t"          /* rotate random */ \
+        _FD_XOR_TI4 " %[res_2_], %[r_output_r_], %[res_]\n\t"  /* a + rot(random) */\
+        "xor %[r_output_r_], %[r_output_r_], %[r_output_r_]\n\t" /* clear subrot output */ \
                                                                       \
         : [res_] "=&r" (res),                                         \
           [c1_] "=&r" (c1), [c2_] "=&r" (c2), [c3_] "=&r" (c3), [c4_] "=&r" (c4), \
           [d1_] "=&r" (d1), [d2_] "=&r" (d2), [d3_] "=&r" (d3), [d4_] "=&r" (d4), \
           [a_r1_] "=&r" (a_r1), [a_r2_] "=&r" (a_r2),                   \
           [b_r_] "=&r" (b_r),  [r_r_] "=&r" (r_r),                      \
-          [a2_2_] "=&r" (a2_2), [a2_3_] "=&r" (a2_3), [r_input_r_] "=&r" (r_input_r) \
-        : [r_] "r" (r), [a2_] "r" (a2), [b_] "r" (b), [r_input_] "r" (r_input)); \
+          [res_1_] "=&r" (res_1), [res_2_] "=&r" (res_2), [r_output_r_] "=&r" (r_output_r) \
+        : [r_] "r" (r), [a2_] "r" (a2), [b_] "r" (b), [r_output_] "r" (r_output)); \
                                                                         \
     if (FD != 1) {                                                      \
       DATATYPE g5 = 0;                                                  \
