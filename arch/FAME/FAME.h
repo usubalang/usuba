@@ -54,6 +54,16 @@
 #error TI not defined (should be 1, 2 or 4)
 #endif
 
+#if FD != 4 && defined(CORRECT)
+#error Cannot use error correcting with FD != 4
+#endif
+
+#ifdef CORRECT
+#define MULT_CORRECT 1
+#else
+#define MULT_CORRECT 0
+#endif
+
 // Multiplication does fault checking by invoking FTCHK, which takes
 // an immediate as input, which describe which version of FTCHK to
 // call (this depends on FD).

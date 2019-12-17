@@ -16,6 +16,18 @@
 #define TI_XOR_1(r,a,b) FD_XOR(r,a,b) /* a = b ^ c */
 #define TI_NOT_1(r,a)   FD_NOT(r,a)   /* a = ~b */
 
+/* At the end of multiplications, we need to call FTCHK. */
+#if FD == 4 && MULT_CORRECT
+#define END_MULT(res) FTCHK(res, IMM_FTCHK, res);
+#else
+#define END_MULT(res)                           \
+  if (FD != 1) {                                \
+    DATATYPE g5 = 0;                            \
+    FTCHK(g5, IMM_FTCHK, g5);                   \
+    FD_OR(fault_flags, fault_flags, g5);        \
+  }
+#endif
+
 #if defined(X86) || defined(NO_CUSTOM_INSTR)
 #define TI_AND_2(res,a,b) {                                             \
     DATATYPE not_fault_flags, a2;                                       \
@@ -35,12 +47,8 @@
     SUBROT_2(r_r, r);                         /* parallel refresh */    \
     FD_XOR(res, r_r, d2);                     /* output */              \
                                                                         \
-    if (FD != 1) {                                                      \
-      DATATYPE g5 = 0;                                                  \
-      FTCHK(g5,IMM_FTCHK,res);                                          \
-      FD_OR(fault_flags,fault_flags,g5);                                \
-    }                                                                   \
-}
+    END_MULT(res);                                                      \
+  }
 #else
 
 #if FD == 1 || defined(CHEATY_CUSTOM)
@@ -79,12 +87,8 @@
         : [r_] "r" (r), [a2_] "r" (a2), [b_] "r" (b));                  \
                                                                         \
                                                                         \
-    DATATYPE g5 = 0;                                                    \
-    if (FD != 1) {                                                      \
-      FTCHK(g5,IMM_FTCHK,res);                                          \
-      FD_OR(fault_flags,fault_flags,g5);                                \
-    }                                                                   \
-}
+    END_MULT(res);                                                      \
+  }
 
 #endif
 
@@ -99,6 +103,7 @@
 #define TI_XOR_2(a,b,c) FD_XOR(a,b,c)
 
 #if defined(X86) || defined(NO_CUSTOM_INSTR)
+
 #define TI_AND_4(res,a,b) {                                             \
     DATATYPE not_fault_flags, a2;                                       \
     FD_NOT(not_fault_flags,fault_flags);                                \
@@ -132,11 +137,8 @@
     r_output_r = 0;                   /* clear subrot output */         \
     asm volatile("" : "+r" (r_output_r)::);                             \
                                                                         \
-    if (FD != 1) {                                                      \
-      DATATYPE g5 = 0;                                                  \
-      FTCHK(g5,IMM_FTCHK,res);                                          \
-      FD_OR(fault_flags,fault_flags,g5);                                \
-    }                                                                   \
+                                                                        \
+    END_MULT(res);                                                      \
   }
 #else
 #if FD == 1 || defined(CHEATY_CUSTOM)
@@ -188,13 +190,9 @@
           [res_1_] "=&r" (res_1), [res_2_] "=&r" (res_2), [r_output_r_] "=&r" (r_output_r) \
         : [r_] "r" (r), [a2_] "r" (a2), [b_] "r" (b), [r_output_] "r" (r_output)); \
                                                                         \
-    if (FD != 1) {                                                      \
-      DATATYPE g5 = 0;                                                  \
-      FTCHK(g5,IMM_FTCHK,res);                                          \
-      FD_OR(fault_flags,fault_flags,g5);                                \
-    }                                                                   \
+                                                                        \
+    END_MULT(res);                                                      \
 }
-
 #endif
 
 #define TI_NOT_4(a,b) a = (b) ^ 0x11111111
