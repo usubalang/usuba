@@ -45,6 +45,9 @@ static int get_rand() {
 }
 #define RAND() get_rand()
 
+#define seed(x) (void)x
+#define get_seed() 0
+#define seed_prev(x) (void)x
 
 
 #else // #ifdef COPROC_RAND
