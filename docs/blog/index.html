@@ -1,0 +1,42 @@
+---
+layout: default
+title: USUBA | Blog
+pagination: 
+  enabled: true
+---
+
+<div class="container py-5 bg-light">
+	<div class="row justify-content-md-center">
+		<div class="col col-lg-7">
+			<h1 class="text-center display-3 border-bottom pb-5 mb-5">USUBA's Blog</h1>
+
+			<!-- Blog articles -->
+	    {% for post in paginator.posts %}
+	      <div class="mx-auto mt-4 p-3 border-bottom pb-5 mb-5">
+	        <a href="{{ post.url | prepend: site.baseurl | replace: '//', '/'}}" class="nodeco"><h2>{{ post.title }}</h2></a> 
+	        <small class="mt-1">Published on the {{ post.date | date: "%Y-%m-%d" }} by {{ post.author }}</small>
+	        <p>{{ post.excerpt }} <a href="{{ post.url | prepend: site.baseurl | replace: '//', '/' }}"><em>Read More...</em></a></p>
+	      </div>
+	    {% endfor %}
+
+		  <!-- Pagination links -->
+		  {% if paginator.total_pages > 1 %}
+		  <div class="text-center">
+		  	Page {{ paginator.page }} of {{ paginator.total_pages }}
+		  </div>
+		  <ul class="pager">
+		      {% if paginator.previous_page %}
+		      <li class="previous">
+		          <a href="{{ paginator.previous_page_path | prepend: site.baseurl | replace: '//', '/' }}">&larr; Newer Posts</a>
+		      </li>
+		      {% endif %}
+		      {% if paginator.next_page %}
+		      <li class="next">
+		          <a href="{{ paginator.next_page_path | prepend: site.baseurl | replace: '//', '/' }}"> Older Posts &rarr;</a>
+		      </li>
+		      {% endif %}
+		  </ul>
+		  {% endif %}
+		</div>
+	</div>
+</div>

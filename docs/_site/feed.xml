@@ -1,0 +1,591 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://localhost:4000/usuba-crypto/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/usuba-crypto/" rel="alternate" type="text/html" /><updated>2020-01-07T18:29:57+01:00</updated><id>http://localhost:4000/usuba-crypto/feed.xml</id><title type="html">USUBA</title><subtitle>Usuba website</subtitle><entry xml:lang="en"><title type="html">Usuba - the genesis</title><link href="http://localhost:4000/usuba-crypto/2020/01/07/usuba-genesis.html" rel="alternate" type="text/html" title="Usuba - the genesis" /><published>2020-01-07T00:00:00+01:00</published><updated>2020-01-07T00:00:00+01:00</updated><id>http://localhost:4000/usuba-crypto/2020/01/07/usuba-genesis</id><content type="html" xml:base="http://localhost:4000/usuba-crypto/2020/01/07/usuba-genesis.html">&lt;!-- Left-over paragraph --&gt;
+&lt;!--
+Motivation: cryptographic primitive implementations
+ - correctness
+ - security
+ - performances
+--&gt;
+&lt;!-- Implementations of cryptographic primitives can be judged on three --&gt;
+&lt;!-- criteria: --&gt;
+
+&lt;!--  - **Correctness**: implementations must compute what their --&gt;
+&lt;!--    specifications describe. While this is the basic requirement for --&gt;
+&lt;!--    any code ever written, it is far from trivial to convince oneself --&gt;
+&lt;!--    that a highly optimized assembly hand-tuned code is correct, let --&gt;
+&lt;!--    alone prove it [20,21]. --&gt;
+
+&lt;!--  - **Security**¹: implementations must be resilient to some if not all --&gt;
+&lt;!--    side-channel attacks. While some side-channels attacks are not --&gt;
+&lt;!--    easily implemented on traditional servers (fault-injection, power --&gt;
+&lt;!--    analysis, ...), others like timing attacks have been shown to be --&gt;
+&lt;!--    very effective [3] and cannot be overlooked. --&gt;
+
+&lt;!--  - **Performances**: cryptography must be as fast as possible in order --&gt;
+&lt;!--    to be transparent from the application's perspective. To achieve --&gt;
+&lt;!--    high throughputs, cryptographers carefully hand-tune their --&gt;
+&lt;!--    implementations, exploiting specific features of the CPU --&gt;
+&lt;!--    microarchitectures they target, thus obscuring the behavior of the --&gt;
+&lt;!--    programs, sometimes raising doubts about correctness and security. --&gt;
+
+&lt;!-- End of left-over paragraph --&gt;
+
+&lt;!--
+Overview
+  - crypto very high-level intro
+  - Usuba, our savior
+  - Blockcipher description, Usuba example (Rectangle)
+  - Constant-time
+  - Bitslicing
+  - m-slicing
+  - Crypto != AES, ==&gt; Usuba is useful
+  - Conclusion
+--&gt;
+
+&lt;!--
+Cryptography
+ - definition
+   + etymology
+   + plaintext, ciphertext, cipher, key
+ - history:
+   + Egypt
+   + Caesar
+   + Enigma
+ - used everywhere:
+   + secure communication
+   + store secure data (passwords, ...)
+ -&gt; different protocols and primitives
+   + example protocols: SSL/TLS
+   + example primitives: AES, Chacha20, RSA, DES
+--&gt;
+
+&lt;p&gt;Cryptography, from the Ancient Greek &lt;em&gt;kryptos&lt;/em&gt; “hidden” and &lt;em&gt;graphein&lt;/em&gt;
+“to write”, is the practice of securing a communication by
+transforming its content (the &lt;em&gt;plaintext&lt;/em&gt;) into an unintelligible text
+(the &lt;em&gt;ciphertext&lt;/em&gt;), using an algorithm called a &lt;em&gt;cipher&lt;/em&gt;, which often
+takes as additional input a secret &lt;em&gt;key&lt;/em&gt; known only from the persons
+encrypting and decrypting the communication. Cryptography has been
+used literally for ages: its first known use dates back to ancient
+Egypt, in 1900 BCE. Almost 2000 years later, Julius Caesar was
+notoriously using cryptography to secure his orders to his generals,
+using what would later be known as a &lt;a href=&quot;https://en.wikipedia.org/wiki/Caesar_cipher&quot;&gt;Caesar
+cipher&lt;/a&gt;, which consists
+in replacing each letter by another one such that the &lt;em&gt;i&lt;/em&gt;-th letter of
+the alphabet is replaced by the (&lt;em&gt;n&lt;/em&gt;+&lt;em&gt;i&lt;/em&gt;)-th one (for some fixed &lt;em&gt;n&lt;/em&gt;
+between 1 and 25). Throughout history, the military would continue to
+use cryptography to protect their communications, with the famous
+example of &lt;a href=&quot;https://en.wikipedia.org/wiki/Enigma_machine&quot;&gt;Enigma&lt;/a&gt;,
+used by Nazi Germany during World War II. Nowadays, in our
+increasingly digital and ever more connected world, cryptography is
+omnipresent, for instance to store sensitive data (&lt;em&gt;eg.&lt;/em&gt; passwords,
+banking data, …), to secure data transfers over the Internet or more
+generally to protect any confidential data. Those different
+applications have different requirements, which are met thanks to
+various &lt;a href=&quot;https://en.wikipedia.org/wiki/Cryptographic_protocol&quot;&gt;&lt;em&gt;cryptographic
+protocols&lt;/em&gt;&lt;/a&gt;
+describing how to use certain &lt;a href=&quot;https://en.wikipedia.org/wiki/Cryptographic_primitive&quot;&gt;&lt;em&gt;cryptographic
+primitives&lt;/em&gt;&lt;/a&gt;
+(&lt;em&gt;ie.&lt;/em&gt;, basic blocks for cryptography, like ciphers) to secure
+communications in a given set of circumstances. Examples of
+cryptographic protocols include
+&lt;a href=&quot;https://en.wikipedia.org/wiki/Transport_Layer_Security&quot;&gt;TLS/SSL&lt;/a&gt;, to
+secure network communications, or the lower-level
+&lt;a href=&quot;https://en.wikipedia.org/wiki/IPsec&quot;&gt;IPsec&lt;/a&gt;, both using cryptographic
+primitives likes the &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Encryption_Standard&quot;&gt;Advanced Encryption
+Standard&lt;/a&gt;
+(AES) and
+&lt;a href=&quot;https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant&quot;&gt;Chacha20&lt;/a&gt;
+[29]. Other examples of cryptographic primitives include the now
+outdated &lt;a href=&quot;https://en.wikipedia.org/wiki/Data_Encryption_Standard&quot;&gt;Data Encryption
+Standard&lt;/a&gt;
+(DES), and &lt;a href=&quot;https://en.wikipedia.org/wiki/RSA_(cryptosystem)&quot;&gt;RSA&lt;/a&gt;
+(used in TLS but not in IPsec).&lt;/p&gt;
+
+&lt;!--
+Cryptanalysis - side-channel attacks
+ - definition cryptanalysis
+ - example breaking Ceasar cipher
+ - more advanced attacks
+   + Related-key attack
+   + Chosen-plaintext attack
+ - secure if no reasonable attacks
+ - side-channel attacks
+   + timing attack (+ code example)
+   + advanced attacks based on hardware
+     * cache-timing attack
+       - example of lookup table &amp; circuit to compute it
+     * power-based attack
+       - code example of protecting previous lookup table
+ -&gt; protections increase code complexity
+ -&gt; hard to do by hand
+ -&gt; (next paragraph) Usuba!
+ --&gt;
+&lt;p&gt;While ciphers became more sophisticated,
+&lt;a href=&quot;https://en.wikipedia.org/wiki/Cryptanalysis&quot;&gt;&lt;em&gt;cryptanalysis&lt;/em&gt;&lt;/a&gt;, the
+study of breaking ciphers became more sophisticated as
+well. Cryptanalysis focuses on finding algorithmic weaknesses in
+cryptographic primitives. For instance, the Caesar cipher, presented
+above, is easily broken by trying to shift all letters of the
+ciphertext by every possible &lt;em&gt;n&lt;/em&gt; (between 1 and 25) until it produces
+a text that makes sense. Examples of more advanced attacks include
+&lt;a href=&quot;https://en.wikipedia.org/wiki/Related-key_attack&quot;&gt;Related-key
+attack&lt;/a&gt;, which
+consist in observing similarities in the ciphertext produced by a
+cipher for a given plaintext with different keys, or &lt;a href=&quot;https://en.wikipedia.org/wiki/Chosen-plaintext_attack&quot;&gt;Chosen-plaintext
+attack&lt;/a&gt;, where
+an attacker will have access to a set of plaintext and corresponding
+ciphertext and will try to retrieve the key. A cipher will typically
+be considered secure if no practical attacks exists, that is, no
+attack that can be carried out in a reasonable time (&lt;em&gt;eg.&lt;/em&gt; tens of
+thousands of years), or set up at a reasonable cost (&lt;em&gt;eg.&lt;/em&gt; billions of
+dollars). However, even when crytanalysis fails to break a cipher, its
+implementation might be vulnerable to &lt;a href=&quot;https://en.wikipedia.org/wiki/Side-channel_attack&quot;&gt;&lt;em&gt;side-channel
+attacks&lt;/em&gt;&lt;/a&gt;, which
+rely on monitoring a cipher execution in order to recover secret
+data. A typical example is &lt;em&gt;timing attacks&lt;/em&gt;: when a cipher uses a
+condition on a secret data, the execution time will vary depending on
+this data. For instance, consider the following C code that checks if
+a provided password matches an expected password:&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;check_password&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;provided&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;expected&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;provided&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;expected&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;If &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;provided&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;expected&lt;/code&gt; start with different characters, then
+this function will quickly return 0. However, if &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;provided&lt;/code&gt; and
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;expected&lt;/code&gt; start with the same 10 characters, then this function will
+loop ten times (and therefore will take longer) before returning 0,
+thus informing an attacker monitoring the execution time of this
+function that he has the first characters right. An easy fix to this
+issue would be to make this function &lt;em&gt;constant-time&lt;/em&gt;, by decorrelating
+its execution time from its inputs:&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;check_password&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;provided&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;expected&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;flag&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;provided&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;expected&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;flag&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;flag&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;More advanced attacks can be designed, especially on complex
+hardwares. For instance, the time needed to read some data from memory
+on a modern Intel computer heavily depends on whether those data are
+in the caches. An attacker could therefore design a timing attack
+based on the cache access pattern, also called &lt;em&gt;cache-timing
+attack&lt;/em&gt;. Even more sophisticated, &lt;a href=&quot;https://en.wikipedia.org/wiki/Power_analysis&quot;&gt;&lt;em&gt;Power
+analysis&lt;/em&gt;&lt;/a&gt; allows an
+attacker monitoring the power consumption of a device (using typically
+an oscilloscope) to gain knowledge of secret data, possibly while
+&lt;a href=&quot;https://en.wikipedia.org/wiki/Fault_injection&quot;&gt;injecting faults&lt;/a&gt; in
+the computation (using for instance electromagnetic impulsion, or
+lasers) to better control what data is leaked.&lt;/p&gt;
+
+&lt;p&gt;Primitive implementations must be manually protected against
+side-channel attacks using various techniques. For instance, the
+common defense against cache-timing attacks consists in replacing
+lookup tables by bitwise instructions. Take the following lookup table
+for example:&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;table&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;which is indexed by 2 bits (since it has 4 elements) can be computed
+by the following code (provided that each bit of the 2-bit input has
+been put in a different variable &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x0&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x1&lt;/code&gt;, and that the 2-bit
+output is expected to be in two variables &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;r0&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;r1&lt;/code&gt;):&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;table&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;For instance, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;table[1]&lt;/code&gt; is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2&lt;/code&gt;, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt; in binary is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;01&lt;/code&gt;. Calling
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;table()&lt;/code&gt; with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x0 = 0&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x1 = 1&lt;/code&gt; produces &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;r0 = 1&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;r1 = 0&lt;/code&gt;,
+or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;10&lt;/code&gt;, which is binary for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2&lt;/code&gt;. Another technique to protect
+primitive implementations is &lt;em&gt;boolean masking&lt;/em&gt;, which aims at
+mitigating Power analysis attacks. It consists in representing each
+bit &lt;em&gt;b&lt;/em&gt; of secret data by &lt;em&gt;n&lt;/em&gt; random bits such that their xor is equal
+to the original secret bit: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;b = b0 ^ b1 ^ ... ^ bn&lt;/code&gt; for each secret
+bit &lt;em&gt;b&lt;/em&gt;. If &lt;em&gt;n&lt;/em&gt; is greater than 2, this is called &lt;em&gt;higher order
+boolean masking&lt;/em&gt;. Adding this protection to the function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;table&lt;/code&gt;
+introduced above would produce the following code:&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;table&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;r0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;r1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;OR&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;where &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;OR&lt;/code&gt; is a function computing a bitwise &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;or&lt;/code&gt; between two masked
+data. Already, our initially simple lookup table is becoming quite
+complicated, and a developper looking at the code would have a hard
+time figuring out what it does. Applying the same techniques to a full
+cipher would take a considerable amount of time and produce a much
+more complex code. Most -if not all- the times, manually implementing
+high-throughput cryptographic primitives, and manually securing
+primitives against side-channel attacks are two complicated and
+tedious taks, hard to get right, and which tends to obfuscate the
+code, thus complicating any further maintenance. Doing both at the
+same time is an even harder task, reaching the limits of what one can
+do by hand.&lt;/p&gt;
+
+&lt;!--
+Presentation of Usuba
+ - programming language for crypto
+ - addresses the 3 points above:
+   - high-level -&gt; obviously correct, easy to reason on
+   - constant-time + countermeasures -&gt; security
+   - high-perf C + intrinsics -&gt; fast
+--&gt;
+
+&lt;p&gt;Instead, we propose &lt;strong&gt;Usuba&lt;/strong&gt; [5,6,7], a domain-specific programming
+language designed to write cryptographic primitives, developed by
+Darius Mercadier and (and under the supervision of) Pierre-Evariste
+Dagand. Usuba is a high-level programming language, making it easy to
+reason on programs (and therefore assert of their correctness). Usuba
+is constant-time by construction, thus protecting against cache-timing
+attacks, and can automatically insert countermeasures like boolean
+masking to protect against power-based side-channels. Finally, Usuba
+compiles to high-performance C code, exploiting SIMD extensions of
+modern CPUs when available (SSE, AVX, AVX512 on Intel, Neon on ARM,
+AltiVec on PowerPC), thus performing on par with hand-tuned code in a
+lot of cases, sometimes even better.&lt;/p&gt;
+
+&lt;!--
+Blockciphers in Usuba
+ - blockcipher: n rounds of ``stuffs''
+   - blockipher == software circuit
+   - usuba: high-level circuits
+ - Example: Rectangle \cite{zhang:rectangle}
+   - circuit (taken from PLDI slides)
+   - Usuba code == straight translation
+ - obvious what it does
+   + still, explain what each function does
+ - 10-15% faster than reference
+ - more generic and high-level than reference
+--&gt;
+
+&lt;p&gt;A blockcipher is typically defined as &lt;em&gt;n&lt;/em&gt; rounds of computation, each
+of them doing the same thing, and taking the output of the previous
+round as well as (most of the times) a key as input. The number of
+round is fixed for a given cipher, and the operations done within a
+round are typically bit-permutations, bitwise operations, and
+sometimes arithmetic operations. A cipher can therefore be seen as a
+stateless circuit. For instance, the Rectangle [13] blockcipher takes
+a 64-bit plaintext, and 25 64-bit keys as input, and produces the
+ciphertext through 24 rounds, each doing a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;xor&lt;/code&gt;, and calling two
+auxiliary functions: SubColumn (a lookup table, which provides
+non-linearity), and ShiftRows (a permutation, which provides
+diffusion). Rectangle can therefore be represented by the following
+circuit:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/usuba-crypto/assets/images/blog/rectangle-circuit.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Usuba aims at providing a way to write an implementation of a cipher
+which is as close to the specification (&lt;em&gt;ie.&lt;/em&gt; the circuit) as
+possible. As such, Rectangle can be straight-forwardly written in
+Usuba in just a few lines of code (explanations below):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Usuba&quot;&gt;table SubColumn (in:v4) returns (out:v4) {
+    6 , 5, 12, 10, 1, 14, 7, 9,
+    11, 0, 3 , 13, 8, 15, 4, 2
+}
+
+node ShiftRows (input:u16[4]) returns (out:u16[4])
+let
+    out[0] = input[0];
+    out[1] = input[1] &amp;lt;&amp;lt;&amp;lt; 1;
+    out[2] = input[2] &amp;lt;&amp;lt;&amp;lt; 12;
+    out[3] = input[3] &amp;lt;&amp;lt;&amp;lt; 13
+tel
+
+node Rectangle (plain:u16[4],key:u16[26][4])
+       returns (cipher:u16[4])
+vars round : u16[26][4]
+let
+    round[0] = plain;
+    forall i in [0,24] {
+        round[i+1] = ShiftRows(SubColumn(round[i] ^ key[i]))
+    }
+    cipher = round[25] ^ key[25]
+tel
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;An introduction to the syntax will be given in a later post, but even
+without it, the code should be self explanatory: the main function
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Rectangle&lt;/code&gt; takes a plaintext as an array of 4 16-bit elements, and a
+key as a 2D array, and computes 25 rounds, each calling the functions
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ShiftRows&lt;/code&gt;, described as 3 left-rotations, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SubColumn&lt;/code&gt;, which
+computes a lookup in a table. This code is painfully simple, and as
+close to the specification as one can be. Yet, it compiles to a C code
+which is 10-15% faster than the reference implementation [6], while
+being much simpler and more generic, as the latter explicitly uses
+vector extensions for specific architectures.&lt;/p&gt;
+
+&lt;!--
+Constant-time code
+ - battle against the compiler
+   + compiler may introduce branches (https://people.eecs.berkeley.edu/~daw/papers/pcmodel-long.pdf)
+   + Example:
+       bool f(bool x, bool y, bool z) {
+          return (x &amp; y) | (~x &amp; z);
+       }
+     produces cmove (it's hard to find doc about cmove constant-time or not (cite Dudect?)).
+ - battle against the (micro)architecture
+   + Example: constant-time multiplication (https://www.bearssl.org/ctmul.html)
+ - Dudect: treat primitive as a blackbox
+ - Languages to enforce constant-time:
+   + HACL* but too low-level
+   + FaCT
+ - ( Obtained by construction with bitslicing )
+--&gt;
+
+&lt;p&gt;One of the other main benefits of Usuba is that the codes it generates
+are constant-time &lt;em&gt;by construction&lt;/em&gt;. To write constant-time code with
+traditional languages (&lt;em&gt;e.g.&lt;/em&gt;, C) is to fight an uphill battle against
+compilers [22], which may silently rewrite one’s carefully crafted
+program into one vulnerable to timing attacks, and against the
+underlying architecture itself [23], whose micro-architectural
+features may leak secrets through timing or otherwise. For instance,
+the assembly generated by Clang 9.0 for the following C implementation
+of a multiplexer:&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;mux&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;z&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;~&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;z&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;uses a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cmove&lt;/code&gt; instruction, which is not known to be constant-time
+(even though it seems to be, experimentally). Likewise, some integer
+multiplication instructions are known to not be constant-time, causing
+library developers to write their own software-level constant-time
+implementations of multiplications [25]. The issue is so far-reaching
+that tools traditionally applied to hardware evaluation are now used
+to analyze software implementations [24], treating the program and its
+execution environment as a single black-box and measuring whether its
+execution time seems constant with a high enough probablity. Most -if
+not all- modern programming languages designed for cryptography have
+built-in mechanism to prevent non-constant-time operations. For
+instance, HACL* [26] has the notion of &lt;em&gt;secure integers&lt;/em&gt; that cannot
+be branched on, and forbids the use of non-constant-time operations
+like division or modulo. FaCT [27] on the other hand takes the stance
+that HACL* is too low-level, and that constant-timeness should be seen
+as a compilation problem: it provides high-level abstractions which
+are compiled down to constant-time idioms. Adopting yet another
+high-level approach, Usuba enforces constant-time by using (in a
+transparent manner from the developer’s point-of-vue) a programming
+model called &lt;em&gt;bitslicing&lt;/em&gt;.&lt;/p&gt;
+
+&lt;!--
+Bitslicing - overview
+ - origin: biham on DES
+ - change data representation to maximize parallelism
+   -&gt; scales well with SIMD extensions
+ - lots of record-breaking software implem uses bitslicing
+ - modern ciphers designed with bitslicing in mind
+ - tedious to write by hand
+   + example: Kwan
+ - Automatic bitslicing in Usuba
+   + clearer, with better performances
+--&gt;
+
+&lt;p&gt;Bitslicing was first introduced by Biham [4] as an implementation
+trick to speed up software implementations of DES. Intuitively, the
+idea of bitslicing is to represent a &lt;em&gt;n&lt;/em&gt;-bit data as 1 bit in &lt;em&gt;n&lt;/em&gt;
+registers. Each register therefore has 63-bit empty bit remaining (in
+the case of 64-bit registers), which can be filled in the same fashion
+by other independant data. To manipulate such data, the cipher must be
+reduced to bitwise logic operators such as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x &amp;amp; y&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x | y&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x ^ y&lt;/code&gt;
+and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;~ x&lt;/code&gt;. On a 64-bit machine, the bitwise &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x &amp;amp; y&lt;/code&gt; operation then
+effectively works like 64 parallel Boolean conjunctions, each
+processing a single bit.  High throughput is thus achieved by
+parallelism: 64 instances of the cipher can execute in
+parallel. Bitslicing is thus especially good at exploiting vector
+extensions of moderns CPUs, which offer large registers (&lt;em&gt;eg.&lt;/em&gt; 128-bit
+Neon on ARM, 128-bit AltiVec on PowerPC, and more commonly known,
+128-bit SSE, 256-bit AVX and 512-bit AVX-512 on Intel). Bitsliced
+implementations are constant-time by design: no data-dependent
+conditionals nor memory accesses are made (or, in fact, possible at
+all). Most record-breaking software implementations of block ciphers
+exploit this technique [8,9,10,11], and modern ciphers are now
+designed with bitslicing in mind [12,13]. However, bitslicing usually
+implies an increase in code complexity, making it hard to write
+efficient bitslice code by hand, as can be shown in those few lines of
+C code which are part of a DES implementation written by Matthew Kwan
+[28]:&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;s1&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r31&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;47&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;11&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;26&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r3&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;13&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;r4&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;41&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l8&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l16&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l22&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l30&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;s2&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r3&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;27&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r4&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;6&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r5&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;54&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r6&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;48&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r7&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;39&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;r8&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;19&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l12&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l27&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l17&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;s3&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r7&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;53&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r8&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;25&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r9&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;33&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r10&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;34&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r11&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;17&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;r12&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l23&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l15&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l29&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;s4&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r11&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r12&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;55&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r13&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;24&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r14&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;32&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r15&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;40&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;r16&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l25&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l19&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l9&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The &lt;a href=&quot;https://github.com/DadaIsCrazy/usuba/blob/master/ciphers/des/kwan/des.c#L788-L1043&quot;&gt;full
+code&lt;/a&gt;
+goes on like this for almost 300 lines, while the &lt;a href=&quot;https://github.com/DadaIsCrazy/usuba/blob/master/samples/usuba/des.ua#L154-L184&quot;&gt;Usuba
+equivalent&lt;/a&gt;
+is just a few lines of codes, very similar to the Rectangle code shown
+above. The simplicity offered by Usuba does not come at any
+performance cost: both Kwan’s and Usuba’s implementations exhibit
+similar performances, and more generally, Usuba usually performs on
+par with hand-tuned code.&lt;/p&gt;
+
+&lt;!--
+m-slicing
+ - limitations of bitslicing
+ - generalization of bitslicing
+ - bitslicing properties still apply: constant time &amp; masking
+ - solves issues of bitslicing:
+    * lower pressure on registers
+    * smaller code size
+    * less transposition cost
+ - type-directed in Usuba
+--&gt;
+
+&lt;p&gt;The bitslicing model can sometimes be too restrictive as it forbids
+the use of arithmetic operations, and may fails to provide the
+expected performances, due to the high pressures it puts on the
+registers. To overcome those issues, and drawing inspiration from
+Kasper &amp;amp; Schwabe’s byte-sliced AES [11], we propose a generalization
+of bitslicing that we dub &lt;em&gt;m&lt;/em&gt;-slicing. &lt;em&gt;m&lt;/em&gt;-slicing preserves the
+constant-time property of bitslicing, while allowing to use SIMD
+packed arithmetic instructions (&lt;em&gt;eg.&lt;/em&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vpaddb&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vmuldp&lt;/code&gt;), as well as
+vector permutations (&lt;em&gt;eg.&lt;/em&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vpshufb&lt;/code&gt;) to speed up permutations. The
+type of slicing is controlled with Usuba’s type-system, thus not
+inflicting no increase in code complexity: the same code will be
+sliced differently depending on the data’s types.&lt;/p&gt;
+
+&lt;!--
+Motivate Usuba's usefulness
+ - AES dominates on high-end intel
+ - embedded devices:
+     - no hardware support for AES
+     - cannot even use hardware because too heavy
+     - use lightweight ciphers -&gt; Usuba comes in
+ - new primitives (Chacha, ...) arise on intel
+   - example: Google uses Chacha in TLS
+   - example: WireGuard uses Chacha
+ - automatic protection against side-channel
+--&gt;
+
+&lt;p&gt;In an era where almost all high-end CPUs have dedicated hardware to
+run AES, making it almost unbeatable by any software implementation of
+any cipher, one could wonder whether Usuba actually has a role to play
+in modern cryptography. However, a lot of embedded devices do not have
+hardware support for AES, and have stringent requirements regarding
+code size and power consumption, which AES cannot oblige. For such
+devices, lightweight ciphers [14,15,16,17] are being developed as
+cheap alternatives to AES, and can benefit from Usuba. Even on
+high-end CPUs, other ciphers are starting to compete with AES, like
+the Chacha family, used for instance by Google in TLS rather than AES
+[18], and more recently chosen by WireGuard over AES that was used by
+its predecessor, IPsec [19]. Finally, Usuba can automatically generate
+countermeasures against power analysis attacks, which even software
+implementations of AES can benefit from [30].&lt;/p&gt;
+
+&lt;!--
+Conclusion: Usuba
+ - high-level language for cryptography
+ - generalized mslicing model
+ - generate efficient C (+ SIMD) code
+ - constant-time by construction
+ - additional countermeasures
+--&gt;
+
+&lt;p&gt;In a nutshell, Usuba is a a statically-typed vector-based programming
+language for specifying block ciphers. Its programming model makes the
+description of cryptographic algorithms intuitive while its type
+system reconciles the need for abstraction –for code reuse– and
+specialization –giving access to architecture-specific features. Using
+a generalized model of bitslicing, called &lt;em&gt;m&lt;/em&gt;-slicing, Usuba can be
+used to express a wide range of cryptographic primitives. Usuba codes
+are constant-time by design, and thus immune to cache-timing
+attacks. Finally, Usuba can automatically protect primitives against
+power-based side-channel attacks using higher-order boolean masking.&lt;/p&gt;
+
+&lt;p&gt;¹ Note that we concern ourselves only with implementations of
+primitives, and not the primitives themselves. This means in
+particular that we do not aspire to protect our implementations
+against attacks at the algorithmic level (&lt;em&gt;e.g.&lt;/em&gt; Chosen-Plaintext
+Attacks [1], Related-Key Attacks [2], …). If a primitive is
+vulnerable to such attacks, then so will its implementations be.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;p&gt;[1] &lt;a href=&quot;https://en.wikipedia.org/wiki/Chosen-plaintext_attack&quot;&gt;Wikipedia: Chosen-plaintext attack&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;[2] &lt;a href=&quot;https://en.wikipedia.org/wiki/Related-key_attack&quot;&gt;Wikipedia: Related-key attack&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;[3] D. J. Bernstein, &lt;a href=&quot;https://cr.yp.to/antiforgery/cachetiming-20050414.pdf&quot;&gt;Cache-timing attacks on AES&lt;/a&gt;, 2005.&lt;/p&gt;
+
+&lt;p&gt;[4] E. Biham, &lt;a href=&quot;http://www.cs.technion.ac.il/users/wwwb/cgi-bin/tr-get.cgi/1997/CS/CS0891.pdf&quot;&gt;A fast new DES implementation in software&lt;/a&gt;, FSE, 1997.&lt;/p&gt;
+
+&lt;p&gt;[5] D. Mercadier &lt;em&gt;et al&lt;/em&gt;, &lt;a href=&quot;Usuba, Optimizing &amp;amp; Trustworthy Bitslicing Compiler&quot;&gt;Usuba, Optimizing &amp;amp; Trustworthy Bitslicing Compiler&lt;/a&gt;, WPMVP, 2018.&lt;/p&gt;
+
+&lt;p&gt;[6] D. Mercadier, Pierre-Evariste Dagand, &lt;a href=&quot;https://dariusmercadier.com/assets/documents/usuba-pldi19.pdf&quot;&gt;Usuba: High-Throughput and Constant-Time Ciphers, by Construction&lt;/a&gt;, PLDI, 2019.&lt;/p&gt;
+
+&lt;p&gt;[7] &lt;a href=&quot;https://github.com/DadaIsCrazy/usuba&quot;&gt;Github Usuba&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;[8] Z. Bao &lt;em&gt;et al&lt;/em&gt;, &lt;a href=&quot;https://eprint.iacr.org/2015/1118.pdf&quot;&gt;Bitsliced Implementations of the PRINCE, LED and RECTANGLE Block Ciphers on AVR 8-bit Microcontrollers&lt;/a&gt;, ICICS, 2015.&lt;/p&gt;
+
+&lt;p&gt;[9] M. Matsui &lt;em&gt;et al&lt;/em&gt;, &lt;a href=&quot;https://www.iacr.org/archive/ches2007/47270121/47270121.ps&quot;&gt;On the Power of Bitslice Implementation on Intel Core2 Processor&lt;/a&gt;, CHES, 2007.&lt;/p&gt;
+
+&lt;p&gt;[10] R. Könighofer, A Fast and Cache-Timing Resistant Implementation of the AES, CT-RSA, 2008.&lt;/p&gt;
+
+&lt;p&gt;[11] E. Käsper, P. Schwabe, &lt;a href=&quot;https://www.esat.kuleuven.be/cosic/publications/article-1261.pdf&quot;&gt;Faster and Timing-Attack Resistant AES-GCM&lt;/a&gt;, CHES, 2009.&lt;/p&gt;
+
+&lt;p&gt;[12] R. Anderson &lt;em&gt;et al&lt;/em&gt;, &lt;a href=&quot;https://www.cl.cam.ac.uk/~rja14/Papers/serpent0.pdf&quot;&gt;Serpent: A New Block Cipher Proposal&lt;/a&gt;, FSE, 1998.&lt;/p&gt;
+
+&lt;p&gt;[13] W. Zhang &lt;em&gt;et al&lt;/em&gt;, &lt;a href=&quot;https://eprint.iacr.org/2014/084.pdf&quot;&gt;RECTANGLE: A Bit-slice Lightweight Block Cipher Suitable for Multiple Platforms&lt;/a&gt;, 2014.&lt;/p&gt;
+
+&lt;p&gt;[14] S. Banik &lt;em&gt;et al&lt;/em&gt;, &lt;a href=&quot;https://eprint.iacr.org/2017/622.pdf&quot;&gt;GIFT: A Small Present - Towards Reaching the Limit of Lightweight Encryption&lt;/a&gt;, CHES, 2017.&lt;/p&gt;
+
+&lt;p&gt;[15] A. Baysal, S. Sahin, &lt;a href=&quot;https://eprint.iacr.org/2015/906&quot;&gt;RoadRunneR: A Small And Fast Bitslice Block Cipher For Low Cost 8-bit Processors&lt;/a&gt;, LightSec, 2015.&lt;/p&gt;
+
+&lt;p&gt;[16] A. Bogdanov &lt;em&gt;et al&lt;/em&gt;, &lt;a href=&quot;http://www.lightweightcrypto.org/present/present_ches2007.pdf&quot;&gt;PRESENT: An Ultra-Lightweight Block Cipher&lt;/a&gt;, CHES, 2007.&lt;/p&gt;
+
+&lt;p&gt;[17] V. Grosso &lt;em&gt;et al&lt;/em&gt;, &lt;a href=&quot;https://hal.inria.fr/hal-01093491/document&quot;&gt;LS-Designs: Bitslice Encryption for Efficient MaskedSoftware Implementations&lt;/a&gt;, FSE, 2014.&lt;/p&gt;
+
+&lt;p&gt;[18] E. Bursztein, &lt;a href=&quot;https://security.googleblog.com/2014/04/speeding-up-and-strengthening-https.html&quot;&gt;Speeding up and strengthening HTTPS connections for Chrome on Android&lt;/a&gt;, 2014, accessed 20/11/2019.&lt;/p&gt;
+
+&lt;p&gt;[19] J. A. Donenfeld, &lt;a href=&quot;https://www.wireguard.com/papers/wireguard.pdf&quot;&gt;WireGuard: Next Generation Kernel Network Tunnel&lt;/a&gt;, 2019.&lt;/p&gt;
+
+&lt;p&gt;[20] G. Barthe, &lt;a href=&quot;https://ieeexplore.ieee.org/document/7310828&quot;&gt;High-Assurance Cryptography: Cryptographyic Software We Can Trust&lt;/a&gt;, 2015.&lt;/p&gt;
+
+&lt;p&gt;[21] K. Bhargavan &lt;em&gt;et al&lt;/em&gt;, &lt;a href=&quot;http://drops.dagstuhl.de/opus/volltexte/2017/7119/pdf/LIPIcs-SNAPL-2017-1.pdf&quot;&gt;Everest: Towards a Verified, Drop-in Replacement of HTTPS&lt;/a&gt;, 2017.&lt;/p&gt;
+
+&lt;p&gt;[22] G. Balakrishnan, T. Reps, &lt;a href=&quot;https://research.cs.wisc.edu/wpis/papers/wysinwyx.final.pdf&quot;&gt;WYSINWYX: What You See Is Not What You eXecute&lt;/a&gt;, 2005.&lt;/p&gt;
+
+&lt;p&gt;[23] A. Moghimi &lt;em&gt;et al&lt;/em&gt;, &lt;a href=&quot;https://arxiv.org/pdf/1711.08002.pdf&quot;&gt;MemJam: A False Dependency Attack againstConstant-Time Crypto Implementations&lt;/a&gt;, 2017.&lt;/p&gt;
+
+&lt;p&gt;[24] O. Reparaz &lt;em&gt;et al&lt;/em&gt;, &lt;a href=&quot;https://eprint.iacr.org/2016/1123.pdf&quot;&gt;Dude, is my code constant time?&lt;/a&gt;, 2016.&lt;/p&gt;
+
+&lt;p&gt;[25] T. Pornin, &lt;a href=&quot;https://www.bearssl.org/ctmul.html&quot;&gt;Constant-time mul&lt;/a&gt;, accessed 12/2019.&lt;/p&gt;
+
+&lt;p&gt;[26] J.-K. Zinzindohoué &lt;em&gt;et al&lt;/em&gt;, &lt;a href=&quot;https://hal.inria.fr/hal-01588421v2/document&quot;&gt;HACL*, A Verified Modern Crytographic Library&lt;/a&gt;, 2017.&lt;/p&gt;
+
+&lt;p&gt;[27] S. Cauligi &lt;em&gt;et al&lt;/em&gt;, &lt;a href=&quot;https://cseweb.ucsd.edu/~dstefan/pubs/cauligi:2017:fact.pdf&quot;&gt;FaCT: A Flexible, Constant-Time Programming Language&lt;/a&gt;, 2017.&lt;/p&gt;
+
+&lt;p&gt;[28] M. Kwan, &lt;a href=&quot;http://www.darkside.com.au/bitslice/&quot;&gt;Bitslice DES&lt;/a&gt;, accessed 2019-01-04.&lt;/p&gt;
+
+&lt;p&gt;[29] D. J. Bernstein, &lt;a href=&quot;https://cr.yp.to/chacha/chacha-20080128.pdf&quot;&gt;Chacha, a variant of Salsa20&lt;/a&gt;, 2008.&lt;/p&gt;
+
+&lt;p&gt;[30] P. Kiaei &lt;em&gt;et al&lt;/em&gt;, &lt;a href=&quot;https://eprint.iacr.org/eprint-bin/cite.pl?entry=2019/756&quot;&gt;SKIVA: Flexible and Modular Side-channel and Fault Countermeasures&lt;/a&gt;, 2019.&lt;/p&gt;</content><author><name>Darius Mercadier</name></author><summary type="html">Usuba is a high-level domain-specific programming language for cryptography , making it easy to reason on programs (and therefore assert of their correctness). Usuba is constant-time by construction, thus protecting against cache-timing attacks, and can automatically insert countermeasures like boolean masking to protect against power-based side-channels. Finally, Usuba compiles to high-performance C code, exploiting SIMD extensions of modern CPUs when available (SSE, AVX, AVX512 on Intel, Neon on ARM, AltiVec on PowerPC)</summary></entry></feed>

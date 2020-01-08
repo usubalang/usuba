@@ -1,0 +1,103 @@
+---
+layout: default
+title: USUBA | Home
+---
+
+<!-- Hero -->
+<div class="container mt-5 py-5 bg-light">
+  <h2 class="text-center display-4 mb-5">USUBA, <b>optimizing</b> <b>bitslicing</b> compiler</h2>
+
+  <p><b>Usuba</b> is a <b>high-level</b> <a href="https://en.wikipedia.org/wiki/Domain-specific_language">domain-specific</a> programming language to write <b>high-throughput</b> and <b>constant-time</b> <a href="https://en.wikipedia.org/wiki/Cryptographic_primitive">cryptographic primitives</a>, generating low-level C (+ <a href="https://en.wikipedia.org/wiki/SIMD">SIMD</a> intrinsics) code, and based on a generalization of bitslicing that we dub <b>m-slicing</b>.</p>
+  <br>
+  
+  	<div class="card-deck">
+  		<div class="card border-primary">
+  			<div class="card-body">
+	  			<h5 class="card-title">High-level</h5>
+	  			<p class="card-text">Usuba provides high-level abstractions tailored specifically for cryptographic primitives: lookup tables, permutation tables, functions, loops, multi-dimensional arrays...</p>
+  			</div>
+  		</div>
+  		<div class="card">
+  			<div class="card-body">
+	  			<h5 class="card-title">High-throughput</h5>
+	  			<p class="card-text">Usuba uses a generalization of <a href="http://www.cs.technion.ac.il/users/wwwb/cgi-bin/tr-get.cgi/1997/CS/CS0891.pdf">bitslicing</a> that we dub <a href="{{ site.baseurl }}/assets/documents/usuba-pldi19.pdf" target="_blank">mslicing</a>. Thanks to the parallel nature of mslicing, and the optimizations carried out by our <a href="https://github.com/DadaIsCrazy/usuba">compiler</a>, we achieve performances similar to hand-tuned C/assembly code.</p>
+  			</div>
+  		</div>
+  		<div class="card border-secondary">
+  			<div class="card-body">
+	  			<h5 class="card-title">Constant-time</h5>
+	  			<p class="card-text">Bitsliced (and msliced) codes have by nature an execution time independent of their inputs, thus making them immune to <a href="https://en.wikipedia.org/wiki/Timing_attack">timing attacks</a>. Furthermore, Usuba can automatically insert countermeasures (higher-order boolean masking) against power-based side-channel attacks.</p>
+	  		</div>
+  		</div>
+  	</div>
+</div>
+
+<!-- USUBA use cases -->
+<!-- <div class="container my-5 py-5 bg-white"> -->
+<!-- 	<div class="row justify-content-md-center"> -->
+<!-- 		<div class="col col-lg-9"> -->
+<!-- 			<h2 class="mb-5">What can you do with USUBA?</h2> -->
+<!-- 			<div class="card-columns"> -->
+<!-- 	  		<div class="card bg-primary"> -->
+<!-- 	  			<div class="card-body"> -->
+<!-- 	  				<div class="text-center"> -->
+<!-- 	  					<div class="fa fa-unlock-alt fa-2x"></div> -->
+<!-- 		  				<h3 class="card-title">Cryptography</h3> -->
+<!-- 		  			</div> -->
+<!-- 		  			<p class="card-text">Bitslicing significantly improves the performance of certain algorithmic operations. We have shown in our papers that USUBA runs AES faster than rival state-of-the-art compilers.</p> -->
+<!-- 	  			</div> -->
+<!-- 	  		</div> -->
+<!-- 	  		<div class="card border border-primary"> -->
+<!-- 	  			<div class="card-body"> -->
+<!-- 	  				<div class="text-center"> -->
+<!-- 	  					<div class="fa fa-blender-phone fa-2x"></div> -->
+<!-- 		  				<h3 class="card-title">IOT</h3> -->
+<!-- 		  			</div> -->
+<!-- 		  			<p class="card-text">With the proliferation of micro-processors and other embedded electronics, security is a paramount concern. USUBA can help protect IOT electronics again several types of attacks.</p> -->
+<!-- 		  		</div> -->
+<!-- 	  		</div>	 -->
+<!-- 	  		<div class="card border-secondary"> -->
+<!-- 	  			<div class="card-body"> -->
+<!-- 	  				<div class="text-center"> -->
+<!-- 	  					<div class="fa fa-vial fa-2x"></div> -->
+<!-- 		  				<h3 class="card-title">Research</h3> -->
+<!-- 		  			</div> -->
+<!-- 		  			<p class="card-text">USUBA is a great platform to make research on bitslicing. We also encourage compilation professors to use our compiler to teach their students about bitslicing, optimization, and how to prove code.</p> -->
+<!-- 		  		</div> -->
+<!-- 	  		</div> -->
+<!--   		</div> -->
+<!--   	</div> -->
+<!--   </div> -->
+<!-- </div> -->
+
+<!-- go further -->
+<div class="container">
+	<div class="row justify-content-md-center">
+		<div class="col col-lg-8">
+			<h2 class="mb-5">Dive Deeper into USUBA</h2>
+			<div class="w-100 border border-dark p-3 my-3 rounded">
+				<h3>Usuba Scientific Papers</h3>
+				<p>Usuba is the fruit of a meticulous research which has been validated by the publication of several peer-reviewed articles:</p>
+				<ul>
+					<li>June 2019: Darius Mercadier, Pierre-Evariste Dagand. <b>Usuba: High-Throughput and Constant-Time Ciphers, by Construction</b>. PLDI 2019, Research Papers Track, Phoenix, AZ, USA. <a href="{{ site.baseurl }}/assets/documents/usuba-pldi19.pdf" target="_blank">(link)</a></li>
+					<li>Feb 2018: Darius Mercadier, Pierre-Évariste Dagand, Lionel Lacassagne, Gilles Muller. <b>Usuba, Optimizing & Trustworthy Bitslicing Compiler.</b> WPMVP’18 - Workshop on Programming Models for SIMD/Vector Processing, Vienna, Austria. ⟨10.1145/3178433.3178437⟩. ⟨hal-01657259v2⟩ <a href="{{ site.baseurl }}/assets/documents/usuba-wpmvp18.pdf" target="_blank">(link)</a></li>
+				</ul>
+			</div>
+			<div class="w-100 border border-primary p-3 my-3 rounded">
+				<h3>Find more insights into Usuba</h3>
+				<p>The creators of USUBA regularly publish blog posts to help the community better understand how USUBA works. In particular, you can expect posts about bitslicing, compilation, and more!</p>
+				<a class="btn btn-primary" href="{{ site.baseurl }}/blog">Read our blog</a>
+			</div>
+			<div class="w-100 border border-secondary p-3 my-3 rounded">
+				<h3>Ready to dive into the source code?</h3>
+				<p>USUBA is an open-source project. We publish our code on Github, and you are most welcome to visit our repository there.</p>
+				<a class="btn btn-secondary" href="https://github.com/DadaIsCrazy/usuba" target="_blank">Go to Github</a>
+			</div>
+			<div class="w-100 border border-dark p-3 my-3 rounded">
+				<h3>Let's get in touch!</h3>
+				<p>A question without answer? A remark, comment on the project? An idea to improve USUBA or implement it to build new applications? We would be glad to hear about you.</p>
+				<p>The easiest way to reach us is to email the main developer of Usuba, Darius Mercadier, whose email is "his name" <i>dot</i> "his last name" <i>at</i> gmail.</p>
+			</div>
+		</div>
+	</div>
+</div>
