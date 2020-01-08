@@ -1,6 +1,0 @@
-{
-    "data_dir":         "{{USUBA}}/data",
-    "tightprove_cache": "{{USUBA}}/tightprove_cache",
-    "sage":             "{{HOME}}/SageMath/sage",
-    "tightprove":       "{{USUBA}}/../tightPROVEp/tightprove-exec.sage"
-}

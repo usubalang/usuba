@@ -1,2 +1,0 @@
-des-inline-sched 6.60 70200
-des-noinline-sched 12.70 95104
