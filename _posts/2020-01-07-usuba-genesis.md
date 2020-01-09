@@ -310,7 +310,10 @@ non-linearity), and ShiftRows (a permutation, which provides
 diffusion). Rectangle can therefore be represented by the following
 circuit:
 
-![]({{ site.baseurl }}/assets/images/blog/rectangle-circuit.png)
+<p align="center">
+<img src="{{ site.baseurl }}/assets/images/blog/rectangle-circuit.png">
+<!-- ![]({{ site.baseurl }}/assets/images/blog/rectangle-circuit.png) -->
+</p>
 
 Usuba aims at providing a way to write an implementation of a cipher
 which is as close to the specification (_ie._ the circuit) as
