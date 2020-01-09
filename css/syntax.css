@@ -207,3 +207,12 @@
 .highlight {
   background-color: #f8f8f8;
 }
+
+
+/* Hector's code to format the code blocks */
+pre {
+  background-color: #e9ecef !important;
+  border-radius: 0 !important;
+  border-left: 0.25rem solid #adb5bd !important;
+  padding: 0.25rem 1rem !important;
+}

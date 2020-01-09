@@ -41,32 +41,38 @@
 
 
 		<!-- Hero -->
-<div class="container mt-5 py-5 bg-light">
-  <h2 class="text-center display-4 mb-5">USUBA, <b>optimizing</b> <b>bitslicing</b> compiler</h2>
-
-  <p><b>Usuba</b> is a <b>high-level</b> <a href="https://en.wikipedia.org/wiki/Domain-specific_language">domain-specific</a> programming language to write <b>high-throughput</b> and <b>constant-time</b> <a href="https://en.wikipedia.org/wiki/Cryptographic_primitive">cryptographic primitives</a>, generating low-level C (+ <a href="https://en.wikipedia.org/wiki/SIMD">SIMD</a> intrinsics) code, and based on a generalization of bitslicing that we dub <b>m-slicing</b>.</p>
-  <br>
-  
-  	<div class="card-deck">
-  		<div class="card border-primary">
-  			<div class="card-body">
-	  			<h5 class="card-title">High-level</h5>
-	  			<p class="card-text">Usuba provides high-level abstractions tailored specifically for cryptographic primitives: lookup tables, permutation tables, functions, loops, multi-dimensional arrays...</p>
-  			</div>
-  		</div>
-  		<div class="card">
-  			<div class="card-body">
-	  			<h5 class="card-title">High-throughput</h5>
-	  			<p class="card-text">Usuba uses a generalization of <a href="http://www.cs.technion.ac.il/users/wwwb/cgi-bin/tr-get.cgi/1997/CS/CS0891.pdf">bitslicing</a> that we dub <a href="/usuba/assets/documents/usuba-pldi19.pdf" target="_blank">mslicing</a>. Thanks to the parallel nature of mslicing, and the optimizations carried out by our <a href="https://github.com/DadaIsCrazy/usuba">compiler</a>, we achieve performances similar to hand-tuned C/assembly code.</p>
-  			</div>
-  		</div>
-  		<div class="card border-secondary">
-  			<div class="card-body">
-	  			<h5 class="card-title">Constant-time</h5>
-	  			<p class="card-text">Bitsliced (and msliced) codes have by nature an execution time independent of their inputs, thus making them immune to <a href="https://en.wikipedia.org/wiki/Timing_attack">timing attacks</a>. Furthermore, Usuba can automatically insert countermeasures (higher-order boolean masking) against power-based side-channel attacks.</p>
-	  		</div>
-  		</div>
+<div class="container mb-5 py-5 bg-light">
+  <div class="row justify-content-center">
+  	<div class="col-lg-11">
+  		<h2 class="text-center display-4 mb-5">USUBA, optimizing bitslicing compiler</h2>
+  		<p><b>Usuba</b> is a <b>high-level</b> <a href="https://en.wikipedia.org/wiki/Domain-specific_language">domain-specific</a> programming language to write <b>high-throughput</b> and <b>constant-time</b> <a href="https://en.wikipedia.org/wiki/Cryptographic_primitive">cryptographic primitives</a>, generating low-level C (+ <a href="https://en.wikipedia.org/wiki/SIMD">SIMD</a> intrinsics) code, and based on a generalization of bitslicing that we dub <b>m-slicing</b>.</p>
   	</div>
+  </div>
+  <div class="row justify-content-center">
+  	<div class="col-lg-11">
+	  	<div class="card-deck">
+	  		<div class="card border-primary">
+	  			<div class="card-body">
+		  			<h5 class="card-title">High-level</h5>
+		  			<p class="card-text">Usuba provides high-level abstractions tailored specifically for cryptographic primitives: lookup tables, permutation tables, functions, loops, multi-dimensional arrays...</p>
+	  			</div>
+	  		</div>
+	  		<div class="card">
+	  			<div class="card-body">
+		  			<h5 class="card-title">High-throughput</h5>
+		  			<p class="card-text">Usuba uses a generalization of <a href="http://www.cs.technion.ac.il/users/wwwb/cgi-bin/tr-get.cgi/1997/CS/CS0891.pdf">bitslicing</a> that we dub <a href="/usuba/assets/documents/usuba-pldi19.pdf" target="_blank">mslicing</a>. Thanks to the parallel nature of mslicing, and the optimizations carried out by our <a href="https://github.com/DadaIsCrazy/usuba">compiler</a>, we achieve performances similar to hand-tuned C/assembly code.</p>
+	  			</div>
+	  		</div>
+	  		<div class="card border-secondary">
+	  			<div class="card-body">
+		  			<h5 class="card-title">Constant-time</h5>
+		  			<p class="card-text">Bitsliced (and msliced) codes have by nature an execution time independent of their inputs, thus making them immune to <a href="https://en.wikipedia.org/wiki/Timing_attack">timing attacks</a>. Furthermore, Usuba can automatically insert countermeasures (higher-order boolean masking) against power-based side-channel attacks.</p>
+		  		</div>
+	  		</div>
+	  	</div>
+	</div>
+  </div>
+ 	
 </div>
 
 <!-- USUBA use cases -->
