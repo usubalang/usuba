@@ -262,10 +262,10 @@ $transition-collapse:         height .35s ease !default;
 // stylelint-disable value-keyword-case
 $font-family-sans-serif:      -apple-system, BlinkMacSystemFont, "Source Sans Pro","Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !default;
 $font-family-monospace:       "Source Code Pro", SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !default;
-$font-family-base:            "Source Code Pro";
+$font-family-base:            "Source Code Pro", sans;
 // stylelint-enable value-keyword-case
 
-$font-size-base:              1.1rem !default; // Assumes the browser default, typically `16px`
+$font-size-base:              1rem !default; // Assumes the browser default, typically `16px`
 $font-size-lg:                ($font-size-base * 1.25) !default;
 $font-size-sm:                ($font-size-base * .875) !default;
 
@@ -284,7 +284,7 @@ $h5-font-size:                $font-size-base * 1.25 !default;
 $h6-font-size:                $font-size-base !default;
 
 $headings-margin-bottom:      $spacer !default;
-$headings-font-family:        "Dosis";
+$headings-font-family:        "Dosis", $font-family-sans-serif;
 $headings-font-weight:        $font-weight-bold !default;
 $headings-line-height:        1.2 !default;
 $headings-color:              inherit !default;
