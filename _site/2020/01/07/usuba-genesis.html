@@ -9,7 +9,6 @@
 <title>Usuba - the genesis</title>
 <meta name="description" content="Usuba website" />
 <link rel="stylesheet" href="/usuba/css/main.css">
-<link rel="stylesheet" href="/usuba/css/syntax.css">
 
 
   <body>
@@ -349,7 +348,7 @@ which is as close to the specification (<em>ie.</em> the circuit) as
 possible. As such, Rectangle can be straight-forwardly written in
 Usuba in just a few lines of code (explanations below):</p>
 
-<pre><code class="language-Usuba">table SubColumn (in:v4) returns (out:v4) {
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>table SubColumn (in:v4) returns (out:v4) {
     6 , 5, 12, 10, 1, 14, 7, 9,
     11, 0, 3 , 13, 8, 15, 4, 2
 }
@@ -372,7 +371,7 @@ let
     }
     cipher = round[25] ^ key[25]
 tel
-</code></pre>
+</code></pre></div></div>
 
 <p>An introduction to the syntax will be given in a later post, but even
 without it, the code should be self explanatory: the main function

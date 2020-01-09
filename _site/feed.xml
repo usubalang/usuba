@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://localhost:4000/usuba/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/usuba/" rel="alternate" type="text/html" /><updated>2020-01-09T14:16:35+01:00</updated><id>http://localhost:4000/usuba/feed.xml</id><title type="html">USUBA</title><subtitle>Usuba website</subtitle><entry xml:lang="en"><title type="html">Usuba - the genesis</title><link href="http://localhost:4000/usuba/2020/01/07/usuba-genesis.html" rel="alternate" type="text/html" title="Usuba - the genesis" /><published>2020-01-07T00:00:00+01:00</published><updated>2020-01-07T00:00:00+01:00</updated><id>http://localhost:4000/usuba/2020/01/07/usuba-genesis</id><content type="html" xml:base="http://localhost:4000/usuba/2020/01/07/usuba-genesis.html">&lt;!-- Left-over paragraph --&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://localhost:4000/usuba/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/usuba/" rel="alternate" type="text/html" /><updated>2020-01-09T14:54:11+01:00</updated><id>http://localhost:4000/usuba/feed.xml</id><title type="html">USUBA</title><subtitle>Usuba website</subtitle><entry xml:lang="en"><title type="html">Usuba - the genesis</title><link href="http://localhost:4000/usuba/2020/01/07/usuba-genesis.html" rel="alternate" type="text/html" title="Usuba - the genesis" /><published>2020-01-07T00:00:00+01:00</published><updated>2020-01-07T00:00:00+01:00</updated><id>http://localhost:4000/usuba/2020/01/07/usuba-genesis</id><content type="html" xml:base="http://localhost:4000/usuba/2020/01/07/usuba-genesis.html">&lt;!-- Left-over paragraph --&gt;
 &lt;!--
 Motivation: cryptographic primitive implementations
  - correctness
@@ -298,7 +298,7 @@ which is as close to the specification (&lt;em&gt;ie.&lt;/em&gt; the circuit) as
 possible. As such, Rectangle can be straight-forwardly written in
 Usuba in just a few lines of code (explanations below):&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&quot;language-Usuba&quot;&gt;table SubColumn (in:v4) returns (out:v4) {
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;table SubColumn (in:v4) returns (out:v4) {
     6 , 5, 12, 10, 1, 14, 7, 9,
     11, 0, 3 , 13, 8, 15, 4, 2
 }
@@ -321,7 +321,7 @@ let
     }
     cipher = round[25] ^ key[25]
 tel
-&lt;/code&gt;&lt;/pre&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;An introduction to the syntax will be given in a later post, but even
 without it, the code should be self explanatory: the main function
