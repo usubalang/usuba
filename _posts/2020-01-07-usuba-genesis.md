@@ -7,6 +7,7 @@ lang: en
 locale: en_US
 author: Darius Mercadier
 excerpt: Usuba is a high-level domain-specific programming language for cryptography , making it easy to reason on programs (and therefore assert of their correctness). Usuba is constant-time by construction, thus protecting against cache-timing attacks, and can automatically insert countermeasures like boolean masking to protect against power-based side-channels. Finally, Usuba compiles to high-performance C code, exploiting SIMD extensions of modern CPUs when available (SSE, AVX, AVX512 on Intel, Neon on ARM, AltiVec on PowerPC)
+comments: true
 ---
 
 <!-- Left-over paragraph -->

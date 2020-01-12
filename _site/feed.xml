@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://localhost:4000/usuba/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/usuba/" rel="alternate" type="text/html" /><updated>2020-01-09T14:54:11+01:00</updated><id>http://localhost:4000/usuba/feed.xml</id><title type="html">USUBA</title><subtitle>Usuba website</subtitle><entry xml:lang="en"><title type="html">Usuba - the genesis</title><link href="http://localhost:4000/usuba/2020/01/07/usuba-genesis.html" rel="alternate" type="text/html" title="Usuba - the genesis" /><published>2020-01-07T00:00:00+01:00</published><updated>2020-01-07T00:00:00+01:00</updated><id>http://localhost:4000/usuba/2020/01/07/usuba-genesis</id><content type="html" xml:base="http://localhost:4000/usuba/2020/01/07/usuba-genesis.html">&lt;!-- Left-over paragraph --&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://localhost:4000/usuba/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/usuba/" rel="alternate" type="text/html" /><updated>2020-01-12T12:46:59+01:00</updated><id>http://localhost:4000/usuba/feed.xml</id><title type="html">USUBA</title><subtitle>Usuba website</subtitle><entry xml:lang="en"><title type="html">Usuba - the genesis</title><link href="http://localhost:4000/usuba/2020/01/07/usuba-genesis.html" rel="alternate" type="text/html" title="Usuba - the genesis" /><published>2020-01-07T00:00:00+01:00</published><updated>2020-01-07T00:00:00+01:00</updated><id>http://localhost:4000/usuba/2020/01/07/usuba-genesis</id><content type="html" xml:base="http://localhost:4000/usuba/2020/01/07/usuba-genesis.html">&lt;!-- Left-over paragraph --&gt;
 &lt;!--
 Motivation: cryptographic primitive implementations
  - correctness
@@ -291,7 +291,10 @@ non-linearity), and ShiftRows (a permutation, which provides
 diffusion). Rectangle can therefore be represented by the following
 circuit:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/usuba/assets/images/blog/rectangle-circuit.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot;&gt;
+&lt;img src=&quot;/usuba/assets/images/blog/rectangle-circuit.png&quot; /&gt;
+&lt;!-- ![](/usuba/assets/images/blog/rectangle-circuit.png) --&gt;
+&lt;/p&gt;
 
 &lt;p&gt;Usuba aims at providing a way to write an implementation of a cipher
 which is as close to the specification (&lt;em&gt;ie.&lt;/em&gt; the circuit) as

@@ -341,7 +341,10 @@ non-linearity), and ShiftRows (a permutation, which provides
 diffusion). Rectangle can therefore be represented by the following
 circuit:</p>
 
-<p><img src="/usuba/assets/images/blog/rectangle-circuit.png" alt="" /></p>
+<p align="center">
+<img src="/usuba/assets/images/blog/rectangle-circuit.png" />
+<!-- ![](/usuba/assets/images/blog/rectangle-circuit.png) -->
+</p>
 
 <p>Usuba aims at providing a way to write an implementation of a cipher
 which is as close to the specification (<em>ie.</em> the circuit) as
@@ -642,6 +645,21 @@ vulnerable to such attacks, then so will its implementations be.</p>
 
 			</div>
 			<!-- Disqus comments -->
+			
+			<div id="disqus_thread" class="border-top my-5 py-5"></div>
+			<script>
+			var disqus_config = function () {
+			    this.page.url = 'http://localhost:4000/usuba/2020/01/07/usuba-genesis.html';  // Replace PAGE_URL with your page's canonical URL variable
+			    this.page.identifier = 'http://localhost:4000/usuba/2020/01/07/usuba-genesis.html'; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+			};
+			(function() { // DON'T EDIT BELOW THIS LINE
+			    var d = document, s = d.createElement('script');
+			    s.src = 'https://usuba-crypto.disqus.com/embed.js';
+			    s.setAttribute('data-timestamp', +new Date());
+			    (d.head || d.body).appendChild(s);
+			})();
+			</script>
+			<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 			
 
 			<div class="mt-5 text-center"><a class="btn btn-primary" href="/usuba/blog">Read more blog articles</a></div>

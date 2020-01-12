@@ -38,3 +38,7 @@ gist:
 kramdown:
   math_engine: mathjax
   syntax_highlighter: rouge
+
+# Disqus Comments
+disqus:
+    shortname: usuba-crypto
