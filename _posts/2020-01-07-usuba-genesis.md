@@ -36,9 +36,7 @@ Cryptography
  - used everywhere:
    + secure communication
    + store secure data (passwords, ...)
- -> different protocols and primitives
-   + example protocols: SSL/TLS
-   + example primitives: AES, Chacha20, RSA, DES
+   -> lots of ciphers
 -->
 
 Cryptography, from the Ancient Greek _kryptos_ "hidden" and _graphein_
@@ -64,7 +62,15 @@ protecting sensitive data (_e.g._ passwords, banking data, ...) and
 securing data transfers over the Internet, using a multitude of
 ciphers.
 
-
+<!-- 
+Modern ciphers
+(mostly to introduce notions)
+ - asymmetric
+ - symmetric:
+   + stream cipher
+   + block cipher
+ - hash functions
+-->
 Modern ciphers (also called _cryptographic primitives_) can be divided
 into three main categories:
 
@@ -113,16 +119,6 @@ Cryptanalysis - side-channel attacks
    + Related-key attack
    + Chosen-plaintext attack
  - secure if no reasonable attacks
- - side-channel attacks
-   + timing attack (+ code example)
-   + advanced attacks based on hardware
-     * cache-timing attack
-       - example of lookup table & circuit to compute it
-     * power-based attack
-       - code example of protecting previous lookup table
- -> protections increase code complexity
- -> hard to do by hand
- -> (next paragraph) Usuba!
  -->
 While ciphers became more sophisticated,
 [_cryptanalysis_](https://en.wikipedia.org/wiki/Cryptanalysis), the
@@ -144,6 +140,18 @@ attack that can be carried out in a reasonable time (_e.g._ tens of
 thousands of years), or set up at a reasonable cost (_e.g._ billions of
 dollars). 
 
+<!--
+ Side-channel attacks
+ - timing attack (+ code example)
+ - advanced attacks based on hardware
+   + cache-timing attack
+     * example of lookup table & circuit to compute it
+   + power-based attack
+     * code example of protecting previous lookup table
+ -> protections increase code complexity
+ -> hard to do by hand
+ -> (next paragraph) Usuba!
+-->
 Even when crytanalysis fails to break a cipher, its implementation
 might be vulnerable to [_side-channel
 attacks_](https://en.wikipedia.org/wiki/Side-channel_attack), which
@@ -258,10 +266,9 @@ do by hand.
 <!--
 Presentation of Usuba
  - programming language for crypto
- - addresses the 3 points above:
-   - high-level -> obviously correct, easy to reason on
-   - constant-time + countermeasures -> security
-   - high-perf C + intrinsics -> fast
+   + high-level -> obviously correct, easy to reason on
+   + constant-time + countermeasures -> security
+   + high-perf C + intrinsics -> fast
 -->
 
 Instead, we propose **Usuba** [5,6,7], a domain-specific programming
@@ -280,11 +287,11 @@ lot of cases, sometimes even better.
 <!--
 Blockciphers in Usuba
  - blockcipher: n rounds of ``stuffs''
-   - blockipher == software circuit
-   - usuba: high-level circuits
+   + blockipher == software circuit
+   + usuba: high-level circuits
  - Example: Rectangle \cite{zhang:rectangle}
-   - circuit (taken from PLDI slides)
-   - Usuba code == straight translation
+   + circuit (taken from PLDI slides)
+   + Usuba code == straight translation
  - obvious what it does
    + still, explain what each function does
  - 10-15% faster than reference
@@ -526,8 +533,18 @@ Finally, Usuba can automatically generate countermeasures against
 power analysis attacks, which even software implementations of AES can
 benefit from [30].
 
+<!--
+(For Phd thesis only)
+Roadmap/contributions/plan:
+ - bitslicing and mslicing Section xx
+ - Usuba syntax/semantics Section xx
+ - Performance compiler Section xx
+ - Side-channel countermesures Section xx
+ - Evaluation Section xx
+-->
 
 <!--
+(For Phd thesis only)
 Conclusion: Usuba
  - high-level language for cryptography
  - generalized mslicing model
