@@ -10,37 +10,6 @@ excerpt: Usuba is a high-level domain-specific programming language for cryptogr
 comments: true
 ---
 
-<!-- Left-over paragraph -->
-<!--
-Motivation: cryptographic primitive implementations
- - correctness
- - security
- - performances
--->
-<!-- Implementations of cryptographic primitives can be judged on three -->
-<!-- criteria: -->
-
-<!--  - **Correctness**: implementations must compute what their -->
-<!--    specifications describe. While this is the basic requirement for -->
-<!--    any code ever written, it is far from trivial to convince oneself -->
-<!--    that a highly optimized assembly hand-tuned code is correct, let -->
-<!--    alone prove it [20,21]. -->
-
-<!--  - **Security**¹: implementations must be resilient to some if not all -->
-<!--    side-channel attacks. While some side-channels attacks are not -->
-<!--    easily implemented on traditional servers (fault-injection, power -->
-<!--    analysis, ...), others like timing attacks have been shown to be -->
-<!--    very effective [3] and cannot be overlooked. -->
-
-<!--  - **Performances**: cryptography must be as fast as possible in order -->
-<!--    to be transparent from the application's perspective. To achieve -->
-<!--    high throughputs, cryptographers carefully hand-tune their -->
-<!--    implementations, exploiting specific features of the CPU -->
-<!--    microarchitectures they target, thus obscuring the behavior of the -->
-<!--    programs, sometimes raising doubts about correctness and security. -->
-
-<!-- End of left-over paragraph -->
-
 
 <!--
 Overview
@@ -89,32 +58,51 @@ between 1 and 25), wrapping around at the end of the
 alphabet. Throughout history, the military would continue to use
 cryptography to protect their communications, with the famous example
 of [Enigma](https://en.wikipedia.org/wiki/Enigma_machine), used by
-Nazi Germany during World War II.
+Nazi Germany during World War II. Nowadays, in our increasingly
+digital and ever more connected world, cryptography is omnipresent,
+protecting sensitive data (_e.g._ passwords, banking data, ...) and
+securing data transfers over the Internet, using a multitude of
+ciphers.
 
-Nowadays, in our increasingly digital and ever more connected world,
-cryptography is omnipresent, for instance to store sensitive data
-(_e.g._ passwords, banking data, ...), to secure data transfers over
-the Internet or more generally to protect any confidential data. Those
-different applications have different requirements, which are met
-thanks to various [_cryptographic
-protocols_](https://en.wikipedia.org/wiki/Cryptographic_protocol)
-describing how to use certain [_cryptographic
-primitives_](https://en.wikipedia.org/wiki/Cryptographic_primitive)
-(_ie._, basic blocks for cryptography, like ciphers) to secure
-communications in a given set of circumstances. Examples of
-cryptographic protocols include
-[TLS/SSL](https://en.wikipedia.org/wiki/Transport_Layer_Security), to
-secure network communications, or the lower-level
-[IPsec](https://en.wikipedia.org/wiki/IPsec), both using cryptographic
-primitives like the [Advanced Encryption
-Standard](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)
-(AES) and
-[Chacha20](https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant)
-[29]. Other examples of cryptographic primitives include
-[RSA](https://en.wikipedia.org/wiki/RSA_(cryptosystem)) (used in TLS
-but not in IPsec) and the now outdated [Data Encryption
-Standard](https://en.wikipedia.org/wiki/Data_Encryption_Standard)
-(DES).
+
+Modern ciphers (also called _cryptographic primitives_) can be divided
+into three main categories:
+
+ - Asymmetric (or public-key) ciphers, which use two different keys
+   for encryption and decryption: one is public and used for
+   encryption, while the other one is private and used for
+   decryption. Commonly used example of asymmetric ciphers include
+   [Diffie-Hellman key exchange
+   protocol](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange),
+   [RSA](https://en.wikipedia.org/wiki/RSA_(cryptosystem)), or
+   elliptic curves likes
+   [Curve25519](https://en.wikipedia.org/wiki/Curve25519).
+   
+ - Symmetric (or secret-key) ciphers, which use the same (secret) key
+   for both encryption and decryption, and are sub-divided into two
+   categories:
+   
+   * Stream ciphers, which generate a pseudo-random bit-stream and xor
+     it with the plaintext. The most widely used stream cipher in
+     software is
+     [Chacha20](https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant).
+   
+   * Block ciphers, which only encrypt a single fixed-size block of
+     data at a time. When the plaintext is longer than the block
+     length, the cipher must be repeatedly called until the whole
+     plaintext is encrypted. The most used block cipher is the
+     [Advanced Encryption
+     Standard](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)
+     (AES) which succeeds to the now outdated [Data Encryption
+     Standard](https://en.wikipedia.org/wiki/Data_Encryption_Standard)
+     (DES).
+
+ - Hash functions, which do not require a key, and are not
+   reversible. They are typically used to provide data integrity or to
+   irreversibly encrypt
+   passwords. [MD5](https://en.wikipedia.org/wiki/MD5) and
+   [SHA-1](https://en.wikipedia.org/wiki/SHA-1) are two well known
+   hash functions.
 
 
 <!--
@@ -256,7 +244,7 @@ void table(bool x0[n], bool x1[n], bool r0[n], bool r1[n]) {
 
 where `OR` is a function computing a bitwise `or` between two masked
 data. Already, our initially simple lookup table is becoming quite
-complicated, and a developper looking at the code would have a hard
+complicated, and a developer looking at the code would have a hard
 time figuring out what it does. Manually applying the same techniques
 to a full cipher would take a considerable amount of time and produce
 a much more complex code. Most -if not all- the times, manually
@@ -277,8 +265,8 @@ Presentation of Usuba
 -->
 
 Instead, we propose **Usuba** [5,6,7], a domain-specific programming
-language designed to write cryptographic primitives, developed by
-Darius Mercadier and (and under the supervision of) Pierre-Evariste
+language designed to write cryptographic primitives, that I'm
+developing with (and under the supervision of) Pierre-Evariste
 Dagand. Usuba is a high-level programming language, making it easy to
 reason on programs (and therefore assert of their correctness). Usuba
 is constant-time by construction, thus protecting against cache-timing
@@ -303,19 +291,19 @@ Blockciphers in Usuba
  - more generic and high-level than reference
 -->
 
-A blockcipher is typically defined as _n_ rounds of computation, each
-of them doing the same thing, and taking the output of the previous
-round as well as (most of the times) a key as input. The number of
-round is fixed for a given cipher, and the operations done within a
-round are typically bit-permutations, bitwise operations, and
-sometimes arithmetic operations. A cipher can therefore be seen as a
-stateless circuit. For instance, the Rectangle [13] blockcipher takes
-a 64-bit plaintext, and 25 64-bit keys as input, and produces the
-ciphertext through 24 rounds, each doing a `xor`, and calling two
-auxiliary functions: SubColumn (a lookup table, which provides
-non-linearity), and ShiftRows (a permutation, which provides
-diffusion). Rectangle can therefore be represented by the following
-circuit:
+The design of Usuba was largely driven by the structure of
+blockciphers. A blockcipher is typically defined as _n_ rounds of
+computation, each of them doing the same thing, and taking the output
+of the previous round as well as (most of the times) a key as
+input. The number of round is fixed for a given blockcipher, and the
+operations done within a round are typically bit-permutations, bitwise
+operations, and sometimes arithmetic operations. A blockcipher can
+therefore be seen as a stateless circuit. For instance, the Rectangle
+[13] blockcipher takes a 64-bit plaintext, and 25 64-bit keys as
+input, and produces the ciphertext through 24 rounds, each doing a
+`xor`, and calling two auxiliary functions: SubColumn (a lookup
+table), and ShiftRows (a permutation). Rectangle can therefore be
+represented by the following circuit:
 
 <p align="center">
 <img src="{{ site.baseurl }}/assets/images/blog/rectangle-circuit.png">
@@ -359,9 +347,9 @@ without it, the code should be self explanatory: the main function
 key as a 2D array, and computes 25 rounds, each calling the functions
 `ShiftRows`, described as 3 left-rotations, and `SubColumn`, which
 computes a lookup in a table. This code is painfully simple, and as
-close to the specification as one can be. Yet, it compiles to a C code
+close to the specification as can be. Yet, it compiles to a C code
 which is 10-15% faster than the reference implementation [6], while
-being much simpler and more generic, as the latter explicitly uses
+being much simpler and more generic, since the latter explicitly uses
 vector extensions for specific architectures.
 
 
@@ -417,7 +405,7 @@ that HACL* is too low-level, and that constant-timeness should be seen
 as a compilation problem: it provides high-level abstractions which
 are compiled down to constant-time idioms. Adopting yet another
 high-level approach, Usuba enforces constant-time by using (in a
-transparent manner from the developer's point-of-vue) a programming
+transparent manner from the developer's perspective) a programming
 model called _bitslicing_.
 
 
@@ -493,17 +481,18 @@ m-slicing
 -->
 
 The bitslicing model can sometimes be too restrictive as it forbids
-the use of arithmetic operations, and may fails to provide the
-expected performances, due to the high pressures it puts on the
-registers. To overcome those issues, and drawing inspiration from
-Kasper & Schwabe's byte-sliced AES [11], we propose a generalization
-of bitslicing that we dub _m_-slicing. _m_-slicing preserves the
-constant-time property of bitslicing, while allowing to use SIMD
-packed arithmetic instructions (_e.g._, `vpaddb`, `vmuldp`), as well as
-vector permutations (_e.g._, `vpshufb`) to speed up permutations. The
-type of slicing is controlled with Usuba's type-system, thus not
-inflicting no increase in code complexity: the same code will be
-sliced differently depending on the data's types.
+the use of arithmetic operations, and may fail to provide the expected
+performances, because it usually requires more registers that
+hardwares provide. To overcome those issues, and drawing inspiration
+from Kasper & Schwabe's byte-sliced AES [11], we propose a
+generalization of bitslicing that we dub _m_-slicing. _m_-slicing
+preserves the constant-time property of bitslicing, while using less
+registers, and allowing to use SIMD packed arithmetic instructions
+(_e.g._, `vpaddb`, `vmuldp`), as well as vector permutations (_e.g._,
+`vpshufb`) to speed up permutations. The type of slicing (bitslicing
+or _m_-slicing for various _m_) is controlled through Usuba's
+type-system, thus not inflicting any increase in code complexity: the
+same code will be sliced differently depending on the data's types.
 
 
 
@@ -531,9 +520,11 @@ cheap alternatives to AES, and can benefit from Usuba. Even on
 high-end CPUs, other ciphers are starting to compete with AES, like
 the Chacha family, used for instance by Google in TLS rather than AES
 [18], and more recently chosen by WireGuard over AES that was used by
-its predecessor, IPsec [19]. Finally, Usuba can automatically generate
-countermeasures against power analysis attacks, which even software
-implementations of AES can benefit from [30].
+its predecessor, IPsec [19]. Usuba can help efficiently implement
+those ciphers, which, unlike AES, are not in Intel's instruction set.
+Finally, Usuba can automatically generate countermeasures against
+power analysis attacks, which even software implementations of AES can
+benefit from [30].
 
 
 <!--
@@ -545,25 +536,17 @@ Conclusion: Usuba
  - additional countermeasures
 -->
 
-In a nutshell, Usuba is a a statically-typed vector-based programming
-language for specifying block ciphers. Its programming model makes the
-description of cryptographic algorithms intuitive while its type
-system reconciles the need for abstraction –for code reuse– and
-specialization –giving access to architecture-specific features. Using
-a generalized model of bitslicing, called _m_-slicing, Usuba can be
-used to express a wide range of cryptographic primitives. Usuba codes
-are constant-time by design, and thus immune to cache-timing
-attacks. Finally, Usuba can automatically protect primitives against
-power-based side-channel attacks using higher-order boolean masking.
+<!-- In a nutshell, Usuba is a statically-typed vector-based programming -->
+<!-- language for specifying block ciphers. Its programming model makes the -->
+<!-- description of cryptographic algorithms intuitive while its type -->
+<!-- system reconciles the need for abstraction –for code reuse– and -->
+<!-- specialization –giving access to architecture-specific features. Using -->
+<!-- a generalized model of bitslicing, called _m_-slicing, Usuba can be -->
+<!-- used to express a wide range of cryptographic primitives. Usuba codes -->
+<!-- are constant-time by design, and thus immune to cache-timing -->
+<!-- attacks. Finally, Usuba can automatically protect primitives against -->
+<!-- power-based side-channel attacks using higher-order boolean masking. -->
 
-
-
-¹ Note that we concern ourselves only with implementations of
-primitives, and not the primitives themselves. This means in
-particular that we do not aspire to protect our implementations
-against attacks at the algorithmic level (_e.g._ Chosen-Plaintext
-Attacks [1], Related-Key Attacks [2], ...). If a primitive is
-vulnerable to such attacks, then so will its implementations be.
 
 ---
 
