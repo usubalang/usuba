@@ -85,16 +85,18 @@ using what would later be known as a [Caesar
 cipher](https://en.wikipedia.org/wiki/Caesar_cipher), which consists
 in replacing each letter by another one such that the _i_-th letter of
 the alphabet is replaced by the (_n_+_i_)-th one (for some fixed _n_
-between 1 and 25). Throughout history, the military would continue to
-use cryptography to protect their communications, with the famous
-example of [Enigma](https://en.wikipedia.org/wiki/Enigma_machine),
-used by Nazi Germany during World War II. Nowadays, in our
-increasingly digital and ever more connected world, cryptography is
-omnipresent, for instance to store sensitive data (_eg._ passwords,
-banking data, ...), to secure data transfers over the Internet or more
-generally to protect any confidential data. Those different
-applications have different requirements, which are met thanks to
-various [_cryptographic
+between 1 and 25), wrapping around at the end of the
+alphabet. Throughout history, the military would continue to use
+cryptography to protect their communications, with the famous example
+of [Enigma](https://en.wikipedia.org/wiki/Enigma_machine), used by
+Nazi Germany during World War II.
+
+Nowadays, in our increasingly digital and ever more connected world,
+cryptography is omnipresent, for instance to store sensitive data
+(_e.g._ passwords, banking data, ...), to secure data transfers over
+the Internet or more generally to protect any confidential data. Those
+different applications have different requirements, which are met
+thanks to various [_cryptographic
 protocols_](https://en.wikipedia.org/wiki/Cryptographic_protocol)
 describing how to use certain [_cryptographic
 primitives_](https://en.wikipedia.org/wiki/Cryptographic_primitive)
@@ -104,15 +106,15 @@ cryptographic protocols include
 [TLS/SSL](https://en.wikipedia.org/wiki/Transport_Layer_Security), to
 secure network communications, or the lower-level
 [IPsec](https://en.wikipedia.org/wiki/IPsec), both using cryptographic
-primitives likes the [Advanced Encryption
+primitives like the [Advanced Encryption
 Standard](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)
 (AES) and
 [Chacha20](https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant)
-[29]. Other examples of cryptographic primitives include the now
-outdated [Data Encryption
+[29]. Other examples of cryptographic primitives include
+[RSA](https://en.wikipedia.org/wiki/RSA_(cryptosystem)) (used in TLS
+but not in IPsec) and the now outdated [Data Encryption
 Standard](https://en.wikipedia.org/wiki/Data_Encryption_Standard)
-(DES), and [RSA](https://en.wikipedia.org/wiki/RSA_(cryptosystem))
-(used in TLS but not in IPsec).
+(DES).
 
 
 <!--
@@ -150,12 +152,14 @@ attack](https://en.wikipedia.org/wiki/Chosen-plaintext_attack), where
 an attacker will have access to a set of plaintext and corresponding
 ciphertext and will try to retrieve the key. A cipher will typically
 be considered secure if no practical attacks exists, that is, no
-attack that can be carried out in a reasonable time (_eg._ tens of
-thousands of years), or set up at a reasonable cost (_eg._ billions of
-dollars). However, even when crytanalysis fails to break a cipher, its
-implementation might be vulnerable to [_side-channel
+attack that can be carried out in a reasonable time (_e.g._ tens of
+thousands of years), or set up at a reasonable cost (_e.g._ billions of
+dollars). 
+
+Even when crytanalysis fails to break a cipher, its implementation
+might be vulnerable to [_side-channel
 attacks_](https://en.wikipedia.org/wiki/Side-channel_attack), which
-rely on monitoring a cipher execution in order to recover secret
+rely on monitoring a cipher's execution in order to recover secret
 data. A typical example is _timing attacks_: when a cipher uses a
 condition on a secret data, the execution time will vary depending on
 this data. For instance, consider the following C code that checks if
@@ -216,10 +220,11 @@ for example:
 int table[4] = { 0, 2, 1, 3 };
 ```
 
-which is indexed by 2 bits (since it has 4 elements) can be computed
-by the following code (provided that each bit of the 2-bit input has
-been put in a different variable `x0` and `x1`, and that the 2-bit
-output is expected to be in two variables `r0` and `r1`):
+It is indexed by 2 bits (since it has 4 elements), and can be computed
+by the following constant-time code (provided that each bit of the
+2-bit input has been put in a different variable `x0` and `x1`, and
+that the 2-bit output is expected to be in two variables `r0` and
+`r1`):
 
 ```c
 void table(bool x0, bool x1, bool* r0, bool* r1) {
@@ -230,14 +235,15 @@ void table(bool x0, bool x1, bool* r0, bool* r1) {
 
 For instance, `table[1]` is `2`, and `1` in binary is `01`. Calling
 `table()` with `x0 = 0` and `x1 = 1` produces `r0 = 1` and `r1 = 0`,
-or `10`, which is binary for `2`. Another technique to protect
-primitive implementations is _boolean masking_, which aims at
-mitigating Power analysis attacks. It consists in representing each
-bit _b_ of secret data by _n_ random bits such that their xor is equal
-to the original secret bit: `b = b0 ^ b1 ^ ... ^ bn` for each secret
-bit _b_. If _n_ is greater than 2, this is called _higher order
-boolean masking_. Adding this protection to the function `table`
-introduced above would produce the following code:
+or `10`, which is binary for `2`. This code does not do any memory
+access depending on secret data, and is thus constant-time. Another
+technique to protect primitive implementations is _boolean masking_,
+which aims at mitigating Power analysis attacks. It consists in
+representing each bit _b_ of secret data by _n_ random bits such that
+their xor is equal to the original secret bit: `b = b0 ^ b1 ^ ... ^
+bn` for each secret bit _b_. If _n_ is greater than 2, this is called
+_higher order boolean masking_. Adding this protection to the function
+`table` introduced above would produce the following code:
 
 ```c
 void table(bool x0[n], bool x1[n], bool r0[n], bool r1[n]) {
@@ -251,12 +257,12 @@ void table(bool x0[n], bool x1[n], bool r0[n], bool r1[n]) {
 where `OR` is a function computing a bitwise `or` between two masked
 data. Already, our initially simple lookup table is becoming quite
 complicated, and a developper looking at the code would have a hard
-time figuring out what it does. Applying the same techniques to a full
-cipher would take a considerable amount of time and produce a much
-more complex code. Most -if not all- the times, manually implementing
-high-throughput cryptographic primitives, and manually securing
-primitives against side-channel attacks are two complicated and
-tedious taks, hard to get right, and which tends to obfuscate the
+time figuring out what it does. Manually applying the same techniques
+to a full cipher would take a considerable amount of time and produce
+a much more complex code. Most -if not all- the times, manually
+implementing high-throughput cryptographic primitives, and manually
+securing primitives against side-channel attacks are two complicated
+and tedious taks, hard to get right, and which tends to obfuscate the
 code, thus complicating any further maintenance. Doing both at the
 same time is an even harder task, reaching the limits of what one can
 do by hand.
@@ -440,7 +446,7 @@ effectively works like 64 parallel Boolean conjunctions, each
 processing a single bit.  High throughput is thus achieved by
 parallelism: 64 instances of the cipher can execute in
 parallel. Bitslicing is thus especially good at exploiting vector
-extensions of moderns CPUs, which offer large registers (_eg._ 128-bit
+extensions of moderns CPUs, which offer large registers (_e.g._ 128-bit
 Neon on ARM, 128-bit AltiVec on PowerPC, and more commonly known,
 128-bit SSE, 256-bit AVX and 512-bit AVX-512 on Intel). Bitsliced
 implementations are constant-time by design: no data-dependent
@@ -493,8 +499,8 @@ registers. To overcome those issues, and drawing inspiration from
 Kasper & Schwabe's byte-sliced AES [11], we propose a generalization
 of bitslicing that we dub _m_-slicing. _m_-slicing preserves the
 constant-time property of bitslicing, while allowing to use SIMD
-packed arithmetic instructions (_eg._, `vpaddb`, `vmuldp`), as well as
-vector permutations (_eg._, `vpshufb`) to speed up permutations. The
+packed arithmetic instructions (_e.g._, `vpaddb`, `vmuldp`), as well as
+vector permutations (_e.g._, `vpshufb`) to speed up permutations. The
 type of slicing is controlled with Usuba's type-system, thus not
 inflicting no increase in code complexity: the same code will be
 sliced differently depending on the data's types.

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://localhost:4000/usuba/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/usuba/" rel="alternate" type="text/html" /><updated>2020-01-12T12:46:59+01:00</updated><id>http://localhost:4000/usuba/feed.xml</id><title type="html">USUBA</title><subtitle>Usuba website</subtitle><entry xml:lang="en"><title type="html">Usuba - the genesis</title><link href="http://localhost:4000/usuba/2020/01/07/usuba-genesis.html" rel="alternate" type="text/html" title="Usuba - the genesis" /><published>2020-01-07T00:00:00+01:00</published><updated>2020-01-07T00:00:00+01:00</updated><id>http://localhost:4000/usuba/2020/01/07/usuba-genesis</id><content type="html" xml:base="http://localhost:4000/usuba/2020/01/07/usuba-genesis.html">&lt;!-- Left-over paragraph --&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="http://localhost:4000/usuba/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/usuba/" rel="alternate" type="text/html" /><updated>2020-01-12T19:08:42+01:00</updated><id>http://localhost:4000/usuba/feed.xml</id><title type="html">USUBA</title><subtitle>Usuba website</subtitle><entry xml:lang="en"><title type="html">Usuba - the genesis</title><link href="http://localhost:4000/usuba/2020/01/07/usuba-genesis.html" rel="alternate" type="text/html" title="Usuba - the genesis" /><published>2020-01-07T00:00:00+01:00</published><updated>2020-01-07T00:00:00+01:00</updated><id>http://localhost:4000/usuba/2020/01/07/usuba-genesis</id><content type="html" xml:base="http://localhost:4000/usuba/2020/01/07/usuba-genesis.html">&lt;!-- Left-over paragraph --&gt;
 &lt;!--
 Motivation: cryptographic primitive implementations
  - correctness
@@ -71,16 +71,18 @@ using what would later be known as a &lt;a href=&quot;https://en.wikipedia.org/w
 cipher&lt;/a&gt;, which consists
 in replacing each letter by another one such that the &lt;em&gt;i&lt;/em&gt;-th letter of
 the alphabet is replaced by the (&lt;em&gt;n&lt;/em&gt;+&lt;em&gt;i&lt;/em&gt;)-th one (for some fixed &lt;em&gt;n&lt;/em&gt;
-between 1 and 25). Throughout history, the military would continue to
-use cryptography to protect their communications, with the famous
-example of &lt;a href=&quot;https://en.wikipedia.org/wiki/Enigma_machine&quot;&gt;Enigma&lt;/a&gt;,
-used by Nazi Germany during World War II. Nowadays, in our
-increasingly digital and ever more connected world, cryptography is
-omnipresent, for instance to store sensitive data (&lt;em&gt;eg.&lt;/em&gt; passwords,
-banking data, …), to secure data transfers over the Internet or more
-generally to protect any confidential data. Those different
-applications have different requirements, which are met thanks to
-various &lt;a href=&quot;https://en.wikipedia.org/wiki/Cryptographic_protocol&quot;&gt;&lt;em&gt;cryptographic
+between 1 and 25), wrapping around at the end of the
+alphabet. Throughout history, the military would continue to use
+cryptography to protect their communications, with the famous example
+of &lt;a href=&quot;https://en.wikipedia.org/wiki/Enigma_machine&quot;&gt;Enigma&lt;/a&gt;, used by
+Nazi Germany during World War II.&lt;/p&gt;
+
+&lt;p&gt;Nowadays, in our increasingly digital and ever more connected world,
+cryptography is omnipresent, for instance to store sensitive data
+(&lt;em&gt;e.g.&lt;/em&gt; passwords, banking data, …), to secure data transfers over
+the Internet or more generally to protect any confidential data. Those
+different applications have different requirements, which are met
+thanks to various &lt;a href=&quot;https://en.wikipedia.org/wiki/Cryptographic_protocol&quot;&gt;&lt;em&gt;cryptographic
 protocols&lt;/em&gt;&lt;/a&gt;
 describing how to use certain &lt;a href=&quot;https://en.wikipedia.org/wiki/Cryptographic_primitive&quot;&gt;&lt;em&gt;cryptographic
 primitives&lt;/em&gt;&lt;/a&gt;
@@ -90,15 +92,15 @@ cryptographic protocols include
 &lt;a href=&quot;https://en.wikipedia.org/wiki/Transport_Layer_Security&quot;&gt;TLS/SSL&lt;/a&gt;, to
 secure network communications, or the lower-level
 &lt;a href=&quot;https://en.wikipedia.org/wiki/IPsec&quot;&gt;IPsec&lt;/a&gt;, both using cryptographic
-primitives likes the &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Encryption_Standard&quot;&gt;Advanced Encryption
+primitives like the &lt;a href=&quot;https://en.wikipedia.org/wiki/Advanced_Encryption_Standard&quot;&gt;Advanced Encryption
 Standard&lt;/a&gt;
 (AES) and
 &lt;a href=&quot;https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant&quot;&gt;Chacha20&lt;/a&gt;
-[29]. Other examples of cryptographic primitives include the now
-outdated &lt;a href=&quot;https://en.wikipedia.org/wiki/Data_Encryption_Standard&quot;&gt;Data Encryption
+[29]. Other examples of cryptographic primitives include
+&lt;a href=&quot;https://en.wikipedia.org/wiki/RSA_(cryptosystem)&quot;&gt;RSA&lt;/a&gt; (used in TLS
+but not in IPsec) and the now outdated &lt;a href=&quot;https://en.wikipedia.org/wiki/Data_Encryption_Standard&quot;&gt;Data Encryption
 Standard&lt;/a&gt;
-(DES), and &lt;a href=&quot;https://en.wikipedia.org/wiki/RSA_(cryptosystem)&quot;&gt;RSA&lt;/a&gt;
-(used in TLS but not in IPsec).&lt;/p&gt;
+(DES).&lt;/p&gt;
 
 &lt;!--
 Cryptanalysis - side-channel attacks
@@ -135,12 +137,14 @@ attack&lt;/a&gt;, where
 an attacker will have access to a set of plaintext and corresponding
 ciphertext and will try to retrieve the key. A cipher will typically
 be considered secure if no practical attacks exists, that is, no
-attack that can be carried out in a reasonable time (&lt;em&gt;eg.&lt;/em&gt; tens of
-thousands of years), or set up at a reasonable cost (&lt;em&gt;eg.&lt;/em&gt; billions of
-dollars). However, even when crytanalysis fails to break a cipher, its
-implementation might be vulnerable to &lt;a href=&quot;https://en.wikipedia.org/wiki/Side-channel_attack&quot;&gt;&lt;em&gt;side-channel
+attack that can be carried out in a reasonable time (&lt;em&gt;e.g.&lt;/em&gt; tens of
+thousands of years), or set up at a reasonable cost (&lt;em&gt;e.g.&lt;/em&gt; billions of
+dollars).&lt;/p&gt;
+
+&lt;p&gt;Even when crytanalysis fails to break a cipher, its implementation
+might be vulnerable to &lt;a href=&quot;https://en.wikipedia.org/wiki/Side-channel_attack&quot;&gt;&lt;em&gt;side-channel
 attacks&lt;/em&gt;&lt;/a&gt;, which
-rely on monitoring a cipher execution in order to recover secret
+rely on monitoring a cipher’s execution in order to recover secret
 data. A typical example is &lt;em&gt;timing attacks&lt;/em&gt;: when a cipher uses a
 condition on a secret data, the execution time will vary depending on
 this data. For instance, consider the following C code that checks if
@@ -198,10 +202,11 @@ for example:&lt;/p&gt;
 &lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;table&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;};&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;which is indexed by 2 bits (since it has 4 elements) can be computed
-by the following code (provided that each bit of the 2-bit input has
-been put in a different variable &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x0&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x1&lt;/code&gt;, and that the 2-bit
-output is expected to be in two variables &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;r0&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;r1&lt;/code&gt;):&lt;/p&gt;
+&lt;p&gt;It is indexed by 2 bits (since it has 4 elements), and can be computed
+by the following constant-time code (provided that each bit of the
+2-bit input has been put in a different variable &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x0&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x1&lt;/code&gt;, and
+that the 2-bit output is expected to be in two variables &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;r0&lt;/code&gt; and
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;r1&lt;/code&gt;):&lt;/p&gt;
 
 &lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;table&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
     &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
@@ -211,14 +216,15 @@ output is expected to be in two variables &lt;code class=&quot;language-plaintex
 
 &lt;p&gt;For instance, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;table[1]&lt;/code&gt; is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2&lt;/code&gt;, and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt; in binary is &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;01&lt;/code&gt;. Calling
 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;table()&lt;/code&gt; with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x0 = 0&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x1 = 1&lt;/code&gt; produces &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;r0 = 1&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;r1 = 0&lt;/code&gt;,
-or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;10&lt;/code&gt;, which is binary for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2&lt;/code&gt;. Another technique to protect
-primitive implementations is &lt;em&gt;boolean masking&lt;/em&gt;, which aims at
-mitigating Power analysis attacks. It consists in representing each
-bit &lt;em&gt;b&lt;/em&gt; of secret data by &lt;em&gt;n&lt;/em&gt; random bits such that their xor is equal
-to the original secret bit: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;b = b0 ^ b1 ^ ... ^ bn&lt;/code&gt; for each secret
-bit &lt;em&gt;b&lt;/em&gt;. If &lt;em&gt;n&lt;/em&gt; is greater than 2, this is called &lt;em&gt;higher order
-boolean masking&lt;/em&gt;. Adding this protection to the function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;table&lt;/code&gt;
-introduced above would produce the following code:&lt;/p&gt;
+or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;10&lt;/code&gt;, which is binary for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2&lt;/code&gt;. This code does not do any memory
+access depending on secret data, and is thus constant-time. Another
+technique to protect primitive implementations is &lt;em&gt;boolean masking&lt;/em&gt;,
+which aims at mitigating Power analysis attacks. It consists in
+representing each bit &lt;em&gt;b&lt;/em&gt; of secret data by &lt;em&gt;n&lt;/em&gt; random bits such that
+their xor is equal to the original secret bit: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;b = b0 ^ b1 ^ ... ^
+bn&lt;/code&gt; for each secret bit &lt;em&gt;b&lt;/em&gt;. If &lt;em&gt;n&lt;/em&gt; is greater than 2, this is called
+&lt;em&gt;higher order boolean masking&lt;/em&gt;. Adding this protection to the function
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;table&lt;/code&gt; introduced above would produce the following code:&lt;/p&gt;
 
 &lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;table&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
     &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
@@ -231,12 +237,12 @@ introduced above would produce the following code:&lt;/p&gt;
 &lt;p&gt;where &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;OR&lt;/code&gt; is a function computing a bitwise &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;or&lt;/code&gt; between two masked
 data. Already, our initially simple lookup table is becoming quite
 complicated, and a developper looking at the code would have a hard
-time figuring out what it does. Applying the same techniques to a full
-cipher would take a considerable amount of time and produce a much
-more complex code. Most -if not all- the times, manually implementing
-high-throughput cryptographic primitives, and manually securing
-primitives against side-channel attacks are two complicated and
-tedious taks, hard to get right, and which tends to obfuscate the
+time figuring out what it does. Manually applying the same techniques
+to a full cipher would take a considerable amount of time and produce
+a much more complex code. Most -if not all- the times, manually
+implementing high-throughput cryptographic primitives, and manually
+securing primitives against side-channel attacks are two complicated
+and tedious taks, hard to get right, and which tends to obfuscate the
 code, thus complicating any further maintenance. Doing both at the
 same time is an even harder task, reaching the limits of what one can
 do by hand.&lt;/p&gt;
@@ -416,7 +422,7 @@ effectively works like 64 parallel Boolean conjunctions, each
 processing a single bit.  High throughput is thus achieved by
 parallelism: 64 instances of the cipher can execute in
 parallel. Bitslicing is thus especially good at exploiting vector
-extensions of moderns CPUs, which offer large registers (&lt;em&gt;eg.&lt;/em&gt; 128-bit
+extensions of moderns CPUs, which offer large registers (&lt;em&gt;e.g.&lt;/em&gt; 128-bit
 Neon on ARM, 128-bit AltiVec on PowerPC, and more commonly known,
 128-bit SSE, 256-bit AVX and 512-bit AVX-512 on Intel). Bitsliced
 implementations are constant-time by design: no data-dependent
@@ -468,8 +474,8 @@ registers. To overcome those issues, and drawing inspiration from
 Kasper &amp;amp; Schwabe’s byte-sliced AES [11], we propose a generalization
 of bitslicing that we dub &lt;em&gt;m&lt;/em&gt;-slicing. &lt;em&gt;m&lt;/em&gt;-slicing preserves the
 constant-time property of bitslicing, while allowing to use SIMD
-packed arithmetic instructions (&lt;em&gt;eg.&lt;/em&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vpaddb&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vmuldp&lt;/code&gt;), as well as
-vector permutations (&lt;em&gt;eg.&lt;/em&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vpshufb&lt;/code&gt;) to speed up permutations. The
+packed arithmetic instructions (&lt;em&gt;e.g.&lt;/em&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vpaddb&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vmuldp&lt;/code&gt;), as well as
+vector permutations (&lt;em&gt;e.g.&lt;/em&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vpshufb&lt;/code&gt;) to speed up permutations. The
 type of slicing is controlled with Usuba’s type-system, thus not
 inflicting no increase in code complexity: the same code will be
 sliced differently depending on the data’s types.&lt;/p&gt;

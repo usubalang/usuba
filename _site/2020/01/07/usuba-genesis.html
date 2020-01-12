@@ -121,16 +121,18 @@ using what would later be known as a <a href="https://en.wikipedia.org/wiki/Caes
 cipher</a>, which consists
 in replacing each letter by another one such that the <em>i</em>-th letter of
 the alphabet is replaced by the (<em>n</em>+<em>i</em>)-th one (for some fixed <em>n</em>
-between 1 and 25). Throughout history, the military would continue to
-use cryptography to protect their communications, with the famous
-example of <a href="https://en.wikipedia.org/wiki/Enigma_machine">Enigma</a>,
-used by Nazi Germany during World War II. Nowadays, in our
-increasingly digital and ever more connected world, cryptography is
-omnipresent, for instance to store sensitive data (<em>eg.</em> passwords,
-banking data, …), to secure data transfers over the Internet or more
-generally to protect any confidential data. Those different
-applications have different requirements, which are met thanks to
-various <a href="https://en.wikipedia.org/wiki/Cryptographic_protocol"><em>cryptographic
+between 1 and 25), wrapping around at the end of the
+alphabet. Throughout history, the military would continue to use
+cryptography to protect their communications, with the famous example
+of <a href="https://en.wikipedia.org/wiki/Enigma_machine">Enigma</a>, used by
+Nazi Germany during World War II.</p>
+
+<p>Nowadays, in our increasingly digital and ever more connected world,
+cryptography is omnipresent, for instance to store sensitive data
+(<em>e.g.</em> passwords, banking data, …), to secure data transfers over
+the Internet or more generally to protect any confidential data. Those
+different applications have different requirements, which are met
+thanks to various <a href="https://en.wikipedia.org/wiki/Cryptographic_protocol"><em>cryptographic
 protocols</em></a>
 describing how to use certain <a href="https://en.wikipedia.org/wiki/Cryptographic_primitive"><em>cryptographic
 primitives</em></a>
@@ -140,15 +142,15 @@ cryptographic protocols include
 <a href="https://en.wikipedia.org/wiki/Transport_Layer_Security">TLS/SSL</a>, to
 secure network communications, or the lower-level
 <a href="https://en.wikipedia.org/wiki/IPsec">IPsec</a>, both using cryptographic
-primitives likes the <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">Advanced Encryption
+primitives like the <a href="https://en.wikipedia.org/wiki/Advanced_Encryption_Standard">Advanced Encryption
 Standard</a>
 (AES) and
 <a href="https://en.wikipedia.org/wiki/Salsa20#ChaCha_variant">Chacha20</a>
-[29]. Other examples of cryptographic primitives include the now
-outdated <a href="https://en.wikipedia.org/wiki/Data_Encryption_Standard">Data Encryption
+[29]. Other examples of cryptographic primitives include
+<a href="https://en.wikipedia.org/wiki/RSA_(cryptosystem)">RSA</a> (used in TLS
+but not in IPsec) and the now outdated <a href="https://en.wikipedia.org/wiki/Data_Encryption_Standard">Data Encryption
 Standard</a>
-(DES), and <a href="https://en.wikipedia.org/wiki/RSA_(cryptosystem)">RSA</a>
-(used in TLS but not in IPsec).</p>
+(DES).</p>
 
 <!--
 Cryptanalysis - side-channel attacks
@@ -185,12 +187,14 @@ attack</a>, where
 an attacker will have access to a set of plaintext and corresponding
 ciphertext and will try to retrieve the key. A cipher will typically
 be considered secure if no practical attacks exists, that is, no
-attack that can be carried out in a reasonable time (<em>eg.</em> tens of
-thousands of years), or set up at a reasonable cost (<em>eg.</em> billions of
-dollars). However, even when crytanalysis fails to break a cipher, its
-implementation might be vulnerable to <a href="https://en.wikipedia.org/wiki/Side-channel_attack"><em>side-channel
+attack that can be carried out in a reasonable time (<em>e.g.</em> tens of
+thousands of years), or set up at a reasonable cost (<em>e.g.</em> billions of
+dollars).</p>
+
+<p>Even when crytanalysis fails to break a cipher, its implementation
+might be vulnerable to <a href="https://en.wikipedia.org/wiki/Side-channel_attack"><em>side-channel
 attacks</em></a>, which
-rely on monitoring a cipher execution in order to recover secret
+rely on monitoring a cipher’s execution in order to recover secret
 data. A typical example is <em>timing attacks</em>: when a cipher uses a
 condition on a secret data, the execution time will vary depending on
 this data. For instance, consider the following C code that checks if
@@ -248,10 +252,11 @@ for example:</p>
 <div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">table</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span> <span class="p">};</span>
 </code></pre></div></div>
 
-<p>which is indexed by 2 bits (since it has 4 elements) can be computed
-by the following code (provided that each bit of the 2-bit input has
-been put in a different variable <code class="language-plaintext highlighter-rouge">x0</code> and <code class="language-plaintext highlighter-rouge">x1</code>, and that the 2-bit
-output is expected to be in two variables <code class="language-plaintext highlighter-rouge">r0</code> and <code class="language-plaintext highlighter-rouge">r1</code>):</p>
+<p>It is indexed by 2 bits (since it has 4 elements), and can be computed
+by the following constant-time code (provided that each bit of the
+2-bit input has been put in a different variable <code class="language-plaintext highlighter-rouge">x0</code> and <code class="language-plaintext highlighter-rouge">x1</code>, and
+that the 2-bit output is expected to be in two variables <code class="language-plaintext highlighter-rouge">r0</code> and
+<code class="language-plaintext highlighter-rouge">r1</code>):</p>
 
 <div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">table</span><span class="p">(</span><span class="n">bool</span> <span class="n">x0</span><span class="p">,</span> <span class="n">bool</span> <span class="n">x1</span><span class="p">,</span> <span class="n">bool</span><span class="o">*</span> <span class="n">r0</span><span class="p">,</span> <span class="n">bool</span><span class="o">*</span> <span class="n">r1</span><span class="p">)</span> <span class="p">{</span>
     <span class="o">*</span><span class="n">r0</span> <span class="o">=</span> <span class="n">x1</span><span class="p">;</span>
@@ -261,14 +266,15 @@ output is expected to be in two variables <code class="language-plaintext highli
 
 <p>For instance, <code class="language-plaintext highlighter-rouge">table[1]</code> is <code class="language-plaintext highlighter-rouge">2</code>, and <code class="language-plaintext highlighter-rouge">1</code> in binary is <code class="language-plaintext highlighter-rouge">01</code>. Calling
 <code class="language-plaintext highlighter-rouge">table()</code> with <code class="language-plaintext highlighter-rouge">x0 = 0</code> and <code class="language-plaintext highlighter-rouge">x1 = 1</code> produces <code class="language-plaintext highlighter-rouge">r0 = 1</code> and <code class="language-plaintext highlighter-rouge">r1 = 0</code>,
-or <code class="language-plaintext highlighter-rouge">10</code>, which is binary for <code class="language-plaintext highlighter-rouge">2</code>. Another technique to protect
-primitive implementations is <em>boolean masking</em>, which aims at
-mitigating Power analysis attacks. It consists in representing each
-bit <em>b</em> of secret data by <em>n</em> random bits such that their xor is equal
-to the original secret bit: <code class="language-plaintext highlighter-rouge">b = b0 ^ b1 ^ ... ^ bn</code> for each secret
-bit <em>b</em>. If <em>n</em> is greater than 2, this is called <em>higher order
-boolean masking</em>. Adding this protection to the function <code class="language-plaintext highlighter-rouge">table</code>
-introduced above would produce the following code:</p>
+or <code class="language-plaintext highlighter-rouge">10</code>, which is binary for <code class="language-plaintext highlighter-rouge">2</code>. This code does not do any memory
+access depending on secret data, and is thus constant-time. Another
+technique to protect primitive implementations is <em>boolean masking</em>,
+which aims at mitigating Power analysis attacks. It consists in
+representing each bit <em>b</em> of secret data by <em>n</em> random bits such that
+their xor is equal to the original secret bit: <code class="language-plaintext highlighter-rouge">b = b0 ^ b1 ^ ... ^
+bn</code> for each secret bit <em>b</em>. If <em>n</em> is greater than 2, this is called
+<em>higher order boolean masking</em>. Adding this protection to the function
+<code class="language-plaintext highlighter-rouge">table</code> introduced above would produce the following code:</p>
 
 <div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">table</span><span class="p">(</span><span class="n">bool</span> <span class="n">x0</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">bool</span> <span class="n">x1</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">bool</span> <span class="n">r0</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="n">bool</span> <span class="n">r1</span><span class="p">[</span><span class="n">n</span><span class="p">])</span> <span class="p">{</span>
     <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
@@ -281,12 +287,12 @@ introduced above would produce the following code:</p>
 <p>where <code class="language-plaintext highlighter-rouge">OR</code> is a function computing a bitwise <code class="language-plaintext highlighter-rouge">or</code> between two masked
 data. Already, our initially simple lookup table is becoming quite
 complicated, and a developper looking at the code would have a hard
-time figuring out what it does. Applying the same techniques to a full
-cipher would take a considerable amount of time and produce a much
-more complex code. Most -if not all- the times, manually implementing
-high-throughput cryptographic primitives, and manually securing
-primitives against side-channel attacks are two complicated and
-tedious taks, hard to get right, and which tends to obfuscate the
+time figuring out what it does. Manually applying the same techniques
+to a full cipher would take a considerable amount of time and produce
+a much more complex code. Most -if not all- the times, manually
+implementing high-throughput cryptographic primitives, and manually
+securing primitives against side-channel attacks are two complicated
+and tedious taks, hard to get right, and which tends to obfuscate the
 code, thus complicating any further maintenance. Doing both at the
 same time is an even harder task, reaching the limits of what one can
 do by hand.</p>
@@ -466,7 +472,7 @@ effectively works like 64 parallel Boolean conjunctions, each
 processing a single bit.  High throughput is thus achieved by
 parallelism: 64 instances of the cipher can execute in
 parallel. Bitslicing is thus especially good at exploiting vector
-extensions of moderns CPUs, which offer large registers (<em>eg.</em> 128-bit
+extensions of moderns CPUs, which offer large registers (<em>e.g.</em> 128-bit
 Neon on ARM, 128-bit AltiVec on PowerPC, and more commonly known,
 128-bit SSE, 256-bit AVX and 512-bit AVX-512 on Intel). Bitsliced
 implementations are constant-time by design: no data-dependent
@@ -518,8 +524,8 @@ registers. To overcome those issues, and drawing inspiration from
 Kasper &amp; Schwabe’s byte-sliced AES [11], we propose a generalization
 of bitslicing that we dub <em>m</em>-slicing. <em>m</em>-slicing preserves the
 constant-time property of bitslicing, while allowing to use SIMD
-packed arithmetic instructions (<em>eg.</em>, <code class="language-plaintext highlighter-rouge">vpaddb</code>, <code class="language-plaintext highlighter-rouge">vmuldp</code>), as well as
-vector permutations (<em>eg.</em>, <code class="language-plaintext highlighter-rouge">vpshufb</code>) to speed up permutations. The
+packed arithmetic instructions (<em>e.g.</em>, <code class="language-plaintext highlighter-rouge">vpaddb</code>, <code class="language-plaintext highlighter-rouge">vmuldp</code>), as well as
+vector permutations (<em>e.g.</em>, <code class="language-plaintext highlighter-rouge">vpshufb</code>) to speed up permutations. The
 type of slicing is controlled with Usuba’s type-system, thus not
 inflicting no increase in code complexity: the same code will be
 sliced differently depending on the data’s types.</p>
