@@ -1,288 +1,201 @@
-#include <emmintrin.h>
-#include <smmintrin.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <time.h>
-#include "x86intrin.h"
+#include <x86intrin.h>
 #include <inttypes.h>
 
+#define WARMUP 1000
+#define NB_RUN 100000000
 
-void add_pack (__m128i x1, __m128i x2, __m128i x3, __m128i x4,
-                   __m128i x5, __m128i x6, __m128i x7, __m128i x8,
-                   __m128i x9, __m128i x10, __m128i x11, __m128i x12,
-                   __m128i x13, __m128i x14, __m128i x15, __m128i x16,
-                   __m128i x17, __m128i x18, __m128i x19, __m128i x20,
-                   __m128i x21, __m128i x22, __m128i x23, __m128i x24,
-                   __m128i x25, __m128i x26, __m128i x27, __m128i x28,
-                   __m128i x29, __m128i x30, __m128i x31, __m128i x32,
-                   __m128i y1, __m128i y2, __m128i y3, __m128i y4,
-                   __m128i y5, __m128i y6, __m128i y7, __m128i y8,
-                   __m128i y9, __m128i y10, __m128i y11, __m128i y12,
-                   __m128i y13, __m128i y14, __m128i y15, __m128i y16,
-                   __m128i y17, __m128i y18, __m128i y19, __m128i y20,
-                   __m128i y21, __m128i y22, __m128i y23, __m128i y24,
-                   __m128i y25, __m128i y26, __m128i y27, __m128i y28,
-                   __m128i y29, __m128i y30, __m128i y31, __m128i y32,
-               __m128i *restrict out)  {
-  out[0] = _mm_add_epi32(x1,y1);
-  out[1] = _mm_add_epi32(x2,y2);
-  out[2] = _mm_add_epi32(x3,y3);
-  out[3] = _mm_add_epi32(x4,y4);
-  out[4] = _mm_add_epi32(x5,y5);
-  out[5] = _mm_add_epi32(x6,y6);
-  out[6] = _mm_add_epi32(x7,y7);
-  out[7] = _mm_add_epi32(x8,y8);
-  out[8] = _mm_add_epi32(x9,y9);
-  out[9] = _mm_add_epi32(x10,y10);
-  out[10] = _mm_add_epi32(x11,y11);
-  out[11] = _mm_add_epi32(x12,y12);
-  out[12] = _mm_add_epi32(x13,y13);
-  out[13] = _mm_add_epi32(x14,y14);
-  out[14] = _mm_add_epi32(x15,y15);
-  out[15] = _mm_add_epi32(x16,y16);
-  out[16] = _mm_add_epi32(x17,y17);
-  out[17] = _mm_add_epi32(x18,y18);
-  out[18] = _mm_add_epi32(x19,y19);
-  out[19] = _mm_add_epi32(x20,y20);
-  out[20] = _mm_add_epi32(x21,y21);
-  out[21] = _mm_add_epi32(x22,y22);
-  out[22] = _mm_add_epi32(x23,y23);
-  out[23] = _mm_add_epi32(x24,y24);
-  out[24] = _mm_add_epi32(x25,y25);
-  out[25] = _mm_add_epi32(x26,y26);
-  out[26] = _mm_add_epi32(x27,y27);
-  out[27] = _mm_add_epi32(x28,y28);
-  out[28] = _mm_add_epi32(x29,y29);
-  out[29] = _mm_add_epi32(x30,y30);
-  out[30] = _mm_add_epi32(x31,y31);
-  out[31] = _mm_add_epi32(x32,y32);
+#define NB_RUN_BITSLICE NB_RUN
+#define NB_RUN_PACKED   (NB_RUN * 10)
+
+
+__attribute__ ((noinline)) void speed_packed() {
+  // Initializing data
+  __m128i a = _mm_set_epi32(rand(), rand(), rand(), rand());
+  __m128i b = _mm_set_epi32(rand(), rand(), rand(), rand());
+
+  // Warming up caches
+  for (int i = 0; i < WARMUP; i++)
+    a = _mm_add_epi32(a,b);
+
+  // The actual measurement
+  unsigned int unused;
+  uint64_t timer = __rdtscp(&unused);
+  for (int i = 0; i < NB_RUN_PACKED; i++)
+    a = _mm_add_epi32(a,b);
+  timer = __rdtscp(&unused) - timer;
+
+  printf("32-bit packed add:   %.2f\n", ((double)timer) / NB_RUN_PACKED / 4);
+
+  // Prevent data from being optimized out
+  asm volatile("" : "+x" (a));
+
 }
 
-void add_pack_arr (__m128i x[32], __m128i y[32], __m128i *restrict out) {
-  for (int i = 0; i < 32; i++) {
-    out[i] = _mm_add_epi8(x[i],y[i]);
+#define full_adder(_a,_b,_c,_res) {             \
+    __m128i _res_tmp = _a ^ _b ^ _c;            \
+    _c = (_a & _b) ^ (_c & (_a ^ _b));          \
+    _res = _res_tmp;                            \
   }
+
+#define add_bitslice(a0,  a1,  a2,   a3,  a4,  a5,  a6,  a7,    \
+                     a8,  a9,  a10, a11, a12, a13, a14, a15,    \
+                     a16, a17, a18, a19, a20, a21, a22, a23,    \
+                     a24, a25, a26, a27, a28, a29, a30, a31,    \
+                     b0,  b1,  b2,   b3,  b4,  b5,  b6,  b7,    \
+                     b8,  b9,  b10, b11, b12, b13, b14, b15,    \
+                     b16, b17, b18, b19, b20, b21, b22, b23,    \
+                     b24, b25, b26, b27, b28, b29, b30, b31) {  \
+    __m128i c = _mm_setzero_si128();                            \
+    full_adder(a0,b0,c,a0);                                     \
+    full_adder(a1,b1,c,a1);                                     \
+    full_adder(a2,b2,c,a2);                                     \
+    full_adder(a3,b3,c,a3);                                     \
+    full_adder(a4,b4,c,a4);                                     \
+    full_adder(a5,b5,c,a5);                                     \
+    full_adder(a6,b6,c,a6);                                     \
+    full_adder(a7,b7,c,a7);                                     \
+    full_adder(a8,b8,c,a9);                                     \
+    full_adder(a9,b9,c,a9);                                     \
+    full_adder(a10,b10,c,a10);                                  \
+    full_adder(a11,b11,c,a11);                                  \
+    full_adder(a12,b12,c,a12);                                  \
+    full_adder(a13,b13,c,a13);                                  \
+    full_adder(a14,b14,c,a14);                                  \
+    full_adder(a15,b15,c,a15);                                  \
+    full_adder(a16,b16,c,a16);                                  \
+    full_adder(a17,b17,c,a17);                                  \
+    full_adder(a18,b18,c,a18);                                  \
+    full_adder(a19,b19,c,a19);                                  \
+    full_adder(a20,b20,c,a20);                                  \
+    full_adder(a21,b21,c,a21);                                  \
+    full_adder(a22,b22,c,a22);                                  \
+    full_adder(a23,b23,c,a23);                                  \
+    full_adder(a24,b24,c,a24);                                  \
+    full_adder(a25,b25,c,a25);                                  \
+    full_adder(a26,b26,c,a26);                                  \
+    full_adder(a27,b27,c,a27);                                  \
+    full_adder(a28,b28,c,a28);                                  \
+    full_adder(a29,b29,c,a29);                                  \
+    full_adder(a30,b30,c,a30);                                  \
+    full_adder(a31,b31,c,a31);                                  \
+  }                                                             \
+
+
+__attribute__ ((noinline)) void speed_bitslice() {
+
+  // Initializing data
+  __m128i a0 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a1 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a2 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a3 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a4 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a5 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a6 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a7 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a8 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a9 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a10 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a11 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a12 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a13 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a14 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a15 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a16 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a17 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a18 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a19 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a20 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a21 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a22 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a23 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a24 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a25 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a26 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a27 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a28 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a29 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a30 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i a31 = _mm_set_epi32(rand(),rand(),rand(),rand());
+
+
+  __m128i b0 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b1 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b2 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b3 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b4 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b5 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b6 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b7 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b8 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b9 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b10 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b11 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b12 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b13 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b14 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b15 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b16 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b17 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b18 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b19 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b20 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b21 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b22 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b23 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b24 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b25 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b26 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b27 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b28 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b29 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b30 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  __m128i b31 = _mm_set_epi32(rand(),rand(),rand(),rand());
+
+
+  // Warming up caches
+  for (int i = 0; i < WARMUP; i++)
+    add_bitslice(a0,  a1,  a2,   a3,  a4,  a5,  a6,  a7,
+                 a8,  a9,  a10, a11, a12, a13, a14, a15,
+                 a16, a17, a18, a19, a20, a21, a22, a23,
+                 a24, a25, a26, a27, a28, a29, a30, a31,
+                 b0,  b1,  b2,   b3,  b4,  b5,  b6,  b7,
+                 b8,  b9,  b10, b11, b12, b13, b14, b15,
+                 b16, b17, b18, b19, b20, b21, b22, b23,
+                 b24, b25, b26, b27, b28, b29, b30, b31);
+
+  // The actual measurement
+  unsigned int unused;
+  uint64_t timer = __rdtscp(&unused);
+  for (int i = 0; i < NB_RUN_BITSLICE; i++)
+    add_bitslice(a0,  a1,  a2,   a3,  a4,  a5,  a6,  a7,
+                 a8,  a9,  a10, a11, a12, a13, a14, a15,
+                 a16, a17, a18, a19, a20, a21, a22, a23,
+                 a24, a25, a26, a27, a28, a29, a30, a31,
+                 b0,  b1,  b2,   b3,  b4,  b5,  b6,  b7,
+                 b8,  b9,  b10, b11, b12, b13, b14, b15,
+                 b16, b17, b18, b19, b20, b21, b22, b23,
+                 b24, b25, b26, b27, b28, b29, b30, b31);
+  timer = __rdtscp(&unused) - timer;
+
+  printf("32-bit bitslice add: %.2f\n", ((double)timer) / NB_RUN_BITSLICE / 128);
+
+  // Prevent data from being optimized out
+  // (can't do in a single "asm volatile" because it requires too many registers)
+  asm volatile("" : "+x" (a0),  "+x" (a1),  "+x" (a2),  "+x" (a3),
+                    "+x" (a4),  "+x" (a5),  "+x" (a6),  "+x" (a7));
+  asm volatile("" : "+x" (a8),  "+x" (a9),  "+x" (a10), "+x" (a11),
+                    "+x" (a12), "+x" (a13), "+x" (a14), "+x" (a15));
+  asm volatile("" : "+x" (a16), "+x" (a17), "+x" (a18), "+x" (a19),
+                    "+x" (a20), "+x" (a21), "+x" (a22), "+x" (a23));
+  asm volatile("" : "+x" (a24), "+x" (a25), "+x" (a26), "+x" (a27),
+                    "+x" (a28), "+x" (a29), "+x" (a30), "+x" (a31));
+
 }
 
 
-__m128i add(__m128i a, __m128i b, __m128i *restrict c) {
-  __m128i tmp = a ^ b;
-  __m128i res = tmp ^ *c;
-  *c = a&b ^ *c&tmp;
-  return res;
-}
-__m128i add_bis(__m128i a, __m128i b, __m128i *restrict c) {
-  __m128i tmp = a ^ b;
-  __m128i res = tmp ^ *c;
-  *c = a&b ^ *c&tmp;
-  return res;
-}
-
-
-void add_bitslice (__m128i x1, __m128i x2, __m128i x3, __m128i x4,
-                   __m128i x5, __m128i x6, __m128i x7, __m128i x8,
-                   __m128i x9, __m128i x10, __m128i x11, __m128i x12,
-                   __m128i x13, __m128i x14, __m128i x15, __m128i x16,
-                   __m128i x17, __m128i x18, __m128i x19, __m128i x20,
-                   __m128i x21, __m128i x22, __m128i x23, __m128i x24,
-                   __m128i x25, __m128i x26, __m128i x27, __m128i x28,
-                   __m128i x29, __m128i x30, __m128i x31, __m128i x32,
-                   __m128i y1, __m128i y2, __m128i y3, __m128i y4,
-                   __m128i y5, __m128i y6, __m128i y7, __m128i y8,
-                   __m128i y9, __m128i y10, __m128i y11, __m128i y12,
-                   __m128i y13, __m128i y14, __m128i y15, __m128i y16,
-                   __m128i y17, __m128i y18, __m128i y19, __m128i y20,
-                   __m128i y21, __m128i y22, __m128i y23, __m128i y24,
-                   __m128i y25, __m128i y26, __m128i y27, __m128i y28,
-                   __m128i y29, __m128i y30, __m128i y31, __m128i y32,
-                   __m128i *restrict out) {
-  __m128i c = _mm_setzero_si128();
-  out[0] = add(x1,y1,&c);
-  out[1] = add(x2,y2,&c);
-  out[2] = add(x3,y3,&c);
-  out[3] = add(x4,y4,&c);
-  out[4] = add(x5,y5,&c);
-  out[5] = add(x6,y6,&c);
-  out[6] = add(x7,y7,&c);
-  out[7] = add(x8,y8,&c);
-  out[8] = add(x9,y9,&c);
-  out[9] = add(x10,y10,&c);
-  out[10] = add(x11,y11,&c);
-  out[11] = add(x12,y12,&c);
-  out[12] = add(x13,y13,&c);
-  out[13] = add(x14,y14,&c);
-  out[14] = add(x15,y15,&c);
-  out[15] = add(x16,y16,&c);
-  out[16] = add(x17,y17,&c);
-  out[17] = add(x18,y18,&c);
-  out[18] = add(x19,y19,&c);
-  out[19] = add(x20,y20,&c);
-  out[20] = add(x21,y21,&c);
-  out[21] = add(x22,y22,&c);
-  out[22] = add(x23,y23,&c);
-  out[23] = add(x24,y24,&c);
-  out[24] = add(x25,y25,&c);
-  out[25] = add(x26,y26,&c);
-  out[26] = add(x27,y27,&c);
-  out[27] = add(x28,y28,&c);
-  out[28] = add(x29,y29,&c);
-  out[29] = add(x30,y30,&c);
-  out[30] = add(x31,y31,&c);
-  out[31] = add(x32,y32,&c);
-}
-
-void add_bitslice_arr (__m128i x[32], __m128i y[32], __m128i *restrict out) {
-  __m128i c = _mm_setzero_si128();
-  for (int i = 0; i < 32; i++) {
-    out[i] = add(x[i],y[i],&c);
-  }
-}
-
-int main () {
-  
-  uint64_t begin, end;
-  FILE* f = fopen("/dev/null","w");
-
-  __m128i x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,
-    x17,x18,x19,x20,x21,x22,x23,x24,x25,x26,x27,x28,x29,x30,x31,x32,
-    y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,
-    y17,y18,y19,y20,y21,y22,y23,y24,y25,y26,y27,y28,y29,y30,y31,y32;
-
-  __m128i x[32],y[32];
-
-  int size = 1e6;
-  srand(time(NULL));
-  __m128i *restrict buffer = aligned_alloc(32,size * 32 * sizeof *buffer);
-
-  for (int i = 0; i < 32; i++) {
-    x[i] = _mm_set_epi32(rand(),rand(),rand(),rand());
-    y[i] = _mm_set_epi32(rand(),rand(),rand(),rand());
-  }
-  
-  x1 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x2 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x3 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x4 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x5 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x6 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x7 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x8 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x9 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x10 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x11 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x12 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x13 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x14 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x15 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x16 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x17 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x18 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x19 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x20 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x21 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x22 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x23 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x24 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x25 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x26 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x27 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x28 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x29 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x30 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x31 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  x32 = _mm_set_epi32(rand(),rand(),rand(),rand());
-
-  y1 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y2 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y3 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y4 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y5 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y6 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y7 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y8 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y9 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y10 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y11 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y12 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y13 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y14 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y15 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y16 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y17 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y18 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y19 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y20 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y21 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y22 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y23 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y24 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y25 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y26 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y27 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y28 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y29 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y30 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y31 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  y32 = _mm_set_epi32(rand(),rand(),rand(),rand());
-
-  for (int i = 0; i < size*32; i++) {
-    __m128i tmp;
-    buffer[i] = add_bis(x1,x2,&tmp);
-  }
-  fwrite(buffer,sizeof *buffer,size*32,f);
-  
-  printf("Packed...... ");fflush(stdout);
-  end = 0;
-  for (int i = 0; i < 25; i++) {
-    begin = _rdtsc();
-    for (int j = 0; j < size; j++)
-      add_pack(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,
-               x17,x18,x19,x20,x21,x22,x23,x24,x25,x26,x27,x28,x29,x30,x31,x32,
-               y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,
-               y17,y18,y19,y20,y21,y22,y23,y24,y25,y26,y27,y28,y29,y30,y31,y32,
-               &(buffer[j*32]));
-    end += _rdtsc() - begin;
-    fwrite(buffer,sizeof *buffer,size*32,f);
-  }
-  printf("%lu\n",end);
-  
-  printf("Bitsliced... ");fflush(stdout);
-  end = 0;
-  for (int i = 0; i < 25; i++) {
-    begin = _rdtsc();
-    for (int j = 0; j < size; j++)
-      add_bitslice(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16,
-                   x17,x18,x19,x20,x21,x22,x23,x24,x25,x26,x27,x28,x29,x30,x31,x32,
-                   y1,y2,y3,y4,y5,y6,y7,y8,y9,y10,y11,y12,y13,y14,y15,y16,
-                   y17,y18,y19,y20,y21,y22,y23,y24,y25,y26,y27,y28,y29,y30,y31,y32,
-                   &(buffer[j*32]));
-    end += _rdtsc() - begin;
-    fwrite(buffer,sizeof *buffer,size*32,f);
-  }
-  printf("%lu\n",end);
-
-  printf("Pack_ar..... ");fflush(stdout);
-    end = 0;
-  for (int i = 0; i < 25; i++) {
-    begin = _rdtsc();
-    for (int j = 0; j < size; j++)
-      add_pack_arr(x,y,&(buffer[j*32]));
-    end += _rdtsc() - begin;
-    fwrite(buffer,sizeof *buffer,size*32,f);
-  }
-  printf("%lu\n",end);
-  
-  
-  printf("Pack_ar..... ");fflush(stdout);
-  end = 0;
-  for (int i = 0; i < 25; i++) {
-    begin = _rdtsc();
-    for (int j = 0; j < size; j++)
-      add_bitslice_arr(x,y,&(buffer[j*32]));
-    end += _rdtsc() - begin;
-    fwrite(buffer,sizeof *buffer,size*32,f);
-  }
-  printf("%lu\n",end);
-  return 0;
+int main() {
+  speed_bitslice();
+  speed_packed();
 }

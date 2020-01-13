@@ -1,20 +1,17 @@
 TARGET = add_8 add_16 add_32
-#CFLAGS = -Wall -Wextra -march=native -Wno-parentheses -fno-tree-vectorize -fstrict-aliasing -inline-max-size=10000 -inline-max-total-size=10000 -O3
-CFLAGS = # making sure the compiler doesn't try to optimize the assembly
-CC = icc
+CFLAGS = -Wall -Wextra -msse4.2 -fno-tree-vectorize -fno-slp-vectorize -O3
+CC = clang
 
 default: $(TARGET)
 all: default
 
-add_8:
-	$(CC) $(CFLAGS) add_8.s -o $@
+asm: add_8.s add_16.s add_32.s
 
-add_16:
-	$(CC) $(CFLAGS) add_16.s -o $@
+add_%: add_%.c
+	$(CC) $(CFLAGS) $< -o $@
 
-add_32:
-	$(CC) $(CFLAGS) add_32.s -o $@
-
+add_%.s: add_%.c
+	$(CC) $(CFLAGS) $< -S -o $@
 
 clean:
-	-rm -f $(TARGET)
+	$(RM) $(TARGET)
