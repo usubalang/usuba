@@ -5,7 +5,7 @@ description: Introduction to bitslicing and mslicing
 lang: en
 locale: en_US
 author: Darius Mercadier
-excerpt: Bitslicing was initially introduced by Biham as an implementation trick to speed of software implementations of the DES cipher. The basic idea of bitslicing is to represent a _n_-bit data as 1 bit is _n_ distinct registers.
+excerpt: Bitslicing was initially introduced by Biham as an implementation trick to speed of software implementations of the DES cipher. The basic idea of bitslicing is to represent a n-bit data as 1 bit is n distinct registers.
 comments: false
 ---
 
@@ -102,30 +102,30 @@ A naive non-bitsliced C implementation would be:
 
 ```c
 char permut(char x) {
-    return ((x & 1)   >> 6) |
-           ((x & 2)   >> 2) |
-           ((x & 4)   << 2) |
-           ((x & 8)   >> 2) |
-           ((x & 16)  << 2) |
-           ((x & 32)  >> 2) |
-           ((x & 64)  << 2) |
-           ((x & 128) << 6);
+    return ((x & 128) >> 6) |
+           ((x & 64)  >> 2) |
+           ((x & 32)  << 2) |
+           ((x & 16)  >> 2) |
+           ((x & 8)   << 2) |
+           ((x & 4)   >> 2) |
+           ((x & 2)   << 2) |
+           ((x & 1)   << 6);
 }
 ```
 
 A clever developper (or a smart compiler) could notice that the three
 right-shifts by 2 can be merged together: 
-`((x & 2) >> 2) | ((x & 8) >> 2)` can be optimized to 
-`(x & (2 | 8)) >> 2`. The same goes for the three left-shifts, and the 
+`((x & 16) >> 2) | ((x & 8) >> 2)` can be optimized to 
+`(x & (16 | 8)) >> 2`. The same goes for the three left-shifts, and the 
 permutation can therefore be written as (with the masks written in
 binary for more simplicity):
 
 ```c
 char permut(char x) {
-    return ((x & 0b00000001) >> 6) |
-           ((x & 0b00101010) >> 2) |
-           ((x & 0b01010100) << 2) |
-           ((x & 0b10000000) << 6);
+    return ((x & 0b10000000) >> 6) |
+           ((x & 0b01010100) >> 2) |
+           ((x & 0b00101010) << 2) |
+           ((x & 0b00000001) << 6);
 }
 ```
 
@@ -149,11 +149,12 @@ void permut(bool x0, bool x1, bool x2, bool x3, bool x4,
 ```
 
 The C compiler can then inline this function, and get rid of the
-assigments by doing [copy
-propagation](https://en.wikipedia.org/wiki/Copy_propagation), thus
-effectively performing this permutation at compile time. (in the case
-that could don't trust your C compiler to perform this task, fear not:
-Usuba will do those optimizations itself)
+assigments by
+doing
+[copy propagation](https://en.wikipedia.org/wiki/Copy_propagation),
+thus effectively performing this permutation at compile time. (in the
+case that you don't trust your C compiler to perform this task, fear
+not: Usuba will do those optimizations itself)
 
 Finally, bitsliced codes run in constant-time, and are thus resilient
 against timing attacks. Conditional jumps on secret data prohibited:
@@ -175,12 +176,12 @@ would be implemented in a bitsliced code as:
 a = (x & b) | (~x & c);
 ```
 
-This would typically incur an overhead, but cryptographic primitives
-usually avoid making use on conditionals. Furthermore, bitslicing also
-prevents any memory access at an index depending on secret data, since
-each bit of the index would be in different registers, thus making
-bitslicing resilient to cache-timing attacks in addition to more
-general timing attacks.
+This would incur an overhead, but cryptographic primitives usually
+avoid using conditionals. Furthermore, bitslicing also prevents any
+memory access at an index depending on secret data, since each bit of
+the index would be in different registers, thus making bitslicing
+resilient to cache-timing attacks in addition to more general timing
+attacks.
 
 
 
@@ -214,14 +215,14 @@ operation_. The simplest mode of operation is Electronic Codebook
 encrypting them separately:
 
 <p align="center">
-<img src="{{ site.baseurl }}/assets/images/blog/ECB.png">
+<img src="{{ site.baseurl }}/assets/images/blog/ECB-small.png">
 </p>
 
 This mode of operation is not very secure because it lacks diffusion:
 two identical blocks will be encrypted into the same ciphertext. This
 can be exploited by an attacker to gain knowledge about the plaintext,
 as can be seen from the following example (taken from
-[Wikipedia](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB-weakness))):
+[Wikipedia](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB-weakness)):
 
 <p align="center">
 <img src="{{ site.baseurl }}/assets/images/blog/ECB-example.png">
@@ -236,7 +237,7 @@ plaintext with an additional secret data called an _initialization
 vector_:
 
 <p align="center">
-<img src="{{ site.baseurl }}/assets/images/blog/CBC.png">
+<img src="{{ site.baseurl }}/assets/images/blog/CBC-small.png">
 </p>
 
 However, because bitslicing encrypts many plaintexts in parallel, it
@@ -247,45 +248,68 @@ Cipher Feedback (CFB) and Output Feedback (OFB)).
 While this reduces the use case for bitslicing, there are still two
 ways of overcoming those issues:
 
- - In the case of a server encrypting a lot of independent data at
-   once, bitslicing can be done in such a way that each parallel data
-   encrypted is independent from the others. In pratice, it means that
-   to fully exploit _n_-bit registers, _n_ independent data must be
-   encrypted, which may be hard to obtain in practice.
+ - In the case of a server encrypting a lot of independent data
+   (coming from different clients), bitslicing can be done in such a
+   way that each parallel data encrypted is independent from the
+   others. In pratice, it means that to fully exploit _n_-bit
+   registers, _n_ independent data must be encrypted, which may be
+   hard to obtain in practice. Furthermore, this may incur a slight
+   management overhead.
    
  - A parallel mode could be used instead, like Counter mode (CTR). CTR
    works by encrypting a counter rather than the plaintext directly,
    and then xoring the encrypted counter with the plaintext, as shown
    below:
-
-<p align="center">
-<img src="{{ site.baseurl }}/assets/images/blog/CTR.png">
-</p>
+   
+   <p align="center">
+   <img src="{{ site.baseurl }}/assets/images/blog/CTR-small.png">
+   </p>
+   
+   Incrementing the counter can be done in parallel using SIMD
+   instructions:
+   
+   ```c
+   // Load 4 times the initial counter in a 128-bit SSE register
+   __m128i counters   = _mm_set1_epi32(counter);
+   // Load a SSE register with integers from 1 to 4
+   __m128i increments = _mm_set_epi32(1, 2, 3, 4);
+   // Increment each element of the counters register in parallel
+   counters = _mm_add_epi32(counters, increments);
+   ```
+   
+   
+   
 
 #### Transposition
 
 Transposing the data from a direct representation to a bitsliced one
 is expensive. Naively, this would be done bit by bit, with the
-following algorithm (assuming that `data` is a square matrix: 64
-64-bit registers, or 32 32-bit registers...):
+following algorithm for a matrix of 64 64-bit registers (a similar
+algorithm can be used for any matrix size):
 
-```python
-def naive_ortho(data):
-    transposed_data = new array[data.length]
-    for i = 0 to data.length:
-        for j = 0 to data.length:
-            transposed_data[j] = ((data[i] >> j) & 1) << i
-    return transposed_data
+```c
+void naive_transposition(uint64_t data[64]) {
+    // transposing |data| in a local array
+    uint64_t transposed_data[64] = { 0 };
+    for (int i = 0; i < 64; i++) {
+        for (int j = 0; j < 64; j++) {
+            transposed_data[j] |= ((data[i] >> j) & 1) << i;
+        }
+    }
+    // copying the local array into |data|, thus transposing |data| in-place
+    memcpy(data, transposed_data, 64 * sizeof(uint64_t));
+}
 ```
 
-This algorithm does 3 operations per bit of data, thus having a cost
-in _O(n)_ where _n_ is the size in bit of the input. Given that modern
-ciphers can have a cost as low as half a cycle per byte (like Chacha20
-on AVX-512 for instance), spending 1 cycle per bit (or 8 cycles per
-byte) transposing the data would make bitslicing impossible to use in
-practice. However, this transposition algorithm can be improved
-(Credited to Knuth [3] by Pornin [4]) by observing that the transpose
-of a matrix can be reccursively written as:
+This algorithm does 4 operations per bit of data (a left-shift `<<`, a
+right-shift `>>`, a bitwise and `&` and a bitwise or `|`), thus having
+a cost in _O(n)_ where _n_ is the size in bit of the input. Given that
+modern ciphers can have a cost as low as half a cycle per byte (like
+Chacha20 on AVX-512 for instance), spending 1 cycle per bit (or 8
+cycles per byte) transposing the data would make bitslicing impossible
+to use in practice. However, this transposition algorithm can be
+improved (credited to Knuth [3] by Pornin [4]) by observing that the
+transpose of a matrix can be reccursively written as:
 
 <p align="center">
 <img src="{{ site.baseurl }}/assets/images/blog/transpose.png">
@@ -296,15 +320,13 @@ this takes 6 iterations). Swapping B and C is done with shifts and
 `or`/`and` with masks. The key factor is than when doing this
 operation recursively, the same shifts and masks will be applied on A
 and B, and on C and D, thus saving a lot of operations over the naive
-algorithm. When applied to a matrix of size _n_x_n_, there are
+algorithm. When applied to a matrix of size _n_ x _n_, there are
 _log(n)_ steps to get to 2x2 matrices, each of them doing _n_
-operations to swap sub-matrices. The total cost is therefore
-_O(n*log(n))_ for a _n_x_n_ matrix, or _O(sqrt(n*log(n))/n)_ per
-bit. For all _n_ between 16 and 512, _sqrt(log(n))_ is between 2 and
-3, which means that the asymptotic cost per bit is about _sqrt(n)/n_ per
-bit. As shown in [5], on a modern Intel computer, this amounts to 1.10
-cycles per bits when _n = 16_, down to 0.09 cycles per bits when _n =
-512_.
+operations to swap sub-matrices B and C. The total cost is therefore
+_O(n*log(n))_ for a _n_ x _n_ matrix, or _O(sqrt(n*log(n)))_ for n
+bits. As shown in [5], on a modern Intel computer, this amounts to
+1.10 cycles per bits when _n = 16_, down to 0.09 cycles per bits when
+_n = 512_.
 
 This algorithm allows the transposition to have a low cost when
 compared to the whole cipher. Furthermore, in a setting where both the
@@ -316,7 +338,50 @@ be the case when encrypting a hard drive.
 #### Arithmetic operations
 
 Bitslicing prevents from using CPU arithmetic instructions (addition,
-multiplication...)
+multiplication...). In order to do arithmetic in bitslicing,
+arithmetic operations must be reimplemented using bitwise operations.
+
+For instance, to do an addition, one must implement an adder in
+software. The simplest adder is
+the
+[ripple-carry adder](https://en.wikipedia.org/wiki/Adder_(electronics)#Ripple-carry_adder),
+which works by chaining _n_ full adders to add two _n_-bit
+numbers. The circuit of a full adder is as follows:
+
+<p align="center">
+<img src="{{ site.baseurl }}/assets/images/blog/adder/adder.png">
+</p>
+
+A full adder takes two bits of input (A and B) and a carry (Cin), and
+returns the sum of A and B (s) as well as the new carry (Cout). A
+ripple-carry adder is simply a chain of such adders:
+
+<p align="center">
+<img src="{{ site.baseurl }}/assets/images/blog/carry-ripple-adder-small.png">
+</p>
+
+When implementing hardware, the dependency introduced by the carry
+limits performances because it prevents each output bit from being
+computed before the previous adder has produced the carry. Various
+techniques exist to overcome this issue, like
+the
+[carry-lookahead adder](https://en.wikipedia.org/wiki/Carry-lookahead_adder) which
+can be implemented in hardware with more parallelism than the
+carry-ripple. However, the carry dependency is less of an issue when
+executing an adder in software, because since a full adder is 5
+instructions (3 `xor` and 2 `and`), and modern CPU cannot execute more
+than 4 bitwise instructions per cycle.
+
+I
+[benchmarked](https://github.com/DadaIsCrazy/usuba/tree/master/experimentations/add)
+a carry-ripple adder implemented in software using SIMD bitwise
+operations against native CPU addition instructions on a Intel Skylake
+i5-6500: native instructions are 2 to 5 times faster than the sofware
+adder. 
+
+When it comes to more complex operations, like multiplications, the
+circuits are much more complex, and implementing them in software
+would yield poor performances
 
 <!--
 Generalized bitslicing: m-slicing
