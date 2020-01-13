@@ -47,20 +47,23 @@ latter can be parallelized, and 5 times slower when the SIMD additions
 can be parallelized.
 
 For each experiment (packed, packed parallel, and bitsliced), a small
-discussion follows, explaining why I beleive the results to be correct.
+discussion follows, explaining why I beleive the results to be
+(mostly) correct.
 
 ### packed addition
 
-`packed` does a single addition in a loop has a throughput of about 1,
-which is the theoretical maximum since there is a dependency between
-each addition:
+`packed` does a single addition in a loop, with a dependency between
+each iteration. The maximal theoretical throughput is therefore
+of 1. In practice, we get numbers that are pretty close:
 
- - for 8-bit add, we are doing 16 additions at once, so 0.06*16 = 0.96
+ - for 8-bit add, 0.06*16 = 0.96
  
- - for 16-bit add, we are doing 8 additions at once, so 0.12*8 = 0.96
+ - for 16-bit add, 0.12*8 = 0.96
  
- - for 32-bit add, we are doing 4 additions at once, so 0.24*4 = 0.96
- 
+ - for 32-bit add, 0.24*4 = 0.96
+
+It's a bit weird that the numbers are below 1.
+
 ### parallel packed addition
 
 The `packed_par` version does 3 independent addition per loop, and
@@ -82,11 +85,11 @@ or a 20% (to 40%) slowdown. 0.33 * 1.2 = 0.396; pretty close to our
  
 ### bitslice addition
 
-For an addition _n_-bits, the adder contains _n_ adders, each of them
-doing 5 bitwise operations. Since about 3 operations can be done every
-cycles, the expected performances are _n * 5/3_ cycles for each
-_n_-bit addition. We get the following numbers experimentally (the
-"128 * " come from the fact that we are doing 128 additions in
+For an addition _n_-bits, the bitslice adder contains _n_ adders, each
+of them doing 5 bitwise operations. Since about 3 operations can be
+done every cycles, the expected performances are _n * 5/3_ cycles for
+each _n_-bit addition. We get the following numbers experimentally
+(the "128 * " come from the fact that we are doing 128 additions in
 parallel):
 
  - 8-bit, 128 * 0.11 = 14.1 cycles/adder, vs expected = 8 * 5/3 = 13.3
@@ -108,4 +111,9 @@ spilling: about half of their assembly instructions are `move`.
 
 ## TODO
 
- - run `perf`
+ - run `perf`.
+
+ - run `iaca` or `llvm-mca`.
+
+ - force more unrolling for the `packed-par` version, and see if the
+   throughput increases.
