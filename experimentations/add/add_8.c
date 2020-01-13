@@ -10,6 +10,38 @@
 #define NB_RUN_PACKED   (NB_RUN * 10)
 
 
+__attribute__ ((noinline)) void speed_packed_parallel() {
+  // Initializing data
+  __m128i a = _mm_set_epi32(rand(), rand(), rand(), rand());
+  __m128i b = _mm_set_epi32(rand(), rand(), rand(), rand());
+  __m128i c = _mm_set_epi32(rand(), rand(), rand(), rand());
+  __m128i d = _mm_set_epi32(rand(), rand(), rand(), rand());
+
+  // Warming up caches
+  for (int i = 0; i < WARMUP; i++) {
+    a = _mm_add_epi8(a,d);
+    b = _mm_add_epi8(b,d);
+    c = _mm_add_epi8(c,d);
+  }
+
+  // The actual measurement
+  unsigned int unused;
+  uint64_t timer = __rdtscp(&unused);
+  for (int i = 0; i < NB_RUN_PACKED; i++) {
+    a = _mm_add_epi8(a,d);
+    b = _mm_add_epi8(b,d);
+    c = _mm_add_epi8(c,d);
+  }
+  timer = __rdtscp(&unused) - timer;
+
+  printf(" 8-bit packed parallel add:   %.2f\n", ((double)timer) / NB_RUN_PACKED / 16 / 3);
+
+  // Prevent data from being optimized out
+  asm volatile("" : "+x" (a), "+x" (b), "+x" (c));
+
+}
+
+
 __attribute__ ((noinline)) void speed_packed() {
   // Initializing data
   __m128i a = _mm_set_epi32(rand(), rand(), rand(), rand());
@@ -99,4 +131,5 @@ __attribute__ ((noinline)) void speed_bitslice() {
 int main() {
   speed_bitslice();
   speed_packed();
+  speed_packed_parallel();
 }
