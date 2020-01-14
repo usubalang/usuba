@@ -5,16 +5,18 @@ pagination:
   enabled: true
 ---
 
-<div class="container py-5 bg-light">
+<div class="container py-5 blog">
 	<div class="row justify-content-md-center">
 		<div class="col col-lg-7">
-			<h1 class="text-center display-3 border-bottom pb-5 mb-5">USUBA's Blog</h1>
+			<h1 class="text-center display-3 mb-5">USUBA's Blog</h1>
 
 			<!-- Blog articles -->
 	    {% for post in paginator.posts %}
-	      <div class="mx-auto mt-4 p-3 border-bottom pb-5 mb-5">
-	        <a href="{{ post.url | prepend: site.baseurl | replace: '//', '/'}}" class="nodeco"><h2>{{ post.title }}</h2></a> 
-	        <small class="mt-1">Published on the {{ post.date | date: "%Y-%m-%d" }} by {{ post.author }}</small>
+	      <div class="mx-auto my-4 p-4 border shadow-sm blog-post bg-light">
+	        <div class="blog-post-header text-center my-3">
+	        	<a href="{{ post.url | prepend: site.baseurl | replace: '//', '/'}}" class="nodeco"><h2 class="mb-1 text-uppercase">{{ post.title }}</h2></a> 
+	        	<small class="font-italic">Published on the {{ post.date | date: "%Y-%m-%d" }} by {{ post.author }}</small>
+	        </div>
 	        <p>{{ post.excerpt }} <a href="{{ post.url | prepend: site.baseurl | replace: '//', '/' }}"><em>Read More...</em></a></p>
 	      </div>
 	    {% endfor %}

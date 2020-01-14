@@ -6,10 +6,12 @@ comments: true
 <div class="container bg-light">
 	<div class="row justify-content-center py-5">
 		<div class="col-lg-7 text-left">
-			<!-- Title -->
-			<h1 class="mb-1">{{ page.title }}</h1>
-			<!-- meta info -->
-			<div class="mt-1 mb-4"><em>Published on {{ page.date | date: "%Y-%m-%d" }} by {{ page.author }}</em></div>
+			<div class="post-header text-center">
+				<!-- Title -->
+				<h1 class="mb-1 text-uppercase">{{ page.title }}</h1>
+				<!-- meta info -->
+				<div class="mt-1 mb-4 text-italic"><em>Published on {{ page.date | date: "%Y-%m-%d" }} by {{ page.author }}</em></div>
+			</div>
 			<!-- body of the article -->
 			<div class="border-bottom">
 				{{ content }}
