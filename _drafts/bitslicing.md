@@ -8,6 +8,10 @@ author: Darius Mercadier
 excerpt: Bitslicing was initially introduced by Biham as an implementation trick to speed of software implementations of the DES cipher. The basic idea of bitslicing is to represent a n-bit data as 1 bit is n distinct registers.
 comments: false
 ---
+<!--
+Missing:
+ - bitslicing -> (very) high register pressure
+-->
 
 <!--
 Intro
@@ -56,43 +60,67 @@ bitwise operations of the CPU can be used and each acts as _m_
 parallel operation, allowing a cipher to effectively run _m_ times in
 parallel.
 
+
 <!--
-Bitslicing: pros
- - wider registers -> more parallelism -> more throughput
-   -> good with SIMD
-   + note that standard cannot always scale with SIMD
-     (because of lookup tables)
- - permutations/shifts at compile-time:
-      y = x << 2 where x:u4
-   means:
-      (y0, y1, y2, y3) = (x0, x1, x2, x3) << 2
-   which becomes:
-      (y0, y1, y2, y3) = (x2, x3, x0, x1)
-   which can be removed used copy propagation, and therefore
-   amounts to a static renaming of variables.
- - constant-time _by design_
+Scaling:
+  - SIMD presentation
+    + example paddb
+  - embarrassingly parallel
+  - wider registers -> more parallelism -> more throughput
+    -> good with SIMD
+  - standard code cannot always scale with SIMD
+    (because of lookup tables)
+-->
+### Scaling
+
+Modern high-end CPUs come with vector extensions, also called SIMD for
+Single Instruction Multiple Data. The idea of SIMD is to do the same
+operation on multiple data with a single instruction, thus increasing
+throughput using data parallelism rather than concurrency. SIMD
+instructions are made available to C developpers thanks to functions
+called _intrinsics_. For instance, the C intrinsics `_mm_add_pi8`
+generates a `paddb` assembly instruction, which takes 2 64-bit MMX
+registers, and does 8 8-bit additions on those registers:
+
+<p align="center">
+<img src="{{ site.baseurl }}/assets/images/blog/paddb-small.png">
+</p>
+
+
+Most non-embedded CPU architectures have SIMD extensions: 128-bit
+AltiVec on PowerPC, 128-bit Neon on ARM, 64-bit MMX, 128-bit SSE,
+256-bit AVX and 512-bit AVX-512 on Intel. While the initial goal of
+SIMD is to speed up standard computations by providing parallel
+arithmetic operations, we can use the bitwise operations and large
+registers they provide to speed up bitslicing.
+
+On the other hand, it's not always possible to use SIMD instructions
+to speed up direct (_i.e._ not bitsliced) cipher implementations: a
+lookup table cannot be parallelized for instance.
+
+
+<!--
+Compile-time permutations
+ - permutations/shifts at compile-time
+ - example: piccolo
+   + circuit
+   + naive code
+   + optimized code
+   + bitslice code
+ - copy propagation -> static renaming of variables
+ - optimized automatically in usuba
 -->
 
-## Bitslicing - pros
+### Compile-time permutations
 
-Bitsliced codes
-are
-[embarrassingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel) by
-nature: executing a bitsliced program on _m_-bit registers executes
-this program _m_ times in parallel. High throughputs can thus be
-achieved by bitsliced code using SIMD vector extensions of modern CPU,
-which offer wide registers (128-bit AltiVec on PowerPC, 128-bit Neon
-on ARM, 128-bit SSE, 256-bit AVX and 512-bit AVX512 on Intel). This
-parallelisation is not always possible for direct (_ie._ not
-bitsliced) cipher implementations: a lookup table for instance, cannot
-be parallelized. 
-
-Furthermore, bitslicing allows shifts, rotations, and, more generally,
-any bit-permutation to be done at compile time. Almost every cipher
-relies on some form of a permutation to
+Bitslicing allows shifts, rotations, and, more generally, any
+bit-permutation to be done at compile time. Almost every cipher relies
+on some form of a permutation to
 provide
-[diffusion](https://en.wikipedia.org/wiki/Confusion_and_diffusion). For
-instance, Picollo [2] uses the following 8-bit permutation:
+[diffusion](https://en.wikipedia.org/wiki/Confusion_and_diffusion)
+(that is, to make sure that changing 1 bit in the plaintext changes
+about half the bits of the ciphertext). For instance, Picollo [2] uses
+the following 8-bit permutation:
 
 <p align="center">
 <img src="{{ site.baseurl }}/assets/images/blog/piccolo-perm.png">
@@ -156,11 +184,84 @@ thus effectively performing this permutation at compile time. (in the
 case that you don't trust your C compiler to perform this task, fear
 not: Usuba will do those optimizations itself)
 
-Finally, bitsliced codes run in constant-time, and are thus resilient
-against timing attacks. Conditional jumps on secret data prohibited:
-since _m_ data are being processed at once, conditions must be
-emulated through masking by computing both branches and recombining
-them. For instance,
+<!--
+Lookup tables
+ - provide confusion (non-linerarity)
+ - not doable in bitslicing
+ - use circuit instead
+   + example (rectangle)
+ - generate circuit with karnaugh maps or BDD
+ - SMT solvers? 
+-->
+### Lookup tables
+
+Lookup tables are often used in ciphers to provide non-linearity in
+ciphers; a desirable property from a security perspective. Such tables
+cannot be used in bitslicing, since each bit of the index would be in
+a different register. Instead, equivalent circuits can be used, as
+illustrated in
+post
+[1: Usuba - the genesis]({{ site.baseurl }}{% post_url 2020-01-07-usuba-genesis %}). As
+a larger example, we can take Rectangle's lookup table [6], defined
+as:
+
+```c
+char table[16] = { 
+    6 , 5, 12, 10, 1, 14, 7, 9,
+    11, 0, 3 , 13, 8, 15, 4, 2
+};
+```
+
+It's a 4x4 lookup table: you need 4 bits to index its 16 elements, and
+it returns integers on 4 bits (0 to 15). An equivalent circuit to this
+table is:
+
+```c
+void table(bool  a0, bool  a1, bool  a2, bool  a3,
+           bool* b0, bool* b1, bool* b2, bool* b3) {
+    bool t1  = ~a1;
+    bool t2  = a0 & t1;
+    bool t3  = a2 ^ a3;
+    *b0      = t2 ^ t3;
+    bool t5  = a3 | t1;
+    bool t6  = a0 ^ t5;
+    *b1      = a2 ^ t6;
+    bool t8  = a1 ^ a2;
+    bool t9  = t3 & t6;
+    *b3      = t8 ^ t9;
+    bool t11 = *b0 | t8;
+    b2       = t6 ^ t11;
+}
+```
+
+Since this is a circuit, the 4 bits of the inputs and the outputs are
+in 4 different variables. Using the principle of bitslicing, we can
+use 64-bit variables (`uint64_t` in C) instead of `bool`, thus
+executing this circuit 64 times in parallel. Bitslicing can thus
+provide a speedup compared to direct code: accessing to a data in the
+original table will take at about 1 cycle (assuming a cache hit),
+while doing the 12 instructions from the circuit above should take
+less than 10 cycles to compute 64 times the lookup (on 64-bit
+registers), thus costing about 0.15 cycles per lookup.
+
+
+<!--
+Constant-time
+ - resilient against timing attacks
+ - no conditional jumps
+   + masking for conditions
+     * example
+   + overhead, but not a lot of conditionals in ciphers
+ - no data-dependent memory access
+   -> immune to cache-timing attacks
+-->
+### Constant-time
+
+Bitsliced codes run in constant-time, and are thus resilient against
+timing attacks. This main reason is that conditional jumps on secret
+data prohibited: since _m_ data are being processed at once,
+conditions must be emulated through masking by computing both branches
+and recombining them. For instance,
 
 ```c
 if (x) {
@@ -180,30 +281,22 @@ This would incur an overhead, but cryptographic primitives usually
 avoid using conditionals. Furthermore, bitslicing also prevents any
 memory access at an index depending on secret data, since each bit of
 the index would be in different registers, thus making bitslicing
-resilient to cache-timing attacks in addition to more general timing
+immune to cache-timing attacks in addition to more general timing
 attacks.
 
 
-
 <!--
-Bitslicing: cons
+Mode of operation
  - definition: mode of operation of a cipher
    * example: ECB
    * example: CBC
-   -> limited to parallel modes in bitslicing
-   * partial solution: 
-     + encrypt independent data
-     + use CTR
- - lookup tables as circuits ?
- - transposition is expensive: sqrt(n * log(n)) ?
- - arithmetic operations emulated
-   + experiment with adder as a circuit
- - (very) high register pressure
+ - limited to parallel modes in bitslicing
+ - partial solution: 
+   + encrypt independent data
+   + use CTR
 -->
-## Bitslicing - cons
 
-
-#### Parallelization
+### Modes of operation
 
 A blockcipher can only encrypts a fixed amount of data, called a
 block, of typically somewhere between 64 and 128 bits (for instance,
@@ -279,8 +372,19 @@ ways of overcoming those issues:
    
    
    
-
-#### Transposition
+<!--
+Transposition
+ - expensive
+ - naive algo:
+   + pseudocode
+   + complexity analysis: O(n)
+ - improved algo
+   + intuition
+   + complexity: O(sqrt(nlogn))
+   + experimental cost
+ - encrypter & decrypter bitslice -> no need for transposition
+-->
+### Transposition
 
 Transposing the data from a direct representation to a bitsliced one
 is expensive. Naively, this would be done bit by bit, with the
@@ -334,8 +438,19 @@ encrypter and the decrypter use the same bitsliced algorithm,
 transposing the data can be omitted altogether. Typically, this could
 be the case when encrypting a hard drive.
 
+<!--
+Arithmetic operations
+ - not possible in CPU
+ -> re-implement as circuit
+ - adder from full adders
+   + full-adder
+   + ripple-carry adder
+   + theoretical cost in software
+   + experimental cost: 2-5x times slower
+ - multiplication too expensive
+-->
 
-#### Arithmetic operations
+### Arithmetic operations
 
 Bitslicing prevents from using CPU arithmetic instructions (addition,
 multiplication...), since each _n_-bit number is represented by 1 bit
@@ -372,82 +487,80 @@ A software implements of a _n_-bit carry-ripple adder thus contains
 _n_ full adders, each doing 5 instructions (3 `xor` and 2 `and`), for
 a total of _5n_ instructions. Since bitslicing still applies, such a
 code would execute _m_ additions at once when ran on _m_-bit registers
-(_e.g._ 64 on 64-bit registers, 128 on SSE registers). On SSE
-registers, we can compare this adder with the native packed addition
-instructions, which do _k_ _n_-bit additions with a single
-instruction: 16 8-bit additions, or 8 16-bit additions, or 4 32-bit
-additions, or 2 64-bit additions. On a Intel Skylake i5-6500, native
-instructions are [2 to 5 times
-faster](https://github.com/DadaIsCrazy/usuba/tree/master/experimentations/add)
-than the software adder.
+(_e.g._ 64 on 64-bit registers, 128 on SSE registers, 256 on AVX
+registers). On SSE registers, we can compare this adder with the
+native packed addition instructions, which do _k_ _n_-bit additions
+with a single instruction: 16 8-bit additions, or 8 16-bit additions,
+or 4 32-bit additions, or 2 64-bit additions. On a Intel Skylake
+i5-6500, native instructions
+are
+[2 to 5 times faster](https://github.com/DadaIsCrazy/usuba/tree/master/experimentations/add) than
+the software adder.
+
+This slowdown by a factor or 5 could still be offset by other parts of
+the programs, like permutations which would be done at compile-time as
+mentionned above. However, implementing more complex operations like
+multiplication is unlikely to ever be an option for bitsliced
+code: while a _n_-bit adder requires _n*5_ instructions, implementing
+a [binary multiplier](https://en.wikipedia.org/wiki/Binary_multiplier)
+requires at least _n*n_ instructions.
 
 
-Implementing a _n_-bit carry-ripple adder in software requires about
-_5 * n_ instructions (5 instructions per full adder). However, to
-multiply two _n_-bit numbers require to compute the partial products
-(_i.e._ `and`) of each of their bits, or _n*n_ operations, which would
-then be recombined using adders. Since the carry-ripple adder has a
-linear complexity and is already almost 5 times slower than using
-native CPU addition, a software implementation of a multiplication
-would be one or several order of magnitude slower than a CPU multiply
-instruction.
+<!-- <\!-- -->
+<!-- Generalized bitslicing: m-slicing -->
+<!--  - inspired by Kasper & Schwabe -->
+<!--  - idea: n-bit input -> m k-bit registers with m>1 and k>1 -->
+<!--  - example: Rectangle (re-use slide from PLDI) -->
+<!--  - less registers pressure -->
+<!--  - still scales with register size -->
+<!--  - less expensive permutation -->
+<!--  - can use (some) SIMD vector instructions -->
+<!--  - two models (V/H-slicing) -->
+<!--  - type-directed in Usuba -->
+<!-- -\-> -->
+<!-- ## mslicing -->
+
+<!-- <p align="center"> -->
+<!-- <img src="{{ site.baseurl }}/assets/images/blog/hslicing_oneway.png"> -->
+<!-- </p> -->
+
+<!-- <p align="center"> -->
+<!-- <img src="{{ site.baseurl }}/assets/images/blog/hslicing_twoway.png"> -->
+<!-- </p> -->
+
+<!-- <\!-- -->
+<!-- Horizontal slicing -->
+<!--  - cf example from previous paragraph -->
+<!--  - bits are splitted within the registers -->
+<!--  - still cannot use arithmetic -->
+<!--  - can use permutations -->
+<!--    + example? (eg, vpshufb on AES's shiftrows?) -->
+<!--  - best implementations of AES use hslicing -->
+<!-- -\-> -->
+<!-- ### Horizontal slicing -->
+
+<!-- <\!-- -->
+<!-- Vertical slicing -->
+<!--  - =~ vectorization -->
+<!--  - bits are packed together -->
+<!--    * example: Rectangle (re-use slide from PLDI) -->
+<!--  - can use arithmetic operations -->
+<!--  - best implems of Serpent and Chacha use Vslicing -->
+<!-- -\-> -->
+<!-- ### Vertical slicing -->
+
+<!-- <p align="center"> -->
+<!-- <img src="{{ site.baseurl }}/assets/images/blog/vslicing_oneway.png"> -->
+<!-- </p> -->
+
+<!-- <p align="center"> -->
+<!-- <img src="{{ site.baseurl }}/assets/images/blog/vslicing_twoway.png"> -->
+<!-- </p> -->
 
 
-<!--
-Generalized bitslicing: m-slicing
- - inspired by Kasper & Schwabe
- - idea: n-bit input -> m k-bit registers with m>1 and k>1
- - example: Rectangle (re-use slide from PLDI)
- - less registers pressure
- - still scales with register size
- - less expensive permutation
- - can use (some) SIMD vector instructions
- - two models (V/H-slicing)
- - type-directed in Usuba
--->
-## mslicing
-
-<p align="center">
-<img src="{{ site.baseurl }}/assets/images/blog/hslicing_oneway.png">
-</p>
-
-<p align="center">
-<img src="{{ site.baseurl }}/assets/images/blog/hslicing_twoway.png">
-</p>
-
-<!--
-Horizontal slicing
- - cf example from previous paragraph
- - bits are splitted within the registers
- - still cannot use arithmetic
- - can use permutations
-   + example? (eg, vpshufb on AES's shiftrows?)
- - best implementations of AES use hslicing
--->
-### Horizontal slicing
-
-<!--
-Vertical slicing
- - =~ vectorization
- - bits are packed together
-   * example: Rectangle (re-use slide from PLDI)
- - can use arithmetic operations
- - best implems of Serpent and Chacha use Vslicing
--->
-### Vertical slicing
-
-<p align="center">
-<img src="{{ site.baseurl }}/assets/images/blog/vslicing_oneway.png">
-</p>
-
-<p align="center">
-<img src="{{ site.baseurl }}/assets/images/blog/vslicing_twoway.png">
-</p>
-
-
-<p align="center">
-<img src="{{ site.baseurl }}/assets/images/blog/slicings.png">
-</p>
+<!-- <p align="center"> -->
+<!-- <img src="{{ site.baseurl }}/assets/images/blog/slicings.png"> -->
+<!-- </p> -->
 
 <!--
 Bitslicing as the basis for security countermeasures
@@ -459,44 +572,8 @@ Bitslicing as the basis for security countermeasures
    * -> mixes well with bitslicing
    * automatically generated by Usuba
 -->
-## Bitslicing for security?
+<!-- ## Bitslicing for security? -->
 
-
-
-## Transposition
-
-<!--
-For pure bitslicing:
- - go from n m-bit inputs to m n-bit registers
-   -> transposition
- - naively, extract and recombine each bit:
-   + for each bit of data: load + shift + and + shift + or + store
-   + O(n²)
-   + too expensive compared to cost of primitive
-     (add number?)
- - optimized algorithm (Knuth/Pornin)
-   + reccursive transposition on sub-matrices
-   + uses shift/and/or, but ``parallel''
-   + pseudo-code?
-   + O(4*n*log(n))
--->
-
-<!--
-For m-slicing
- - H-slicing: basically same thing as bitslicing, just faster
- - V-slicing
-   + accelerated by SIMD instructions
-   + example: serpent transposition?
- - Some transpositions are complicated:
-   + Rectangle
--->
-
-<!--
-Transposition conclusion
-- need to account for transposition when choosing slicing
-- if both encrypter and decrypter are sliced, can omit transposition
-  + eg, disk encryption
--->
 
 ---
 
@@ -511,3 +588,5 @@ Transposition conclusion
 [4] T. Pornin, [Implantation et optimisation des primitives cryptographiques](https://www.bolet.org/~pornin/2001-phd-pornin.pdf), 2001.
 
 [5] D. Mercadier _et al_, [Usuba, Optimizing & Trustworthy Bitslicing Compiler](Usuba, Optimizing & Trustworthy Bitslicing Compiler), WPMVP, 2018.
+
+[6] W. Zhang _et al_, [RECTANGLE: A Bit-slice Lightweight Block Cipher Suitable for Multiple Platforms](https://eprint.iacr.org/2014/084.pdf), 2014.
