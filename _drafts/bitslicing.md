@@ -338,50 +338,60 @@ be the case when encrypting a hard drive.
 #### Arithmetic operations
 
 Bitslicing prevents from using CPU arithmetic instructions (addition,
-multiplication...). In order to do arithmetic in bitslicing,
-arithmetic operations must be reimplemented using bitwise operations.
+multiplication...), since each _n_-bit number is represented by 1 bit
+in _n_ disctinct registers. Instead, bitslice programs must
+reimplement binary arithmetic, using bitwise instructions, like
+hardware manufacturers do.
 
-For instance, to do an addition, one must implement an adder in
-software. The simplest adder is
-the
-[ripple-carry adder](https://en.wikipedia.org/wiki/Adder_(electronics)#Ripple-carry_adder),
-which works by chaining _n_ full adders to add two _n_-bit
-numbers. The circuit of a full adder is as follows:
+For instance, an addition can be implemented in software using an
+adder. The simplest adder is the [ripple-carry
+adder](https://en.wikipedia.org/wiki/Adder_(electronics)#Ripple-carry_adder),
+which works by chaining _n_ full adders to add two _n_-bit numbers. A
+full adder takes two 1-bit inputs (A and B) and a carry (Cin), and
+returns the sum of A and B (s) as well as the new carry (Cout):
 
-<p align="center">
+
+**TODO: fix image (S1)**
+
+<p align="center"> 
 <img src="{{ site.baseurl }}/assets/images/blog/adder/adder.png">
 </p>
 
-A full adder takes two bits of input (A and B) and a carry (Cin), and
-returns the sum of A and B (s) as well as the new carry (Cout). A
-ripple-carry adder is simply a chain of such adders:
+A ripple-carry adder is simply a chain of such adders:
 
 <p align="center">
 <img src="{{ site.baseurl }}/assets/images/blog/carry-ripple-adder-small.png">
 </p>
 
-When implementing hardware, the dependency introduced by the carry
-limits performances because it prevents each output bit from being
-computed before the previous adder has produced the carry. Various
-techniques exist to overcome this issue, like
-the
-[carry-lookahead adder](https://en.wikipedia.org/wiki/Carry-lookahead_adder) which
-can be implemented in hardware with more parallelism than the
-carry-ripple. However, the carry dependency is less of an issue when
-executing an adder in software, because since a full adder is 5
-instructions (3 `xor` and 2 `and`), and modern CPU cannot execute more
-than 4 bitwise instructions per cycle.
+Various techniques exist to build a better hardware adders than the
+carry-ripple (_e.g._ [carry-lookahead
+adder](https://en.wikipedia.org/wiki/Carry-lookahead_adder)), but they
+do not apply to software, as will be detailed in a later article.
 
-I
-[benchmarked](https://github.com/DadaIsCrazy/usuba/tree/master/experimentations/add)
-a carry-ripple adder implemented in software using SIMD bitwise
-operations against native CPU addition instructions on a Intel Skylake
-i5-6500: native instructions are 2 to 5 times faster than the sofware
-adder. 
+A software implements of a _n_-bit carry-ripple adder thus contains
+_n_ full adders, each doing 5 instructions (3 `xor` and 2 `and`), for
+a total of _5n_ instructions. Since bitslicing still applies, such a
+code would execute _m_ additions at once when ran on _m_-bit registers
+(_e.g._ 64 on 64-bit registers, 128 on SSE registers). On SSE
+registers, we can compare this adder with the native packed addition
+instructions, which do _k_ _n_-bit additions with a single
+instruction: 16 8-bit additions, or 8 16-bit additions, or 4 32-bit
+additions, or 2 64-bit additions. On a Intel Skylake i5-6500, native
+instructions are [2 to 5 times
+faster](https://github.com/DadaIsCrazy/usuba/tree/master/experimentations/add)
+than the software adder.
 
-When it comes to more complex operations, like multiplications, the
-circuits are much more complex, and implementing them in software
-would yield poor performances
+
+Implementing a _n_-bit carry-ripple adder in software requires about
+_5 * n_ instructions (5 instructions per full adder). However, to
+multiply two _n_-bit numbers require to compute the partial products
+(_i.e._ `and`) of each of their bits, or _n*n_ operations, which would
+then be recombined using adders. Since the carry-ripple adder has a
+linear complexity and is already almost 5 times slower than using
+native CPU addition, a software implementation of a multiplication
+would be one or several order of magnitude slower than a CPU multiply
+instruction.
+
 
 <!--
 Generalized bitslicing: m-slicing
