@@ -28,6 +28,12 @@
   \node[and gate,minimum size=0.6cm] at ($(4,-1)$) (and2) {};
   \node[xor gate,minimum size=0.6cm] at ($(6,-0.5)$) (xor3) {};
 
+  \node (textxor1) at ($(2.05,1.90)$) { xor };
+  \node (textxor2) at ($(4.05,1)$) { xor };
+  \node (textand1) at ($(4,0.03)$) { and };
+  \node (textand2) at ($(4,-0.97)$) { and };
+  \node (textxor3) at ($(6.05,-0.5)$) { xor };
+
   \draw (a.east) --++(180:-4mm) |- (xor1.input 1);
   \draw (b.east) --++(180:-7mm) |- (xor1.input 2);
   \draw (xor1.output) --++(180:-4mm) |- (xor2.input 1);
