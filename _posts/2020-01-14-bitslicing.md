@@ -1,12 +1,14 @@
 ---
 layout: post
 title: Bitslicing
-description: Introduction to bitslicing and mslicing
+date: "2020-01-14 00:00:00"
+description: Introduction to bitslicing
 lang: en
 locale: en_US
 author: Darius Mercadier
 excerpt: Bitslicing was initially introduced by Biham as an implementation trick to speed of software implementations of the DES cipher. The basic idea of bitslicing is to represent a n-bit data as 1 bit is n distinct registers.
 comments: false
+hidden: true
 ---
 <!--
 Missing:
@@ -59,6 +61,13 @@ into _n_ _m_-bit registers (or variables). Then, standard _m_-bit
 bitwise operations of the CPU can be used and each acts as _m_
 parallel operation, allowing a cipher to effectively run _m_ times in
 parallel.
+
+
+In the following, we present various aspects of bitslicing: how to
+scale bitslice code, how to efficiently compute permutations, how to
+implement lookup table, why bitslice code is constant time, how to
+transpose the data, and finally, how bitslicing behaves when it comes
+to arithmetic operations.
 
 
 <!--
@@ -195,15 +204,14 @@ Lookup tables
 -->
 ### Lookup tables
 
-Lookup tables are often used in ciphers to provide non-linearity in
-ciphers; a desirable property from a security perspective. Such tables
-cannot be used in bitslicing, since each bit of the index would be in
-a different register. Instead, equivalent circuits can be used, as
-illustrated in
-post
-[1: Usuba - the genesis]({{ site.baseurl }}{% post_url 2020-01-07-usuba-genesis %}). As
-a larger example, we can take Rectangle's lookup table [6], defined
-as:
+Lookup tables are often used in ciphers to implement _Sboxes_, which
+are functions providing non-linearity in ciphers; a desirable property
+from a security perspective. Such tables cannot be used in bitslicing,
+since each bit of the index would be in a different register. Instead,
+equivalent circuits can be used, as illustrated in post [1: Usuba -
+the genesis]({{ site.baseurl }}{% post_url 2020-01-07-usuba-genesis
+%}). As a larger example, we can take Rectangle's lookup table [6],
+defined as:
 
 ```c
 char table[16] = { 
@@ -237,13 +245,26 @@ void table(bool  a0, bool  a1, bool  a2, bool  a3,
 Since this is a circuit, the 4 bits of the inputs and the outputs are
 in 4 different variables. Using the principle of bitslicing, we can
 use 64-bit variables (`uint64_t` in C) instead of `bool`, thus
-executing this circuit 64 times in parallel. Bitslicing can thus
-provide a speedup compared to direct code: accessing to a data in the
-original table will take at about 1 cycle (assuming a cache hit),
-while doing the 12 instructions from the circuit above should take
-less than 10 cycles to compute 64 times the lookup (on 64-bit
-registers), thus costing about 0.15 cycles per lookup.
+computing the Sbox 64 times in parallel. Bitslicing can thus provide a
+speedup compared to direct code: accessing to a data in the original
+table will take at about 1 cycle (assuming a cache hit), while doing
+the 12 instructions from the circuit above should take less than 10
+cycles to compute 64 times the Sbox (on 64-bit registers), thus
+costing about 0.15 cycles per Sbox.
 
+Converting a lookup table into a circuit can be easily done using
+[Karnaugh maps](https://en.wikipedia.org/wiki/Karnaugh_map) or [Binary
+decision
+diagrams](https://en.wikipedia.org/wiki/Binary_decision_diagram). However,
+this would produce larges circuits, containing much more instructions
+than optimal ones. Brute-forcing is unlikely to yield any results, as
+even a small 4x4 Sbox requires usually about 12 instructions, and
+hundred of billions of circuits of 12 instructions exist. Heuristic
+can be added to the brute-force search in order to reduce the
+complexity of the search [7], but this doesn't scale well beyond 4x4
+Sboxes. For larger Sboxes, like AES's 8x8 Sbox, cryptograph often have
+to analyze the Sboxes' underlying mathematical structure to optimize
+them, which becomes a tedious and highly specialized job.
 
 <!--
 Constant-time
@@ -466,8 +487,6 @@ full adder takes two 1-bit inputs (A and B) and a carry (Cin), and
 returns the sum of A and B (s) as well as the new carry (Cout):
 
 
-**TODO: fix image (S1)**
-
 <p align="center"> 
 <img src="{{ site.baseurl }}/assets/images/blog/adder/adder.png">
 </p>
@@ -505,6 +524,44 @@ code: while a _n_-bit adder requires _n*5_ instructions, implementing
 a [binary multiplier](https://en.wikipedia.org/wiki/Binary_multiplier)
 requires at least _n*n_ instructions.
 
+
+<!-- 
+Conclusion
+ - bitslicing good in some settings:
+   + no arithmetics
+   + known efficient circuits for the sbox
+   + permutations
+ - However:
+   + transposition is expensive
+   + register pressure is high
+ - m-slicing to solve the issues
+-->
+### Conclusion
+
+Using bitslicing can significantly improve the throughput of a
+cipher. This is especially true on CPU with SIMD extensions, providing
+wide registers, and thus allowing for a lot of data-parallelism. The
+gains in performances vary depending on the structure of the ciphers:
+permutations will be free, synthesizing circuits to lookup tables
+might be hard, and arithmetic operations will always be very
+expensive. Transposition will have a non-negligeable cost, making
+bitslicing a dubious technique for computing small circuits.
+
+There is another issue with bitslicing: register pressure. A _n_-bit
+input is turned into _n_ registers, but modern CPUs often have only 16
+registers. Thus, a 128-bit input cannot be put into 128
+registers. What will happen is a process called _spilling_: the data
+be stored in 128 memory locations, and when some parts are actually
+needed, they will be loaded into registers. For instance, on a fully
+bitslice AES, about half the assembly instructions are `move`, moving
+data from memory to registers and back.
+
+To overcome the cost of spilling registers, and drawing inspiration
+from existing adaptations of bitslicing, we propose a model called
+_m_-slicing, which keeps the main property of bitslicing:
+constant-time, data parallelism scaling with register size, while
+reducing register pressure, and allowing the use of more SIMD
+instructions, like additions and multiplications.
 
 <!-- <\!-- -->
 <!-- Generalized bitslicing: m-slicing -->
@@ -590,3 +647,5 @@ Bitslicing as the basis for security countermeasures
 [5] D. Mercadier _et al_, [Usuba, Optimizing & Trustworthy Bitslicing Compiler](Usuba, Optimizing & Trustworthy Bitslicing Compiler), WPMVP, 2018.
 
 [6] W. Zhang _et al_, [RECTANGLE: A Bit-slice Lightweight Block Cipher Suitable for Multiple Platforms](https://eprint.iacr.org/2014/084.pdf), 2014.
+
+[7] D. A. Osvik, [Speeding up Serpent](https://www.ii.uib.no/~osvik/pub/aes3.pdf), 2000.
