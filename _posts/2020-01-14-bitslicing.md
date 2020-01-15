@@ -31,16 +31,16 @@ Bitslicing was initially introduced by Biham [1] as an implementation
 trick to speed of software implementations of the
 [DES](https://en.wikipedia.org/wiki/Data_Encryption_Standard)
 cipher. The basic idea of bitslicing is to represent a _n_-bit data as
-1 bit is _n_ distinct registers. On 64-bit registers, there are then
+1 bit in _n_ distinct registers. On 64-bit registers, there are then
 63 unused bits in each registers, which can be filled in the same
-fashion by taking 63 other independent _n_-bit data, as putting each
-of their _n_ bits in each registers. Bitwise operators on 64-bit
-(_eg._ `and`, `or`, `xor`, `not`) then act as 64 parallel
-operators. For instance, if we have some 3-bit data, we'd need 3
-registers to store them (assume our registers are 4-bit wides, for the
-sake of simplicity). Each first bit of each data goes into the first
-register; each second bit into the second register and each third bit
-into the third registers:
+fashion by taking 63 other independent _n_-bit data, and putting each
+one of their _n_ bits in one of the registers. Bitwise operators on
+64-bit (_e.g._ `and`, `or`, `xor`, `not`) then act as 64 parallel
+operators. For instance, bitslicing 3-bit data requires 3
+registers. Each first bit of each data goes into the first register;
+each second bit into the second register and each third bit into the
+third register. Using 4-bit registers (for the sake of simplicity),
+this can be applied to 4 data:
 
 <p align="center">
 <img src="{{ site.baseurl }}/assets/images/blog/bitslicing-example-small.png">
@@ -66,8 +66,8 @@ parallel.
 In the following, we present various aspects of bitslicing: how to
 scale bitslice code, how to efficiently compute permutations, how to
 implement lookup table, why bitslice code is constant time, how to
-transpose the data, and finally, how bitslicing behaves when it comes
-to arithmetic operations.
+transpose the data, and finally, how bitslicing deals with arithmetic
+operations.
 
 
 <!--
@@ -82,14 +82,15 @@ Scaling:
 -->
 ### Scaling
 
-Modern high-end CPUs come with vector extensions, also called SIMD for
-Single Instruction Multiple Data. The idea of SIMD is to do the same
-operation on multiple data with a single instruction, thus increasing
-throughput using data parallelism rather than concurrency. SIMD
-instructions are made available to C developpers thanks to functions
-called _intrinsics_. For instance, the C intrinsics `_mm_add_pi8`
-generates a `paddb` assembly instruction, which takes 2 64-bit MMX
-registers, and does 8 8-bit additions on those registers:
+Modern high-end CPUs come with vector extensions, also called _SIMD_
+for Single Instruction Multiple Data. The idea of SIMD is to do the
+same operation on multiple data with a single instruction, thus
+increasing throughput using data parallelism rather than
+concurrency. SIMD instructions are made available to C developpers
+thanks to functions called _intrinsics_. For instance, the C
+intrinsics `_mm_add_pi8` generates a `paddb` assembly instruction,
+which takes 2 64-bit MMX registers, and does 8 8-bit additions on
+those registers:
 
 <p align="center">
 <img src="{{ site.baseurl }}/assets/images/blog/paddb-small.png">
@@ -101,12 +102,115 @@ AltiVec on PowerPC, 128-bit Neon on ARM, 64-bit MMX, 128-bit SSE,
 256-bit AVX and 512-bit AVX-512 on Intel. While the initial goal of
 SIMD is to speed up standard computations by providing parallel
 arithmetic operations, we can use the bitwise operations and large
-registers they provide to speed up bitslicing.
+registers they provide to speed up bitslicing. Executing a bitslice
+program on 512-bit registers will compute the same circuit on 512
+independent data in parallel, thus readucing 8 times the cost per data
+compared to 64-bit registers. Parallelizing direct (_i.e._ not
+bitsliced) code in the same fashion using SIMD instructions is not
+always possible: a lookup table cannot be parallelized for instance.
 
-On the other hand, it's not always possible to use SIMD instructions
-to speed up direct (_i.e._ not bitsliced) cipher implementations: a
-lookup table cannot be parallelized for instance.
+The overall time needed to execute the circuit, and thus the latency,
+on the other hand remains constant no matter the registers used:
+encrypting 64 inputs in parallel on 64-bit registers, or encrypting
+512 inputs int parallel on 512bit registers will take roughly the same
+amount of time. 
 
+Finally, to make full use of SIMD extensions, hundreds of inputs must
+be available to be encrypted in parallel. For instance, on AES, which
+encrypts a 128-bit plaintext, in order to fill up 512-bit AVX-512
+registers, 8 KB of data are required. And even if such amount of data
+are available, bitslicing might not always work because some modes of
+operations cannot be used, as shown below.
+
+
+<!--
+Mode of operation
+ - definition: mode of operation of a cipher
+   * example: ECB
+   * example: CBC
+ - limited to parallel modes in bitslicing
+ - partial solution: 
+   + encrypt independent data
+   + use CTR
+-->
+
+### Modes of operation
+
+A blockcipher can only encrypts a fixed amount of data, called a
+block, of typically somewhere between 64 and 128 bits (for instance,
+64 for DES, 80 for Rectangle, 128 for AES). When the plaintext is
+longer than the block size, the cipher must be repeatedly called until
+the whole plaintext is encrypted, using an algorithm called a _mode of
+operation_. The simplest mode of operation is Electronic Codebook
+(ECB), and consists in dividing the plaintext into blocks, and
+encrypting them separately:
+
+<p align="center">
+<img src="{{ site.baseurl }}/assets/images/blog/ECB-small.png">
+</p>
+
+This mode of operation is not very secure because it lacks diffusion:
+two identical blocks will be encrypted into the same ciphertext. This
+can be exploited by an attacker to gain knowledge about the plaintext,
+as can be seen from the following example (taken from
+[Wikipedia](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB-weakness)):
+
+<p align="center">
+<img src="{{ site.baseurl }}/assets/images/blog/ECB-example.png">
+</p>
+
+
+One of the better, and commonly used mode is Cipher Block Chaining
+(CBC), which solves the weakness of ECB by xoring each plaintext with
+the ciphertext produced by the encryption of the previous
+plaintext. This proccessed is bootstraped by xoring the first
+plaintext with an additional secret data called an _initialization
+vector_:
+
+<p align="center">
+<img src="{{ site.baseurl }}/assets/images/blog/CBC-small.png">
+</p>
+
+However, because bitslicing encrypts many plaintexts in parallel, it
+prevents the use of CBC, as well as any other mode that would rely on
+using a ciphertext as an input for encrypting the next plaintext (like
+Cipher Feedback (CFB) and Output Feedback (OFB)).
+
+While this reduces the use cases for bitslicing, there are still two
+ways of overcoming those issues:
+
+ - In the case of a server encrypting a lot of independent data
+   (coming from different clients), bitslicing can be done in such a
+   way that each parallel data encrypted is independent from the
+   others (_e.g._ all the data come from different clients). In
+   pratice, it means that to fully exploit _n_-bit registers, _n_
+   independent data must be encrypted, which may be hard to obtain in
+   practice. Furthermore, this may incur a slight management overhead.
+   
+ - A parallel mode could be used instead, like Counter mode (CTR). CTR
+   works by encrypting a counter rather than the plaintext directly,
+   and then xoring the encrypted counter with the plaintext, as shown
+   below:
+   
+   <p align="center">
+   <img src="{{ site.baseurl }}/assets/images/blog/CTR-small.png">
+   </p>
+   
+   Incrementing the counter can be done in parallel using SIMD
+   instructions:
+   
+   ```c
+   // Load 4 times the initial counter in a 128-bit SSE register
+   __m128i counters   = _mm_set1_epi32(counter);
+   // Load a SSE register with integers from 1 to 4
+   __m128i increments = _mm_set_epi32(1, 2, 3, 4);
+   // Increment each element of the counters register in parallel
+   counters = _mm_add_epi32(counters, increments);
+   // |counters| can now be transposed and encrypted in parallel
+   ```
+   
+   CTR can thus be fully parallelized and therefore allows bitslicing
+   to encrypt a lot of data from a single origin in parralel.
 
 <!--
 Compile-time permutations
@@ -247,24 +351,27 @@ in 4 different variables. Using the principle of bitslicing, we can
 use 64-bit variables (`uint64_t` in C) instead of `bool`, thus
 computing the Sbox 64 times in parallel. Bitslicing can thus provide a
 speedup compared to direct code: accessing to a data in the original
-table will take at about 1 cycle (assuming a cache hit), while doing
-the 12 instructions from the circuit above should take less than 10
-cycles to compute 64 times the Sbox (on 64-bit registers), thus
-costing about 0.15 cycles per Sbox.
+table will take about 1 cycle (assuming a cache hit), while doing the
+12 instructions from the circuit above should take less than 10 cycles
+to compute 64 times the Sbox (on 64-bit registers), thus costing about
+0.15 cycles per Sbox.
 
 Converting a lookup table into a circuit can be easily done using
 [Karnaugh maps](https://en.wikipedia.org/wiki/Karnaugh_map) or [Binary
 decision
 diagrams](https://en.wikipedia.org/wiki/Binary_decision_diagram). However,
-this would produce larges circuits, containing much more instructions
-than optimal ones. Brute-forcing is unlikely to yield any results, as
-even a small 4x4 Sbox requires usually about 12 instructions, and
-hundred of billions of circuits of 12 instructions exist. Heuristic
-can be added to the brute-force search in order to reduce the
-complexity of the search [7], but this doesn't scale well beyond 4x4
-Sboxes. For larger Sboxes, like AES's 8x8 Sbox, cryptograph often have
-to analyze the Sboxes' underlying mathematical structure to optimize
-them, which becomes a tedious and highly specialized job.
+this would produce large circuits, containing much more instructions
+than minimal circuits would. Brute-forcing is unlikely to yield any
+results, as even a small 4x4 Sbox requires usually a circuit of about
+12 instructions, and hundreds of billions of such circuits
+exist. Heuristic can be added to the brute-force search in order to
+reduce the complexity of the search [7], but this doesn't scale well
+beyond 4x4 Sboxes. For larger Sboxes, like AES's 8x8 Sbox,
+cryptographers often have to analyze the Sboxes' underlying
+mathematical structure to optimize them, which becomes a tedious and
+highly specialized job. Unfortunately, such a task is hard to
+automatize, and is unavoidable to obtain good performances from
+bitslicing a cipher with large Sboxes.
 
 <!--
 Constant-time
@@ -301,96 +408,10 @@ a = (x & b) | (~x & c);
 This would incur an overhead, but cryptographic primitives usually
 avoid using conditionals. Furthermore, bitslicing also prevents any
 memory access at an index depending on secret data, since each bit of
-the index would be in different registers, thus making bitslicing
-immune to cache-timing attacks in addition to more general timing
-attacks.
+the index would be in different registers (as illustrated above on
+Sboxes), thus making bitslicing immune to cache-timing attacks in
+addition to more general timing attacks.
 
-
-<!--
-Mode of operation
- - definition: mode of operation of a cipher
-   * example: ECB
-   * example: CBC
- - limited to parallel modes in bitslicing
- - partial solution: 
-   + encrypt independent data
-   + use CTR
--->
-
-### Modes of operation
-
-A blockcipher can only encrypts a fixed amount of data, called a
-block, of typically somewhere between 64 and 128 bits (for instance,
-64 for DES, 80 for Rectangle, 128 for AES). When the plaintext is
-longer than that, the cipher must be repeatedly called until the whole
-plaintext is encrypted, using an algorithm called a _mode of
-operation_. The simplest mode of operation is Electronic Codebook
-(ECB), and consists in dividing the plaintext into blocks, and
-encrypting them separately:
-
-<p align="center">
-<img src="{{ site.baseurl }}/assets/images/blog/ECB-small.png">
-</p>
-
-This mode of operation is not very secure because it lacks diffusion:
-two identical blocks will be encrypted into the same ciphertext. This
-can be exploited by an attacker to gain knowledge about the plaintext,
-as can be seen from the following example (taken from
-[Wikipedia](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB-weakness)):
-
-<p align="center">
-<img src="{{ site.baseurl }}/assets/images/blog/ECB-example.png">
-</p>
-
-
-One of the better, and commonly used mode is Cipher Block Chaining
-(CBC), which solves the weakness of ECB by xoring each plaintext with
-the ciphertext produced by the encryption of the previous
-plaintext. This proccessed is bootstraped by xoring the first
-plaintext with an additional secret data called an _initialization
-vector_:
-
-<p align="center">
-<img src="{{ site.baseurl }}/assets/images/blog/CBC-small.png">
-</p>
-
-However, because bitslicing encrypts many plaintexts in parallel, it
-prevents the use of CBC, as well as any other mode that would rely on
-using a ciphertext as an input for encrypting the next plaintext (like
-Cipher Feedback (CFB) and Output Feedback (OFB)).
-
-While this reduces the use case for bitslicing, there are still two
-ways of overcoming those issues:
-
- - In the case of a server encrypting a lot of independent data
-   (coming from different clients), bitslicing can be done in such a
-   way that each parallel data encrypted is independent from the
-   others. In pratice, it means that to fully exploit _n_-bit
-   registers, _n_ independent data must be encrypted, which may be
-   hard to obtain in practice. Furthermore, this may incur a slight
-   management overhead.
-   
- - A parallel mode could be used instead, like Counter mode (CTR). CTR
-   works by encrypting a counter rather than the plaintext directly,
-   and then xoring the encrypted counter with the plaintext, as shown
-   below:
-   
-   <p align="center">
-   <img src="{{ site.baseurl }}/assets/images/blog/CTR-small.png">
-   </p>
-   
-   Incrementing the counter can be done in parallel using SIMD
-   instructions:
-   
-   ```c
-   // Load 4 times the initial counter in a 128-bit SSE register
-   __m128i counters   = _mm_set1_epi32(counter);
-   // Load a SSE register with integers from 1 to 4
-   __m128i increments = _mm_set_epi32(1, 2, 3, 4);
-   // Increment each element of the counters register in parallel
-   counters = _mm_add_epi32(counters, increments);
-   ```
-   
    
    
 <!--
@@ -430,11 +451,12 @@ This algorithm does 4 operations per bit of data (a left-shift `<<`, a
 right-shift `>>`, a bitwise and `&` and a bitwise or `|`), thus having
 a cost in _O(n)_ where _n_ is the size in bit of the input. Given that
 modern ciphers can have a cost as low as half a cycle per byte (like
-Chacha20 on AVX-512 for instance), spending 1 cycle per bit (or 8
-cycles per byte) transposing the data would make bitslicing impossible
-to use in practice. However, this transposition algorithm can be
-improved (credited to Knuth [3] by Pornin [4]) by observing that the
-transpose of a matrix can be reccursively written as:
+Chacha20 on AVX-512 for instance), spending 1 cycle per bit (8 cycles
+per byte) transposing the data would make bitslicing too inefficient
+to be used in practice. However, this transposition algorithm can be
+improved (as shown by Knuth [3], and explained in details by Pornin
+[4]) by observing that the transpose of a matrix can be reccursively
+written as:
 
 <p align="center">
 <img src="{{ site.baseurl }}/assets/images/blog/transpose.png">
@@ -450,8 +472,9 @@ _log(n)_ steps to get to 2x2 matrices, each of them doing _n_
 operations to swap sub-matrices B and C. The total cost is therefore
 _O(n*log(n))_ for a _n_ x _n_ matrix, or _O(sqrt(n*log(n)))_ for n
 bits. As shown in [5], on a modern Intel computer, this amounts to
-1.10 cycles per bits when _n = 16_, down to 0.09 cycles per bits when
-_n = 512_.
+1.10 cycles per bits when _n = 16_ (_i.e._ transposing a 16x16
+matrix), down to 0.09 cycles per bits when _n = 512_ (_i.e._
+transposing a 512x512 matrix).
 
 This algorithm allows the transposition to have a low cost when
 compared to the whole cipher. Furthermore, in a setting where both the
@@ -502,19 +525,19 @@ carry-ripple (_e.g._ [carry-lookahead
 adder](https://en.wikipedia.org/wiki/Carry-lookahead_adder)), but they
 do not apply to software, as will be detailed in a later article.
 
-A software implements of a _n_-bit carry-ripple adder thus contains
-_n_ full adders, each doing 5 instructions (3 `xor` and 2 `and`), for
-a total of _5n_ instructions. Since bitslicing still applies, such a
-code would execute _m_ additions at once when ran on _m_-bit registers
-(_e.g._ 64 on 64-bit registers, 128 on SSE registers, 256 on AVX
-registers). On SSE registers, we can compare this adder with the
-native packed addition instructions, which do _k_ _n_-bit additions
-with a single instruction: 16 8-bit additions, or 8 16-bit additions,
-or 4 32-bit additions, or 2 64-bit additions. On a Intel Skylake
-i5-6500, native instructions
-are
-[2 to 5 times faster](https://github.com/DadaIsCrazy/usuba/tree/master/experimentations/add) than
-the software adder.
+A software implementation of a _n_-bit carry-ripple adder thus
+contains _n_ full adders, each doing 5 operations (3 `xor` and 2
+`and`), for a total of _5n_ instructions. Since bitslicing still
+applies, such a code would execute _m_ additions at once when ran on
+_m_-bit registers (_e.g._ 64 on 64-bit registers, 128 on SSE
+registers, 256 on AVX registers). The cost to do one _n_-bit addition
+is therefore _5n/m_. On SSE registers, we can compare this adder with
+the native packed addition instructions, which do _k_ _n_-bit
+additions with a single instruction: 16 8-bit additions, or 8 16-bit
+additions, or 4 32-bit additions, or 2 64-bit additions. On a Intel
+Skylake i5-6500, native instructions are [2 to 5 times
+faster](https://github.com/DadaIsCrazy/usuba/tree/master/experimentations/add)
+than the software adder.
 
 This slowdown by a factor or 5 could still be offset by other parts of
 the programs, like permutations which would be done at compile-time as
@@ -539,16 +562,17 @@ Conclusion
 ### Conclusion
 
 Using bitslicing can significantly improve the throughput of a
-cipher. This is especially true on CPU with SIMD extensions, providing
-wide registers, and thus allowing for a lot of data-parallelism. The
+cipher. This is especially true on CPU with SIMD extensions, which
+provide wide registers, thus enabling lots of data-parallelism. The
 gains in performances vary depending on the structure of the ciphers:
-permutations will be free, synthesizing circuits to lookup tables
-might be hard, and arithmetic operations will always be very
+permutations will be free, lookup tables will have varying
+performances depending on the size of the circuits needed to implement
+them, and arithmetic operations will always be very
 expensive. Transposition will have a non-negligeable cost, making
 bitslicing a dubious technique for computing small circuits.
 
 There is another issue with bitslicing: register pressure. A _n_-bit
-input is turned into _n_ registers, but modern CPUs often have only 16
+input is turned into _n_ registers, but modern CPUs often only have 16
 registers. Thus, a 128-bit input cannot be put into 128
 registers. What will happen is a process called _spilling_: the data
 be stored in 128 memory locations, and when some parts are actually
@@ -557,9 +581,9 @@ bitslice AES, about half the assembly instructions are `move`, moving
 data from memory to registers and back.
 
 To overcome the cost of spilling registers, and drawing inspiration
-from existing adaptations of bitslicing, we propose a model called
-_m_-slicing, which keeps the main property of bitslicing:
-constant-time, data parallelism scaling with register size, while
+from existing adaptations of bitslicing [8], we propose a model called
+_m_-slicing, which keeps the main properties of bitslicing
+(constant-time, data parallelism scaling with register size), while
 reducing register pressure, and allowing the use of more SIMD
 instructions, like additions and multiplications.
 
@@ -649,3 +673,5 @@ Bitslicing as the basis for security countermeasures
 [6] W. Zhang _et al_, [RECTANGLE: A Bit-slice Lightweight Block Cipher Suitable for Multiple Platforms](https://eprint.iacr.org/2014/084.pdf), 2014.
 
 [7] D. A. Osvik, [Speeding up Serpent](https://www.ii.uib.no/~osvik/pub/aes3.pdf), 2000.
+
+[8] E. Käsper, P. Schwabe, [Faster and Timing-Attack Resistant AES-GCM](https://www.esat.kuleuven.be/cosic/publications/article-1261.pdf), CHES, 2009.
