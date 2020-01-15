@@ -7,7 +7,7 @@ lang: en
 locale: en_US
 author: Darius Mercadier
 excerpt: Bitslicing was initially introduced by Biham as an implementation trick to speed of software implementations of the DES cipher. The basic idea of bitslicing is to represent a n-bit data as 1 bit is n distinct registers.
-comments: false
+comments: true
 hidden: false
 ---
 <!--
