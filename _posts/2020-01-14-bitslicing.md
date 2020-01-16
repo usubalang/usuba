@@ -59,8 +59,10 @@ doing a `xor` between the first and third register above computes 4
 The general idea of bitslicing is thus to transpose _m_ _n_-bit data
 into _n_ _m_-bit registers (or variables). Then, standard _m_-bit
 bitwise operations of the CPU can be used and each acts as _m_
-parallel operation, allowing a cipher to effectively run _m_ times in
-parallel.
+parallel operation. Therefore, if a cipher can be expressed as a
+combination of bitwise operations, it can be ran _m_ times in parallel
+using bitslicing. A bitsliced program can thus be seen as a parallel
+circuit implemented in software.
 
 
 In the following, we present various aspects of bitslicing: how to
@@ -82,13 +84,13 @@ Scaling:
 -->
 ### Scaling
 
-Modern high-end CPUs come with vector extensions, also called _SIMD_
-for Single Instruction Multiple Data. The idea of SIMD is to do the
-same operation on multiple data with a single instruction, thus
-increasing throughput using data parallelism rather than
-concurrency. SIMD instructions are made available to C developpers
-thanks to functions called _intrinsics_. For instance, the C
-intrinsics `_mm_add_pi8` generates a `paddb` assembly instruction,
+Modern high-end CPUs come with vector instruction sets, also called
+_SIMD_ (Single Instruction Multiple Data) extensions. The idea of SIMD
+is to do the same operation on multiple data with a single
+instruction, thus increasing throughput using data parallelism rather
+than concurrency. SIMD instructions are made available to C
+developpers thanks to functions called _intrinsics_. For instance, the
+C intrinsics `_mm_add_pi8` generates a `paddb` assembly instruction,
 which takes 2 64-bit MMX registers, and does 8 8-bit additions on
 those registers:
 
@@ -102,12 +104,13 @@ AltiVec on PowerPC, 128-bit Neon on ARM, 64-bit MMX, 128-bit SSE,
 256-bit AVX and 512-bit AVX-512 on Intel. While the initial goal of
 SIMD is to speed up standard computations by providing parallel
 arithmetic operations, we can use the bitwise operations and large
-registers they provide to speed up bitslicing. Executing a bitslice
-program on 512-bit registers will compute the same circuit on 512
-independent data in parallel, thus readucing 8 times the cost per data
-compared to 64-bit registers. Parallelizing direct (_i.e._ not
-bitsliced) code in the same fashion using SIMD instructions is not
-always possible: a lookup table cannot be parallelized for instance.
+registers they provide to speed up bitsliced
+implementations. Executing a bitsliced program on 512-bit registers
+will compute the same circuit on 512 independent data in parallel,
+thus reducing 8 times the cost per data compared to 64-bit
+registers. Parallelizing direct (_i.e._ not bitsliced) code in the
+same fashion using SIMD instructions is not always possible: a lookup
+table cannot be parallelized for instance.
 
 The overall time needed to execute the circuit, and thus the latency,
 on the other hand remains constant no matter the registers used:
@@ -117,10 +120,8 @@ amount of time.
 
 Finally, to make full use of SIMD extensions, hundreds of inputs must
 be available to be encrypted in parallel. For instance, on AES, which
-encrypts a 128-bit plaintext, in order to fill up 512-bit AVX-512
-registers, 8 KB of data are required. And even if such amount of data
-are available, bitslicing might not always work because some modes of
-operations cannot be used, as shown below.
+encrypts a 128-bit plaintext, in order to fill 512-bit AVX-512
+registers, 8 KB of data are required. 
 
 
 <!--
@@ -136,23 +137,24 @@ Mode of operation
 
 ### Modes of operation
 
-A blockcipher can only encrypts a fixed amount of data, called a
-block, of typically somewhere between 64 and 128 bits (for instance,
-64 for DES, 80 for Rectangle, 128 for AES). When the plaintext is
-longer than the block size, the cipher must be repeatedly called until
-the whole plaintext is encrypted, using an algorithm called a _mode of
-operation_. The simplest mode of operation is Electronic Codebook
-(ECB), and consists in dividing the plaintext into blocks, and
-encrypting them separately:
+A blockcipher can only encrypt a fixed amount of data, called a block,
+using between 64 and 128 bits (for instance, 64 for DES, 80 for
+Rectangle, 128 for AES). When the plaintext is longer than the block
+size, the cipher must be repeatedly called until the whole plaintext
+is encrypted, using an algorithm called a _mode of operation_. The
+simplest mode of operation is Electronic Codebook (ECB), and consists
+in dividing the plaintext into sub-plaintexts (of the size of a
+block), encrypting them separately, and concatenating the resulting
+sub-ciphertext to produce the full ciphertext:
 
 <p align="center">
 <img src="{{ site.baseurl }}/assets/images/blog/ECB-small.png">
 </p>
 
-This mode of operation is not very secure because it lacks diffusion:
-two identical blocks will be encrypted into the same ciphertext. This
-can be exploited by an attacker to gain knowledge about the plaintext,
-as can be seen from the following example (taken from
+This mode of operation is considered unsecured because identical
+blocks will be encrypted into the same ciphertext. This can be
+exploited by an attacker to gain knowledge about the plaintext, as can
+be seen from the following example (taken from
 [Wikipedia](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB-weakness)):
 
 <p align="center">
@@ -161,20 +163,20 @@ as can be seen from the following example (taken from
 
 
 One of the better, and commonly used mode is Cipher Block Chaining
-(CBC), which solves the weakness of ECB by xoring each plaintext with
-the ciphertext produced by the encryption of the previous
-plaintext. This proccessed is bootstraped by xoring the first
-plaintext with an additional secret data called an _initialization
+(CBC), which solves the weakness of ECB by xoring each sub-plaintext
+with the sub-ciphertext produced by the encryption of the previous
+sub-plaintext. This proccessed is bootstraped by xoring the first
+sub-plaintext with an additional secret data called an _initialization
 vector_:
 
 <p align="center">
 <img src="{{ site.baseurl }}/assets/images/blog/CBC-small.png">
 </p>
 
-However, because bitslicing encrypts many plaintexts in parallel, it
-prevents the use of CBC, as well as any other mode that would rely on
-using a ciphertext as an input for encrypting the next plaintext (like
-Cipher Feedback (CFB) and Output Feedback (OFB)).
+However, because bitslicing encrypts many sub-plaintexts in parallel,
+it prevents the use of CBC, as well as any other mode that would rely
+on using a sub-ciphertext as an input for encrypting the next
+sub-plaintext (like Cipher Feedback (CFB) and Output Feedback (OFB)).
 
 While this reduces the use cases for bitslicing, there are still two
 ways of overcoming those issues:
@@ -188,9 +190,9 @@ ways of overcoming those issues:
    practice. Furthermore, this may incur a slight management overhead.
    
  - A parallel mode could be used instead, like Counter mode (CTR). CTR
-   works by encrypting a counter rather than the plaintext directly,
-   and then xoring the encrypted counter with the plaintext, as shown
-   below:
+   works by encrypting a counter rather than the sub-plaintexts
+   directly, and then xoring the encrypted counter with the
+   sub-plaintext, as shown below:
    
    <p align="center">
    <img src="{{ site.baseurl }}/assets/images/blog/CTR-small.png">
