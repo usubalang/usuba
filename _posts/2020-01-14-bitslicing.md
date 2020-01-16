@@ -6,7 +6,7 @@ description: Introduction to bitslicing
 lang: en
 locale: en_US
 author: Darius Mercadier
-excerpt: Bitslicing was initially introduced by Biham as an implementation trick to speed of software implementations of the DES cipher. The basic idea of bitslicing is to represent a n-bit data as 1 bit is n distinct registers.
+excerpt: Bitslicing was initially introduced by Biham as an implementation trick to speed of software implementations of the DES cipher. The basic idea of bitslicing is to represent a n-bit data as 1 bit is n distinct registers, or, more generally, m n-bit data as n m-bit registers. This technique can thus be used to encrypt large amounts of data at once, especially when using SIMD registers.
 comments: true
 hidden: false
 ---
@@ -28,17 +28,17 @@ Intro
 -->
 
 Bitslicing was initially introduced by Biham [1] as an implementation
-trick to speed of software implementations of the
+trick to speed up software implementations of the
 [DES](https://en.wikipedia.org/wiki/Data_Encryption_Standard)
 cipher. The basic idea of bitslicing is to represent a _n_-bit data as
 1 bit in _n_ distinct registers. On 64-bit registers, there are then
-63 unused bits in each registers, which can be filled in the same
+63 unused bits in each register, which can be filled in the same
 fashion by taking 63 other independent _n_-bit data, and putting each
-one of their _n_ bits in one of the registers. Bitwise operators on
-64-bit (_e.g._ `and`, `or`, `xor`, `not`) then act as 64 parallel
+of their _n_ bits in one of the registers. Bitwise operators on 64-bit
+(_e.g._ `and`, `or`, `xor`, `not`) then act as 64 parallel
 operators. For instance, bitslicing 3-bit data requires 3
-registers. Each first bit of each data goes into the first register;
-each second bit into the second register and each third bit into the
+registers. The first bit of each data goes into the first register;
+the second bit into the second register and the third bit into the
 third register. Using 4-bit registers (for the sake of simplicity),
 this can be applied to 4 data:
 
