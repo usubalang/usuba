@@ -7,11 +7,24 @@ all: default
 
 asm: add_8.s add_16.s add_32.s
 
-add_%: add_%.c
-	$(CC) $(CFLAGS) $< -o $@
+add_%: add.c
+	$(CC) $(CFLAGS) -D ADD$* $< -o $@
 
-add_%.s: add_%.c
-	$(CC) $(CFLAGS) $< -S -o $@
+add_%.s: add.c
+	$(CC) $(CFLAGS) -D ADD$* $< -S -o $@
+
+vtune: add_vtune_BITSLICE add_vtune_PACKED add_vtune_PARALLEL
+
+add_vtune_%: add.c
+	$(CC) $(CFLAGS) -D ADD32 -D $* $< -o $@
+
+iaca: add_iaca_BITSLICE add_iaca_PACKED add_iaca_PARALLEL
+
+add_iaca_%: add.c
+	$(CC) $(CFLAGS) -D IACA_$* -D ADD32 $< -o $@
 
 clean:
 	$(RM) $(TARGET)
+	$(RM) add_vtune_BITSLICE add_vtune_PACKED add_vtune_PARALLEL
+	$(RM) add_8.s add_16.s add_32.s
+	$(RM) add_iaca_BITSLICE add_iaca_PACKED add_iaca_PARALLEL
