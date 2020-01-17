@@ -3,6 +3,10 @@
 #include <x86intrin.h>
 #include <inttypes.h>
 
+#if defined(IACA_PARALLEL) || defined(IACA_PACKED) || defined(IACA_BITSLICE)
+#include "iacaMarks.h"
+#endif
+
 #define WARMUP 1000
 #define NB_RUN 100000000
 
@@ -27,11 +31,17 @@ __attribute__ ((noinline)) void speed_packed_parallel() {
   // The actual measurement
   unsigned int unused;
   uint64_t timer = __rdtscp(&unused);
-  for (int i = 0; i < NB_RUN_PACKED; i++) {
+  for (int i = 0; i < NB_RUN_PACKED; i++) { 
+#ifdef IACA_PARALLEL
+    IACA_START
+#endif
     a = _mm_add_epi32(a,d);
     b = _mm_add_epi32(b,d);
     c = _mm_add_epi32(c,d);
   }
+#ifdef IACA_PARALLEL
+  IACA_END
+#endif
   timer = __rdtscp(&unused) - timer;
 
   printf("32-bit packed parallel add:   %.2f\n", ((double)timer) / NB_RUN_PACKED / 4 / 3);
@@ -55,8 +65,14 @@ __attribute__ ((noinline)) void speed_packed() {
   unsigned int unused;
   uint64_t timer = __rdtscp(&unused);
   for (int i = 0; i < NB_RUN_PACKED; i++) {
+#ifdef IACA_PACKED
+    IACA_START
+#endif
     a = _mm_add_epi32(a,b);
   }
+#ifdef IACA_PACKED
+  IACA_END
+#endif
   timer = __rdtscp(&unused) - timer;
 
   printf("32-bit packed add:   %.2f\n", ((double)timer) / NB_RUN_PACKED / 4);
@@ -201,7 +217,10 @@ __attribute__ ((noinline)) void speed_bitslice() {
   // The actual measurement
   unsigned int unused;
   uint64_t timer = __rdtscp(&unused);
-  for (int i = 0; i < NB_RUN_BITSLICE; i++)
+  for (int i = 0; i < NB_RUN_BITSLICE; i++) {
+#ifdef IACA_BITSLICE
+    IACA_START
+#endif
     add_bitslice(a0,  a1,  a2,   a3,  a4,  a5,  a6,  a7,
                  a8,  a9,  a10, a11, a12, a13, a14, a15,
                  a16, a17, a18, a19, a20, a21, a22, a23,
@@ -210,6 +229,10 @@ __attribute__ ((noinline)) void speed_bitslice() {
                  b8,  b9,  b10, b11, b12, b13, b14, b15,
                  b16, b17, b18, b19, b20, b21, b22, b23,
                  b24, b25, b26, b27, b28, b29, b30, b31);
+  }
+#ifdef IACA_BITSLICE
+  IACA_END
+#endif
   timer = __rdtscp(&unused) - timer;
 
   printf("32-bit bitslice add: %.2f\n", ((double)timer) / NB_RUN_BITSLICE / 128);
