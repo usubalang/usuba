@@ -62,7 +62,8 @@ bitwise operations of the CPU can be used and each acts as _m_
 parallel operation. Therefore, if a cipher can be expressed as a
 combination of bitwise operations, it can be ran _m_ times in parallel
 using bitslicing. A bitsliced program can thus be seen as a parallel
-circuit implemented in software.
+circuit (_i.e._ a composition of logical operations) implemented in
+software.
 
 
 In the following, we present various aspects of bitslicing: how to
@@ -184,7 +185,7 @@ ways of overcoming those issues:
  - In the case of a server encrypting a lot of independent data
    (coming from different clients), bitslicing can be done in such a
    way that each parallel data encrypted is independent from the
-   others (_e.g._ all the data come from different clients). In
+   others (_i.e._ all the data come from different clients). In
    pratice, it means that to fully exploit _n_-bit registers, _n_
    independent data must be encrypted, which may be hard to obtain in
    practice. Furthermore, this may incur a slight management overhead.
@@ -228,14 +229,12 @@ Compile-time permutations
 
 ### Compile-time permutations
 
-Bitslicing allows shifts, rotations, and, more generally, any
-bit-permutation to be done at compile time. Almost every cipher relies
-on some form of a permutation to
-provide
-[diffusion](https://en.wikipedia.org/wiki/Confusion_and_diffusion)
-(that is, to make sure that changing 1 bit in the plaintext changes
-about half the bits of the ciphertext). For instance, Picollo [2] uses
-the following 8-bit permutation:
+One of the important properties of any cipher is
+[diffusion](https://en.wikipedia.org/wiki/Confusion_and_diffusion): it
+ensures that if 2 plaintexts differ by 1 bit, then statistically half of
+the bits of the corresponding ciphertexts should differ. In practice,
+this property is often achieved using permutations. For instance,
+Picollo [2] uses the following 8-bit permutation:
 
 <p align="center">
 <img src="{{ site.baseurl }}/assets/images/blog/piccolo-perm.png">
@@ -258,10 +257,10 @@ char permut(char x) {
 
 A clever developper (or a smart compiler) could notice that the three
 right-shifts by 2 can be merged together: 
-`((x & 16) >> 2) | ((x & 8) >> 2)` can be optimized to 
-`(x & (16 | 8)) >> 2`. The same goes for the three left-shifts, and the 
-permutation can therefore be written as (with the masks written in
-binary for more simplicity):
+`((x & 64) >> 2) | ((x & 16) >> 2) | ((x & 4) >> 2)` can be optimized 
+to `(x & (64 | 16 | 4)) >> 2`. The same goes for the three left-shifts
+by 2, and the permutation can therefore be written as (with the masks
+written in binary for more simplicity):
 
 ```c
 char permut(char x) {
@@ -276,10 +275,10 @@ Bitslicing allows to do even better: this permutation would be written
 as simply 8 assignments in a bitsliced code:
 
 ```c
-void permut(bool x0, bool x1, bool x2, bool x3, bool x4,
-            bool x0, bool x1, bool x2, bool x3, bool x4,
-            bool* y0, bool* y1, bool* y2, bool* y3, bool* y4,
-            bool* y0, bool* y1, bool* y2, bool* y3, bool* y4) {
+void permut(bool x0, bool x1, bool x2, bool x3,
+            bool x4, bool x5, bool x6, bool x7,
+            bool* y0, bool* y1, bool* y2, bool* y3, 
+            bool* y4, bool* y5, bool* y6, bool* y7) {
     *y0 = x2;
     *y1 = x7;
     *y2 = x4;
@@ -292,12 +291,12 @@ void permut(bool x0, bool x1, bool x2, bool x3, bool x4,
 ```
 
 The C compiler can then inline this function, and get rid of the
-assigments by
-doing
-[copy propagation](https://en.wikipedia.org/wiki/Copy_propagation),
-thus effectively performing this permutation at compile time. (in the
-case that you don't trust your C compiler to perform this task, fear
-not: Usuba will do those optimizations itself)
+assigments by doing [copy
+propagation](https://en.wikipedia.org/wiki/Copy_propagation), thus
+effectively performing this permutation at compile time. This
+technique can be applied to any bit-permutation, as well as to shifts
+and rotations, making them effectively free (_i.e._ done at compile
+time) in bitslicing.
 
 <!--
 Lookup tables
@@ -310,14 +309,17 @@ Lookup tables
 -->
 ### Lookup tables
 
-Lookup tables are often used in ciphers to implement _Sboxes_, which
-are functions providing non-linearity in ciphers; a desirable property
-from a security perspective. Such tables cannot be used in bitslicing,
-since each bit of the index would be in a different register. Instead,
-equivalent circuits can be used, as illustrated in post [1: Usuba -
-the genesis]({{ site.baseurl }}{% post_url 2020-01-07-usuba-genesis
-%}). As a larger example, we can take Rectangle's lookup table [6],
-defined as:
+The other important property of ciphers is
+[_confusion_](https://en.wikipedia.org/wiki/Confusion_and_diffusion),
+which means that each bit of a ciphertext should depend on several
+bits of the encryption key in order to obscure the relationship
+between the two. Most ciphers achieve this property using functions
+called Sbox (for Substitution-box), often defined using lookup tables.
+Such tables cannot be used in bitslicing, since each bit of the index
+would be in a different register. Instead, equivalent circuits can be
+used, as illustrated in post [1: Usuba - the genesis]({{ site.baseurl
+}}{% post_url 2020-01-07-usuba-genesis %}). As a larger example, we
+can take Rectangle's lookup table [6], defined as:
 
 ```c
 char table[16] = { 
@@ -344,34 +346,32 @@ void table(bool  a0, bool  a1, bool  a2, bool  a3,
     bool t9  = t3 & t6;
     *b3      = t8 ^ t9;
     bool t11 = *b0 | t8;
-    b2       = t6 ^ t11;
+    *b2      = t6 ^ t11;
 }
 ```
 
-Since this is a circuit, the 4 bits of the inputs and the outputs are
-in 4 different variables. Using the principle of bitslicing, we can
-use 64-bit variables (`uint64_t` in C) instead of `bool`, thus
-computing the Sbox 64 times in parallel. Bitslicing can thus provide a
-speedup compared to direct code: accessing to a data in the original
-table will take about 1 cycle (assuming a cache hit), while doing the
-12 instructions from the circuit above should take less than 10 cycles
-to compute 64 times the Sbox (on 64-bit registers), thus costing about
-0.15 cycles per Sbox.
+Using the principle of bitslicing, we can use 64-bit variables
+(`uint64_t` in C) instead of `bool`, thus computing the Sbox 64 times
+in parallel. Bitslicing can thus provide a speedup compared to direct
+code: accessing to a data in the original table will take about 1
+cycle (assuming a cache hit), while doing the 12 instructions from the
+circuit above should take 12 cycles or less to compute 64 times the
+Sbox (on 64-bit registers), thus costing at most 0.19 cycles per Sbox.
 
 Converting a lookup table into a circuit can be easily done using
 [Karnaugh maps](https://en.wikipedia.org/wiki/Karnaugh_map) or [Binary
 decision
 diagrams](https://en.wikipedia.org/wiki/Binary_decision_diagram). However,
 this would produce large circuits, containing much more instructions
-than minimal circuits would. Brute-forcing is unlikely to yield any
-results, as even a small 4x4 Sbox requires usually a circuit of about
-12 instructions, and hundreds of billions of such circuits
-exist. Heuristic can be added to the brute-force search in order to
-reduce the complexity of the search [7], but this doesn't scale well
-beyond 4x4 Sboxes. For larger Sboxes, like AES's 8x8 Sbox,
+than minimal circuits would. Brute-forcing every possible is unlikely
+to yield any results, as even a small 4x4 Sbox requires usually a
+circuit of about 12 instructions, and hundreds of billions of such
+circuits exist. Heuristic can be added to the brute-force search in
+order to reduce the complexity of the search [7], but this doesn't
+scale well beyond 4x4 Sboxes. For larger Sboxes, like AES's 8x8 Sbox,
 cryptographers often have to analyze the Sboxes' underlying
 mathematical structure to optimize them, which becomes a tedious and
-highly specialized job. Unfortunately, such a task is hard to
+highly specialized job [9, 10]. Unfortunately, such a task is hard to
 automatize, and is unavoidable to obtain good performances from
 bitslicing a cipher with large Sboxes.
 
@@ -388,31 +388,43 @@ Constant-time
 ### Constant-time
 
 Bitsliced codes run in constant-time, and are thus resilient against
-timing attacks. This main reason is that conditional jumps on secret
-data prohibited: since _m_ data are being processed at once,
-conditions must be emulated through masking by computing both branches
-and recombining them. For instance,
+timing attacks. This main reason is that 
+
+Bitslicing prevents from branching on secret data, since within each
+register (in particular the potential branch condition), each bit
+represents a different data. Thus, conditionals must be emulated
+through masking by computing both branches and recombining them. For
+instance, the following code
 
 ```c
 if (x) {
     a = b;
 } else {
-    a = c;
+    a = c ^ d;
 }
 ```
 
 would be implemented in a bitsliced code as:
 
 ```c
-a = (x & b) | (~x & c);
+a = (x & b) | (~x & (c ^ d));
 ```
 
-This would incur an overhead, but cryptographic primitives usually
-avoid using conditionals. Furthermore, bitslicing also prevents any
-memory access at an index depending on secret data, since each bit of
-the index would be in different registers (as illustrated above on
-Sboxes), thus making bitslicing immune to cache-timing attacks in
-addition to more general timing attacks.
+If `x` is a secret data, the direct code is vulnerable to timing
+attacks: it runs faster `x` is true than if it's false. An attacker
+could thus observe the timing execution and deduce the value of
+`x`. On the other hand, the bitsliced code executes the same
+instructions no matter the value of `x` and is thus immune to timining
+attacks. For large conditionals, this would come at a cost expanse,
+since computing both branches is more expensive than computing a
+single one. However, this is usually not an issue, since cryptographic
+primitives usually avoid using large conditionals.
+
+Furthermore, bitslicing also prevents any memory access at an index
+depending on secret data, since each bit of the index would be in
+different registers (as illustrated above on Sboxes), thus making
+bitslicing immune to cache-timing attacks in addition to more general
+timing attacks.
 
    
    
@@ -677,3 +689,7 @@ Bitslicing as the basis for security countermeasures
 [7] D. A. Osvik, [Speeding up Serpent](https://www.ii.uib.no/~osvik/pub/aes3.pdf), 2000.
 
 [8] E. Käsper, P. Schwabe, [Faster and Timing-Attack Resistant AES-GCM](https://www.esat.kuleuven.be/cosic/publications/article-1261.pdf), CHES, 2009.
+
+[9] D. Canright, [A Very Compact S-Box for AES](https://www.iacr.org/archive/ches2005/032.pdf), CHES, 2005.
+
+[10] J. Boyar, R. Peralta, [A depth-16 circuit for the AES S-box](https://eprint.iacr.org/2011/332.pdf), SEC, 2012.
