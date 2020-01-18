@@ -387,14 +387,13 @@ Constant-time
 -->
 ### Constant-time
 
-Bitsliced codes run in constant-time, and are thus resilient against
-timing attacks. This main reason is that 
-
 Bitslicing prevents from branching on secret data, since within each
-register (in particular the potential branch condition), each bit
-represents a different data. Thus, conditionals must be emulated
-through masking by computing both branches and recombining them. For
-instance, the following code
+register, each bit represents a different data. In particular, the
+branch condition could be, at the same time, true for some data, and
+false for others. Thus, both branches of conditionals need to be
+computed, and combined by masking with the branch condition. For
+instance, the following branching code (assuming `x`, `a`, `b`, `c`
+and `d` are all booleans, for the sake of simplicity):
 
 ```c
 if (x) {
@@ -410,22 +409,23 @@ would be implemented in a bitsliced code as:
 a = (x & b) | (~x & (c ^ d));
 ```
 
-If `x` is a secret data, the direct code is vulnerable to timing
-attacks: it runs faster `x` is true than if it's false. An attacker
+If `x` is a secret data, the branching code is vulnerable to timing
+attacks: it runs faster if `x` is true than if it's false. An attacker
 could thus observe the timing execution and deduce the value of
 `x`. On the other hand, the bitsliced code executes the same
 instructions no matter the value of `x` and is thus immune to timining
 attacks. For large conditionals, this would come at a cost expanse,
 since computing both branches is more expensive than computing a
-single one. However, this is usually not an issue, since cryptographic
-primitives usually avoid using large conditionals.
+single one. However, this is usually not an issue, since most
+cryptographic primitives avoid using large conditionals.
 
-Furthermore, bitslicing also prevents any memory access at an index
-depending on secret data, since each bit of the index would be in
-different registers (as illustrated above on Sboxes), thus making
-bitslicing immune to cache-timing attacks in addition to more general
-timing attacks.
-
+The lack of branches is not enough to make a program constant-time:
+memory accesses at secret indices could be vulnerable to cache-timing
+attacks (presented in the post [1: Usuba - the genesis]({{
+site.baseurl }}{% post_url 2020-01-07-usuba-genesis %})). However, as
+shown in the previous section, bitslicing prevents such memory
+accesses by replacing lookup tables by constant-time
+circuits. Bitsliced codes are thus constant-time by construction.
    
    
 <!--
@@ -477,18 +477,39 @@ written as:
 </p>
 
 until there are only matrices of size 2x2 left (on a 64x64 matrix,
-this takes 6 iterations). Swapping B and C is done with shifts and
-`or`/`and` with masks. The key factor is than when doing this
-operation recursively, the same shifts and masks will be applied on A
-and B, and on C and D, thus saving a lot of operations over the naive
-algorithm. When applied to a matrix of size _n_ x _n_, there are
+this takes 6 iterations). Swapping B and C is done with shifts, `or`s,
+and `and`s. The key factor is that when doing this operation
+recursively, the same shifts/`and`s/`or`s are applied at the same time
+on A and B, and on C and D, thus saving a lot of operations over the
+naive algorithm.
+
+As an example, let's consider a 4x4 matrix composed of 4 4-bit data U,
+V, W and X. The first step is to transpose the 2x2 sub-matrices
+(corresponding to A, B, C and D above). Since those are 2x2 matrices,
+the transpition involves no reccursion:
+
+<p align="center">
+<img src="{{ site.baseurl }}/assets/images/blog/transposition-4x4-v2-step1-small.png">
+</p>
+
+Note how transposing A and B is done with the same operations: `&
+0b1010` isolates the left-most bits in both A and B at the same time;
+`<< 1` shifts the right-most bits of both A and B at the same time,
+and the final `or` recombines both A and B at the same time. The same
+goes for C and D. B and C transposed can then be swapped in order to
+the finalize the whole transposition:
+
+<p align="center">
+<img src="{{ site.baseurl }}/assets/images/blog/transposition-4x4-v2-step2-small.png">
+</p>
+
+When applied to a matrix of size _n_ x _n_, this algorithm does
 _log(n)_ steps to get to 2x2 matrices, each of them doing _n_
 operations to swap sub-matrices B and C. The total cost is therefore
 _O(n*log(n))_ for a _n_ x _n_ matrix, or _O(sqrt(n*log(n)))_ for n
 bits. As shown in [5], on a modern Intel computer, this amounts to
-1.10 cycles per bits when _n = 16_ (_i.e._ transposing a 16x16
-matrix), down to 0.09 cycles per bits when _n = 512_ (_i.e._
-transposing a 512x512 matrix).
+1.10 cycles per bits on a 16x16 matrix, down to 0.09 cycles per bits
+on a 512x512 matrix.
 
 This algorithm allows the transposition to have a low cost when
 compared to the whole cipher. Furthermore, in a setting where both the
@@ -553,7 +574,7 @@ Skylake i5-6500, native instructions are [2 to 5 times
 faster](https://github.com/DadaIsCrazy/usuba/tree/master/experimentations/add)
 than the software adder.
 
-This slowdown by a factor or 5 could still be offset by other parts of
+This slowdown by a factor of 5 could still be offset by other parts of
 the programs, like permutations which would be done at compile-time as
 mentionned above. However, implementing more complex operations like
 multiplication is unlikely to ever be an option for bitsliced
@@ -575,24 +596,24 @@ Conclusion
 -->
 ### Conclusion
 
-Using bitslicing can significantly improve the throughput of a
-cipher. This is especially true on CPU with SIMD extensions, which
-provide wide registers, thus enabling lots of data-parallelism. The
-gains in performances vary depending on the structure of the ciphers:
-permutations will be free, lookup tables will have varying
-performances depending on the size of the circuits needed to implement
-them, and arithmetic operations will always be very
-expensive. Transposition will have a non-negligeable cost, making
-bitslicing a dubious technique for computing small circuits.
+Using bitslicing can significantly improve the throughput of a cipher,
+especially on CPU with SIMD extensions, which provide wide registers,
+enabling a lot of data-parallelism. The gains in performances however
+vary depending on the structure of the ciphers: permutations will be
+free, lookup tables will have varying performances depending on the
+size of the circuits needed to implement them, and arithmetic
+operations will always be very expensive. Furthermore, transposition
+often has a non-negligeable cost, making bitslicing a dubious
+technique for computing small circuits.
 
 There is another issue with bitslicing: register pressure. A _n_-bit
 input is turned into _n_ registers, but modern CPUs often only have 16
 registers. Thus, a 128-bit input cannot be put into 128
 registers. What will happen is a process called _spilling_: the data
-be stored in 128 memory locations, and when some parts are actually
-needed, they will be loaded into registers. For instance, on a fully
-bitslice AES, about half the assembly instructions are `move`, moving
-data from memory to registers and back.
+will be stored in 128 memory locations, and when some parts are
+actually needed, they will be loaded into registers. For instance, on
+a fully bitslice AES, about half the assembly instructions are `move`,
+moving data from memory to registers and back.
 
 To overcome the cost of spilling registers, and drawing inspiration
 from existing adaptations of bitslicing [8], we propose a model called
