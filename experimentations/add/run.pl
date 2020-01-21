@@ -32,7 +32,7 @@ for (1 .. $nb_runs) {
 
 # Printing results
 print "|    **addition type**   |  **cycles/loop** |  **cycles/add** |\n";
-print "| ---------------------- | ---------------- | --------------- |\n";
+print "|          &nbsp;        |       &nbsp;     |      &nbsp;     |\n";
 for my $size (@sizes) {
     for my $slicing (qw(bitslice packed_single packed_parallel)) {
         printf "| %2d-bit %15s | ", $size, $slicing;
@@ -44,5 +44,5 @@ for my $size (@sizes) {
         }
         printf "\n";
     }
-    print "| ---------------------- | ---------------- | --------------- |\n";
+    print "|          &nbsp;        |       &nbsp;     |      &nbsp;     |\n";
 }

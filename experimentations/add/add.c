@@ -30,10 +30,43 @@
 
 #define WARMUP 1000
 
+#if ! (defined(SSE) || defined(GP))
+#define SSE
+#endif
+
+#ifdef SSE
+#define DATATYPE __m128i
+#define ADD_32(_a,_b) _mm_add_epi32(_a,_b)
+#define ADD_16(_a,_b) _mm_add_epi16(_a,_b)
+#define ADD_8(_a,_b)  _mm_add_epi8(_a,_b)
+#define PACKED_ADDS_32 4 // 4 parallel add with a single _mm_add
+#define PACKED_ADDS_16 8 // 8 parallel add with a single _mm_add
+#define PACKED_ADDS_8 16 // 16 parallel add with a single _mm_add
+#define REG_SIZE (sizeof(__m128i)*8)
+#define ZERO _mm_setzero_si128()
+#define INIT() _mm_set_epi32(rand(), rand(), rand(), rand())
+#define ASM_MOD "x"
+#elif defined(GP)
+#define DATATYPE int
+#define ADD_32(_a,_b) ((_a) + (_b))
+#define ADD_16(_a,_b) ((_a) + (_b))
+#define ADD_8(_a,_b) ((_a) + (_b))
+#define PACKED_ADDS_32 1
+#define PACKED_ADDS_16 1
+#define PACKED_ADDS_8 1
+#define ZERO 0
+#define REG_SIZE (sizeof(int)*8)
+#define INIT() rand()
+#define ASM_MOD "r"
+#else
+#error SSE or GP must be defined
+#endif
+
+
 #ifdef PARALLEL
 #define NB_RUN_PACKED 10000000000
 #elif defined(PACKED)
-#define NB_RUN_PACKED 10000000000
+#define NB_RUN_PACKED 500000000
 #elif defined(BITSLICE)
 #define NB_RUN_BITSLICE 200000000
 #else
@@ -49,16 +82,16 @@
 #endif
 
 #ifdef ADD32
-#define ADD_SIMD _mm_add_epi32
-#define PACKED_ADDS 4 // 4 parallel add with a single _mm_add
+#define ADD_NATIVE(_a,_b) ADD_32(_a,_b)
+#define PACKED_ADDS PACKED_ADDS_32
 #define ADD_SIZE "32"
 #elif defined(ADD16)
-#define ADD_SIMD _mm_add_epi16
-#define PACKED_ADDS 8 // 8 parallel add with a single _mm_add
+#define ADD_NATIVE(_a,_b) ADD_16(_a,_b)
+#define PACKED_ADDS PACKED_ADDS_16
 #define ADD_SIZE "16"
 #elif defined(ADD8)
-#define ADD_SIMD _mm_add_epi8
-#define PACKED_ADDS 16 // 16 parallel add with a single _mm_add
+#define ADD_NATIVE(_a,_b) ADD_8(_a,_b)
+#define PACKED_ADDS PACKED_ADDS_8
 #define ADD_SIZE "8"
 #else
 #error Please define ADD32, ADD16 or ADD8
@@ -68,30 +101,33 @@
 #ifdef PARALLEL
 __attribute__ ((noinline)) void speed_packed_parallel() {
   // Initializing data
-  __m128i a = _mm_set_epi32(rand(), rand(), rand(), rand());
-  __m128i b = _mm_set_epi32(rand(), rand(), rand(), rand());
-  __m128i c = _mm_set_epi32(rand(), rand(), rand(), rand());
-  __m128i d = _mm_set_epi32(rand(), rand(), rand(), rand());
+  DATATYPE a = INIT();
+  DATATYPE b = INIT();
+  DATATYPE c = INIT();
+  DATATYPE d = INIT();
 
   // Warming up caches
   for (int i = 0; i < WARMUP; i++) {
-    a = ADD_SIMD(a,d);
-    b = ADD_SIMD(b,d);
-    c = ADD_SIMD(c,d);
+    asm volatile("" : "+"ASM_MOD (a), "+"ASM_MOD (b), "+"ASM_MOD (c));
+    a = ADD_NATIVE(a,d);
+    b = ADD_NATIVE(b,d);
+    c = ADD_NATIVE(c,d);
   }
 
   // The actual measurement
   unsigned int unused;
   uint64_t timer = __rdtscp(&unused);
-  for (unsigned long i = 0; i < NB_RUN_PACKED; i++) {
-#ifdef IACA_PARALLEL
+  #ifdef IACA_PARALLEL
     IACA_START
 #elif defined(MCA_PARALLEL)
     __asm volatile("# LLVM-MCA-BEGIN parallel");
 #endif
-    a = ADD_SIMD(a,d);
-    b = ADD_SIMD(b,d);
-    c = ADD_SIMD(c,d);
+
+  for (unsigned long i = 0; i < NB_RUN_PACKED; i++) {
+    asm volatile("" : "+"ASM_MOD (a), "+"ASM_MOD (b), "+"ASM_MOD (c));
+    a = ADD_NATIVE(a,d);
+    b = ADD_NATIVE(b,d);
+    c = ADD_NATIVE(c,d);
   }
 #ifdef IACA_PARALLEL
   IACA_END
@@ -105,7 +141,7 @@ __attribute__ ((noinline)) void speed_packed_parallel() {
          ((double)timer) / NB_RUN_PACKED / PACKED_ADDS / 3);
 
   // Prevent data from being optimized out
-  asm volatile("" : "+x" (a), "+x" (b), "+x" (c));
+  asm volatile("" : "+"ASM_MOD (a), "+"ASM_MOD (b), "+"ASM_MOD (c));
 
 }
 #endif
@@ -114,12 +150,13 @@ __attribute__ ((noinline)) void speed_packed_parallel() {
 #ifdef PACKED
 __attribute__ ((noinline)) void speed_packed() {
   // Initializing data
-  __m128i a = _mm_set_epi32(rand(), rand(), rand(), rand());
-  __m128i b = _mm_set_epi32(rand(), rand(), rand(), rand());
+  DATATYPE a = INIT();
+  DATATYPE b = INIT();
 
   // Warming up caches
   for (unsigned long i = 0; i < WARMUP; i++) {
-    a = ADD_SIMD(a,b);
+    asm volatile("" : "+"ASM_MOD (a));
+    a = ADD_NATIVE(a,b);
   }
 
   // The actual measurement
@@ -131,7 +168,8 @@ __attribute__ ((noinline)) void speed_packed() {
 #elif defined(MCA_PACKED)
     __asm volatile("# LLVM-MCA-BEGIN packed");
 #endif
-    a = ADD_SIMD(a,b);
+    asm volatile("" : "+"ASM_MOD (a));
+    a = ADD_NATIVE(a,b);
   }
 #ifdef IACA_PACKED
   IACA_END
@@ -145,7 +183,7 @@ __attribute__ ((noinline)) void speed_packed() {
          ((double)timer) / NB_RUN_PACKED / PACKED_ADDS);
 
   // Prevent data from being optimized out
-  asm volatile("" : "+x" (a));
+  asm volatile("" : "+"ASM_MOD (a));
 
 }
 #endif
@@ -153,7 +191,7 @@ __attribute__ ((noinline)) void speed_packed() {
 
 #ifdef BITSLICE
 #define full_adder(_a,_b,_c,_res) {             \
-    __m128i _res_tmp = _a ^ _b ^ _c;            \
+    DATATYPE _res_tmp = _a ^ _b ^ _c;            \
     _c = (_a & _b) ^ (_c & (_a ^ _b));          \
     _res = _res_tmp;                            \
   }
@@ -167,7 +205,7 @@ __attribute__ ((noinline)) void speed_packed() {
                      b8,  b9,  b10, b11, b12, b13, b14, b15,    \
                      b16, b17, b18, b19, b20, b21, b22, b23,    \
                      b24, b25, b26, b27, b28, b29, b30, b31) {  \
-    __m128i c = _mm_setzero_si128();                            \
+    DATATYPE c = ZERO;                            \
     full_adder(a0,b0,c,a0);                                     \
     full_adder(a1,b1,c,a1);                                     \
     full_adder(a2,b2,c,a2);                                     \
@@ -207,7 +245,7 @@ __attribute__ ((noinline)) void speed_packed() {
                      a8,  a9,  a10, a11, a12, a13, a14, a15,    \
                      b0,  b1,  b2,   b3,  b4,  b5,  b6,  b7,    \
                      b8,  b9,  b10, b11, b12, b13, b14, b15) {  \
-    __m128i c = _mm_setzero_si128();                            \
+    DATATYPE c = ZERO;                            \
     full_adder(a0,b0,c,a0);                                     \
     full_adder(a1,b1,c,a1);                                     \
     full_adder(a2,b2,c,a2);                                     \
@@ -229,7 +267,7 @@ __attribute__ ((noinline)) void speed_packed() {
 #elif defined(ADD8)
 #define add_bitslice(a0,  a1,  a2,   a3,  a4,  a5,  a6,  a7,    \
                      b0,  b1,  b2,   b3,  b4,  b5,  b6,  b7) {  \
-    __m128i c = _mm_setzero_si128();                            \
+    DATATYPE c = ZERO;                            \
     full_adder(a0,b0,c,a0);                                     \
     full_adder(a1,b1,c,a1);                                     \
     full_adder(a2,b2,c,a2);                                     \
@@ -245,77 +283,77 @@ __attribute__ ((noinline)) void speed_packed() {
 __attribute__ ((noinline)) void speed_bitslice() {
 
   // Initializing data
-  __m128i a0 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a1 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a2 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a3 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a4 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a5 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a6 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a7 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  DATATYPE a0 = INIT();
+  DATATYPE a1 = INIT();
+  DATATYPE a2 = INIT();
+  DATATYPE a3 = INIT();
+  DATATYPE a4 = INIT();
+  DATATYPE a5 = INIT();
+  DATATYPE a6 = INIT();
+  DATATYPE a7 = INIT();
 #if defined(ADD16) || defined(ADD32)
-  __m128i a8 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a9 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a10 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a11 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a12 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a13 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a14 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a15 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  DATATYPE a8 = INIT();
+  DATATYPE a9 = INIT();
+  DATATYPE a10 = INIT();
+  DATATYPE a11 = INIT();
+  DATATYPE a12 = INIT();
+  DATATYPE a13 = INIT();
+  DATATYPE a14 = INIT();
+  DATATYPE a15 = INIT();
 #if defined(ADD32)
-  __m128i a16 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a17 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a18 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a19 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a20 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a21 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a22 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a23 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a24 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a25 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a26 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a27 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a28 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a29 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a30 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i a31 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  DATATYPE a16 = INIT();
+  DATATYPE a17 = INIT();
+  DATATYPE a18 = INIT();
+  DATATYPE a19 = INIT();
+  DATATYPE a20 = INIT();
+  DATATYPE a21 = INIT();
+  DATATYPE a22 = INIT();
+  DATATYPE a23 = INIT();
+  DATATYPE a24 = INIT();
+  DATATYPE a25 = INIT();
+  DATATYPE a26 = INIT();
+  DATATYPE a27 = INIT();
+  DATATYPE a28 = INIT();
+  DATATYPE a29 = INIT();
+  DATATYPE a30 = INIT();
+  DATATYPE a31 = INIT();
 #endif
 #endif
 
-  __m128i b0 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b1 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b2 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b3 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b4 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b5 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b6 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b7 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  DATATYPE b0 = INIT();
+  DATATYPE b1 = INIT();
+  DATATYPE b2 = INIT();
+  DATATYPE b3 = INIT();
+  DATATYPE b4 = INIT();
+  DATATYPE b5 = INIT();
+  DATATYPE b6 = INIT();
+  DATATYPE b7 = INIT();
 #if defined(ADD16) || defined(ADD32)
-  __m128i b8 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b9 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b10 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b11 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b12 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b13 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b14 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b15 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  DATATYPE b8 = INIT();
+  DATATYPE b9 = INIT();
+  DATATYPE b10 = INIT();
+  DATATYPE b11 = INIT();
+  DATATYPE b12 = INIT();
+  DATATYPE b13 = INIT();
+  DATATYPE b14 = INIT();
+  DATATYPE b15 = INIT();
 #if defined(ADD32)
-  __m128i b16 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b17 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b18 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b19 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b20 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b21 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b22 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b23 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b24 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b25 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b26 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b27 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b28 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b29 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b30 = _mm_set_epi32(rand(),rand(),rand(),rand());
-  __m128i b31 = _mm_set_epi32(rand(),rand(),rand(),rand());
+  DATATYPE b16 = INIT();
+  DATATYPE b17 = INIT();
+  DATATYPE b18 = INIT();
+  DATATYPE b19 = INIT();
+  DATATYPE b20 = INIT();
+  DATATYPE b21 = INIT();
+  DATATYPE b22 = INIT();
+  DATATYPE b23 = INIT();
+  DATATYPE b24 = INIT();
+  DATATYPE b25 = INIT();
+  DATATYPE b26 = INIT();
+  DATATYPE b27 = INIT();
+  DATATYPE b28 = INIT();
+  DATATYPE b29 = INIT();
+  DATATYPE b30 = INIT();
+  DATATYPE b31 = INIT();
 #endif
 #endif
 
@@ -350,9 +388,9 @@ __attribute__ ((noinline)) void speed_bitslice() {
     __asm__ __volatile__ (
 					  "\n\t  movl $111, %%ebx"
 					  "\n\t  .byte 0x64, 0x67, 0x90"
-					  : "+x" (a0) : : "memory" );
+					  : "+"ASM_MOD (a0) : : "memory" );
 #elif defined(MCA_BITSLICE)
-    __asm volatile("# LLVM-MCA-BEGIN bitslice" : "+x" (a0));
+    __asm volatile("# LLVM-MCA-BEGIN bitslice" : "+"ASM_MOD (a0));
 #endif
 #ifdef ADD8
     add_bitslice(a0,  a1,  a2,   a3,  a4,  a5,  a6,  a7,
@@ -381,20 +419,20 @@ __attribute__ ((noinline)) void speed_bitslice() {
   timer = __rdtscp(&unused) - timer;
 
   printf(ADD_SIZE "-bit bitslice add:        %5.2f cycles/loop  (%.2f cycles/add)\n",
-         ((double)timer)/NB_RUN_BITSLICE, ((double)timer) / NB_RUN_BITSLICE / 128);
+         ((double)timer)/NB_RUN_BITSLICE, ((double)timer) / NB_RUN_BITSLICE / REG_SIZE);
 
   // Prevent data from being optimized out
   // (can't do in a single "asm volatile" because it requires too many registers)
-  asm volatile("" : "+x" (a0),  "+x" (a1),  "+x" (a2),  "+x" (a3),
-                    "+x" (a4),  "+x" (a5),  "+x" (a6),  "+x" (a7));
+  asm volatile("" : "+"ASM_MOD (a0),  "+"ASM_MOD (a1),  "+"ASM_MOD (a2),  "+"ASM_MOD (a3),
+                    "+"ASM_MOD (a4),  "+"ASM_MOD (a5),  "+"ASM_MOD (a6),  "+"ASM_MOD (a7));
 #if defined(ADD16) || defined(ADD32)
-  asm volatile("" : "+x" (a8),  "+x" (a9),  "+x" (a10), "+x" (a11),
-                    "+x" (a12), "+x" (a13), "+x" (a14), "+x" (a15));
+  asm volatile("" : "+"ASM_MOD (a8),  "+"ASM_MOD (a9),  "+"ASM_MOD (a10), "+"ASM_MOD (a11),
+                    "+"ASM_MOD (a12), "+"ASM_MOD (a13), "+"ASM_MOD (a14), "+"ASM_MOD (a15));
 #if defined(ADD32)
-  asm volatile("" : "+x" (a16), "+x" (a17), "+x" (a18), "+x" (a19),
-                    "+x" (a20), "+x" (a21), "+x" (a22), "+x" (a23));
-  asm volatile("" : "+x" (a24), "+x" (a25), "+x" (a26), "+x" (a27),
-                    "+x" (a28), "+x" (a29), "+x" (a30), "+x" (a31));
+  asm volatile("" : "+"ASM_MOD (a16), "+"ASM_MOD (a17), "+"ASM_MOD (a18), "+"ASM_MOD (a19),
+                    "+"ASM_MOD (a20), "+"ASM_MOD (a21), "+"ASM_MOD (a22), "+"ASM_MOD (a23));
+  asm volatile("" : "+"ASM_MOD (a24), "+"ASM_MOD (a25), "+"ASM_MOD (a26), "+"ASM_MOD (a27),
+                    "+"ASM_MOD (a28), "+"ASM_MOD (a29), "+"ASM_MOD (a30), "+"ASM_MOD (a31));
 #endif
 #endif
 

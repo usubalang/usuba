@@ -12,20 +12,19 @@ Run the experiment with `./run.pl`.
 On my Intel Skylake i5-6500, with Clang 7.0.0, the results are:
 
 |    **addition type**   |  **cycles/loop** |  **cycles/add** |
-| ---------------------- | ---------------- | --------------- |
-|  8-bit        bitslice |  15.02 (+- 0.02) |  0.12 (+- 0.00) |
+|          &nbsp;        |       &nbsp;     |      &nbsp;     |
+|  8-bit        bitslice |  14.79 (+- 0.03) |  0.12 (+- 0.00) |
 |  8-bit   packed_single |   1.00 (+- 0.00) |  0.06 (+- 0.00) |
-|  8-bit packed_parallel |   1.34 (+- 0.00) |  0.03 (+- 0.00) |
-| ---------------------- | ---------------- | --------------- |
-| 16-bit        bitslice |  33.34 (+- 0.07) |  0.26 (+- 0.00) |
+|  8-bit packed_parallel |   1.00 (+- 0.00) |  0.02 (+- 0.00) |
+|          &nbsp;        |       &nbsp;     |      &nbsp;     |
+| 16-bit        bitslice |  33.32 (+- 0.07) |  0.26 (+- 0.00) |
 | 16-bit   packed_single |   1.00 (+- 0.00) |  0.13 (+- 0.00) |
-| 16-bit packed_parallel |   1.34 (+- 0.00) |  0.06 (+- 0.00) |
-| ---------------------- | ---------------- | --------------- |
-| 32-bit        bitslice |  74.64 (+- 0.12) |  0.58 (+- 0.00) |
+| 16-bit packed_parallel |   1.00 (+- 0.00) |  0.04 (+- 0.00) |
+|          &nbsp;        |       &nbsp;     |      &nbsp;     |
+| 32-bit        bitslice |  74.62 (+- 0.08) |  0.58 (+- 0.00) |
 | 32-bit   packed_single |   1.00 (+- 0.00) |  0.25 (+- 0.00) |
-| 32-bit packed_parallel |   1.33 (+- 0.01) |  0.11 (+- 0.00) |
-| ---------------------- | ---------------- | --------------- |
-
+| 32-bit packed_parallel |   1.00 (+- 0.00) |  0.08 (+- 0.00) |
+|          &nbsp;        |       &nbsp;     |      &nbsp;     |
 
 
 Where `bitslice` is the sofware implemented carry-ripple adder,
@@ -61,13 +60,14 @@ should be doable in a single cycle, and this is what we observe.
 ### parallel packed addition
 
 The `packed_parallel` version does 3 independent addition per loop,
-and therefore has a maximum theoretical throughput of 0.33. However,
-it takes about 1.3 cycles/loop iteration. This doesn't might be the
-overhead of the loop itself, but I'm not sure because Clang unrolls it
-5 times... Forcing more unrolling doesn't change
-performances... llvm-mca predicts 1.3 cycles/iteration, but for the
-wrong reasons I think (it doesn't see the unrolling)... to
-investiguate.
+and therefore has a maximum theoretical throughput of 0.33. This is
+what we get; as expected. Can't get any better.
+
+**Fun fact**: at some point I force some unrolling by Clang (I don't
+remember why but my performances were not as expected, and I thought
+more unrolling would help). Turns out it harms performances. TODO: add
+more explanations.
+
 
 ### bitslice addition
 
@@ -92,13 +92,10 @@ spilling: about half of their assembly instructions are `move`.
 
 
 
-
 ## TODO
 
- - run `perf`.
+ - run `perf`
  
  - run `vtune`
 
- - run `iaca` or `llvm-mca`.
-
- - run `llvm-mca` on parallel_packed with unrolling
+ - run `iaca` or `llvm-mca`
