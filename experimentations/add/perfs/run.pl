@@ -7,6 +7,11 @@ use autodie qw( open close );
 
 my $source_file = 'add.s';
 
+say "| Padding |       Cycles      |   MITE uops   |   DSB uops    |" . 
+    "    DSB miss   | DSB miss penalty |";
+say "| ------- | ----------------- | ------------- | ------------- |" . 
+    " ------------- | ---------------- |";
+
 for my $n (0 .. 128) {
     open my $FH_IN, '<', $source_file;
     open my $FH_OUT, '>', 'tmp.s';
@@ -29,8 +34,13 @@ for my $n (0 .. 128) {
     my $start_alignment = $n;
     my $jump_alignment = $n+16;
 
-    printf "%3d - %3d: $cycles\n", $start_alignment, $jump_alignment;
-    #if (($mite_uops=~s/ //gr) > ($dsb_uops =~ s/ //gr)) {
-        say "   $mite_uops - $dsb_uops - $dsb_miss - $penalty_cycles - $cycles";
-    #}
+    if (($cycles =~ s/ //gr) < 2_400_000_000 || 
+        ($cycles =~ s/ //gr) > 2_600_000_000) {
+        $cycles = "**" . $cycles . "**";
+    } else {
+        $cycles = "  " . $cycles . "  ";
+    }
+    
+    printf "| %7d | %13s | %13s | %13s | %13s | %16s |\n",
+      $n, $cycles, $mite_uops, $dsb_uops, $dsb_miss, $penalty_cycles
 }
