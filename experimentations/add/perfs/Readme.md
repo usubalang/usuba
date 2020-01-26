@@ -79,31 +79,30 @@ find the detailed results in [results.md](results.md).
 
 Here are the "rules" guiding how the program behaves:
 
- - 1) The "usual" case is: 2.45 cycles/iteration, with a total of
+ - 1\ The "usual" case is: 2.45 cycles/iteration, with a total of
    around 7 uops/iteration, all issued by the DSB. 7 uops per
    iteration means that fusion between the increment and the jump
    occured.
 
- - 2) Optimal performances (2 cycles/iteration) are achieved when
+ - 2\ Optimal performances (2 cycles/iteration) are achieved when
    there are 48 and 112 bytes of padding before the loop. In those
    cases, 8 uops are issued by the DSB per iteration, which means that
    fusion did _not_ occur. Since the jump instruction is 16 bytes
    after the start of the loop, the 48 and 112 bytes of padding mean
    that the jump instruction was aligned on 64 bytes.
    
- - 3) When the jump instruction is aligned on 32 bytes - 2 to 32
+ - 3\ When the jump instruction is aligned on 32 bytes - 2 to 32
    bytes + 3 (and the previous bullet doesn't apply), the loop
    executes in 3 cycles/iteration. All uops (7/iteration) are issued
    by the MITE. If the jump is also aligned on 64 bytes - 1, there are
    2 DSB miss per iteration, otherwise, there is 1 DSB miss per
    iteration. There are 2 special cases with the rule:
    
-   - 3.a) When the jump instruction is aligned on 32 bytes - 1, the
+   - 3.a\ When the jump instruction is aligned on 32 bytes - 1, the
      loop executes in 4 cycles/iteration rather than 3.
      
-   - 3.b) When the jump instruction is aligned on 32 bytes - 2, there
+   - 3.b\ When the jump instruction is aligned on 32 bytes - 2, there
      are always 1 DSB miss per iteration (never 2).
-   
 
 Rule 2\ explains why aligning the loop on 16 bytes might be better
 than aligning it on 32, 64 or 128: the jump _must_ be aligned on 64
@@ -129,8 +128,16 @@ cycles/iteration) shows:
 ```
 
 The jump is at address `4004c0`, which is a multiple of 64, as
-expected.
+expected. Note that the fact the macro fusion does not happen in that
+case is documented in [Intel's
+manual](https://software.intel.com/sites/default/files/managed/9e/bc/64-ia-32-architectures-optimization-manual.pdf)
+says in Section 2.5.2.1:
 
+> Macro fusion does not happen if the first instruction ends on byte 63 of a cache line, and the second instruction is a conditional branch that starts at byte 0 of the next cache line.
+
+2 cycles/iteration when macro-fusion does not occur means that in each
+iteration, the first 3 additions and the increment are executed in 1
+cycles, and the last 3 additions and the jump and a second cycle.
 
 
 ## TODO
