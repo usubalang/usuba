@@ -6,9 +6,9 @@ use v5.14;
 use autodie qw( open close );
 
 # Print output headers
-say "| Padding |       Cycles      |   MITE uops   |   DSB uops    |" . 
+say "| Padding | Loop start |       Cycles      |   MITE uops   |   DSB uops    |" . 
     "    DSB miss   | DSB miss penalty |";
-say "| ------- | ----------------- | ------------- | ------------- |" . 
+say "| ------- | ---------- | ----------------- | ------------- | ------------- |" . 
     " ------------- | ---------------- |";
 
 for my $n (0 .. 128) {
@@ -45,6 +45,6 @@ for my $n (0 .. 128) {
     }
 
     # Print the results for this padding
-    printf "| %7d | %13s | %13s | %13s | %13s | %16s |\n",
-      $n, $cycles, $mite_uops, $dsb_uops, $dsb_miss, $penalty_cycles
+    printf "| %7d | %10d | %13s | %13s | %13s | %13s | %16s |\n",
+      $n, $n+16, $cycles, $mite_uops, $dsb_uops, $dsb_miss, $penalty_cycles
 }
