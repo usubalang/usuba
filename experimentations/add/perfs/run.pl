@@ -5,10 +5,12 @@ use warnings;
 use v5.14;
 use autodie qw( open close );
 
+my $jump_offset_base = 16; # Set to 34 for unrolling of 5
+
 # Print output headers
-say "| Padding | Loop start |       Cycles      |   MITE uops   |   DSB uops    |" . 
+say "| Padding | Jump offset |       Cycles      |   MITE uops   |   DSB uops    |" . 
     "    DSB miss   | DSB miss penalty |";
-say "| ------- | ---------- | ----------------- | ------------- | ------------- |" . 
+say "| ------- | ----------- | ----------------- | ------------- | ------------- |" . 
     " ------------- | ---------------- |";
 
 for my $n (0 .. 128) {
@@ -36,15 +38,16 @@ for my $n (0 .. 128) {
     my ($penalty_cycles) = $perf_output =~ /(\d+(?: \d+)*)\s*dsb2mite_switches.penalty_cycles/;
     my ($cycles)         = $perf_output =~ /(\d+(?: \d+)*)\s*cycles/;
 
-    # Format number of cycles so that outliers are in bold
+    # Format number of cycles so that outliers are bolded
     if (($cycles =~ s/ //gr) < 2_400_000_000 || 
-        ($cycles =~ s/ //gr) > 2_600_000_000) {
+        ($cycles =~ s/ //gr) > 2_550_000_000) {
         $cycles = "**" . $cycles . "**";
     } else {
         $cycles = "  " . $cycles . "  ";
     }
 
     # Print the results for this padding
-    printf "| %7d | %10d | %13s | %13s | %13s | %13s | %16s |\n",
-      $n, $n+16, $cycles, $mite_uops, $dsb_uops, $dsb_miss, $penalty_cycles
+    printf "| %7d | %11d | %13s | %13s | %13s | %13s | %16s |\n",
+        $n, $n+$jump_offset_base, $cycles, $mite_uops, $dsb_uops, 
+        $dsb_miss, $penalty_cycles;
 }
