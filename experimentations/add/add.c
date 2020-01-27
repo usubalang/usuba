@@ -28,6 +28,14 @@
 #include "iacaMarks.h"
 #endif
 
+#if defined(MCA_PARALLEL)
+#define PARALLEL
+#elif defined(MCA_PACKED)
+#define PACKED
+#elif defined(MCA_BITSLICE)
+#define BITSLICE
+#endif
+
 #define WARMUP 1000
 
 #if ! (defined(SSE) || defined(GP))
@@ -117,13 +125,13 @@ __attribute__ ((noinline)) void speed_packed_parallel() {
   // The actual measurement
   unsigned int unused;
   uint64_t timer = __rdtscp(&unused);
+#pragma unroll(2)
+  for (unsigned long i = 0; i < NB_RUN_PACKED; i++) {
   #ifdef IACA_PARALLEL
     IACA_START
 #elif defined(MCA_PARALLEL)
     __asm volatile("# LLVM-MCA-BEGIN parallel");
 #endif
-
-  for (unsigned long i = 0; i < NB_RUN_PACKED; i++) {
     asm volatile("" : "+"ASM_MOD (a), "+"ASM_MOD (b), "+"ASM_MOD (c));
     a = ADD_NATIVE(a,d);
     b = ADD_NATIVE(b,d);
