@@ -12,19 +12,16 @@ Run the experiment with `./run.pl`.
 On my Intel Skylake i5-6500, with Clang 7.0.0, the results are:
 
 |    **addition type**   |  **cycles/loop** |  **cycles/add** |
-|          &nbsp;        |       &nbsp;     |      &nbsp;     |
+| ---------------------- | ---------------- | --------------- |
 |  8-bit        bitslice |  14.79 (+- 0.03) |  0.12 (+- 0.00) |
 |  8-bit   packed_single |   1.00 (+- 0.00) |  0.06 (+- 0.00) |
 |  8-bit packed_parallel |   1.00 (+- 0.00) |  0.02 (+- 0.00) |
-|          &nbsp;        |       &nbsp;     |      &nbsp;     |
 | 16-bit        bitslice |  33.32 (+- 0.07) |  0.26 (+- 0.00) |
 | 16-bit   packed_single |   1.00 (+- 0.00) |  0.13 (+- 0.00) |
 | 16-bit packed_parallel |   1.00 (+- 0.00) |  0.04 (+- 0.00) |
-|          &nbsp;        |       &nbsp;     |      &nbsp;     |
 | 32-bit        bitslice |  74.62 (+- 0.08) |  0.58 (+- 0.00) |
 | 32-bit   packed_single |   1.00 (+- 0.00) |  0.25 (+- 0.00) |
 | 32-bit packed_parallel |   1.00 (+- 0.00) |  0.08 (+- 0.00) |
-|          &nbsp;        |       &nbsp;     |      &nbsp;     |
 
 
 Where `bitslice` is the sofware implemented carry-ripple adder,
