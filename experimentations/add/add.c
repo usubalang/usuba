@@ -125,7 +125,6 @@ __attribute__ ((noinline)) void speed_packed_parallel() {
   // The actual measurement
   unsigned int unused;
   uint64_t timer = __rdtscp(&unused);
-#pragma unroll(2)
   for (unsigned long i = 0; i < NB_RUN_PACKED; i++) {
   #ifdef IACA_PARALLEL
     IACA_START
