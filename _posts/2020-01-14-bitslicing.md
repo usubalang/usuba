@@ -234,7 +234,7 @@ One of the important properties of any cipher is
 ensures that if 2 plaintexts differ by 1 bit, then statistically half of
 the bits of the corresponding ciphertexts should differ. In practice,
 this property is often achieved using permutations. For instance,
-Picollo [2] uses the following 8-bit permutation:
+Piccolo [2] uses the following 8-bit permutation:
 
 <p align="center">
 <img src="{{ site.baseurl }}/assets/images/blog/piccolo-perm.png">
