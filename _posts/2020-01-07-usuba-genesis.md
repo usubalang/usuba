@@ -44,15 +44,14 @@ Cryptography, from the Ancient Greek _kryptos_ "hidden" and _graphein_
 transforming its content (the _plaintext_) into an unintelligible text
 (the _ciphertext_), using an algorithm called a _cipher_, which often
 takes as additional input a secret _key_ known only from the persons
-encrypting and decrypting the communication. Cryptography has been
-used literally for ages: its first known use dates back to ancient
-Egypt, in 1900 BCE. Almost 2000 years later, Julius Caesar was
-notoriously using cryptography to secure his orders to his generals,
-using what would later be known as a [Caesar
-cipher](https://en.wikipedia.org/wiki/Caesar_cipher), which consists
-in replacing each letter by another one such that the _i_-th letter of
-the alphabet is replaced by the (_n_+_i_)-th one (for some fixed _n_
-between 1 and 25), wrapping around at the end of the
+encrypting and decrypting the communication. The first known use of
+cryptography dates back to ancient Egypt, in 1900 BCE. Almost 2000
+years later, Julius Caesar was notoriously using cryptography to
+secure his orders to his generals, using what would later be known as
+a [Caesar cipher](https://en.wikipedia.org/wiki/Caesar_cipher), which
+consists in replacing each letter by another one such that the _i_-th
+letter of the alphabet is replaced by the (_n_+_i_)-th one (for some
+fixed _n_ between 1 and 25), wrapping around at the end of the
 alphabet. Throughout history, the military would continue to use
 cryptography to protect their communications, with the famous example
 of [Enigma](https://en.wikipedia.org/wiki/Enigma_machine), used by
@@ -81,7 +80,7 @@ into three main categories:
    [Diffie-Hellman key exchange
    protocol](https://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange),
    [RSA](https://en.wikipedia.org/wiki/RSA_(cryptosystem)), or
-   elliptic curves likes
+   elliptic curves like
    [Curve25519](https://en.wikipedia.org/wiki/Curve25519).
    
  - Symmetric (or secret-key) ciphers, which use the same (secret) key
@@ -95,9 +94,10 @@ into three main categories:
    
    * Block ciphers, which only encrypt a single fixed-size block of
      data at a time. When the plaintext is longer than the block
-     length, the cipher must be repeatedly called until the whole
-     plaintext is encrypted. The most used block cipher is the
-     [Advanced Encryption
+     length, a block cipher is turned into a stream cipher using an
+     algorithm called a mode of operation, which describes how to
+     repeatedly call the block cipher until the whole plaintext is
+     encrypted. The most used block cipher is the [Advanced Encryption
      Standard](https://en.wikipedia.org/wiki/Advanced_Encryption_Standard)
      (AES) which succeeds to the now outdated [Data Encryption
      Standard](https://en.wikipedia.org/wiki/Data_Encryption_Standard)
@@ -128,17 +128,16 @@ cryptographic primitives. For instance, the Caesar cipher, presented
 above, is easily broken by trying to shift all letters of the
 ciphertext by every possible _n_ (between 1 and 25) until it produces
 a text that makes sense. Examples of more advanced attacks include
-[Related-key
+[related-key
 attack](https://en.wikipedia.org/wiki/Related-key_attack), which
 consist in observing similarities in the ciphertext produced by a
-cipher for a given plaintext with different keys, or [Chosen-plaintext
+cipher for a given plaintext with different keys, or [chosen-plaintext
 attack](https://en.wikipedia.org/wiki/Chosen-plaintext_attack), where
 an attacker will have access to a set of plaintext and corresponding
-ciphertext and will try to retrieve the key. A cipher will typically
-be considered secure if no practical attacks exists, that is, no
-attack that can be carried out in a reasonable time (_e.g._ tens of
-thousands of years), or set up at a reasonable cost (_e.g._ billions of
-dollars). 
+ciphertext and will try to retrieve the key. A cipher will be
+considered secure if no practical attacks exists, that is, no attack
+that can be carried out in a reasonable time or set up at a reasonable
+cost (_e.g._ billions of dollars).
 
 <!--
  Side-channel attacks
@@ -152,14 +151,19 @@ dollars).
  -> hard to do by hand
  -> (next paragraph) Usuba!
 -->
+
 Even when crytanalysis fails to break a cipher, its implementation
 might be vulnerable to [_side-channel
 attacks_](https://en.wikipedia.org/wiki/Side-channel_attack), which
 rely on monitoring a cipher's execution in order to recover secret
-data. A typical example is _timing attacks_: when a cipher uses a
-condition on a secret data, the execution time will vary depending on
-this data. For instance, consider the following C code that checks if
-a provided password matches an expected password:
+data. Side-channel attacks exploit physical vulnerabilities of the
+architecture a cipher is ran on: executing a cipher takes time,
+consumes power, induces memory transfers, _etc._, all of which could
+be attack vectors. A typical example is _timing attacks_ [31,32,3],
+which exploit variations of the execution time of a cipher due to
+conditional branches depending on secret data. For instance, consider
+the following C code that checks if a provided password matches an
+expected password:
 
 ```c
 int check_password(char* provided, char* expected, int length) {
@@ -177,9 +181,9 @@ this function will quickly return 0. However, if `provided` and
 `expected` start with the same 10 characters, then this function will
 loop ten times (and therefore will take longer) before returning 0,
 thus informing an attacker monitoring the execution time of this
-function that he has the first characters right. An easy fix to this
-issue would be to make this function _constant-time_, by decorrelating
-its execution time from its inputs:
+function that he has the first characters right. This vulnerability
+could be fixed by decorrelating this function's execution time from
+its input, making it _constant-time_:
 
 ```c
 int check_password(char* provided, char* expected, int length) {
@@ -193,72 +197,148 @@ int check_password(char* provided, char* expected, int length) {
 }
 ```
 
-More advanced attacks can be designed, especially on complex
-hardwares. For instance, the time needed to read some data from memory
-on a modern Intel computer heavily depends on whether those data are
-in the caches. An attacker could therefore design a timing attack
-based on the cache access pattern, also called _cache-timing
-attack_. Even more sophisticated, [_Power
-analysis_](https://en.wikipedia.org/wiki/Power_analysis) allows an
-attacker monitoring the power consumption of a device (using typically
-an oscilloscope) to gain knowledge of secret data, possibly while
-[injecting faults](https://en.wikipedia.org/wiki/Fault_injection) in
-the computation (using for instance electromagnetic impulsion, or
-lasers) to better control what data is leaked.
 
-Primitive implementations must be manually protected against
-side-channel attacks using various techniques. For instance, the
-common defense against cache-timing attacks consists in replacing
-lookup tables by bitwise instructions. Take the following lookup table
-for example:
+Timing attacks can also be possible in the absence of branches on
+secret data: the time needed to read some data from memory on a modern
+Intel computer heavily depends on whether those data are in cache. An
+attacker could therefore design a timing attack based on cache
+accesses pattern, also called _cache-timing attack_. 
 
-```c
-int table[4] = { 0, 2, 1, 3 };
-```
+More advanced, by monitoring the power consumption of a cipher rather
+than its timing, an attacker can use a [_power
+analysis_](https://en.wikipedia.org/wiki/Power_analysis) [37, 38] to
+gain knowledge of secret data: power consumption can be correlated
+with the number of transistor switching state, which itself depends on
+secret data's values [36].
 
-It is indexed by 2 bits (since it has 4 elements), and can be computed
-by the following constant-time code (provided that each bit of the
-2-bit input has been put in a different variable `x0` and `x1`, and
-that the 2-bit output is expected to be in two variables `r0` and
-`r1`):
+Rather than being passive (_i.e._ observing the execution without
+tampering with it), an attacker can be active, and [inject
+faults](https://en.wikipedia.org/wiki/Fault_injection) [33,34,35] in
+the computation (using _e.g._ ionizing radiations, electromagnetic
+impulsion, or lasers). For instance, consider the following C code,
+which returns some secret data if it is provided with the correct pin
+code:
 
 ```c
-void table(bool x0, bool x1, bool* r0, bool* r1) {
-    *r0 = x1;
-    *r1 = x0 | x1;
-}
-```
-
-For instance, `table[1]` is `2`, and `1` in binary is `01`. Calling
-`table()` with `x0 = 0` and `x1 = 1` produces `r0 = 1` and `r1 = 0`,
-or `10`, which is binary for `2`. This code does not do any memory
-access depending on secret data, and is thus constant-time. Another
-technique to protect primitive implementations is _boolean masking_,
-which aims at mitigating Power analysis attacks. It consists in
-representing each bit _b_ of secret data by _n_ random bits such that
-their xor is equal to the original secret bit: `b = b0 ^ b1 ^ ... ^
-bn` for each secret bit _b_. If _n_ is greater than 2, this is called
-_higher order boolean masking_. Adding this protection to the function
-`table` introduced above would produce the following code:
-
-```c
-void table(bool x0[n], bool x1[n], bool r0[n], bool r1[n]) {
-    for (int i = 0; i < n; i++) {
-        r0[i] = x1[i];
+char* get_secret_data(int pin_code) {
+    if (pin_code != expected_pin_code) {
+        return NULL;
     }
-    r1 = OR(x0, x1);
+    return secret_data;
 }
 ```
 
-where `OR` is a function computing a bitwise `or` between two masked
-data. Already, our initially simple lookup table is becoming quite
-complicated, and a developer looking at the code would have a hard
-time figuring out what it does. Manually applying the same techniques
-to a full cipher would take a considerable amount of time and produce
-a much more complex code. Most -if not all- the times, manually
+An attacker could inject a fault during this code's execution in order
+to skip the `return NULL` instruction, which would cause this function
+to return the secret data even when provided with the wrong pin code.
+
+Protecting primitive implementations requires a deep understanding of
+both the hardware and the existing attacks. For instance, let's
+consider a function called `lookup`, which takes as input a 2-bit
+integer `index`, and returns the 2-bit integer at index `index` in an
+internal table `table`:
+
+```c
+int lookup(int index) {
+    int table[4] = { 3, 0, 1, 2 };
+    return table[index];
+}
+```
+
+This code is vulnerable to cache-timing attacks, since `table[index]`
+might hit or miss in the cache depending on `index`'s value. To make
+`lookup` resilient to such attacks, we can transform it to remove the
+table and only do constant-time bitwise operations instead:
+
+
+```c
+int lookup_ct(int index) {
+    // Extracting the index's 2 bits
+    bool x0 = (index >> 1) & 1;
+    bool x1 = index & 1;
+    
+    // Computing the lookup
+    bool r1 = ~x1;
+    bool r0 = ~(x0 ^ x1);
+    
+    // Recombining the result's bits together
+    return (r0 << 1) | r1;
+}
+```
+
+For instance, `lookup(1)` returns `0` (the value at index `1` in
+`table`). When calling `lookup_ct(1)`, it first extracts the index's 2
+bits: the most significant bit, `0`, goes into `x1`, and the least
+significant bit, `1`, goes into `x0`. It then assigns `~x1` (`0`) to
+`r1`, and `~(x0 ^ x1)` (`0`) to `r0`. Recombining `r0` and `r1` thus
+produces `0`; like the table-based function `lookup`
+did. `lookup_ct`'s code does not do any memory access depending on
+secret data, and is thus constant-time, and therefore resilient to
+cache-timing attacks.
+
+However, `lookup_ct` is still vulnerable to power analysis attacks:
+computing `~x1` for instance might consume a different amount of power
+depending on whether `x1` is `0` or `1`. To thwart power-based
+attacks, we can use _boolean masking_, which consists in representing
+each bit _b_ of secret data by _n_ random bits (called _shares_) such
+that their `xor` is equal to the original secret bit: `b = b0 ^ b1 ^
+... ^ bn` for each secret bit _b_. If _n_ is greater than 2, this
+technique is called _higher order boolean masking_. Adding this
+protection `lookup_ct` would produce the following code (assuming that
+`index` has already been masked and is therefore now an array of
+shares):
+
+```c
+int* lookup_ct_masked(int index[NUMBER_OF_SHARES]) {
+    // Extracting the index's 2 bits
+    bool x0[NUMBER_OF_SHARES], x1[NUMBER_OF_SHARES];
+    for (int i = 0; i < NUMBER_OF_SHARES; i++) {
+        x0[i] = (index[i] >> 1) & 1;
+        x1[i] = index[i] & 1;
+    }
+    
+    // Computing the lookup
+    bool r0[NUMBER_OF_SHARES], r1[NUMBER_OF_SHARES];
+    // r1 = ~x1
+    r1[0] = ~x1[0];
+    for (int i = 1; i < NUMBER_OF_SHARES; i++) {
+        r1[i] = x1[i];
+    }
+    // r0 = ~(x0 ^ x1)
+    r0[0] = ~(x0[0] ^ x1[0]);
+    for (int i = 1; i < NUMBER_OF_SHARES; i++) {
+        r0[i] = x0[i] ^ x1[i];
+    }
+    
+    // Recombining the result's bits together
+    int result[NUMBER_OF_SHARES];
+    for (int i = 0; i < NUMBER_OF_SHARES; i++) {
+        result[i] = (r0[i] << 1) | r1[i]
+    }
+    // (pretending that we can return local arrays in C)
+    return result;
+}
+```
+
+Computing a masked `not` only requires negating one of the shares (we
+arbitrarily chose the first one): negating a bit `b` shared as `b0`
+and `b1` is indeed `(~b0) ^ b1` rather than `(~b0) ^ (~b1)`. Computing
+a masked `xor` on the other hand requires xoring all shares.
+
+Protecting this code against fault injection could be done by
+duplicating instructions, which would add yet another layer of
+complexity. However, one must be careful about the interactions
+between countermeasures: adding protection against faults could undo
+some of the protection against power analysis. Even if the
+countermeasures do not mitigate one another, an attacker could combine
+fault injection and power analysis [39,40,41], which needs to be taken
+into account when designing countermeasures [42,43].
+
+Applying those protection techniques to a full cipher would take a
+considerable amount of time and produce a very complex code. Manually
 implementing high-throughput cryptographic primitives, and manually
 securing primitives against side-channel attacks are two complicated
-and tedious taks, hard to get right, and which tends to obfuscate the
+and tedious task, hard to get right, and which tends to obfuscate the
 code, thus complicating any further maintenance. Doing both at the
 same time is an even harder task, reaching the limits of what one can
 do by hand.
@@ -272,17 +352,17 @@ Presentation of Usuba
 -->
 
 Instead, we propose **Usuba** [5,6,7], a domain-specific programming
-language designed to write cryptographic primitives, that I'm
-developing with (and under the supervision of) Pierre-Evariste
-Dagand. Usuba is a high-level programming language, making it easy to
-reason on programs (and therefore assert of their correctness). Usuba
-is constant-time by construction, thus protecting against cache-timing
-attacks, and can automatically insert countermeasures like boolean
-masking to protect against power-based side-channels. Finally, Usuba
-compiles to high-performance C code, exploiting SIMD extensions of
-modern CPUs when available (SSE, AVX, AVX512 on Intel, Neon on ARM,
-AltiVec on PowerPC), thus performing on par with hand-tuned code in a
-lot of cases, sometimes even better.
+language designed to write cryptographic primitives, that I am
+developing as part of my PhD thesis, under the supervision of
+Pierre-Evariste Dagand. Usuba is a high-level programming language,
+making it easy to reason on programs (and therefore check their
+correctness). Usuba is constant-time by construction, thus protecting
+against cache-timing attacks, and can automatically insert
+countermeasures like boolean masking to protect against power-based
+side-channels. Finally, Usuba compiles to high-performance C code,
+exploiting SIMD extensions of modern CPUs when available (SSE, AVX,
+AVX512 on Intel, Neon on ARM, AltiVec on PowerPC), thus performing on
+par with hand-tuned code in a lot of cases, sometimes even better.
 
 <!--
 Blockciphers in Usuba
@@ -308,17 +388,16 @@ operations, and sometimes arithmetic operations. A blockcipher can
 therefore be seen as a stateless circuit. For instance, the Rectangle
 [13] blockcipher takes a 64-bit plaintext, and 25 64-bit keys as
 input, and produces the ciphertext through 24 rounds, each doing a
-`xor`, and calling two auxiliary functions: SubColumn (a lookup
-table), and ShiftRows (a permutation). Rectangle can therefore be
+`xor`, and calling two auxiliary functions: `SubColumn` (a lookup
+table), and `ShiftRows` (a permutation). Rectangle can therefore be
 represented by the following circuit:
 
 <p align="center">
 <img src="{{ site.baseurl }}/assets/images/blog/rectangle-circuit.png">
-<!-- ![]({{ site.baseurl }}/assets/images/blog/rectangle-circuit.png) -->
 </p>
 
 Usuba aims at providing a way to write an implementation of a cipher
-which is as close to the specification (_ie._ the circuit) as
+which is as close to the specification (_i.e._ the circuit) as
 possible. As such, Rectangle can be straight-forwardly written in
 Usuba in just a few lines of code (explanations below):
 
@@ -348,16 +427,16 @@ let
 tel
 ```
 
-An introduction to the syntax will be given in a later post, but even
-without it, the code should be self explanatory: the main function
-`Rectangle` takes a plaintext as an array of 4 16-bit elements, and a
-key as a 2D array, and computes 25 rounds, each calling the functions
-`ShiftRows`, described as 3 left-rotations, and `SubColumn`, which
-computes a lookup in a table. This code is painfully simple, and as
-close to the specification as can be. Yet, it compiles to a C code
-which is 10-15% faster than the reference implementation [6], while
-being much simpler and more generic, since the latter explicitly uses
-vector extensions for specific architectures.
+The code should be self explanatory: the main function `Rectangle`
+takes a plaintext as a tuple of 4 16-bit elements, and a key as a 2D
+array, and computes 25 rounds, each calling the functions `ShiftRows`,
+described as 3 left-rotations, and `SubColumn`, which computes a
+lookup in a table. This code is simple, and as close to the
+specification as can be. Yet, it compiles to a C code which is 10-15%
+faster than the reference implementation [6], while being much simpler
+and more generic, since the latter explicitly uses SSE and AVX SIMD
+extensions, whereas the Usuba code is not bound to a specific SIMD
+extension.
 
 
 <!--
@@ -394,26 +473,25 @@ bool mux(bool x, bool y, bool z) {
 }
 ```
 
-uses a `cmove` instruction, which is not known to be constant-time
+uses a `cmove` instruction, which is not specified to be constant-time
 (even though it seems to be, experimentally). Likewise, some integer
-multiplication instructions are known to not be constant-time, causing
+multiplication instructions are known not to be constant-time, causing
 library developers to write their own software-level constant-time
-implementations of multiplications [25]. The issue is so far-reaching
+implementations of multiplication [25]. The issue is so far-reaching
 that tools traditionally applied to hardware evaluation are now used
 to analyze software implementations [24], treating the program and its
 execution environment as a single black-box and measuring whether its
-execution time seems constant with a high enough probablity. Most -if
-not all- modern programming languages designed for cryptography have
-built-in mechanism to prevent non-constant-time operations. For
-instance, HACL* [26] has the notion of _secure integers_ that cannot
-be branched on, and forbids the use of non-constant-time operations
-like division or modulo. FaCT [27] on the other hand takes the stance
-that HACL* is too low-level, and that constant-timeness should be seen
-as a compilation problem: it provides high-level abstractions which
-are compiled down to constant-time idioms. Adopting yet another
-high-level approach, Usuba enforces constant-time by using (in a
-transparent manner from the developer's perspective) a programming
-model called _bitslicing_.
+execution time is constant with a high enough probablity. Most modern
+programming languages designed for cryptography have built-in
+mechanism to prevent non constant-time operations. For instance, HACL*
+[26] has the notion of _secure integers_ that cannot be branched on,
+and forbids the use of non constant-time operations like division or
+modulo. FaCT [27] on the other hand takes the stance that HACL* is too
+low-level, and that constant-timeness should be seen as a compilation
+problem: it provides high-level abstractions which are compiled down
+to constant-time idioms. Adopting yet another high-level approach,
+Usuba enforces constant-time by adopting (in a transparent manner from
+the developer's perspective) a programming model called _bitslicing_.
 
 
 <!--
@@ -431,28 +509,27 @@ Bitslicing - overview
 
 Bitslicing was first introduced by Biham [4] as an implementation
 trick to speed up software implementations of DES. Intuitively, the
-idea of bitslicing is to represent a _n_-bit data as 1 bit in _n_
+idea of bitslicing is to represent a _n_-bit value as 1 bit in _n_
 registers. Each register therefore has 63-bit empty bit remaining (in
 the case of 64-bit registers), which can be filled in the same fashion
-by other independant data. To manipulate such data, the cipher must be
+by other independant values. To manipulate such data, the cipher must be
 reduced to bitwise logic operators such as `x & y`, `x | y`, `x ^ y`
 and `~ x`. On a 64-bit machine, the bitwise `x & y` operation then
 effectively works like 64 parallel Boolean conjunctions, each
 processing a single bit.  High throughput is thus achieved by
 parallelism: 64 instances of the cipher can execute in
 parallel. Bitslicing is thus especially good at exploiting vector
-extensions of moderns CPUs, which offer large registers (_e.g._ 128-bit
-Neon on ARM, 128-bit AltiVec on PowerPC, and more commonly known,
-128-bit SSE, 256-bit AVX and 512-bit AVX-512 on Intel). Bitsliced
-implementations are constant-time by design: no data-dependent
-conditionals nor memory accesses are made (or, in fact, possible at
-all). Most record-breaking software implementations of block ciphers
-exploit this technique [8,9,10,11], and modern ciphers are now
-designed with bitslicing in mind [12,13]. However, bitslicing usually
-implies an increase in code complexity, making it hard to write
-efficient bitslice code by hand, as can be shown in those few lines of
-C code which are part of a DES implementation written by Matthew Kwan
-[28]:
+extensions of modern CPUs, which offer large registers (_e.g._ 128-bit
+Neon on ARM, 128-bit AltiVec on PowerPC, and 128-bit SSE, 256-bit AVX
+and 512-bit AVX-512 on Intel). Bitsliced implementations are
+constant-time by design: no data-dependent conditionals nor memory
+accesses are made (or, in fact, possible at all). Most record-breaking
+software implementations of block ciphers exploit this technique
+[8,9,10,11], and modern ciphers are now designed with bitslicing in
+mind [12,13]. However, bitslicing usually implies an increase in code
+complexity, making it hard to write efficient bitslice code by hand,
+as can be demonstrate by the few lines of C code which are part of a DES
+implementation written by Matthew Kwan [28]:
 
 ```c
 s1 (r31 ^ k[47], r0 ^ k[11], r1 ^ k[26], r2 ^ k[3], r3 ^ k[13],
@@ -490,7 +567,7 @@ m-slicing
 The bitslicing model can sometimes be too restrictive as it forbids
 the use of arithmetic operations, and may fail to provide the expected
 performances, because it usually requires more registers that
-hardwares provide. To overcome those issues, and drawing inspiration
+hardwares provide. To overcome these issues, and drawing inspiration
 from Kasper & Schwabe's byte-sliced AES [11], we propose a
 generalization of bitslicing that we dub _m_-slicing. _m_-slicing
 preserves the constant-time property of bitslicing, while using less
@@ -607,24 +684,50 @@ Conclusion: Usuba
 
 [19] J. A. Donenfeld, [WireGuard: Next Generation Kernel Network Tunnel](https://www.wireguard.com/papers/wireguard.pdf), 2019.
 
-[20] G. Barthe, [High-Assurance Cryptography: Cryptographyic Software We Can Trust](https://ieeexplore.ieee.org/document/7310828), 2015.
+[20] G. Barthe, [High-Assurance Cryptography: Cryptographyic Software We Can Trust](https://ieeexplore.ieee.org/document/7310828), IEEE Security & Privacy, 2015.
 
-[21] K. Bhargavan _et al_, [Everest: Towards a Verified, Drop-in Replacement of HTTPS](http://drops.dagstuhl.de/opus/volltexte/2017/7119/pdf/LIPIcs-SNAPL-2017-1.pdf), 2017.
+[21] K. Bhargavan _et al_, [Everest: Towards a Verified, Drop-in Replacement of HTTPS](http://drops.dagstuhl.de/opus/volltexte/2017/7119/pdf/LIPIcs-SNAPL-2017-1.pdf), SNAPL, 2017.
 
-[22] G. Balakrishnan, T. Reps, [WYSINWYX: What You See Is Not What You eXecute](https://research.cs.wisc.edu/wpis/papers/wysinwyx.final.pdf), 2005.
+[22] G. Balakrishnan _et al_, [WYSINWYX: What You See Is Not What You eXecute](https://research.cs.wisc.edu/wpis/papers/wysinwyx.final.pdf), VSTTE, 2005.
 
 [23] A. Moghimi _et al_, [MemJam: A False Dependency Attack againstConstant-Time Crypto Implementations](https://arxiv.org/pdf/1711.08002.pdf), 2017.
 
-[24] O. Reparaz _et al_, [Dude, is my code constant time?](https://eprint.iacr.org/2016/1123.pdf), 2016.
+[24] O. Reparaz _et al_, [Dude, is my code constant time?](https://eprint.iacr.org/2016/1123.pdf), DATE, 2016.
 
 [25] T. Pornin, [Constant-time mul](https://www.bearssl.org/ctmul.html), accessed 12/2019.
 
-[26] J.-K. Zinzindohoué _et al_, [HACL*, A Verified Modern Crytographic Library](https://hal.inria.fr/hal-01588421v2/document), 2017.
+[26] J.-K. Zinzindohoué _et al_, [HACL*, A Verified Modern Crytographic Library](https://hal.inria.fr/hal-01588421v2/document), ACM Conference on Computer and Communications Security, 2017.
 
-[27] S. Cauligi _et al_, [FaCT: A Flexible, Constant-Time Programming Language](https://cseweb.ucsd.edu/~dstefan/pubs/cauligi:2017:fact.pdf), 2017.
+[27] S. Cauligi _et al_, [FaCT: A Flexible, Constant-Time Programming Language](https://cseweb.ucsd.edu/~dstefan/pubs/cauligi:2017:fact.pdf), SecDev, 2017.
 
 [28] M. Kwan, [Bitslice DES](http://www.darkside.com.au/bitslice/), accessed 2019-01-04.
 
 [29] D. J. Bernstein, [Chacha, a variant of Salsa20](https://cr.yp.to/chacha/chacha-20080128.pdf), 2008.
 
 [30] P. Kiaei _et al_, [SKIVA: Flexible and Modular Side-channel and Fault Countermeasures](https://eprint.iacr.org/eprint-bin/cite.pl?entry=2019/756), 2019.
+
+[31] P. C. Kochern, [Timing Attacks on Implementations of Diffie-Hellman, RSA, DSS, and Other Systems](https://link.springer.com/content/pdf/10.1007/3-540-68697-5_9.pdf), CRYPTO, 1996.
+
+[32] David Brumley, Dan Boneh, [Remote timing attacks are practical](crypto.stanford.edu/~dabo/pubs/papers/ssl-timing), USENIX Security Symposium, 2003.
+
+[33] E. Biham, A. Shamir, [A New Cryptographic Attack on DES](https://cryptome.org/jya/dfa.htm), 1996.
+
+[34] F. Bao _et al_, [Breaking public key cryptosystems on tamper resistant devices in the presence of transient faults](https://ink.library.smu.edu.sg/cgi/viewcontent.cgi?article=4725&context=sis_research), Security Protocols Workshop, 1997.
+
+[35] R. Anderson, M. Kuhn, [Low Cost Attacks on Tamper Resistant Devices](https://www.cl.cam.ac.uk/~mgk25/tamper2.pdf), Security Protocols, 1997.
+
+[36] P. Kocher _et al._, [Introduction to differential power analysis](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.225.3481&rep=rep1&type=pdf), Cryptographic Engineering, 2011.
+
+[37] P. Kocher _et al._, [Differential Power Analysis](https://www.paulkocher.com/DifferentialPowerAnalysis.pdf), CRYPTO, 1999.
+
+[38] T. S. Messerges, [Using Second-Order Power Analysis to Attack DPA Resistant Software](https://link.springer.com/chapter/10.1007/3-540-44499-8_19), CHES, 2002.
+
+[39] F. Amiel _et al._, [Passive and Active combined Attacks: Combining Fault Attacks and Side Channel Analysis](https://ieeexplore.ieee.org/document/4318989), FDTC, 2007.
+
+[40] T. Roche _et al._, [Combined Fault and Side-Channel Attack on Protected Implementations of AES](https://link.springer.com/content/pdf/10.1007/978-3-642-27257-8_5.pdf), CARDIS, 2011.
+
+[41] J. Fan _et al._, [To Infinity and Beyond: Combined Attack on ECC Using Points of Low Order](https://link.springer.com/content/pdf/10.1007/978-3-642-23951-9_10.pdf), CHES, 2011.
+
+[42] O. Reparaz _et al._, [CAPA: The Spirit of Beaver against Physical Attacks](https://www.esat.kuleuven.be/cosic/publications/article-2894.pdf), CRYPTO, 2018.
+
+[43] Siemen Dhooghe, Svetla Nikova, [My Gadget Just Cares For Me - How NINA Can Prove Security Against Combined Attacks](https://eprint.iacr.org/2019/615.pdf), 2019.
