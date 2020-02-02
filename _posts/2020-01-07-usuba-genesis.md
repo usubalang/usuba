@@ -107,7 +107,7 @@ into three main categories:
    reversible. They are typically used to provide data integrity or to
    irreversibly encrypt
    passwords. [MD5](https://en.wikipedia.org/wiki/MD5) and
-   [SHA-1](https://en.wikipedia.org/wiki/SHA-1) are two well known
+   [SHA-1](https://en.wikipedia.org/wiki/SHA-1) are two well-known
    hash functions.
 
 
@@ -128,16 +128,16 @@ cryptographic primitives. For instance, the Caesar cipher, presented
 above, is easily broken by trying to shift all letters of the
 ciphertext by every possible _n_ (between 1 and 25) until it produces
 a text that makes sense. Examples of more advanced attacks include
-[related-key
-attack](https://en.wikipedia.org/wiki/Related-key_attack), which
-consist in observing similarities in the ciphertext produced by a
-cipher for a given plaintext with different keys, or [chosen-plaintext
-attack](https://en.wikipedia.org/wiki/Chosen-plaintext_attack), where
-an attacker will have access to a set of plaintext and corresponding
-ciphertext and will try to retrieve the key. A cipher will be
-considered secure if no practical attacks exists, that is, no attack
-that can be carried out in a reasonable time or set up at a reasonable
-cost (_e.g._ billions of dollars).
+[related-key attack](https://en.wikipedia.org/wiki/Related-key_attack)
+[44,45,46], which consist in observing similarities in the ciphertext
+produced by a cipher for a given plaintext with different keys, or,
+similarly, [differential
+cryptanalysis](https://en.wikipedia.org/wiki/Differential_cryptanalysis)
+[47,48], where several plaintexts are encrypted, and the attacker
+tries to find statisical patterns in the produced ciphertexts. A
+cipher will be considered secure if no practical attacks exists, that
+is, no attack that can be carried out in a reasonable time or set up
+at a reasonable cost (_e.g._ billions of dollars).
 
 <!--
  Side-channel attacks
@@ -215,7 +215,7 @@ Rather than being passive (_i.e._ observing the execution without
 tampering with it), an attacker can be active, and [inject
 faults](https://en.wikipedia.org/wiki/Fault_injection) [33,34,35] in
 the computation (using _e.g._ ionizing radiations, electromagnetic
-impulsion, or lasers). For instance, consider the following C code,
+impulsions, or lasers). For instance, consider the following C code,
 which returns some secret data if it is provided with the correct pin
 code:
 
@@ -282,11 +282,13 @@ depending on whether `x1` is `0` or `1`. To thwart power-based
 attacks, we can use _boolean masking_, which consists in representing
 each bit _b_ of secret data by _n_ random bits (called _shares_) such
 that their `xor` is equal to the original secret bit: `b = b0 ^ b1 ^
-... ^ bn` for each secret bit _b_. If _n_ is greater than 2, this
-technique is called _higher order boolean masking_. Adding this
-protection `lookup_ct` would produce the following code (assuming that
-`index` has already been masked and is therefore now an array of
-shares):
+... ^ bn` for each secret bit _b_. The idea being that an attacker now
+needs to determine the value of _n_ bits of data in order to know the
+value of a single secret bit, which increases exponentially (in _n_)
+the cost of the attack. If _n_ is greater than 2, this technique is
+called _higher order boolean masking_. Adding this protection
+`lookup_ct` would produce the following code (assuming that `index`
+has already been masked and is therefore now an array of shares):
 
 ```c
 int* lookup_ct_masked(int index[NUMBER_OF_SHARES]) {
@@ -323,19 +325,30 @@ int* lookup_ct_masked(int index[NUMBER_OF_SHARES]) {
 Computing a masked `not` only requires negating one of the shares (we
 arbitrarily chose the first one): negating a bit `b` shared as `b0`
 and `b1` is indeed `(~b0) ^ b1` rather than `(~b0) ^ (~b1)`. Computing
-a masked `xor` on the other hand requires xoring all shares.
+a masked `xor` between two masked values on the other hand requires
+xoring all of their shares: `(a0, a1, ..., an) ^ (b0, b1, ..., bn) =
+(a0^b0, a1^b1, ..., an^bn)`.
 
 Protecting this code against fault injection could be done by
 duplicating instructions, which would add yet another layer of
 complexity. However, one must be careful about the interactions
-between countermeasures: adding protection against faults could undo
-some of the protection against power analysis. Even if the
+between countermeasures: adding protections against faults could undo
+some of the protections against power analysis. Even if the
 countermeasures do not mitigate one another, an attacker could combine
 fault injection and power analysis [39,40,41], which needs to be taken
 into account when designing countermeasures [42,43].
 
 Applying those protection techniques to a full cipher would take a
-considerable amount of time and produce a very complex code. Manually
+considerable amount of time and produce a very complex code. 
+
+
+<!-- 
+High-throughput cryptography
+ - 
+-->
+
+
+Manually
 implementing high-throughput cryptographic primitives, and manually
 securing primitives against side-channel attacks are two complicated
 and tedious task, hard to get right, and which tends to obfuscate the
@@ -731,3 +744,13 @@ Conclusion: Usuba
 [42] O. Reparaz _et al._, [CAPA: The Spirit of Beaver against Physical Attacks](https://www.esat.kuleuven.be/cosic/publications/article-2894.pdf), CRYPTO, 2018.
 
 [43] Siemen Dhooghe, Svetla Nikova, [My Gadget Just Cares For Me - How NINA Can Prove Security Against Combined Attacks](https://eprint.iacr.org/2019/615.pdf), 2019.
+
+[44] Alex Biryukov, Dmitry Khovratovich, [Related-key Cryptanalysis of the Full AES-192 and AES-256](https://eprint.iacr.org/2009/317.pdf), ASIACRYPT, 2009.
+
+[45] J. Kesley _et al._, [Related-Key Cryptanalysis of 3- WAY, Biham-DES, CAST, DES-X, NewDES, RC2, and TEA](https://www.schneier.com/academic/paperfiles/paper-relatedkey.pdf), ICICS, 1997.
+
+[46] M. Bellare, T. Kohno, [A Theoretical Treatment of Related-Key Attacks: RKA-PRPs, RKA-PRFs, and Applications](https://link.springer.com/content/pdf/10.1007/3-540-39200-9_31.pdf), EUROCRYPT, 2003.
+
+[47] E. Biham, A. Shamir, [Differential cryptanalysis of DES-like cryptosystems](https://link.springer.com/content/pdf/10.1007%2FBF00630563.pdf), CRYPTO, 1990.
+
+[48] X. Lai _et al._, [Markov Ciphers and Differential Cryptanalysis](https://link.springer.com/content/pdf/10.1007%2F3-540-46416-6.pdf), EUROCRYPT, 1991.
