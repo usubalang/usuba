@@ -153,13 +153,26 @@ sub-ciphertext to produce the full ciphertext:
 </p>
 
 This mode of operation is considered unsecured because identical
-blocks will be encrypted into the same ciphertext. This can be
-exploited by an attacker to gain knowledge about the plaintext, as can
-be seen from the following example (taken from
-[Wikipedia](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#ECB-weakness)):
+blocks will be encrypted into the same ciphertext, which can be
+exploited by an attacker to gain knowledge about the plaintext. For
+instance, consider the following image:
 
 <p align="center">
-<img src="{{ site.baseurl }}/assets/images/blog/ECB-example.png">
+<img src="{{ site.baseurl }}/assets/images/blog/ecb-example.png">
+</p>
+
+Encrypting it using AES in ECB mode produces the following image:
+
+<p align="center">
+<img src="{{ site.baseurl }}/assets/images/blog/ecb-example-enc-ecb.png">
+</p>
+
+
+Using a more secure mode instead (namely CTR, presented below)
+produces the following result:
+
+<p align="center">
+<img src="{{ site.baseurl }}/assets/images/blog/ecb-example-enc-ctr.png">
 </p>
 
 
@@ -621,62 +634,6 @@ _m_-slicing, which keeps the main properties of bitslicing
 (constant-time, data parallelism scaling with register size), while
 reducing register pressure, and allowing the use of more SIMD
 instructions, like additions and multiplications.
-
-<!-- <\!-- -->
-<!-- Generalized bitslicing: m-slicing -->
-<!--  - inspired by Kasper & Schwabe -->
-<!--  - idea: n-bit input -> m k-bit registers with m>1 and k>1 -->
-<!--  - example: Rectangle (re-use slide from PLDI) -->
-<!--  - less registers pressure -->
-<!--  - still scales with register size -->
-<!--  - less expensive permutation -->
-<!--  - can use (some) SIMD vector instructions -->
-<!--  - two models (V/H-slicing) -->
-<!--  - type-directed in Usuba -->
-<!-- -\-> -->
-<!-- ## mslicing -->
-
-<!-- <p align="center"> -->
-<!-- <img src="{{ site.baseurl }}/assets/images/blog/hslicing_oneway.png"> -->
-<!-- </p> -->
-
-<!-- <p align="center"> -->
-<!-- <img src="{{ site.baseurl }}/assets/images/blog/hslicing_twoway.png"> -->
-<!-- </p> -->
-
-<!-- <\!-- -->
-<!-- Horizontal slicing -->
-<!--  - cf example from previous paragraph -->
-<!--  - bits are splitted within the registers -->
-<!--  - still cannot use arithmetic -->
-<!--  - can use permutations -->
-<!--    + example? (eg, vpshufb on AES's shiftrows?) -->
-<!--  - best implementations of AES use hslicing -->
-<!-- -\-> -->
-<!-- ### Horizontal slicing -->
-
-<!-- <\!-- -->
-<!-- Vertical slicing -->
-<!--  - =~ vectorization -->
-<!--  - bits are packed together -->
-<!--    * example: Rectangle (re-use slide from PLDI) -->
-<!--  - can use arithmetic operations -->
-<!--  - best implems of Serpent and Chacha use Vslicing -->
-<!-- -\-> -->
-<!-- ### Vertical slicing -->
-
-<!-- <p align="center"> -->
-<!-- <img src="{{ site.baseurl }}/assets/images/blog/vslicing_oneway.png"> -->
-<!-- </p> -->
-
-<!-- <p align="center"> -->
-<!-- <img src="{{ site.baseurl }}/assets/images/blog/vslicing_twoway.png"> -->
-<!-- </p> -->
-
-
-<!-- <p align="center"> -->
-<!-- <img src="{{ site.baseurl }}/assets/images/blog/slicings.png"> -->
-<!-- </p> -->
 
 <!--
 Bitslicing as the basis for security countermeasures
