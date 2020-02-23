@@ -14,7 +14,7 @@
 
   \node (a) at (0, 2) { $~A~$ };
   \node (b) at (0, 1.5) { $~B~$ };
-  \node (cin) at (0, 0.9) { $C_{in}$ };
+  \node (cin) at (1.75, 0.9) { $C_{in}$ };
 
   \node (invisible1) at (0, 2.1) { \phantom{invisible} };
   \node (invisible2) at (0, -1.2) { \phantom{invisible} };
@@ -25,13 +25,13 @@
   \node[xor gate,minimum size=0.6cm] at ($(2,1.90)$) (xor1) {};
   \node[xor gate,minimum size=0.6cm] at ($(4,1)$) (xor2) {};
   \node[and gate,minimum size=0.6cm] at ($(4,0)$) (and1) {};
-  \node[and gate,minimum size=0.6cm] at ($(4,-1)$) (and2) {};
+  \node[and gate,minimum size=0.6cm] at ($(2,-1)$) (and2) {};
   \node[xor gate,minimum size=0.6cm] at ($(6,-0.5)$) (xor3) {};
 
   \node (textxor1) at ($(2.05,1.90)$) { xor };
   \node (textxor2) at ($(4.05,1)$) { xor };
   \node (textand1) at ($(4,0.03)$) { and };
-  \node (textand2) at ($(4,-0.97)$) { and };
+  \node (textand2) at ($(2,-0.97)$) { and };
   \node (textxor3) at ($(6.05,-0.5)$) { xor };
 
   \draw (a.east) --++(180:-4mm) |- (xor1.input 1);
@@ -39,14 +39,14 @@
   \draw (xor1.output) --++(180:-4mm) |- (xor2.input 1);
   \draw (cin.east) |- (xor2.input 2);
 
-  \draw (a.east) --++(180:-4mm) |- (and2.input 1);
-  \draw (b.east) --++(180:-7mm) |- (and2.input 2);
+  \draw (a.east) --++(180:-4mm) |- (and2.input 2);
+  \draw (b.east) --++(180:-7mm) |- (and2.input 1);
 
   \draw (xor1.output) --++(180:-4mm) |- (and1.input 1);
-  \draw (cin.east) --++(180:-10mm)    |- (and1.input 2);
+  \draw (cin.east) --++(180:-5mm)    |- (and1.input 2);
 
   \draw (and1.output) --++(180:-6mm) |- (xor3.input 1);
-  \draw (and2.output) --++(180:-6mm) |- (xor3.input 2);
+  \draw (and2.output) --++(180:-26mm) |- (xor3.input 2);
 
   \draw (xor2.output) |- (s.west);
   \draw (xor3.output) |- (cout.west);
