@@ -414,7 +414,7 @@ which is as close to the specification (_i.e._ the circuit) as
 possible. As such, Rectangle can be straight-forwardly written in
 Usuba in just a few lines of code (explanations below):
 
-```
+```lustre
 table SubColumn (in:v4) returns (out:v4) {
     6 , 5, 12, 10, 1, 14, 7, 9,
     11, 0, 3 , 13, 8, 15, 4, 2
