@@ -45,11 +45,14 @@ front-end. First, the language offers domain-specific syntax for
 specifying cryptographic constructs such as lookup tables or
 permutations. We boil these constructs down to Boolean circuits (see
 post [5 - Usuba]({{ site.baseurl }}{% post_url 2020-02-24-usuba
-%})). Second, the language provides a limited form of parametric
-polymorphism while offering an overloading mechanism for logical and
-arithmetic operations based on ad-hoc polymorphism. We produce
-monomorphic code, with types and operations being expanded to machine
-baked instructions for the target architecture and parallelism
+%})). Second, while our vectors allow for a very permissive
+programming discipline for developpers, they require some special
+transformations in order to facilitate both optimizations and
+generation of C. Finally, the language provides a limited form of
+parametric polymorphism while offering an overloading mechanism for
+logical and arithmetic operations based on ad-hoc polymorphism. We
+produce monomorphic code, with types and operations being expanded to
+machine baked instructions for the target architecture and parallelism
 discipline.
 
 ### Vectors
@@ -471,8 +474,60 @@ with (efficient) bitslicing.
 The front-end produces a monomorphic dataflow graph whose nodes
 correspond to logical and arithmetic operations provided by the target
 instruction set. This strict subset of the Usuba language is called
-Usuba0. It translates almost directly to C: in principle, we only need
-to schedule the code after which each equation turns into a variable
+Usuba0, whose grammar follows:
+
+
+<pre><code>
+<b>nd</b>  ::=                                       (node declaration)
+     |  node <i>id</i>(<b>tv</b><sup>+</sup>) returns (<b>tv</b><sup>+</sup>)
+          vars <b>tv</b><sup>+</sup> 
+          let <b>eq</b><sup>+</sup> tel
+               
+<b>tv</b> ::= <i>id</i> : <b>typ</b>                (variable declaration)
+
+<b>typ</b> ::=                              (type)
+         | <b>typ</b>[<i>n</i>]                       (vector)
+         | u&lt;V&gt;<i>m</i>                        (vertical atoms)
+         | u&lt;H&gt;<i>m</i>                        (horizontal atoms)
+         | nat                          (natural number)
+
+<b>eq</b> ::=                                     (equation)
+    | forall <i>i</i> in [<b>aexpr</b>,<b>aexpr</b>] { <b>eq</b><sup>+</sup> }         (loop)
+    | <b>var</b> = <b>expr</b>                                (simple equation)
+    | <b>var</b><sup>+</sup> = <i>f</i>(<b>var</b><sup>+</sup>)                            (node call)
+
+<b>var</b> ::=                  (variable)
+    | <i>x</i>                      (variable)
+    | <i>x</i>[<b>aexpr</b>]               (vector index)
+    
+<b>expr</b> ::=                   (expression)
+    | <b>var</b>                      (variable)
+    | <i>n</i>                        (constant)
+    | <b>unop</b> <b>var</b>                 (unary operation)
+    | <b>var</b> <b>binop</b> <b>var</b>            (binary operation)
+    | <b>var</b> <b>shiftop</b> <b>aexpr</b>        (shift)
+    | Shuffle(<b>var</b>, [<i>n</i><sup>+</sup>])       (shuffle)
+
+<b>aexpr</b> ::=                    (arithmetic expression)
+    | <i>n</i>                          (constant)
+    | <b>var</b>                        (variable)
+    | <b>aexpr</b> <b>binop</b> <b>aexpr</b>          (binary operation)
+
+<b>binop</b> ::= + | - | * | & | ^ | "|"
+<b>unop</b> ::= - | ~
+<b>shiftop</b> ::= << | >> | <<< | >>>
+</code>
+</pre>
+
+Usuba0 nodes are restricted to standard nodes (_i.e._, no permutations
+nor lookup tables). Types are monomorphic atoms or vectors. Vector
+indices are allowed, but ranges and slices are forbidden. Expressions
+are not recursive, and vector assignments are not allowed except for
+the return values of function calls. All operators in Usuba0 map
+directly to machine instructions.
+
+Usuba0 translates almost directly to C: in principle, we only need to
+schedule the code after which each equation turns into a variable
 assignment of an integer type. Nodes are translated to function
 definitions whereas node calls translate to function calls. However,
 the Usuba0 code produced by the front-end is subjected to several
