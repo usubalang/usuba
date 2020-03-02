@@ -240,6 +240,7 @@ vars c:b2[2]
 let
     c = f(a);
     r = g(c);
+tel
 ```
 
 Assuming that `match_params` starts with `main`, then:
@@ -247,12 +248,13 @@ Assuming that `match_params` starts with `main`, then:
   - `c = f(a)` has the correct amount of parameters: one input and one
     output.
     
-  - `r = g(c)` has the correct amount of parameters, but only one
-    input instead of two. It is thus replaced by `r = g(c[0], c[1])`.
+  - `r = g(c)` has the correct amount of variables on the left
+    hand-side, but only one argument in the call to `g` instead of
+    two. It is thus replaced by `r = g(c[0], c[1])`.
     
   - Then, `g`'s body is looked at:
   
-    - `r = f(a,b)` has one output has expected, but two inputs instead
+    - `r = f(a,b)` has one output as expected, but two inputs instead
       of one. `f`'s parameter `a` is thus expanded, and `f` becomes:
       
       ```lustre
