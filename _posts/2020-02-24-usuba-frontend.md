@@ -1,14 +1,14 @@
 ---
 layout: post
-title: Usubac front-end
-date: "2020-02-24 00:00:00"
+title: Usubac - front-end
+date: "2020-02-26 00:00:00"
 description: The frontend of Usuba
 lang: en
 locale: en_US
 author: Darius Mercadier
-excerpt: 
-comments: false
-hidden: true
+excerpt: Usuba's compiler, Usubac, consists of two phases. The front-end distills Usuba's high-level constructs into a minimal core language, while the back-end performs optimizations over the core language. The core language, called Usuba0, amounts to dataflow graphs of Boolean and arithmetic operators. In its final pass, the back-end translate Usuba0 to C code with intrinsics.
+comments: true
+hidden: false
 ---
 
 Usuba's compiler, Usubac, consists of two phases: the front-end, whose
