@@ -22,32 +22,34 @@ use File::Copy;
 use FindBin;
 
 
-my $NB_LOOP = 10;
+my $NB_LOOP = 2;
 my $CC      = 'clang';
-my $CFLAGS  = '-Wall -Wextra -O3 -march=native -fno-slp-vectorize -fno-vectorize';
-my $INC     = '-I ../../arch';
+my $CFLAGS  = '-O3 -march=native';
+my $HEADERS = '-I ../../arch';
 $| = 1;
 
 
 my %ciphers = (
     des        => 0,
     serpent    => 1,
-    rectangle  => 1,
+    'serpent-inter'   => 0,
+    rectangle   => 1,
+    'rectangle-inter' => 0,
     aes        => 0,
     aes_kasper => 0,
-    chacha20   => 1,
+    chacha20   => 0,
     ascon      => 1,
     ace        => 1,
     clyde      => 1,
     gift       => 1,
+    photon     => 1,
     pyjamask   => 1,
-    xoodoo     => 1,
-    gimli      => 1
+    xoodoo     => 1
     );
 my @ciphers = grep { $ciphers{$_} } keys %ciphers;
 
 
-my $gen     = !@ARGV || "@ARGV" =~ /-g/;
+my $gen     = "@ARGV" =~ /-g/;
 my $compile = !@ARGV || "@ARGV" =~ /-c/;
 my $run     = !@ARGV || "@ARGV" =~ /-r/;
 
@@ -59,15 +61,15 @@ if ($gen) {
     print "Compiling Usuba sources...";
     chdir "$FindBin::Bin/../..";
 
-    my $out_dir = "$pwd/generated/ciphers";
-    make_path $out_dir unless -d $out_dir;
-
-    my $ua_args = "-V -arch std -gen-bench";
+    my $ua_args = "-V -arch sse -no-arr -no-sched";
 
     for my $cipher (@ciphers) {
         my $source  = "samples/usuba/$cipher.ua";
-        system "./usubac $ua_args                -o $out_dir/${cipher}.c       $source";
-        system "./usubac $ua_args -interleave 10 -o $out_dir/${cipher}-inter.c $source";
+        if ($cipher eq 'rectangle') {
+            $source = "-lf samples/usuba/rectangle_vector.ua";
+        }
+        system "./usubac $ua_args                -o $pwd/$cipher/${cipher}_ua.c       $source";
+        system "./usubac $ua_args -interleave 10 -o $pwd/$cipher-inter/${cipher}_ua.c $source";
     }
 
     say " done.";
@@ -76,36 +78,34 @@ if ($gen) {
 if ($compile) {
     print "Compiling C sources...";
     chdir "$FindBin::Bin";
+    make_path "bin" unless -d "bin";
 
-    my $out_dir = "$pwd/generated/bin";
-    make_path $out_dir unless -d $out_dir;
+    system "$CC -w $CFLAGS $HEADERS main_speed.c serpent/stream.c " .
+        "serpent/serpent.c serpent/serpent_ua.c -o bin/serpent";
+    system "$CC -w $CFLAGS $HEADERS main_speed.c serpent-inter/stream.c " .
+        "serpent-inter/serpent.c serpent-inter/serpent_ua.c -o bin/serpent-inter";
 
-    my $cipher_dir = "$pwd/generated/ciphers";
+    system "$CC -D SSE $CFLAGS $HEADERS main_speed.c rectangle/stream.c " .
+        "rectangle/key.c rectangle/rectangle_ua.c -o bin/rectangle";
+    system "$CC -D SSE $CFLAGS $HEADERS main_speed.c rectangle-inter/stream.c " .
+        "rectangle-inter/key.c rectangle-inter/rectangle_ua.c -o bin/rectangle-inter";
 
-    for my $cipher (@ciphers) {
-        system "$CC $CFLAGS $INC bench.c $cipher_dir/$cipher.c       -o $out_dir/$cipher";
-        system "$CC $CFLAGS $INC bench.c $cipher_dir/$cipher-inter.c -o $out_dir/$cipher-inter";
-    }
     say " done.";
 }
 
 exit unless $run;
 
-chdir $pwd;
 make_path "results" unless -d "results";
 
 my %formatted;
 for my $cipher (@ciphers) {
 
-    my $bin_dir = "$pwd/generated/bin";
-    next unless -e "$bin_dir/$cipher";
-
     my %res;
     for ( 1 .. $NB_LOOP ) {
         print "\rRunning benchs $cipher... $_/$NB_LOOP";
 
-        for my $bin ("$bin_dir/$cipher", "$bin_dir/$cipher-inter") {
-            my $cycles = sprintf "%03.02f", `$bin`;
+        for my $bin ("bin/$cipher", "bin/$cipher-inter") {
+            my $cycles = sprintf "%03.02f", `./$bin`;
             push @{ $res{$bin}->{details} }, $cycles;
             $res{$bin}->{total} += $cycles;
         }
@@ -116,15 +116,15 @@ for my $cipher (@ciphers) {
     say "Results $cipher:";
     for my $bin (sort { $res{$a}->{total} <=> $res{$b}->{total} } keys %res) {
         my $size = -s $bin;
-        my $name = $bin =~ s{$bin_dir/}{}r;
+        my $name = $bin =~ s{bin/}{}r;
         printf "%13s : %03.02f  [ %s ]  {$size bytes}\n", $name, $res{$bin}->{total} / $NB_LOOP,
             (join ", ", @{$res{$bin}->{details}});
         printf $FP_OUT "%s %.02f $size\n", $name, $res{$bin}->{total} / $NB_LOOP;
     }
     say "";
 
-    my $bin_nointer = "$bin_dir/$cipher";
-    my $bin_inter   = "$bin_dir/$cipher-inter";
+    my $bin_nointer = "bin/$cipher";
+    my $bin_inter   = "bin/$cipher-inter";
     my $speedup      = ($res{$bin_nointer}->{total} - $res{$bin_inter}->{total})
         / $res{$bin_nointer}->{total} * 100;
     my $size  = ((-s $bin_inter) - (-s $bin_nointer)) / (-s $bin_inter) * 100;
@@ -135,11 +135,13 @@ for my $cipher (@ciphers) {
 
 
 open my $FP_OUT, '>', 'results/interleaving.tex';
-for my $cipher (@ciphers) {
-    printf $FP_OUT
-"\\newcommand{\\Interleaving${cipher}Speedup}{%.02f}
-\\newcommand{\\Interleaving${cipher}Code}{%.02f}
+printf $FP_OUT
+"
+\\newcommand{\\InterleavingSerpentSpeedup}{%.02f}
+\\newcommand{\\InterleavingSerpentCode}{%.02f}
 
+\\newcommand{\\InterleavingRectangleSpeedup}{%.02f}
+\\newcommand{\\InterleavingRectangleCode}{%.02f}
 ",
-    $formatted{$cipher}->{speedup}, $formatted{$cipher}->{size};
-}
+    $formatted{serpent}->{speedup}, $formatted{serpent}->{size},
+    $formatted{rectangle}->{speedup}, $formatted{rectangle}->{size};

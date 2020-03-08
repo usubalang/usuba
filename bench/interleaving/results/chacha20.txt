@@ -1,0 +1,2 @@
+chacha20 6.81 8416
+chacha20-inter 10.04 12520
