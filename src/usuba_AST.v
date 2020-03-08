@@ -155,7 +155,8 @@ Record config := {
   no_arr       : bool;
   arr_entry    : bool;
   unroll       : bool;
-  interleave   : N;
+  interleave   : N; (* Actually the grain *)
+  inter_factor : N;
   fdti         : string;
   lazylift     : bool;
   slicing_set  : bool;
