@@ -51,7 +51,7 @@ let arith_op_to_c_generic = function
 
 let rec aexpr_to_c (e:arith_expr) : string =
   match simpl_arith (make_env ()) e with
-  | Const_e n -> sprintf "0x%x" n
+  | Const_e n -> sprintf "%d" n
   | Var_e x   -> rename x.name
   | Op_e(op,x,y) -> sprintf "(%s %s %s)"
                             (aexpr_to_c x) (arith_op_to_c op) (aexpr_to_c y)
