@@ -369,14 +369,12 @@ let rec get_typ_size (conf:config) (typ:typ) : int =
      if s = Var_e Mask.masking_order then get_typ_size conf t
      else (get_typ_size conf t) * (eval_arith_ne s)
   | Uint(dir,Mint m,n) ->
-     n * m *
-       (match dir with
-        | Bslice -> assert (m = 1); (* Just in case *)
-                    conf.bits_per_reg
-        | Vslice | Hslice -> 1
-        | _ -> eprintf "Invalid polymorphic dir: %s.\n"
-                       (Usuba_print.dir_to_str dir);
-               assert false)
+     n * m * (
+       match conf.archi with
+       | Std -> (match dir with
+                 | Bslice -> conf.bits_per_reg
+                 | _ -> 1)
+       | _ -> (conf.bits_per_reg / m))
   | Nat           -> eprintf "Can't get_typ_size(Nat).\n";
                      assert false
   | Uint(_,_,_)   -> eprintf "Can't get_typ_size(%s).\n"
@@ -387,24 +385,50 @@ let gen_bench (node:def) (conf:config) : string =
 
   sprintf
 "uint32_t bench_speed() {
-  /* inputs */
+  /* Inputs */
   %s
-  /* outputs */
+
+  /* Preventing inputs from being optimized out */
   %s
-  /* fun call */
+
+  /* Outputs */
+  %s
+  /* Primitive call */
   %s(%s,%s);
+
+  /* Preventing outputs from being optimized out */
+  %s
 
   /* Returning the number of encrypted bytes */
   return %d;
 }"
+  (* inputs *)
   (join "\n  " (List.map (fun s -> s ^ " = { 0 };")
                          (List.map (fun vd -> var_decl_to_c conf vd false) node.p_in)))
+  (join "\n  " (List.map (fun vd ->
+                          let modifier = match vd.vd_typ with
+                            | Uint(_,_,1) -> "r" | _ -> "m" in
+                          sprintf "asm volatile(\"\" : \"+%s\" (%s));" modifier
+                                  (rename vd.vd_id.name)) node.p_in))
+
+  (* outputs *)
   (join "\n  " (List.map (fun s -> s ^ " = { 0 };")
                          (List.map (fun vd -> var_decl_to_c conf vd true) node.p_out)))
+
+  (* node call *)
   (rename node.id.name)
+  (*   node inputs *)
   (join ", " (List.map (fun vd -> rename vd.vd_id.name) node.p_in))
+  (*   node outputs *)
   (join ", " (List.map (fun vd ->
                         match vd.vd_typ with
                         | Nat | Uint(_,_,1) -> "&" ^ (rename vd.vd_id.name)
                         | _ -> rename vd.vd_id.name) node.p_out))
+
+  (* keeping outputs alive *)
+  (join "\n  " (List.map (fun vd ->
+                          sprintf "asm volatile(\"\" : \"+m\" (%s));"
+                                  (rename vd.vd_id.name)) node.p_out))
+
+  (* returning number of encrypted bytes *)
   ((List.fold_left (fun sum vd -> sum + (get_typ_size conf vd.vd_typ)) 0 node.p_out) / 8)
