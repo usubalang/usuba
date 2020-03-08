@@ -1,6 +1,6 @@
 /* ******************************************** *\
- * 
- * 
+ *
+ *
  *
 \* ******************************************** */
 
@@ -37,6 +37,7 @@
 
 #define L_SHIFT(a,b,c)  _mm512_slli_epi##c(a,b)
 #define R_SHIFT(a,b,c)  _mm512_srli_epi##c(a,b)
+#define RA_SHIFT(a,b,c) _mm512_sra_epi##c(a,b)
 
 #define L_ROTATE(a,b,c)                                                 \
   b == 8 && c == 32 ?                                                   \
@@ -50,7 +51,7 @@
                                           13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2, \
                                           13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2)) : \
     OR(L_SHIFT(a,b,c),R_SHIFT(a,c-b,c))
-  
+
 #define R_ROTATE(a,b,c)                                                 \
   b == 8 && c == 32 ?                                                   \
     _mm512_shuffle_epi8(a,_mm512_set_epi8(12,15,14,13,8,11,10,9,4,7,6,5,0,3,2,1, \
@@ -153,7 +154,7 @@ void real_ortho_512x512(__m512i data[]) {
     _mm512_set_epi64(-1UL,-1UL,0UL,0UL,-1UL,-1UL,0UL,0UL),
     _mm512_set_epi64(-1UL,-1UL,-1UL,-1UL,0UL,0UL,0UL,0UL),
   };
-  
+
   for (int i = 0; i < 9; i ++) {
     int n = (1UL << i);
     for (int j = 0; j < 512; j += (2 * n))

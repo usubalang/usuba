@@ -1,6 +1,6 @@
 /* ******************************************** *\
- * 
- * 
+ *
+ *
  *
 \* ******************************************** */
 
@@ -37,6 +37,7 @@
 
 #define L_SHIFT(a,b,c)  _mm256_slli_epi##c(a,b)
 #define R_SHIFT(a,b,c)  _mm256_srli_epi##c(a,b)
+#define RA_SHIFT(a,b,c) _mm256_sra_epi##c(a,b)
 
 #define L_ROTATE(a,b,c)                                                 \
   b == 8 && c == 32 ?                                                   \
@@ -46,7 +47,7 @@
     _mm256_shuffle_epi8(a,_mm256_set_epi8(13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2, \
                                           13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2)) : \
     OR(L_SHIFT(a,b,c),R_SHIFT(a,c-b,c))
-  
+
 #define R_ROTATE(a,b,c)                                                 \
   b == 8 && c == 32 ?                                                   \
     _mm256_shuffle_epi8(a,_mm256_set_epi8(12,15,14,13,8,11,10,9,4,7,6,5,0,3,2,1, \
@@ -129,7 +130,7 @@ void real_ortho_256x256(__m256i data[]) {
     _mm256_set1_epi64x(0xffffffff00000000UL),
     _mm256_set_epi64x(0UL,-1UL,0UL,-1UL),
     _mm256_set_epi64x(0UL,0UL,-1UL,-1UL),
-  
+
   };
 
   __m256i mask_r[8] = {
@@ -142,7 +143,7 @@ void real_ortho_256x256(__m256i data[]) {
     _mm256_set_epi64x(-1UL,0UL,-1UL,0UL),
     _mm256_set_epi64x(-1UL,-1UL,0UL,0UL),
   };
-  
+
   for (int i = 0; i < 8; i ++) {
     int n = (1UL << i);
     for (int j = 0; j < 256; j += (2 * n))

@@ -1,6 +1,6 @@
 /* ******************************************** *\
- * 
- * 
+ *
+ *
  *
 \* ******************************************** */
 
@@ -37,6 +37,7 @@
 
 #define L_SHIFT(a,b,c)  _mm_slli_epi##c(a,b)
 #define R_SHIFT(a,b,c)  _mm_srli_epi##c(a,b)
+#define RA_SHIFT(a,b,c) _mm_sra_epi##c(a,b)
 
 #define L_ROTATE(a,b,c)                                                 \
   b == 8 && c == 32 ?                                                   \
@@ -44,7 +45,7 @@
     b == 16 && c == 32 ?                                                \
     _mm_shuffle_epi8(a,_mm_set_epi8(13,12,15,14,9,8,11,10,5,4,7,6,1,0,3,2)) : \
     OR(L_SHIFT(a,b,c),R_SHIFT(a,c-b,c))
-  
+
 #define R_ROTATE(a,b,c)                                                 \
   b == 8 && c == 32 ?                                                   \
     _mm_shuffle_epi8(a,_mm_set_epi8(12,15,14,13,8,11,10,9,4,7,6,5,0,3,2,1)) : \
@@ -122,7 +123,7 @@ void real_ortho_128x128(__m128i data[]) {
     _mm_set1_epi64x(0xffff0000ffff0000UL),
     _mm_set1_epi64x(0xffffffff00000000UL),
     _mm_set_epi64x(0x0000000000000000UL,0xffffffffffffffffUL),
-  
+
   };
 
   __m128i mask_r[7] = {
@@ -134,7 +135,7 @@ void real_ortho_128x128(__m128i data[]) {
     _mm_set1_epi64x(0x00000000ffffffffUL),
     _mm_set_epi64x(0xffffffffffffffffUL,0x0000000000000000UL),
   };
-  
+
   for (int i = 0; i < 7; i ++) {
     int n = (1UL << i);
     for (int j = 0; j < 128; j += (2 * n))
@@ -150,7 +151,7 @@ void real_ortho_128x128(__m128i data[]) {
           /* Note the "inversion" of srli and slli. */
           data[j + k] = _mm_or_si128(u, _mm_slli_si128(x, 8));
           data[j + n + k] = _mm_or_si128(_mm_srli_si128(v, 8), y);
-        } 
+        }
       }
   }
 }
@@ -165,7 +166,7 @@ void real_ortho_128x128_blend(__m128i data[]) {
     _mm_set1_epi64x(0xffff0000ffff0000UL),
     _mm_set1_epi64x(0xffffffff00000000UL),
     _mm_set_epi64x(0UL,-1UL),
-  
+
   };
 
   __m128i mask_r[7] = {
@@ -177,7 +178,7 @@ void real_ortho_128x128_blend(__m128i data[]) {
     _mm_set1_epi64x(0x00000000ffffffffUL),
     _mm_set_epi64x(-1UL,0UL),
   };
-  
+
   for (int i = 0; i < 7; i ++) {
     int n = (1UL << i);
     for (int j = 0; j < 128; j += (2 * n))
@@ -211,7 +212,7 @@ void real_ortho_128x128_blend(__m128i data[]) {
           /* Note the "inversion" of srli and slli. */
           data[j + k] = _mm_blend_epi16(u,_mm_slli_si128(x,8), 0b11110000);
           data[j + n + k] = _mm_blend_epi16(_mm_srli_si128(v, 8), y, 0b11110000);
-        } 
+        }
       }
   }
 }
