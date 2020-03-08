@@ -32,7 +32,11 @@ trick, popularized by Matsui [1]: for a cipher using a small number of
 registers (for example, strictly below 8 general-purpose registers on
 Intel), we can increase its instruction-level parallelism (ILP) by
 interleaving several copies of a single cipher, each manipulating its
-own independent set of variables. This can be understood as a static
+own independent set of variables. 
+
+_An example here_
+
+This can be understood as a static
 form of hyper-threading, by which we (statically) interleave the
 instruction stream of several parallel execution of a single
 cipher. By increasing ILP, we reduce the impact of data hazards in the
@@ -47,11 +51,13 @@ a straightforward Usuba0-to-Usuba0 translation.
 The interleaving heuristic itself is retrospectively straight-forward:
 the number of interleaved instances is set to be the number of CPU
 registers available on the target architecture divided by the maximal
-number of live registers in the given algorithm. For example, Serpent
-and Rectangle use respectively 8 and 7 AVX registers at most, which
-drives the compiler to pick an interleaving factor of 2 when
-compiling. Choosing a larger factor would induce spilling, which is
-highly detrimental to performance.
+number of live registers in the given algorithm. **TODO**: nuance or
+remove: we don't know the number of live registers. -> Heuristic with
+automatic benchmark? (sounds reasonable -> do it!)
+For example, Serpent and Rectangle use respectively 8 and 7 AVX
+registers at most, which drives the compiler to pick an interleaving
+factor of 2 when compiling. Choosing a larger factor would induce
+spilling, which is highly detrimental to performance.
 
 A second design decision concerns the size of the independent code
 blocks to be interleaved. We have empirically observed that we can
@@ -59,12 +65,208 @@ adopt a coarse-grained approach: we chose to alternate between blocks
 of 10 equations from each of the interleaved instances. The scheduling
 performed by Usubac and the instruction scheduling later performed by
 C compilers will do an excellent job at taking advantage of the
-resulting ILP.
+resulting ILP. **TODO**: this almost doesn't matter with Usuba's
+scheduling algorithm -> rephrase to state that? Or benchmark various
+granularities, and add a plot. Maybe do both.
 
 On Serpent, we observe that the throughput of 2 interleaved ciphers is
 21.75% higher than the throughput of a single cipher, while increasing
 the code size by 29.3%. Similarly for Rectangle, the throughput
-increases by 27.62% at the expense of a 19.2% increase in code size.
+increases by 27.62% at the expense of a 19.2% increase in code
+size. Ace: slightly better? Ascon: slightly better? Clyde: better?
+
+Note on GP & auto-vectorization.
+
+### Inlining
+
+The decision of inlining nodes is partly justified by the usual
+reasoning applied by C compilers: a function call implies a
+significant overhead that, for very frequently called functions (such
+as S-boxes, in our case) makes it worth the increase in code size. In
+fact, all the compilers we have tested (excepted GCC in some
+situations) are able to spot the fact that S-boxes, for example,
+benefit from being inlined.  Usubac is only a helping hand here,
+making sure that the user does not observe a performance regression
+because of what could only be characterized as a bug in the C
+compiler’s heuristics.
+
+Bitslicing, however, sends the inlining heuristics of C compilers
+astray. A bitsliced node compiles to a C function taking hundreds of
+variables as inputs and outputs. For instance, the round function in
+DES takes 120 arguments once bitsliced. Calling such a function
+requires the caller to push hundreds of variables onto the stack while
+the callee has to go through the stack to retrieve them, leading to a
+significant execution overhead but also a growth in code size. C
+compilers naturally avoid inlining this function because its code is
+quite large, missing the fact that calling it actually becomes a
+bottleneck.
+
+On DES, inlining results in a 44.8% improvement in throughput while
+actually reducing code size by 9.1%. Similarly, a bitsliced
+implementation of AES (automatically obtained from the more efficient
+hsliced version) is 24.24% more efficient with inlining at the expense
+of a 24.8% increase in code size.  Because the AES round function is
+significantly larger than its number of input variables, we notice an
+increase of code size. However, increasing code size is hardly a
+performance issue in our setting: our code is executed in a
+straight-line sequence, with few to no control flow instructions. As a
+result, whatever big the resulting binary is, instruction prefetch
+allows us to amortize the few cache misses over the whole cache lines.
+
+Besides, inlining offers more opportunities for scheduling. For
+instance, symmetric cipher are usually composed of a sequence of 10 to
+20 applications of a single round function.  Inlining this function
+enables Usubac to schedule instructions across rounds, so as to
+increase ILP.
+
+
+
+### Scheduling bitsliced code
+
+Our scheduling algorithm differs significantly depending on whether we
+are scheduling bitsliced or m-sliced code. In a bitsliced program, the
+single, major bottleneck is register pressure: a significant portion
+of the execution time is spent spilling registers to and from the
+stack. On DES, about 1 in 5 instructions deals with spilling.  The
+role of scheduling is therefore to minimize register pres- sure as
+much as possible.
+
+
+One might expect the C compiler to already minimize register
+pressure. However, it is well known that combining reg- ister
+allocation and instruction scheduling is NP-hard [2], and modern C
+compilers use heuristics to get the best possible approximations in
+most cases. In the bistlicing setting, where hundreds of variables are
+alive at the same time, those heuristics often prove to be
+inefficient, and miss opportunities to lower the spilling.
+
+Our scheduling algorithm follows:
+
+```python
+def Schedule(prog)
+    for each function call funCall of prog do
+        for each variable v in funCall's arguments do
+            if v's definition is not scheduled yet then
+                schedule v's definition next
+        schedule funCall next
+        for each variable v defined by funCall do
+            for each equation eqn of prog using v do
+                if eqn is ready to be scheduled then
+                    schedule eqn next
+```
+
+This algorithm focuses on reducing the live ranges of function calls
+arguments and return values –regardless of whether those functions
+will be inlined or not–. The reasonning behind it is as
+follows. According tothe x86-64 calling conventions, the first 8
+arguments of function calls are passed in registers. It is therefore
+profitable to schedule the instructions computing those arguments
+close to the function call, thus removing the need to spill them only
+to reload them later into registers. As for return values, they are
+returned by reference in a structure (since x86-64 calling conventions
+do not allow functions to return more than one value), which amounts
+to having spilled them already. However, by moving instructions that
+uses them right after the function call, we increase the potential
+benefits of inlining: the return values will not need to be spilled
+but instead will be allowed to stay in registers as their live ranges
+will now be much shorter.
+
+On bitsliced DES, combining scheduling and inlining increases
+throughput by 6.77% compared to the inlined code and reduces code size
+by 9.9% whereas, on bitsliced AES, throughput is increased by 2.49%
+and code size reduced by 3.4%. This witnesses the fact that the
+scheduling performed by Usubac is able to reduce unnecessary spilling,
+which was not spotted by C compilers. Overall, combining inlining and
+scheduling results in a net 45.8% increase in throughput compared to
+baseline. Similarly, on bitsliced AES, throughput is globally improved
+by 26.22%.
+
+### Scheduling m-sliced code
+
+Unlike bitsliced code, m-sliced programs have much lower register
+pressure. Spilling is less of an issue, the latency of the few
+resulting load and store operations being hidden by the CPU
+pipeline. Instead, the challenge consists in being able to saturate
+the parallel CPU execution units. To do so, one must increase ILP,
+taking into account the availability of specialized execution
+units. For instance, hsliced code will rely on SIMD shuffle
+instructions (vpshufb) that can be executed on a single execution unit
+on current Skylake architecture. Performing a sequence of shuffles is
+extremely detrimental to performance: the execution of the shuffles
+(and their respective dependencies) becomeserialized, bottlenecking
+the dedicated execution unit.
+
+One might think that the out-of-order nature of modern CPU would
+alleviate this issue, allowing the processor to execute independent
+instructions ahead in the execution streams. C compilers (such as ICC
+and Clang) seems to adopt this policy: groups of shuffle in the source
+code will be scheduled as-is in the resulting assembly. Only GCC
+statically schedules independent (for example, arithmetic)
+instructions in-between shuffles in the generated assembly. However,
+due to the bulky nature of sliced code, we observe that the
+reservation station is quickly saturated, preventing actual
+out-of-order execution.
+
+We statically increase ILP in Usubac by maintaining a look-behind
+window of the previous 16 instructions (which corresponds to the
+maximal number of registers available on Intel platforms without
+AVX512) while scheduling. To schedule an instruction, we search among
+the remaining instructions one with no data hazard with the
+instructions in the look-behind window, and that would execute on a
+different execution unit. If no such instruction can be found, we
+reduce the size of the look-behind window, and, utlimately just
+schedule any instruction that is ready.
+
+This scheduling algorithm increased the throughput of hsliced AES by
+2.43%, and of vsliced Chacha20 by 9.09%.  Inspecting the generated
+assembly, we notice that, in both cases, the impact of data hazards
+have been minimized by reorganizing computations within each rounds.
+
+Inlining is instrumental in improving the quality of scheduling in
+this setting too: it allows instructions to flow freely across node
+calls. For instance, a round of Chacha20 is specified in terms of 2
+half-rounds, which we naturally implement with two nodes. Thanks to
+inlining, we can afford to define a node, hence increasing
+readability, knowing that, performance-wise, it is transparent.
+
+Whereas inlining allows scheduling to improve the code quality within
+a single round, symmetric ciphers usually combine ten or more
+iterations of a given round. For instance, Chacha20 performs 10
+iterations of a double round, and AES performs between 10 and 14
+rounds. In Usuba, these iterations are naturally expressed with a
+grouped definition, using the forall declaration.
+
+Usubac can choose between expanding the forall declaration –unrolling
+the loop at the expense of code size– or to translate it into a C for
+loop. The loop bounds being statically known, the C compiler could
+also decide to fully unroll this loop. However, the size of the loop
+body being significant, compilers prefer to avoid unrolling it, a
+sound decision in general since code locality ought to be preserved.
+Since we have perfect locality anyway, code size is not an issue in
+our setting. We may thus profitably unroll all the rounds into a
+single straight-line program: scheduling is thus able to re-order
+instructions across distinct encryption rounds. On AES
+(resp. Chacha20), this yields a 3.22% (resp. 3.63%) speedup compared
+to an implementation performing intra-round scheduling only, at the
+expense of a 31.90% (resp. 19.40%) increase in code size.
+
+
+### Remark
+
+It would be tempting to integrate the above optimizations as a
+domain-specific backend for, say, LLVM [3].  We conjecture that the
+resulting compiler would not be radically different nor significantly
+faster than Usuba. First, our optimizations are complementary to those
+performed by the C compiler (_e.g._, inlining). They would be
+expressed almost as-is over LLVM-IR. Second, Table 2 will show that
+there is no silver bullet among compilers: we are currently free to
+pick the absolute best compiler, even if closed source. Third, going
+the extra mile and targeting C simplifies integration in existing code
+bases, as witnessed by the incorporation of the C files produced by
+HACL* [4] into the Firefox and Wireguard projects. This allows the
+cryptographical primitives to potentially outlive the DSL. In the
+following, we evaluate the performance of the code generated by our
+compiler.
 
 
 ---
@@ -72,3 +274,9 @@ increases by 27.62% at the expense of a 19.2% increase in code size.
 ## References
 
 [1] M. Matsui, [How Far Can We Go on the x64 Processors?](https://www.iacr.org/archive/fse2006/40470344/40470344.pdf), FSE, 2006.
+
+[2] R. Motwani _et al._, [Combining register allocation and instruction scheduling](https://pdfs.semanticscholar.org/1b7d/20b856fd420f93525e70a876853f08560e38.pdf), 1995.
+
+[3] C. Lattner, V. Adve, [LLVM: A Compilation Framework for Lifelong Program Analysis & Transformation](https://llvm.org/pubs/2003-09-30-LifelongOptimizationTR.pdf), CGO, 2004.
+
+[4] J.-K. Zinzindohoué _et al_, [HACL*, A Verified Modern Crytographic Library](https://hal.inria.fr/hal-01588421v2/document), ACM Conference on Computer and Communications Security, 2017.
