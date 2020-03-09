@@ -26,6 +26,9 @@ these optimizations at the level of Usuba0.
 
 ### Interleaving
 
+
+#### Principle
+
 A first optimization consists in interleaving several executions of
 the program. Usuba allows us to systematize this folklore programming
 trick, popularized by Matsui [1]: for a cipher using a small number of
@@ -34,19 +37,103 @@ Intel), we can increase its instruction-level parallelism (ILP) by
 interleaving several copies of a single cipher, each manipulating its
 own independent set of variables. 
 
-_An example here_
+This can be understood as a static form of hyper-threading, by which
+we (statically) interleave the instruction stream of several parallel
+execution of a single cipher. By increasing ILP, we reduce the impact
+of data hazards in the deeply pipelined CPU architecture we are
+targeting. Note that this technique is orthogonal from slicing (which
+exploits spatial parallelism, in the registers) by exploiting temporal
+parallelism, _i.e._ the fact that a modern CPU can dispatch multiple,
+independent instructions to its parallel execution units. This
+technique naturally fits within our parallel programming framework: we
+can implement it by a straightforward Usuba0-to-Usuba0 translation.
 
-This can be understood as a static
-form of hyper-threading, by which we (statically) interleave the
-instruction stream of several parallel execution of a single
-cipher. By increasing ILP, we reduce the impact of data hazards in the
-deeply pipelined CPU architecture we are targeting. Note that this
-technique is orthogonal from slicing (which exploits spatial
-parallelism, in the registers) by exploiting temporal parallelism,
-_i.e._ the fact that a modern CPU can dispatch multiple, independent
-instructions to its parallel execution units. This technique naturally
-fits within our parallel programming framework: we can implement it by
-a straightforward Usuba0-to-Usuba0 translation.
+
+#### Example
+
+Rectangle's S-box for instance can be written in C using the following
+macro:
+
+```c
+int sbox_circuit(a0,a1,a2,a3) {                 \
+  int t0, t1, t2;                               \
+  t0 = ~a1;                                     \
+  t1 = a2 ^ a3;                                 \
+  t2 = a3 | t0;                                 \
+  t2 = a0 ^ t2;                                 \
+  a0 = a0 & t0;                                 \
+  a0 = a0 ^ t1;                                 \
+  t0 = a1 ^ a2;                                 \
+  a1 = a2 ^ t2;                                 \
+  a3 = t1 & t2;                                 \
+  a3 = t0 ^ a3;                                 \
+  t0 = a0 | t0;                                 \
+  a2 = t2 ^ t0;                                 \
+  }
+```
+
+This implementation modifies its input (`a0`, `a1`, `a2` and `a3`)
+in-place, and uses 3 temporary variables `t0`, `t1` and `t2`. It
+contains 12 instructions, and we might therefore expect that it
+executes in 3 cycles on a Skylake, saturating the 4 bitwise ports of
+this CPU. However, it contains a lot of data dependencies: `t2 = a3 |
+t0` needs to wait to `t0 = ~a1` to be computed; `t2 = a0 ^ t2` needs
+to wait for `t2 = a3 | t0`; `a0 = a0 ^ t1` needs to wait for `a0 = a0
+& t0`, and so on. Compiled with Clang 7.0.0, this codes executes in
+about about 5.24 cycles. By interleaving two instances of this code,
+the impact of data hazards is reduced:
+
+```c
+int sbox_circuit_interleaved(a0,a1,a2,a3,a0_2,a1_2,a2_2,a3_2) {  \
+    int t0, t1, t2;                                         \
+                           int t0_2, t1_2, t2_2;            \
+    t0 = ~a1;                                               \
+                           t0_2 = ~a1_2;                    \
+    t1 = a2 ^ a3;                                           \
+                           t1_2 = a2_2 ^ a3_2;              \
+    t2 = a3 | t0;                                           \
+                           t2_2 = a3_2 | t0_2;              \
+    t2 = a0 ^ t2;                                           \
+                           t2_2 = a0_2 ^ t2_2;              \
+    a0 = a0 & t0;                                           \
+                           a0_2 = a0_2 & t0_2;              \
+    a0 = a0 ^ t1;                                           \
+                           a0_2 = a0_2 ^ t1_2;              \
+    t0 = a1 ^ a2;                                           \
+                           t0_2 = a1_2 ^ a2_2;              \
+    a1 = a2 ^ t2;                                           \
+                           a1_2 = a2_2 ^ t2_2;              \
+    a3 = t1 & t2;                                           \
+                           a3_2 = t1_2 & t2_2;              \
+    a3 = t0 ^ a3;                                           \
+                           a3_2 = t0_2 ^ a3_2;              \
+    t0 = a0 | t0;                                           \
+                           t0_2 = a0_2 | t0_2;              \
+    a2 = t2 ^ t0;                                           \
+                           a2_2 = t2_2 ^ t0_2;              \
+  }
+```
+
+This code contains twice the S-box code (visually separated to make it
+clearer): one implementation computes the S-box on `a0`, `a1`, `a2`
+and `a3` while the other computes it on a second input, `a0_2`,
+`a1_2`, `a2_2` and `a3_2`. This code runs in 7 cycles; or 3.5 cycles
+per S-box, which is much closer to the ideal 3 cycles/S-box. 
+
+Despite the interleaving, some data dependencies remain, and it may be
+tempting to interleave a third execution of the S-box. However, since
+each S-box requires 7 registers (4 for the input, and 3 temporaries),
+this would require 21 registers, and only 16 are available. Still, we
+benchmarked this S-box interleaved 3 times, and it executes 12.92
+cycles, or 4.3 cycles/S-box; which is slower than when only 2
+executions are interleaved. Inspecting the assembly code reveals that
+when 3 S-boxes are interleaved, 4 values are spilled, thus requiring 8
+additional `move` operations (4 stores and 4 loads). Interleaving 2
+S-boxes does not cause any spilling.
+
+
+#### Implementation
+
 
 The interleaving heuristic itself is retrospectively straight-forward:
 the number of interleaved instances is set to be the number of CPU
