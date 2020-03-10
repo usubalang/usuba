@@ -193,7 +193,11 @@ module Interleave_generic = struct
     (* Using 1 as default grain; that's reasonable given the CPU
     architecture to maximize parallelism *)
     let grain = if conf.interleave = 0 then 1 else conf.interleave in
-    { nodes = List.map (interleave_def inter_factor grain) prog.nodes }
+    if inter_factor > 1 then
+      { nodes = List.map (interleave_def inter_factor grain) prog.nodes }
+    else
+      (* Nothing to do if inter_factor is less than 2 *)
+      prog
 
 end
 
