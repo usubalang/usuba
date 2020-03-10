@@ -193,9 +193,9 @@ let schedule_def (def:def) : def =
 (* Must be called once arrays (and thus Loop) have been removed. *)
 let schedule_prog (prog:prog) (conf:config): prog =
   (* Printf.fprintf stderr "Scheduler (simple) disabled.\n"; *)
-  if conf.unroll then
-  { nodes = List.map schedule_def prog.nodes }
-  else
+  (* if conf.unroll then *)
+  (* { nodes = List.map schedule_def prog.nodes } *)
+  (* else *)
     prog
 
 
