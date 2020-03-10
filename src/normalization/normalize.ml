@@ -62,7 +62,7 @@ let register_normalize_core (runner:pass_runner) : unit =
 let register_pre_schedule (runner:pass_runner) : unit =
   (* Scheduling is a bit tricky: need to apply CSE_CF_CP before
   scheduling *)
-  if (runner#get_conf ()).scheduling then
+  if (runner#get_conf ()).pre_schedule then
     runner#register_pass (fun prog conf ->
                           Pre_schedule.schedule
                             (Simple_opts.opt_prog prog conf)) "Pre_schedule"

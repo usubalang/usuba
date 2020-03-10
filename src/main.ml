@@ -22,6 +22,7 @@ let fold_const    = ref true
 let cse           = ref true
 let copy_prop     = ref true
 let loop_fusion   = ref true
+let pre_schedule  = ref true
 let scheduling    = ref true
 let schedule_n    = ref 10
 let share_var     = ref false
@@ -128,6 +129,7 @@ let main () =
                            cse := false;
                            copy_prop := false),
                        "Deactive CSE, Copy propagation and Constant folding";
+      "-no-pre-sched", Arg.Clear pre_schedule, "Deactivate pre-scheduling opti";
       "-no-sched", Arg.Clear scheduling, "Deactivate scheduling opti";
       "-sched-n", Arg.Int (fun n -> schedule_n := n), "Set scheduling param";
       "-no-share", Arg.Clear share_var, "Deactivate variable sharing";
@@ -167,6 +169,8 @@ let main () =
                        else if !shares <> 1 then 32 else
                          bits_in_arch !arch in
 
+    let pre_sched = !pre_schedule && !scheduling in
+
     if !maskVerif then (
       unroll    := true;
       no_arr    := true;
@@ -187,13 +191,14 @@ let main () =
         cse            =   !cse;
         copy_prop      =   !copy_prop;
         loop_fusion    =   !loop_fusion;
+        pre_schedule   =   pre_sched; (* local var *)
         scheduling     =   !scheduling;
         schedule_n     =   !schedule_n;
         share_var      =   !share_var;
         linearize_arr  =   !linearize_arr;
         precal_tbl     =   !precal_tbl;
         archi          =   !arch;
-        bits_per_reg   =   bits_per_reg; (* local var! *)
+        bits_per_reg   =   bits_per_reg; (* local var *)
         no_arr         =   !no_arr;
         arr_entry      =   !arr_entry;
         unroll         =   !unroll;

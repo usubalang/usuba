@@ -5,6 +5,74 @@ open Basic_utils
 open Utils
 open Printf
 
+(* |eqs_ready|: equations ready to be scheduled;
+   |vars_avail|: variables available (ie, on the lhs of already
+                 scheduled equations)
+   |depends|: hashtbl containing for each variable, all equations that
+              use it (ie, equations that directly depends on it).
+
+   Loops are not currently handled (this module does nothing on nodes
+   containing loops).  *)
+
+(* exception Loop_not_implemented *)
+
+(* let schedule_deqs (env_var:(ident, typ) Hashtbl.t) (eqs_ready: *)
+
+(* (\* Initialize the |depends| hash which contains for each variable, all *)
+(*    equations that use it directly. *\) *)
+(* let compute_dependencies (env_var:(ident, typ) Hashtbl.t) (deqs:deq list) : *)
+(*       (var, deq list) Hashtbl.t = *)
+(*   let depends = Hashtbl.create 100 in *)
+
+(*   List.iter *)
+(*     (fun d -> *)
+(*      match d.content with *)
+(*      | Loop _ -> raise Loop_not_implemented *)
+(*      | Eqn(lhs,e,_) -> *)
+(*         List.iter *)
+(*           (fun v -> *)
+(*            let prev_deps = match Hashtbl.find_opt depends v with *)
+(*              | Some l -> l *)
+(*              | None   -> [] in *)
+(*            Hashtbl.replace depends v (d :: prev_deps)) *)
+(*           (List.map (expand_var env_var) (get_used_vars e))) deqs; *)
+
+(*   deqs *)
+
+(* (\* Adds all variables of |p_in| into a hashmap of available variables. *\) *)
+(* let init_vars_avail (p_in:var_d list) = *)
+(*   let vars_avail = Hashtbl.create 10 in *)
+(*   List.iter (fun vd -> *)
+(*              List.iter (fun v -> Hashtbl.add vars_avail vd true) *)
+(*                        (expand_vd vd)) p_in; *)
+(*   vars_avail *)
+
+(* let schedule_def (def:def) : def = *)
+(*   try *)
+(*     { def with *)
+(*       node = match def.node with *)
+(*              | Single(vars,body) -> *)
+(*                 let env_var = build_env_var def.p_in def.p_out vars in *)
+(*                 let eqs_ready = Hashtbl.create 50 in *)
+(*                 let vars_avail = init_vars_avail def.p_in in *)
+(*                 let depends = compute_dependencies env_var body in *)
+(*                 schedule_deqs env_var eqs_ready vars_avail depends body *)
+(*              | _ -> def.node } *)
+(*   with Loop_not_implemented -> def *)
+
+
+(* let schedule (prog:prog) : prog = *)
+(*   {nodes = List.map schedule_def prog.nodes } *)
+
+
+
+
+
+
+
+
+
+
 
 let update_hoh hash k1 k2 =
   match Hashtbl.find_opt hash k1 with
@@ -14,13 +82,16 @@ let update_hoh hash k1 k2 =
               Hashtbl.add hash k1 h
 
 
-let make_var_ready (ready:(var,var list * expr * ((ident*deq_i) list)) Hashtbl.t)
-                   (is_sched:(var list*expr,bool) Hashtbl.t)
-                   (sched_vars:(var,bool) Hashtbl.t)
-                   (var:var) : (var list * expr * ((ident*deq_i) list)) list =
+let rec make_var_ready (env_var: (ident,typ) Hashtbl.t)
+                       (ready:(var,var list * expr * ((ident*deq_i) list)) Hashtbl.t)
+                       (is_sched:(var list*expr,bool) Hashtbl.t)
+                       (sched_vars:(var,bool) Hashtbl.t)
+                       (var:var) : (var list * expr * ((ident*deq_i) list)) list =
   let rec aux (var:var) : (var list * expr * ((ident*deq_i) list)) list =
     match Hashtbl.find_opt ready var with
-    | None      -> []
+    | None      -> (match get_var_type env_var var with
+                    | Uint(_,_,1) | Nat -> []
+                    | _ -> flat_map aux (expand_var_partial env_var var))
     | Some(l,e,orig) -> match Hashtbl.find_opt is_sched (l,e) with
                         | Some _ -> []
                         | None   -> let prevs = flat_map aux (get_used_vars e) in
@@ -31,12 +102,13 @@ let make_var_ready (ready:(var,var list * expr * ((ident*deq_i) list)) Hashtbl.t
   List.rev @@ aux var
 
 
-let schedule_pre (ready:(var,var list * expr * ((ident*deq_i) list)) Hashtbl.t)
+let schedule_pre (env_var: (ident,typ) Hashtbl.t)
+                 (ready:(var,var list * expr * ((ident*deq_i) list)) Hashtbl.t)
                  (is_sched:(var list*expr,bool) Hashtbl.t)
                  (sched_vars:(var,bool) Hashtbl.t)
                  (args:var list) : (var list * expr * ((ident*deq_i) list)) list =
   List.rev @@
-    flat_map (make_var_ready ready is_sched sched_vars) args
+    flat_map (make_var_ready env_var ready is_sched sched_vars) args
 
 
 let schedule_post (deps:(var,(var,bool) Hashtbl.t) Hashtbl.t)
@@ -63,7 +135,8 @@ let schedule_post (deps:(var,(var,bool) Hashtbl.t) Hashtbl.t)
                   (keys_2nd_layer deps x)) vars
 
 
-let schedule_asgn (ready:(var,var list * expr * ((ident*deq_i) list)) Hashtbl.t)
+let schedule_asgn (env_var: (ident,typ) Hashtbl.t)
+                  (ready:(var,var list * expr * ((ident*deq_i) list)) Hashtbl.t)
                   (is_sched:(var list*expr,bool) Hashtbl.t)
                   (sched_vars:(var,bool) Hashtbl.t)
                   (schedule:(var list * expr * ((ident*deq_i) list)) list ref)
@@ -72,7 +145,7 @@ let schedule_asgn (ready:(var,var list * expr * ((ident*deq_i) list)) Hashtbl.t)
                   (orig:(ident*deq_i) list)
                   (l:var list) (e:expr) : unit =
   match e with
-  | Fun(f,args) -> schedule := (schedule_pre ready is_sched sched_vars
+  | Fun(f,args) -> schedule := (schedule_pre env_var ready is_sched sched_vars
                                              (flat_map get_used_vars args))
                                @ !schedule;
                    Hashtbl.add is_sched (l,e) true;
@@ -107,14 +180,14 @@ let build_deps (deqs: deq list) =
 
   deps_down,deps_up,defs
 
-let schedule_deqs (deqs:deq list) (def:def): deq list =
+let schedule_deqs (vars:var_d list) (deqs:deq list) (def:def): deq list =
   let (deps_down,deps_up,defs)  = build_deps deqs in
   let ready    = Hashtbl.create 500 in
   let is_sched = Hashtbl.create 500 in
   let sched_vars = Hashtbl.create 500 in
   let schedule = ref [] in
 
-  let env_var = build_env_var def.p_in [] [] in
+  let env_var = build_env_var def.p_in def.p_out vars in
   let rec init_sched_vars (v:var) : unit =
     Hashtbl.add sched_vars v true;
     match expand_var_partial env_var v with
@@ -123,7 +196,7 @@ let schedule_deqs (deqs:deq list) (def:def): deq list =
   List.iter (fun vd -> init_sched_vars (Var vd.vd_id)) def.p_in;
 
   List.iter (fun d -> match d.content with
-              | Eqn(l,e,_) -> schedule_asgn ready is_sched sched_vars
+              | Eqn(l,e,_) -> schedule_asgn env_var ready is_sched sched_vars
                                             schedule deps_down defs d.orig l e
               | _ -> raise (Error "Invalid Loop")) deqs;
 
@@ -139,7 +212,7 @@ let schedule_deqs (deqs:deq list) (def:def): deq list =
 let schedule_node (def:def) : def =
   if is_noopt def then def else
     { def with node = match def.node with
-                      | Single(vars,deqs) -> Single(vars,schedule_deqs deqs def)
+                      | Single(vars,deqs) -> Single(vars,schedule_deqs vars deqs def)
                       | _ -> def.node }
 
 let schedule (prog:prog) : prog =

@@ -145,6 +145,7 @@ Record config := {
   cse          : bool;
   copy_prop    : bool;
   loop_fusion  : bool;
+  pre_schedule : bool;
   scheduling   : bool;
   schedule_n   : N;
   share_var    : bool;

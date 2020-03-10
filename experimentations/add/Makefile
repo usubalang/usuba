@@ -1,5 +1,5 @@
 TARGET = add_8 add_16 add_32
-CFLAGS = -Wall -Wextra -msse4.2 -fno-tree-vectorize -fno-slp-vectorize -O3
+CFLAGS = -Wall -Wextra -march=native -fno-tree-vectorize -fno-slp-vectorize -O3
 ARCH = SSE
 CC = clang
 

@@ -26,6 +26,7 @@ let default_conf : config =
     cse          = true;
     copy_prop    = true;
     loop_fusion  = true;
+    pre_schedule = true;
     scheduling   = true;
     schedule_n   = 10;
     share_var    = false;
@@ -325,6 +326,9 @@ let rec expand_var env_var ?(env_it=Hashtbl.create 100) ?(bitslice=false) ?(part
 
 let rec expand_var_partial env_var ?(env_it=Hashtbl.create 100) (v:var) : var list =
   expand_var env_var ~env_it:env_it ~partial:true v
+
+let expand_vd (vd:var_d) : var list =
+  expand_var (build_env_var [vd] [] []) (Var vd.vd_id)
 
 (* Returns the base variable of a variable (ie, remove ranges/slices/index) *)
 let rec get_var_base (v:var) : var =
