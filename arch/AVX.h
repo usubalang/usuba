@@ -37,7 +37,7 @@
 
 #define L_SHIFT(a,b,c)  _mm256_slli_epi##c(a,b)
 #define R_SHIFT(a,b,c)  _mm256_srli_epi##c(a,b)
-#define RA_SHIFT(a,b,c) _mm256_sra_epi##c(a,b)
+#define RA_SHIFT(a,b,c) _mm256_sra_epi##c(a,_mm_set1_epi##c(b))
 
 #define L_ROTATE(a,b,c)                                                 \
   b == 8 && c == 32 ?                                                   \
