@@ -519,9 +519,7 @@ let rec get_expr_type
                   raise Fatal_type_error)
         else
           let def = Hashtbl.find env_fun f in
-          List.map (fun vd -> vd.vd_typ) def.p_out
-     | _ -> eprintf "The type-checker doesn't handle `%s' yet. Exiting.\n" (expr_to_str e);
-            assert false)
+          List.map (fun vd -> vd.vd_typ) def.p_out)
 
 
 (* Checks that the type of |e| is |lhs_types|. |lhs_types| has been
@@ -716,10 +714,6 @@ let rec type_expr (backtrace:string list)
              print_backtrace backtrace;
              error := true);
      Fun_v(f.id, ae, typed_l)
-  | _ -> eprintf "[Type error] Type-checking of `%s' not implemented yet.\n"
-           (get_expr_constr_str e);
-         print_backtrace backtrace;
-         raise Fatal_type_error
 
 
 (* The types of the left han-side are always computable (since it's

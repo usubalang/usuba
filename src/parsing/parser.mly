@@ -21,14 +21,10 @@
 %token TOK_VAR
 %token TOK_LET
 %token TOK_TEL
-%token TOK_FBY
 %token TOK_PERM
 %token TOK_TABLE
 %token TOK_FORALL
 %token TOK_IN
-%token TOK_WHEN
-%token TOK_WHENOT
-%token TOK_MERGE
 %token TOK_SHUFFLE
 %token TOK_INLINE
 %token TOK_NOINLINE
@@ -66,7 +62,6 @@
 %token TOK_RANGE
 %token TOK_LT
 %token TOK_GT
-%token TOK_ARROW
 %token TOK_SQUOTE
 
 %token TOK_AND
@@ -82,18 +77,12 @@
 %token <Usuba_AST.ident> TOK_id
 %token <Usuba_AST.ident> TOK_id_no_x
 %token <int> TOK_int
-%token <Usuba_AST.constr> TOK_constr
 %token <Usuba_AST.dir> TOK_dir
 
 %token TOK_EOF
 
 
 (***************************** Precedence levels ******************************)
-
-%nonassoc TOK_FBY
-%nonassoc TOK_WHEN
-%nonassoc TOK_WHENOT
-%nonassoc TOK_ARROW
 
 %nonassoc TOK_LSHIFT TOK_RSHIFT TOK_RASHIFT TOK_LROTATE TOK_RROTATE
 
@@ -202,23 +191,10 @@ exp:
   | f=ident TOK_LPAREN args=explist TOK_RPAREN { Fun(f, args) }
   | f=ident TOK_LT n=arith_exp TOK_GT
     TOK_LPAREN args=explist TOK_RPAREN { Fun_v(f, n, args) }
-  | a=exp TOK_WHEN constr=TOK_constr TOK_LPAREN x=ident TOK_RPAREN { When(a,constr, x) }
-  | a=exp TOK_WHENOT constr=TOK_constr TOK_LPAREN x=ident TOK_RPAREN
-    (* Transforming Whenot into When. Would be cleaner to do it later, todo.. *)
-    { match constr with
-      | True -> When(a,False, x)
-      | False -> When(a,True, x) }
-  | TOK_MERGE ck=ident c=caselist { Merge(ck,c) }
-  | init=exp TOK_FBY follow=exp { Fby(init,follow,None) }
-  (* | init=exp TOK_LT f=ident TOK_GT TOK_FBY follow=exp *)
-  (*   { Fby(init,follow,Some f) } *)
 exp_a: e=exp TOK_EOF { e }
 
 explist: l=separated_nonempty_list(TOK_COMMA,exp) { l }
 
-caselist:
-  | option(TOK_PIPE)
-    l=separated_nonempty_list(TOK_PIPE,c=TOK_constr TOK_ARROW e=exp {c,e}) { l }
 
 pat:
   | p=var                      { [ p ] }

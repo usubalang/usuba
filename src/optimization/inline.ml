@@ -60,9 +60,6 @@ module Must_inline = struct
                           (must_inline_expr env_var env_in y)
     | Fun(_,l)       -> List.exists (must_inline_expr env_var env_in) l
     | Fun_v(_,_,l)   -> List.exists (must_inline_expr env_var env_in) l
-    | _ -> Printf.eprintf "must_inline_expr: doesn't handle '%s' yet.\n"
-                          (Usuba_print.expr_to_str e);
-           assert false
 
   let rec must_inline_deqs (env_var:(ident,typ) Hashtbl.t)
                            (env_in:(ident,bool) Hashtbl.t)

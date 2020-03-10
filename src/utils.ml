@@ -526,9 +526,6 @@ let get_expr_constr_str (e:expr) : string =
   | Arith _   -> "Arith"
   | Fun _     -> "Fun"
   | Fun_v _   -> "Fun_v"
-  | Fby _     -> "Fby"
-  | Merge _   -> "Merge"
-  | When _    -> "When"
 
 let rec contains_fun (e:expr) : bool =
     match e with
@@ -540,7 +537,6 @@ let rec contains_fun (e:expr) : bool =
   | Arith(_,x,y)  -> (contains_fun x) || (contains_fun y)
   | Fun _         -> true
   | Fun_v _       -> true
-  | _ -> assert false
 
 let rec is_constant (ae:arith_expr) : bool =
   match ae with

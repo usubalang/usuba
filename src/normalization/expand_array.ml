@@ -152,7 +152,6 @@ let rec expand_expr env_var env_keep env env_it bitslice force (e:expr) : expr =
      (* Note: can raise Need_unroll *)
      Fun(fresh_suffix f (sprintf "%d'" (eval_arith env ae)),
                           List.map rec_call el)
-  | Fby _ | When _ | Merge _ -> e
 
 
 let rec do_unroll env_var env_keep env bitslice force unroll x ei ef deqs : deq list =

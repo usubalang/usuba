@@ -31,9 +31,6 @@ let rec apply_perm_e env_fun env_var (e:expr) : expr =
                 (match env_fetch env_fun f with
                  | Some perm -> Tuple (list_from_perm env_var perm l')
                  | None -> Fun(f,l'))
-  | Fby(ei,ef,f) -> Fby(apply_perm_e env_fun env_var ei,apply_perm_e env_fun env_var ef,f)
-  | When(e,c,x)  -> When(apply_perm_e env_fun env_var e, c, x)
-  | Merge(x,l)   -> Merge(x,List.map (fun (c,e) -> c,apply_perm_e env_fun env_var e) l)
   | Fun_v(_,_,_) -> assert false
 
 

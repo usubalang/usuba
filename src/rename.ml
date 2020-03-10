@@ -49,12 +49,6 @@ let rec rename_expr (e:expr) =
   | Fun(f,l) -> if is_builtin f then Fun(f,List.map rename_expr l)
                 else Fun(fresh_suffix f "'",List.map rename_expr l)
   | Fun_v(f,e,l) -> Fun_v(fresh_suffix f "'",rename_arith_expr e,List.map rename_expr l)
-  | Fby(ei,ef,f)   -> Fby(rename_expr ei,rename_expr ef,
-                          match f with
-                          | None -> None
-                          | Some id -> Some (fresh_suffix id "'"))
-  | When(e,c,x) -> When(rename_expr e,c,fresh_suffix x "'")
-  | Merge(x,l)  -> Merge(fresh_suffix x "'",List.map (fun (c,e) -> c,rename_expr e) l)
 
 
 

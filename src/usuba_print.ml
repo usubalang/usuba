@@ -59,10 +59,6 @@ let rec var_to_str_types = function
   | Slice(v,l) -> sprintf "Splice: %s[%s]" (var_to_str_types v)
                           (join "," (List.map arith_to_str_types l))
 
-let constr_to_str = function
-  | True  -> "True"
-  | False -> "False"
-
 let rec expr_to_str_types = function
   | Const(c,_) -> "Const: " ^ (string_of_int c)
   | ExpVar v -> "ExpVar: " ^ (var_to_str v)
@@ -80,14 +76,6 @@ let rec expr_to_str_types = function
   | Fun(f,l) -> "Fun: " ^ f.name ^ "(" ^ (join "," (List.map expr_to_str_types l)) ^ ")"
   | Fun_v(f,e,l) -> "Fun_v: " ^ f.name ^ "[" ^ (arith_to_str e) ^ "]"
                                ^ "(" ^ (join "," (List.map expr_to_str_types l)) ^ ")"
-  | Fby(ei,ef,id) -> "Fby: " ^ (expr_to_str_types ei) ^ " fby " ^ (expr_to_str_types ef)
-  | When(e,c,x)  -> sprintf "When: %s when %s(%s)" (expr_to_str_types e) (constr_to_str c) x.name
-  | Merge(ck,c)   -> sprintf "Merge: merge %s %s"
-                             ck.name (join " "
-                                      (List.map (fun (c,y) ->
-                                                 sprintf "| %s -> %s "
-                                                         (constr_to_str c)
-                                                         (expr_to_str_types y)) c))
 
 let rec expr_to_str = function
   | Const(c,_) -> (string_of_int c)
@@ -105,14 +93,6 @@ let rec expr_to_str = function
   | Fun(f,l) -> sprintf "%s(%s)" f.name (join "," (List.map expr_to_str l))
   | Fun_v(f,e,l) -> sprintf "%s[%s](%s)" f.name (arith_to_str e)
                             (join "," (List.map expr_to_str l))
-  | Fby(ei,ef,id) -> sprintf "%s fby %s" (expr_to_str ei) (expr_to_str ef)
-  | When(e,c,x)  -> sprintf "%s when %s(%s)" (expr_to_str e) (constr_to_str c) x.name
-  | Merge(ck,c)   -> sprintf "merge %s %s"
-                             ck.name (join " "
-                                      (List.map (fun (c,y) ->
-                                                 sprintf "| %s -> %s "
-                                                         (constr_to_str c)
-                                                         (expr_to_str y)) c))
 let expr_to_str_l = lift_comma expr_to_str
 
 let pat_to_str pat =

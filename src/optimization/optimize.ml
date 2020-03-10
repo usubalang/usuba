@@ -23,7 +23,6 @@ module Clean = struct
     | Arith(_,x,y) -> clean_expr env x; clean_expr env y
     | Fun(_,l) -> List.iter (clean_expr env) l
     | Fun_v(_,_,l) -> List.iter (clean_expr env) l
-    | Fby(ei,ef,_) -> clean_expr env ei; clean_expr env ef
     | _ -> ()
 
   let clean_in_deqs (vars:p) (deqs:deq list) : p =

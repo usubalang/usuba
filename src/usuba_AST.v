@@ -40,10 +40,6 @@ Inductive typ :=
   | Uint (d:dir) (m: mtyp) (n:N)
   | Array (t: typ) (n:arith_expr).
 
-Inductive constr :=
-  | True
-  | False.
-
 Inductive var :=
   | Var (i: ident)
   | Index (x: var)(ae: arith_expr)
@@ -62,9 +58,7 @@ Inductive expr :=
   | Arith (op: arith_op)(e1 e2: expr)
   | Fun (x: ident)(es: list expr)
   | Fun_v (x: ident)(ae: arith_expr)(es: list expr) (* nodes arrays *)
-  | Fby (e1 e2: expr)(mx: option ident)
-  | When (e: expr)(x: constr) (y: ident)
-  | Merge (x: ident)(xs: list (constr * expr)).
+.
 
 Inductive stmt_opt := Unroll | No_unroll | Pipelined | Safe_exit.
 

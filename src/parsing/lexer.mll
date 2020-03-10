@@ -20,12 +20,8 @@ let _ =
      "tel", TOK_TEL;
      "perm", TOK_PERM;
      "table", TOK_TABLE;
-     "fby", TOK_FBY;
      "forall", TOK_FORALL;
      "in", TOK_IN;
-     "merge", TOK_MERGE;
-     "when", TOK_WHEN;
-     "whenot", TOK_WHENOT;
      "Shuffle", TOK_SHUFFLE;
      "_inline", TOK_INLINE;
      "_no_inline", TOK_NOINLINE;
@@ -71,8 +67,6 @@ rule token = parse
 | "x"    { TOK_CROSS }
 
 (* identifiers / keywords *)
-| "True"   { TOK_constr True  }
-| "False"  { TOK_constr False }
 (* This pattern is a bit hacky: it doesn't match types (like u8, v15, b2 etc.) *)
 | ['a' 'c'-'t' 'w' 'y' 'z' 'A'-'Z' '_' ] ['a'-'w' 'y' 'z' 'A'-'Z' '0'-'9' '_' '\'']*
 | [ 'u' 'v' 'b' ] ['a'-'w' 'y' 'z' 'A'-'Z' '_' ] ['a'-'w' 'y' 'z' 'A'-'Z' '0'-'9' '_' '\'']* as id
@@ -84,7 +78,6 @@ rule token = parse
 
 (* symbols *)
 | "'"    { TOK_SQUOTE    }
-| "->"   { TOK_ARROW     }
 | "("    { TOK_LPAREN    }
 | ")"    { TOK_RPAREN    }
 | "["    { TOK_LBRACKET  }

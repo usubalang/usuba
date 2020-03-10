@@ -88,9 +88,6 @@ let norm_prog (rename:bool) (prog:prog) (conf:config) : prog =
   (* Schedules instructions according to their dependencies *)
   runner#register_pass Init_scheduler.schedule_prog "Init_scheduler 1";
 
-  (* Remove when/merge *)
-  runner#register_pass Remove_ctrl.remove_ctrl "Remove_ctrl";
-
   register_normalize_core runner;
 
   (* Monomorphize to H/V/B-slice *)

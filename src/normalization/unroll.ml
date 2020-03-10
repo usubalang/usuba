@@ -40,7 +40,6 @@ let rec unroll_in_expr (env_it:(ident,int) Hashtbl.t) (e:expr) : expr =
   | Fun(f,l)        -> Fun(f,List.map (unroll_in_expr env_it) l)
   | Fun_v(f,x,l)    -> Fun_v(f, simpl_arith env_it x,
                              List.map (unroll_in_expr env_it) l)
-  | _ -> assert false
 
 
 let rec unroll_deqs (env_it:(ident,int) Hashtbl.t)
