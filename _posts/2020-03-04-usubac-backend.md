@@ -118,18 +118,30 @@ This code contains twice the S-box code (visually separated to make it
 clearer): one implementation computes the S-box on `a0`, `a1`, `a2`
 and `a3` while the other computes it on a second input, `a0_2`,
 `a1_2`, `a2_2` and `a3_2`. This code runs in 7 cycles; or 3.5 cycles
-per S-box, which is much closer to the ideal 3 cycles/S-box. 
+per S-box, which is much closer to the ideal 3 cycles/S-box. We shall
+call it 2-interleaved.
 
 Despite the interleaving, some data dependencies remain, and it may be
 tempting to interleave a third execution of the S-box. However, since
 each S-box requires 7 registers (4 for the input, and 3 temporaries),
 this would require 21 registers, and only 16 are available. Still, we
-benchmarked this S-box interleaved 3 times, and it executes 12.92
-cycles, or 4.3 cycles/S-box; which is slower than when only 2
-executions are interleaved. Inspecting the assembly code reveals that
-when 3 S-boxes are interleaved, 4 values are spilled, thus requiring 8
-additional `move` operations (4 stores and 4 loads). Interleaving 2
-S-boxes does not cause any spilling.
+benchmarked this 3-interleaved S-box, and it executes 12.92 cycles, or
+4.3 cycles/S-box; which is slower than the 2-interleaved one, but
+still faster than without interleaved at all. Inspecting the assembly
+code reveals that in the 3-interleaved S-box, 4 values are spilled,
+thus requiring 8 additional `move` operations (4 stores and 4
+loads). The 2-interleaved S-box does not contain any spilling.
+
+
+**Remark.** In order to benchmark the S-box, we put it in a loop that
+we unrolled 10 times (using Clang's `unroll` pragma). This unrolling
+is required because of the expected port saturation: if we hope that
+the S-box without interleaving to use ports 0, 1, 5 and 6 of the CPU
+for 3 cycles, this leaves no free port to perform the jump at the end
+of the loop. In practice, since the non-interleaved S-box does not
+saturate the ports, this doesn't change its performances. However,
+unrolling increases the performances of the 2-interleaved S-box -which
+puts more pressure on the execution ports- by 14%.
 
 
 #### Implementation
