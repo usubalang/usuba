@@ -26,9 +26,6 @@ let _ =
      "merge", TOK_MERGE;
      "when", TOK_WHEN;
      "whenot", TOK_WHENOT;
-     "on", TOK_ON;
-     "onot", TOK_ONOT;
-     "base", TOK_BASE;
      "Shuffle", TOK_SHUFFLE;
      "_inline", TOK_INLINE;
      "_no_inline", TOK_NOINLINE;
@@ -103,7 +100,6 @@ rule token = parse
 | "<"    { TOK_LT        }
 | ">"    { TOK_GT        }
 | ","    { TOK_COMMA     }
-| "::"   { TOK_TWO_COLON }
 | ":"    { TOK_COLON     }
 | ";"    { TOK_SEMICOLON }
 | "|"    { TOK_PIPE      }

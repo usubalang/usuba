@@ -12,7 +12,6 @@ let warnings    = ref false
 let verbose     = ref 1
 let verif       = ref false
 let type_check  = ref true
-let clock_check = ref false
 let check_tbl   = ref false
 
 let inlining      = ref true
@@ -112,10 +111,6 @@ let main () =
       "-verif", Arg.Set verif, "Activate verification";
       "-check-tbl", Arg.Set check_tbl, "Activate verification of tables";
       "-no-type-check", Arg.Clear type_check, "Deactivate type checking";
-      "-no-clock-check", Arg.Clear clock_check, "Deactivate clock checking";
-      "-no-checks", Arg.Unit (fun () -> type_check := false;
-                                        clock_check := false),
-                    "Deactivate both type and clock checking";
       "-no-inline", Arg.Clear inlining, "Deactivate inlining opti";
       "-inline-all", Arg.Set inline_all, "Force inlining of every node";
       "-light-inline", Arg.Set light_inline, "Inline only _inline functions";
@@ -182,7 +177,6 @@ let main () =
         verbose        =   !verbose;
         verif          =   !verif;
         type_check     =   !type_check;
-        clock_check    =   !clock_check;
         check_tbl      =   !check_tbl;
         inlining       =   !inlining;
         inline_all     =   !inline_all;
@@ -225,9 +219,7 @@ let main () =
       raise (Error ("Invalid -fix-size " ^ (string_of_int conf.bits_per_reg)));
 
     let prog = Type_checker.type_prog prog conf in
-    if !clock_check then
-      if not (Clock_checker.is_clocked prog) then
-        raise (Error "Unsound program: bad clocks");
+
     print_c s prog conf in
 
 

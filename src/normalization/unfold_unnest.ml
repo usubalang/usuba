@@ -25,8 +25,8 @@ let rec expand_intn (id: ident) (n: int) : ident list =
       else (fresh_suffix id (string_of_int i)) :: (aux (i+1))
     in aux 1
 
-let expand_intn_typed (id: ident) (n: int) (ck: clock) =
-  List.map (fun x -> (x,bool,ck)) (expand_intn id n)
+let expand_intn_typed (id: ident) (n: int) =
+  List.map (fun x -> (x,bool)) (expand_intn id n)
 
 let expand_intn_pat (id: ident) (n: int) : var list =
   List.map (fun x -> Var x) (expand_intn id n)

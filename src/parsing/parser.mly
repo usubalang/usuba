@@ -29,9 +29,6 @@
 %token TOK_WHEN
 %token TOK_WHENOT
 %token TOK_MERGE
-%token TOK_ON
-%token TOK_ONOT
-%token TOK_BASE
 %token TOK_SHUFFLE
 %token TOK_INLINE
 %token TOK_NOINLINE
@@ -58,7 +55,6 @@
 %token TOK_RCURLY
 %token TOK_EQUAL
 %token TOK_COMMA
-%token TOK_TWO_COLON
 %token TOK_COLON
 %token TOK_SEMICOLON
 %token TOK_PIPE
@@ -268,8 +264,8 @@ opt_var_d:
   | TOK_LAZYLIFT { PlazyLift }
 
 var_d:
-  ids=separated_list(TOK_COMMA, ident) TOK_COLON attr=list(opt_var_d) t=typ ck=pclock
-  { List.map (fun x -> { vd_id = x; vd_typ=t; vd_ck=ck; vd_opts=attr; vd_orig=[] }) ids }
+  ids=separated_list(TOK_COMMA, ident) TOK_COLON attr=list(opt_var_d) t=typ
+  { List.map (fun x -> { vd_id = x; vd_typ=t; vd_opts=attr; vd_orig=[] }) ids }
 
 p:
   | l=separated_list(TOK_COMMA, var_d) { List.flatten l }
@@ -310,15 +306,6 @@ typ:
     { match sizes with
       | [] -> t
       | _ -> List.fold_right (fun s i -> Array(i, Const_e (eval_arith_ne s))) sizes t }
-
-pclock:
-   | { Base }
-   | TOK_TWO_COLON ck=clock { ck }
-
-clock:
-   | TOK_BASE { Base }
-   | ck=clock TOK_ON x=ident { On(ck,x) }
-   | ck=clock TOK_ONOT x=ident { Onot(ck,x) }
 
 
 opt_def:

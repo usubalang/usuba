@@ -11,11 +11,6 @@ Extract Inductive string => "string"  [ """" "^" ].
 
 Record ident := { uid: positive;
                   name: string }.
-Inductive clock :=
-| Defclock (* Temporary, for clocks we don't know *)
-| Base
-| On (ck:clock) (x:ident)
-| Onot (ck:clock) (x:ident).
 
 Inductive log_op := And | Or | Xor | Andn | Masked (op:log_op).
 Inductive arith_op := Add | Mul | Sub | Div | Mod.
@@ -91,7 +86,6 @@ Inductive var_d_opt := Pconst | PlazyLift.
 Inductive var_d := {
   vd_id   : ident;
   vd_typ  : typ;
-  vd_ck   : clock;
   vd_opts : list var_d_opt;
   vd_orig : list (ident * var_d); (* A list of functions from where this variable was inlined *)
 }.
@@ -136,7 +130,6 @@ Record config := {
   verbose      : N;
   verif        : bool;
   type_check   : bool;
-  clock_check  : bool;
   check_tbl    : bool;
   inlining     : bool;
   inline_all   : bool;
@@ -179,4 +172,4 @@ Set Extraction KeepSingleton.
 Extraction "usuba_AST.ml"
            config prog def def_opt def_i p var_d var_d_opt
            deq deq_i expr var typ arith_expr shift_op
-           arith_op log_op clock ident arch.
+           arith_op log_op ident arch.

@@ -164,13 +164,6 @@ let rec typ_to_str ?(acc="") typ =
   | Array(typ,n) -> typ_to_str ~acc:(sprintf "%s[%s]" acc (arith_to_str n)) typ
 let typ_to_str_l = lift_comma typ_to_str
 
-let rec clock_to_str ck =
-  match ck with
-  | Defclock -> "_"
-  | Base -> "base"
-  | On(ck,x) -> (clock_to_str ck) ^ " on " ^ x.name
-  | Onot(ck,x) -> (clock_to_str ck) ^ " onot " ^ x.name
-
 let var_d_opt_to_str (vopt:var_d_opt) =
   match vopt with
   | Pconst -> "const"
@@ -178,18 +171,16 @@ let var_d_opt_to_str (vopt:var_d_opt) =
 let var_d_opt_to_str_l = lift_space var_d_opt_to_str
 
 let full_vd_to_str (vd:var_d) =
-  sprintf "%s : %s %s :: %s"
+  sprintf "%s : %s %s"
           vd.vd_id.name
           (var_d_opt_to_str_l vd.vd_opts)
           (full_typ_to_str vd.vd_typ)
-          (clock_to_str vd.vd_ck)
 
 let vd_to_str (vd:var_d) =
-  sprintf "%s : %s %s :: %s"
+  sprintf "%s : %s %s"
           vd.vd_id.name
           (var_d_opt_to_str_l vd.vd_opts)
           (typ_to_str vd.vd_typ)
-          (clock_to_str vd.vd_ck)
 let p_to_str = lift_comma vd_to_str
 
 

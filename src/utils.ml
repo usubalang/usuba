@@ -17,7 +17,6 @@ let default_conf : config =
     verbose      = 1;
     verif        = false;
     type_check   = true;
-    clock_check  = true;
     check_tbl    = false;
     inlining     = true;
     inline_all   = false;
@@ -149,16 +148,15 @@ let gen_list_0_int (n: int) : int list =
     else aux (n-1) ((n-1) :: acc)
   in aux n []
 
-let make_var_d (id:ident) (typ:typ) (ck:clock)
+let make_var_d (id:ident) (typ:typ)
                (opts:var_d_opt list) (orig:(ident*var_d) list) : var_d =
   { vd_id   = id;
     vd_typ  = typ;
-    vd_ck   = ck;
     vd_opts = opts;
     vd_orig = orig }
 
-let simple_var_d (id:ident) = make_var_d id bool Defclock [] []
-let simple_typed_var_d (id:ident) (typ:typ) = make_var_d id typ Defclock [] []
+let simple_var_d (id:ident) = make_var_d id bool [] []
+let simple_typed_var_d (id:ident) (typ:typ) = make_var_d id typ [] []
 
 let env_fetch env v =
   (* try *)
@@ -417,11 +415,11 @@ type 'a env = (string, 'a) Hashtbl.t
 let env_add (env: 'a env) (id: ident) (value: 'a) : unit =
   Hashtbl.add env id.name value
 
-(* converts an uint_n to n bools (with types and clock) *)
-let expand_intn_typed (id: ident) (n: int) (ck: clock) =
+(* converts an uint_n to n bools *)
+let expand_intn_typed (id: ident) (n: int) =
   let rec aux i =
     if i > n then []
-    else ((fresh_suffix id (string_of_int i), bool), ck) :: (aux (i+1))
+    else (fresh_suffix id (string_of_int i), bool) :: (aux (i+1))
   in aux 1
 
 (* converts an uint_n to n bools (in the format of pat) *)

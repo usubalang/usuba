@@ -118,8 +118,6 @@ let norm_prog (rename:bool) (prog:prog) (conf:config) : prog =
   (* CSE-CP + Scheduling *)
   runner#register_pass Optimize.opt_prog "Optimize";
 
-  runner#register_pass Fix_clocks.fix_prog "Fix_clocks";
-
   register_norm_bitslice runner;
 
   let prog' = runner#run_all_passes prog in
