@@ -168,13 +168,147 @@ resulting ILP. **TODO**: this almost doesn't matter with Usuba's
 scheduling algorithm -> rephrase to state that? Or benchmark various
 granularities, and add a plot. Maybe do both.
 
+
+#### Benchmarking
+
+
+1.5GB of C code generated (fully unrolled and inlinined to allow for a
+better scheduling). (or 19.5 million of lines)
+
+Ace: one of its basic block is a fonction which computes `((x <<< 5) &
+x) ^ (x <<< 1)`. It contains 4 instructions, and yet cannot be done in
+less than 3 cycles, because of its inner dependencies. Interleaving
+this function twice means that it contains 8 instructions which cannot
+execute in less than 3 cycles, wasting 1 port for 1
+cycle. Interleaving it 3 times or more allows it to fully sature its
+ports. Some other idioms used can limit the utilization the CPU, like
+`0xfffffffe ^ ((rc >> i) & 1)` which also cannot execute in less than
+3 cycles despite containing only 3 instructions.
+
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/ace-small.png">
+</p>
+
+
+Ascon: **TODO**: find out what is happening. State represented as 5
+64-bit integers. Desn't require lot's of temporaries => low register
+pressure. Non-interleaved: IPC=2.65. 2-interleaved (grain=10),
+IPC=2.96 (loads/store x2.5). 3-interleaved (grain=10), IPC=3.20
+(loads/store = x9).
+
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/ascon-small.png">
+</p>
+
+Rectangle's Sbox contains 12 instructions, which could execute in 4
+cycles. However, because of its dependencies, it cannot execute in
+less than 5 cycles (this is also true on general purposes, even though
+it could execute in 3 cycles). The register pressure is fairly low
+(the state is stored on 4 registers, and 3 additional temporaries are
+used by the S-box). The number of loads in the 2-interleaved assembly
+is twice more than in the non-interleaved (meaning that interleaving
+introduces no spilling at all). The 3-interleaved version contains
+twice more loads than the 2-interleaved: some spilling has been
+introduced. However, the improvement in the S-box makes up for the
+spilling. The 4-interleaved and 5-interleaved codes contain even more
+spilling, which explain why they don't behave as good. It is worth
+noting that the non-interleaved version has an IPC of 2.61, while all
+of the interleaved versions are above 3.4 IPC. In the case of the
+5-interleaved version, one every three instruction reads or loads data
+from/to memory.
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/rectangle-small.png">
+</p>
+
+Serpent only requires 5 registers (4 for the state and 1 temporary
+register used in the S-box). Its linear layer contains 28 instructions
+`xor`s and shifts, yet executes in 14 cycles due to data
+dependencies. Likewise, the S-box are bound by data dependencies. For
+instance, the first S-box contains 17 instructions, but executes in 8
+cycles.
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/serpent-small.png">
+</p>
+
+
+**Bearly improves:**
+
+
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/clyde-small.png">
+</p>
+
+
+**RECHECK**
+Non-interleaved: 2.49 IPC -> slightly low. 2-interleaved (grain=10):
+2.69 IPC. Memory loads & stores x4, meaning it introduces
+spilling. Yet, the round function has a dependency, which interleaving
+is able to erase at the cost of some spilling. Not very clear.
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/chacha20-small.png">
+</p>
+
+
+**Doesn't improve:**
+
+**RECHECK**
+Gift: interleaving (x2) -> 10x more loads, 4.5x more
+stores. (expected: 2x and 2x). Non-interleaved version is already at
+3.5 instr/cycle (IPC). Interleaving introduces a lot of spilling,
+reducing to 2.51 IPC.
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/gift-small.png">
+</p>
+
+
+Front-end bandwidth issue. Could be considered as a compiler issue:
+the non-interleaved code tends to use the pattern `and` + memory
+operand, while the interleaved one tends to do `move` + `and`. The
+latter requires 7 bytes for the move + 4 for the and = 11 bytes, while
+the former requires only 7 bytes for the and. Hence, front-end
+bandwidth limitation.
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/pyjamask-small.png">
+</p>
+
+
+Xoodoo represents the block as a 3x4 32-bit matrix. Most operations
+are done either on each column or on each row, _i.e._ repeated 3 or 4
+times, meaning they can easily be parallelized. More inputs = more spilling.
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/xoodoo-small.png">
+</p>
+
+
+
+
 On Serpent, we observe that the throughput of 2 interleaved ciphers is
 21.75% higher than the throughput of a single cipher, while increasing
 the code size by 29.3%. Similarly for Rectangle, the throughput
 increases by 27.62% at the expense of a 19.2% increase in code
 size. Ace: slightly better? Ascon: slightly better? Clyde: better?
 
-Note on GP & auto-vectorization.
+
+**Remark.** When benchmarking interleaving on general purpose
+registers, we were careful to disable Clang's auto-vectorization
+(using `-fno-slp-vectorize -fno-vectorize`). Failing to do so produces
+inconsistent results since Clang is able to partially vectorize some
+implementations and not others. Furthermore, we would not be
+benchmarking general purpose registers anymore since the vectorized
+code would use SSE or AVX registers.
+
+
+
+
 
 ### Inlining
 
