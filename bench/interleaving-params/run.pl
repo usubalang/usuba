@@ -22,7 +22,7 @@ use File::Copy;
 use FindBin;
 
 
-my $NB_LOOP = 2;
+my $NB_LOOP = 10;
 my $CC      = 'clang';
 my $CFLAGS  = '-Wall -Wextra -O3 -march=native -fno-slp-vectorize -fno-vectorize';
 my $INC     = '-I ../../arch';
@@ -49,7 +49,6 @@ my %ciphers = (
     );
 my @ciphers = grep { $ciphers{$_} } keys %ciphers;
 
-
 my $gen     = !@ARGV || "@ARGV" =~ /-g/;
 my $compile = !@ARGV || "@ARGV" =~ /-c/;
 my $run     = !@ARGV || "@ARGV" =~ /-r/;
@@ -70,16 +69,16 @@ if ($gen) {
     for my $cipher (@ciphers) {
         my $source  = "samples/usuba/$cipher.ua";
         system "./usubac $ua_args -o $out_dir/$cipher.c $source";
-        system "./usubac -V -arch avx -gen-bench -interleave 5 -sched-n 4 -inline-all -unroll -no-pre-sched -o $out_dir/$cipher-2-sched $source";
-        system "./usubac -V -arch avx -gen-bench -sched-n 4 -inline-all -unroll -no-pre-sched -o $out_dir/$cipher-sched $source";
+        system "./usubac -V -arch avx -gen-bench -interleave 5 -sched-n 4 -inline-all -unroll -no-pre-sched -o $out_dir/$cipher-2-sched.c $source";
+        system "./usubac -V -arch avx -gen-bench -sched-n 4 -inline-all -unroll -no-pre-sched -o $out_dir/$cipher-sched.c $source";
 
-        # for my $grain (@grains) {
-        #     for my $factor (@factors) {
+        for my $grain (@grains) {
+            for my $factor (@factors) {
 
-        #         system "./usubac $ua_args -inter-factor $factor -interleave $grain " .
-        #             "-o $out_dir/${cipher}-$factor-$grain.c $source";
-        #     }
-        # }
+                system "./usubac $ua_args -inter-factor $factor -interleave $grain " .
+                    "-o $out_dir/${cipher}-$factor-$grain.c $source";
+            }
+        }
     }
     say " done.";
 }
@@ -124,17 +123,21 @@ for my $cipher (@ciphers) {
         print "\rRunning benchs $cipher... $_/$NB_LOOP";
 
         for my $bin ("$bin_dir/$cipher", "$bin_dir/$cipher-2-sched", "$bin_dir/$cipher-sched") {
-            my $cycles = sprintf "%03.02f", `$bin`;
-            push @{ $res{$bin}->{details} }, $cycles;
-            $res{$bin}->{total} += $cycles;
+            if (-e $bin) {
+                my $cycles = sprintf "%03.02f", `$bin`;
+                push @{ $res{$bin}->{details} }, $cycles;
+                $res{$bin}->{total} += $cycles;
+            }
         }
 
         for my $grain (@grains) {
             for my $factor (@factors) {
                 my $bin = "$bin_dir/$cipher-$factor-$grain";
-                my $cycles = sprintf "%03.02f", `$bin`;
-                push @{ $res{$bin}->{details} }, $cycles;
-                $res{$bin}->{total} += $cycles;
+                if (-e $bin) {
+                    my $cycles = sprintf "%03.02f", `$bin`;
+                    push @{ $res{$bin}->{details} }, $cycles;
+                    $res{$bin}->{total} += $cycles;
+                }
             }
         }
     }
