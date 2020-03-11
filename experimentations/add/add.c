@@ -38,11 +38,23 @@
 
 #define WARMUP 1000
 
-#if ! (defined(SSE) || defined(GP))
+#if ! (defined(AVX) || defined(SSE) || defined(GP))
 #define SSE
 #endif
 
-#ifdef SSE
+#ifdef AVX
+#define DATATYPE __m256i
+#define ADD_32(_a,_b) _mm256_add_epi32(_a,_b)
+#define ADD_16(_a,_b) _mm256_add_epi16(_a,_b)
+#define ADD_8(_a,_b)  _mm256_add_epi8(_a,_b)
+#define PACKED_ADDS_32 8 // 4 parallel add with a single _mm_add
+#define PACKED_ADDS_16 16 // 8 parallel add with a single _mm_add
+#define PACKED_ADDS_8 32 // 16 parallel add with a single _mm_add
+#define REG_SIZE (sizeof(__m256i)*8)
+#define ZERO _mm256_setzero_si256()
+#define INIT() _mm256_set_epi32(rand(), rand(), rand(), rand(),rand(), rand(), rand(), rand())
+#define ASM_MOD "x"
+#elif defined(SSE)
 #define DATATYPE __m128i
 #define ADD_32(_a,_b) _mm_add_epi32(_a,_b)
 #define ADD_16(_a,_b) _mm_add_epi16(_a,_b)
@@ -159,11 +171,12 @@ __attribute__ ((noinline)) void speed_packed() {
   // Initializing data
   DATATYPE a = INIT();
   DATATYPE b = INIT();
+  DATATYPE c = INIT();
 
   // Warming up caches
   for (unsigned long i = 0; i < WARMUP; i++) {
-    asm volatile("" : "+"ASM_MOD (a));
-    a = ADD_NATIVE(a,b);
+    asm volatile("" : "+"ASM_MOD (a), "+"ASM_MOD (b), "+"ASM_MOD (c));
+    a = ADD_NATIVE(b,c);
   }
 
   // The actual measurement
@@ -175,8 +188,8 @@ __attribute__ ((noinline)) void speed_packed() {
 #elif defined(MCA_PACKED)
     __asm volatile("# LLVM-MCA-BEGIN packed");
 #endif
-    asm volatile("" : "+"ASM_MOD (a));
-    a = ADD_NATIVE(a,b);
+    asm volatile("" : "+"ASM_MOD (a), "+"ASM_MOD (b), "+"ASM_MOD (c));
+    a = ADD_NATIVE(b,c);
   }
 #ifdef IACA_PACKED
   IACA_END

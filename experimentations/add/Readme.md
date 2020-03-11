@@ -11,17 +11,34 @@ Run the experiment with `./run.pl`.
 
 On my Intel Skylake i5-6500, with Clang 7.0.0, the results are:
 
-|    **addition type**   |  **cycles/loop** |  **cycles/add** |
-| ---------------------- | ---------------- | --------------- |
-|  8-bit        bitslice |  14.79 (+- 0.03) |  0.12 (+- 0.00) |
-|  8-bit   packed_single |   1.00 (+- 0.00) |  0.06 (+- 0.00) |
-|  8-bit packed_parallel |   1.00 (+- 0.00) |  0.02 (+- 0.00) |
-| 16-bit        bitslice |  33.32 (+- 0.07) |  0.26 (+- 0.00) |
-| 16-bit   packed_single |   1.00 (+- 0.00) |  0.13 (+- 0.00) |
-| 16-bit packed_parallel |   1.00 (+- 0.00) |  0.04 (+- 0.00) |
-| 32-bit        bitslice |  74.62 (+- 0.08) |  0.58 (+- 0.00) |
-| 32-bit   packed_single |   1.00 (+- 0.00) |  0.25 (+- 0.00) |
-| 32-bit packed_parallel |   1.00 (+- 0.00) |  0.08 (+- 0.00) |
+|    **addition type**   |  **cycles/loop (AVX / SSE / GP)** |  **cycles/add  (AVX / SSE / GP)** |
+| ---------------------- | --------------------------------- | --------------------------------- |
+|  8-bit        bitslice |    12.19   /   14.78  /  16.30   |     0.05   /    0.12  /   0.51   | 
+|  8-bit   packed_single |     1.01   /    1.00  /   1.00   |     0.03   /    0.06  /   1.00   | 
+|  8-bit packed_parallel |     1.00   /    1.00  /   1.00   |     0.01   /    0.02  /   0.33   | 
+|         &nbsp;         |             &nbsp;               |                &nbsp;            |
+| 16-bit        bitslice |    30.93   /   33.34  /  34.60   |     0.12   /    0.26  /   1.08   | 
+| 16-bit   packed_single |     1.00   /    1.00  /   1.00   |     0.06   /    0.13  /   1.00   | 
+| 16-bit packed_parallel |     1.00   /    1.00  /   1.00   |     0.02   /    0.04  /   0.33   | 
+|         &nbsp;         |             &nbsp;               |                &nbsp;             |
+| 32-bit        bitslice |    76.17   /   74.78  /  74.93   |     0.30   /    0.58  /   2.34   | 
+| 32-bit   packed_single |     1.00   /    1.00  /   1.00   |     0.13   /    0.25  /   1.00   | 
+| 32-bit packed_parallel |     1.00   /    1.00  /   1.00   |     0.04   /    0.08  /   0.33   | 
+
+
+|    **addition type**   |  **cycles/loop (SSE / GP)** |  **cycles/add  (SSE / GP)** |
+| ---------------------- | --------------------------- | --------------------------- |
+|  8-bit        bitslice |     12.03    /    16.26     |      0.09    /     0.51     | 
+|  8-bit   packed_single |      1.00    /     1.00     |      0.06    /     1.00     | 
+|  8-bit packed_parallel |      1.00    /     1.00     |      0.02    /     0.33     | 
+|         &nbsp;         |          &nbsp;             |             &nbsp;          |
+| 16-bit        bitslice |     28.84    /    34.56     |      0.23    /     1.08     | 
+| 16-bit   packed_single |      1.00    /     1.00     |      0.13    /     1.00     | 
+| 16-bit packed_parallel |      1.00    /     1.00     |      0.04    /     0.33     | 
+|         &nbsp;         |          &nbsp;             |             &nbsp;          |
+| 32-bit        bitslice |     69.32    /    74.83     |      0.54    /     2.34     | 
+| 32-bit   packed_single |      1.00    /     1.00     |      0.25    /     1.00     | 
+| 32-bit packed_parallel |      1.00    /     1.00     |      0.08    /     0.33     |
 
 
 Where `bitslice` is the sofware implemented carry-ripple adder,
