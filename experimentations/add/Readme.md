@@ -105,11 +105,10 @@ than expected. I am fairly confident that this comes from the
 spilling: about half of their assembly instructions are `move`.
 
 
+## Comparing adders by size
 
-## TODO
 
- - run `perf`
- 
- - run `vtune`
-
- - run `iaca` or `llvm-mca`
+The script `benchmark_adders.pl` generates adders of size 4 to 64 and
+benchmarks them on GP, SSE and AVX. The results can be found in the
+following
+[spreadsheet](https://docs.google.com/spreadsheets/d/17BLaOdQEMvRXepwmvCuXoKrb4Nwoxn8aoEfNqwo1YZY/edit?usp=sharing).
