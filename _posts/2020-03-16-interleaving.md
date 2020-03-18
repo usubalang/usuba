@@ -128,10 +128,12 @@ puts more pressure on the execution ports- by 14%.
 
 ### Initial benchmark
 
-We generated 2-interleaved and non-interleaved codes for 10 ciphers
-which looked like "reasonable" candidates for interleaving: their
-register pressure was relatively low. The results are shown in the
-following table:
+To benchmark our interleaving optimization, we considered 10 ciphers
+which looked like "reasonable" candidates for interleaving, since
+their register pressure was relatively low. We started by generating
+non-interleaved and 2-interleaved implementations on general purpose
+registers for each of them to compare them. We compiled the generated
+codes with Clang 7.0.0. The results are shown in the following table:
 
 <style type="text/css">
 .tg  {border-collapse:collapse;border-spacing:0;}
@@ -167,7 +169,7 @@ following table:
     <td class="tg-0pky">ace</td>
     <td class="tg-0pky">2.90</td>
     <td class="tg-0pky">3.69</td>
-    <td class="tg-0lax">1.18</td>
+    <td class="tg-0lax">1.23</td>
   </tr>
   <tr>
     <td class="tg-0pky">ascon</td>
@@ -203,19 +205,19 @@ following table:
     <td class="tg-0pky">pyjamask</td>
     <td class="tg-0pky">3.36</td>
     <td class="tg-0pky">3.49</td>
-    <td class="tg-0lax">0.99</td>
+    <td class="tg-0lax">1.07</td>
   </tr>
   <tr>
     <td class="tg-0pky">rectangle</td>
     <td class="tg-0pky">2.61</td>
     <td class="tg-0pky">3.40</td>
-    <td class="tg-0lax">1.16</td>
+    <td class="tg-0lax">1.25</td>
   </tr>
   <tr>
     <td class="tg-0pky">serpent</td>
     <td class="tg-0pky">2.65</td>
     <td class="tg-0pky">3.60</td>
-    <td class="tg-0lax">1.21</td>
+    <td class="tg-0lax">1.35</td>
   </tr>
   <tr>
     <td class="tg-0pky">xoodoo</td>
@@ -230,7 +232,9 @@ following table:
 Interleaving is more beneficial on ciphers with low instructions per
 cycle (IPC). In all cases, the reason for the low IPC is data
 hazards. The 2-interleaved implementations reduce the impact of those
-data hazards, and bring the IPC up while increasing the performances.
+data hazards, and bring the IPC up while increasing the
+performances. We will examine each case one by one in the next section.
+
 
 ### Factor and grain
 
@@ -355,6 +359,14 @@ cycles per bytes; lower is better) of each cipher depending on the
 interleaving granularity for each interleaving factor.
 
 
+**Remark.** When benchmarking interleaving on general purpose
+registers, we were careful to disable Clang's auto-vectorization
+(using `-fno-slp-vectorize -fno-vectorize`). Failing to do so produces
+inconsistent results since Clang is able to partially vectorize some
+implementations and not others. Furthermore, we would not be
+benchmarking general purpose registers anymore since the vectorized
+code would use SSE or AVX registers.
+
 #### Ace
 
 
@@ -363,19 +375,20 @@ interleaving granularity for each interleaving factor.
 </p>
 
 
-One of Ace's basic block is a fonction which computes `((x <<< 5) & x)
+One of Ace's basic block is a function which computes `((x <<< 5) & x)
 ^ (x <<< 1)`. It contains 4 instructions, and yet cannot be done in
 less than 3 cycles, because of its inner dependencies. Interleaving
 this function twice means that it contains 8 instructions which cannot
-execute in less than 3 cycles, wasting 1 port for 1
-cycle. Interleaving it 3 times or more allows it to fully sature its
-ports, and it is indeed 1.01x times faster than the 2-interleaved
-implementation depsite containing more spilling, and is 1.25x faster
-than the non-interleaved implementation.
+execute in less than 3 cycles, wasting 4 port-cycle. Interleaving it 3
+times or more allows it to fully sature its ports (_i.e._ run its 12
+instructions in 3 cycles), and it is indeed 1.01x times faster than
+the 2-interleaved implementation depsite containing more spilling, and
+is 1.25x faster than the non-interleaved implementation.
 
 Ace also contain other idioms which can limit the utilization the CPU,
 like `0xfffffffe ^ ((rc >> i) & 1)` which also cannot execute in less
-than 3 cycles despite containing only 3 instructions.
+than 3 cycles despite containing only 3 instructions. Those idioms
+benefit from interleaving as well.
 
 Interleaving 4 or 5 times introduces some spilling which reduces the
 performances, but minimizes the impact of data hazard enough to be
@@ -389,7 +402,85 @@ schedule the instructions in a way to reduce the impact of data
 hazards. When the granularity increases too much (100 and 200), this
 less the case, and performances start to decrease.
 
+
+#### Rectangle
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/rectangle-gp-small.png">
+</p>
+
+We have already shown Rectangle's S-box in this post's
+introduction. It contains 12 instructions, and could be executed in 4
+cycles if it wasn't for their dependencies: its run time is actually
+5.24 cycles. Interleaving 2 (resp. 3) times Rectangle gives a speedup
+of x1.26 (resp. x1.13), regardless of the granularity. The number of
+loads and stores in the 2-interleaved Rectangle implementation is
+twice more than in the non-interleaved implementation: interleaving
+introduced no spilling at all. On the other hand, the 3-interleaved
+implementation contains 4 times more memory operations than the
+non-interleaved one.
+
+Interleaving 4 or 5 instances with a small granularity (less than 10)
+introduces too much spilling which reduces performances. Increasing
+the granularity reduces this spilling while still allowing the C
+compiler to schedule the instructions in a way to reduce the impact of
+data hazards. For instance, 5-interleaved Rectangle with a granularity
+of 50 contains twice less memory loads and stores than with a
+granularity of 2.
+
+
+
+
+#### Serpent
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/serpent-gp-small.png">
+</p>
+
+Serpent only requires 5 registers (4 for the state and 1 temporary
+register used in the S-box). Its linear layer contains 28 instructions
+`xor`s and shifts, yet executes in 14 cycles due to data
+dependencies. Likewise, the S-boxes were optimized by Osvik [2] to put
+a very low pressure on the registers, at the expense of data
+dependencies. For instance, the first S-box contains 17 instructions,
+but executes in 8 cycles. This choice made sense back when there were
+only 8 general purpose registers available, among which one was
+reserved for the stack pointer, and one was use to keep a pointer to
+the key, leaving only 6 registers available. 
+
+Now that we have 16 registers available, interleaving several
+implementations of Serpent makes sense and does greatly improve
+performances as can be seen from the graph. Once again, interleaving
+more than two implementation introduces spilling, and does not improve
+performances.
+
+On AVX however, all 16 registers are available for use: the stack
+pointer and the pointer to the key are kept in general purpose
+registers rather than AVX ones. 3-interleaving therefore introduces
+less spilling than on GP registers, making it 1.05 times faster than
+2-interleaving:
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/serpent-small.png">
+</p>
+
+
+The current best AVX implementation of Serpent is -to the best of our
+knowledge- the one from the [Linux
+kernel](https://github.com/torvalds/linux/blob/ac309e7744bee222df6de0122facaf2d9706fa70/arch/x86/crypto/serpent-avx2-asm_64.S),
+written by Kivilinna [3], and only uses 2-interleaving. Kivilinna
+mentions that he experimentally came to the conclusion that
+interleaving at a granularity of 8 is optimal for the S-boxes and that
+10 or 11 is optimal for the linear layer. Using Usuba, we are able to
+systemize this experimental approach and we observe that with Clang,
+the granularity as a very low impact on the performances.
+
+
 #### Ascon
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/ascon-gp-small.png">
+</p>
 
 Ascon: **TODO**: find out what is happening. State represented as 5
 64-bit integers. Desn't require lot's of temporaries => low register
@@ -398,142 +489,174 @@ IPC=2.96 (loads/store x2.5). 3-interleaved (grain=10), IPC=3.20
 (loads/store = x9).
 
 
-<p align="center" style="margin-top:30px;margin-bottom:30px">
-<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/ascon-gp-small.png">
-</p>
 
 
-#### Rectangle
-
-Rectangle's Sbox contains 12 instructions, which could execute in 4
-cycles. However, because of its dependencies, it cannot execute in
-less than 5 cycles (this is also true on general purposes, even though
-it could execute in 3 cycles). The register pressure is fairly low
-(the state is stored on 4 registers, and 3 additional temporaries are
-used by the S-box). The number of loads in the 2-interleaved assembly
-is twice more than in the non-interleaved (meaning that interleaving
-introduces no spilling at all). The 3-interleaved version contains
-twice more loads than the 2-interleaved: some spilling has been
-introduced. However, the improvement in the S-box makes up for the
-spilling. The 4-interleaved and 5-interleaved codes contain even more
-spilling, which explain why they don't behave as good. It is worth
-noting that the non-interleaved version has an IPC of 2.61, while all
-of the interleaved versions are above 3.4 IPC. In the case of the
-5-interleaved version, one every three instruction reads or loads data
-from/to memory.
-
-
-#### Serpent
-
-<p align="center" style="margin-top:30px;margin-bottom:30px">
-<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/rectangle-gp-small.png">
-</p>
-
-Serpent only requires 5 registers (4 for the state and 1 temporary
-register used in the S-box). Its linear layer contains 28 instructions
-`xor`s and shifts, yet executes in 14 cycles due to data
-dependencies. Likewise, the S-box are bound by data dependencies. For
-instance, the first S-box contains 17 instructions, but executes in 8
-cycles.
-
-<p align="center" style="margin-top:30px;margin-bottom:30px">
-<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/serpent-gp-small.png">
-</p>
-
-
-**Bearly improves:**
-
-
-
-<p align="center" style="margin-top:30px;margin-bottom:30px">
-<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/clyde-gp-small.png">
-</p>
-
-
-**RECHECK**
-Non-interleaved: 2.49 IPC -> slightly low. 2-interleaved (grain=10):
-2.69 IPC. Memory loads & stores x4, meaning it introduces
-spilling. Yet, the round function has a dependency, which interleaving
-is able to erase at the cost of some spilling. Not very clear.
-
-<p align="center" style="margin-top:30px;margin-bottom:30px">
-<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/chacha20-gp-small.png">
-</p>
-
-
-**Doesn't improve:**
-
-**RECHECK**
-
-Gift: interleaving (x2) -> 10x more loads, 4.5x more
-stores. (expected: 2x and 2x). Non-interleaved version is already at
-3.5 instr/cycle (IPC). Interleaving introduces a lot of spilling,
-reducing to 2.51 IPC.
-
-<p align="center" style="margin-top:30px;margin-bottom:30px">
-<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/gift-gp-small.png">
-</p>
-
-
-Pyjamask. Front-end bandwidth issue. Could be considered as a compiler
-issue: the non-interleaved code tends to use the pattern `and` +
-memory operand, while the interleaved one tends to do `move` +
-`and`. The latter requires 7 bytes for the move + 4 for the and = 11
-bytes, while the former requires only 7 bytes for the and. Hence,
-front-end bandwidth limitation.
+#### Pyjamask
 
 <p align="center" style="margin-top:30px;margin-bottom:30px">
 <img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/pyjamask-gp-small.png">
 </p>
 
 
-Xoodoo represents the block as a 3x4 32-bit matrix. Most operations
-are done either on each column or on each row, _i.e._ repeated 3 or 4
-times, meaning they can easily be parallelized. More inputs = more spilling.
+The linear layer of Pyjamask multiplies each of the 4 32-bit of the
+state by a 32x32 binary matrix. This operation is done bit by bit,
+and, for each bit, 4 operations are needed; each of them depending on
+the previous one. This means that for the whole matrix multiplication,
+which makes up most of Pyjamask, only one instruction is executed per
+cycle.
+
+On general purpose registers, interleaving twice Pyjamask increases
+performances 1.13 times, mainly thanks to the parallelism it allows in
+this matrix multiplication. However, it is still not enough to fully
+utilize the pipeline, which is why interleaving 3, 4 or 5 times is
+more beneficial, despite the additional spilling it introduces.
+
+
+This effect is even more noticeable on AVX registers, as can be seen
+in the following table:
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+.tg .tg-cly1{text-align:left;vertical-align:middle}
+.tg .tg-wa1i{font-weight:bold;text-align:center;vertical-align:middle}
+.tg .tg-0lax{text-align:left;vertical-align:top}
+</style>
+<center>
+<table class="tg" style="undefined;table-layout: fixed; width: 499px; margin-top: 40px; margin-bottom: 40px">
+<colgroup>
+<col style="width: 125px">
+<col style="width: 125px">
+<col style="width: 125px">
+<col style="width: 124px">
+</colgroup>
+  <tr>
+    <th class="tg-wa1i">Interleaving</th>
+    <th class="tg-wa1i">Cycles/Bytes</th>
+    <th class="tg-wa1i">IPC</th>
+    <th class="tg-wa1i">#Loads/Stores<br>(millions)</th>
+  </tr>
+  <tr>
+    <td class="tg-cly1">none</td>
+    <td class="tg-cly1">54.13</td>
+    <td class="tg-0lax">2.71</td>
+    <td class="tg-cly1">235</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">x2</td>
+    <td class="tg-0lax">47.18</td>
+    <td class="tg-0lax">2.94</td>
+    <td class="tg-0lax">665</td>
+  </tr>
+  <tr>
+    <td class="tg-cly1">x3</td>
+    <td class="tg-cly1">41.35</td>
+    <td class="tg-0lax">3.38</td>
+    <td class="tg-cly1">2300</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">x4</td>
+    <td class="tg-0lax">41.91</td>
+    <td class="tg-0lax">3.36</td>
+    <td class="tg-0lax">6180</td>
+  </tr>
+  <tr>
+    <td class="tg-0lax">x5</td>
+    <td class="tg-0lax">42.67</td>
+    <td class="tg-0lax">3.50</td>
+    <td class="tg-0lax">15750</td>
+  </tr>
+</table>
+</center>
+
+Interleaving twice increases performances by x1.18, while interleaving
+three times increases performances by 1.31x, depsite increasing the
+amount of memory operations by 10 (and thefore the amout of memory
+operations per input by 3.3). Even the 5-interleaved version is more
+efficient than the non-interleaved one, despite containing 66 times
+more loads and stores.
+
+Another factor explaining the speedup offered by interleaving on
+Pyjamask is the fact that the matrix used in the matrix multiplication
+is circular, and can therefore be computed at runtime using a simple
+rotation. This matrix is the same for all interleaved copies of the
+cipher, and the rotations can therefore be done only once for all of
+them.
+
+
+#### Other ciphers
+
+On the other ciphers we benchmarked (Chacha20, Clyde, Gift, Gimli,
+Xoodoo), interleaving made performances worse, as can be seen from the
+graphs below. As shown in Section "Initial benchmark", all of those
+ciphers have very high IPC, above 3.5. None of those cipher is bound
+by data dependencies (except for Chacha20, on which we will come back
+in the post about scheduling), and the main impact of interleaving is
+to introduce spilling.
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/chacha20-gp-small.png">
+</p>
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/clyde-gp-small.png">
+</p>
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/gift-gp-small.png">
+</p>
+
+<p align="center" style="margin-top:30px;margin-bottom:30px">
+<img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/gimli-gp-small.png">
+</p>
 
 <p align="center" style="margin-top:30px;margin-bottom:30px">
 <img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/xoodoo-gp-small.png">
 </p>
 
 
-**Remark.** When benchmarking interleaving on general purpose
-registers, we were careful to disable Clang's auto-vectorization
-(using `-fno-slp-vectorize -fno-vectorize`). Failing to do so produces
-inconsistent results since Clang is able to partially vectorize some
-implementations and not others. Furthermore, we would not be
-benchmarking general purpose registers anymore since the vectorized
-code would use SSE or AVX registers.
+#### Overall impact of factor and granularity
+
+All of the examples we considered show that large granularities (50
+and above) reduce the impact of interleaving, regardless of whether it
+was positive or negative. Most of the times, the granularity has
+little to no impact on the performances, as long as it is
+below 20. There are a few exceptions, which can be attributed to
+either compiler or CPU effects, and can be seen on Clyde, Gift, and
+Xoodoo. For instance, on Xoodoo 3-interleaved, granularities of 12 and
+20 are 1.26 times than granularities of 10, 15 and 30. Using `perf`,
+we can see that the implementations with a granularity of 10, 15 and
+30 do 1.53 more memory accesses than the ones with a granularity of 12
+and 20, hinting toward a compiler issue.
 
 
+Determining the ideal interleaving factor for a given cipher is a
+complex task because it depends both the register pressure and the
+data dependencies. In some cases, like Pyjamask, introducing some
+spilling in order to reduce the amount of data hazards is worth it,
+while in other cases, like Rectangle, spilling deteriorates the
+performances. Furthermore, while we can compute the maximum number of
+live variables in an Usuba0 program, the C compiler is free to
+schedule the generated C code how it sees fit, potentially reducing or
+increasing the amount of live variables.
 
 
+Fortunately, Usubac automates the interleaving optimization, which we
+can leverage to releave the programer from the burden of determining
+himself the optimal interleaving parameters. When ran with the option
+`-auto-interleave`, Usubac automatically benchmarks several
+interleaving factors (0, 2, 3 and 4) in order to find out which is
+best. This suffers from the limitation of loosing some genericity in
+the C code generated: we only test its optimality with one compiler on
+one platform.
 
-The interleaving heuristic itself is retrospectively straight-forward:
-the number of interleaved instances is set to be the number of CPU
-registers available on the target architecture divided by the maximal
-number of live registers in the given algorithm. **TODO**: nuance or
-remove: we don't know the number of live registers. -> Heuristic with
-automatic benchmark? (sounds reasonable -> do it!)
-For example, Serpent and Rectangle use respectively 8 and 7 AVX
-registers at most, which drives the compiler to pick an interleaving
-factor of 2 when compiling. Choosing a larger factor would induce
-spilling, which is highly detrimental to performance.
-
-A second design decision concerns the size of the independent code
-blocks to be interleaved. We have empirically observed that we can
-adopt a coarse-grained approach: we chose to alternate between blocks
-of 10 equations from each of the interleaved instances. The scheduling
-performed by Usubac and the instruction scheduling later performed by
-C compilers will do an excellent job at taking advantage of the
-resulting ILP. **TODO**: this almost doesn't matter with Usuba's
-scheduling algorithm -> rephrase to state that? Or benchmark various
-granularities, and add a plot. Maybe do both.
-
-
-#### Benchmarking
-
-
-
+We do not benchmark the granularity when selecting the ideal
+interleaving setup, since its influence on performances is
+minimal. Furthermore, our scheduling algorithm (which will be
+presented in a later post) strives to minimize the impact of data
+dependencies and thus reduces even further the influence of the
+granularity.
 
 
 
@@ -543,8 +666,6 @@ granularities, and add a plot. Maybe do both.
 
 [1] M. Matsui, [How Far Can We Go on the x64 Processors?](https://www.iacr.org/archive/fse2006/40470344/40470344.pdf), FSE, 2006.
 
-[2] R. Motwani _et al._, [Combining register allocation and instruction scheduling](https://pdfs.semanticscholar.org/1b7d/20b856fd420f93525e70a876853f08560e38.pdf), 1995.
+[2] D. A. Osvik, [Speeding up Serpent](https://www.ii.uib.no/~osvik/pub/aes3.pdf), AES Candidate Conference, 2000.
 
-[3] C. Lattner, V. Adve, [LLVM: A Compilation Framework for Lifelong Program Analysis & Transformation](https://llvm.org/pubs/2003-09-30-LifelongOptimizationTR.pdf), CGO, 2004.
-
-[4] J.-K. Zinzindohoué _et al_, [HACL*, A Verified Modern Crytographic Library](https://hal.inria.fr/hal-01588421v2/document), ACM Conference on Computer and Communications Security, 2017.
+[3] J. Kivilinna, [Block Ciphers: Fast Implementations on x86-64 Architecture](http://jultika.oulu.fi/files/nbnfioulu-201305311409.pdf), 2013.
