@@ -173,9 +173,9 @@ codes with Clang 7.0.0. The results are shown in the following table:
   </tr>
   <tr>
     <td class="tg-0pky">ascon</td>
-    <td class="tg-0pky">2.74</td>
-    <td class="tg-0pky">3.24</td>
-    <td class="tg-0lax">1.21</td>
+    <td class="tg-0pky">2.89</td>
+    <td class="tg-0pky">3.30</td>
+    <td class="tg-0lax">1.15</td>
   </tr>
   <tr>
     <td class="tg-0pky">chacha20</td>
@@ -478,15 +478,55 @@ the granularity as a very low impact on the performances.
 
 #### Ascon
 
+**WARNING: out-of date graph. The new one should have factor 2 as the
+lowest, then baseline, then factors 3, 4 and 5 above.**
+
 <p align="center" style="margin-top:30px;margin-bottom:30px">
 <img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/ascon-gp-small.png">
 </p>
 
-Ascon: **TODO**: find out what is happening. State represented as 5
-64-bit integers. Desn't require lot's of temporaries => low register
-pressure. Non-interleaved: IPC=2.65. 2-interleaved (grain=10),
-IPC=2.96 (loads/store x2.5). 3-interleaved (grain=10), IPC=3.20
-(loads/store = x9).
+
+Ascon is the trickiest of the ciphers we considered when it comes to
+analyzing its interleaved performances. Its S-box contains 22
+instructions with few enough data dependencies to allow it to run in
+about 6 cycles, which is very close to saturate the CPU. Its linear
+layer however is the following:
+
+```lustre
+node LinearLayer(state:u64x5) returns (stateR:u64x5)
+let
+  stateR[0] = state[0] ^ (state[0] >>> 19) ^ (state[0] >>> 28);
+  stateR[1] = state[1] ^ (state[1] >>> 61) ^ (state[1] >>> 39);
+  stateR[2] = state[2] ^ (state[2] >>> 1)  ^ (state[2] >>> 6);
+  stateR[3] = state[3] ^ (state[3] >>> 10) ^ (state[3] >>> 17);
+  stateR[4] = state[4] ^ (state[4] >>> 7)  ^ (state[4] >>> 41);
+tel
+```
+
+This linear layer is not limited by data-dependencies, but by the
+rotations: general purpose rotations can only be executed by ports 0
+and 6. Only two rotations can be executed each cycle, and this code
+can therefore not be executed in less than 7 cycles: 5 cycles for all
+the rotations, followed by two additional cycles to finish computing
+`stateR[4]` from the result of the rotations, each computing a single
+`xor`.
+
+There are two ways that Ascon can benefit from interleaving. First, if
+the linear layer is executed twice simultaneously, the last 2 extra
+cycles computing a single `xor` each become two cycles computing two
+`xor`s each; saving one cycle. Second, out-of-order execution can
+allow the S-box of one instance of Ascon to execute while the linear
+layer of the other copy executes, thus allowing a full saturation of
+the CPU despite the rotations being only able to use ports 0 and 6.
+
+The IPC of the non-interleaved code is 2.89, while the 2-interleaved
+version runs with at an IPC of 3.30, which seems to confirm the
+hypotheses that interleaving does indeed reduce the bottle-necking
+effect of the rotations. 
+
+While 2-interleaving does not introduce any spilling at all,
+interleaving 3 instances and more does, which causes those
+implementations to slow down Ascon.
 
 
 
