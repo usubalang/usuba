@@ -478,8 +478,6 @@ the granularity as a very low impact on the performances.
 
 #### Ascon
 
-**WARNING: out-of date graph. The new one should have factor 2 as the
-lowest, then baseline, then factors 3, 4 and 5 above.**
 
 <p align="center" style="margin-top:30px;margin-bottom:30px">
 <img src="{{ site.baseurl }}/assets/images/blog/graphs-interleaving/ascon-gp-small.png">
@@ -512,21 +510,120 @@ the rotations, followed by two additional cycles to finish computing
 `xor`.
 
 There are two ways that Ascon can benefit from interleaving. First, if
-the linear layer is executed twice simultaneously, the last 2 extra
-cycles computing a single `xor` each become two cycles computing two
-`xor`s each; saving one cycle. Second, out-of-order execution can
-allow the S-box of one instance of Ascon to execute while the linear
-layer of the other copy executes, thus allowing a full saturation of
-the CPU despite the rotations being only able to use ports 0 and 6.
+the linear layer is executed two (resp. three) times simultaneously,
+the last 2 extra cycles computing a single `xor` each become two
+cycles computing two (resp. three) `xor`s each; saving one (resp. two)
+cycle. Second, out-of-order execution can allow the S-box of one
+instance of Ascon to execute while the linear layer of the other copy
+executes, thus allowing a full saturation of the CPU despite the
+rotations being only able to use ports 0 and 6.
 
-The IPC of the non-interleaved code is 2.89, while the 2-interleaved
-version runs with at an IPC of 3.30, which seems to confirm the
-hypotheses that interleaving does indeed reduce the bottle-necking
-effect of the rotations. 
+To understand how interleaving impacts performances, we used Linux's
+`perf` tool to get the IPC, numbers of loads and stores, and the
+number of cycles where 1, 2, 3 or 4 instructions are executed:
 
-While 2-interleaving does not introduce any spilling at all,
-interleaving 3 instances and more does, which causes those
-implementations to slow down Ascon.
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:black;}
+.tg .tg-lboi{border-color:inherit;text-align:left;vertical-align:middle}
+.tg .tg-uzvj{font-weight:bold;border-color:inherit;text-align:center;vertical-align:middle}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style>
+<center>
+<table class="tg" style="undefined;table-layout: fixed; width: 652px; margin-top: 40px; margin-bottom: 40px">
+<colgroup>
+<col style="width: 112px">
+<col style="width: 110px">
+<col style="width: 76px">
+<col style="width: 110px">
+<col style="width: 61px">
+<col style="width: 61px">
+<col style="width: 61px">
+<col style="width: 61px">
+</colgroup>
+  <tr>
+    <th class="tg-uzvj" rowspan="2">Interleaving</th>
+    <th class="tg-uzvj" rowspan="2">Cycles/Bytes</th>
+    <th class="tg-uzvj" rowspan="2">IPC</th>
+    <th class="tg-uzvj" rowspan="2">#Loads/Stores<br>(normalized)</th>
+    <th class="tg-uzvj" colspan="4">% of cycles where at least n µops are executed</th>
+  </tr>
+  <tr>
+    <td class="tg-uzvj">1</td>
+    <td class="tg-uzvj">2</td>
+    <td class="tg-uzvj">3</td>
+    <td class="tg-uzvj">4</td>
+  </tr>
+  <tr>
+    <td class="tg-lboi">none</td>
+    <td class="tg-lboi">4.85</td>
+    <td class="tg-0pky">2.75</td>
+    <td class="tg-lboi">1</td>
+    <td class="tg-0pky">99.2</td>
+    <td class="tg-0pky">92.6</td>
+    <td class="tg-0pky">48.9</td>
+    <td class="tg-0pky">15.5</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">x2</td>
+    <td class="tg-0pky">4.01</td>
+    <td class="tg-0pky">3.29</td>
+    <td class="tg-0pky">2.07</td>
+    <td class="tg-0pky">99.9</td>
+    <td class="tg-0pky">99.6</td>
+    <td class="tg-0pky">72.7</td>
+    <td class="tg-0pky">35.6</td>
+  </tr>
+  <tr>
+    <td class="tg-lboi">x3</td>
+    <td class="tg-lboi">3.92</td>
+    <td class="tg-0pky">3.80</td>
+    <td class="tg-lboi">9.69</td>
+    <td class="tg-0pky">99.7</td>
+    <td class="tg-0pky">98.7</td>
+    <td class="tg-0pky">91.3</td>
+    <td class="tg-0pky">63.9</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">x4</td>
+    <td class="tg-0pky">4.05</td>
+    <td class="tg-0pky">3.50</td>
+    <td class="tg-0pky">10.05</td>
+    <td class="tg-0pky">99.7</td>
+    <td class="tg-0pky">97.0</td>
+    <td class="tg-0pky">79.6</td>
+    <td class="tg-0pky">51.3</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">x5</td>
+    <td class="tg-0pky">4.13</td>
+    <td class="tg-0pky">3.37</td>
+    <td class="tg-0pky">10.63</td>
+    <td class="tg-0pky">99.9</td>
+    <td class="tg-0pky">96.7</td>
+    <td class="tg-0pky">74.1</td>
+    <td class="tg-0pky">43.7</td>
+  </tr>
+</table>
+</center>
+
+The non-interleaved code has a fairly low IPC of 2.75, and uses less
+than 3 ports on half the cycles. Interleaving twice Ascon increases
+the IPC to 3.29, and doubles the number of memory operations which
+indicates that no spilling has been introduced. However, only 72% of
+the cycles use 3 cycles or more, which is still no very
+high. 3-interleaved Ascon suffers from a lot more spilling: it
+contains about 10 times more memory operations than without
+interleaving. However, it also brings the IPC up tp 3.80, and uses 3
+ports or more on 91% of the cycles.
+
+However, interleaving a fourth or a fifth copy of Ascon doesn't
+increase performances further, which is not surprising since
+3-interleaved Ascon already almost saturates the CPU
+ports. Furthermore, 4 and 5-interleaved Ascon even reduces the port
+usage, probably because too much time is spent waiting on memory
+operations to be completed.
 
 
 
@@ -575,44 +672,44 @@ in the following table:
     <th class="tg-wa1i">Interleaving</th>
     <th class="tg-wa1i">Cycles/Bytes</th>
     <th class="tg-wa1i">IPC</th>
-    <th class="tg-wa1i">#Loads/Stores<br>(millions)</th>
+    <th class="tg-wa1i">#Loads/Stores<br>(normalized)</th>
   </tr>
   <tr>
     <td class="tg-cly1">none</td>
     <td class="tg-cly1">54.13</td>
     <td class="tg-0lax">2.71</td>
-    <td class="tg-cly1">235</td>
+    <td class="tg-cly1">1</td>
   </tr>
   <tr>
     <td class="tg-0lax">x2</td>
     <td class="tg-0lax">47.18</td>
     <td class="tg-0lax">2.94</td>
-    <td class="tg-0lax">665</td>
+    <td class="tg-0lax">2.83</td>
   </tr>
   <tr>
     <td class="tg-cly1">x3</td>
     <td class="tg-cly1">41.35</td>
     <td class="tg-0lax">3.38</td>
-    <td class="tg-cly1">2300</td>
+    <td class="tg-cly1">9.8</td>
   </tr>
   <tr>
     <td class="tg-0lax">x4</td>
     <td class="tg-0lax">41.91</td>
     <td class="tg-0lax">3.36</td>
-    <td class="tg-0lax">6180</td>
+    <td class="tg-0lax">26.3</td>
   </tr>
   <tr>
     <td class="tg-0lax">x5</td>
     <td class="tg-0lax">42.67</td>
     <td class="tg-0lax">3.50</td>
-    <td class="tg-0lax">15750</td>
+    <td class="tg-0lax">67</td>
   </tr>
 </table>
 </center>
 
 Interleaving twice increases performances by x1.18, while interleaving
 three times increases performances by 1.31x, depsite increasing the
-amount of memory operations by 10 (and thefore the amout of memory
+amount of memory operations by 9.8 (and thefore the amout of memory
 operations per input by 3.3). Even the 5-interleaved version is more
 efficient than the non-interleaved one, despite containing 66 times
 more loads and stores.
