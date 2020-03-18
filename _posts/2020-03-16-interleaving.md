@@ -7,8 +7,8 @@ lang: en
 locale: en_US
 author: Darius Mercadier
 excerpt: A first optimization in Usubac consists in interleaving several executions of the program. For a cipher using a small number of registers (for example, strictly below 8 general-purpose registers on Intel), we can increase its instruction-level parallelism (ILP) by interleaving several copies of a single cipher, each manipulating its own independent set of variables.
-comments: false
-hidden: true
+comments: true
+hidden: false
 ---
 
 The back-end exclusively manipulates Usuba0 code, taking advantage of
