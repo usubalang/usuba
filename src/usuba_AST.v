@@ -145,6 +145,7 @@ Record config := {
   unroll       : bool;
   interleave   : N; (* Actually the grain *)
   inter_factor : N;
+  auto_inter   : bool;
   fdti         : string;
   lazylift     : bool;
   slicing_set  : bool;

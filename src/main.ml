@@ -32,6 +32,7 @@ let arr_entry     = ref true
 let unroll        = ref false
 let interleave    = ref 0
 let inter_factor  = ref 0
+let auto_inter    = ref false
 
 let arch         = ref Std
 let bits_per_reg = ref 64
@@ -136,6 +137,7 @@ let main () =
       "-unroll", Arg.Set unroll, "Unroll all loops";
       "-interleave", Arg.Int (fun n -> interleave := n), "Sets the interleaving granularity (1 => 'a=b;c=d' becomes 'a=b;a2=b2;c=d;c2=d', 2 => 'a=b;c=d' becomes 'a=b;c=d;a2=b2;c2=d2')";
       "-inter-factor", Arg.Int (fun n -> inter_factor := n), "Set the interleaving factor (how many instances of the cipher should be interleaved)";
+      "-auto-inter", Arg.Set auto_inter, "Activate automatic interleaving";
       "-arch", Arg.String (fun s -> arch := str_to_arch s), "Set architecture";
       "-bits-per-reg", Arg.Set_int bits_per_reg, "Set number of bits to use in the registers (with -arch std only, needs to be a multiple of 2)";
       "-fdti",Arg.Set_string fdti, "Specify the order of ti and fd (tifd or fdti)";
@@ -198,6 +200,7 @@ let main () =
         unroll         =   !unroll;
         interleave     =   !interleave;
         inter_factor   =   !inter_factor;
+        auto_inter     =   !auto_inter;
         fdti           =   !fdti;
         lazylift       =   !lazylift;
         slicing_set    =   !slicing_set;

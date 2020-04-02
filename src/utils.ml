@@ -38,6 +38,7 @@ let default_conf : config =
     unroll       = false;
     interleave   = 0;
     inter_factor = 0;
+    auto_inter   = false;
     fdti         = "";
     lazylift     = false;
     slicing_set  = false;
