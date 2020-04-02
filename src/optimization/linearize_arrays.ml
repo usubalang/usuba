@@ -13,6 +13,7 @@ open Usuba_print
 open Basic_utils
 open Utils
 
+let pass_name = "Linearize_arrays"
 
 exception Keep_it
 
@@ -357,8 +358,11 @@ let linearize_def (conf:config) (env_fun:(ident,def) Hashtbl.t) (def:def) : def 
      def
   | _ -> def
 
-let linearize_arrays (prog:prog) (conf:config) : prog =
+let run _ (prog:prog) (conf:config) : prog =
   let env_fun = build_env_fun prog.nodes in
   if conf.linearize_arr then
     { nodes = List.map (linearize_def conf env_fun) prog.nodes }
   else prog
+
+
+let as_pass = (run, "Linearize_arrays");

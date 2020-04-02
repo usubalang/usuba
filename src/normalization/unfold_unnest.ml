@@ -276,6 +276,9 @@ let norm_def env_fun (def: def) : def =
   | _ ->
      def
 
-let norm_prog (prog:prog) (conf:config) : prog =
+let run _ (prog:prog) (conf:config) : prog =
   let env_fun = build_env_fun prog.nodes in
   { nodes = List.map (norm_def env_fun) prog.nodes }
+
+
+let as_pass = (run, "Unfold_unnest")

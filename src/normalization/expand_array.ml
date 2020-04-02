@@ -8,6 +8,7 @@ open Basic_utils
 open Utils
 open Printf
 
+
 type array_fate = Keep | Remove | Split
 
 (* Precision on the "force" parameter that we keep around in most functions:
@@ -297,9 +298,12 @@ let rec map_special_last f g l =
   | hd :: tl -> (f hd) :: (map_special_last f g tl)
 
 
-let rec expand_array (prog:prog) (conf:config): prog =
+let rec run _ (prog:prog) (conf:config): prog =
   let force    = if conf.no_arr then Remove else Keep in
   let bitslice = conf.slicing_set && (conf.slicing_type = B) in
   let unroll   = conf.unroll in
   { nodes = map_special_last (expand_def bitslice force unroll false)
                              (expand_def bitslice force unroll conf.arr_entry) prog.nodes }
+
+
+let as_pass = (run, "Expand_array")

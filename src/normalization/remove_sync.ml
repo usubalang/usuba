@@ -2,6 +2,7 @@ open Basic_utils
 open Utils
 open Usuba_AST
 
+
 let new_vars = ref []
 
 let gen_tmp =
@@ -111,5 +112,8 @@ let clean_def (def:def) : def =
   | _ -> def
 
 
-let remove_sync (prog:prog) (conf:config) : prog =
+let run _ (prog:prog) (conf:config) : prog =
   { nodes = List.map clean_def prog.nodes }
+
+
+let as_pass = (run, "Remove_sync")

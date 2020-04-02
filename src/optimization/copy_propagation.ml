@@ -110,7 +110,6 @@ open Usuba_AST
 open Basic_utils
 open Utils
 
-
 (* Given a list of deqs, this module computes the variables that must
    not be optimized away. Those are array variables used in loops or
    in function calls. *)
@@ -199,8 +198,9 @@ let rec propagate_in_aexpr (optimized_away:(var,expr*((ident*deq_i) list)) Hasht
   match ae with
   | Const_e _    -> ae
   | Var_e x      -> (match Hashtbl.find_opt optimized_away (Var x) with
-                     | Some (Const(c,_),_) -> Const_e c
-                     | _                 -> Var_e x)
+                     | Some (Const(c,_),_)    -> Const_e c
+                     | Some (ExpVar(Var v),_) -> Var_e v
+                     | _                      -> Var_e x)
   | Op_e(op,x,y) -> Op_e(op,propagate_in_aexpr optimized_away x,
                          propagate_in_aexpr optimized_away y)
 
@@ -323,5 +323,8 @@ let cp_def (def:def) : def =
      { def with node = Single(vars,cp_deqs env_var env_keep optimized_away body) }
   | _ -> def
 
-let cp_prog (prog:prog) (conf:config) : prog =
+let run _ (prog:prog) (conf:config) : prog =
   { nodes = List.map cp_def prog.nodes }
+
+
+let as_pass = (run, "Copy_propagation")

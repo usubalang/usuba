@@ -113,5 +113,8 @@ let cse_def (def:def) : def =
      { def with node = Single(vars,cse_deqs env_expr body) }
   | _ -> def
 
-let cse_prog (prog:prog) (conf:config) : prog =
+let run _ (prog:prog) (conf:config) : prog =
   { nodes = List.map cse_def prog.nodes }
+
+
+let as_pass = (run, "CSE")

@@ -265,6 +265,9 @@ let fuse_loops_def (def:def) : def =
      { def with node = Single(vars,fuse_loops_deqs env_var env_it env_ready body) }
   | _ -> def
 
-let fuse_loops (prog:prog) (conf:config) : prog =
+let run _ (prog:prog) (conf:config) : prog =
   let prog = { nodes = List.map fuse_loops_def prog.nodes } in
   { nodes = List.map fuse_loops_def prog.nodes }
+
+
+let as_pass = (run, "Fuse_loop_general")

@@ -134,9 +134,12 @@ let rec rewrite_def (def: def) (conf:config) : def =
   | _ -> def
 
 
-let convert_tables (prog: prog) (conf:config): prog =
+let run _ (prog: prog) (conf:config): prog =
   bitslice := conf.slicing_set && (conf.slicing_type = B);
   if conf.keep_tables then
     prog
   else
     { nodes = List.map (fun x -> rewrite_def x conf) prog.nodes }
+
+
+let as_pass = (run, "Convert_tables")

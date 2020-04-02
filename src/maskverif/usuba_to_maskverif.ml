@@ -120,3 +120,9 @@ let prog_to_str (prog:prog) : string=
 
 let print_prog (prog:prog) : unit =
   Printf.printf "%s" (prog_to_str prog)
+
+let run _ (prog:prog) _ : prog =
+  print_prog prog;
+  prog
+
+let as_pass = (run, "Usuba_to_maskverif")

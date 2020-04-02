@@ -1,8 +1,7 @@
 (***************************************************************************** )
                               expand_permut.ml
 
-    This module first converts permutation tables list into permutation tables.
-    Then, it converts permutation tables into regular nodes.
+    This module converts permutation tables into regular nodes.
 
     This is actually a temporary solution, as we'd rather like the permutation
     tables to just rename registers.
@@ -14,6 +13,7 @@
 open Usuba_AST
 open Basic_utils
 open Utils
+
 
 let list_from_perm env_var (perm:int list) (l:expr list) : expr list =
   let args = Array.of_list (flat_map (Unfold_unnest.expand_expr env_var) l) in
@@ -52,7 +52,10 @@ let rec rewrite_defs (l: def list) : def list =
                      | _ -> x) l
 
 
-let expand_permut (p: prog) (conf:config) : prog =
+let run _ (p: prog) (conf:config) : prog =
   { nodes = List.filter (fun x -> match x.node with
                                   | Perm _ -> false
                                   | _ -> true) (rewrite_defs p.nodes) }
+
+
+let as_pass = (run, "Expand_permut")

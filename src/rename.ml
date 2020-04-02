@@ -18,6 +18,7 @@ open Usuba_AST
 open Basic_utils
 open Utils
 
+
 (* Since the transformation of the code will produce new variable names,
    we must rename the old variables to make there won't be any conflicts
    with those new names (or with any ocaml builtin name).
@@ -79,6 +80,8 @@ let rename_def (def:def) : def =
                                              | _ -> node) nodes)
            | _ -> def.node }
 
-
-let rename_prog (p: prog) (conf:config) : prog =
+let run _ (p:prog) (conf:config) : prog =
   { nodes = List.map rename_def p.nodes }
+
+
+let as_pass = (run, "Rename")

@@ -2,10 +2,9 @@ open Usuba_AST
 open Basic_utils
 open Utils
 open Printf
+open Pass_runner
 
 exception Unsound of string
-
-let print_env env = Hashtbl.fold (fun k _ _ -> printf "%s\n" k) env ()
 
 
 let compare_tables (orig:def) (norm:def)  =
@@ -24,13 +23,15 @@ let compare_tables (orig:def) (norm:def)  =
   (* Printf.fprintf stderr "Table %s sound.\n" orig.id.name *)
 
 
-let tables_sound (orig:prog) (normalized:prog) : unit =
+let tables_sound (runner:pass_runner) (orig:prog) (normalized:prog) : unit =
 
   List.iter (fun x ->
              match x.node with
              | Table _ ->
-                (try let normed = List.find (fun def -> contains def.id.name x.id.name)
-                                            normalized.nodes in
+                (try let normed =
+                       List.find (fun def -> contains def.id.name x.id.name)
+                                 normalized.nodes in
                      compare_tables x normed
                  with Not_found -> ())
-             | _ -> ()) (Expand_multiples.expand_multiples orig default_conf).nodes
+             | _ -> ()) (runner#run_module ~conf:default_conf
+                                           Expand_multiples.as_pass orig).nodes

@@ -192,5 +192,7 @@ let fold_def (def:def) : def =
      { def with node = Single(vars,fold_deqs env_var body) }
   | _ -> def
 
-let fold_prog (prog:prog) (conf:config) : prog =
+let run _ (prog:prog) (conf:config) : prog =
   { nodes = List.map fold_def prog.nodes }
+
+let as_pass = (run, "Constant_folding")

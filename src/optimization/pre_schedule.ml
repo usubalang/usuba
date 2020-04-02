@@ -5,6 +5,7 @@ open Basic_utils
 open Utils
 open Printf
 
+
 (* |eqs_ready|: equations ready to be scheduled;
    |vars_avail|: variables available (ie, on the lhs of already
                  scheduled equations)
@@ -215,7 +216,10 @@ let schedule_node (def:def) : def =
                       | Single(vars,deqs) -> Single(vars,schedule_deqs vars deqs def)
                       | _ -> def.node }
 
-let schedule (prog:prog) : prog =
+let run _ (prog:prog) (_:config) : prog =
   try
     { nodes = List.map schedule_node prog.nodes }
   with Error _ -> prog
+
+
+let as_pass = (run, "Pre_schedule")

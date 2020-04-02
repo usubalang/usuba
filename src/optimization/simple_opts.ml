@@ -15,26 +15,8 @@
 open Usuba_AST
 open Basic_utils
 open Utils
+open Pass_runner
 
-
-let print title body conf =
-  if conf.verbose >= 5 then
-    begin
-      Printf.fprintf stderr "%s\n" title;
-      if conf.verbose >= 100 then
-        Printf.fprintf stderr "%s\n" (Usuba_print.prog_to_str body)
-    end
-
-
-let run_pass title func conf prog =
-  if conf.verbose >= 5 then
-    Printf.fprintf stderr "\n\nRunning %s...\n%!" title;
-  let res = func prog conf in
-  if conf.verbose >= 5 then
-    Printf.fprintf stderr "\n%s done.\n%!" title;
-  if conf.verbose >= 100 then
-    Printf.fprintf stderr "%s\n%!" (Usuba_print.prog_to_str res);
-  res
 
 let rec opt_def ?(retry:int=5) (def:def) =
   let def' =
@@ -48,22 +30,22 @@ let rec opt_def ?(retry:int=5) (def:def) =
   else def'
 
 
-let rec opt_prog ?(retry:int=20) (prog:prog) (conf:config) =
+let rec _run (runner:pass_runner) ?(retry:int=20) (prog:prog) (conf:config)
+        : prog =
 
-  let run_pass title func ?(sconf = conf) prog =
-    run_pass title func sconf prog in
-
-  let fold_const = if conf.fold_const then Constant_folding.fold_prog else fun p _ -> p in
-  let cse        = if conf.cse        then CSE.cse_prog               else fun p _ -> p in
-  let copy_prop  = if conf.copy_prop  then Copy_propagation.cp_prog   else fun p _ -> p in
-
-  let prog' =
-    prog |>
-      (run_pass "Constant_folding" fold_const)                    |>
-      (run_pass "CSE" cse)                                        |>
-      (run_pass "Copy_propagation" copy_prop)                     |>
-      (run_pass "Norm_tuples" Norm_tuples.norm_tuples) in
+  let prog' = runner#run_modules_guard
+                       [ Constant_folding.as_pass, conf.fold_const;
+                         CSE.as_pass, conf.cse;
+                         Copy_propagation.as_pass, conf.copy_prop;
+                         Norm_tuples.as_pass, true ] prog in
 
   if retry > 0 then
-    if prog = prog' then prog else opt_prog ~retry:(retry-1) prog' conf
+    if prog = prog' then prog else _run runner ~retry:(retry-1) prog' conf
   else prog'
+
+
+let run (runner:pass_runner) (prog:prog) (conf:config) : prog =
+  _run runner prog conf
+
+
+let as_pass = (run, "Simple_opts")

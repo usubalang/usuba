@@ -78,6 +78,7 @@ open Basic_utils
 open Utils
 open Printf
 
+
 exception Updated
 exception Need_unroll
 
@@ -411,7 +412,7 @@ let rec expand_def (env_fun:(ident,def) Hashtbl.t) (def:def) : unit =
     Updated -> expand_def env_fun def
 
 
-let expand_parameters (prog:prog) (conf:config) : prog =
+let run _ (prog:prog) (conf:config) : prog =
 
   let env_fun = Hashtbl.create 100 in
   List.iter (fun node -> Hashtbl.add env_fun node.id node) prog.nodes;
@@ -432,3 +433,6 @@ let expand_parameters (prog:prog) (conf:config) : prog =
   done;
 
   { nodes = List.map (fun node -> Hashtbl.find env_fun node.id) prog.nodes }
+
+
+let as_pass = (run, "Expand_parameters")

@@ -81,18 +81,27 @@ let gen_output_filename (file_in: string) : string =
   let out_name = last (String.split_on_char '/' full_name) in
   out_name ^ ".c"
 
-let print_c (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
-  (* Generating C code *)
+
+let compile (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
+  (* Type-checking *)
+  let prog = Type_checker.type_prog prog conf in
+
+  (* Normalizing AND optimizing *)
+  let normed_prog = Normalize.compile prog conf in
+
+  (* Generating a string of C code *)
+  let c_prog_str = Usuba_to_c.prog_to_c prog normed_prog conf file_in in
+
+  (* Opening out file *)
   let out = match !output with
     | ""  -> open_out (gen_output_filename file_in)
     | str -> open_out str in
 
-  let normalized = Normalize.compile prog conf in
-
-  let c_prog = Usuba_to_c.prog_to_c prog normalized conf file_in in
-
-  fprintf out "%s" c_prog;
+  (* Printing the C code *)
+  fprintf out "%s" c_prog_str;
   close_out out
+
+
 
 let run_tests () : unit =
   Test_constant_folding.test ();
@@ -102,6 +111,7 @@ let run_tests () : unit =
   Test_pass_runner.test ();
   Test_monomorphize.test ();
   Printf.printf "All tests ran.\n"
+
 
 let main () =
   Printexc.record_backtrace true;
@@ -218,12 +228,7 @@ let main () =
         compact        =   !compact;
       } in
 
-    if conf.archi = Std && conf.bits_per_reg mod 2 <> 0 then
-      raise (Error ("Invalid -fix-size " ^ (string_of_int conf.bits_per_reg)));
-
-    let prog = Type_checker.type_prog prog conf in
-
-    print_c s prog conf in
+    compile s prog conf in
 
 
   Arg.parse speclist compile usage_msg

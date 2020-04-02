@@ -1,7 +1,7 @@
 open Usuba_AST
 open Basic_utils
 open Utils
-
+open Pass_runner
 
 (* Simplify (ie, remove) every tuples that can be simplified:
      - Remove Tuples from function call arguments:
@@ -60,9 +60,10 @@ module Simplify_tuples = struct
        { def with node  = Single(p_var, simpl_deqs body) }
     | _ -> def
 
-  let simpl_tuples (prog: prog) : prog =
+  let run _ (prog: prog) (_:config) : prog =
     { nodes = List.map simpl_tuples_def prog.nodes }
 
+  let as_pass = (run, "Simplify_tuples")
 end
 
 (* Split of tuples into assignements of non-tuples:
@@ -79,6 +80,7 @@ end
        x[2] = c;
  *)
 module Split_tuples = struct
+
   let real_split_tuple env (orig:(ident * deq_i) list) (p: var list)
                        (e: expr) (sync:bool) : deq list =
     let el = Unfold_unnest.expand_expr env e in
@@ -112,8 +114,10 @@ module Split_tuples = struct
        { def with node  = Single(p_var, split_tuples_deq env body) }
     | _ -> def
 
-  let split_tuples (prog: prog) : prog =
+  let run _ (prog: prog) (conf:config) : prog =
     { nodes = List.map split_tuples_def prog.nodes }
+
+  let as_pass = (run, "Split_tuples")
 end
 
 let rec norm_tuples_def (def:def) : def =
@@ -126,12 +130,14 @@ let rec norm_tuples_def (def:def) : def =
   if def <> def' then norm_tuples_def def'
   else def
 
-let rec norm_tuples (prog:prog) (conf:config) : prog =
-  let prog' =
-    Simplify_tuples.simpl_tuples
-      (Split_tuples.split_tuples
-         (Simplify_tuples.simpl_tuples prog)) in
+let rec run (runner:pass_runner) (prog:prog) (conf:config) : prog =
+  let prog' = runner#run_modules [ Simplify_tuples.as_pass;
+                                   Split_tuples.as_pass;
+                                   Simplify_tuples.as_pass ] prog in
 
   (* Fixpoint to make sure every tuples are complitely simplified. *)
-  if prog <> prog' then norm_tuples prog' conf
+  if prog <> prog' then run runner prog' conf
   else prog'
+
+
+let as_pass = (run, "Norm_tuples")

@@ -37,6 +37,7 @@
 open Usuba_AST
 open Basic_utils
 open Utils
+open Pass_runner
 
 
 (* Returns the "nested" level of a type: it corresponds to how many
@@ -288,7 +289,7 @@ module Dir_params = struct
       | _ -> ()
 
 
-  let rec fix_dim (prog:prog) (conf:config) : prog =
+  let rec run (runner:pass_runner) (prog:prog) (conf:config) : prog =
 
     (* Build a hash containing all nodes *)
     let env_fun = Hashtbl.create 100 in
@@ -303,23 +304,17 @@ module Dir_params = struct
       (* Could have introduce unbalancing between parameters/arguments
          and new unwanted arrays/tuples -> need to re-run a bunch of
          normalization *)
-      (* TODO: make that less ugly *)
-      fix_dim (
-          Norm_tuples.norm_tuples (
-              Expand_array.expand_array (
-                  Expand_parameters.expand_parameters (
-                      Norm_tuples.norm_tuples (
-                          Expand_array.expand_array (
-                              { nodes = List.map (fun node -> Hashtbl.find env_fun node.id)
-                                          prog.nodes }
-                            ) conf
-                        ) conf
-                    ) conf
-                ) conf
-            ) conf
-        ) conf
+      let runner = new pass_runner conf in
+      let prog = { nodes = List.map (fun node -> Hashtbl.find env_fun node.id)
+                                    prog.nodes } in
+      run runner (runner#run_modules
+                           [Expand_array.as_pass;
+                            Norm_tuples.as_pass;
+                            Expand_parameters.as_pass;
+                            Expand_array.as_pass;
+                            Norm_tuples.as_pass] prog) conf
 
-
+  let as_pass = (run, "Fix_dim.Dir_params")
 end
 
 (* Go through each function call, and, if needed, updates the
@@ -366,7 +361,8 @@ module Dir_inner = struct
                    (we can always reduce dimension, but not expand) *)
                 ) else ()
              (* Not a Const/ExpVar -> not possible *)
-             | _ -> assert false
+             | _ -> Printf.printf "Error: %s\n" (Usuba_print.expr_to_str arg);
+                    assert false
             ) args;
 
           (* Retrieveing f's returns param, and checking return values' types *)
@@ -403,7 +399,7 @@ module Dir_inner = struct
       | _ -> ()
 
 
-  let rec fix_dim (prog:prog) (conf:config) : prog =
+  let rec run (runner:pass_runner) (prog:prog) (conf:config) : prog =
 
     (* Build a hash containing all nodes *)
     let env_fun = Hashtbl.create 100 in
@@ -418,20 +414,14 @@ module Dir_inner = struct
       (* Could have introduce unbalancing between parameters/arguments
          and new unwanted arrays/tuples -> need to re-run a bunch of
          normalization *)
-      (* TODO: make that less ugly *)
-      fix_dim (
-          Norm_tuples.norm_tuples (
-              Expand_array.expand_array (
-                  Expand_parameters.expand_parameters (
-                      Norm_tuples.norm_tuples (
-                          Expand_array.expand_array (
-                              { nodes = List.map (fun node -> Hashtbl.find env_fun node.id)
-                                          prog.nodes }
-                            ) conf
-                        ) conf
-                    ) conf
-                ) conf
-            ) conf
-        ) conf
+      let prog = { nodes = List.map (fun node -> Hashtbl.find env_fun node.id)
+                                    prog.nodes } in
+      run runner (runner#run_modules
+                           [Expand_array.as_pass;
+                            Norm_tuples.as_pass;
+                            Expand_parameters.as_pass;
+                            Expand_array.as_pass;
+                            Norm_tuples.as_pass] prog) conf
 
+  let as_pass = (run, "Fix_dim.Dir_inner")
 end

@@ -2,6 +2,7 @@ open Usuba_AST
 open Basic_utils
 open Utils
 
+
 let compact = ref false
 
 (* Will be used within Hslice/Vslice/Bslice (which is why it's located
@@ -457,7 +458,7 @@ let specialize_entry (all_nodes:(ident,def) Hashtbl.t)
                                   | _ -> def.node }
 
 
-let monomorphize (prog:prog) (conf:config) : prog =
+let run _ (prog:prog) (conf:config) : prog =
   compact := conf.compact;
 
   (* Getting the default dir (command line parameter) *)
@@ -493,3 +494,6 @@ let monomorphize (prog:prog) (conf:config) : prog =
         (fun def ->
          let monos_hash = Hashtbl.find specialized_nodes def.id in
          values monos_hash) prog.nodes }
+
+
+let as_pass = (run, "Monomorphize")

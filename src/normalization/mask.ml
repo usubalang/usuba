@@ -248,5 +248,8 @@ let mask_def (def:def) : def =
   | _ -> Printf.eprintf "Cannot mask something else that a def (%s). Exiting.\n" def.id.name;
          assert false
 
-let mask_prog (prog:prog) : prog =
+let run _ (prog:prog) (_:config) : prog =
   { nodes = List.map mask_def prog.nodes }
+
+
+let as_pass = (run, "Mask")

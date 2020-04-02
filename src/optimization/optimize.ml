@@ -2,6 +2,7 @@ open Basic_utils
 open Utils
 open Usuba_AST
 open Usuba_print
+open Pass_runner
 
 (* Clean.clean_vars_decl removes unused variables from variable declarations of nodes
    (unused variables will likely be variables that have been optimized out) *)
@@ -44,51 +45,27 @@ module Clean = struct
        { def with node = Single(vars,body) }
     | _ -> def
 
-  let clean_vars_decl (prog:prog) (conf:config) : prog =
+  let run _ (prog:prog) (conf:config) : prog =
     { nodes = List.map clean_def prog.nodes }
+
+
+  let as_pass = (run, "Clean")
 end
 
 
-let print title body conf =
-  if conf.verbose >= 5 then
-    begin
-      Printf.fprintf stderr "%s\n" title;
-      if conf.verbose >= 100 then
-        Printf.fprintf stderr "%s\n" (Usuba_print.prog_to_str body)
-    end
+
+let optimize (runner:pass_runner) (prog: Usuba_AST.prog) (conf:config) : Usuba_AST.prog =
 
 
-let run_pass title func conf prog =
-  if conf.verbose >= 5 then
-    Printf.fprintf stderr "\n\nRunning %s...\n%!" title;
-  let res = func prog conf in
-  if conf.verbose >= 5 then
-    Printf.fprintf stderr "\n%s done.\n%!" title;
-  if conf.verbose >= 100 then
-    Printf.fprintf stderr "%s\n%!" (Usuba_print.prog_to_str res);
-  res
+  runner#run_modules_guard
+           [ Interleave.as_pass, conf.interleave > 0;
+             Simple_opts.as_pass, true;
+             Fuse_loop_general.as_pass, conf.loop_fusion;
+             Simple_opts.as_pass, true;
+             Scheduler.as_pass,  conf.scheduling;
+             Share_var.as_pass,  conf.share_var;
+             Clean.as_pass, true;
+             Remove_dead_code.as_pass, true ] prog
 
 
-let opt_prog (prog: Usuba_AST.prog) (conf:config) : Usuba_AST.prog =
-
-  let run_pass title func ?(sconf = conf) prog =
-    run_pass title func sconf prog in
-
-
-  (* All optimization are opt-in/opt-out => selecting here which ones to do. *)
-  let interleave  = if conf.interleave > 0 then Interleave.interleave      else fun p _ -> p in
-  let schedule    = if conf.scheduling     then Scheduler.schedule         else fun p _ -> p in
-  let share_var   = if conf.share_var      then Share_var.share_prog       else fun p _ -> p in
-  let fuse_loops  = if conf.loop_fusion    then Fuse_loop_general.fuse_loops else fun p _ -> p in
-  (* Simple_opts alreay takes care of checking conf *)
-  let simple_opts = Simple_opts.opt_prog in
-
-  prog |>
-    (run_pass "Interleaving" interleave)                             |>
-    (run_pass "Simple_opts" simple_opts)                             |>
-    (run_pass "Loop fusion" fuse_loops)                              |>
-    (run_pass "Simple_opts" simple_opts)                             |>
-    (run_pass "Scheduling" schedule)                                 |>
-    (run_pass "Share_var" share_var)                                 |>
-    (run_pass "Cleaning var decls" Clean.clean_vars_decl)            |>
-    (run_pass "Remove_dead_code" Remove_dead_code.remove_dead_code)
+let as_pass = (optimize, "Optimize")

@@ -13,7 +13,7 @@ COQCFILES = usuba_AST.v
 all:
 	coqc $(COQCFILES)
 	$(OCAMLBUILD) $(MAIN).native
-	rm *.vo *.mli *.glob
+	rm *.vo *.glob
 	./main.native -tests
 	cp main.native ../usubac
 

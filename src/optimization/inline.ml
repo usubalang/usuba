@@ -14,6 +14,7 @@ open Usuba_AST
 open Basic_utils
 open Utils
 
+
 (* Contains the value of "inlining" within "conf". *)
 let light_inline = ref false
 
@@ -352,7 +353,7 @@ let rec _inline (prog:prog) (conf:config) inlined : prog =
 
 
 (* Main inlining function. _inline actually does most of the job *)
-let inline (prog:prog) (conf:config) : prog =
+let run _ (prog:prog) (conf:config) : prog =
   if conf.light_inline || conf.inlining then
     (* Hashtbl containing the inlining status of each node:
      false if it is not already inlined, true if it is *)
@@ -365,3 +366,6 @@ let inline (prog:prog) (conf:config) : prog =
     (* And now, perform the inlining *)
     _inline prog conf inlined
   else prog
+
+
+let as_pass = (run, "Inline")

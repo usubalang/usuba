@@ -27,6 +27,7 @@ open Basic_utils
 open Utils
 open Usuba_AST
 
+
 module Find_used_variables = struct
 
   (* Because of loops, we need to iterate multiple time over the
@@ -109,5 +110,8 @@ let remove_dead_code_def (def:def) : def =
      { def with node = Single(vars',body') }
   | _ -> def
 
-let remove_dead_code (prog:prog) (conf:config) : prog =
+let run _ (prog:prog) (conf:config) : prog =
   { nodes = List.map remove_dead_code_def prog.nodes }
+
+
+let as_pass = (run, "Remove_dead_code")

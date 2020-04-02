@@ -12,6 +12,7 @@ open Usuba_AST
 open Basic_utils
 open Utils
 
+
 let do_shift (env_var:(ident,typ) Hashtbl.t) (op:shift_op)
       (l:expr list) (n:int) : expr list =
   (* Empty env_fun since unfold_unnest must already have been called *)
@@ -90,8 +91,11 @@ let shift_def (def:def) : def =
      { def with node  = Single(vars,List.map (shift_deq env_var) body) }
   | _ -> def
 
-let expand_shifts (prog:prog) (conf:config) : prog =
+let run _ (prog:prog) (conf:config) : prog =
   (* Inlines nodes that _must_ be inlined. *)
   let prog' = Inline.vital_inline prog conf in
   (* And perform shifts *)
   { nodes = List.map shift_def prog'.nodes }
+
+
+let as_pass = (run, "Shift_tuples")

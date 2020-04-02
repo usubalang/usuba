@@ -2,7 +2,7 @@ open Usuba_AST
 open Basic_utils
 open Utils
 open Printf
-
+open Pass_runner
 
 module Refresh = struct
 
@@ -424,19 +424,19 @@ let is_call_and_loop_free (def:def) : bool =
    normalized again. Mainly, tuples, need to be unfolded again. Since
    there is no function that inlines everything _and_ normalized the
    program after, we define it here.*)
-let clean_inline (prog:prog) (conf:config) : prog =
+let clean_inline (runner:pass_runner) (prog:prog) (conf:config) : prog =
   let conf = { conf with inlining = true;
                          inline_all = true;
                          light_inline = false;
              } in
-  let prog = Inline.inline prog conf in
-  let prog = Unfold_unnest.norm_prog     prog conf in
-  let prog = Expand_array.expand_array   prog conf in
-  let prog = Expand_permut.expand_permut prog conf in
-  let prog = Norm_tuples.norm_tuples     prog conf in
-  let prog = Shift_tuples.expand_shifts  prog conf in
-  let prog = Norm_tuples.norm_tuples     prog conf in
-  prog
+  runner#run_modules ~conf:conf
+           [ Inline.as_pass;
+             Unfold_unnest.as_pass;
+             Expand_array.as_pass;
+             Expand_permut.as_pass;
+             Norm_tuples.as_pass;
+             Shift_tuples.as_pass;
+             Norm_tuples.as_pass ] prog
 
 (* |new_def| was produced using Tightprove_to_usuba, while |old_def|
    comes from the original AST. This function updates the variables of
@@ -464,15 +464,15 @@ let match_variables (new_def:def) (old_def:def) : def * (var_d list) =
 
 
 (* Refreshes a program which doesn't contain loops *)
-let refresh_prog (prog:prog) (conf:config) : prog =
+let refresh_prog (runner:pass_runner) (prog:prog) (conf:config) : prog =
   (* Step 1: fully inline prog *)
-  let inlined_prog = clean_inline prog conf in
+  let inlined_prog = clean_inline runner prog conf in
   assert (List.length inlined_prog.nodes = 1);
   (* Note that:
       - unrolling an Usuba0 program produces and Usuba0 program
         (hence, we don't need re-normalize it, unlike inlining)
       - |conf| in the call to Unroll.unroll_prog is unused *)
-  let unrolled_prog = Unroll.unroll_prog ~force:true inlined_prog conf in
+  let unrolled_prog = Unroll.force_run inlined_prog conf in
   let ua_def = List.hd unrolled_prog.nodes in
 
   (* Step 2: call TP *)
@@ -500,11 +500,12 @@ let refresh_simple_def (conf:config) (def:def) : def =
   else
     def
 
-(* This is a simplified version that doesn't do inlining/unrolling. To
-   improve.*)
-let process_prog (prog:prog) (conf:config) : prog =
-  let prog = Clear_origins.clear_origins prog conf in
+let run (runner:pass_runner) (prog:prog) (conf:config) : prog =
+  let prog = runner#run_module Clear_origins.as_pass prog in
   let prog = { nodes = List.map (refresh_simple_def conf) prog.nodes } in
-  let prog = Clear_origins.clear_origins prog conf in
-  let prog = refresh_prog prog conf in
+  let prog = runner#run_module Clear_origins.as_pass prog in
+  let prog = refresh_prog runner prog conf in
   prog
+
+
+let as_pass = (run, "Tightprove")

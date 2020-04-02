@@ -381,9 +381,12 @@ module Low_pressure_sched = struct
 
 end
 
-let schedule (prog:prog) (conf:config) : prog =
+let run _ (prog:prog) (conf:config) : prog =
   (* Reg_alloc.alloc_reg prog        *)
   (* Basic_scheduler.schedule prog *)
   (* Random_scheduler.schedule prog  *)
   (* Depth_first_sched.schedule prog *)
   Low_pressure_sched.schedule prog conf
+
+
+let as_pass = (run, "Sceduler")

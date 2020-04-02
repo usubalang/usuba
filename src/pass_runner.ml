@@ -1,49 +1,75 @@
 open Usuba_AST
 open Basic_utils
+open Printf
 
-(* A pass is defined by a config, as action to run, and a name. The
-name is only used for debugging purposes (when running the program
-with -v xx) *)
-type pass = { conf:config;
-              action:prog -> config -> prog;
-              name:string }
 
 (* |def_conf| is the config used by default for all passes. *)
 class pass_runner (def_conf:config) =
 object (self)
 
-  (* The passes to run. They are stored in reverse order and the list
-  is reverted before running the passes. *)
-  val mutable passes : pass list = []
+  (* For passes called within passes, keep track of the callers *)
+  val mutable callers : string list = []
 
-  (* Registers a pass. The default conf (|def_conf|) will be used if
-  no conf is provided. *)
-  method register_pass ?(conf:config=def_conf)
-                       (action:prog -> config -> prog)
-                       (name:string) : unit =
-    passes <- { conf=conf; action=action; name=name } :: passes
+  method private print (msg:string) : unit =
+    let current_str = List.hd callers in
+    let callers_str =
+      if List.tl callers <> [] then
+        sprintf " (%s ->)" (join " -> " (List.rev (List.tl callers)))
+      else "" in
+    Printf.eprintf "[%s]%s %s\n%!" current_str callers_str msg
 
   (* Runs a pass. *)
-  method run_pass (pass:pass) (prog:prog) : prog =
-    let conf = pass.conf in
+  method private run_pass (conf, action, name) (prog:prog) : prog =
+    callers <- name :: callers;
 
-    if conf.verbose >= 5 then Printf.eprintf "\rRunning pass %s... %!" pass.name;
+    if conf.verbose >= 5 then self#print "starting...";
 
-    let prog' = pass.action prog pass.conf in
-    passes <- [];
+    let prog' = action self prog conf in
 
-    if conf.verbose >= 3 then Printf.eprintf "done.%!";
-    if conf.verbose >= 5 then Printf.eprintf "\n";
-    if conf.verbose >= 100 then Printf.eprintf "%s\n\n=========================\n\n"
-                                               (Usuba_print.prog_to_str prog');
+    if conf.verbose >= 5 then self#print "done.";
+    if conf.verbose >= 100 then
+      self#print (sprintf " Result:\n=========================\n%s\n=========================\n\n"
+                          (Usuba_print.prog_to_str prog'));
+
+    callers <- List.tl callers;
 
     prog'
 
-  (* Runs all passes. *)
-  method run_all_passes (prog:prog) : prog =
-    (* Note the use of fold_right, which amounts to using fold_left + rev.*)
-    List.fold_right self#run_pass passes prog
+  (* Returns |prog| without running the pass, but prints some debug if
+     verbosity is high enough *)
+  method private skip_module (conf:config) (name:string) (prog:prog) : prog =
+    callers <- name :: callers;
+    if conf.verbose >= 5 then self#print "skipping.";
+    callers <- List.tl callers;
+    prog
 
-  method get_passes () : pass list = passes
-  method get_conf () : config = def_conf
+  (* Runs the passes in argument *)
+  method private run_passes passes (prog:prog) : prog =
+    List.fold_right self#run_pass (List.rev passes) prog
+
+
+  (* Runs a module *)
+  method run_module ?(conf:config=def_conf) (action, name) (prog:prog) : prog =
+    let pass = (conf, action, name) in
+    self#run_pass pass prog
+
+  (* Runs several modules *)
+  method run_modules ?(conf:config=def_conf) moduls (prog:prog) : prog =
+    let passes = List.map (fun (action,name) -> (conf, action, name)) moduls in
+    self#run_passes passes prog
+
+  (* Runs a module if |guard| is true *)
+  method run_module_guard ?(conf:config=def_conf) (guard:bool)
+                          (action, name) (prog:prog) : prog =
+    if guard then self#run_module ~conf:conf (action,name) prog
+    else self#skip_module conf name prog
+
+  (* Runs several modules, each protected by a guard *)
+  method run_modules_guard ?(conf:config=def_conf)
+                           (moduls:(('b * string) * bool) list)
+                           (prog:prog) : prog =
+    List.fold_right (fun ((action,name),guard) prog ->
+                     if guard then self#run_pass (conf, action, name) prog
+                     else self#skip_module conf name prog)
+                    (List.rev moduls) prog
 end

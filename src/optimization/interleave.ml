@@ -5,7 +5,7 @@ open Printf
 
 (* WARNING: this module contains some old code, poorly written and
 document, kept around just in case. Interleave_generic is reasonably
-well written and document, and is the current implementation of the
+well written and documented, and is the current implementation of the
 interleaver -> look at it if you need to, and ignore everything else
 in this file. *)
 
@@ -45,13 +45,13 @@ in this file. *)
 
     - do not duplicate constant variables
 
-    - think about whether there should be a special case to not the
-      body of functions that are less than |grain| instructions
-      long. Pro: it would make smaller code, and probably should be as
-      fast, or maybe faster (less register pressure within the
-      function). Cons: interleaving should happen when register
-      pressure is low, and inlining a small function should always be
-      useful, or at least not hurt the performances. Cons2:
+    - think about whether there should be a special case to not
+      interleave the body of functions that are less than |grain|
+      instructions long. Pro: it would make smaller code, and probably
+      should be as fast, or maybe faster (less register pressure
+      within the function). Cons: interleaving should happen when
+      register pressure is low, and inlining a small function should
+      always be useful, or at least not hurt the performances. Cons2:
       interleaving works tightly with scheduling, and this would
       prevent the scheduler from optimizing the interleaving.
 
@@ -527,7 +527,10 @@ end
 
 
 
-let interleave (prog:prog) (conf:config) =
+let run _ (prog:prog) (conf:config) =
   Interleave_generic.interleave prog conf
   (* Dup2_nofunc_param.interleave conf.interleave prog conf *)
  (*Dup2.interleave prog conf*)
+
+
+let as_pass = (run, "Interleave")

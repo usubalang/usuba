@@ -4,7 +4,6 @@ open Basic_utils
 open Utils
 
 
-
 let rec simpl_var env_it (v:var) : var =
   match v with
   | Var _ -> v
@@ -163,5 +162,8 @@ let share_def (def:def) (no_arr:bool) : def =
      { def with node = Single(vars,body) }
   | _ -> def
 
-let share_prog (prog:prog) (conf:config) : prog =
+let run _ (prog:prog) (conf:config) : prog =
   { nodes = apply_last prog.nodes (fun x -> share_def x conf.no_arr) }
+
+
+let as_pass = (run, "Share_var")

@@ -38,5 +38,8 @@ let clear_def (def:def) : def =
          Single(vars,body)
       | _ -> def.node }
 
-let clear_origins (prog:prog) (conf:config) : prog =
+let run _ (prog:prog) (conf:config) : prog =
   { nodes = List.map clear_def prog.nodes }
+
+
+let as_pass = (run, "Clear_origins")
