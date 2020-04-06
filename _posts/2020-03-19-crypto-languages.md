@@ -158,21 +158,58 @@ side-channel attacks became a thing [6].
 
 ### FaCT
 
+FaCT [7] is a C-style DSL for cryptography, which generates
+proved-constant-time LLVM Intermediate Represendation (IR) code. FaCT
+allows developpers to write cryptographic code without having to
+resort to programming "tricks" to make it constant-time, like masking
+conditionals, or using flags instead of early-return. Those tricks
+obfuscate the code, and implementing them wrong can lead to unexpected
+weaknesses [8].
+
+Instead, FaCT allows the developpers to write C-style code, where
+secret values are annotated with the keyword `secret` in their
+definition. The compiler then takes care of transforming any
+non-constant-time idioms using those values into constant-time
+ones. Those idioms include early routine termination, conditional
+branching, and memory accesses. 
+
+FaCT's transformations which remove vulnerable constructions are
+proven to produce constant-time code. However, because LLVM could
+still introduce vulnerability (for instance by optimizing branchless
+statements with conditional branches), they rely on dudect [9] to
+ensure that the final assembly is empirically constant-time.
+
+While FaCT achieves the same result as Usuba, constant-time
+cryptographic codes, their use-cases are different. The constructions
+that FaCT makes constant-time are found in protocols (_eg._ TLS) or
+asymmetric primitives (_eg._ RSA), whereas Usuba focuses on symmetric
+cryptography. Furthermore, Usuba is higher-level than FaCT: the later
+can almost be straight-forwardly compiled to C, which Usuba requires
+more normalization, especially when automatically bitslicing
+programs. Both languages however achieve similar performances as
+hand-tuned codes, even though Usuba implements several optimizations
+itself while FaCT mostly relies on LLVM's optimize.
+
+
 ### HaCL*
 
 ### Cryptoverif
 
 ### EasyCrypt
 
+### CPPL ?
+
+### BSS (pornin)
+
+
+
+## Assemblers
+
 ### Jasmin?
 
 ### Vale?
 
 ### qasm?
-
-### CPPL ?
-
-### BSS (pornin)
 
 
 
@@ -191,3 +228,9 @@ side-channel attacks became a thing [6].
 [5] E. Oswald, M. Aigner, [Randomized Addition-Subtraction Chains as a Countermeasure against Power Attacks](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.125.2275&rep=rep1&type=pdf), CHES, 2001.
 
 [6] E. Prouff, M. Rivain, [Masking against Side-Channel Attacks: a Formal Security Proof](https://www.iacr.org/archive/eurocrypt2013/78810139/78810139.pdf), EuroCrypt, 2013.
+
+[7] S. Cauligi _et al._, [FaCT: A DSL for Timing-Sensitive Computation](https://ranjitjhala.github.io/static/fact_dsl.pdf), PLDI, 2019.
+
+[8] N. J. AlFardan, K. G. Paterson, [Lucky Thirteen: Breaking the TLS and DTLS Record Protocols](https://www.ieee-security.org/TC/SP2013/papers/4977a526.pdf), IEEESSP, 2013.
+
+[9] O. Reparaz _et al._, [Dude, is my code constant time?](https://eprint.iacr.org/2016/1123.pdf), DATE, 2017.
