@@ -81,7 +81,7 @@ A kernel code is always asynchronous with respect to the host code, and sometime
     //Host code during device execution
     ...
 
-    // End of the overlapped host code. Waiting for the end of kernel execution to transfer data between the host and the device. 
+    // End of the overlapped host code. Waiting for the end of the kernel execution to transfer data between the host and the device. 
     cudaMemcpy(a, d_a, numBytes, cudaMemcpyDeviceToHost); // Synchronous function, no overlapping allowed.
 ```
 
