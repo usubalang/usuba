@@ -104,6 +104,58 @@ missing in Cryptol.
 
 ### CAO
 
+CAO [3,4] is another domain-specific programming language (DSL) for
+cryptography, which focuses on primitives. Like Usuba, CAO started
+from the observation that writing primitives in C either leads to poor
+performances because the C compiler is unable to optimize them well,
+or to un-maintainable code because optimizations are done by hand.
+
+The level of abstractions provided by CAO is similar to Usuba, unlike
+Cryptol, which provided very high-level mathematical-oriented
+constructions: functions, `for` loops, standard C operators (`+`, `-`,
+`*`, ...), ranges to index multiples elements of a vector,
+concatenation of vectors... CAO also has a `map` builtin, which
+describes mapping from inputs to outputs of a permutation, in a style
+similar to Usuba's `perm` nodes.
+
+However, whereas Usuba's main target is symmetric cryptography, CAO is
+more oriented toward asymmetric (public-key) cryptography, and thus
+offers many abstractions for finite field arithmetics. For instance,
+one can define a type `f` for AES's values like:
+
+```
+typedef f := gf[2 ** 8] over $ ** 8 + $ ** 4 + $ ** 3 + $ + 1
+```
+
+AES's Mixcolumn can then be written in a more mathematical way in CAO
+than in Usuba: while the latter required the programmer to manually
+provide equations, the former allows the use of arithmetic operators
+to compute in GF(2<sup>8</sup>).
+
+To support public-key cryptography, CAO also provides conditionals in
+the language. However, to prevent timing attacks, variables can be
+annotated with `secret`: the compiler will emit an error if a
+conditional branch is done on a `secret` value. Such a mechanism is
+not needed in Usuba, where branches on non-static values cannot be
+expressed at all.
+
+Because of the exotic types introduced when dealing with public-key
+cryptography (first-order polynomials, very large integers of some
+finite fields...), CAO applies some optimizations to its programs
+before generating C code. For instance, C compilers' strength
+reduction pass (replacing "strong" operations by "weaker" once, for
+instance replacing a multiplication by several additions) will not
+handle finite field arithmetics, but CAO's does.
+
+CAO also tries to offer a way for programs to be resilient against
+side-channel attacks, by providing an operator `?`, which introduces
+fresh randomness. However, introducing randomness throughout the
+computation [5] is not proven to be secured. CAO thus uses Hidden
+Markov Models to try and break it. This is weaker than Usuba's
+automatic masking, but was done years provable security against
+side-channel attacks became a thing [6]. 
+
+
 ### FaCT
 
 ### HaCL*
@@ -118,6 +170,8 @@ missing in Cryptol.
 
 ### qasm?
 
+### CPPL ?
+
 ### BSS (pornin)
 
 
@@ -129,3 +183,11 @@ missing in Cryptol.
 [1] J. R. Lewis, B. Martin, [Cryptol: high assurance, retargetable crypto development and validation](https://cryptol.net/files/cryptol_whitepaper.pdf), 2003.
 
 [2] L. De Moura, N. Bjørner, [Z3: An efficient SMT solver](https://link.springer.com/content/pdf/10.1007%2F978-3-540-78800-3_24.pdf), TACAS, 2008.
+
+[3] M. Barbosa _et al._, [First Steps Toward a Cryptography-Aware Language and Compiler](https://eprint.iacr.org/2005/160.pdf), 2005.
+
+[4] M. Barbosa _et al._, [Compiling CAO: From Cryptographic Specifications to C Implementations](https://haslab.uminho.pt/pfsilva/files/post14-ack.pdf), POST, 2014.
+
+[5] E. Oswald, M. Aigner, [Randomized Addition-Subtraction Chains as a Countermeasure against Power Attacks](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.125.2275&rep=rep1&type=pdf), CHES, 2001.
+
+[6] E. Prouff, M. Rivain, [Masking against Side-Channel Attacks: a Formal Security Proof](https://www.iacr.org/archive/eurocrypt2013/78810139/78810139.pdf), EuroCrypt, 2013.
