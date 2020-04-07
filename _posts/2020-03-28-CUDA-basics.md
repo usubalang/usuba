@@ -96,7 +96,7 @@ The size of a grid is limited to 65 535 blocks in each dimension except for x wh
     src="{{ site.baseurl }}/assets/images/blog/cuda/programmer_view_grid.png"/>
 </p>
 
-In CUDA, the two reasons for choosing a multi-dimensional grid are: firstly to overtake the one-dimensional block size limitation and by extension the thread number limitation; and secondly to get a better representation of a potential multi dimensional problem resulting in an easier way to index data structures. For instance,   
+In CUDA, the two reasons for choosing a multi-dimensional grid are: firstly to overtake the one-dimensional block size limitation and by extension the thread number limitation; and secondly to get a better representation of a potential multi dimensional problem resulting in an easier way to index data structures.   
 
 ##### Blocks
 
