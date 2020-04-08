@@ -26,63 +26,78 @@ let rewrite_p (p:p) : var list =
   List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd.vd_typ) p;
   flat_map (fun vd -> expand_var env_var ~bitslice:!bitslice (Var vd.vd_id)) p
 
-let get_bits (l:int list) (i:int) : int list =
-  List.rev @@ List.map (fun x -> x lsr i land 1) l
+let tmp_var i =
+  fresh_ident ("tmp_" ^ (string_of_int i))
 
-let tmp_var i j k =
-  fresh_ident ("tmp_" ^ (string_of_int i) ^ "_" ^ (string_of_int j) ^ "_" ^ (string_of_int k))
-
-let mux c a b = Log(Or,Log(And,Not c,ExpVar(Var a)),Log(And,c,ExpVar(Var b)))
-(* let mux c a b = Log(Xor,ExpVar(Var a),Log(And,c,Log(Xor,ExpVar(Var a),ExpVar(Var b)))) *)
-
+let fake_mux c a b = Log(Xor,a,Log(And,b,c))
 
 let rewrite_table (id:ident) (p_in:p) (p_out:p)
-      (opt:def_opt list) (l:int list) : def =
+                   (opt:def_opt list) (l:int list) : def =
+
   let const_typ = get_base_type (List.hd p_in).vd_typ in
+  let msize = match get_type_m const_typ with
+    | Mint m -> m
+    | _ -> assert false in
+  let zero = Const(0,Some const_typ) in
+  let one = Const(gen_minus_one msize,Some const_typ) in
   let exp_p_in  = Array.of_list @@ rewrite_p p_in in
   let exp_p_out = Array.of_list @@ rewrite_p p_out in
-  let size_in = Array.length exp_p_in in
-  let size_out = Array.length exp_p_out in
+  let si = Array.length exp_p_in in
+  let so = Array.length exp_p_out in
   let body = ref [] in
   let vars = ref [] in
-  for i = 1 to size_out do (* for each bit ou the output *)
 
-    (* get the bits of the output the current rank *)
-    let bits = Array.of_list (List.rev (get_bits l (size_out-i))) in
+  let n2 = Array.init (List.length l) (fun i -> ref (List.nth l i)) in
 
-    (* initialise rank 0 *)
-    for j = 1 to List.length l do
-      let var = tmp_var i 0 (j-1) in
-      vars := (simple_var_d var) :: !vars;
-      body := Eqn ([Var var],Const(bits.(j-1),Some const_typ),false) :: !body
-    done;
-
-    (* for each depth *)
-    for j = 1 to size_in do
-
-      for k = 1 to pow 2 (size_in-j) do
-        let var_l  = tmp_var i j (k-1) in
-        let var_r1 = tmp_var i (j-1) ((k-1)*2) in
-        let var_r2 = tmp_var i (j-1) ((k-1)*2+1) in
-        vars := (simple_var_d var_l) ::
-                  (simple_var_d var_r1) ::
-                    (simple_var_d var_r2) :: !vars;
-        body := Eqn ([Var var_l],
-                       mux (ExpVar exp_p_in.(size_in-j)) var_r1 var_r2, false)
-                :: !body
-      done
-    done;
-
-    (* set output *)
-    let var = tmp_var i size_in 0 in
-    vars := (simple_var_d var) :: !vars;
-    body := Eqn ([exp_p_out.(i-1)], ExpVar(Var var), false) :: !body
-
+  for i = 0 to si-1 do
+    for j = 0 to (Array.length n2) - 1 do
+      if (j lsr i) land 1 = 1 then
+        n2.(j) := !(n2.(j)) lxor !(n2.(j lxor (1 lsl i)))
+    done
   done;
 
-  let body = List.rev_map (fun d -> { orig=[]; content=d }) !body in
+  let var_offset = ref 0 in
+  for i = 0 to so-1 do
+    let l = ref 0 in
+    let k = ref 0 in
+    while !k < 1 lsl si do
+      let v1 = if !(n2.(!k)) land (1 lsl (so - 1 - i)) <> 0 then one else zero in
+      let v2 = if !(n2.(!k+1)) land (1 lsl (so - 1 - i)) <> 0 then one else zero in
+      let cond = ExpVar exp_p_in.(si-1) in
+      let expr = fake_mux cond v1 v2 in
+      let var = tmp_var (!var_offset + !l) in
+      vars := (simple_var_d var) :: !vars;
+      body := ([Var var], expr) :: !body;
+      l := !l + 1;
+      k := !k + 2;
+    done;
+
+    let m = ref 0 in
+    for j = 1 to si-1 do
+      k := 0;
+      while !k < 1 lsl (si - j) do
+        let v1 = ExpVar (Var (tmp_var (!var_offset + (!m + !k)))) in
+        let v2 = ExpVar (Var (tmp_var (!var_offset + (!m + !k + 1)))) in
+        let cond = ExpVar exp_p_in.(si-1-j) in
+        let expr = fake_mux cond v1 v2 in
+        let var = tmp_var (!var_offset + !l) in
+        vars := (simple_var_d var) :: !vars;
+        body := ([Var var], expr) :: !body;
+        l := !l + 1;
+        k := !k + 2;
+      done;
+      m := !m + (1 lsl (si - j));
+    done;
+
+    body := ([exp_p_out.(i)], ExpVar(Var(tmp_var (!var_offset + (!l-1))))) :: !body;
+    var_offset := !var_offset + (1 lsl si);
+  done;
+
+  let body = List.rev_map (fun (lhs,rhs) -> { orig=[]; content=Eqn(lhs,rhs,false) }) !body in
   { id = id; p_in = p_in; p_out = p_out; opt = opt;
-    node = Single(!vars,body) }
+    node = Single(!vars, body) }
+
+
 
 (* When a table is replaced by a node, it's param types might be
    different and need to be fixed:
@@ -122,7 +137,9 @@ let rewrite_single_table (id:ident) (p_in:p) (p_out:p)
                       p_out = fix_p p_out new_node.p_out;
                       opt = new_node.opt @ opt }
     with Not_found -> Simple_opts.opt_def (Norm_tuples.norm_tuples_def (Unfold_unnest.norm_def (Hashtbl.create 1) (rewrite_table id p_in p_out opt l)))
-  else Simple_opts.opt_def (Norm_tuples.norm_tuples_def (Unfold_unnest.norm_def (Hashtbl.create 1) (rewrite_table id p_in p_out opt l)))
+  else
+    let table = rewrite_table id p_in p_out opt l in
+    Simple_opts.opt_def (Norm_tuples.norm_tuples_def (Unfold_unnest.norm_def (Hashtbl.create 1) table))
 
 let rec rewrite_def (def: def) (conf:config) : def =
   let id    = def.id in
