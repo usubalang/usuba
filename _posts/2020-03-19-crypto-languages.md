@@ -153,7 +153,7 @@ fresh randomness. However, introducing randomness throughout the
 computation [5] is not proven to be secured. CAO thus uses Hidden
 Markov Models to try and break it. This is weaker than Usuba's
 automatic masking, but was done years provable security against
-side-channel attacks became a thing [6]. 
+side-channel attacks became a must [6]. 
 
 
 ### FaCT
@@ -191,13 +191,44 @@ hand-tuned codes, even though Usuba implements several optimizations
 itself while FaCT mostly relies on LLVM's optimize.
 
 
+### dSCADL
+
+dSCADL [10,11] is a **d**ata flow based **S**ymmetric
+**C**ryptographic **A**lgorithm **D**escription **L**anguage. The
+language is meant to allow developper to write symmetric primitives
+with a simple language, which should be intuitive to use, while still
+offering good performances. 
+
+dSCADL's variables are either scalars or cubes. Scalars are integers,
+either used in the control flow like loop indices, or to represent any
+mono-dimensional (potentially secret) data. Cubes by opposition are
+used for multi-dimensional data, for instance to represent AES's state
+as a matrix. To compare with Usuba's types, scalars encompass Usuba's
+`Nat` and <code>u<i>m</i></code>, while cubes are similar to Usuba's
+arrays. dSCADL provides operators to manipulate cubes, like point-wise
+arithmetic and substitution, matrix multiplication, row and column
+concatenation. Those cube operators allow dSCADL's AES implementation
+to be higher level that Usuba's, as MixColumn (the matrix
+multiplication) is done with a simple operator, expanded by the
+compiler to lower-level operations.
+
+However, dSCADL compiles to OCaml code and then links with a runtime
+library, making it much slower than Usuba, which compiles directly to
+C. In the paper presentnig dSCADL [10], better performances for dSCADL
+than Cryptol are reported, but it is unclear how fair the benchmark
+is, since in the code they provide [11], the Cryptol codes include
+correctness proofs which are done using a SMT-solver.
+
+Finally, dSCADL allows the use of secret values in conditionals, as
+well as lookup in tables at secret indices, making the produced codes
+potentially vulnerable to timing attacks.
+
+
 ### HaCL*
 
 ### Cryptoverif
 
 ### EasyCrypt
-
-### CPPL ?
 
 ### BSS (pornin)
 
@@ -211,6 +242,10 @@ itself while FaCT mostly relies on LLVM's optimize.
 
 ### qasm?
 
+
+### Not detailed
+
+ - Some languages for Protocols, like CPPL.
 
 
 ---
@@ -234,3 +269,7 @@ itself while FaCT mostly relies on LLVM's optimize.
 [8] N. J. AlFardan, K. G. Paterson, [Lucky Thirteen: Breaking the TLS and DTLS Record Protocols](https://www.ieee-security.org/TC/SP2013/papers/4977a526.pdf), IEEESSP, 2013.
 
 [9] O. Reparaz _et al._, [Dude, is my code constant time?](https://eprint.iacr.org/2016/1123.pdf), DATE, 2017.
+
+[10] J. Rao _et al._, [dSCADL: A Data Flow based Symmetric Cryptographic Algorithm Description Language](https://ieeexplore.ieee.org/document/8989331), CCET, 2019.
+
+[11] J. Rao, [dSCAL github](https://github.com/rynxr/SCADL), accessed 08/04/2020.
