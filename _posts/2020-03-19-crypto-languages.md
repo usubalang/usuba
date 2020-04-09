@@ -224,13 +224,81 @@ well as lookup in tables at secret indices, making the produced codes
 potentially vulnerable to timing attacks.
 
 
+### A Domain Specific Language for Cryptography
+
+Giovanni Agosta and Gerardo Pelosi proposed in [12] a domain specific
+language for cryptography. This DSL was not named, but we shall call
+it ADSLFC (**A** **D**omain **S**pecific **L**anguage **F**or
+**C**ryptography) in the following, for simplicity. ADSLFC is based on
+Python in the hope that developers will find it easy to use, and will
+easily assimilate the syntax (unlike Cryptol for instance, which uses
+haskell-like syntax, which may be harder to understand for most
+programmers). Finally, ADSLFC is compiled to Python (but the authors
+mention as future work that they would like to compile to C as well),
+in order to allow for and easy interoperability with C/C++.
+
+The base type of ADSLFC is `int`, which represents a signed integer of
+unlimited precision. This type can then be refined by specifying its
+size (`int.32` for a 32-bit integer for instance), or made unsigned
+using the `u.` prefix. The TEA cipher for instance takes as input
+values of type `u.int.32`, similar to Usuba's `u32`.  Vectors can be
+used to represent either (possibly multi-dimentional) arrays of
+integers or polynomials. To deal with finite field arithmetics, a `mod
+x` anotation can be added to a type, meaning that operations on this
+type are done modulo `x`.
+
+Standard arithmetic operators are provided for integers (addition,
+multiplication, exponentiation...), as well as bitwise operators, and
+an operator to call a S-box (represented as a vector used as a lookup
+table). Additional operators are available to manipulate vectors:
+concatenation, indexing, replication, transposition... The features of
+the language are thus similar to Usuba's, with added constructions to
+deal with finite field arithmetics and polynomials. No example of
+ADSLFC using those constructions are available, but AES and most
+public-key ciphers should be written in a more natural way in ADSLFC
+than in Usuba.
+
+Finally, ADSLFC was designed to allow fast prototyping and
+development, with seemingly no regard for performances, unlike Usuba,
+for which speed is a crucial aspect. No performances numbers are
+provided in [12], but since ADSLFC compiles to Python, and no
+optimizations are mentioned in [12], we can expect the generated codes
+to be slower than Usuba's highly optimized C codes.
+
+
+### BSC
+
+BSC [13] is the only bitslicing compiler (besides Usuba) we know
+of. The initial design of Usuba [14], which did not support m-slicing
+was largely inspired from BSC: lookup tables and permutations reused
+BSC's syntax, and the types were similar: booleans are arrays. Usuba's
+tuples are also inspired from BSC's vectors: in BSC, a vector of size
+_n_ can be destructed into two vectors of size _i_ and _j_ (such that
+_i + j = n_) using the syntax `[a # b] = c` (where `a`, `b` and `c`
+are vectors of size `i`, `j` and `n`), which is equivalent to Usuba's
+`(a, b) = n`. Finally, we reused in Usuba the algorithm used by BSC to
+convert lookup tables into circuits.
+
+BSC, however, remained a basic prototype and does not perform any
+optimization but copy propagation (removing assigment of a variable to
+another). Furthermore, BSC does not offer loop constructions, and
+inlines every function, producing unnecessary large
+codes. Benchmarking BSC against Usuba on DES shows that Usuba is about
+10% faster, mainly thanks to its scheduling algorithm.
+
+BSC does not support m-slicing, which is to be expected since
+m-slicing was introduced by [14] and [15], 8 and 9 years after the
+development of BSC.
+
+
+
+
 ### HaCL*
+
 
 ### Cryptoverif
 
 ### EasyCrypt
-
-### BSS (pornin)
 
 
 
@@ -273,3 +341,13 @@ potentially vulnerable to timing attacks.
 [10] J. Rao _et al._, [dSCADL: A Data Flow based Symmetric Cryptographic Algorithm Description Language](https://ieeexplore.ieee.org/document/8989331), CCET, 2019.
 
 [11] J. Rao, [dSCAL github](https://github.com/rynxr/SCADL), accessed 08/04/2020.
+
+[12] G. Agosta, G. Pelosi, [A Domain Specific Language for Cryptography](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.206.5258&rep=rep1&type=pdf), FDL, 2007.
+
+[13] T. Pornin, [Implantation et optimisation des primitives cryptographiques](https://www.bolet.org/~pornin/2001-phd-pornin.pdf) (implementation and optimization of cryptographic primitives), PhD thesis, 2001.
+
+[14] D. Mercadier _et al._, [Usuba: Optimizing & Trustworthy Bitslicing Compiler](https://hal.archives-ouvertes.fr/hal-01657259/document), WPMVP@PPoPP, 2018.
+
+[15] R. Könighofer, [A Fast and Cache-Timing Resistant Implementation of the AES](https://link.springer.com/content/pdf/10.1007/978-3-540-79263-5_12.pdf), CT-RSA, 2008.
+
+[16] E. Käsper, P. Schwabe, [Faster and Timing-Attack Resistant AES-GCM](https://www.esat.kuleuven.be/cosic/publications/article-1261.pdf), CHES, 2009.
