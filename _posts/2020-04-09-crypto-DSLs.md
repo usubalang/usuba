@@ -1,16 +1,15 @@
 ---
 layout: post
-title: Languages for cryptography
-date: "2020-03-19 00:00:00"
+title: DSLs for cryptography
+date: "2020-04-09 00:00:00"
 description: Presentation of some languages cryptography, and their differences/similarities with Usuba
 lang: en
 locale: en_US
 author: Darius Mercadier
-excerpt: 
-comments: false
-hidden: true
+excerpt: Cryptol started from the observation that due to the lack of standard for specifying cryptographic algorithms, papers described their ciphers using a combination of english (too ambiguous) and pseudo-codes (ill-suited to describe mathematical operations) while providing reference implementations in C (too low-level)
+comments: true
+hidden: false
 ---
-
 
 
 ### Cryptol 
@@ -289,31 +288,6 @@ codes. Benchmarking BSC against Usuba on DES shows that Usuba is about
 BSC does not support m-slicing, which is to be expected since
 m-slicing was introduced by [14] and [15], 8 and 9 years after the
 development of BSC.
-
-
-
-
-### HaCL*
-
-
-### Cryptoverif
-
-### EasyCrypt
-
-
-
-## Assemblers
-
-### Jasmin?
-
-### Vale?
-
-### qasm?
-
-
-### Not detailed
-
- - Some languages for Protocols, like CPPL.
 
 
 ---
