@@ -354,7 +354,8 @@ let rec _inline (prog:prog) (conf:config) inlined : prog =
 
 (* Main inlining function. _inline actually does most of the job *)
 let run _ (prog:prog) (conf:config) : prog =
-  if conf.light_inline || conf.inlining then
+  if conf.no_inline then prog
+  else
     (* Hashtbl containing the inlining status of each node:
      false if it is not already inlined, true if it is *)
     let inlined = Hashtbl.create 20 in
@@ -365,7 +366,6 @@ let run _ (prog:prog) (conf:config) : prog =
     light_inline := conf.light_inline;
     (* And now, perform the inlining *)
     _inline prog conf inlined
-  else prog
 
 
 let as_pass = (run, "Inline")

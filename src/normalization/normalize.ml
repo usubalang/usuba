@@ -63,7 +63,7 @@ let optimize (prog:prog) (conf:config) : prog =
            [ Simple_opts.as_pass,          true;
              Pre_schedule.as_pass,         conf.pre_schedule;
              Normalize_core.as_pass,       true;
-             Inline.as_pass,               conf.light_inline || conf.inlining;
+             Inline.as_pass,               not conf.no_inline;
              Simple_opts.as_pass,          true;
              Pre_schedule.as_pass,         true;
              Normalize_inner_core.as_pass, true;

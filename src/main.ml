@@ -10,11 +10,11 @@ open Config
 
 let warnings    = ref false
 let verbose     = ref 1
-let verif       = ref false
 let type_check  = ref true
 let check_tbl   = ref false
 
-let inlining      = ref true
+let no_inline     = ref false
+let auto_inline   = ref true
 let inline_all    = ref false
 let light_inline  = ref false
 let fold_const    = ref true
@@ -119,10 +119,9 @@ let main () =
   let speclist =
     [ "-w", Arg.Set warnings, "Activate warnings";
       "-v", Arg.Set_int verbose, "Set verbosity level";
-      "-verif", Arg.Set verif, "Activate verification";
       "-check-tbl", Arg.Set check_tbl, "Activate verification of tables";
       "-no-type-check", Arg.Clear type_check, "Deactivate type checking";
-      "-no-inline", Arg.Clear inlining, "Deactivate inlining opti";
+      "-no-inline", Arg.Set no_inline, "Deactivate inlining opti";
       "-inline-all", Arg.Set inline_all, "Force inlining of every node";
       "-light-inline", Arg.Set light_inline, "Inline only _inline functions";
       "-no-fold-const", Arg.Clear fold_const, "Deactive Constant Folding";
@@ -187,10 +186,10 @@ let main () =
     let conf = {
         warnings       =   !warnings;
         verbose        =   !verbose;
-        verif          =   !verif;
         type_check     =   !type_check;
         check_tbl      =   !check_tbl;
-        inlining       =   !inlining;
+        auto_inline    =   !auto_inline;
+        no_inline      =   !no_inline;
         inline_all     =   !inline_all;
         light_inline   =   !light_inline;
         fold_const     =   !fold_const;

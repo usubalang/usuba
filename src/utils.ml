@@ -15,10 +15,10 @@ exception Skip
 let default_conf : config =
   { warnings     = true;
     verbose      = 1;
-    verif        = false;
     type_check   = true;
     check_tbl    = false;
-    inlining     = true;
+    auto_inline  = true;
+    no_inline    = false;
     inline_all   = false;
     light_inline = false;
     fold_const   = true;

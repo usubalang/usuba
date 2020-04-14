@@ -425,9 +425,10 @@ let is_call_and_loop_free (def:def) : bool =
    there is no function that inlines everything _and_ normalized the
    program after, we define it here.*)
 let clean_inline (runner:pass_runner) (prog:prog) (conf:config) : prog =
-  let conf = { conf with inlining = true;
-                         inline_all = true;
+  let conf = { conf with inline_all   = true;
                          light_inline = false;
+                         auto_inline  = false;
+                         no_inline    = false;
              } in
   runner#run_modules ~conf:conf
            [ Inline.as_pass;

@@ -120,47 +120,53 @@ Inductive slicing := H | V | B.
 
 (* The compiler's configuration *)
 Record config := {
-  warnings     : bool;
-  verbose      : N;
-  verif        : bool;
-  type_check   : bool;
-  check_tbl    : bool;
-  inlining     : bool;
-  inline_all   : bool;
-  light_inline : bool;
-  fold_const   : bool;
-  cse          : bool;
-  copy_prop    : bool;
-  loop_fusion  : bool;
-  pre_schedule : bool;
-  scheduling   : bool;
-  schedule_n   : N;
-  share_var    : bool;
-  linearize_arr: bool;
-  precal_tbl   : bool;
-  archi        : arch;
-  bits_per_reg : N;
-  no_arr       : bool;
-  arr_entry    : bool;
-  unroll       : bool;
-  interleave   : N; (* Actually the grain *)
-  inter_factor : N;
-  auto_inter   : bool;
-  fdti         : string;
-  lazylift     : bool;
-  slicing_set  : bool;
-  slicing_type : slicing;
-  m_set        : bool;
-  m_val        : N;
-  tightPROVE   : bool;
-  tightprove_dir : string;
-  maskVerif    : bool;
-  masked       : bool;
-  ua_masked    : bool;
-  shares       : N;
-  gen_bench    : bool;
-  keep_tables  : bool;
-  compact      : bool;
+  warnings     : bool; (* Doesn't do anything... I think *)
+  verbose      : N;    (* 5   = prints which passes are getting executed,
+                          100 = prints the Usuba program after each pass *)
+  type_check   : bool; (* Enables type-checking *)
+  check_tbl    : bool; (* Enables verification of tables to circuit conversion *)
+  no_inline    : bool; (* Disables all inlining *)
+  auto_inline  : bool; (* Lets Usuba chose which nodes to inline or not *)
+  inline_all   : bool; (* Inlines all nodes *)
+  light_inline : bool; (* Inlines only nodes marked with _inline *)
+  fold_const   : bool; (* Enables constant folding *)
+  cse          : bool; (* Enables CSE *)
+  copy_prop    : bool; (* Enables Copy propagation *)
+  loop_fusion  : bool; (* Enables loop fusion *)
+  pre_schedule : bool; (* Enables bistlice scheduling *)
+  scheduling   : bool; (* Enables mslice scheduling *)
+  schedule_n   : N;    (* Look-behind window for mslice scheduling *)
+  share_var    : bool; (* Enables variable reuse *)
+  linearize_arr: bool; (* Enables array linearization *)
+  precal_tbl   : bool; (* Enables the use of precomputed lookup tables *)
+  archi        : arch; (* Selects the architecture to target *)
+  bits_per_reg : N;    (* Number of bits per register *)
+  no_arr       : bool; (* Removes all arrays (except in parameters) *)
+  arr_entry    : bool; (* Removes arrays from parameters *)
+  unroll       : bool; (* Unrolls all loops *)
+  interleave   : N;    (* Interleaving granularity *)
+  inter_factor : N;    (* Interleaving factor *)
+  auto_inter   : bool; (* Automatically interleave *)
+  fdti         : string; (* *)
+  lazylift     : bool; (* Enables lazy lifting *)
+  slicing_set  : bool; (* If true, it means a slicing direction is selected,
+                          and slicing_type (below) contains it *)
+  slicing_type : slicing; (* Slicing direction *)
+  m_set        : bool; (* If true, it means a word size is selected,
+                          and m_val (below) contains it *)
+  m_val        : N;    (* word size *)
+  tightPROVE   : bool; (* Enables tightPROVE masking verification *)
+  tightprove_dir : string; (* Tightprove's output directory *)
+  maskVerif    : bool; (* Enables maskVerif code generation *)
+  masked       : bool; (* Enables masking by using special AND/OR/NOT/XOR macros *)
+  ua_masked    : bool; (* Enables masking within Usuba; only a custom
+                          AND macro is needed *)
+  shares       : N;    (* Number of shares for masking *)
+  gen_bench    : bool; (* Generates a benchmarking function *)
+  keep_tables  : bool; (* Keeps tables as tables rather than converting
+                          them into circuits *)
+  compact      : bool; (* (broken) Generates loops when unfolding
+                          operators instead of a list of equations. *)
 }.
 
 Set Extraction KeepSingleton.
