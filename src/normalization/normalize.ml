@@ -59,22 +59,24 @@ let norm_prog (rename:bool) (prog:prog) (conf:config) : prog =
 let optimize (prog:prog) (conf:config) : prog =
   let runner = new pass_runner conf in
 
-  runner#run_modules_guard
+  let prog =
+    runner#run_modules_guard
            [ Simple_opts.as_pass,          true;
              Pre_schedule.as_pass,         conf.pre_schedule;
-             Normalize_core.as_pass,       true;
-             Inline.as_pass,               not conf.no_inline;
-             Simple_opts.as_pass,          true;
-             Pre_schedule.as_pass,         true;
-             Normalize_inner_core.as_pass, true;
-             Optimize.as_pass,             true;
-             Normalize_inner_core.as_pass, true;
-             Tightprove.as_pass,           conf.tightPROVE;
-             Usuba_to_maskverif.as_pass,   conf.maskVerif;
-             Mask.as_pass,                 conf.ua_masked;
-             Fuse_loops.as_pass,           conf.loop_fusion;
-             Linearize_arrays.as_pass,     conf.linearize_arr
-           ] prog
+             Normalize_core.as_pass,       true ] prog in
+
+  Inline.run_with_cont runner prog conf
+                       [ Simple_opts.as_pass,          true;
+                         Pre_schedule.as_pass,         true;
+                         Normalize_inner_core.as_pass, true;
+                         Optimize.as_pass,             true;
+                         Normalize_inner_core.as_pass, true;
+                         Tightprove.as_pass,           conf.tightPROVE;
+                         Usuba_to_maskverif.as_pass,   conf.maskVerif;
+                         Mask.as_pass,                 conf.ua_masked;
+                         Fuse_loops.as_pass,           conf.loop_fusion;
+                         Linearize_arrays.as_pass,     conf.linearize_arr
+                       ]
 
 
 let compile (prog:prog) (conf:config) : prog =

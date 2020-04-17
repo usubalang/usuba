@@ -14,6 +14,7 @@ let type_check  = ref true
 let check_tbl   = ref false
 
 let no_inline     = ref false
+let bench_inline  = ref false
 let auto_inline   = ref true
 let inline_all    = ref false
 let light_inline  = ref false
@@ -122,6 +123,7 @@ let main () =
       "-check-tbl", Arg.Set check_tbl, "Activate verification of tables";
       "-no-type-check", Arg.Clear type_check, "Deactivate type checking";
       "-no-inline", Arg.Set no_inline, "Deactivate inlining opti";
+      "-bench-inline", Arg.Set bench_inline, "Activate benchmark-guided inlining";
       "-inline-all", Arg.Set inline_all, "Force inlining of every node";
       "-light-inline", Arg.Set light_inline, "Inline only _inline functions";
       "-no-fold-const", Arg.Clear fold_const, "Deactive Constant Folding";
@@ -188,10 +190,11 @@ let main () =
         verbose        =   !verbose;
         type_check     =   !type_check;
         check_tbl      =   !check_tbl;
+        bench_inline   =   !bench_inline;
         auto_inline    =   !auto_inline;
+        light_inline   =   !light_inline;
         no_inline      =   !no_inline;
         inline_all     =   !inline_all;
-        light_inline   =   !light_inline;
         fold_const     =   !fold_const;
         cse            =   !cse;
         copy_prop      =   !copy_prop;

@@ -13,10 +13,7 @@
 open Usuba_AST
 open Basic_utils
 open Utils
-
-
-(* Contains the value of "inlining" within "conf". *)
-let light_inline = ref false
+open Pass_runner
 
 (* This module checks if a node _must_ be inlined and if so, returns
    it. For now, a node must be inlined if it uses shifts of sizes
@@ -283,22 +280,42 @@ let do_inline (prog:prog) (to_inline:def) : prog =
                   | _ -> def) prog.nodes }
 
 
+(* Heuristically decides (ie returns true of false) if |def| should be
+   inlined or not. *)
+let should_inline_heuristic (def:def) : bool =
+
+  (* |is_full_assign| returns true if |deqs| only contains assignments *)
+  let rec is_full_assign (deqs:deq list) : bool =
+    List.for_all (fun deq ->
+                  match deq.content with
+                  | Eqn(_,ExpVar _,_) -> true
+                  | Loop(_,_,_,dl,_) -> is_full_assign dl
+                  | _ -> false) deqs in
+
+  if (List.length def.p_in) + (List.length def.p_out) > 8 then
+    (* More than 8 parameters -> will need to be passed on the stack
+       -> inlining *)
+    true
+  else if is_single def.node && is_full_assign (get_body def.node) then
+    (* Node only contains assignments -> it's a permutation of some
+       kind -> inlining *)
+    true
+  else
+    false
+
 (* Returns true if def doesn't contain any function call,
    or if those calls are to functions that are not going
    to be inlined *)
-let is_call_free env (def:def) : bool =
+let rec is_call_free env inlined conf (def:def) : bool =
   let rec deq_call_free (deq:deq) : bool =
     match deq.content with
     | Eqn(_,Fun(f,_),_) ->
        if f.name = "refresh" then true
-       else
-         is_noinline (Hashtbl.find env f.name)
-         || is_perm (Hashtbl.find env f.name)
+       else not (can_inline env inlined conf (Hashtbl.find env f.name))
     | Eqn _ -> true
     | Loop(_,_,_,dl,_) -> List.for_all deq_call_free dl in
   match def.node with
-  | Single(_,body) ->
-     List.for_all deq_call_free body
+  | Single(_,body) -> List.for_all deq_call_free body
   | _ -> false
 
 (* Returns true if the node can be inlined now. ie:
@@ -306,17 +323,21 @@ let is_call_free env (def:def) : bool =
     - it doesn't have the attribute "no_inline"
        (and "inline_all" isn't set to true)
     - it doesn't contain any function call, or
-    - every function call it contains is to a node "no_inline" *)
-let can_inline env inlined conf (node:def) : bool =
-  (* Is not already inlined *)
-  (not (Hashtbl.find inlined node.id.name)) &&
-    (* if |light_inline|, then the node must be _inline *)
-    ( (not !light_inline) || (is_inline node) ) &&
-      (* Is not "no_inline" or inlining is forced *)
-      ( (not (is_noinline node)) || conf.inline_all ) &&
-        (* Doesn't contain any call, or calls to "no_inline" *)
-        (is_call_free env node)
-
+    - every function call it contains is to a node that should not be inlined
+    - the heuristic decides that this node is worth being inlined *)
+and can_inline env inlined conf (node:def) : bool =
+  if Hashtbl.find inlined node.id.name then
+    false (* Already inlined *)
+  else if conf.light_inline then
+    is_inline node (* Only inline if node is marked as "_inline" *)
+  else if conf.inline_all then
+    true (* All nodes are inlined if -inline-all is active *)
+  else if is_call_free env inlined conf node then
+    (* Node doesn't contain any function call that should be inlined
+       -> heuristically deciding to inline it or not *)
+    should_inline_heuristic node
+  else
+    false
 
 (* Inlines only the functions that must be inlined. For now, those are
    functions that use tuple shifts with a shift size depending on a
@@ -363,9 +384,42 @@ let run _ (prog:prog) (conf:config) : prog =
     (* The last node is the entry point, it wouldn't make sense to try inline it *)
     Hashtbl.replace inlined (last prog.nodes).id.name true;
 
-    light_inline := conf.light_inline;
     (* And now, perform the inlining *)
     _inline prog conf inlined
+
+
+let run_with_cont (runner:pass_runner) (prog:prog) (conf:config) nexts : prog =
+  if not conf.bench_inline then
+    runner#run_modules_guard nexts (run runner prog conf)
+  else
+    (assert conf.bench_inline;
+     let fully_inlined = run runner prog { conf with inline_all = true } in
+     let no_inlined    = run runner prog { conf with no_inline  = true } in
+     let auto_inlined  = run runner prog conf in
+
+     let fully_inlined = runner#run_modules_guard nexts fully_inlined in
+     let no_inlined    = runner#run_modules_guard nexts no_inlined in
+     let auto_inlined  = runner#run_modules_guard nexts auto_inlined in
+
+     Printf.printf "Benchmarking dat shit...\n";
+
+     let (perfs_full, perfs_no, perfs_auto) =
+       list_to_tuple3
+         (Perfs.compare_perfs [ fully_inlined; no_inlined; auto_inlined ]) in
+
+     Printf.printf "Benchmarks res: %.2f vs %.2f vs %.2f\n" perfs_full perfs_no perfs_auto;
+
+     if perfs_full < perfs_auto then
+       if perfs_full < perfs_no then
+         fully_inlined
+       else
+         no_inlined
+     else
+       if perfs_no < perfs_auto then
+         no_inlined
+       else
+         auto_inlined)
+
 
 
 let as_pass = (run, "Inline")

@@ -17,10 +17,11 @@ let default_conf : config =
     verbose      = 1;
     type_check   = true;
     check_tbl    = false;
+    bench_inline = false;
     auto_inline  = true;
+    light_inline = false;
     no_inline    = false;
     inline_all   = false;
-    light_inline = false;
     fold_const   = true;
     cse          = true;
     copy_prop    = true;
@@ -555,7 +556,13 @@ let rec simpl_var_indices (v:var) : var =
 let is_builtin (f:ident) : bool =
   List.mem f.name [ "print"; "rand"; "refresh" ]
 
+(* Returns true if |defi| is a single; false otherwise *)
+let is_single (defi:def_i) =
+  match defi with
+  | Single _ -> true
+  | _ -> false
 
+(* Helps to get the variables and body of a "Single" node *)
 let get_vars_body = function
   | Single(vars,body) -> vars, body
   | _ -> assert false

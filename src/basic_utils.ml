@@ -183,3 +183,15 @@ let fold_right_i ?(start:int=0) (f:int -> 'a -> 'b -> 'b) (l:'a list) (init:'b) 
   List.fold_right (fun a b -> let res = f !i a b in
                               incr i;
                               res) l init
+
+
+(* List destruction helpers (to avoid warnings within code) *)
+let list_to_tuple1 l = match l with
+  | [ x ] -> x
+  | _ -> assert false
+let list_to_tuple2 l = match l with
+  | [ x; y ] -> (x, y)
+  | _ -> assert false
+let list_to_tuple3 l = match l with
+  | [ x; y; z ] -> (x, y, z)
+  | _ -> assert false
