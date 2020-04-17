@@ -70,6 +70,7 @@ sub gen_config {
  whenever the configure script is ran again. *)\n\n";
 
     say $FH qq{let data_dir = "$config->{data_dir}"};
+    say $FH qq{let arch_dir = "$config->{arch_dir}"};
     say $FH qq{let tightprove_cache = "$config->{tightprove_cache}"};
     say $FH qq{let sage = "$config->{sage}"};
     say $FH qq{let tightprove = "$config->{tightprove}"};

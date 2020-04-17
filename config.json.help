@@ -8,6 +8,9 @@ This file explains how `config.json` works.
     probably leave it as is unless you know precisely what you are
     doing.
 
+  - arch_dir: the directory where to find the C headers for each
+    architecture.
+
   - tightprove_cache: the directory to use a cache for tightprove when
     compiling Usuba files with `-tp`. If you do not already have a
     cache from a previous installation of Usuba, you can probably
