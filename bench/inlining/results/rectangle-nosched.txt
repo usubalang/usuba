@@ -1,2 +1,0 @@
-rectangle-inline-nosched 5.60 17176
-rectangle-noinline-nosched 5.60 17256

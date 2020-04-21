@@ -1,2 +1,0 @@
-rectangle-noinline-sched 5.36 17256
-rectangle-inline-sched 5.56 17176
