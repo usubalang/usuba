@@ -217,6 +217,9 @@ module Bslice = struct
     | Shuffle(v,l) -> Shuffle(specialize_var env_var v,l)
     | Arith(op,ExpVar x,ExpVar y) ->
        Arith(op,ExpVar(specialize_var env_var x),ExpVar(specialize_var env_var y))
+    (* | Tuple l -> *)
+    (*    (\* This should only happen when there is an operation between a const and a *\) *)
+    (*    Tuple (List.map (specialize_expr env_dir env_m env_var) l) *)
     | _ -> Printf.eprintf "Monomorphize::Bslice::specialize_expr: Invalid expr: %s\n"
              (Usuba_print.expr_to_str e);
            assert false

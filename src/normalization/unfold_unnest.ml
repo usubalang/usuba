@@ -133,13 +133,21 @@ let rec expand_expr env_var (e:expr) : expr list =
         | x' -> [x'])
       with Not_found -> (* |ae| does not simplify to a Const *)
         [ Shift(op,x',ae) ])
-  | Log(op,x,y) -> List.map2 (fun x y -> Log(op,x,y))
-                             (expand_expr env_var x)
-                             (expand_expr env_var y)
+  | Log(op,x,y) ->
+     let l1 = expand_expr env_var x in
+     let l2 = expand_expr env_var y in
+     if List.length l1 = List.length l2 then
+       List.map2 (fun x y -> Log(op,x,y)) l1 l2
+     else
+       [ Log(op,Tuple l1,Tuple l2) ]
   | Shuffle(v,pat) -> List.map (fun x -> Shuffle(x,pat)) (expand_var env_var v)
-  | Arith(op,x,y) -> List.map2 (fun x y -> Arith(op,x,y))
-                              (expand_expr env_var x)
-                              (expand_expr env_var y)
+  | Arith(op,x,y) ->
+     let l1 = expand_expr env_var x in
+     let l2 = expand_expr env_var y in
+     if List.length l1 = List.length l2 then
+       List.map2 (fun x y -> Arith(op,x,y)) l1 l2
+     else
+       [ Arith(op,Tuple l1,Tuple l2) ]
   | Fun(f,l) -> if f.name = "refresh" && List.length l <> 1 then
                   flat_map (fun v -> expand_expr env_var (Fun(f,[v])))
                            (flat_map (expand_expr env_var) l)
@@ -147,6 +155,19 @@ let rec expand_expr env_var (e:expr) : expr list =
   | _ -> assert false
 
 (* ************************************************************************** *)
+
+let rec remove_generic (typ:typ) (dir:dir) (mtyp:mtyp) : typ =
+  match typ with
+  | Nat -> Nat
+  | Uint(d,m,n) ->
+     let new_m = match m with
+       | Mint _ | Mnat -> m
+       | Mvar _ -> mtyp in
+     let new_d = match d with
+       | Varslice _ -> dir
+       | _ -> d in
+     Uint(new_d,new_m,n)
+  | Array(t,n) -> Array(remove_generic t dir mtyp,n)
 
 let rec remove_call env_var env_fun (its:(ident*int) list)
                     (dir,mtyp:dir*mtyp) (ltyp:typ list) (e:expr)
@@ -160,7 +181,11 @@ let rec remove_call env_var env_fun (its:(ident*int) list)
     let typ = if List.length expr_typ_l > 1
               then Array(reduce_same_list expr_typ_l,Const_e(List.length expr_typ_l))
               else List.hd expr_typ_l in
-    let typ = update_type_m (update_type_dir typ dir) mtyp in
+    (* Not entirely sure why this is necessary. Remove it and run
+       `./usubac -V samples/usuba/serpent.ua` and it will not work
+       anymore. TODO: spend a few minutes understanding why this is
+       necessary and fix. *)
+    let typ = remove_generic typ dir mtyp in
     let (new_id,new_var,new_typ) = gen_tmp env_var its typ in
     new_vars := (simple_typed_var_d new_id new_typ) :: !new_vars;
 
@@ -187,7 +212,8 @@ and remove_calls env_var env_fun (its:(ident*int) list)
                           then Array(reduce_same_list expr_typ_l,
                                      Const_e(List.length expr_typ_l))
                           else List.hd expr_typ_l in
-                let typ = update_type_m (update_type_dir typ dir) mtyp in
+                (* See comment un |remove_call| for the next line. *)
+                let typ = remove_generic typ dir mtyp in
                 let (new_id,new_var,new_typ) = gen_tmp env_var its typ in
                 new_vars := (simple_typed_var_d new_id new_typ) :: !new_vars;
                 pre_deqs := !pre_deqs @ [{ content = (Eqn([new_var],e',false)); orig = [] }];
@@ -218,26 +244,46 @@ and norm_expr env_var env_fun (its:(ident*int) list)
      deqs1 @ deqs2,
      ( match x1', x2' with
        | Tuple l1,Tuple l2 ->
-          Tuple (List.map2 (fun x y -> Log(op,x,y))
-                           (flat_map (expand_expr env_var) l1)
-                           (flat_map (expand_expr env_var) l2))
+          let l1' = flat_map (expand_expr env_var) l1 in
+          let l2' = flat_map (expand_expr env_var) l2 in
+          if List.length l1' = List.length l2' then
+            Tuple (List.map2 (fun x y -> Log(op,x,y)) l1' l2')
+          else
+            (* There should be some const in either |l1'| or |l2'| that
+               are not yet expanded. *)
+            Log(op,Tuple l1',Tuple l2')
        | _ ->
-          Tuple(List.map2 (fun x y -> Log(op,x,y))
-                              (expand_expr env_var x1')
-                              (expand_expr env_var x2')))
+          let l1 = expand_expr env_var x1' in
+          let l2 = expand_expr env_var x2' in
+          if List.length l1 = List.length l2 then
+              Tuple(List.map2 (fun x y -> Log(op,x,y)) l1 l2)
+          else
+            (* There should be some const in either |l1| or |l2| that
+               are not yet expanded. *)
+            Log(op,Tuple l1,Tuple l2))
   | Arith(op,x1,x2) ->
      let (deqs1, x1') = remove_call env_var env_fun its (dir,mtyp) ltyp x1 in
      let (deqs2, x2') = remove_call env_var env_fun its (dir,mtyp) ltyp x2 in
      deqs1 @ deqs2,
      ( match x1', x2' with
        | Tuple l1,Tuple l2 ->
-          Tuple (List.map2 (fun x y -> Arith(op,x,y))
-                   (flat_map (expand_expr env_var) l1)
-                   (flat_map (expand_expr env_var) l2))
+          let l1' = flat_map (expand_expr env_var) l1 in
+          let l2' = flat_map (expand_expr env_var) l2 in
+          if List.length l1' = List.length l2' then
+            Tuple (List.map2 (fun x y -> Arith(op,x,y)) l1' l2')
+          else
+            (* There should be some const in either |l1'| or |l2'| that
+               are not yet expanded. *)
+            Arith(op,Tuple l1',Tuple l2')
        | _ ->
-          Tuple(List.map2 (fun x y -> Arith(op,x,y))
-                  (expand_expr env_var x1')
-                  (expand_expr env_var x2')))
+          let l1 = expand_expr env_var x1' in
+          let l2 = expand_expr env_var x2' in
+          if List.length l1 = List.length l2 then
+              Tuple(List.map2 (fun x y -> Arith(op,x,y)) l1 l2)
+          else
+            (* There should be some const in either |l1| or |l2| that
+               are not yet expanded. *)
+            Arith(op,Tuple l1,Tuple l2))
   | Not e ->
      let (deqs,e') = remove_call env_var env_fun its (dir,mtyp) ltyp e in
      deqs,
