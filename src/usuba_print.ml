@@ -6,6 +6,7 @@ open Printf
 let lift_comma f = fun l -> join "," (List.map f l)
 let lift_space f = fun l -> join " " (List.map f l)
 
+
 let unfold_andn e =
   match e with
   | Log(Andn,x,y) -> Log(And,Not x,y)
@@ -44,61 +45,6 @@ let rec arith_to_str_types = function
   | Op_e(op,x,y) -> "Op_e(" ^ (arith_to_str_types x) ^ " " ^ (arith_op_to_str op) ^
                       " " ^ (arith_to_str_types y) ^ ")"
 
-let rec var_to_str = function
-  | Var v -> v.name
-  | Index(v,e) -> sprintf "%s[%s]" (var_to_str v) (arith_to_str e)
-  | Range(v,ei,ef) -> sprintf "%s[%s .. %s]" (var_to_str v) (arith_to_str ei) (arith_to_str ef)
-  | Slice(v,l) -> sprintf "%s[%s]" (var_to_str v) (join "," (List.map arith_to_str l))
-let var_to_str_l = lift_comma var_to_str
-
-let rec var_to_str_types = function
-  | Var v -> sprintf "Var: %s" v.name
-  | Index(v,e) -> sprintf "Index: %s[%s]" (var_to_str_types v) (arith_to_str_types e)
-  | Range(v,ei,ef) -> sprintf "Range: %s[%s..%s] " (var_to_str_types v) (arith_to_str_types ei)
-                              (arith_to_str_types ef)
-  | Slice(v,l) -> sprintf "Splice: %s[%s]" (var_to_str_types v)
-                          (join "," (List.map arith_to_str_types l))
-
-let rec expr_to_str_types = function
-  | Const(c,_) -> "Const: " ^ (string_of_int c)
-  | ExpVar v -> "ExpVar: " ^ (var_to_str v)
-  | Tuple t -> "Tuple: (" ^ (join "," (List.map expr_to_str_types t)) ^ ")"
-  | Log(Andn,x,y) -> "Andn: " ^ (expr_to_str_types (unfold_andn (Log(Andn,x,y))))
-  | Log(o,x,y) -> "Log: " ^ "(" ^ (expr_to_str_types x) ^ (log_op_to_str o)
-                  ^ (expr_to_str_types y) ^ ")"
-  | Shuffle(v,l) -> sprintf "Shuffle: Shuffle(%s,[%s])" (var_to_str v)
-                            (join "," (List.map string_of_int l))
-  | Arith(o,x,y) -> "Arith: " ^ "(" ^ (expr_to_str_types x) ^ (arith_op_to_str o)
-                    ^ (expr_to_str_types y) ^ ")"
-  | Shift(o,x,y) -> "Shift: " ^ "(" ^ (expr_to_str_types x) ^ (shift_op_to_str o)
-                    ^ (arith_to_str y) ^ ")"
-  | Not e -> "Not: ~" ^ (expr_to_str_types e)
-  | Fun(f,l) -> "Fun: " ^ f.name ^ "(" ^ (join "," (List.map expr_to_str_types l)) ^ ")"
-  | Fun_v(f,e,l) -> "Fun_v: " ^ f.name ^ "[" ^ (arith_to_str e) ^ "]"
-                               ^ "(" ^ (join "," (List.map expr_to_str_types l)) ^ ")"
-
-let rec expr_to_str = function
-  | Const(c,_) -> (string_of_int c)
-  | ExpVar v   -> var_to_str v
-  | Tuple t -> sprintf "(%s)" (join "," (List.map expr_to_str t))
-  | Log(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
-                          (log_op_to_str o) (expr_to_str y)
-  | Shuffle(v,l) -> sprintf "Shuffle(%s,[%s])" (var_to_str v)
-                            (join "," (List.map string_of_int l))
-  | Arith(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
-                            (arith_op_to_str o) (expr_to_str y)
-  | Shift(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
-                            (shift_op_to_str o) (arith_to_str y)
-  | Not e -> sprintf "(~ %s)" (expr_to_str e)
-  | Fun(f,l) -> sprintf "%s(%s)" f.name (join "," (List.map expr_to_str l))
-  | Fun_v(f,e,l) -> sprintf "%s[%s](%s)" f.name (arith_to_str e)
-                            (join "," (List.map expr_to_str l))
-let expr_to_str_l = lift_comma expr_to_str
-
-let pat_to_str pat =
-  "(" ^ (join "," (List.map var_to_str pat)) ^ ")"
-let pat_to_str_types pat =
-  "(" ^ (join "," (List.map var_to_str_types pat)) ^ ")"
 
 let m_to_str m =
   match m with
@@ -143,6 +89,64 @@ let rec typ_to_str ?(acc="") typ =
        acc
   | Array(typ,n) -> typ_to_str ~acc:(sprintf "%s[%s]" acc (arith_to_str n)) typ
 let typ_to_str_l = lift_comma typ_to_str
+
+
+let rec var_to_str = function
+  | Var v -> v.name
+  | Index(v,e) -> sprintf "%s[%s]" (var_to_str v) (arith_to_str e)
+  | Range(v,ei,ef) -> sprintf "%s[%s .. %s]" (var_to_str v) (arith_to_str ei) (arith_to_str ef)
+  | Slice(v,l) -> sprintf "%s[%s]" (var_to_str v) (join "," (List.map arith_to_str l))
+let var_to_str_l = lift_comma var_to_str
+
+let rec var_to_str_types = function
+  | Var v -> sprintf "Var: %s" v.name
+  | Index(v,e) -> sprintf "Index: %s[%s]" (var_to_str_types v) (arith_to_str_types e)
+  | Range(v,ei,ef) -> sprintf "Range: %s[%s..%s] " (var_to_str_types v) (arith_to_str_types ei)
+                              (arith_to_str_types ef)
+  | Slice(v,l) -> sprintf "Splice: %s[%s]" (var_to_str_types v)
+                          (join "," (List.map arith_to_str_types l))
+
+let rec expr_to_str_types = function
+  | Const(c,_) -> "Const: " ^ (string_of_int c)
+  | ExpVar v -> "ExpVar: " ^ (var_to_str v)
+  | Tuple t -> "Tuple: (" ^ (join "," (List.map expr_to_str_types t)) ^ ")"
+  | Log(Andn,x,y) -> "Andn: " ^ (expr_to_str_types (unfold_andn (Log(Andn,x,y))))
+  | Log(o,x,y) -> "Log: " ^ "(" ^ (expr_to_str_types x) ^ (log_op_to_str o)
+                  ^ (expr_to_str_types y) ^ ")"
+  | Shuffle(v,l) -> sprintf "Shuffle: Shuffle(%s,[%s])" (var_to_str v)
+                            (join "," (List.map string_of_int l))
+  | Arith(o,x,y) -> "Arith: " ^ "(" ^ (expr_to_str_types x) ^ (arith_op_to_str o)
+                    ^ (expr_to_str_types y) ^ ")"
+  | Shift(o,x,y) -> "Shift: " ^ "(" ^ (expr_to_str_types x) ^ (shift_op_to_str o)
+                    ^ (arith_to_str y) ^ ")"
+  | Not e -> "Not: ~" ^ (expr_to_str_types e)
+  | Fun(f,l) -> "Fun: " ^ f.name ^ "(" ^ (join "," (List.map expr_to_str_types l)) ^ ")"
+  | Fun_v(f,e,l) -> "Fun_v: " ^ f.name ^ "[" ^ (arith_to_str e) ^ "]"
+                               ^ "(" ^ (join "," (List.map expr_to_str_types l)) ^ ")"
+
+let rec expr_to_str = function
+  | Const(c,Some t) -> sprintf "0x%x:%s" c (typ_to_str t)
+  | Const(c,None)   -> sprintf "0x%x" c
+  | ExpVar v   -> var_to_str v
+  | Tuple t -> sprintf "(%s)" (join "," (List.map expr_to_str t))
+  | Log(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
+                          (log_op_to_str o) (expr_to_str y)
+  | Shuffle(v,l) -> sprintf "Shuffle(%s,[%s])" (var_to_str v)
+                            (join "," (List.map string_of_int l))
+  | Arith(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
+                            (arith_op_to_str o) (expr_to_str y)
+  | Shift(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
+                            (shift_op_to_str o) (arith_to_str y)
+  | Not e -> sprintf "(~ %s)" (expr_to_str e)
+  | Fun(f,l) -> sprintf "%s(%s)" f.name (join "," (List.map expr_to_str l))
+  | Fun_v(f,e,l) -> sprintf "%s[%s](%s)" f.name (arith_to_str e)
+                            (join "," (List.map expr_to_str l))
+let expr_to_str_l = lift_comma expr_to_str
+
+let pat_to_str pat =
+  "(" ^ (join "," (List.map var_to_str pat)) ^ ")"
+let pat_to_str_types pat =
+  "(" ^ (join "," (List.map var_to_str_types pat)) ^ ")"
 
 let var_d_opt_to_str (vopt:var_d_opt) =
   match vopt with
