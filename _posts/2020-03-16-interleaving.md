@@ -15,14 +15,15 @@ The back-end exclusively manipulates Usuba0 code, taking advantage of
 referential transparency (any variable `x` in an expression can be
 replaced by its definition) as well as the fact that we are dealing
 with a non Turing-complete language (our programs are thus very
-static). Optimizations carried out at this level are easier to write
-but also more precise. The back-end is complementary with the
-optimizations offered by C compilers. There is a significant semantic
-gap between the user intents expressed in Usuba and their
-straightforward sliced translations in C. This results in missed
-optimization opportunities for the C compiler, of which we shall study
-a few examples in the following. The back-end authoritatively performs
-these optimizations at the level of Usuba0.
+static: loop bounds are known at compile-time, there are no
+conditionals...). Optimizations carried out at this level are easier
+to write but also more precise. The back-end's optimizations are
+complementary with the optimizations offered by C compilers. There is
+a significant semantic gap between the user intents expressed in Usuba
+and their straightforward sliced translations in C. This results in
+missed optimization opportunities for the C compiler, of which we
+shall study a few examples in the following. The back-end
+authoritatively performs these optimizations at the level of Usuba0.
 
 
 A first optimization consists in interleaving several executions of
@@ -102,17 +103,18 @@ and `a3` while the other computes it on a second input, `a0_2`,
 `a1_2`, `a2_2` and `a3_2`. This code runs in 7 cycles; or 3.5 cycles
 per S-box, which is much closer to the ideal 3 cycles/S-box. We shall
 call it 2-interleaved.
-
+ports
 Despite the interleaving, some data dependencies remain, and it may be
 tempting to interleave a third execution of the S-box. However, since
 each S-box requires 7 registers (4 for the input, and 3 temporaries),
-this would require 21 registers, and only 16 are available. Still, we
-benchmarked this 3-interleaved S-box, and it executes 12.92 cycles, or
-4.3 cycles/S-box; which is slower than the 2-interleaved one, but
-still faster than without interleaved at all. Inspecting the assembly
-code reveals that in the 3-interleaved S-box, 4 values are spilled,
-thus requiring 8 additional `move` operations (4 stores and 4
-loads). The 2-interleaved S-box does not contain any spilling.
+this would require 21 registers, and only 16 general purpose register
+are available on Intel. Still, we benchmarked this 3-interleaved
+S-box, and it executes 12.92 cycles, or 4.3 cycles/S-box; which is
+slower than the 2-interleaved one, but still faster than without
+interleaving at all. Inspecting the assembly code reveals that in the
+3-interleaved S-box, 4 values are spilled, thus requiring 8 additional
+`move` operations (4 stores and 4 loads). The 2-interleaved S-box does
+not contain any spilling.
 
 
 **Remark.** In order to benchmark the S-box, we put it in a loop that
@@ -121,19 +123,19 @@ is required because of the expected port saturation: if the S-box
 without interleaving was to use ports 0, 1, 5 and 6 of the CPU for 3
 cycles, this would leave no free port to perform the jump at the end
 of the loop. In practice, since the non-interleaved S-box does not
-saturate the ports, this doesn't change its performances. However,
-unrolling increases the performances of the 2-interleaved S-box -which
-puts more pressure on the execution ports- by 14%.
+saturate the ports, this does not impact performance. However,
+unrolling improves performance of the 2-interleaved S-box --which puts
+more pressure on the execution ports-- by 14%.
 
 
 ### Initial benchmark
 
 To benchmark our interleaving optimization, we considered 10 ciphers
-which looked like "reasonable" candidates for interleaving, since
-their register pressure was relatively low. We started by generating
-non-interleaved and 2-interleaved implementations on general purpose
-registers for each of them to compare them. We compiled the generated
-codes with Clang 7.0.0. The results are shown in the following table:
+with low register pressure, making them good candidates for
+interleaving. We started by generating non-interleaved and
+2-interleaved implementations on general purpose registers for
+Intel. We compiled the generated codes with Clang 7.0.0. The results
+are shown in the following table (sorted by instructions per cycle):
 
 <style type="text/css">
 .tg  {border-collapse:collapse;border-spacing:0;}
@@ -157,13 +159,49 @@ codes with Clang 7.0.0. The results are shown in the following table:
 <col style="width: 119px">
 </colgroup>
   <tr>
-    <th class="tg-wa1i" rowspan="2">cipher</th>
+    <th class="tg-wa1i" rowspan="2">Cipher</th>
     <th class="tg-amwm" colspan="2">Instructions per cycle</th>
-    <th class="tg-yla0" rowspan="2">Interleaving (x2)<br>speedup</th>
+    <th class="tg-wa1i" rowspan="2">Speedup</th>
   </tr>
   <tr>
     <td class="tg-fymr">without interleaving</td>
-    <td class="tg-fymr">with interleaving x2</td>
+    <td class="tg-fymr">with 2-interleaving</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">xoodoo</td>
+    <td class="tg-0pky">3.92</td>
+    <td class="tg-0pky">3.79</td>
+    <td class="tg-0lax">0.85</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">clyde</td>
+    <td class="tg-0pky">3.89</td>
+    <td class="tg-0pky">3.93</td>
+    <td class="tg-0lax">0.97</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">gimli</td>
+    <td class="tg-0pky">3.82</td>
+    <td class="tg-0pky">3.86</td>
+    <td class="tg-0lax">0.87</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">gift</td>
+    <td class="tg-0pky">3.57</td>
+    <td class="tg-0pky">3.54</td>
+    <td class="tg-0lax">0.94</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">chacha20</td>
+    <td class="tg-0pky">3.55</td>
+    <td class="tg-0pky">3.95</td>
+    <td class="tg-0lax">0.95</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">pyjamask</td>
+    <td class="tg-0pky">3.36</td>
+    <td class="tg-0pky">3.49</td>
+    <td class="tg-0lax">1.07</td>
   </tr>
   <tr>
     <td class="tg-0pky">ace</td>
@@ -178,52 +216,16 @@ codes with Clang 7.0.0. The results are shown in the following table:
     <td class="tg-0lax">1.15</td>
   </tr>
   <tr>
-    <td class="tg-0pky">chacha20</td>
-    <td class="tg-0pky">3.55</td>
-    <td class="tg-0pky">3.95</td>
-    <td class="tg-0lax">0.95</td>
-  </tr>
-  <tr>
-    <td class="tg-0pky">clyde</td>
-    <td class="tg-0pky">3.89</td>
-    <td class="tg-0pky">3.93</td>
-    <td class="tg-0lax">0.97</td>
-  </tr>
-  <tr>
-    <td class="tg-0pky">gift</td>
-    <td class="tg-0pky">3.57</td>
-    <td class="tg-0pky">3.54</td>
-    <td class="tg-0lax">0.94</td>
-  </tr>
-  <tr>
-    <td class="tg-0pky">gimli</td>
-    <td class="tg-0pky">3.82</td>
-    <td class="tg-0pky">3.86</td>
-    <td class="tg-0lax">0.87</td>
-  </tr>
-  <tr>
-    <td class="tg-0pky">pyjamask</td>
-    <td class="tg-0pky">3.36</td>
-    <td class="tg-0pky">3.49</td>
-    <td class="tg-0lax">1.07</td>
-  </tr>
-  <tr>
-    <td class="tg-0pky">rectangle</td>
-    <td class="tg-0pky">2.61</td>
-    <td class="tg-0pky">3.40</td>
-    <td class="tg-0lax">1.25</td>
-  </tr>
-  <tr>
     <td class="tg-0pky">serpent</td>
     <td class="tg-0pky">2.65</td>
     <td class="tg-0pky">3.60</td>
     <td class="tg-0lax">1.35</td>
   </tr>
   <tr>
-    <td class="tg-0pky">xoodoo</td>
-    <td class="tg-0pky">3.92</td>
-    <td class="tg-0pky">3.79</td>
-    <td class="tg-0lax">0.85</td>
+    <td class="tg-0pky">rectangle</td>
+    <td class="tg-0pky">2.61</td>
+    <td class="tg-0pky">3.40</td>
+    <td class="tg-0lax">1.25</td>
   </tr>
 </table>
 
@@ -232,14 +234,14 @@ codes with Clang 7.0.0. The results are shown in the following table:
 Interleaving is more beneficial on ciphers with low instructions per
 cycle (IPC). In all cases, the reason for the low IPC is data
 hazards. The 2-interleaved implementations reduce the impact of those
-data hazards, and bring the IPC up while increasing the
-performances. We will examine each case one by one in the next section.
+data hazards, and bring the IPC up while increasing performance. We
+will examine each case one by one in the next section.
 
 
 ### Factor and grain
 
 We now know that interleaving can indeed increase performances of
-ciphers containing a lot of data dependencies. In order to optimize
+ciphers suffering from tight dependencies. In order to optimize
 this interleaving, we parametrized Usubac's algorithms by both a
 factor and a grain. The factor corresponds to how many implementations
 are interleaved, while the grain describes the granularity at which
@@ -294,8 +296,10 @@ factor and grain.
 
 The grain is only up to a function call or loop, since we do not
 duplicate function calls but rather the arguments in a function
-call. For instance, the following Usuba code (extracted from our
-Chacha20 implementation):
+call. The rational being that interleaving is supposed to reduce
+pipeline stalls within functions (resp. loops), and duplicating
+function calls (resp. loops) would fail to achieve this. For instance,
+the following Usuba code (extracted from our Chacha20 implementation):
 
 ```lustre
 state[0,4,8,12]  := QR(state[0,4,8,12]);
@@ -303,13 +307,13 @@ state[1,5,9,13]  := QR(state[1,5,9,13]);
 state[2,6,10,14] := QR(state[2,6,10,14]);
 ```
 
-Is 2-interleaved as (with `QR`'s definition being modified
+is 2-interleaved as (with `QR`'s definition being modified
 accordingly):
 
 ```lustre
-(state[0,4,8,12],state_2[0,4,8,12])  := QR(state[0,4,8,12],state_2[0,4,8,12]);
-(state[1,5,9,13],state_2[1,5,9,13])  := QR(state[1,5,9,13],state_2[1,5,9,13]);
-(state[2,6,10,14],state_2[2,6,10,14]) := QR(state[2,6,10,14],state_2[2,6,10,14]);
+(state[0,4,8,12],state_2[0,4,8,12])  := QR_x2(state[0,4,8,12],state_2[0,4,8,12]);
+(state[1,5,9,13],state_2[1,5,9,13])  := QR_x2(state[1,5,9,13],state_2[1,5,9,13]);
+(state[2,6,10,14],state_2[2,6,10,14]) := QR_x2(state[2,6,10,14],state_2[2,6,10,14]);
 ```
 
 Rather than:
@@ -323,36 +327,29 @@ state[2,6,10,14] := QR(state[2,6,10,14]);
 state_2[0,4,8,12]  := QR(state_2[0,4,8,12]);
 ```
 
-(note that vector slices are not part of Usuba0, but we used them in
-this example nevertheless for more clarity)
 
-The rational being that interleaving is supposed to reduce pipeline
-stalls within functions (resp. loops), and duplicating function calls
-(resp. loops) would fail to achieve this.
+To evaluate how the factor and the grain impact performance, we
+generated implementations of 10 ciphers with different factors (0
+(without interleaving), 2, 3, 4 and 5), and different grains (1, 2, 3,
+4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30, 50, 100, 200). We used Usubac's
+`-unroll` and `-inline-all` flags to fully unroll and inline the codes
+(this flags will be discussed in a later post) in order to eliminate
+the impact of loops and function calls from our experiment. Overall,
+we generated 19.5 millions of lines of C code in 700 files for this
+benchmark.
 
-To evaluate how the factor and the grain impact the performances of a
-cipher, we generated implementations of 10 ciphers with different
-factors (0 (without interleaving), 2, 3, 4 and 5), and different
-grains (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30, 50, 100,
-200). We used Usubac's `-unroll` and `-inline-all` flags to fully
-unroll and inline the codes (this flags will be discussed in a later
-post) in order to reduce the impact of loops and function calls from
-our experiment. Overall, we generated 19.5 millions of lines of C code
-in 700 files for this benchmark.
+We benchmarked our interleaved implementations on general purpose
+registers rather than SIMD ones, and verified that the front-end was
+not a bottleneck. SIMD assembly instructions are larger than general
+purpose ones. Since most codes (_eg._ HPC applications) on SIMD are
+made of loops and function calls, decoded instructions are stored in
+the instruction cache (DSB). However, since we fully inlined and
+unrolled the codes, the legacy pipeline (MITE) is used to decode the
+instructions, and can only process up to 16 bytes of instruction per
+cycle. AVX instructions can easily take 7 bytes (an addition where one
+of the operand is a memory address for instance), and 16 bytes often
+correspond to only 2 instructions; not enough to fill the pipeline.
 
-SIMD assembly instructions are larger than general purpose ones. Since
-standard codes are made of loops and function calls, decoded
-instructions are stored in the instruction cache (DSB). However, since
-we fully inlined and unrolled the codes, the legacy pipeline (MITE) is
-used to decode the instructions, and can only process up to 16 bytes
-of instruction per cycle. AVX instructions can easily take 7 bytes (an
-addition where one of the operand is a memory address for instance),
-and 16 bytes often correspond to only 2 instructions; not enough to
-fill the pipeline.
-
-We therefore benchmarked our interleaved implementations on general
-purpose registers rather than SIMD ones, and verified that the
-front-end was indeed not a bottleneck.
 
 We report the results in the form of graphs showing the throughput (in
 cycles per bytes; lower is better) of each cipher depending on the
@@ -362,8 +359,8 @@ interleaving granularity for each interleaving factor.
 **Remark.** When benchmarking interleaving on general purpose
 registers, we were careful to disable Clang's auto-vectorization
 (using `-fno-slp-vectorize -fno-vectorize`). Failing to do so produces
-inconsistent results since Clang is able to partially vectorize some
-implementations and not others. Furthermore, we would not be
+inconsistent results since Clang erratically and partially vectorizes
+some implementations and not others. Furthermore, we would not be
 benchmarking general purpose registers anymore since the vectorized
 code would use SSE or AVX registers.
 
@@ -375,32 +372,33 @@ code would use SSE or AVX registers.
 </p>
 
 
-One of Ace's basic block is a function which computes `((x <<< 5) & x)
+One of Ace's basic block is a function that computes `((x <<< 5) & x)
 ^ (x <<< 1)`. It contains 4 instructions, and yet cannot be done in
 less than 3 cycles, because of its inner dependencies. Interleaving
 this function twice means that it contains 8 instructions which cannot
 execute in less than 3 cycles, wasting 4 port-cycle. Interleaving it 3
 times or more allows it to fully sature its ports (_i.e._ run its 12
-instructions in 3 cycles), and it is indeed 1.01x times faster than
-the 2-interleaved implementation depsite containing more spilling, and
-is 1.25x faster than the non-interleaved implementation.
+instructions in 3 cycles), and it is indeed slightly faster (less than
+2 percents though) than the 2-interleaved implementation despite
+containing more spilling, and is 1.25x faster than the non-interleaved
+implementation.
 
-Ace also contain other idioms which can limit the utilization the CPU,
-like `0xfffffffe ^ ((rc >> i) & 1)` which also cannot execute in less
-than 3 cycles despite containing only 3 instructions. Those idioms
-benefit from interleaving as well.
+Ace also contains other idioms which can limit CPU utilization, like
+`0xfffffffe ^ ((rc >> i) & 1)` which also cannot execute in less than
+3 cycles despite containing only 3 instructions. Those idioms benefit
+from interleaving as well.
 
-Interleaving 4 or 5 times introduces some spilling which reduces the
-performances, but minimizes the impact of data hazard enough to be
+Interleaving 4 or 5 times introduces some spilling which reduces
+performance, but minimizes the impact of data hazard enough to be
 better than the non-interleaved implementation. For comparison, the
 5-interleaved implementation does 27 times more reads/stores to/from
 memory than the non-interleaved one and is still 1.16x faster.
 
 In all cases, the granularity has a low impact. The reordering done by
-clang, as well as the out-of-order nature of the CPU are able to
+Clang, as well as the out-of-order nature of the CPU are able to
 schedule the instructions in a way to reduce the impact of data
-hazards. When the granularity increases too much (100 and 200), this
-less the case, and performances start to decrease.
+hazards. When the granularity is too coarse (100 and 200
+instructions), performance start to decrease.
 
 
 #### Rectangle
