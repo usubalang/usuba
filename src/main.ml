@@ -185,6 +185,12 @@ let main () =
       arr_entry := false;
     );
 
+    if !no_arr then (
+      (* When -no-arr is combined with -ua-masked, the linearization
+         could take forever, and is obviously not necessary. *)
+      linearize_arr := false;
+    );
+
     let conf = {
         warnings       =   !warnings;
         verbose        =   !verbose;

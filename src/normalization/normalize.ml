@@ -67,7 +67,7 @@ let optimize (prog:prog) (conf:config) : prog =
 
   Inline.run_with_cont runner prog conf
                        [ Simple_opts.as_pass,          true;
-                         Pre_schedule.as_pass,         true;
+                         Pre_schedule.as_pass,         conf.pre_schedule;
                          Normalize_inner_core.as_pass, true;
                          Optimize.as_pass,             true;
                          Normalize_inner_core.as_pass, true;
