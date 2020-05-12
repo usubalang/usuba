@@ -188,7 +188,7 @@ let rec deq_i_to_str ?(indent="") (deq_i:deq_i) =
        (join ";\n" (List.map (deq_to_str ~indent:(indent ^ "  ")) d))
        indent
 and deq_to_str ?(indent="") (deq:deq) =
-  deq_i_to_str deq.content
+  deq_i_to_str ~indent:indent deq.content
 
 let deq_i_to_str_l = lift_comma deq_i_to_str
 let deq_to_str_l = lift_comma deq_to_str
