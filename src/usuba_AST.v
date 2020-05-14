@@ -129,6 +129,7 @@ Record config := {
   auto_inline  : bool; (* Lets Usuba chose which nodes to inline or not *)
   light_inline : bool; (* Inlines only nodes marked with _inline *)
   inline_all   : bool; (* Inlines all nodes *)
+  heavy_inline : bool; (* Inline every nodes except for _no_inline ones *)
   no_inline    : bool; (* Disables all inlining *)
   fold_const   : bool; (* Enables constant folding *)
   cse          : bool; (* Enables CSE *)

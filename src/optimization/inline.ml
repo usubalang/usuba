@@ -328,10 +328,14 @@ let rec is_call_free env inlined conf (def:def) : bool =
 and can_inline env inlined conf (node:def) : bool =
   if Hashtbl.find inlined node.id.name then
     false (* Already inlined *)
+  else if not (is_single node.node) then
+    false
   else if conf.light_inline then
     is_inline node (* Only inline if node is marked as "_inline" *)
   else if conf.inline_all then
     true (* All nodes are inlined if -inline-all is active *)
+  else if conf.heavy_inline then
+    not (is_noinline node) (* Inline all nodes that aren't _no_inline *)
   else if is_call_free env inlined conf node then
     (* Node doesn't contain any function call that should be inlined
        -> heuristically deciding to inline it or not *)

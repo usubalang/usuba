@@ -17,6 +17,7 @@ let no_inline     = ref false
 let bench_inline  = ref false
 let auto_inline   = ref true
 let inline_all    = ref false
+let heavy_inline  = ref false
 let light_inline  = ref false
 let fold_const    = ref true
 let cse           = ref true
@@ -126,6 +127,7 @@ let main () =
       "-bench-inline", Arg.Set bench_inline, "Activate benchmark-guided inlining";
       "-inline-all", Arg.Set inline_all, "Force inlining of every node";
       "-light-inline", Arg.Set light_inline, "Inline only _inline functions";
+      "-heavy-inline", Arg.Set heavy_inline, "Inline every node, except for _no_inline";
       "-no-fold-const", Arg.Clear fold_const, "Deactive Constant Folding";
       "-no-CSE", Arg.Clear cse, "Deactive CSE";
       "-no-copy-prop", Arg.Clear copy_prop, "Deactive Copy Propagation";
@@ -199,6 +201,7 @@ let main () =
         bench_inline   =   !bench_inline;
         auto_inline    =   !auto_inline;
         light_inline   =   !light_inline;
+        heavy_inline   =   !heavy_inline;
         no_inline      =   !no_inline;
         inline_all     =   !inline_all;
         fold_const     =   !fold_const;
