@@ -82,9 +82,9 @@ let gen_tmp =
   fun (env_var:(ident,typ) Hashtbl.t) (its:(ident*int) list) (typ:typ) ->
     incr cpt;
     let id = fresh_ident ("_tmp" ^ (string_of_int !cpt) ^ "_") in
+    let var = var_of_its its id in
     let its = List.rev its in
     let typ = typ_of_its its typ in
-    let var = var_of_its its id in
     Hashtbl.replace env_var id typ;
     (id,var,typ)
 
