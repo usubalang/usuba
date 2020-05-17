@@ -19,6 +19,7 @@ let auto_inline   = ref true
 let inline_all    = ref false
 let heavy_inline  = ref false
 let light_inline  = ref false
+let compact_mono  = ref true
 let fold_const    = ref true
 let cse           = ref true
 let copy_prop     = ref true
@@ -128,6 +129,7 @@ let main () =
       "-inline-all", Arg.Set inline_all, "Force inlining of every node";
       "-light-inline", Arg.Set light_inline, "Inline only _inline functions";
       "-heavy-inline", Arg.Set heavy_inline, "Inline every node, except for _no_inline";
+      "-no-compact-mono", Arg.Clear compact_mono, "Disables compact bitslice monomorphization";
       "-no-fold-const", Arg.Clear fold_const, "Deactive Constant Folding";
       "-no-CSE", Arg.Clear cse, "Deactive CSE";
       "-no-copy-prop", Arg.Clear copy_prop, "Deactive Copy Propagation";
@@ -204,6 +206,7 @@ let main () =
         heavy_inline   =   !heavy_inline;
         no_inline      =   !no_inline;
         inline_all     =   !inline_all;
+        compact_mono   =   !compact_mono;
         fold_const     =   !fold_const;
         cse            =   !cse;
         copy_prop      =   !copy_prop;

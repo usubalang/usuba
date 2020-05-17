@@ -23,6 +23,7 @@ let default_conf : config =
     no_inline      = false;
     inline_all     = false;
     heavy_inline   = false;
+    compact_mono   = true;
     fold_const     = true;
     cse            = true;
     copy_prop      = true;

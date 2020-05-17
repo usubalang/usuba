@@ -131,6 +131,7 @@ Record config := {
   inline_all   : bool; (* Inlines all nodes *)
   heavy_inline : bool; (* Inline every nodes except for _no_inline ones *)
   no_inline    : bool; (* Disables all inlining *)
+  compact_mono : bool; (* Enables compact monomorphization *)
   fold_const   : bool; (* Enables constant folding *)
   cse          : bool; (* Enables CSE *)
   copy_prop    : bool; (* Enables Copy propagation *)
