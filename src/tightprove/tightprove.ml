@@ -429,6 +429,7 @@ let clean_inline (runner:pass_runner) (prog:prog) (conf:config) : prog =
                          light_inline = false;
                          auto_inline  = false;
                          no_inline    = false;
+                         heavy_inline = false;
              } in
   runner#run_modules ~conf:conf
            [ Inline.as_pass;
@@ -474,6 +475,7 @@ let refresh_prog (runner:pass_runner) (prog:prog) (conf:config) : prog =
         (hence, we don't need re-normalize it, unlike inlining)
       - |conf| in the call to Unroll.unroll_prog is unused *)
   let unrolled_prog = Unroll.force_run inlined_prog conf in
+  let unrolled_prog = runner#run_module ~conf:conf Simple_opts.as_pass unrolled_prog in
   let ua_def = List.hd unrolled_prog.nodes in
 
   (* Step 2: call TP *)
