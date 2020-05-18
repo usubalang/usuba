@@ -347,6 +347,21 @@ let do_inline (prog:prog) (to_inline:def) : prog =
                   | _ -> def) prog.nodes }
 
 
+
+(* is_n_percent_assign returns true if |deqs| contains more than |n|
+   percent assginments. *)
+let is_more_than_n_percent_assign (n:int) (deqs:deq list) : bool =
+  let rec get_assigns (deqs:deq list) : int * int =
+    List.fold_left (fun (asgns,tot) deq ->
+                    match deq.content with
+                    | Eqn(_,ExpVar _,_) -> (asgns+1, tot+1)
+                    | Loop(_,_,_,dl,_) ->
+                       let (asgns',tot') = get_assigns dl in
+                       (asgns+asgns', tot+tot')
+                    | _ -> (asgns, tot+1)) (0,0) deqs in
+  let (asgns, tot) = get_assigns deqs in
+  (float_of_int tot) *. (float_of_int n) /. 100. <= (float_of_int asgns)
+
 (* Heuristically decides (ie returns true of false) if |def| should be
    inlined or not. *)
 let should_inline_heuristic (def:def) : bool =
@@ -385,7 +400,8 @@ let should_pre_inline (def:def) : bool =
   let out_size = List.fold_left (+) 0
                     (List.map (fun vd -> typ_size vd.vd_typ) def.p_out) in
   if (not !orig_conf.inline_all) && (is_noinline def) then false
-  else (in_size > 31) && (out_size > 31)
+  else ((in_size > 31) && (out_size > 31))
+       || (is_more_than_n_percent_assign 65 (get_body def.node))
 
 
 (* Returns true if def doesn't contain any function call,
