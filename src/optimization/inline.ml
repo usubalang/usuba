@@ -366,23 +366,21 @@ let is_more_than_n_percent_assign (n:int) (deqs:deq list) : bool =
    inlined or not. *)
 let should_inline_heuristic (def:def) : bool =
 
-  (* |is_full_assign| returns true if |deqs| only contains assignments *)
-  let rec is_full_assign (deqs:deq list) : bool =
-    List.for_all (fun deq ->
-                  match deq.content with
-                  | Eqn(_,ExpVar _,_) -> true
-                  | Loop(_,_,_,dl,_) -> is_full_assign dl
-                  | _ -> false) deqs in
 
-  if (List.length def.p_in) + (List.length def.p_out) > 8 then
+  if (List.length def.p_in) + (List.length def.p_out) > 10 then
     (* More than 8 parameters -> will need to be passed on the stack
        -> inlining *)
     true
-  else if is_single def.node && is_full_assign (get_body def.node) then
-    (* Node only contains assignments -> it's a permutation of some
-       kind -> inlining *)
-    true
+  else if is_single def.node then
+    if is_more_than_n_percent_assign 50 (get_body def.node) then
+      (* Node contains more than 50% assignments -> probably better to
+         inline it *)
+      true
+    else
+      false
   else
+    (* Not a regular node; should not really happen (but it can
+    because of the hack to keep lookup tables with -keep-tables) *)
     false
 
 (* Returns true if |def| is chosen to be pre-inlined (in order to
