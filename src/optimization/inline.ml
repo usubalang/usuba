@@ -15,6 +15,17 @@ open Basic_utils
 open Utils
 open Pass_runner
 
+let pre_inline = ref false
+let orig_conf  = ref default_conf
+
+
+(* Returns true is the inlining level in |conf| is more aggressive
+   than auto_inline. *)
+let is_more_aggressive_than_auto (conf:config) : bool =
+  if conf.inline_all || conf.heavy_inline then true
+  else false
+
+
 (* This module checks if a node _must_ be inlined and if so, returns
    it. For now, a node must be inlined if it uses shifts of sizes
    depending on the parameters. *)
@@ -359,6 +370,24 @@ let should_inline_heuristic (def:def) : bool =
   else
     false
 
+(* Returns true if |def| is chosen to be pre-inlined (in order to
+   pre_schedule to be as effective as possible). For now, the
+   condition is: more than 31 inputs and more than 31 outputs. The
+   reasoning being that if this function takes that much
+   inputs/outputs, it's very unlikely an Sbox and more likely either a
+   linear function, or a wrapper around several S-boxes. In all cases,
+   we'd rather have it inlined for pre-schedule to be able to do
+   something. Small exception: if |def| is _no_inline and -inline-all
+   wasn't enabled, then it's not inlined. *)
+let should_pre_inline (def:def) : bool =
+  let in_size  = List.fold_left (+) 0
+                    (List.map (fun vd -> typ_size vd.vd_typ) def.p_in) in
+  let out_size = List.fold_left (+) 0
+                    (List.map (fun vd -> typ_size vd.vd_typ) def.p_out) in
+  if (not !orig_conf.inline_all) && (is_noinline def) then false
+  else (in_size > 31) && (out_size > 31)
+
+
 (* Returns true if def doesn't contain any function call,
    or if those calls are to functions that are not going
    to be inlined *)
@@ -388,6 +417,8 @@ and can_inline env inlined conf (node:def) : bool =
     false
   else if conf.light_inline then
     is_inline node (* Only inline if node is marked as "_inline" *)
+  else if !pre_inline then
+    should_pre_inline node
   else if conf.inline_all then
     true (* All nodes are inlined if -inline-all is active *)
   else if conf.heavy_inline then
@@ -434,7 +465,7 @@ let rec _inline (prog:prog) (conf:config) inlined : prog =
 
 
 (* Main inlining function. _inline actually does most of the job *)
-let run _ (prog:prog) (conf:config) : prog =
+let run_common (prog:prog) (conf:config) : prog =
   if conf.no_inline then prog
   else
     (* Hashtbl containing the inlining status of each node:
@@ -447,11 +478,29 @@ let run _ (prog:prog) (conf:config) : prog =
     (* And now, perform the inlining *)
     _inline prog conf inlined
 
+let run _ (prog:prog) (conf:config) : prog =
+  pre_inline := false;
+  run_common prog conf
+
+let run_pre_inline _ (prog:prog) (conf:config) : prog =
+  pre_inline := true;
+  orig_conf  := conf;
+  if is_more_aggressive_than_auto conf then
+    let conf = { conf with auto_inline  = true;
+                           heavy_inline = false;
+                           inline_all   = false } in
+    run_common prog conf
+  else
+    prog
+
+
 
 let as_pass = (run, "Inline")
+let as_pass_pre = (run_pre_inline, "Inline-pre")
 
 
 let run_with_cont (runner:pass_runner) (prog:prog) (conf:config) nexts : prog =
+  pre_inline := false;
   if not conf.bench_inline then
     runner#run_modules_guard ~conf:conf ((as_pass, true) :: nexts) prog
   else

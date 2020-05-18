@@ -52,7 +52,6 @@ let norm_prog (rename:bool) (prog:prog) (conf:config) : prog =
     Soundness.tables_sound runner (runner#run_module Rename.as_pass prog)
                            normed_prog;
 
-
   normed_prog
 
 
@@ -65,6 +64,15 @@ let optimize (prog:prog) (conf:config) : prog =
              Pre_schedule.as_pass,         conf.pre_schedule;
              Normalize_core.as_pass,       true ] prog in
 
+  let guard_for_pre_inlining =
+    conf.pre_schedule && (Inline.is_more_aggressive_than_auto conf) in
+  let prog = runner#run_modules_guard
+                      [ Inline.as_pass_pre,     guard_for_pre_inlining;
+                        Normalize_core.as_pass, guard_for_pre_inlining;
+                        Pre_schedule.as_pass,   guard_for_pre_inlining;
+                        Normalize_core.as_pass, guard_for_pre_inlining ] prog in
+
+
   Inline.run_with_cont runner prog conf
                        [ Simple_opts.as_pass,          true;
                          Pre_schedule.as_pass,         conf.pre_schedule;
@@ -75,7 +83,8 @@ let optimize (prog:prog) (conf:config) : prog =
                          Usuba_to_maskverif.as_pass,   conf.maskVerif;
                          Mask.as_pass,                 conf.ua_masked;
                          Fuse_loops.as_pass,           conf.loop_fusion;
-                         Linearize_arrays.as_pass,     conf.linearize_arr
+                         Linearize_arrays.as_pass,     conf.linearize_arr(* ; *)
+                         (* Inplace_nodes.as_pass,        conf.inplace_nodes; *)
                        ]
 
 
