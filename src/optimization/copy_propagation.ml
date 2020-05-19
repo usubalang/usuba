@@ -156,20 +156,17 @@ module Compute_keeps = struct
            (* lhs must be kept only if within a loop *)
            if in_loop then
              List.iter (compute_keep_var env_keep env_var) lhs;
-        | Eqn([v],e,_) ->
+        | Eqn(lhs,e,_) ->
            (* If in loop, keep everything, otherwise, keep nothing. *)
            if in_loop then (
              compute_keep_expr env_keep env_var e;
-             compute_keep_var  env_keep env_var v
+             List.iter (compute_keep_var env_keep env_var) lhs
            )
         | Loop(i,_,_,dl,_) ->
            (* Just reccursive call with |in_loop|=true *)
            Hashtbl.add env_var i Nat;
            compute_keep_deqs env_keep env_var ~in_loop:true dl;
-           Hashtbl.remove env_var i
-        | _ -> Printf.eprintf "compute_keep_deqs: invalid deq: %s.\n"
-                   (Usuba_print.deq_to_str d);
-                 assert false)
+           Hashtbl.remove env_var i)
       deqs
 
   let compute_keeps (def:def) : (ident,bool) Hashtbl.t =
