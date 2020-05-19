@@ -365,11 +365,17 @@ let is_more_than_n_percent_assign (n:int) (deqs:deq list) : bool =
 (* Heuristically decides (ie returns true of false) if |def| should be
    inlined or not. *)
 let should_inline_heuristic (def:def) : bool =
+  let in_size  = List.fold_left (+) 0
+                    (List.map (fun vd -> typ_size vd.vd_typ) def.p_in) in
+  let out_size = List.fold_left (+) 0
+                    (List.map (fun vd -> typ_size vd.vd_typ) def.p_out) in
 
 
   if (List.length def.p_in) + (List.length def.p_out) > 10 then
     (* More than 8 parameters -> will need to be passed on the stack
        -> inlining *)
+    true
+  else if (in_size > 31) && (out_size > 31) then
     true
   else if is_single def.node then
     if is_more_than_n_percent_assign 50 (get_body def.node) then
