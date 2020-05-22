@@ -75,10 +75,6 @@ let vd_to_tp (vd:Usuba_AST.var_d) : string =
   sprintf "%s%s" (ident_to_str vd.vd_id)
           (vd_typ_to_tp vd.vd_typ "")
 
-let all_vars_same_m (var_l:Usuba_AST.var_d list) : bool =
-  let first_m = Utils.get_type_m (List.hd var_l).vd_typ in
-  List.for_all (fun vd -> Utils.get_type_m vd.vd_typ = first_m) var_l
-
 let get_node_body (def:Usuba_AST.def) : Usuba_AST.deq list =
   match def.node with
   | Single(_,body) -> body
@@ -89,7 +85,7 @@ let m_as_int = function
   | _ -> assert false
 
 let usuba_to_tp (def:Usuba_AST.def) : ((string,Usuba_AST.var) Hashtbl.t) * Tp_AST.def =
-  assert (all_vars_same_m def.p_in);
+  assert (Utils.all_vars_same_m def.p_in);
   let m = m_as_int (Utils.get_type_m (List.hd def.p_in).vd_typ) in
   bitslice := m = 1;
 

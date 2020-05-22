@@ -476,6 +476,7 @@ let refresh_prog (runner:pass_runner) (prog:prog) (conf:config) : prog =
       - |conf| in the call to Unroll.unroll_prog is unused *)
   let unrolled_prog = Unroll.force_run inlined_prog conf in
   let unrolled_prog = runner#run_module ~conf:conf Simple_opts.as_pass unrolled_prog in
+  let unrolled_prog = runner#run_module ~conf:conf Normalize_core.as_pass unrolled_prog in
   let ua_def = List.hd unrolled_prog.nodes in
 
   (* Step 2: call TP *)
@@ -496,7 +497,7 @@ let refresh_prog (runner:pass_runner) (prog:prog) (conf:config) : prog =
 
 (* Refreshes a def wich doesnt contain function calls nor loops *)
 let refresh_simple_def (conf:config) (def:def) : def =
-  if is_call_and_loop_free def then
+  if is_call_and_loop_free def && (all_vars_same_m def.p_in) then
     let (vars_corres,tp_def) = Usuba_to_tightprove.usuba_to_tp def in
     let r_tp_def = Tp_IO.get_refreshed_def tp_def conf in
     fst (Tightprove_to_usuba.tp_to_usuba vars_corres def r_tp_def)

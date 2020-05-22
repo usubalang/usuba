@@ -570,3 +570,12 @@ let get_vars_body = function
   | _ -> assert false
 let get_vars x = fst (get_vars_body x)
 let get_body x = snd (get_vars_body x)
+
+let get_deq_expr (deq:deq) : expr =
+  match deq.content with
+  | Eqn(_,e,_) -> e
+  | _ -> assert false
+
+let all_vars_same_m (var_l:var_d list) : bool =
+  let first_m = get_type_m (List.hd var_l).vd_typ in
+  List.for_all (fun vd -> get_type_m vd.vd_typ = first_m) var_l
