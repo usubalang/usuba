@@ -13,13 +13,15 @@ my @ciphers = qw(des ascon gift present rectangle serpent);
 my $work_dir = tempdir();
 
 
-# Generating the .c
+# Compiling the Usuba files to C
+say "Compiling Usuba files";
 chdir $ua_dir;
 for my $cipher (@ciphers) {
-    system "./usubac -gen-bench -no-pre-sched -no-sched -B -o $work_dir/$cipher.c samples/usuba/$cipher.ua";
+    system "./usubac -unroll -gen-bench -no-sched -B -o $work_dir/$cipher.c samples/usuba/$cipher.ua";
 }
 
 # Compiling C files to ASM
+say "Compiling C files";
 chdir $work_dir;
 for my $cipher (@ciphers) {
     system "perl -pi -E 's/void/static void/' $cipher.c";
@@ -27,6 +29,7 @@ for my $cipher (@ciphers) {
 }
 
 # Counting spilling
+say "Computing spilling\n";
 chdir $work_dir;
 for my $cipher (@ciphers) {
     open my $FH, '<', "$cipher.s";
@@ -37,3 +40,6 @@ for my $cipher (@ciphers) {
     }
     printf "%10s: %.2f ($spills / $tot)\n", $cipher, $spills / $tot;
 }
+
+# Removing work directory
+rmdir $work_dir;
