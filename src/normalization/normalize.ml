@@ -3,36 +3,6 @@ open Basic_utils
 open Utils
 open Pass_runner
 
-
-module Normalize_inner_core = struct
-  let run (runner:pass_runner) (prog:prog) (conf:config) =
-    runner#run_modules [ Unfold_unnest.as_pass;
-                         Expand_array.as_pass;
-                         Expand_permut.as_pass;
-                         Norm_tuples.as_pass;
-                         Shift_tuples.as_pass;
-                         Norm_tuples.as_pass ] prog
-
-  let as_pass = (run, "Normalize_inner_core")
-end
-
-module Normalize_core = struct
-  let run (runner:pass_runner) (prog:prog) (conf:config) =
-    runner#run_modules [ Expand_array.as_pass;
-                         Normalize_inner_core.as_pass;
-                         Expand_parameters.as_pass;
-                         Fix_dim.Dir_params.as_pass;
-                         Expand_array.as_pass;
-                         Normalize_inner_core.as_pass;
-                         Expand_parameters.as_pass;
-                         Fix_dim.Dir_inner.as_pass;
-                         Expand_array.as_pass;
-                         Normalize_inner_core.as_pass ] prog
-
-  let as_pass = (run, "Normalize_core")
-end
-
-
 let norm_prog (rename:bool) (prog:prog) (conf:config) : prog =
   let runner = new pass_runner conf in
 
