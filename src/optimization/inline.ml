@@ -371,9 +371,8 @@ let should_inline_heuristic (def:def) : bool =
                     (List.map (fun vd -> typ_size vd.vd_typ) def.p_out) in
 
 
-  if (List.length def.p_in) + (List.length def.p_out) > 10 then
-    (* More than 8 parameters -> will need to be passed on the stack
-       -> inlining *)
+  if (List.length def.p_in) + (List.length def.p_out) > 16 then
+    (* More than 16 parameters -> is probably not a S-box -> inlining *)
     true
   else if (in_size > 31) && (out_size > 31) then
     true
