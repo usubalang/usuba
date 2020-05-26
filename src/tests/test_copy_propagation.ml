@@ -20,8 +20,7 @@ tel" in
 "node f(x,y:u1) returns (z:u1)
    vars a,b,c:u1
 let
-    a = x ^ y;
-    z = a;
+    z = x ^ y;
 tel" in
   assert (result = expected)
 
@@ -46,10 +45,8 @@ tel" in
 "node f(x,y:u1[2]) returns (z:u1[2])
    vars a,b,c:u1[2]
 let
-    a[0] = x[0] ^ y[0];
-    a[1] = x[1] ^ y[1];
-    z[0] = a[0];
-    z[1] = a[1];
+    z[0] = x[0] ^ y[0];
+    z[1] = x[1] ^ y[1];
 tel" in
     assert (result = expected)
 
@@ -103,8 +100,7 @@ tel" in
    vars a,b,c,d:u1
 let
     a = x ^ y;
-    c = f(a);
-    z = c;
+    z = f(a);
 tel" in
   assert (result = expected)
 
@@ -256,8 +252,7 @@ let
     a = 5;
     b = a{1,0,3,2};
     c = b ^ x;
-    d = c ^ y;
-    z = d;
+    z = c ^ y;
 tel" in
   assert (result = expected)
 

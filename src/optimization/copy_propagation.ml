@@ -110,6 +110,7 @@ open Usuba_AST
 open Basic_utils
 open Utils
 
+
 (* Given a list of deqs, this module computes the variables that must
    not be optimized away. Those are array variables used in loops or
    in function calls. *)
@@ -145,7 +146,9 @@ module Compute_keeps = struct
   (* |in_loop|: true if in a loop, false otherwise. It's used because
      in a loop, any read/write to an array must be performed, whereas
      outside loops (and funcall), those can be optimized away. *)
-  let rec compute_keep_deqs (env_keep:(ident,bool) Hashtbl.t)
+  let rec compute_keep_deqs
+            (backward:bool)
+            (env_keep:(ident,bool) Hashtbl.t)
             (env_var:(ident,typ) Hashtbl.t)
             ?(in_loop:bool = false)
             (deqs:deq list) : unit =
@@ -154,8 +157,7 @@ module Compute_keeps = struct
            (* keep arrays in |l| *)
            List.iter (compute_keep_expr env_keep env_var) l;
            (* lhs must be kept only if within a loop *)
-           if in_loop then
-             List.iter (compute_keep_var env_keep env_var) lhs;
+           List.iter (compute_keep_var env_keep env_var) lhs;
         | Eqn(lhs,e,_) ->
            (* If in loop, keep everything, otherwise, keep nothing. *)
            if in_loop then (
@@ -165,11 +167,13 @@ module Compute_keeps = struct
         | Loop(i,_,_,dl,_) ->
            (* Just reccursive call with |in_loop|=true *)
            Hashtbl.add env_var i Nat;
-           compute_keep_deqs env_keep env_var ~in_loop:true dl;
+           compute_keep_deqs backward env_keep env_var ~in_loop:true dl;
            Hashtbl.remove env_var i)
       deqs
 
-  let compute_keeps (def:def) : (ident,bool) Hashtbl.t =
+  (* If |backward| is true, then this function is called for the
+     backward copy propagation. See |backward_cp| for more. *)
+  let compute_keeps ?(backward:bool=false) (def:def) : (ident,bool) Hashtbl.t =
     match def.node with
     | Single(vars,body) ->
        let env_var = build_env_var def.p_in def.p_out vars in
@@ -178,12 +182,157 @@ module Compute_keeps = struct
         Using a (ident,bool) Hashtbl, but you should see this like a
         Set. *)
        let env_keep = Hashtbl.create 10 in
-       List.iter (fun vd -> Hashtbl.add env_keep vd.vd_id true) def.p_out;
+       if backward then
+         (List.iter (fun vd -> Hashtbl.add env_keep vd.vd_id true) def.p_in;
+          compute_keep_deqs backward env_keep env_var (List.rev body))
+       else
+         (List.iter (fun vd -> Hashtbl.add env_keep vd.vd_id true) def.p_out;
+          compute_keep_deqs backward env_keep env_var body);
        (* Calling compute_keep_deqs, which will add stuffs to env_keep *)
-       compute_keep_deqs env_keep env_var body;
        (* And return env_keep *)
        env_keep
     | _ -> assert false
+
+end
+
+(* Copy propagation doesn't work with return values:
+
+    node f(x,y:b1) returns (z:b1)
+      vars t1, t2:b1
+    let
+      t1 = x ^ y;
+      t2 = t1;
+      z = t2;
+    tel
+
+   Becomes (after the regular copy propagation):
+
+    node f(x,y:b1) returns (z:b1)
+      vars t1:b1
+    let
+      t1 = x ^ y;
+      z = t1;
+    tel
+
+   The module Backwards_propagate will then transform it into:
+
+    node f(x,y:b1) returns (z:b1)
+      vars t1:b1
+    let
+      z = x ^ y;
+    tel
+
+   I'm pretty sure that GCC/Clang are pretty good at optimizing
+   that. However, this would be better for the heuristic inlining: the
+   node f above would be recognized as being 50% assignment without
+   backward copy propagation, which is obviously wrong: it's actually
+   0% assignments...
+ *)
+module Backwards_cp = struct
+
+  (* This function is a bit weird because |optimized_away| contains Var
+   but |ae| contains Var_e, so... Maybe we should consider removing
+   arith_expr and keeping only expr. *)
+  let rec propagate_in_aexpr (optimized_away:(var,var) Hashtbl.t)
+                             (ae:arith_expr) : arith_expr =
+    match ae with
+    | Const_e _    -> ae
+    | Var_e x      -> (match Hashtbl.find_opt optimized_away (Var x) with
+                       | Some (Var v) -> Var_e v
+                       | _            -> Var_e x)
+    | Op_e(op,x,y) -> Op_e(op,propagate_in_aexpr optimized_away x,
+                           propagate_in_aexpr optimized_away y)
+
+  (* Propagates optimized away variables: if |v| has been optimized
+   away, it's replaced. *)
+  let propagate_in_var (optimized_away:(var,var) Hashtbl.t) (v:var) : var =
+    match Hashtbl.find_opt optimized_away v with
+    | Some v' -> v'
+    | None    -> v
+
+  (* Basically does nothing besides recursively calling itself until
+     it reaches an ExpVar, on which it calls propagate_in_var *)
+  let rec propagate_in_expr  (optimized_away:(var,var) Hashtbl.t) (e:expr)
+          : expr =
+    match e with
+    | Const _         -> e
+    | ExpVar v        -> ExpVar (propagate_in_var optimized_away v)
+    | Tuple l         -> Tuple (List.map (propagate_in_expr optimized_away) l)
+    | Shuffle(v,l)    -> Shuffle(propagate_in_var optimized_away v,l)
+    | Not e'          -> Not (propagate_in_expr optimized_away e')
+    | Shift(op,e',ae) -> Shift(op,propagate_in_expr optimized_away e',
+                               propagate_in_aexpr optimized_away ae)
+    | Log(op,x,y)     -> Log(op,propagate_in_expr optimized_away x,
+                             propagate_in_expr optimized_away y)
+    | Arith(op,x,y)   -> Arith(op,propagate_in_expr optimized_away x,
+                                   propagate_in_expr optimized_away y)
+    | Fun(f,l)        -> Fun(f,(List.map (propagate_in_expr optimized_away) l))
+    | _ -> Printf.eprintf "propagate_in_expr: invalid expr: %s.\n"
+                          (Usuba_print.expr_to_str e);
+           assert false
+
+  let cp_assign (keep_env:(ident,bool) Hashtbl.t)
+                (out_env:(ident,bool) Hashtbl.t)
+                (optimized_away:(var,var) Hashtbl.t)
+                (orig:(ident*deq_i) list) (v:var) (ve:var) (sync:bool)
+      : deq list =
+    match Hashtbl.find_opt keep_env (get_base_name ve) with
+    | Some _ -> (* Need to keep this assignment *)
+       (* No need to propagate: |ve| is in |keep_env|. *)
+       [ { orig = orig; content = Eqn([v],ExpVar ve,sync) } ]
+    | None -> (* Can remove this assignment *)
+       match Hashtbl.find_opt out_env (get_base_name v) with
+       | Some _ ->
+          (match Hashtbl.find_opt optimized_away ve with
+           | Some ve' -> (* |ve| has already been optimized out ->
+                               keeping this assignment, with |ve'|
+                               instead of |ve| *)
+              [ { orig = orig; content = Eqn([v],ExpVar ve',sync) } ]
+           | None ->
+              (* Optimizing this assignment away *)
+              Hashtbl.add optimized_away ve v;
+              [])
+       | None -> (* Not a variable we are interested in optimizing away. *)
+          [ { orig = orig; content = Eqn([v],ExpVar ve,sync) } ]
+
+  let rec cp_deqs (env_var:(ident,typ) Hashtbl.t)
+                  (keep_env:(ident,bool) Hashtbl.t)
+                  (out_env:(ident,bool) Hashtbl.t)
+                  (optimized_away:(var,var) Hashtbl.t)
+                  (deqs:deq list) : deq list =
+    flat_map (fun deq ->
+              match deq.content with
+              | Eqn([v],ExpVar ve,sync) ->
+                 (* A Var copy -> will be removed if |v| isn't in |keep_env| *)
+                 cp_assign keep_env out_env optimized_away deq.orig v ve sync
+              | Eqn(lhs,e,sync) ->
+                 (* A non-copy expression -> propagate copies inside *)
+                 [ { deq with
+                     content = Eqn(List.map (propagate_in_var optimized_away) lhs,
+                                   propagate_in_expr optimized_away e,sync) } ]
+              | Loop(i,ei,ef,dl,opts)  ->
+                 (* A loop -> reccursive call *)
+                 Hashtbl.add env_var i Nat;
+                 let dl = List.rev (cp_deqs env_var keep_env out_env
+                                            optimized_away (List.rev dl)) in
+                 let deq' =
+                   { deq with
+                     content = Loop(i,ei,ef,dl,opts) } in
+                 Hashtbl.remove env_var i;
+                 [ deq' ])
+             deqs
+
+  let cp_def (def:def) : def =
+    match def.node with
+    | Single(vars,body) ->
+       let env_var  = build_env_var def.p_in def.p_out vars in
+       let keep_env = Compute_keeps.compute_keeps ~backward:true def in
+       let out_env  = Hashtbl.create 100 in
+       List.iter (fun vd -> Hashtbl.add out_env vd.vd_id true) def.p_out;
+       let optimized_away = Hashtbl.create 100 in
+       let body = List.rev (cp_deqs env_var keep_env out_env optimized_away (List.rev body)) in
+       { def with node = Single(vars,body) }
+    | _ -> def
 
 end
 
@@ -305,6 +454,7 @@ let rec cp_deqs (env_var:(ident,typ) Hashtbl.t)
          [ deq' ])
     deqs
 
+
 let cp_def (def:def) : def =
   match def.node with
   | Single(vars,body) ->
@@ -317,7 +467,8 @@ let cp_def (def:def) : def =
      let env_keep = Compute_keeps.compute_keeps def in
      (* Environment of optimized away variables. *)
      let optimized_away = Hashtbl.create 100 in
-     { def with node = Single(vars,cp_deqs env_var env_keep optimized_away body) }
+     Backwards_cp.cp_def
+       { def with node = Single(vars,cp_deqs env_var env_keep optimized_away body) }
   | _ -> def
 
 let run _ (prog:prog) (conf:config) : prog =
