@@ -27,11 +27,11 @@ let is_more_aggressive_than_auto (conf:config) : bool =
 
 
 let sbox_minimal_size (out_size:int) : int =
-  12
+  10
   (* below code doesn't work because of Skinny, whose 8x8 S-box requires
      only 24 instructions...*)
   (* match out_size with *)
-  (* | 4 -> 12 (\* Shortest = Rectangle *\) *)
+  (* | 4 -> 10 (\* Shortest = Gift *\) *)
   (* | 5 -> 20 (\* Shortest = Ascon *\) *)
   (* | 6 -> 50 (\* Shortest = DES *\) *)
   (* | 8 -> 110 (\* Shortest = AES *\) *)
@@ -109,10 +109,6 @@ and can_inline env inlined conf (node:def) : bool =
     false (* Already inlined *)
   else if not (is_single node.node) then
     false
-  (* else if !pre_inline && (not (is_noinline node)) then *)
-  (*   (let r = should_pre_inline env inlined conf node in *)
-  (*   Printf.printf "should_pre_inline %s = %b\n" node.id.name r; *)
-  (*   r) *)
   else if conf.light_inline then
     is_inline node (* Only inline if node is marked as "_inline" *)
   else if conf.inline_all then
@@ -176,6 +172,7 @@ let run_pre_inline (runner:pass_runner) (prog:prog) (conf:config) : prog =
   orig_conf  := conf;
   if is_more_aggressive_than_auto conf then
     let conf = { conf with auto_inline  = true;
+                           light_inline = false;
                            heavy_inline = false;
                            inline_all   = false } in
     run_common runner prog conf
