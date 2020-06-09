@@ -14,7 +14,6 @@ let type_check  = ref true
 let check_tbl   = ref false
 
 let no_inline     = ref false
-let bench_inline  = ref false
 let auto_inline   = ref true
 let inline_all    = ref false
 let heavy_inline  = ref false
@@ -35,7 +34,6 @@ let arr_entry     = ref true
 let unroll        = ref false
 let interleave    = ref 0
 let inter_factor  = ref 0
-let auto_inter    = ref false
 
 let arch         = ref Std
 let bits_per_reg = ref 64
@@ -57,6 +55,13 @@ let slicing_type = ref B
 let slicing_set  = ref false
 let m_val        = ref 1
 let m_set        = ref false
+
+let bench_all      = ref false
+let bench_inline   = ref false
+let bench_inter    = ref false
+let bench_bitsched = ref false
+let bench_msched   = ref false
+let bench_sharevar = ref false
 
 let keep_tables  = ref false
 
@@ -87,7 +92,7 @@ let gen_output_filename (file_in: string) : string =
 
 let compile (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
   (* Type-checking *)
-  let prog = Type_checker.type_prog prog conf in
+  let prog = if conf.type_check then Type_checker.type_prog prog conf else prog in
 
   (* Normalizing AND optimizing *)
   let normed_prog = Normalize.compile prog conf in
@@ -125,7 +130,6 @@ let main () =
       "-check-tbl", Arg.Set check_tbl, "Activate verification of tables";
       "-no-type-check", Arg.Clear type_check, "Deactivate type checking";
       "-no-inline", Arg.Set no_inline, "Deactivate inlining opti";
-      "-bench-inline", Arg.Set bench_inline, "Activate benchmark-guided inlining";
       "-inline-all", Arg.Set inline_all, "Force inlining of every node";
       "-light-inline", Arg.Set light_inline, "Inline only _inline functions";
       "-heavy-inline", Arg.Set heavy_inline, "Inline every node, except for _no_inline";
@@ -152,9 +156,14 @@ let main () =
       "-unroll", Arg.Set unroll, "Unroll all loops";
       "-interleave", Arg.Int (fun n -> interleave := n), "Sets the interleaving granularity (1 => 'a=b;c=d' becomes 'a=b;a2=b2;c=d;c2=d', 2 => 'a=b;c=d' becomes 'a=b;c=d;a2=b2;c2=d2')";
       "-inter-factor", Arg.Int (fun n -> inter_factor := n), "Set the interleaving factor (how many instances of the cipher should be interleaved)";
-      "-auto-inter", Arg.Set auto_inter, "Activate automatic interleaving";
       "-arch", Arg.String (fun s -> arch := str_to_arch s), "Set architecture";
       "-bits-per-reg", Arg.Set_int bits_per_reg, "Set number of bits to use in the registers (with -arch std only, needs to be a multiple of 2)";
+      "-bench-all", Arg.Set bench_all, "Enable all benchmark-guided optimizations";
+      "-bench-inline", Arg.Set bench_inline, "Enable benchmark-guided inlining";
+      "-bench-inter", Arg.Set bench_inter, "Enable benchmark-guided interleaving";
+      "-bench-bitsched", Arg.Set bench_bitsched, "Enable benchmark-guided bitslice scheduling";
+      "-bench-msched", Arg.Set bench_msched, "Enable benchmark-guided mslice scheduling";
+      "-bench-sharevar", Arg.Set bench_sharevar, "Enable benchmark-guided variable sharing";
       "-fdti",Arg.Set_string fdti, "Specify the order of ti and fd (tifd or fdti)";
       "-lf", Arg.Set lazylift, "Enable lazy lifting";
       "-o", Arg.Set_string output, "Set the output filename";
@@ -181,7 +190,7 @@ let main () =
                        else if !shares <> 1 then 32 else
                          bits_in_arch !arch in
 
-    let pre_sched = !pre_schedule && !scheduling in
+    let pre_sched = !pre_schedule (* && !scheduling *) in
 
     if !maskVerif then (
       unroll    := true;
@@ -200,7 +209,6 @@ let main () =
         verbose        =   !verbose;
         type_check     =   !type_check;
         check_tbl      =   !check_tbl;
-        bench_inline   =   !bench_inline;
         auto_inline    =   !auto_inline;
         light_inline   =   !light_inline;
         heavy_inline   =   !heavy_inline;
@@ -224,7 +232,6 @@ let main () =
         unroll         =   !unroll;
         interleave     =   !interleave;
         inter_factor   =   !inter_factor;
-        auto_inter     =   !auto_inter;
         fdti           =   !fdti;
         lazylift       =   !lazylift;
         slicing_set    =   !slicing_set;
@@ -240,6 +247,11 @@ let main () =
         gen_bench      =   !gen_bench;
         keep_tables    =   !keep_tables;
         compact        =   !compact;
+        bench_inline   =   !bench_inline   || !bench_all;
+        bench_inter    =   !bench_inter    || !bench_all;
+        bench_bitsched =   !bench_bitsched || !bench_all;
+        bench_msched   =   !bench_msched   || !bench_all;
+        bench_sharevar =   !bench_sharevar || !bench_all;
       } in
 
     compile s prog conf in

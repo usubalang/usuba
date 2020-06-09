@@ -125,7 +125,6 @@ Record config := {
                           100 = prints the Usuba program after each pass *)
   type_check   : bool; (* Enables type-checking *)
   check_tbl    : bool; (* Enables verification of tables to circuit conversion *)
-  bench_inline : bool; (* Chooses best inlining by benchmarking *)
   auto_inline  : bool; (* Lets Usuba chose which nodes to inline or not *)
   light_inline : bool; (* Inlines only nodes marked with _inline *)
   inline_all   : bool; (* Inlines all nodes *)
@@ -149,7 +148,6 @@ Record config := {
   unroll       : bool; (* Unrolls all loops *)
   interleave   : N;    (* Interleaving granularity *)
   inter_factor : N;    (* Interleaving factor *)
-  auto_inter   : bool; (* Automatically interleave *)
   fdti         : string; (* *)
   lazylift     : bool; (* Enables lazy lifting *)
   slicing_set  : bool; (* If true, it means a slicing direction is selected,
@@ -170,6 +168,12 @@ Record config := {
                           them into circuits *)
   compact      : bool; (* (broken) Generates loops when unfolding
                           operators instead of a list of equations. *)
+  (* Benchmarking flags (for automatic selection of best opti to use or not) *)
+  bench_inline   : bool; (* Inlining: inline_all vs auto_inline vs _no_inline *)
+  bench_inter    : bool; (* Interleaving: which factor? (0, 2, 3) *)
+  bench_bitsched : bool; (* Bitslice schedule: yes or no *)
+  bench_msched   : bool; (* Mslice schedule: yes or no *)
+  bench_sharevar : bool; (* Share var: yes or no *)
 }.
 
 Set Extraction KeepSingleton.

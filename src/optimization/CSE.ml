@@ -48,6 +48,7 @@
 open Usuba_AST
 open Basic_utils
 open Utils
+open Pass_runner
 
 let rec cse_expr (env_expr:(expr,var list) Hashtbl.t) (e:expr) : expr =
   match Hashtbl.find_opt env_expr e with
@@ -113,8 +114,9 @@ let cse_def (def:def) : def =
      { def with node = Single(vars,cse_deqs env_expr body) }
   | _ -> def
 
-let run _ (prog:prog) (conf:config) : prog =
-  { nodes = List.map cse_def prog.nodes }
+let run (runner:pass_runner) (prog:prog) (conf:config) : prog =
+  runner#run_module Norm_tuples.as_pass
+                    { nodes = List.map cse_def prog.nodes }
 
 
 let as_pass = (run, "CSE")

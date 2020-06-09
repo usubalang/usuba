@@ -163,9 +163,6 @@ let run_common (runner:pass_runner) (prog:prog) (conf:config) : prog =
     (* And now, perform the inlining *)
     _inline runner prog conf inlined
 
-let run (runner:pass_runner) (prog:prog) (conf:config) : prog =
-  pre_inline := false;
-  run_common runner prog conf
 
 let run_pre_inline (runner:pass_runner) (prog:prog) (conf:config) : prog =
   pre_inline := true;
@@ -179,41 +176,59 @@ let run_pre_inline (runner:pass_runner) (prog:prog) (conf:config) : prog =
   else
     prog
 
+let run_simple (runner:pass_runner) (prog:prog) (conf:config) : prog =
+  pre_inline := false;
+  run_common runner prog conf
+
+let run_bench (runner:pass_runner) (prog:prog) (conf:config) nexts : prog =
+  assert conf.bench_inline;
+
+  let fully_inlined = run_simple runner prog { conf with inline_all  = true } in
+  let no_inlined    = run_simple runner prog { conf with no_inline   = true } in
+  let auto_inlined  = run_simple runner prog { conf with auto_inline = true } in
+
+  runner#push_in_bench "Inline:always";
+  let fully_inlined = runner#run_modules_bench nexts fully_inlined in
+  runner#pop_in_bench ();
+  runner#push_in_bench "Inline:never";
+  let no_inlined    = runner#run_modules_bench nexts no_inlined in
+  runner#pop_in_bench ();
+  runner#push_in_bench "Inline:heuristic";
+  let auto_inlined  = runner#run_modules_bench nexts auto_inlined in
+  runner#pop_in_bench ();
+
+  let (perfs_full, perfs_no, perfs_auto) =
+    list_to_tuple3
+      (Perfs.compare_perfs [ fully_inlined; no_inlined; auto_inlined ] conf) in
+
+  let (prog, selected) =
+    if perfs_full < perfs_auto then
+      if perfs_full < perfs_no then
+        (fully_inlined, "always")
+      else
+        (no_inlined, "never")
+    else
+      if perfs_no < perfs_auto then
+        (no_inlined, "never")
+      else
+        (auto_inlined, "heuristic") in
+
+  Printf.printf "Inline: always:%.2f  --  never:%.2f  --  heuristic:%.2f --> selecting %s\n%!"
+                perfs_full perfs_no perfs_auto selected;
+
+  prog
+
+
+let run (runner:pass_runner) (prog:prog) (conf:config) : prog =
+  let nexts = runner#get_nexts () in
+  pre_inline := false;
+  if not conf.bench_inline then
+    runner#run_modules_bench ~conf:conf
+                   (((run_simple,"Inline"),true,Pass_runner.Always) :: nexts) prog
+  else
+    run_bench runner prog conf nexts
+
 
 
 let as_pass = (run, "Inline")
 let as_pass_pre = (run_pre_inline, "Inline-pre")
-
-
-let run_with_cont (runner:pass_runner) (prog:prog) (conf:config) nexts : prog =
-  pre_inline := false;
-  if not conf.bench_inline then
-    runner#run_modules_guard ~conf:conf ((as_pass, true) :: nexts) prog
-  else
-    (assert conf.bench_inline;
-     let fully_inlined = run runner prog { conf with inline_all = true } in
-     let no_inlined    = run runner prog { conf with no_inline  = true } in
-     let auto_inlined  = run runner prog conf in
-
-     let fully_inlined = runner#run_modules_guard nexts fully_inlined in
-     let no_inlined    = runner#run_modules_guard nexts no_inlined in
-     let auto_inlined  = runner#run_modules_guard nexts auto_inlined in
-
-     Printf.printf "Benchmarking dat shit...\n";
-
-     let (perfs_full, perfs_no, perfs_auto) =
-       list_to_tuple3
-         (Perfs.compare_perfs [ fully_inlined; no_inlined; auto_inlined ]) in
-
-     Printf.printf "Benchmarks res: %.2f vs %.2f vs %.2f\n" perfs_full perfs_no perfs_auto;
-
-     if perfs_full < perfs_auto then
-       if perfs_full < perfs_no then
-         fully_inlined
-       else
-         no_inlined
-     else
-       if perfs_no < perfs_auto then
-         no_inlined
-       else
-         auto_inlined)

@@ -34,29 +34,34 @@ let optimize (prog:prog) (conf:config) : prog =
              Pre_schedule.as_pass,         conf.pre_schedule;
              Normalize_core.as_pass,       true ] prog in
 
-  let guard_for_pre_inlining =
+  let guard_pre_inline =
     conf.pre_schedule && (Inline.is_more_aggressive_than_auto conf) in
-  let prog = runner#run_modules_guard
-                      [ Inline.as_pass_pre,     guard_for_pre_inlining;
-                        Normalize_core.as_pass, guard_for_pre_inlining;
-                        Pre_schedule.as_pass,   guard_for_pre_inlining;
-                        Normalize_core.as_pass, guard_for_pre_inlining ] prog in
 
-
-  Inline.run_with_cont runner prog conf
-                       [ Simple_opts.as_pass,          true;
-                         Pre_schedule.as_pass,         conf.pre_schedule;
-                         Normalize_inner_core.as_pass, true;
-                         Optimize.as_pass,             true;
-                         Normalize_inner_core.as_pass, true;
-                         Tightprove.as_pass,           conf.tightPROVE;
-                         Usuba_to_maskverif.as_pass,   conf.maskVerif;
-                         Mask.as_pass,                 conf.ua_masked;
-                         Fuse_loops.as_pass,           conf.loop_fusion;
-                         Linearize_arrays.as_pass,     conf.linearize_arr(* ; *)
-                         (* Inplace_nodes.as_pass,        conf.inplace_nodes; *)
-                       ]
-
+  runner#run_modules_bench
+         [
+           Inline.as_pass_pre,           guard_pre_inline,   Pass_runner.Toggle conf.bench_bitsched;
+           Normalize_core.as_pass,       guard_pre_inline,   Pass_runner.Always;
+           Pre_schedule.as_pass,         guard_pre_inline,   Pass_runner.Toggle conf.bench_bitsched;
+           Normalize_core.as_pass,       guard_pre_inline,   Pass_runner.Always;
+           Inline.as_pass,               true,               Pass_runner.Custom conf.bench_inline;
+           Simple_opts.as_pass,          true,               Pass_runner.Always;
+           Pre_schedule.as_pass,         conf.pre_schedule,  Pass_runner.Toggle conf.bench_bitsched;
+           Normalize_inner_core.as_pass, true,               Pass_runner.Always;
+           Interleave.as_pass,           conf.interleave > 0,Pass_runner.Custom conf.bench_inter;
+           Simple_opts.as_pass,          true,               Pass_runner.Always;
+           Fuse_loop_general.as_pass,    conf.loop_fusion,   Pass_runner.Always;
+           Simple_opts.as_pass,          true,               Pass_runner.Always;
+           Scheduler.as_pass,            conf.scheduling,    Pass_runner.Toggle conf.bench_msched;
+           Share_var.as_pass,            conf.share_var,     Pass_runner.Toggle conf.bench_sharevar;
+           Clean.as_pass,                true,               Pass_runner.Always;
+           Remove_dead_code.as_pass,     true,               Pass_runner.Always;
+           Normalize_inner_core.as_pass, true,               Pass_runner.Always;
+           Tightprove.as_pass,           conf.tightPROVE,    Pass_runner.Always;
+           Usuba_to_maskverif.as_pass,   conf.maskVerif,     Pass_runner.Always;
+           Mask.as_pass,                 conf.ua_masked,     Pass_runner.Always;
+           Fuse_loops.as_pass,           conf.loop_fusion,   Pass_runner.Always;
+           Linearize_arrays.as_pass,     conf.linearize_arr, Pass_runner.Always
+         ] prog
 
 let compile (prog:prog) (conf:config) : prog =
 

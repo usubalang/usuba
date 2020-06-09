@@ -17,7 +17,6 @@ let default_conf : config =
     verbose        = 1;
     type_check     = true;
     check_tbl      = false;
-    bench_inline   = false;
     auto_inline    = true;
     light_inline   = false;
     no_inline      = false;
@@ -41,7 +40,6 @@ let default_conf : config =
     unroll         = false;
     interleave     = 0;
     inter_factor   = 0;
-    auto_inter     = false;
     fdti           = "";
     lazylift       = false;
     slicing_set    = false;
@@ -57,6 +55,11 @@ let default_conf : config =
     gen_bench      = false;
     keep_tables    = false;
     compact        = false;
+    bench_inline   = false;
+    bench_inter    = false;
+    bench_bitsched = false;
+    bench_msched   = false;
+    bench_sharevar = false;
   }
 
 let default_dir = Varslice { uid = -1; name = "D" }
