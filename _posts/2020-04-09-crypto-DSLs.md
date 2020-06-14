@@ -24,16 +24,17 @@ algorithms, from protocols and modes of operations down to
 primitives. It covers a broder range than Usuba, which focuses solely
 on primitives. 
 
-While Usuba programs are designed to act as specifications of ciphers,
-they remain implementations, in the sense that Usuba's operators and
-constructions are driven by existing CPU architectures. Cryptol on the
-other hands removes the architectural aspects altogether, and strives
-to offer very high-level abstractions. As such, Cryptol natively
-supports polynomials and field arithmetics, allowing it to express
-more naturally than Usuba ciphers like AES. For instance, AES's
-multiplication in GF(2<sup>8</sup>) modulo the irreducible polynome
-<i>x<sup>8</sup> + x<sup>4</sup> + x<sup>3</sup> + x + 1</i> can be
-written in Cryptol as:
+Usuba's design was driven by existing CPU architectures, but still
+aims at providing a semantics abstract enough to allow reasoning on
+combinational circuits. Often, ciphers are specified at this level of
+abstraction, but not always: AES for instance is defined in terms of
+operations in a finite field. Cryptol handles well this type of
+cipher, by providing high-level mathematical abstractions, even when
+they do not trivially map to any commonly used hardware. As such,
+Cryptol natively supports polynomials and field arithmetics. For
+instance, AES's multiplication in GF(2<sup>8</sup>) modulo the
+irreducible polynome <i>x<sup>8</sup> + x<sup>4</sup> +
+x<sup>3</sup> + x + 1</i> can be written in Cryptol as:
 
 ```
 irreducible = <| x^^8 + x^^4 + x^^3 + x + 1 |>
@@ -49,9 +50,8 @@ programs, Cryptol's main construction is sequences, which, unlike
 tuples, contains elements of the same type. Several builtins allow to
 construct and manipulate sequences: comprehensions, enumerations,
 infinite sequences, indexing and appending operators. Furthermore, in
-Cryptol, bitvectors can be specified using boolean sequences, whereas
-Usuba does not allow bit-manipulation of words, which would not be
-efficient on most CPU architectures. For instance, the expression
+Cryptol, bitvectors can be specified using boolean sequences. For
+instance, the expression
 
 ```
 [True, False, True, False, True, False]
@@ -60,16 +60,16 @@ efficient on most CPU architectures. For instance, the expression
 constructs the integer 42, and the indexing operation `@` can be with
 the same effect on the literal 42 or on this sequence: `42 @ 2`
 returns `True`, like `[True, False, True, False, True, False] @ 2`
-does.
+does. Usuba does not allow bit-manipulation of words, which would not
+be efficient on most CPU architectures.
 
 
-The Cryptol language is much richer than Usuba, and include features
-like records, strings, user-defined types, predicates, modules,
-first-class type variables and lambda expressions. Focusing on
-symmetric primitives in Usuba, we strived to keep the language as
-simple (yet expressive) as possible, and did not require those
-constructions, which may prove useful when specifying asymmetric
-primitives, protocols and modes of operation.
+The Cryptol language is more expressive than Usuba, and include
+features like records, strings, user-defined types, predicates,
+modules, first-class type variables and lambda expressions. By
+focusing on symmetric primitives in Usuba, we strived to keep the
+language as simple (yet expressive) as possible, and did not require
+those constructions.
 
 
 Another aspect of Cryptol is that it allows programmers to write
@@ -81,39 +81,37 @@ is found in Cryptol's reference AES implementation:
 property AESCorrect msg key = aesDecrypt (aesEncrypt (msg, key), key) == msg
 ```
 
-which states that decrypting a ciphertext encrypted with AES yield the
-original plaintext. When the SMT solver fails to prove properties in
-reasonable time, Cryptol can to random testing: it tests the property
-on a given number of random inputs and observes if it holds. Usuba is
-weaker than Cryptol on that regard: while it performs some checking
-(it does exhaustive testing on lookup tables and their corresponding
-circuits for instance, and can ensure the correctness of some
-optimization passes using translation validation), it does not offer
-constructions to express and validate properties.
+which states that decrypting a ciphertext encrypted with AES yields
+the original plaintext. When the SMT solver fails to prove properties
+in reasonable time, Cryptol falls back to random testing: it tests the
+property on a given number of random inputs and checks whether it
+holds. Usuba does not offer such features at this stage, even though
+it still performs some checking (it does exhaustive testing on lookup
+tables and their corresponding circuits for instance, and can ensure
+the correctness of some optimization passes using translation
+validation).
 
-Overall, Cryptol is much more complete than Usuba, in the sense that
-it can be used for any cryptographic algorithm, while Usuba is
-restricted to symmetric primitives. Another major difference, is that
-while Cryptol's main goal is to provide a language for specifying and
-verifying cryptography, Usuba focuses on performances and offer only
-high-level constructions that it is able to compile to efficient
+Overall, Cryptol is a very expressive language for cryptography, but
+falls short on the performance aspect. With Usuba we restricted the
+problem tackled by Cryptol to only symmetric primitives in order to
+focus on performances, and adopted a bottum-view, offering only only
+high-level constructions that we are able to compile to efficient
 code. Furthermore, the automatic slicing and masking done by Usuba are
 missing in Cryptol.
 
 
 ### CAO
 
-CAO [3,4] is another domain-specific programming language (DSL) for
-cryptography, which focuses on primitives. Like Usuba, CAO started
-from the observation that writing primitives in C either leads to poor
+CAO [3,4] is a domain-specific programming language (DSL), that
+focuses on cryptographic primitives. Like Usuba, CAO started from the
+observation that writing primitives in C either leads to poor
 performances because the C compiler is unable to optimize them well,
-or to un-maintainable code because optimizations are done by hand.
+or to unmaintainable code because optimizations are done by hand.
 
-The level of abstractions provided by CAO is similar to Usuba, unlike
-Cryptol, which provided very high-level mathematical-oriented
-constructions: functions, `for` loops, standard C operators (`+`, `-`,
-`*`, ...), ranges to index multiples elements of a vector,
-concatenation of vectors... CAO also has a `map` builtin, which
+The level of abstractions provided by CAO is similar to Usuba and
+unlike Cryptol: functions, `for` loops, standard C operators (`+`,
+`-`, `*`, ...), ranges to index multiples elements of a vector,
+concatenation of vectors... CAO also has a `map` operator, which
 describes mapping from inputs to outputs of a permutation, in a style
 similar to Usuba's `perm` nodes.
 
@@ -126,16 +124,15 @@ one can define a type `f` for AES's values like:
 typedef f := gf[2 ** 8] over $ ** 8 + $ ** 4 + $ ** 3 + $ + 1
 ```
 
-AES's Mixcolumn can then be written in a more mathematical way in CAO
-than in Usuba: while the latter required the programmer to manually
-provide equations, the former allows the use of arithmetic operators
-to compute in GF(2<sup>8</sup>).
+AES's Mixcolumn can then be written at a higher level in CAO than in
+Usuba, allowing the programming to dirrectly appeal to operators in
+GF(2<sup>8</sup>), which are missing from Usuba.
 
 To support public-key cryptography, CAO also provides conditionals in
 the language. However, to prevent timing attacks, variables can be
-annotated with `secret`: the compiler will emit an error if a
-conditional branch is done on a `secret` value. Such a mechanism is
-not needed in Usuba, where branches on non-static values cannot be
+annotated as being `secret`: the compiler will emit an error if a
+conditional depends on a `secret` value. Such a mechanism is not
+needed in Usuba, where conditionals on non-static values cannot be
 expressed at all.
 
 Because of the exotic types introduced when dealing with public-key
@@ -148,46 +145,48 @@ handle finite field arithmetics, but CAO's does.
 
 CAO also tries to offer a way for programs to be resilient against
 side-channel attacks, by providing an operator `?`, which introduces
-fresh randomness. However, introducing randomness throughout the
-computation [5] is not proven to be secured. CAO thus uses Hidden
-Markov Models to try and break it. This is weaker than Usuba's
-automatic masking, but was done years provable security against
-side-channel attacks became a must [6]. 
+fresh randomness. However, since introducing randomness throughout the
+computation [5] is not proven to be secured, CAO uses Hidden Markov
+Models to try and break it. Usuba integrates recent progresses in
+provable countermeasures against side-channel attacks [6], thus
+providing a stronger security.
 
 
 ### FaCT
 
-FaCT [7] is a C-style DSL for cryptography, which generates
-proved-constant-time LLVM Intermediate Represendation (IR) code. FaCT
-allows developpers to write cryptographic code without having to
-resort to programming "tricks" to make it constant-time, like masking
+FaCT [7] is a C-style DSL for cryptography, which generates provably
+constant-time LLVM Intermediate Represendation (IR) code. FaCT allows
+developpers to write cryptographic code without having to resort to
+programming "tricks" to make it constant-time, like masking
 conditionals, or using flags instead of early-return. Those tricks
-obfuscate the code, and implementing them wrong can lead to unexpected
-weaknesses [8].
+obfuscate the code, and an error can lead to devastating security
+issues [8].
 
 Instead, FaCT allows the developpers to write C-style code, where
-secret values are annotated with the keyword `secret` in their
-definition. The compiler then takes care of transforming any
-non-constant-time idioms using those values into constant-time
-ones. Those idioms include early routine termination, conditional
-branching, and memory accesses. 
+secret values are annotated with the keyword `secret`. The compiler
+then takes care of transforming any non constant-time idiom into
+constant-time ones. It thus automatically detects and secures unsafe
+early routine terminations, conditional branches, and memory accesses.
 
-FaCT's transformations which remove vulnerable constructions are
-proven to produce constant-time code. However, because LLVM could
-still introduce vulnerability (for instance by optimizing branchless
-statements with conditional branches), they rely on dudect [9] to
-ensure that the final assembly is empirically constant-time.
+FaCT's transformations are proven to produce constant-time
+code. However, because LLVM could still introduce vulnerability (for
+instance by optimizing branchless statements with conditional
+branches), they rely on dudect [9] to ensure that the final assembly
+is empirically constant-time. Moreover, FaCT has a notion of _public
+safety_ to ensure the memory safety as well as the lack of buffer
+overflows/underflows and undefined behaviors. FaCT ensures the public
+safety of a program using the Z3 SMT solver.
 
-While FaCT achieves the same result as Usuba, constant-time
-cryptographic codes, their use-cases are different. The constructions
-that FaCT makes constant-time are found in protocols (_eg._ TLS) or
-asymmetric primitives (_eg._ RSA), whereas Usuba focuses on symmetric
-cryptography. Furthermore, Usuba is higher-level than FaCT: the later
-can almost be straight-forwardly compiled to C, which Usuba requires
-more normalization, especially when automatically bitslicing
-programs. Both languages however achieve similar performances as
+FaCT and Usuba differ in their use-cases. FaCT targets protocols
+(_e.g._, TLS) and asymmetric primitives (_e.g._, RSA), whereas Usuba
+focuses on symmetric cryptography. Furthermore, Usuba is higher-level
+than FaCT: the later can almost be straight-forwardly compiled to C
+and requires the developer to explicitely use vector instructions when
+he wants them, while Usuba requires more normalization (especially
+when automatically bitslicing programs) and automatically generates
+SIMD codes. Both languages however achieve similar performances as
 hand-tuned codes, even though Usuba implements several optimizations
-itself while FaCT mostly relies on LLVM's optimize.
+itself while FaCT mostly relies on LLVM's optimizer.
 
 
 ### dSCADL
@@ -213,38 +212,39 @@ compiler to lower-level operations.
 
 However, dSCADL compiles to OCaml code and then links with a runtime
 library, making it much slower than Usuba, which compiles directly to
-C. In the paper presentnig dSCADL [10], better performances for dSCADL
+C. In the paper presenting dSCADL [10], better performances for dSCADL
 than Cryptol are reported, but it is unclear how fair the benchmark
 is, since in the code they provide [11], the Cryptol codes include
-correctness proofs which are done using a SMT-solver.
+correctness proofs which are done using a SMT-solver at compile-time
+rather than at run-time.
 
 Finally, dSCADL allows the use of secret values in conditionals, as
 well as lookup in tables at secret indices, making the produced codes
 potentially vulnerable to timing attacks.
 
 
-### A Domain Specific Language for Cryptography
+### ADSLFC
 
-Giovanni Agosta and Gerardo Pelosi proposed in [12] a domain specific
+Giovanni Agosta and Gerardo Pelosi [12] proposed a domain specific
 language for cryptography. This DSL was not named, but we shall call
 it ADSLFC (**A** **D**omain **S**pecific **L**anguage **F**or
 **C**ryptography) in the following, for simplicity. ADSLFC is based on
 Python in the hope that developers will find it easy to use, and will
-easily assimilate the syntax (unlike Cryptol for instance, which uses
-haskell-like syntax, which may be harder to understand for most
-programmers). Finally, ADSLFC is compiled to Python (but the authors
-mention as future work that they would like to compile to C as well),
-in order to allow for and easy interoperability with C/C++.
+easily assimilate the syntax (unlike Cryptol for instance, which they
+deem "much harder to understand for a non-specialized user [than C]"
+in [12], Section 4). Finally, ADSLFC is compiled to Python (but the
+authors mention as future work that they would like to compile to C as
+well), in order to allow for and easy interoperability with C/C++.
 
 The base type of ADSLFC is `int`, which represents a signed integer of
 unlimited precision. This type can then be refined by specifying its
 size (`int.32` for a 32-bit integer for instance), or made unsigned
 using the `u.` prefix. The TEA cipher for instance takes as input
 values of type `u.int.32`, similar to Usuba's `u32`.  Vectors can be
-used to represent either (possibly multi-dimentional) arrays of
+used to represent either arrays (possibly multi-dimentional) of
 integers or polynomials. To deal with finite field arithmetics, a `mod
-x` anotation can be added to a type, meaning that operations on this
-type are done modulo `x`.
+x` (where `x` is a polynomial) anotation can be added to a type,
+meaning that operations on this type are done modulo `x`.
 
 Standard arithmetic operators are provided for integers (addition,
 multiplication, exponentiation...), as well as bitwise operators, and
@@ -252,42 +252,43 @@ an operator to call a S-box (represented as a vector used as a lookup
 table). Additional operators are available to manipulate vectors:
 concatenation, indexing, replication, transposition... The features of
 the language are thus similar to Usuba's, with added constructions to
-deal with finite field arithmetics and polynomials. No example of
-ADSLFC using those constructions are available, but AES and most
-public-key ciphers should be written in a more natural way in ADSLFC
-than in Usuba.
+deal with finite field arithmetics and polynomials. 
 
 Finally, ADSLFC was designed to allow fast prototyping and
 development, with seemingly no regard for performances, unlike Usuba,
 for which speed is a crucial aspect. No performances numbers are
-provided in [12], but since ADSLFC compiles to Python, and no
-optimizations are mentioned in [12], we can expect the generated codes
-to be slower than Usuba's highly optimized C codes.
+provided in the original paper [12], but since ADSLFC compiles to
+Python, and no performance-related optimizations are mentioned, we can
+expect the generated codes to be slower than Usuba's highly optimized
+C codes.
 
 
 ### BSC
 
-BSC [13] is the only bitslicing compiler (besides Usuba) we know
-of. The initial design of Usuba [14], which did not support m-slicing
-was largely inspired from BSC: lookup tables and permutations reused
-BSC's syntax, and the types were similar: booleans are arrays. Usuba's
-tuples are also inspired from BSC's vectors: in BSC, a vector of size
-_n_ can be destructed into two vectors of size _i_ and _j_ (such that
-_i + j = n_) using the syntax `[a # b] = c` (where `a`, `b` and `c`
-are vectors of size `i`, `j` and `n`), which is equivalent to Usuba's
-`(a, b) = n`. Finally, we reused in Usuba the algorithm used by BSC to
-convert lookup tables into circuits.
+BSC [13] is a direct ancestor of Usuba. The initial design of Usuba
+[14], which did not support m-slicing, was largely inspired by BSC:
+lookup tables and permutations originated from BSC, and the types
+(booleans and vectors of booleans) were similar. Usuba's tuples are
+also inspired from BSC's vectors: in BSC, a vector of size _n_ can be
+destructed into two vectors of size _i_ and _j_ (such that _i + j =
+n_) using the syntax `[a # b] = c` (where `a`, `b` and `c` are vectors
+of size `i`, `j` and `n`), which is equivalent to Usuba's `(a, b) =
+n`. Finally, Usuba borrows from BSC the algorithm to convert lookup
+tables into circuits.
 
-BSC, however, remained a basic prototype and does not perform any
-optimization but copy propagation (removing assigment of a variable to
+Usuba improves upon BSC by expanding the range of optimizations beyond
+mere copy propagation (removing assigment of a variable to
 another). Furthermore, BSC does not offer loop constructions, and
 inlines every function, producing unnecessary large
 codes. Benchmarking BSC against Usuba on DES shows that Usuba is about
 10% faster, mainly thanks to its scheduling algorithm.
 
-BSC does not support m-slicing, which is to be expected since
-m-slicing was introduced by [14] and [15], 8 and 9 years after the
-development of BSC.
+Similarly, m-slicing was only introduced almost a decade after BSC
+[14,15], and most SIMD extensions post-date BSC: SSE instructions sets
+were developped between 1999 (SSE) and 2008 (SSE4.2), AVX dates from
+2008, AVX2 from 2012 and AVX512 from 2016. Usuba shows that both
+m-slicing and vectorization are nonetheless compatible with the
+programming model pionered by BSC.
 
 
 ---
