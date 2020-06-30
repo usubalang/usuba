@@ -719,7 +719,7 @@ Conclusion: Usuba
 
 [30] P. Kiaei _et al_, [SKIVA: Flexible and Modular Side-channel and Fault Countermeasures](https://eprint.iacr.org/eprint-bin/cite.pl?entry=2019/756), 2019.
 
-[31] P. C. Kochern, [Timing Attacks on Implementations of Diffie-Hellman, RSA, DSS, and Other Systems](https://link.springer.com/content/pdf/10.1007/3-540-68697-5_9.pdf), CRYPTO, 1996.
+[31] P. C. Kocher, [Timing Attacks on Implementations of Diffie-Hellman, RSA, DSS, and Other Systems](https://link.springer.com/content/pdf/10.1007/3-540-68697-5_9.pdf), CRYPTO, 1996.
 
 [32] David Brumley, Dan Boneh, [Remote timing attacks are practical](crypto.stanford.edu/~dabo/pubs/papers/ssl-timing), USENIX Security Symposium, 2003.
 
