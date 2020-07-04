@@ -365,7 +365,13 @@ let get_arrays (vars:p) : p =
 (* To determine if an array can be linearized, we kinda simulate what
    would happen after linearization, thanks to the function
    "can_linearize". Refer to its comments to see how this is done. *)
-let linearize_def (conf:config) (env_fun:(ident,def) Hashtbl.t) (def:def) : def =
+(* When several layers of an array can be removed, we apply several
+   times linearize_def. Even though the function is strictly
+   converging, we use the |retry| parameter to avoid looping over and
+   over. TODO: remove |retry| here (and maybe add a warning if too
+   many recursion, but this really should not happen). *)
+let rec linearize_def ?(retry:int=5) (conf:config)
+                      (env_fun:(ident,def) Hashtbl.t) (def:def) : def =
   match def.node with
   | Single(vars,body) ->
      (* Building variable environment. It is only use to expand
@@ -388,9 +394,13 @@ let linearize_def (conf:config) (env_fun:(ident,def) Hashtbl.t) (def:def) : def 
      let vars = update_vars to_linearize vars in
      (* Update body with linearized variables *)
      let body = linearize to_linearize body in
-     let def = { def with node = Single(vars,body) } in
-     Hashtbl.replace env_fun def.id def;
-     def
+     let new_def = { def with node = Single(vars,body) } in
+     Hashtbl.replace env_fun def.id new_def;
+
+     if retry > 0 && def <> new_def then
+       linearize_def ~retry:(retry-1) conf env_fun new_def
+     else new_def
+
   | _ -> def
 
 let run _ (prog:prog) (conf:config) : prog =
