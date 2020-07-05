@@ -172,58 +172,180 @@ let loop_idx      = fresh_ident "_mask_idx"
 let make_loop_indexed (v:var) : var =
   Index(v,Var_e loop_idx)
 
-let mask_var (orig:(ident*deq_i) list) (vl:var) (ve:var) : deq list =
-  [ { orig=orig;
-      content=
-        Loop(loop_idx,Const_e 0,loop_end,
-             [{orig=orig;
-               content=Eqn([make_loop_indexed vl],
-                           ExpVar(make_loop_indexed ve),false)}],[]) }]
-(*                                                      ^^^^^   ^^ *)
-(*                                                (eqn's sync)  (loop's opts)   *)
-
-let mask_cst (orig:(ident*deq_i) list) (vl:var) (c:int) (typ:typ option) : deq list =
-  if c = 0 then
-    [ { orig=orig;
-        content=
-          Loop(loop_idx,Const_e 0,loop_end,
-               [{orig=orig;
-                 content=Eqn([make_loop_indexed vl],Const(0,typ),false)}],[]) }]
-  else
-  [ { orig=orig; content=Eqn([Index(vl,Const_e 0)],Const(c,typ),false) };
-    { orig=orig;
-      content=Loop(loop_idx,Const_e 1,loop_end,
+let mask_var (env_var:(ident,typ) Hashtbl.t)
+             (env_const:(ident,bool) Hashtbl.t)
+             (orig:(ident*deq_i) list) (vl:var) (ve:var) : deq list =
+  match Hashtbl.mem env_const (get_base_name vl) with
+  | true  ->
+     (match Hashtbl.mem env_const (get_base_name ve) with
+      | true  -> (* const = const *)
+         [ { orig=orig; content=Eqn([vl],ExpVar ve, false) } ]
+      | false -> (* const = var *)
+         Printf.eprintf "Cannot convert non-constant into constant.\n";
+                 assert false)
+  | false ->
+     match Hashtbl.mem env_const (get_base_name ve) with
+     | true  -> (* var = const *)
+        let typ = get_var_type env_var vl in
+        [ {orig=orig;
+           content=Eqn([Index(vl,Const_e 0)],ExpVar ve,false)};
+          {orig=orig;
+           content=Loop(loop_idx,Const_e 1,loop_end,
+                        [{orig=orig;
+                          content=Eqn([make_loop_indexed vl],
+                                      Const(0,Some typ),false)}],[])}]
+     | false -> (* var = var *)
+        [ { orig=orig;
+            content=
+              Loop(loop_idx,Const_e 0,loop_end,
                    [{orig=orig;
-                     content=Eqn([make_loop_indexed vl],Const(0,typ),false)}],[])}]
+                     content=Eqn([make_loop_indexed vl],
+                                 ExpVar(make_loop_indexed ve),false)}],[]) }]
+(*                                                            ^^^^^    ^^ *)
+(*                                                   (eqn's sync)  (loop's opts)   *)
 
-let mask_shift (orig:(ident*deq_i) list) (vl:var) (op:shift_op) (ve:var) (ae:arith_expr) : deq list =
-  [ { orig=orig;
-      content=
-        Loop(loop_idx,Const_e 0,loop_end,
-             [{orig=orig;
-               content=Eqn([make_loop_indexed vl],
-                           Shift(op,ExpVar(make_loop_indexed ve),ae), false)}],[])}]
-
-let mask_not (orig:(ident*deq_i) list) (vl:var) (ve:var) : deq list =
-  [ {orig=orig;
-     content=Eqn([Index(vl,Const_e 0)],Not(ExpVar(Index(ve,Const_e 0))),false)};
-    {orig=orig;
-     content=Loop(loop_idx,Const_e 1,loop_end,
+let mask_cst (env_const:(ident,bool) Hashtbl.t)
+             (orig:(ident*deq_i) list) (vl:var) (c:int) (typ:typ option) : deq list =
+  match Hashtbl.mem env_const (get_base_name vl) with
+  | true  -> (* const = const *)
+     [ { orig = orig; content=Eqn([vl],Const(c,typ),false) } ]
+  | false -> (* var = const *)
+     if c = 0 then
+       [ { orig=orig;
+           content=
+             Loop(loop_idx,Const_e 0,loop_end,
                   [{orig=orig;
-                    content=Eqn([make_loop_indexed vl],
-                                ExpVar(make_loop_indexed ve),false)}],[])}]
+                    content=Eqn([make_loop_indexed vl],Const(0,typ),false)}],[]) }]
+     else
+       [ { orig=orig; content=Eqn([Index(vl,Const_e 0)],Const(c,typ),false) };
+         { orig=orig;
+           content=Loop(loop_idx,Const_e 1,loop_end,
+                        [{orig=orig;
+                          content=Eqn([make_loop_indexed vl],Const(0,typ),false)}],[])}]
 
-let mask_xor (orig:(ident*deq_i) list) (vl:var) (x:var) (y:var) : deq list =
-  (* TODO: could be optimized if one of the operands is a constant... *)
-  [ { orig=orig;
-      content=
-        Loop(loop_idx,Const_e 0,loop_end,
-             [{orig=orig;
-               content=Eqn([make_loop_indexed vl],
-                           Log(Xor,ExpVar(make_loop_indexed x),
-                               ExpVar(make_loop_indexed y)),false)}],[])}]
+let mask_shift (env_var:(ident,typ) Hashtbl.t)
+               (env_const:(ident,bool) Hashtbl.t)
+               (orig:(ident*deq_i) list) (vl:var) (op:shift_op)
+               (ve:var) (ae:arith_expr) : deq list =
+  match Hashtbl.mem env_const (get_base_name vl) with
+  | true ->
+     (match Hashtbl.mem env_const (get_base_name ve) with
+      | true  -> (* const = const *)
+         [ { orig=orig; content=Eqn([vl],Shift(op,ExpVar ve,ae),false) } ]
+      | false -> (* const = var *)
+         Printf.eprintf "Cannot convert non-constant into constant.\n";
+         assert false)
+  | false ->
+     match Hashtbl.mem env_const (get_base_name ve) with
+      | true  -> (* var = const *)
+         let typ = get_var_type env_var vl in
+         [ { orig=orig; content=Eqn([vl],Shift(op,ExpVar ve,ae),false) };
+           { orig=orig;
+             content=
+               Loop(loop_idx,Const_e 1,loop_end,
+                    [{orig=orig;
+                      content=Eqn([make_loop_indexed vl],
+                                  Const(0,Some typ), false)}],[])} ]
+      | false -> (* var = var *)
+         [ { orig=orig;
+             content=
+               Loop(loop_idx,Const_e 0,loop_end,
+                    [{orig=orig;
+                      content=Eqn([make_loop_indexed vl],
+                                  Shift(op,ExpVar(make_loop_indexed ve),ae), false)}],[])}]
+
+let mask_not (env_var:(ident,typ) Hashtbl.t)
+             (env_const:(ident,bool) Hashtbl.t)
+             (orig:(ident*deq_i) list) (vl:var) (ve:var) : deq list =
+  match Hashtbl.mem env_const (get_base_name vl) with
+  | true ->
+     (match Hashtbl.mem env_const (get_base_name ve) with
+      | true  -> (* const = const *)
+         [ { orig=orig; content=Eqn([vl],Not (ExpVar ve),false) } ]
+      | false -> (* const = var *)
+         Printf.eprintf "Cannot convert non-constant into constant.\n";
+         assert false)
+  | false ->
+     match Hashtbl.mem env_const (get_base_name ve) with
+     | true  -> (* var = const *)
+        let typ = get_var_type env_var vl in
+        [ {orig=orig;
+           content=Eqn([Index(vl,Const_e 0)],Not(ExpVar ve),false)};
+          {orig=orig;
+           content=Loop(loop_idx,Const_e 1,loop_end,
+                        [{orig=orig;
+                          content=Eqn([make_loop_indexed vl],
+                                      Const(0,Some typ),false)}],[])}]
+     | false -> (* var = var *)
+        [ {orig=orig;
+           content=Eqn([Index(vl,Const_e 0)],Not(ExpVar(Index(ve,Const_e 0))),false)};
+          {orig=orig;
+           content=Loop(loop_idx,Const_e 1,loop_end,
+                        [{orig=orig;
+                          content=Eqn([make_loop_indexed vl],
+                                      ExpVar(make_loop_indexed ve),false)}],[])}]
 
 type is_const = Zero | One | Two
+
+let mask_xor (env_var:(ident,typ) Hashtbl.t)
+             (env_const:(ident,bool) Hashtbl.t)
+             (orig:(ident*deq_i) list) (vl:var) (x:var) (y:var) : deq list =
+  let (cst,x,y) = if (Hashtbl.mem env_const (get_base_name x)) &&
+                       (Hashtbl.mem env_const (get_base_name y)) then (Two,x,y)
+                  else if Hashtbl.mem env_const (get_base_name x) then (One,y,x)
+                  else if Hashtbl.mem env_const (get_base_name y) then (One,x,y)
+                  else (Zero,x,y) in
+  let typ = get_var_type env_var x in
+  match cst with
+  | Zero ->
+     (match Hashtbl.mem env_const (get_base_name vl) with
+      | true -> (* const = var ^ var *)
+         Printf.eprintf "Cannot convert non-constant into constant.\n";
+         assert false
+      | false -> (* var = var ^ var *)
+         (* Xoring share by share *)
+         [ { orig=orig;
+             content=
+               Loop(loop_idx,Const_e 0,loop_end,
+                    [{orig=orig;
+                      content=Eqn([make_loop_indexed vl],
+                                  Log(Xor,ExpVar(make_loop_indexed x),
+                                      ExpVar(make_loop_indexed y)),false)}],[])}])
+  | One ->
+     (match Hashtbl.mem env_const (get_base_name vl) with
+      | true -> (* const = var ^ const *)
+         Printf.eprintf "Cannot convert non-constant into constant.\n";
+         assert false
+      | false -> (* var = var ^ const *)
+         (* Xoring first share with the constant and the next ones with 0 *)
+         [ { orig=orig;
+             content=Eqn([Index(vl,Const_e 0)],
+                         Log(Xor,ExpVar(Index(x,Const_e 0)),ExpVar y), false)};
+           { orig=orig;
+             content=
+               Loop(loop_idx,Const_e 1,loop_end,
+                    [{orig=orig;
+                      content=Eqn([make_loop_indexed vl],
+                                  Log(Xor,ExpVar(make_loop_indexed x),
+                                      Const(0,Some typ)),false)}],[])}])
+  | Two ->
+     match Hashtbl.mem env_const (get_base_name vl) with
+     | true -> (* const = const ^ const *)
+        (* Straightforward Xor *)
+        [ { orig=orig;
+            content=Eqn([vl],Log(Xor,ExpVar x,ExpVar y),false) } ]
+     | false -> (* var = const ^ const *)
+         [ { orig=orig;
+             content=Eqn([Index(vl,Const_e 0)],
+                         Log(Xor,ExpVar x,ExpVar y), false)};
+           { orig=orig;
+             content=
+               Loop(loop_idx,Const_e 1,loop_end,
+                    [{orig=orig;
+                      content=Eqn([make_loop_indexed vl],Const(0,Some typ),false)}],[])}]
+
+
+
 let mask_and_or (env_var:(ident,typ) Hashtbl.t)
                 (env_const:(ident,bool) Hashtbl.t)
                 (orig:(ident*deq_i) list) (vl:var) (op:log_op) (x:var) (y:var) : deq list =
@@ -232,28 +354,42 @@ let mask_and_or (env_var:(ident,typ) Hashtbl.t)
                   else if Hashtbl.mem env_const (get_base_name x) then (One,y,x)
                   else if Hashtbl.mem env_const (get_base_name y) then (One,x,y)
                   else (Zero,x,y) in
+  let typ = get_var_type env_var x in
   match cst with
-  | Zero -> [ {orig=orig; content=Eqn([vl],Log(Masked op,ExpVar x,ExpVar y),false)} ]
+  | Zero ->
+     (match Hashtbl.mem env_const (get_base_name vl) with
+      | true  -> (* const = var & var *)
+         Printf.eprintf "Cannot convert non-constant into constant.\n";
+         assert false
+      | false -> (* var = var & var *)
+        [ {orig=orig; content=Eqn([vl],Log(Masked op,ExpVar x,ExpVar y),false)} ])
   | One  -> (* The second operand is a constant *)
-     [ {orig=orig;
-        content=
-          Loop(loop_idx,Const_e 0,loop_end,
-               [{orig=orig;
-                 content=Eqn([make_loop_indexed vl],
-                             Log(op,ExpVar(make_loop_indexed x),
-                                 ExpVar(Index(y,Const_e 0))),false)}],[])}]
+     (match Hashtbl.mem env_const (get_base_name vl) with
+      | true  -> (* const = var & const *)
+         Printf.eprintf "Cannot convert non-constant into constant.\n";
+         assert false
+      | false -> (* var = var & const *)
+         [ {orig=orig;
+            content=
+              Loop(loop_idx,Const_e 0,loop_end,
+                   [{orig=orig;
+                     content=Eqn([make_loop_indexed vl],
+                                 Log(op,ExpVar(make_loop_indexed x),ExpVar y),false)}],[])}])
   | Two -> (* both operands are constant *)
-     let zero_typ = get_var_type env_var x in
-     [ {orig=orig;
-        content=Eqn([Index(vl,Const_e 0)],
-                    Log(op,ExpVar(Index(x,Const_e 0)),
-                        ExpVar(Index(y,Const_e 0))), false)};
-       {orig=orig;
-        content=
-          Loop(loop_idx,Const_e 1,loop_end,
-               [ {orig=orig;
-                  content=Eqn([make_loop_indexed vl],
-                              Const(0,Some zero_typ),false)}],[])}]
+     match Hashtbl.mem env_const (get_base_name vl) with
+     | true -> (* const = const & const *)
+        [ {orig=orig;
+           content=Eqn([vl],
+                       Log(op,ExpVar x,ExpVar y), false)} ]
+     | false -> (* var = const & const *)
+         [ { orig=orig;
+             content=Eqn([Index(vl,Const_e 0)],
+                         Log(op,ExpVar x,ExpVar y), false)};
+           { orig=orig;
+             content=
+               Loop(loop_idx,Const_e 1,loop_end,
+                    [{orig=orig;
+                      content=Eqn([make_loop_indexed vl],Const(0,Some typ),false)}],[])}]
 
 let mask_eqn (env_var:(ident,typ) Hashtbl.t)
              (env_const:(ident,bool) Hashtbl.t)
@@ -263,11 +399,11 @@ let mask_eqn (env_var:(ident,typ) Hashtbl.t)
   | Mnat -> (* not masking nats *) [ {orig=orig;content=Eqn([vl],e,false)} ]
   | _ ->
      match e with
-     | Const(c,typ) -> mask_cst orig vl c typ
-     | ExpVar v     -> mask_var orig vl v
-     | Shift(op,ExpVar v,ae)      -> mask_shift orig vl op v ae
-     | Not(ExpVar v) -> mask_not orig vl v
-     | Log(Xor,ExpVar x,ExpVar y) -> mask_xor orig vl x y
+     | Const(c,typ) -> mask_cst env_const orig vl c typ
+     | ExpVar v     -> mask_var env_var env_const orig vl v
+     | Shift(op,ExpVar v,ae)      -> mask_shift env_var env_const orig vl op v ae
+     | Not(ExpVar v) -> mask_not env_var env_const orig vl v
+     | Log(Xor,ExpVar x,ExpVar y) -> mask_xor env_var env_const orig vl x y
      | Log(And as op,ExpVar x,ExpVar y)
      | Log(Or as op,ExpVar x,ExpVar y)  -> mask_and_or env_var env_const orig vl op x y
      | _ -> Printf.eprintf "Cannot mask expression: %s.\n"
@@ -291,8 +427,10 @@ let rec mask_typ (typ:typ) : typ =
   | Uint(d,m,n) -> Array(Array(Uint(d,m,1),Var_e masking_order),Const_e n)
   | Array(typ',s) -> Array(mask_typ typ',s)
 
-let mask_p (p:p) : p =
-  List.map (fun vd -> { vd with vd_typ = mask_typ vd.vd_typ}) p
+let mask_p (env_const:(ident,bool) Hashtbl.t) (p:p) : p =
+  List.map (fun vd -> { vd with vd_typ = match Hashtbl.find_opt env_const vd.vd_id with
+                                         | Some _ -> vd.vd_typ
+                                         | None   -> mask_typ vd.vd_typ}) p
 
 let mask_def (env_fun:(ident,def) Hashtbl.t) (def:def) : def =
   match def.node with
@@ -307,9 +445,9 @@ let mask_def (env_fun:(ident,def) Hashtbl.t) (def:def) : def =
      let env_var   = build_env_var def.p_in def.p_out vars in
      let env_const = Get_consts.get_consts_def env_fun ~consts_in:consts_params def in
 
-     { def with p_in  = mask_p def.p_in;
-                p_out = mask_p def.p_out;
-                node  = Single(mask_p vars, mask_deqs env_var env_const body) }
+     { def with p_in  = mask_p env_const def.p_in;
+                p_out = mask_p env_const def.p_out;
+                node  = Single(mask_p env_const vars, mask_deqs env_var env_const body) }
   | _ -> Printf.eprintf "Cannot mask something else that a def (%s). Exiting.\n" def.id.name;
          assert false
 
