@@ -1,5 +1,5 @@
 
-_no_inline table SubBytes_single (input:v8) returns (output:v8) {
+table SubBytes_single (input:v8) returns (output:v8) {
     99, 124, 119, 123, 242, 107, 111, 197, 48, 1, 103, 43, 254, 215, 171, 118,
     202, 130, 201, 125, 250, 89, 71, 240, 173, 212, 162, 175, 156, 164, 114, 192,
     183, 253, 147, 38, 54, 63, 247, 204, 52, 165, 229, 241, 113, 216, 49, 21,
@@ -19,7 +19,6 @@ _no_inline table SubBytes_single (input:v8) returns (output:v8) {
 }
 
 node SubBytes (inputSB:b8[16]) returns (out:b8[16])
-vars
 let
     forall i in [0,15] {
       out[i] = SubBytes_single(inputSB[i])
@@ -27,19 +26,16 @@ let
 tel
 
 node ShiftRows (inputSR:b8[16]) returns (output:b1[128])
-vars
 let
     output = inputSR[0,5,10,15,4,9,14,3,8,13,2,7,12,1,6,11]
 tel
 
 node times2 (i:b1[8]) returns (o:b1[8])
-vars
 let
     o = (i << 1) ^ (0,0,0,i[0],i[0],0,i[0],i[0])
 tel
 
 node times3 (i:b1[8]) returns (o:b1[8])
-vars
 let
     o = times2(i) ^ i
 tel
@@ -61,20 +57,25 @@ let
     }
 tel
 
+node AddRoundKey(i:b128,key:b128) returns (r:b128)
+let
+    r = i ^ key
+tel
+
 
 node AES (plain:b128,key:b128[11]) returns (cipher:b1[128])
 vars
     tmp : b128[10]
 let
     # Initial AddRoundKey
-    tmp[0] = plain ^ key[0];
+    tmp[0] = AddRoundKey(plain, key[0]);
 
     # 9 rounds (the last is special)
     forall i in [1,9] {
-      tmp[i] = MixColumn( ShiftRows( SubBytes( tmp[i-1] ) ) ) ^ key[i]
+      tmp[i] = AddRoundKey(MixColumn(ShiftRows(SubBytes(tmp[i-1]))), key[i])
     }
 
     # Last (10th) round (no MixColumn)
-    cipher = ShiftRows(SubBytes(tmp[9])) ^ key[10]
+    cipher = AddRoundKey(ShiftRows(SubBytes(tmp[9])), key[10])
 
 tel

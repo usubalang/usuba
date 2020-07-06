@@ -5,19 +5,16 @@ tel
 
 node simeck_box(input:u32x2, rc:u32) returns (output:u32x2)
 vars
-    round:u32x2[9],
-    tmp:u32[8]
+    round:u32x2[9]
 let
-
     round[0] = input;
 
     forall i in [0, 7] {
-      tmp[i] = f(round[i][0]) ^ round[i][1] ^ 0xfffffffe ^ ((rc >> i) & 1);
-      round[i+1][0,1] = (tmp[i], round[i][0]) ;
+      round[i+1] = ( f(round[i][0]) ^ round[i][1] ^ 0xfffffffe ^ ((rc >> i) & 1),
+                     round[i][0] );
     }
 
     output = round[8]
-
 tel
 
 
@@ -29,11 +26,7 @@ let
     B := B ^ C ^ (0,SC[0]) ^ (0xffffffff,0xffffff00);
     D := D ^ E ^ (0,SC[1]) ^ (0xffffffff,0xffffff00);
     E := E ^ A ^ (0,SC[2]) ^ (0xffffffff,0xffffff00);
-    Ar = D;
-    Br = C;
-    Cr = A;
-    Dr = E;
-    Er = B;
+    (Ar, Br, Cr, Dr, Er) = (D, C, A, E, B);
 tel
 
 
@@ -50,7 +43,6 @@ let
           0x53,0x5d,0x49,0x7f,0xbe,0x1d,0x28,0x6c,0x82,0x47,0x6b,0x88,0xdc,0x8b,0x59,0xc6,
           0x43,0xe4,0x5e,0xcc,0x32,0x4e,0x75,0x25,0xfd,0xf9,0x76,0xa0,0xb0,0x09,0x1e,0xad);
 
-
     tmp[0] = input;
 
     forall i in [0, 15] {
@@ -58,5 +50,4 @@ let
     }
 
     output = tmp[16];
-
 tel

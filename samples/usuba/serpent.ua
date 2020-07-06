@@ -37,5 +37,4 @@ let
     }
 
     ciphertext = sbox<7>(tmp[31] ^ keys[31]) ^ keys[32]
-    
 tel

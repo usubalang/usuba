@@ -7,7 +7,7 @@ let
     o = i ^ k
 tel
 
-node mat_mult(col:const u32,vec:u32) returns (res:u32)
+node mat_mult(col:u32,vec:u32) returns (res:u32)
 vars
     mat_col:u32[33],
     res_tmp:u32[33],
@@ -27,7 +27,7 @@ tel
 
 node MixRows (input:u32x4) returns (output:u32x4)
 vars
-    M: const u32[4]
+    M:u32[4]
 let
     M = (0xa3861085, 0x63417021, 0x692cf280, 0x48a54813);
     forall i in [0, 3] {
