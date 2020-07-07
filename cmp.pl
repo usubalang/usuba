@@ -2,26 +2,38 @@
 
 use strict;
 use warnings;
-use List::Util qw(sum);
+use List::Util qw(sum max);
+use feature 'say';
 
-my $tot = 30;
+my $tot = 1;
+my $G = 1000000000;
 if ($ARGV[0] =~ /^\d+$/) {
     $tot = shift @ARGV;
 }
-my $signif = int($tot / 2);
 
 my %times;
 
 for ( 1 .. $tot ) {
     for (@ARGV) {
-        push @{$times{$_}}, `./$_` =~ s/ .*$//r;
+        push @{$times{$_}}, (`./$_` =~ s/ .*$//r)+0;
     }
 }
 
+my %formatted;
 for (@ARGV) {
-    $times{$_} = sum ((sort { $a <=> $b } @{$times{$_}})[1 .. $signif])
+  my $u = sum(@{$times{$_}})/@{$times{$_}}; # mean
+  my $s = ( sum( map {($_-$u)**2} @{$times{$_}} ) / @{$times{$_}} ) ** 0.5; # standard deviation
+  $formatted{$_} = { mean => $u, stdev => $s };
 }
 
-for (sort { $times{$a} <=> $times{$b} } keys %times) {
-    printf "$_ => %.3f\n",$times{$_}/$signif
+my $padding = max map { length } @ARGV;
+
+say "Details:";
+for (sort { $formatted{$a}->{mean} <=> $formatted{$b}->{mean} } keys %formatted) {
+  printf "%*s => %.3f +-%.3f [%s]\n", $padding, $_, $formatted{$_}->{mean}, $formatted{$_}->{stdev}, join ", ", @{$times{$_}};
+}
+
+say "\nSummary:";
+for (sort { $formatted{$a}->{mean} <=> $formatted{$b}->{mean} } keys %formatted) {
+    printf "%*s => %.3f +-%.3f\n", $padding, $_, $formatted{$_}->{mean}, $formatted{$_}->{stdev}
 }
