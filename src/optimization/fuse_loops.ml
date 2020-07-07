@@ -7,6 +7,7 @@ open Usuba_AST
 open Basic_utils
 open Utils
 
+let bitslice = ref false
 
 
 (* **************************************************************** *)
@@ -53,7 +54,7 @@ let rec add_to_skipped (skipped:(ident,bool) Hashtbl.t)
 let rec partition_deqs ?(skipped:(ident,bool) Hashtbl.t=Hashtbl.create 10)
                        (outer:loop) (nexts:deq list) :
           deq list  =
-  if false then
+  if !bitslice then
     (* This first version is less aggressive when fusing loops: it
        only fuses that are right next to each others. *)
   match nexts with
@@ -137,6 +138,7 @@ let fuse_loops_def (def:def) : def =
   | _ -> def
 
 let run _ (prog:prog) (conf:config) : prog =
+  bitslice := conf.slicing_type = B;
   let prog = { nodes = List.map fuse_loops_def prog.nodes } in
   { nodes = List.map fuse_loops_def prog.nodes }
 
