@@ -1,0 +1,5 @@
+# To compute IPC:
+perl -E 'for(glob("*")){next if/-/;$v1=`perf stat -e cycles,instructions ./$_ 2>&1`;$v2=`perf stat -e cycles,instructions ./$_-2-10 2>&1`;($v1)=$v1=~/(\d\,\d+)\s+ insn per cycle/;($v2)=$v2=~/(\d\,\d+)\s+ insn per cycle/;say"$_\t$v1\t$v2"}'
+
+# To format results
+perl -pE '/^(\w+) (\d+(?:\.\d+))/&&($c=$1)&&($v=$2);/-(\d+)-(\d+) (\d+(?:\.\d+)?)/&&($h{$1}{$2}=$3)}{for my$g(sort{$a<=>$b}keys %{$h{2}}){say"$g\t", $v*8, "\t",join"\t",map{$h{$_}{$g}*8}sort{$a<=>$b}keys%h}' rectangle.txt | tee rectangle_formatted.txt

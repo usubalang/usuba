@@ -64,13 +64,13 @@ if ($gen) {
     my $out_dir = "$pwd/generated/ciphers";
     make_path $out_dir unless -d $out_dir;
 
-    my $ua_args = "-V -arch avx -gen-bench -no-sched -inline-all -unroll -no-pre-sched";
+    my $ua_args = "-V -gen-bench -no-sched -inline-all -unroll -no-pre-sched";
 
     for my $cipher (@ciphers) {
         my $source  = "samples/usuba/$cipher.ua";
         system "./usubac $ua_args -o $out_dir/$cipher.c $source";
-        system "./usubac -V -arch avx -gen-bench -interleave 5 -sched-n 4 -inline-all -unroll -no-pre-sched -o $out_dir/$cipher-2-sched.c $source";
-        system "./usubac -V -arch avx -gen-bench -sched-n 4 -inline-all -unroll -no-pre-sched -o $out_dir/$cipher-sched.c $source";
+        system "./usubac -V -gen-bench -interleave 5 -sched-n 4 -inline-all -unroll -no-pre-sched -o $out_dir/$cipher-2-sched.c $source";
+        system "./usubac -V -gen-bench -sched-n 4 -inline-all -unroll -no-pre-sched -o $out_dir/$cipher-sched.c $source";
 
         for my $grain (@grains) {
             for my $factor (@factors) {
