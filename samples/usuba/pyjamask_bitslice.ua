@@ -1,3 +1,6 @@
+# Bitsliced version
+# Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/pyjamask-spec-round2.pdf
+
 # We use a different source for pyjamask bitslice and vslice because
 # col_mult in Vslicing uses an arithmetic shift to convert a bit into
 # a register full of this bit. This is not doable, nor needed in

@@ -1,3 +1,4 @@
+# Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/Xoodyak-spec-round2.pdf
 
 node theta(A:u32[3][4]) returns (R:u32[3][4])
 vars P, E: u32[4]

@@ -1,3 +1,4 @@
+# Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/subterranean-spec-round2.pdf
 
 node chi(state:b257) returns (stateR:b257)
 let

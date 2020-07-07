@@ -21,7 +21,7 @@ let
     state[1,5,9,13]  := QR(state[1,5,9,13]);
     state[2,6,10,14] := QR(state[2,6,10,14]);
     state[3,7,11,15] := QR(state[3,7,11,15]);
-    
+
     stateR[0,5,10,15] = QR(state[0,5,10,15]);
     stateR[1,6,11,12] = QR(state[1,6,11,12]);
     stateR[2,7,8,13]  = QR(state[2,7,8,13]);

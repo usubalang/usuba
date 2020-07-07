@@ -1,3 +1,4 @@
+# Specification: https://www.cl.cam.ac.uk/~rja14/Papers/serpent.pdf
 
 _no_inline table[] sbox (input:v4) returns (out:v4) [
     { 3, 8,15, 1,10, 6, 5,11,14,13, 4, 2, 7, 0, 9,12 } ;

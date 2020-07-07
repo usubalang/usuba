@@ -1,6 +1,6 @@
+# Specification: https://tools.ietf.org/html/rfc2040
+
 # Can't work because of the dynamic rotate.
-
-
 
 # A full adder
 node add (a:bool,b:bool,cin:bool)
@@ -21,7 +21,6 @@ let
     forall i in [0,31] {
       (r[i],c[i+1]) = add(a[i],b[i],c[i])
     }
-
 tel
 
 
@@ -45,6 +44,4 @@ let
     }
 
     ciphertext = (A[12], B[12]);
-
 tel
-    

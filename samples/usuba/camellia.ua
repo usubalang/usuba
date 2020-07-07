@@ -35,13 +35,10 @@ vars
     y1:u32, y2:u32,
     k1:u32, k2:u32
 let
-
     (y1,y2) = f_in;
     (k1,k2) = key;
 
     f_out = (y1 ^ (y2 | k2), y2 ^ ((y1 & k1) <<< 1))
-    
-    
 tel
 
 
@@ -50,12 +47,10 @@ vars
     x1:u32, x2:u32,
     k1:u32, k2:u32
 let
-
     (x1,x2) = f_in;
     (k1,k2) = key;
 
     f_out = (x2 ^ ((x1 & k1) <<< 1), x1 ^ (x2 | k2))
-
 tel
 
 node F (f_in:u64,key:u64) returns (f_out:u64)
@@ -65,7 +60,7 @@ vars
     y:u8[8]
 let
     t_in = f_in ^ key;
-    
+
     forall i in [0,3] { t_out[i] = SBOX<i>(t_in[i]) }
     t_out[4] = SBOX<1>(t_in[4]);
     t_out[5] = SBOX<2>(t_in[5]);
@@ -82,7 +77,6 @@ let
     y[7] = t_out[0] ^ t_out[3] ^ t_out[4] ^ t_out[5] ^ t_out[6];
 
     f_out = y
-    
 tel
 
 node camellia (plaintext:u128, kw:u64[4], k:u64[18], ke:u64[4])
@@ -91,7 +85,6 @@ vars
     D1 : u64[12],
     D2 : u64[12]
 let
-
    (D1[0],D2[0]) = plaintext ^ kw[0,1];
 
    forall i in [0,2] {
@@ -115,6 +108,5 @@ let
      D1[i+1] = D1[i] ^ F(D2[i+1],k[(i-2)*2+1])
    }
 
-   ciphertext = (D2[11], D1[11]) ^ kw[2,3]    
-
+   ciphertext = (D2[11], D1[11]) ^ kw[2,3]
 tel

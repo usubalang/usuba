@@ -1,3 +1,4 @@
+# Specification: https://www.ecrypt.eu.org/stream/p3ciphers/trivium/trivium_p3.pdf
 
 #pragma vectorization
 

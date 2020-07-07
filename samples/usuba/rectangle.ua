@@ -1,3 +1,5 @@
+# Specification: https://eprint.iacr.org/2014/084.pdf
+
 _no_inline table SubColumn (input:v4) returns (out:v4) {
     6, 5, 12, 10, 1, 14, 7, 9, 11, 0, 3, 13, 8, 15, 4, 2
 }

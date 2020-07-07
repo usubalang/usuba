@@ -1,3 +1,5 @@
+# Specification: https://eprint.iacr.org/2011/697.pdf
+
 table sBox (x:b4) returns (y:b4) {
     #3, 8,15, 1,10, 6, 5,11,14,13, 4, 2, 7, 0, 9,12
     0xe,0xd,0xb,0x0,0x2,0x1,0x4,0xf,0x7,0xa,0x8,0x5,0x9,0xc,0x3,0x6
@@ -18,6 +20,7 @@ tel
 #     }
 #     stateR[159] = state[159];
 # tel
+
 node pLayer(state:b8[20]) returns (stateR:b8[20])
 vars x:b1[160], PermutedBitNo:nat, y:nat
 let

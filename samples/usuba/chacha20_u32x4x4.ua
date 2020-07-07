@@ -23,7 +23,7 @@ tel
 // Quarter round
 node QR (input:u128<4>x4) returns (output:u128<4>x4)
 let
-    output = QR_end(QR_start(input))    
+    output = QR_end(QR_start(input))
 tel
 
 
