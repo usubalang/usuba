@@ -21,138 +21,138 @@
 #     xmm131:v1,xmm132:v1,xmm133:v1,xmm134:v1,xmm135:v1,xmm136:v1,xmm137:v1,
 #     xmm138:v1,xmm139:v1
 # let
-#     xmm8 = xmm6 ^ xmm5;     
-#     xmm9 = xmm1 ^ xmm2;     
-#     xmm10 = xmm0 ^ xmm8;     
-#     xmm11 = xmm9 ^ xmm6;     
-#     xmm12 = xmm0 ^ xmm3;     
-#     xmm13 = xmm12 ^ xmm11;     
-#     xmm14 = xmm7 ^ xmm12;     
-#     xmm15 = xmm10 ^ xmm7;     
-#     xmm16 = xmm4 ^ xmm14;     
-#     xmm17 = xmm10 ^ xmm4;     
-#     xmm18 = xmm1 ^ xmm16;     
-#     xmm19 = xmm15 ^ xmm9;     
-#     xmm20 = xmm10 ^ xmm1;     
-#     xmm21 = xmm15 ^ xmm17;    
-#     xmm22 = xmm20 ^ xmm19;    
-#     xmm23 = xmm10 ^ xmm18;     
-#     xmm24 = xmm19 ^ xmm17;    
-#     xmm25 = xmm13 ^ xmm0;    
-#     xmm26 = xmm21 ^ xmm22;  
-#     xmm27 = xmm22 & xmm23;    
-#     xmm28 = xmm23 | xmm22;    
-#     xmm29 = xmm21 & xmm25;  
-#     xmm30 = xmm25 | xmm21;   
-#     xmm31 = xmm23 ^ xmm25;   
-#     xmm32 = xmm31 & xmm26;  
-#     xmm33 = xmm18 ^ xmm0;    
-#     xmm34 = xmm33 & xmm24;  
-#     xmm35 = xmm34 ^ xmm30;  
-#     xmm36 = xmm34 ^ xmm28;  
-#     xmm37 = xmm15 ^ xmm20;    
-#     xmm38 = xmm10 ^ xmm13;    
-#     xmm39 = xmm37 | xmm38;    
-#     xmm40 = xmm38 & xmm37;  
-#     xmm41 = xmm40 ^ xmm27;    
-#     xmm42 = xmm32 ^ xmm35;  
-#     xmm43 = xmm29 ^ xmm36;  
-#     xmm44 = xmm32 ^ xmm39;    
-#     xmm45 = xmm29 ^ xmm41;    
-#     xmm46 = xmm29 ^ xmm44;    
-#     xmm47 = xmm19 & xmm18;    
-#     xmm48 = xmm17 & xmm0;    
-#     xmm49 = xmm20 & xmm10;    
-#     xmm50 = xmm15 | xmm13;     
-#     xmm51 = xmm47 ^ xmm42;  
-#     xmm52 = xmm48 ^ xmm43;  
-#     xmm53 = xmm49 ^ xmm46;    
-#     xmm54 = xmm50 ^ xmm45;    
-#     xmm55 = xmm51 ^ xmm52;  
-#     xmm56 = xmm53 & xmm51;   
-#     xmm57 = xmm54 ^ xmm56;   
-#     xmm58 = xmm55 & xmm57;  
-#     xmm59 = xmm52 ^ xmm58;  
-#     xmm60 = xmm53 ^ xmm54;    
-#     xmm61 = xmm52 ^ xmm56;  
-#     xmm62 = xmm61 & xmm60;  
-#     xmm63 = xmm54 ^ xmm62;   
-#     xmm64 = xmm63 ^ xmm53;    
-#     xmm65 = xmm57 ^ xmm63;  
-#     xmm66 = xmm54 & xmm65;   
-#     xmm67 = xmm66 ^ xmm64;    
-#     xmm68 = xmm66 ^ xmm57;  
-#     xmm69 = xmm59 & xmm68;  
-#     xmm70 = xmm55 ^ xmm69;  
-#     xmm71 = xmm59 ^ xmm70;  
-#     xmm72 = xmm13 & xmm71;   
-#     xmm73 = xmm13 ^ xmm10;    
-#     xmm74 = xmm70 & xmm73;  
-#     xmm75 = xmm10 & xmm59;    
-#     xmm76 = xmm75 ^ xmm74;   
-#     xmm77 = xmm72 ^ xmm75;    
-#     xmm78 = xmm0 ^ xmm13;     
-#     xmm79 = xmm18 ^ xmm10;     
-#     xmm80 = xmm63 ^ xmm59;  
-#     xmm81 = xmm67 ^ xmm70;   
-#     xmm82 = xmm80 ^ xmm81;  
-#     xmm83 = xmm78 & xmm82;   
-#     xmm84 = xmm79 ^ xmm78;     
-#     xmm85 = xmm81 & xmm84;    
-#     xmm86 = xmm80 & xmm79;    
-#     xmm87 = xmm85 ^ xmm86;     
-#     xmm88 = xmm83 ^ xmm85;    
-#     xmm89 = xmm63 ^ xmm67;   
-#     xmm90 = xmm0 & xmm89;   
-#     xmm91 = xmm0 ^ xmm18;     
-#     xmm92 = xmm67 & xmm91;     
-#     xmm93 = xmm18 & xmm63;    
-#     xmm94 = xmm93 ^ xmm92;     
-#     xmm95 = xmm90 ^ xmm93;    
-#     xmm96 = xmm88 ^ xmm94;     
-#     xmm97 = xmm76 ^ xmm88;    
-#     xmm98 = xmm87 ^ xmm95;     
-#     xmm99 = xmm77 ^ xmm87;     
-#     xmm100 = xmm15 ^ xmm17;    
-#     xmm101 = xmm20 ^ xmm19;     
-#     xmm102 = xmm80 ^ xmm81;  
-#     xmm103 = xmm100 & xmm102;  
-#     xmm104 = xmm101 ^ xmm100;   
-#     xmm105 = xmm81 & xmm104;  
-#     xmm106 = xmm80 & xmm101;    
-#     xmm107 = xmm105 ^ xmm106;    
-#     xmm108 = xmm103 ^ xmm105;  
-#     xmm109 = xmm63 ^ xmm67;   
-#     xmm110 = xmm17 & xmm109;   
-#     xmm111 = xmm17 ^ xmm19;     
-#     xmm112 = xmm67 & xmm111;     
-#     xmm113 = xmm19 & xmm63;    
-#     xmm114 = xmm113 ^ xmm112;     
-#     xmm115 = xmm110 ^ xmm113;    
-#     xmm116 = xmm63 ^ xmm80;  
-#     xmm117 = xmm67 ^ xmm81;   
-#     xmm118 = xmm116 ^ xmm117;  
-#     xmm119 = xmm15 & xmm118;   
-#     xmm120 = xmm15 ^ xmm20;     
-#     xmm121 = xmm117 & xmm120;    
-#     xmm122 = xmm20 & xmm116;    
-#     xmm123 = xmm122 ^ xmm121;     
-#     xmm124 = xmm119 ^ xmm122;    
-#     xmm125 = xmm108 ^ xmm123;    
-#     xmm126 = xmm108 ^ xmm114;    
-#     xmm127 = xmm107 ^ xmm124;     
-#     xmm128 = xmm107 ^ xmm115;     
-#     xmm129 = xmm125 ^ xmm96;     
-#     xmm130 = xmm127 ^ xmm97;     
-#     xmm131 = xmm126 ^ xmm129;    
-#     xmm132 = xmm97 ^ xmm96;    
-#     xmm133 = xmm96 ^ xmm130;     
-#     xmm134 = xmm99 ^ xmm130;     
-#     xmm135 = xmm99 ^ xmm128;     
-#     xmm136 = xmm128 ^ xmm98;     
-#     xmm137 = xmm131 ^ xmm135;    
-#     xmm138 = xmm98 ^ xmm135;     
-#     xmm139 = xmm132 ^ xmm138;    
+#     xmm8 = xmm6 ^ xmm5;
+#     xmm9 = xmm1 ^ xmm2;
+#     xmm10 = xmm0 ^ xmm8;
+#     xmm11 = xmm9 ^ xmm6;
+#     xmm12 = xmm0 ^ xmm3;
+#     xmm13 = xmm12 ^ xmm11;
+#     xmm14 = xmm7 ^ xmm12;
+#     xmm15 = xmm10 ^ xmm7;
+#     xmm16 = xmm4 ^ xmm14;
+#     xmm17 = xmm10 ^ xmm4;
+#     xmm18 = xmm1 ^ xmm16;
+#     xmm19 = xmm15 ^ xmm9;
+#     xmm20 = xmm10 ^ xmm1;
+#     xmm21 = xmm15 ^ xmm17;
+#     xmm22 = xmm20 ^ xmm19;
+#     xmm23 = xmm10 ^ xmm18;
+#     xmm24 = xmm19 ^ xmm17;
+#     xmm25 = xmm13 ^ xmm0;
+#     xmm26 = xmm21 ^ xmm22;
+#     xmm27 = xmm22 & xmm23;
+#     xmm28 = xmm23 | xmm22;
+#     xmm29 = xmm21 & xmm25;
+#     xmm30 = xmm25 | xmm21;
+#     xmm31 = xmm23 ^ xmm25;
+#     xmm32 = xmm31 & xmm26;
+#     xmm33 = xmm18 ^ xmm0;
+#     xmm34 = xmm33 & xmm24;
+#     xmm35 = xmm34 ^ xmm30;
+#     xmm36 = xmm34 ^ xmm28;
+#     xmm37 = xmm15 ^ xmm20;
+#     xmm38 = xmm10 ^ xmm13;
+#     xmm39 = xmm37 | xmm38;
+#     xmm40 = xmm38 & xmm37;
+#     xmm41 = xmm40 ^ xmm27;
+#     xmm42 = xmm32 ^ xmm35;
+#     xmm43 = xmm29 ^ xmm36;
+#     xmm44 = xmm32 ^ xmm39;
+#     xmm45 = xmm29 ^ xmm41;
+#     xmm46 = xmm29 ^ xmm44;
+#     xmm47 = xmm19 & xmm18;
+#     xmm48 = xmm17 & xmm0;
+#     xmm49 = xmm20 & xmm10;
+#     xmm50 = xmm15 | xmm13;
+#     xmm51 = xmm47 ^ xmm42;
+#     xmm52 = xmm48 ^ xmm43;
+#     xmm53 = xmm49 ^ xmm46;
+#     xmm54 = xmm50 ^ xmm45;
+#     xmm55 = xmm51 ^ xmm52;
+#     xmm56 = xmm53 & xmm51;
+#     xmm57 = xmm54 ^ xmm56;
+#     xmm58 = xmm55 & xmm57;
+#     xmm59 = xmm52 ^ xmm58;
+#     xmm60 = xmm53 ^ xmm54;
+#     xmm61 = xmm52 ^ xmm56;
+#     xmm62 = xmm61 & xmm60;
+#     xmm63 = xmm54 ^ xmm62;
+#     xmm64 = xmm63 ^ xmm53;
+#     xmm65 = xmm57 ^ xmm63;
+#     xmm66 = xmm54 & xmm65;
+#     xmm67 = xmm66 ^ xmm64;
+#     xmm68 = xmm66 ^ xmm57;
+#     xmm69 = xmm59 & xmm68;
+#     xmm70 = xmm55 ^ xmm69;
+#     xmm71 = xmm59 ^ xmm70;
+#     xmm72 = xmm13 & xmm71;
+#     xmm73 = xmm13 ^ xmm10;
+#     xmm74 = xmm70 & xmm73;
+#     xmm75 = xmm10 & xmm59;
+#     xmm76 = xmm75 ^ xmm74;
+#     xmm77 = xmm72 ^ xmm75;
+#     xmm78 = xmm0 ^ xmm13;
+#     xmm79 = xmm18 ^ xmm10;
+#     xmm80 = xmm63 ^ xmm59;
+#     xmm81 = xmm67 ^ xmm70;
+#     xmm82 = xmm80 ^ xmm81;
+#     xmm83 = xmm78 & xmm82;
+#     xmm84 = xmm79 ^ xmm78;
+#     xmm85 = xmm81 & xmm84;
+#     xmm86 = xmm80 & xmm79;
+#     xmm87 = xmm85 ^ xmm86;
+#     xmm88 = xmm83 ^ xmm85;
+#     xmm89 = xmm63 ^ xmm67;
+#     xmm90 = xmm0 & xmm89;
+#     xmm91 = xmm0 ^ xmm18;
+#     xmm92 = xmm67 & xmm91;
+#     xmm93 = xmm18 & xmm63;
+#     xmm94 = xmm93 ^ xmm92;
+#     xmm95 = xmm90 ^ xmm93;
+#     xmm96 = xmm88 ^ xmm94;
+#     xmm97 = xmm76 ^ xmm88;
+#     xmm98 = xmm87 ^ xmm95;
+#     xmm99 = xmm77 ^ xmm87;
+#     xmm100 = xmm15 ^ xmm17;
+#     xmm101 = xmm20 ^ xmm19;
+#     xmm102 = xmm80 ^ xmm81;
+#     xmm103 = xmm100 & xmm102;
+#     xmm104 = xmm101 ^ xmm100;
+#     xmm105 = xmm81 & xmm104;
+#     xmm106 = xmm80 & xmm101;
+#     xmm107 = xmm105 ^ xmm106;
+#     xmm108 = xmm103 ^ xmm105;
+#     xmm109 = xmm63 ^ xmm67;
+#     xmm110 = xmm17 & xmm109;
+#     xmm111 = xmm17 ^ xmm19;
+#     xmm112 = xmm67 & xmm111;
+#     xmm113 = xmm19 & xmm63;
+#     xmm114 = xmm113 ^ xmm112;
+#     xmm115 = xmm110 ^ xmm113;
+#     xmm116 = xmm63 ^ xmm80;
+#     xmm117 = xmm67 ^ xmm81;
+#     xmm118 = xmm116 ^ xmm117;
+#     xmm119 = xmm15 & xmm118;
+#     xmm120 = xmm15 ^ xmm20;
+#     xmm121 = xmm117 & xmm120;
+#     xmm122 = xmm20 & xmm116;
+#     xmm123 = xmm122 ^ xmm121;
+#     xmm124 = xmm119 ^ xmm122;
+#     xmm125 = xmm108 ^ xmm123;
+#     xmm126 = xmm108 ^ xmm114;
+#     xmm127 = xmm107 ^ xmm124;
+#     xmm128 = xmm107 ^ xmm115;
+#     xmm129 = xmm125 ^ xmm96;
+#     xmm130 = xmm127 ^ xmm97;
+#     xmm131 = xmm126 ^ xmm129;
+#     xmm132 = xmm97 ^ xmm96;
+#     xmm133 = xmm96 ^ xmm130;
+#     xmm134 = xmm99 ^ xmm130;
+#     xmm135 = xmm99 ^ xmm128;
+#     xmm136 = xmm128 ^ xmm98;
+#     xmm137 = xmm131 ^ xmm135;
+#     xmm138 = xmm98 ^ xmm135;
+#     xmm139 = xmm132 ^ xmm138;
 #     S0 = xmm133;
 #     S1 = xmm134;
 #     S2 = xmm137;
@@ -164,25 +164,25 @@
 # tel
 
 
-node sbox (U0:b1, U1:b1, U2:b1, U3:b1, U4:b1, U5:b1, U6:b1, U7:b1)
-     returns  (S0:b1, S1:b1, S2:b1, S3:b1, S4:b1, S5:b1, S6:b1, S7:b1)
+node sbox (U0:v1, U1:v1, U2:v1, U3:v1, U4:v1, U5:v1, U6:v1, U7:v1)
+     returns  (S0:v1, S1:v1, S2:v1, S3:v1, S4:v1, S5:v1, S6:v1, S7:v1)
 vars
-    y0:b1,  y1:b1,  y2:b1,  y3:b1,  y4:b1,  y5:b1,  y6:b1,  y7:b1,
-    y8:b1,  y9:b1,  y10:b1, y11:b1, y12:b1, y13:b1, y14:b1, y15:b1,
-    y16:b1, y17:b1, y18:b1, y19:b1, y20:b1, y21:b1, 
-    t0:b1,  t1:b1,  t2:b1,  t3:b1,  t4:b1,  t5:b1,  t6:b1,  t7:b1,
-    t8:b1,  t9:b1,  t10:b1, t11:b1, t12:b1, t13:b1, t14:b1, t15:b1,
-    t16:b1, t17:b1, t18:b1, t19:b1, t20:b1, t21:b1, t22:b1, t23:b1,
-    t24:b1, t25:b1, t26:b1, t27:b1, t28:b1, t29:b1, t30:b1, t31:b1,
-    t32:b1, t33:b1, t34:b1, t35:b1, t36:b1, t37:b1, t38:b1, t39:b1,
-    t40:b1, t41:b1, t42:b1, t43:b1, t44:b1, t45:b1, 
-    z0:b1,  z1:b1,  z2:b1,  z3:b1,  z4:b1,  z5:b1,  z6:b1,  z7:b1,
-    z8:b1,  z9:b1,  z10:b1, z11:b1, z12:b1, z13:b1, z14:b1, z15:b1,
-    z16:b1, z17:b1,
-    tc0:b1,  tc1:b1,  tc2:b1,  tc3:b1,  tc4:b1,  tc5:b1,  tc6:b1,
-    tc7:b1,  tc8:b1,  tc9:b1,  tc10:b1, tc11:b1, tc12:b1, tc13:b1,
-    tc14:b1, tc15:b1, tc16:b1, tc17:b1, tc18:b1, tc19:b1, tc20:b1,
-    tc21:b1, tc22:b1, tc23:b1, tc24:b1, tc25:b1, tc26:b1
+    y0:v1,  y1:v1,  y2:v1,  y3:v1,  y4:v1,  y5:v1,  y6:v1,  y7:v1,
+    y8:v1,  y9:v1,  y10:v1, y11:v1, y12:v1, y13:v1, y14:v1, y15:v1,
+    y16:v1, y17:v1, y18:v1, y19:v1, y20:v1, y21:v1,
+    t0:v1,  t1:v1,  t2:v1,  t3:v1,  t4:v1,  t5:v1,  t6:v1,  t7:v1,
+    t8:v1,  t9:v1,  t10:v1, t11:v1, t12:v1, t13:v1, t14:v1, t15:v1,
+    t16:v1, t17:v1, t18:v1, t19:v1, t20:v1, t21:v1, t22:v1, t23:v1,
+    t24:v1, t25:v1, t26:v1, t27:v1, t28:v1, t29:v1, t30:v1, t31:v1,
+    t32:v1, t33:v1, t34:v1, t35:v1, t36:v1, t37:v1, t38:v1, t39:v1,
+    t40:v1, t41:v1, t42:v1, t43:v1, t44:v1, t45:v1,
+    z0:v1,  z1:v1,  z2:v1,  z3:v1,  z4:v1,  z5:v1,  z6:v1,  z7:v1,
+    z8:v1,  z9:v1,  z10:v1, z11:v1, z12:v1, z13:v1, z14:v1, z15:v1,
+    z16:v1, z17:v1,
+    tc0:v1,  tc1:v1,  tc2:v1,  tc3:v1,  tc4:v1,  tc5:v1,  tc6:v1,
+    tc7:v1,  tc8:v1,  tc9:v1,  tc10:v1, tc11:v1, tc12:v1, tc13:v1,
+    tc14:v1, tc15:v1, tc16:v1, tc17:v1, tc18:v1, tc19:v1, tc20:v1,
+    tc21:v1, tc22:v1, tc23:v1, tc24:v1, tc25:v1, tc26:v1
 let
   y14 = U3 ^ U5;
   y13 = U0 ^ U6;
