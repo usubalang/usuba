@@ -1,126 +1,250 @@
 #!/usr/bin/perl
 
-=usage
-    
-    ./compile.pl [-g] [-c] [-r]
+=head
 
-To compile and run, `./compile.pl` (or `./compile.pl -c -r`).
-To generate the C files from Usuba, `./compile.pl -g`. (not by default)
-To compile only, `./compile.pl -c`.
-To run only, `./compile.pl -r`
+To add a new ciphers, modify the %ciphers hash.
 
 =cut
-    
+
 use strict;
 use warnings;
-no warnings qw( numeric );
 use v5.14;
+use autodie qw( open close );
+$| = 1;
 
 use Cwd;
 use File::Path qw( remove_tree make_path );
 use File::Copy;
+use File::Copy::Recursive qw( dircopy );
 use FindBin;
+use List::Util qw( sum max );
+use JSON;
+use POSIX qw( strftime );
+use Term::ANSIColor;
+use Statistics::Test::WilcoxonRankSum;
+use List::MoreUtils qw( zip_unflatten );
 
-
-my $NB_LOOP = 20;
-my $CC      = 'clang';
-my $CFLAGS  = '-O3 -march=native';
-my $HEADERS = '-I ../../arch';
-$| = 1;
-
-
+my @archs         = qw( std sse avx );
+my $cc            = 'gcc';
+my $header_file   = "$FindBin::Bin/../../arch";
+my $cflags        = "-march=native -Os -fno-tree-vectorize -fno-tree-slp-vectorize " .
+                    "-Wall -Wextra -Wno-missing-braces -D WARMING=1000 -I $header_file";
+my $bench_nb_run  = 300000;
+my $ua_source_dir = "$FindBin::Bin/../../samples/usuba";
+my $c_source_dir  = "/tmp/ua-bench-sched-bs/C";
+my $bin_dir       = "/tmp/ua-bench-sched-bs/bin";
+my $ua_flags      = '-gen-bench -no-arr -unroll -sched-n 1';
+my $bench_main    = "$FindBin::Bin/../../experimentations/bench_generic/bench.c";
+my $res_file      = "/tmp/ua-bench-sched-bs/results.txt";
+my $ua_dir        = "$FindBin::Bin/../..";
 my %ciphers = (
-    des        => 1,
-    serpent    => 0,
-    aes        => 1,
-    aes_kasper => 0,
-    chacha20   => 0
+    'AES-bs'       => [ 'aes.ua',                '-B' ],
+    'ACE-bs'       => [ 'ace_bitslice.ua',       '-B' ],
+    'Ascon-bs'     => [ 'ascon.ua',              '-B' ],
+    'Clyde-bs'     => [ 'clyde_bitslice.ua',     '-B' ],
+    'DES'          => [ 'des.ua',                '-B' ],
+    'Gift-bs'      => [ 'gift.ua',               '-B' ],
+    'Gimli-bs'     => [ 'gimli_bitslice.ua',     '-B' ],
+    'Photon-bs'    => [ 'photon_bitslice.ua',    '-B' ],
+    'Present'      => [ 'present.ua',            '-B' ],
+    'Pyjamask-bs'  => [ 'pyjamask_bitslice.ua',  '-B' ],
+    'Rectangle-bs' => [ 'rectangle_bitslice.ua', '-B' ],
+    'Serpent-bs'   => [ 'serpent.ua',            '-B' ],
+    'Skinny-bs'    => [ 'skinny_bitslice.ua',    '-B' ],
+    'Spongent'     => [ 'spongent.ua',           '-B' ],
+    'Subterranean' => [ 'subterranean.ua',       '-B' ],
+    'Xoodoo'       => [ 'xoodoo.ua',             '-B' ]
     );
-my @ciphers = grep { $ciphers{$_} } keys %ciphers;
+my $nb_run = 30;
+
+#my @opts = @ARGV;
+my @opts = (
+    '-no-pre-sched',
+    '',
+    '-no-pre-sched -no-compact-mono',
+    '-no-compact-mono');
+my $ref_opt = $opts[0];
+# If first argument is a number, then this is the number of the opts
+# to use as reference.
+if ($opts[0] =~ /^(\d+)$/) {
+    @opts    = @opts[1 .. $#opts];
+    $ref_opt = $opts[$1];
+}
+
+my $make     = 0;
+my $gen      = 0;
+my $compile  = 1;
+my $run      = 1;
+
+sub avg_stdev {
+    my $u = sum(@_) / @_; # mean
+    my $s = (sum(map {($_-$u)**2} @_) / @_) ** 0.5; # stdev
+    return ($u, $s);
+}
 
 
-my $gen     = "@ARGV" =~ /-g/;
-my $compile = !@ARGV || "@ARGV" =~ /-c/;
-my $run     = !@ARGV || "@ARGV" =~ /-r/;
+if ($make) {
+    chdir $ua_dir;
 
-
-my $pwd = "$FindBin::Bin";
-
+    say "-----------------------------------------------------------------------";
+    say "------------------------- Recompiling Usuba   -------------------------";
+    say "-----------------------------------------------------------------------";
+    die if system 'make';
+    say "\n";
+}
 
 if ($gen) {
-    print "Compiling Usuba sources...";
-    chdir "$FindBin::Bin/../..";
+    chdir $ua_dir;
+    remove_tree $c_source_dir if -d $c_source_dir;
+    make_path $c_source_dir;
 
-    my $ua_args = "-arch sse";
-    for my $cipher (@ciphers) {
-        my $source  = "samples/usuba/$cipher.ua";
-        system "./usubac -B $ua_args -no-sched -o $pwd/$cipher/nosched.c $source";
-        system "./usubac -B $ua_args           -o $pwd/$cipher/sched.c   $source";
+    say "-----------------------------------------------------------------------";
+    say "-------------------- Compiling from Usuba to C ------------------------";
+    say "-----------------------------------------------------------------------";
+    for my $cipher (sort keys %ciphers) {
+        say "\t- $cipher....";
+        for my $arch (@archs) {
+            next if $arch eq 'std' && $cipher =~ /-hs$/;
+            for my $opt (@opts) {
+                my $opt_name = $opt =~ y/ /_/r;
+                my ($ua_file, @specific_opts) = @{$ciphers{$cipher}};
+                system "./usubac $ua_flags $opt @specific_opts -arch $arch -o " .
+                    "$c_source_dir/$cipher-$opt_name-$arch.c " .
+                    "$ua_source_dir/$ua_file";
+            }
+        }
     }
-    say " done.";
+    say "\n";
 }
 
 if ($compile) {
-    print "Compiling C sources...";
-    chdir "$FindBin::Bin";
-    make_path "bin" unless -d "bin";
-    for my $cipher (@ciphers) {
-        system "$CC $CFLAGS $HEADERS main_speed.c $cipher/stream.c $cipher/sched.c -o bin/$cipher-sched";
-        system "$CC $CFLAGS $HEADERS main_speed.c $cipher/stream.c $cipher/nosched.c -o bin/$cipher-nosched";
-    }
-    say " done.";
-}
+    say "-----------------------------------------------------------------------";
+    say "-------------------------- Compiling C files --------------------------";
+    say "-----------------------------------------------------------------------";
 
-exit unless $run;
+    remove_tree $bin_dir if -d $bin_dir;
+    make_path $bin_dir;
 
-make_path "results" unless -d "results";
-
-my %formatted;
-for my $cipher (@ciphers) {
-    
-    my %res;
-    for ( 1 .. $NB_LOOP ) {
-        print "\rRunning benchs $cipher... $_/$NB_LOOP";
-
-        for my $sched (qw(nosched sched)) {
-            my $bin = "bin/$cipher-$sched";
-            my $cycles = sprintf "%03.02f", `./$bin`; 
-            push @{ $res{$bin}->{details} }, $cycles;
-            $res{$bin}->{total} += $cycles;
+    for my $cipher (sort keys %ciphers) {
+        say "\t- $cipher....";
+        for my $arch (@archs) {
+            next if $arch eq 'std' && $cipher eq 'AES-hs';
+            for my $opt (@opts) {
+                my $opt_name = $opt =~ y/ /_/r;
+                my $this_nb_run = (grep { $_ eq '-B' } @{$ciphers{$cipher}}) ?
+                    $bench_nb_run / 20 : $bench_nb_run;
+                system "$cc $cflags -D NB_RUN=$this_nb_run $bench_main $c_source_dir/$cipher-$opt_name-$arch.c -o $bin_dir/$cipher$opt_name-$arch";
+            }
         }
     }
-    say "\rRunning benchs $cipher... done.     ";
-
-
-    open my $FP_OUT, '>', "results/$cipher.txt";
-    say "Results $cipher:";
-    for my $bin (sort { $res{$a}->{total} <=> $res{$b}->{total} } keys %res) {
-        my $size = -s $bin;
-        my $name = $bin =~ s{bin/}{}r;
-        printf "%13s : %03.02f  [ %s ]  {$size bytes}\n", $name, $res{$bin}->{total} / $NB_LOOP,
-            (join ", ", @{$res{$bin}->{details}});
-        printf $FP_OUT "%s %.02f $size\n", $name, $res{$bin}->{total} / $NB_LOOP;
-    }
-    say "";
-
-    my $bin_sched   = "bin/$cipher-sched";
-    my $bin_nosched = "bin/$cipher-nosched";
-    my $speedup      = ($res{$bin_nosched}->{total} - $res{$bin_sched}->{total})
-        / $res{$bin_nosched}->{total} * 100;
-    my $size  = ((-s $bin_sched) - (-s $bin_nosched)) / (-s $bin_sched) * 100;
-    $formatted{$cipher}->{speedup} = $speedup;
-    $formatted{$cipher}->{size}    = $size;
-    $formatted{$cipher}->{sign}    = $size >= 0 ? "+" : "";
+    say "\n";
 }
 
 
-open my $FP_OUT, '>', 'results/scheduling-bs.tex';
-printf $FP_OUT
-"\\newcommand{\\SchedulingBitsliceDESSpeedup}{%.2f}
-\\newcommand{\\SchedulingBitsliceDESCode}{%.2f}
-\\newcommand{\\SchedulingBitsliceAESSpeedup}{%.2f}
-\\newcommand{\\SchedulingBitsliceAESCode}{%.2f}
-",
-    $formatted{des}->{speedup}, $formatted{des}->{size},
-    $formatted{aes}->{speedup}, $formatted{aes}->{size};
-    
+if ($run) {
+    say "-----------------------------------------------------------------------";
+    say "---------------------------- Benchmarking -----------------------------";
+    say "-----------------------------------------------------------------------";
+
+    my %times;
+    for (1 .. $nb_run) {
+        for my $cipher (sort keys %ciphers) {
+            print "\r\033[2K\t- $cipher ($_ / $nb_run)";
+            for my $arch (@archs) {
+                next if $arch eq 'std' && $cipher =~ /-hs$/;
+                for my $opt (@opts) {
+                    my $opt_name = $opt =~ y/ /_/r;
+                    push @{$times{$arch}->{$opt}->{$cipher}},
+                        0+(`$bin_dir/$cipher$opt_name-$arch` =~ s/^\d+(\.\d+)?\K.*\n?//r);
+                }
+            }
+        }
+    }
+    say "\r\033[2KBenchmarking done.";
+
+
+    say "Computing statistics...\n";
+    open my $FH, '>', $res_file;
+
+    my $longest_str_cipher = max map { length } keys %ciphers;
+    my %lengths = map { $_ => max(6, length($_)) } @opts;
+
+
+    for my $arch (@archs) {
+
+        say "Arch: $arch";
+
+        printf "%*s ", $longest_str_cipher, 'cipher';
+        printf $FH "%*s ", $longest_str_cipher, 'cipher';
+        for my $opt (@opts) {
+            printf "| %*s ", $lengths{$opt}, $opt;
+            printf $FH "| %*s ", $lengths{$opt}, $opt;
+        }
+        printf "\n";
+        printf $FH "\n";
+        printf "-" x ($longest_str_cipher);
+        printf $FH "-" x ($longest_str_cipher);
+        for my $opt (@opts) {
+            print "-|", "-" x ($lengths{$opt}+1);
+            print $FH "-|", "-" x ($lengths{$opt}+1);
+        }
+        printf "\n";
+        printf $FH "\n";
+
+        for my $cipher (sort keys %ciphers) {
+            next if $arch eq 'std' && $cipher =~ /-hs$/;
+            my %mean;
+            for my $opt (@opts) {
+                next unless grep { $_ > 0 } @{$times{$arch}->{$opt}->{$cipher}};
+                @{$times{$arch}->{$opt}->{$cipher}} =
+                    (sort { $a <=> $b } @{$times{$arch}->{$opt}->{$cipher}})
+                    [1 .. $nb_run - 2];
+                ($mean{$arch}->{$opt}->{$cipher}) =
+                    avg_stdev(@{$times{$arch}->{$opt}->{$cipher}});
+            }
+
+            my $ref_mean = $mean{$arch}->{$ref_opt}->{$cipher};
+
+            my @perfs =
+                map {
+                    $mean{$arch}->{$_}->{$cipher} ?
+                        sprintf "%.2f", $mean{$arch}->{$_}->{$cipher} / $ref_mean :
+                        "-"
+                }
+                @opts;
+
+            my @probs =
+                map {
+                    $mean{$arch}->{$_}->{$cipher} ?
+                        do {
+                            my $wilcox = Statistics::Test::WilcoxonRankSum->new();
+                            $wilcox->load_data($times{$arch}->{$_}->{$cipher},
+                                               $times{$arch}->{$ref_opt}->{$cipher});
+                            $wilcox->probability()} :
+                        "-"
+                }
+                @opts;
+
+            my @colors =
+                map {
+                    $_->[0] =~ /\d/ ?
+                        $_->[0] > 0.05 ? 'yellow' : $_->[1] > 1 ? 'red' : 'green' :
+                        'white'
+                }
+                zip_unflatten(@probs, @perfs);
+
+
+            printf "%*s ", $longest_str_cipher, $cipher;
+            printf $FH "%*s ", $longest_str_cipher, $cipher;
+            for my $i (0 .. $#opts) {
+                printf "| %s%*s%s ", color($colors[$i]), $lengths{$opts[$i]},"x$perfs[$i]", color('reset');
+                printf $FH "| %s%*s%s ", color($colors[$i]), $lengths{$opts[$i]},"x$perfs[$i]", color('reset');
+            }
+            printf "\n" ;
+            printf $FH "\n" ;
+        }
+        say "\n";
+        say $FH "\n";
+    }
+    close $FH;
+}
