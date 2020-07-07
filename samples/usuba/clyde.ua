@@ -1,6 +1,6 @@
 # Specification: https://csrc.nist.gov/CSRC/media/Projects/Lightweight-Cryptography/documents/round-1/spec-doc/Spook-spec.pdf
 
-_inline node sbox (x0:v1, x1:v1, x2:v1, x3:v1) returns (y0:v1, y1:v1, y2:v1, y3:v1)
+node sbox (x0:v1, x1:v1, x2:v1, x3:v1) returns (y0:v1, y1:v1, y2:v1, y3:v1)
 let
     y1 = (x0 & x1) ^ x2;
     y0 = (x3 & x0) ^ x1;
@@ -8,7 +8,7 @@ let
     y2 = (y0 & y1) ^ x3
 tel
 
-_inline node sbox_R (x0:v1, x1:v1, x2:v1, x3:v1) returns (y0:v1, y1:v1, y2:v1, y3:v1)
+node sbox_R (x0:v1, x1:v1, x2:v1, x3:v1) returns (y0:v1, y1:v1, y2:v1, y3:v1)
 vars
     y1_R:v1
 let
@@ -19,7 +19,7 @@ let
     y2 = (y0 & y1_R) ^ x3
 tel
 
-_inline node lbox(x,y:u32) returns (xr,yr:u32)
+node lbox(x,y:u32) returns (xr,yr:u32)
 vars
     a, b, c, d: u32
 let
@@ -38,20 +38,20 @@ let
     (xr, yr) = (a,b)
 tel
 
-_no_inline node lbox_layer(state:u32x4) returns (stateR:u32x4)
+node lbox_layer(state:u32x4) returns (stateR:u32x4)
 let
     stateR[0,1] = lbox(state[0], state[1]);
     stateR[2,3] = lbox(state[2], state[3])
 tel
 
-_no_inline node add_rc(state:u32x4, rc:u32x4) returns (stateR:u32x4)
+node add_rc(state:u32x4, rc:u32x4) returns (stateR:u32x4)
 let
     forall i in [0, 3] {
         stateR[i] = state[i] ^ rc[i]
     }
 tel
 
-_no_inline node tweakey (key,tweak:u32x4) returns (tk:u32x4[3])
+node tweakey (key,tweak:u32x4) returns (tk:u32x4[3])
 vars
     tx : u32[2]
 let
