@@ -95,6 +95,20 @@ volatile int __rand = 0;
 static DATATYPE get_random() {
   return __rand;
 }
+#elif defined(POOLING)
+#define POOL_DELAY 65
+#include "main.h"
+extern unsigned long waited;
+extern unsigned long last_rand;
+
+static DATATYPE get_random() {
+  unsigned long now = (unsigned long)DWT->CYCCNT;
+  unsigned long delta = now - last_rand;
+  if (delta < POOL_DELAY) waited += delta;
+  last_rand = now;
+  return now;
+}
+
 #else
 static DATATYPE get_random() {
   srand(time(NULL));
