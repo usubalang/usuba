@@ -41,7 +41,9 @@ module Get_consts = struct
           |env_not_const|. The following 2 asserts make sure of that,
           even though it shouldn't be necessary to check it. *)
     if Hashtbl.mem env_const id then
-      (assert (not (Hashtbl.mem env_not_const id));
+      (if Hashtbl.mem env_not_const id then
+         Printf.printf "%s is both const and not const\n" id.name;
+       assert (not (Hashtbl.mem env_not_const id));
        true)
     else
       (assert (Hashtbl.mem env_not_const id);
@@ -118,11 +120,6 @@ module Get_consts = struct
        let env_const     = Hashtbl.create 10 in
        let env_not_const = Hashtbl.create 10 in
        (* Setting up |env_const|. *)
-       let add_consts (l:p) =
-         List.iter (fun vd -> if is_const vd then
-                                Hashtbl.add env_const vd.vd_id true) l in
-       add_consts def.p_in;
-       add_consts vars;
        if List.length consts_in <> 0 then
          List.iter2 (fun vd b -> if b then Hashtbl.add env_const vd.vd_id true
                                  else Hashtbl.add env_not_const vd.vd_id true)
