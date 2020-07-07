@@ -27,13 +27,13 @@ use List::MoreUtils qw( zip_unflatten );
 my @archs         = qw( std avx );
 my $cc            = 'clang';
 my $header_file   = "$FindBin::Bin/arch";
-my $cflags        = "-march=native -O3 -fno-tree-vectorize -fno-slp-vectorize " .
+my $cflags        = "-march=native -O3 -fno-slp-vectorize -fno-tree-vectorize " .
                     "-Wall -Wextra -Wno-missing-braces -D WARMING=1000 -I $header_file";
 my $bench_nb_run  = 300000;
 my $ua_source_dir = "$FindBin::Bin/samples/usuba";
 my $c_source_dir  = "/tmp/ua-bench/C";
 my $bin_dir       = "/tmp/ua-bench/bin";
-my $ua_flags      = '-gen-bench -no-sched';
+my $ua_flags      = '-gen-bench -unroll';
 my $bench_main    = "$FindBin::Bin/experimentations/bench_generic/bench.c";
 my $res_file      = "/tmp/ua-bench/results.txt";
 my $ua_dir        = "$FindBin::Bin";
@@ -49,7 +49,8 @@ my %ciphers = (
     'DES'          => [ 'des.ua',                '-B' ],
     'Chacha20'     => [ 'chacha20.ua',           '-V' ],
     'Gift-vs'      => [ 'gift.ua',               '-V' ],
-    'Gift-bs'      => [ 'gift_bitslice.ua',      '-B' ],
+    'Gift-fix'     => [ 'gift_fixslice.ua',      '-V' ],
+    'Gift-bs'      => [ 'gift.ua',               '-B' ],
     'Gimli-vs'     => [ 'gimli.ua',              '-V' ],
     'Gimli-bs'     => [ 'gimli_bitslice.ua',     '-B -unroll -inline-all' ],
     'Photon-bs'    => [ 'photon_bitslice.ua',    '-B', '-no-sched' ],
@@ -63,22 +64,16 @@ my %ciphers = (
     'Skinny-bs'    => [ 'skinny_bitslice.ua',    '-B', '-no-pre-sched' ],
     'Spongent'     => [ 'spongent.ua',           '-B' ],
     'Subterranean' => [ 'subterranean.ua',       '-B' ],
+    'Xoodoo-vs'    => [ 'xoodoo.ua',             '-V' ],
+    'Xoodoo-bs'    => [ 'xoodoo.ua',             '-B' ],
     );
-my $nb_run = 20;
+my $nb_run = 30;
 
-#my @opts = @ARGV;
 my @opts = (
-    '',
-    '-inline-all',
     '-no-inline',
-    '-no-linearize-arr',
-    '-unroll',
-    '-unroll -inline-all',
-    '-unroll -no-inline',
-    '-unroll -no-linearize-arr',
-    '-no-arr',
-    '-no-arr -inline-all',
-    '-no-arr -no-inline');
+    '-inline-all',
+    '',
+    '-bench-inline');
 my $ref_opt = $opts[0];
 # If first argument is a number, then this is the number of the opts
 # to use as reference.
@@ -87,9 +82,9 @@ if ($opts[0] =~ /^(\d+)$/) {
     $ref_opt = $opts[$1];
 }
 
-my $make     = 0;
-my $gen      = 0;
-my $compile  = 0;
+my $make     = 1;
+my $gen      = 1;
+my $compile  = 1;
 my $run      = 1;
 
 sub avg_stdev {
@@ -124,9 +119,6 @@ if ($gen) {
             for my $opt (@opts) {
                 my $opt_name = $opt =~ y/ /_/r;
                 my ($ua_file, @specific_opts) = @{$ciphers{$cipher}};
-                say "./usubac $ua_flags $opt @specific_opts -arch $arch -o " .
-                    "$c_source_dir/$cipher-$opt_name-$arch.c " .
-                    "$ua_source_dir/$ua_file";
                 system "./usubac $ua_flags $opt @specific_opts -arch $arch -o " .
                     "$c_source_dir/$cipher-$opt_name-$arch.c " .
                     "$ua_source_dir/$ua_file";
@@ -147,7 +139,7 @@ if ($compile) {
     for my $cipher (sort keys %ciphers) {
         say "\t- $cipher....";
         for my $arch (@archs) {
-            next if $arch eq 'std' && $cipher eq 'AES-hs';
+            next if $arch eq 'std' && $cipher =~ /-hs/;
             for my $opt (@opts) {
                 my $opt_name = $opt =~ y/ /_/r;
                 my $this_nb_run = (grep { $_ eq '-B' } @{$ciphers{$cipher}}) ?
