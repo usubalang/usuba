@@ -1,7 +1,6 @@
 # Specification:
 # https://uwaterloo.ca/communications-security-lab/sites/ca.communications-security-lab/files/uploads/files/ace-spec-round2.pdf
 
-
 node f(x:u32) returns (y:u32)
 let
     y = ((x <<< 5) & refresh(x)) ^ (x <<< 1)
