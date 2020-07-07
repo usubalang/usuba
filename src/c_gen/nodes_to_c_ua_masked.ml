@@ -329,22 +329,47 @@ let gen_bench (node:def) (conf:config) : string =
 "uint32_t bench_speed() {
   /* inputs */
   %s
+
+  /* Preventing inputs from being optimized out */
+  %s
+
   /* outputs */
   %s
-  /* fun call */
+  /* Primitive call */
   %s(%s,%s);
+
+  /* Preventing outputs from being optimized out */
+  %s
 
   /* Returning the number of encrypted bytes */
   return %d;
 }"
+(* inputs *)
   (join "\n  " (List.map (fun s -> s ^ " = { 0 };")
                          (List.map (fun vd -> var_decl_to_c conf vd false) node.p_in)))
+  (join "\n  " (List.map (fun vd ->
+                          let modifier = match vd.vd_typ with
+                            | Uint(_,_,1) -> "r" | _ -> "m" in
+                          sprintf "asm volatile(\"\" : \"+%s\" (%s));" modifier
+                                  (rename vd.vd_id.name)) node.p_in))
+
+  (* outputs *)
   (join "\n  " (List.map (fun s -> s ^ " = { 0 };")
                          (List.map (fun vd -> var_decl_to_c conf vd true) node.p_out)))
+  (* node call *)
   (rename node.id.name)
+  (* node inputs *)
   (join ", " (List.map (fun vd -> rename vd.vd_id.name) node.p_in))
+  (* node outputs *)
   (join ", " (List.map (fun vd ->
                         match vd.vd_typ with
                         | Nat | Uint(_,_,1) -> "&" ^ (rename vd.vd_id.name)
                         | _ -> rename vd.vd_id.name) node.p_out))
+
+  (* keeping outputs alive *)
+  (join "\n  " (List.map (fun vd ->
+                          sprintf "asm volatile(\"\" : \"+m\" (%s));"
+                                  (rename vd.vd_id.name)) node.p_out))
+
+  (* returning number of encrypted bytes *)
   ((List.fold_left (fun sum vd -> sum + (Nodes_to_c.get_typ_size conf vd.vd_typ)) 0 node.p_out) / 8)
