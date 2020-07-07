@@ -1,3 +1,5 @@
+# Bitsliced version, without key-schedule
+# Specification: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf
 
 table SubBytes_single (input:v8) returns (output:v8) {
     99, 124, 119, 123, 242, 107, 111, 197, 48, 1, 103, 43, 254, 215, 171, 118,
@@ -41,7 +43,6 @@ let
 tel
 
 node MixColumn_single (inp:b8[4]) returns (out:b8[4])
-vars
 let
     out[0] = times2(inp[0]) ^ times3(inp[1]) ^ inp[2] ^ inp[3];
     out[1] = inp[0] ^ times2(inp[1]) ^ times3(inp[2]) ^ inp[3];
@@ -50,7 +51,6 @@ let
 tel
 
 node MixColumn (inp:b32[4]) returns (out:b32[4])
-vars
 let
     forall i in [0,3] {
        out[i] = MixColumn_single(inp[i])
@@ -77,5 +77,4 @@ let
 
     # Last (10th) round (no MixColumn)
     cipher = AddRoundKey(ShiftRows(SubBytes(tmp[9])), key[10])
-
 tel

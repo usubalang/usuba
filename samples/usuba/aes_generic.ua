@@ -1,3 +1,6 @@
+# V-sliced version, without key-schedule
+# Specification: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf
+
 _no_inline table SubBytes (input:v8) returns (output:v8) {
     99, 124, 119, 123, 242, 107, 111, 197, 48, 1, 103, 43, 254, 215, 171, 118,
     202, 130, 201, 125, 250, 89, 71, 240, 173, 212, 162, 175, 156, 164, 114, 192,
