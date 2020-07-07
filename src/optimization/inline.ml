@@ -118,7 +118,8 @@ and can_inline env inlined conf (node:def) : bool =
   else if is_call_free env inlined conf node then
     (* Node doesn't contain any function call that should be inlined
        -> heuristically deciding to inline it or not *)
-    (not (is_noinline node)) && (should_inline_heuristic node)
+    (is_inline node) ||
+      ((not (is_noinline node)) && (should_inline_heuristic node))
   else
     false
 
