@@ -22,24 +22,23 @@ use JSON;
 use POSIX qw( strftime );
 use Term::ANSIColor;
 use Statistics::Test::WilcoxonRankSum;
+use List::MoreUtils qw( zip_unflatten );
 
-my @archs         = qw( std avx );
-my @inlinings     = ('-inline-all', '-no-inline', '');
-my $ref_inline    = ""; # Inlining option to use as reference
+my @archs         = qw( std sse avx );
 my $cc            = 'clang';
 my $header_file   = "$FindBin::Bin/../../arch";
-my $cflags        = "-march=native -O3 -fno-tree-vectorize -fno-slp-vectorize " .
+my $cflags        = "-march=native -O3 -fno-slp-vectorize -fno-tree-vectorize " .
                     "-Wall -Wextra -Wno-missing-braces -D WARMING=1000 -I $header_file";
 my $bench_nb_run  = 300000;
 my $ua_source_dir = "$FindBin::Bin/../../samples/usuba";
-my $c_source_dir  = "$FindBin::Bin/C";
-my $bin_dir       = "$FindBin::Bin/bin";
-my $ua_flags      = '-gen-bench';
-my $bench_main    = "$FindBin::Bin/bench.c";
-my $res_dir       = "$FindBin::Bin/results";
+my $c_source_dir  = "/tmp/ua-bench-inlining/C";
+my $bin_dir       = "/tmp/ua-bench-inlining/bin";
+my $ua_flags      = '-gen-bench -unroll -sched-n 4';
+my $bench_main    = "$FindBin::Bin/../../experimentations/bench_generic/bench.c";
+my $res_file      = "/tmp/ua-bench-inlining/results.txt";
 my $ua_dir        = "$FindBin::Bin/../..";
 my %ciphers = (
-    'AES-bs'       => [ 'aes.ua',                '-B' ],
+    'AES-bs'       => [ 'aes.ua',                '-B', '-no-sched' ],
     'AES-hs'       => [ 'aes_mslice.ua',         '-H' ],
     'ACE-vs'       => [ 'ace.ua',                '-V' ],
     'ACE-bs'       => [ 'ace_bitslice.ua',       '-B' ],
@@ -50,7 +49,8 @@ my %ciphers = (
     'DES'          => [ 'des.ua',                '-B' ],
     'Chacha20'     => [ 'chacha20.ua',           '-V' ],
     'Gift-vs'      => [ 'gift.ua',               '-V' ],
-    'Gift-bs'      => [ 'gift_bitslice.ua',      '-B' ],
+    'Gift-fix'     => [ 'gift_fixslice.ua',      '-V' ],
+    'Gift-bs'      => [ 'gift.ua',               '-B' ],
     'Gimli-vs'     => [ 'gimli.ua',              '-V' ],
     'Gimli-bs'     => [ 'gimli_bitslice.ua',     '-B -unroll -inline-all' ],
     'Photon-bs'    => [ 'photon_bitslice.ua',    '-B', '-no-sched' ],
@@ -61,16 +61,29 @@ my %ciphers = (
     'Rectangle-hs' => [ 'rectangle.ua',          '-H', '-interleave 2' ],
     'Rectangle-bs' => [ 'rectangle_bitslice.ua', '-B' ],
     'Serpent'      => [ 'serpent.ua',            '-V', '-interleave 2' ],
-    'Skinny-bs'    => [ 'skinny_bitslice.ua',    '-B' ],
+    'Skinny-bs'    => [ 'skinny_bitslice.ua',    '-B', '-no-pre-sched' ],
     'Spongent'     => [ 'spongent.ua',           '-B' ],
     'Subterranean' => [ 'subterranean.ua',       '-B' ],
+    'Xoodoo-vs'    => [ 'xoodoo.ua',             '-V' ],
+    'Xoodoo-bs'    => [ 'xoodoo.ua',             '-B' ],
     );
-my $nb_run = 20;
+my $nb_run = 30;
+my @opts = (
+    '-no-inline',
+    '-inline-all',
+    '');
+my $ref_opt = $opts[0];
+# If first argument is a number, then this is the number of the opts
+# to use as reference.
+if ($opts[0] =~ /^(\d+)$/) {
+    @opts    = @opts[1 .. $#opts];
+    $ref_opt = $opts[$1];
+}
 
-my $make     = !@ARGV || "@ARGV" =~ /-m/;
-my $gen      = !@ARGV || "@ARGV" =~ /-g/;
-my $compile  = !@ARGV || "@ARGV" =~ /-c/;
-my $run      = !@ARGV || "@ARGV" =~ /-r/;
+my $make     = 0;
+my $gen      = 0;
+my $compile  = 1;
+my $run      = 1;
 
 sub avg_stdev {
     my $u = sum(@_) / @_; # mean
@@ -100,11 +113,13 @@ if ($gen) {
     for my $cipher (sort keys %ciphers) {
         say "\t- $cipher....";
         for my $arch (@archs) {
-            for my $inline (@inlinings) {
-                next if $arch eq 'std' && $cipher =~ /-hs$/;
-                my ($ua_file, @opts) = @{$ciphers{$cipher}};
-                system "./usubac $ua_flags $inline -arch $arch -o " .
-                    "$c_source_dir/$cipher$inline-$arch.c @opts " .
+            next if $arch ne 'avx'; # The compilation will be the same for all arch
+            next if $arch eq 'std' && $cipher =~ /-hs$/;
+            for my $opt (@opts) {
+                my $opt_name = $opt =~ y/ /_/r;
+                my ($ua_file, @specific_opts) = @{$ciphers{$cipher}};
+                system "./usubac $ua_flags $opt @specific_opts -arch $arch -o " .
+                    "$c_source_dir/$cipher-$opt_name.c " .
                     "$ua_source_dir/$ua_file";
             }
         }
@@ -123,11 +138,13 @@ if ($compile) {
     for my $cipher (sort keys %ciphers) {
         say "\t- $cipher....";
         for my $arch (@archs) {
-            for my $inline (@inlinings) {
-                next if $arch eq 'std' && $cipher eq 'AES-hs';
+            next if $arch eq 'std' && $cipher =~ /-hs/;
+            for my $opt (@opts) {
+                my $opt_name = $opt =~ y/ /_/r;
                 my $this_nb_run = (grep { $_ eq '-B' } @{$ciphers{$cipher}}) ?
                     $bench_nb_run / 20 : $bench_nb_run;
-                system "$cc $cflags -D NB_RUN=$this_nb_run $bench_main $c_source_dir/$cipher$inline-$arch.c -o $bin_dir/$cipher$inline-$arch";
+                system "perl -pe 's/AVX\.h/uc($arch) . \".h\"/e' $c_source_dir/$cipher-$opt_name.c > $c_source_dir/$cipher-$opt_name-$arch.c";
+                system "$cc $cflags -D NB_RUN=$this_nb_run $bench_main $c_source_dir/$cipher-$opt_name-$arch.c -o $bin_dir/$cipher$opt_name-$arch";
             }
         }
     }
@@ -146,9 +163,10 @@ if ($run) {
             print "\r\033[2K\t- $cipher ($_ / $nb_run)";
             for my $arch (@archs) {
                 next if $arch eq 'std' && $cipher =~ /-hs$/;
-                for my $inline (@inlinings) {
-                    push @{$times{$arch}->{$inline}->{$cipher}},
-                        0+(`$bin_dir/$cipher$inline-$arch` =~ s/^\d+(\.\d+)?\K.*\n?//r);
+                for my $opt (@opts) {
+                    my $opt_name = $opt =~ y/ /_/r;
+                    push @{$times{$arch}->{$opt}->{$cipher}},
+                        0+(`$bin_dir/$cipher$opt_name-$arch` =~ s/^\d+(\.\d+)?\K.*\n?//r);
                 }
             }
         }
@@ -157,60 +175,87 @@ if ($run) {
 
 
     say "Computing statistics...\n";
-    make_path $res_dir unless -d $res_dir;
-    my $res_file = "$res_dir/result.txt";
     open my $FH, '>', $res_file;
 
     my $longest_str_cipher = max map { length } keys %ciphers;
+    my %lengths = map { $_ => max(6, length($_)) } @opts;
 
 
     for my $arch (@archs) {
 
         say "Arch: $arch";
 
-        say join "-+-", ("-" x ($longest_str_cipher)), map { "-" x 8 } 1 .. 3;
-        printf "%*s | %16s | %16s | %16s\n", $longest_str_cipher, 'cipher',
-            'no-inline', '-inline-all', 'auto-inline';
-        say join "-+-", ("-" x ($longest_str_cipher)), map { "-" x 8 } 1 .. 3;
+        printf "%*s ", $longest_str_cipher, 'cipher';
+        printf $FH "%*s ", $longest_str_cipher, 'cipher';
+        for my $opt (@opts) {
+            printf "| %*s ", $lengths{$opt}, $opt;
+            printf $FH "| %*s ", $lengths{$opt}, $opt;
+        }
+        printf "\n";
+        printf $FH "\n";
+        printf "-" x ($longest_str_cipher);
+        printf $FH "-" x ($longest_str_cipher);
+        for my $opt (@opts) {
+            print "-|", "-" x ($lengths{$opt}+1);
+            print $FH "-|", "-" x ($lengths{$opt}+1);
+        }
+        printf "\n";
+        printf $FH "\n";
 
         for my $cipher (sort keys %ciphers) {
             next if $arch eq 'std' && $cipher =~ /-hs$/;
             my %mean;
-            for my $inline (@inlinings) {
-                @{$times{$arch}->{$inline}->{$cipher}} =
-                    (sort { $a <=> $b } @{$times{$arch}->{$inline}->{$cipher}})
+            for my $opt (@opts) {
+                next unless grep { $_ > 0 } @{$times{$arch}->{$opt}->{$cipher}};
+                @{$times{$arch}->{$opt}->{$cipher}} =
+                    (sort { $a <=> $b } @{$times{$arch}->{$opt}->{$cipher}})
                     [1 .. $nb_run - 2];
-                ($mean{$arch}->{$inline}->{$cipher}) =
-                    avg_stdev(@{$times{$arch}->{$inline}->{$cipher}});
+                ($mean{$arch}->{$opt}->{$cipher}) =
+                    avg_stdev(@{$times{$arch}->{$opt}->{$cipher}});
             }
 
-            my $ref_mean = $mean{$arch}->{"-no-inline"}->{$cipher};
+            my $ref_mean = $mean{$arch}->{$ref_opt}->{$cipher};
 
-            my ($perf_all, $perf_auto) =
-                map { sprintf "%.2f", $mean{$arch}->{$_}->{$cipher} / $ref_mean }
-                "-inline-all", "";
+            my @perfs =
+                map {
+                    $mean{$arch}->{$_}->{$cipher} ?
+                        sprintf "%.2f", $mean{$arch}->{$_}->{$cipher} / $ref_mean :
+                        "-"
+                }
+                @opts;
 
-            my ($prob_all, $prob_auto) =
-                map { my $wilcox = Statistics::Test::WilcoxonRankSum->new();
-                      $wilcox->load_data($times{$arch}->{$_}->{$cipher},
-                                         $times{$arch}->{"-no-inline"}->{$cipher});
-                      $wilcox->probability() }
-                "-inline-all", "";
+            my @probs =
+                map {
+                    $mean{$arch}->{$_}->{$cipher} ?
+                        do {
+                            my $wilcox = Statistics::Test::WilcoxonRankSum->new();
+                            $wilcox->load_data($times{$arch}->{$_}->{$cipher},
+                                               $times{$arch}->{$ref_opt}->{$cipher});
+                            $wilcox->probability()} :
+                        "-"
+                }
+                @opts;
 
-            my ($color_all, $color_auto) =
-                map { $_->[0] > 0.05 ? 'yellow' : $_->[1] > 1 ? 'red' : 'green' }
-                [$prob_all, $perf_all], [$prob_auto, $perf_auto];
+            my @colors =
+                map {
+                    $_->[0] =~ /\d/ ?
+                        $_->[0] > 0.05 ? 'yellow' : $_->[1] > 1 ? 'red' : 'green' :
+                        'white'
+                }
+                zip_unflatten(@probs, @perfs);
 
 
-            printf "%*s | %16s | %s%16s%s | %s%16s%s\n",
-                $longest_str_cipher, $cipher, 1,
-                color($color_all), "x$perf_all", color('reset'),
-                color($color_auto),  "x$perf_auto",  color('reset');
-            printf $FH "%*s | %16s | %16s | %16s\n",
-                $longest_str_cipher, $cipher, 1,
-                "x$perf_all", "x$perf_auto";
+            printf "%*s ", $longest_str_cipher, $cipher;
+            printf $FH "%*s ", $longest_str_cipher, $cipher;
+            for my $i (0 .. $#opts) {
+                printf "| %s%*s%s ", color($colors[$i]), $lengths{$opts[$i]},"x$perfs[$i]", color('reset');
+                printf $FH "| %s%*s%s ", color($colors[$i]), $lengths{$opts[$i]},"x$perfs[$i]", color('reset');
+            }
+            printf "\n" ;
+            printf $FH "\n" ;
         }
         say "\n";
+        say $FH "\n";
     }
     close $FH;
 }
