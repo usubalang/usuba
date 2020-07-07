@@ -1,3 +1,6 @@
+# Bitsliced version
+# Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/gift-cofb-spec-round2.pdf
+
 // We use a different source file for the bitsliced and vsliced codes
 // of Gift, because PermBits can be written somewhat more simply when
 // doing bitslicing by using a bit permutation (done through indexing
