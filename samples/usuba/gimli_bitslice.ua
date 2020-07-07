@@ -1,3 +1,6 @@
+# Bitsliced version
+# Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/gimli-spec-round2.pdf
+
 # Due to a bug in Usuba, the generic version (which uses u32) cannot
 # be directly bitsliced by Usuba. This is why there are two versions
 # of Gimli here: the first one uses u32 while the second one uses b32.

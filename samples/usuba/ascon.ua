@@ -1,3 +1,6 @@
+# Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/ascon-spec-round2.pdf
+# Misc.:
+#   https://ascon.iaik.tugraz.at/
 
 table Sbox(x:v5) returns (y:v5) {
   0x4,  0xb,  0x1f, 0x14, 0x1a, 0x15, 0x9,  0x2,

@@ -1,3 +1,5 @@
+# Specification: https://tools.ietf.org/html/rfc7539
+
 node QR_start (a:u128<4>x1, b:u128<4>x1, c:u128<4>x1, d:u128<4>x1)
      returns (aR:u128<4>x1, bR:u128<4>x1, cR:u128<4>x1, dR:u128<4>x1)
 let

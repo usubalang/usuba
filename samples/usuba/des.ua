@@ -1,3 +1,5 @@
+# Specification: https://csrc.nist.gov/csrc/media/publications/fips/46/3/archive/1999-10-25/documents/fips46-3.pdf
+
 _no_inline table[] sbox (a:b6) returns ( out:b4 ) [
 {
     14, 0, 4, 15, 13, 7, 1, 4, 2, 14, 15, 2, 11, 13, 8, 1,

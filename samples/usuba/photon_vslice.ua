@@ -1,3 +1,6 @@
+# H-sliced version
+# Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/photon-beetle-spec-round2.pdf
+
 # Note that Photon Vslice is not valid Usuba per-se: it uses a table,
 # which cannot be converted to a circuit given how it's called. (well,
 # it would be doable, but would require a lot of machinery in the

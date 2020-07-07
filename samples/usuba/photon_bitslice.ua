@@ -1,3 +1,6 @@
+# Bitsliced version
+# Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/photon-beetle-spec-round2.pdf
+
 _no_inline table Sbox (x:b4) returns (y:b4) {
     12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2
 }

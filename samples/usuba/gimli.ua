@@ -1,3 +1,6 @@
+# V-sliced version
+# Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/gimli-spec-round2.pdf
+
 node SPbox_Rx (col:u32[3]) returns (colR:u32[3])
 vars
     x, y, z, x_R : u32

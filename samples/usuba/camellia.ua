@@ -1,3 +1,6 @@
+# Specification: https://info.isl.ntt.co.jp/crypt/eng/camellia/dl/01espec.pdf
+# Misc.:
+#   https://info.isl.ntt.co.jp/crypt/eng/camellia/
 
 _no_inline table SBOX1 (a:u8) returns (b:u8) {
  112, 130,  44, 236, 179,  39, 192, 229, 228, 133,  87,  53, 234,  12, 174,  65,

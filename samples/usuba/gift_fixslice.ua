@@ -1,3 +1,9 @@
+# Fixsliced version
+# Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/gift-cofb-spec-round2.pdf
+# About this implementation:
+#     Fixslicing: A New GIFT Representation
+#     https://eprint.iacr.org/2020/412
+
 node Sbox(S0,S1,S2,S3:v1) returns (S':v4)
 let
     S1 ^:= S0 & S2;

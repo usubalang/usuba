@@ -1,3 +1,4 @@
+# Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/drygascon-spec-round2.pdf
 
 table Sbox(x:v5) returns (y:v5) {
   0x4,  0xb,  0x1f, 0x14, 0x1a, 0x15, 0x9,  0x2,

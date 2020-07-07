@@ -1,3 +1,5 @@
+# Specification: https://csrc.nist.gov/CSRC/media/Projects/Lightweight-Cryptography/documents/round-1/spec-doc/Spook-spec.pdf
+
 _inline node sbox (x0:v1, x1:v1, x2:v1, x3:v1) returns (y0:v1, y1:v1, y2:v1, y3:v1)
 let
     y1 = (x0 & x1) ^ x2;
