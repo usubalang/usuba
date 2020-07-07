@@ -102,7 +102,7 @@ static DATATYPE get_random() {
 }
 #endif
 
-static void isw_mult(DATATYPE *res, const DATATYPE *op1, const DATATYPE *op2) {
+static void __attribute__((noinline)) isw_mult(DATATYPE *res, const DATATYPE *op1, const DATATYPE *op2) {
   int i,j;
   DATATYPE rnd;
 
@@ -123,7 +123,7 @@ static void isw_mult(DATATYPE *res, const DATATYPE *op1, const DATATYPE *op2) {
 
 #define REFRESH isw_refresh
 
-static void isw_refresh(DATATYPE *res, const DATATYPE *in) {
+static void __attribute__((noinline)) isw_refresh(DATATYPE *res, const DATATYPE *in) {
   int i,j;
   DATATYPE rnd;
 
