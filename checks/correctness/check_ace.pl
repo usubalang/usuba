@@ -39,7 +39,7 @@ for my $slicing ('vslice', 'bitslice') {
     # Compiling Usuba Clyde.
     say "Compiling Ace from Usuba to C...";
     my $slicing_flag = $slicing eq 'vslice' ? '-V' : '-B';
-    error if system "./usubac $slicing_flag -o $temp_dir/ace_ua_$slicing.c -arch std -no-sched samples/usuba/ace.ua";
+    error if system "./usubac $slicing_flag -o $temp_dir/ace_ua_$slicing.c -arch std samples/usuba/ace.ua";
 
     chdir $temp_dir;
     copy $_, "." for glob "$FindBin::Bin/ace/*";
