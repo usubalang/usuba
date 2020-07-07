@@ -46,11 +46,6 @@ INLINING="-light-inline"
 # Spongent bitslice
 ./usubac -gen-bench $INLINING -bits-per-reg 32 -check-tbl -B -no-sched -o nist/spongent/usuba/bench/spongent_ua_bitslice.c -arch std -no-share nist/spongent/usuba/ua/spongent.ua
 
-# Drygascon bitslice
-./usubac -gen-bench $INLINING -bits-per-reg 32 -no-sched -B -o nist/drygascon/usuba/bench/drygascon_ua_bitslice.c nist/drygascon/usuba/ua/drygascon.ua
-# Drygascon vslice
-./usubac -gen-bench $INLINING -no-sched -V -o nist/drygascon/usuba/bench/drygascon_ua_vslice.c nist/drygascon/usuba/ua/drygascon.ua
-
 # Subterranean bitslice
 ./usubac -gen-bench $INLINING -bits-per-reg 32 -no-sched -B -o nist/subterranean/usuba/bench/subterranean_ua_bitslice.c nist/subterranean/usuba/ua/subterranean.ua
 
