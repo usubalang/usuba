@@ -48,7 +48,7 @@ exception Fatal_type_error
    parameter or something like that. *)
 exception Uncomputable
 
-(* On the otber hand, when an error that doesn't prevent typing the
+(* On the other hand, when an error that doesn't prevent typing the
    current node is encountered, |error| is just set to true. *)
 let error = ref false
 
@@ -124,6 +124,7 @@ let rec eval_arith (backtrace:string list)
      | Div -> x' / y'
      | Mod -> if x' >= 0 then x' mod y' else y' + (x' mod y')
 
+
 (* Expands a typ into basic types (Uint(_,_,1) or Nat) *)
 (* No |backtrace| or error handling: I don't see anything that could
    go wrong. *)
@@ -133,6 +134,11 @@ let rec expand_typ (typ:typ) : typ list =
   | Uint(d,m,n) -> List.map (fun _ -> Uint(d,m,1)) (gen_list_int n)
   | Array(t,n)  -> flat_map (fun _ -> expand_typ t) (gen_list_int (eval_arith_ne n))
   | Nat         -> [ Nat ]
+
+(* Returns the size of a type, where size is defined as its
+   length. Called on a bitsliced type, it can be used to rebuild a bn
+   from n b1. On a vsliced type, this is probably not that useful.. *)
+let typ_size (typ:typ) : int = List.length (expand_typ typ)
 
 (* Helper function to check that |idx| is less than the size |v_size|
    of the array it is indexing. *)
@@ -521,6 +527,85 @@ let rec get_expr_type
           let def = Hashtbl.find env_fun f in
           List.map (fun vd -> vd.vd_typ) def.p_out)
 
+(* Sets the type of all untyped consts in |e| to |typ| (not in
+   function calls though). *)
+let rec set_consts_type (typ:typ) (e:expr) : expr =
+  match e with
+  | Const(c,None)   -> Const(c,Some typ)
+  | Tuple l         -> Tuple (List.map (set_consts_type typ) l)
+  | _ -> e
+
+(* Returns the amount of untyped Const (but not within a function
+   call) in |e|. This function is used to know wether we need to be
+   clever to type an eventual Const. *)
+let rec count_untyped_consts (e:expr) : int =
+  match e with
+  | Const(_,None) -> 1
+  | Tuple l       -> List.fold_left (fun tot e -> tot + (count_untyped_consts e)) 0 l
+  | _             -> 0
+
+(* Returns the amount of bits in |e|, except for the bits occupied by
+   untyped constants. The idea being that if |e| contains |n| untyped
+   constants, |k| bits, and is supposed to be |l| bits long, then each
+   constant should have size (l-k)/n. *)
+let rec get_nonconsts_bits (backtrace:string list)
+                           (env_fun:(ident,def) Hashtbl.t)
+                           (env_var:(ident,typ) Hashtbl.t)
+                           (env_it:(ident,int) Hashtbl.t)
+                           (e:expr) : int =
+  let rec_call = get_nonconsts_bits backtrace env_fun env_var env_it in
+  let var_size (v:var) : int = typ_size (get_var_type backtrace env_var env_it v) in
+  match e with
+  | Const(_,Some typ) -> typ_size typ
+  | Const(_,None)     -> 0
+  | ExpVar v          -> var_size v
+  | Tuple l           -> List.fold_left (fun tot e -> tot + (rec_call e)) 0 l
+  | Not e             -> rec_call e
+  | Shift(_,e,_)      -> rec_call e
+  | Log(_,x,y)        -> max (rec_call x) (rec_call y)
+  | Shuffle(v,_)      -> var_size v
+  | Arith(_,x,y)      -> max (rec_call x) (rec_call y)
+  | Fun(f,_)
+  | Fun_v(f,_,_)      ->
+     let def = Hashtbl.find env_fun f in
+     List.fold_left (fun tot vd -> typ_size vd.vd_typ) 0 def.p_out
+
+(* Gives a type to bitslice constants *)
+let rec fix_consts_types (backtrace:string list)
+                         (env_fun:(ident,def) Hashtbl.t)
+                         (env_var:(ident,typ) Hashtbl.t)
+                         (env_it:(ident,int) Hashtbl.t)
+                         (lhs_types:typ list)
+                         (e:expr) : expr =
+  let n_consts = count_untyped_consts e in
+  let bitslice = List.exists (fun typ -> match typ with
+                                         | Uint(_,Mint m,_) -> m = 1
+                                         | _ -> false) lhs_types in
+  if n_consts = 0 || bitslice = false then
+    e (* Nothing to do *)
+  else
+    (* Gonna heuristically type constants. We need to find out the
+       amount of bits left in the Tuple: we'll split them evenly
+       between the |n| Consts. (note that here, we are necessarily in
+       bitslice mode) *)
+    (let nonconsts_bits = get_nonconsts_bits backtrace env_fun env_var env_it e in
+     let lhs_size = List.fold_left (fun tot typ -> tot + (typ_size typ)) 0 lhs_types in
+     let consts_bits = lhs_size - nonconsts_bits in
+     if consts_bits mod n_consts <> 0 then (
+       eprintf "[Type error] in (%s), %d constants to fit in %d bits; cannot guess what to do.\n"
+               (expr_to_str e) n_consts consts_bits;
+       print_backtrace backtrace;
+       error := true;
+       (* Returning the expression as is just to not die at the first
+          error; but since |error| was just set, this result will
+          never be used. *)
+       e
+     ) else (
+       let const_size = consts_bits / n_consts in
+       (* Typing all consts in |e| with the same type *)
+       set_consts_type (Uint(Bslice,Mint 1,const_size)) e
+     )
+    )
 
 (* Checks that the type of |e| is |lhs_types|. |lhs_types| has been
    obtained by typing the lhs that |e| is being assigned to.
@@ -528,27 +613,40 @@ let rec get_expr_type
 (* |lhs_types| is mutable in order to facilitate typing of
    subexpressions *)
 let rec type_expr (backtrace:string list)
-          (env_fun:(ident,def) Hashtbl.t)
-          (env_var:(ident,typ) Hashtbl.t)
-          (env_it:(ident,int) Hashtbl.t)
-          (lhs_types:typ list ref)
-          (e:expr) : expr =
+                  (env_fun:(ident,def) Hashtbl.t)
+                  (env_var:(ident,typ) Hashtbl.t)
+                  (env_it:(ident,int) Hashtbl.t)
+                  (lhs_types:typ list ref)
+                  (e:expr) : expr =
   let backtrace = (sprintf "type_expr(%s)" (expr_to_str e)) :: backtrace in
   let rec_call = type_expr backtrace env_fun env_var env_it lhs_types in
+  let e = fix_consts_types backtrace env_fun env_var env_it !lhs_types e in
   match e with
   | Const(n,None) ->
-     (* A Const -> need to:
-          - type it using (List.hd !lhs_types)
+     (* A Const ->
+          - since fix_consts_types has already ran, the Const is either:
+             * msliced, in which case its type should be (List.hd !lhs_types)
+             * bitsliced, in which case its type should be (!lhs_types)
+               (in that case, it was not typed by fix_consts_types because
+                it's not part of a Tuple)
+        Additionally, we need to:
           - make sure its type is Nat or Uint(_,_,1)
           - if its type is Uint(_,_,1), make sure it fits within *)
-     let typ =
-       (match !lhs_types with
-        | hd :: tl -> lhs_types := tl;
-                      hd
-        | _ -> eprintf "[Type error] Unbalanced left/right types: trying to type [Const %d]: nothing to match with.\n"
-                 n;
-               print_backtrace backtrace;
-               raise Fatal_type_error) in
+     let bitslice = List.exists (fun typ -> match typ with
+                                            | Uint(_,Mint m,_) -> m = 1
+                                            | _ -> false) !lhs_types in
+     let typ = if bitslice then
+                 let typ = Uint(Bslice,Mint 1,List.length !lhs_types) in
+                 lhs_types := [];
+                 typ
+               else
+                 match !lhs_types with
+                 | hd :: tl -> lhs_types := tl;
+                               hd
+                 | _ -> eprintf "[Type error] Unbalanced left/right types: trying to type [Const %d]: nothing to match with.\n"
+                                n;
+                        print_backtrace backtrace;
+                        raise Fatal_type_error in
      (* Making sure that n will fit in its type *)
      (match typ with
       | Nat -> () (* nothing do do *)
@@ -556,12 +654,12 @@ let rec type_expr (backtrace:string list)
          (* TODO: remove this "i < 63"; handle that better throughout Usubac *)
          if i < 63 && pow 2 i <= n then
            (eprintf "[Type error] Constant 0x%x doesn't fit in %d bits (inferred type: %s --> max=%d).\n"
-              n i (typ_to_str typ) (pow 2 i);
+                    n i (typ_to_str typ) (pow 2 i);
             print_backtrace backtrace;
             error := true)
       | Uint(_,Mvar _,_) ->
          eprintf "[Type error] Cannot make sure that const 0x%x fits in a type with polymorphic word-size (%s).\n"
-           n (typ_to_str typ);
+                 n (typ_to_str typ);
          print_backtrace backtrace;
          error := true
       | _ -> assert false
@@ -581,17 +679,12 @@ let rec type_expr (backtrace:string list)
         not want to fully expand some variables) *)
      let vl = expand_var backtrace env_var env_it v in
      let typs = flat_map expand_typ
-                  (List.map (get_var_type backtrace env_var env_it) vl) in
+                         (List.map (get_var_type backtrace env_var env_it) vl) in
      match_types_asgn backtrace typs lhs_types;
      (* Returning v unchanged *)
      ExpVar v
-  | Tuple l  ->
-     (* A Tuple. Only need to reccursively call type_expr on its
-        component. *)
-     Tuple(List.map rec_call l)
-  | Not e    ->
-     (* A not. Reccursive call is enough *)
-     Not(rec_call e)
+  | Tuple l  -> Tuple(List.map rec_call l)
+  | Not e    -> Not(rec_call e)
   | Shift(op,e,ae) ->
      (* A shift. Reccursive call is enough since there is nothing to
         actually check: Shifts are defined over both arrays an atomic
@@ -613,8 +706,8 @@ let rec type_expr (backtrace:string list)
      let y' = rec_call y in
      (* Making sure x' and y' have the same type *)
      match_types_binop backtrace
-       (get_expr_type env_fun env_var env_it x')
-       (get_expr_type env_fun env_var env_it y');
+                       (get_expr_type env_fun env_var env_it x')
+                       (get_expr_type env_fun env_var env_it y');
      (* Returning the new expr *)
      Log(op,x',y')
   | Arith(op,x,y) ->
@@ -660,7 +753,7 @@ let rec type_expr (backtrace:string list)
            Fun(f,[type_expr backtrace env_fun env_var env_it lhs_types (ExpVar v)])
         | _ -> eprintf "[Type error] refresh can only take variables as arguments for now.\n";
                print_backtrace backtrace;
-                  raise Fatal_type_error)
+               raise Fatal_type_error)
      else
        (let f = match Hashtbl.find_opt env_fun f with
           | Some def -> def
@@ -672,7 +765,13 @@ let rec type_expr (backtrace:string list)
         let param_types =
           ref (flat_map expand_typ
                         (List.map (fun vd -> vd.vd_typ) f.p_in)) in
-        let typed_l = List.map (type_expr backtrace env_fun env_var env_it param_types) l in
+        (* Reccursive call on a Tuple in order to have the reccursive
+           call on a single expr so that the Const typing rule
+           (fix_consts_types) will work correctly *)
+        let typed_l =
+          match type_expr backtrace env_fun env_var env_it param_types (Tuple l) with
+          | Tuple l' -> l'
+          | _ -> assert false (* Definitely not possible *) in
         (* if |param_types| is not empty, then |vs| is larger than |e| *)
         if !param_types <> [] then
           (eprintf "[Type error] Unbalanced left/right types: type of rhs is smaller than type of lhs. Remains: %s.\n"
@@ -706,11 +805,11 @@ let rec type_expr (backtrace:string list)
          let ae = eval_arith backtrace env_var env_it ae in
          if ae >= size then
            (eprintf "[Type error] Out of bounds access in `%s' (Multiple of size %d): index %d.\n"
-              f.id.name size ae;
+                    f.id.name size ae;
             print_backtrace backtrace;
             error := true);
       | _ -> eprintf "[Type error] Accessing non-Multiple `%s' as a Multiple.\n"
-               f.id.name;
+                     f.id.name;
              print_backtrace backtrace;
              error := true);
      Fun_v(f.id, ae, typed_l)
