@@ -39,13 +39,15 @@ module Must_inline = struct
     | ExpVar _       -> false
     | Tuple l        -> List.exists (must_inline_expr env_var env_in) l
     | Not e'         -> must_inline_expr env_var env_in e'
-    | Shift(_,e',ae) -> (must_inline_expr env_var env_in e') ||
-                          (must_inline_shift env_var env_in e' ae)
     | Log(_,x,y)     -> (must_inline_expr env_var env_in x) ||
                           (must_inline_expr env_var env_in y)
-    | Shuffle _      -> false
     | Arith(_,x,y)   -> (must_inline_expr env_var env_in x) ||
                           (must_inline_expr env_var env_in y)
+    | Shift(_,e',ae) -> (must_inline_expr env_var env_in e') ||
+                          (must_inline_shift env_var env_in e' ae)
+    | Shuffle _      -> false
+    | Mask(e',_)     -> must_inline_expr env_var env_in e'
+    | Pack(l,_)      -> List.exists (must_inline_expr env_var env_in) l
     | Fun(_,l)       -> List.exists (must_inline_expr env_var env_in) l
     | Fun_v(_,_,l)   -> List.exists (must_inline_expr env_var env_in) l
 

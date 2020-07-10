@@ -41,10 +41,10 @@ let do_shift (env_var:(ident,typ) Hashtbl.t) (op:shift_op)
 (* TODO: I'm pretty sure this doesn't cover every cases *)
 let rec shift (env_var:(ident,typ) Hashtbl.t) (op:shift_op) (e:expr) (n:int) : expr =
   match e with
-  | Const _ -> Shift(op,e,Const_e n)
+  | Const _  -> Shift(op,e,Const_e n)
   | ExpVar _ -> Shift(op,e,Const_e n)
-  | Tuple l -> Tuple(do_shift env_var op l n)
-  | Not(e) -> Not(shift env_var op e n)
+  | Tuple l  -> Tuple(do_shift env_var op l n)
+  | Not(e)   -> Not(shift env_var op e n)
   | Shift(op',e',Const_e n') ->
      let t = shift env_var op' e' n' in
      if t = e then
@@ -56,8 +56,10 @@ let rec shift (env_var:(ident,typ) Hashtbl.t) (op:shift_op) (e:expr) (n:int) : e
 let rec shift_expr (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
   match e with
   | ExpVar _ | Const _ -> e
-  | Tuple l -> Tuple(List.map (shift_expr env_var) l)
-  | Not e' -> Not (shift_expr env_var e')
+  | Tuple l       -> Tuple(List.map (shift_expr env_var) l)
+  | Not e'        -> Not (shift_expr env_var e')
+  | Log(op,x,y) -> Log(op,shift_expr env_var x,shift_expr env_var y)
+  | Arith(op,x,y) -> Arith(op,shift_expr env_var x,shift_expr env_var y)
   | Shift(op,e,n) ->
      let e' = shift_expr env_var e in
      (match e' with
@@ -70,9 +72,9 @@ let rec shift_expr (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
                shift will be performed. *)
             Shift(op,e',n))
             | _ -> Shift(op,e',n))
-  | Log(op,x,y) -> Log(op,shift_expr env_var x,shift_expr env_var y)
-  | Arith(op,x,y) -> Arith(op,shift_expr env_var x,shift_expr env_var y)
-  | Fun(f,l) -> Fun(f,List.map (shift_expr env_var) l)
+  | Mask(e,i) -> Mask(shift_expr env_var e,i)
+  | Pack(l,t) -> Pack(List.map (shift_expr env_var) l,t)
+  | Fun(f,l)  -> Fun(f,List.map (shift_expr env_var) l)
   | Fun_v(f,ei,l) -> Fun_v(f,ei,List.map (shift_expr env_var) l)
   | _ -> e
 

@@ -113,12 +113,14 @@ module Unroll = struct
     | ExpVar v       -> ExpVar (unroll_var env_it v)
     | Tuple  l       -> Tuple (List.map (unroll_expr env_it) l)
     | Not e          -> Not (unroll_expr env_it e)
-    | Shift(op,e,ae) -> Shift(op,unroll_expr env_it e,simpl_arith env_it ae)
     | Log(op,x,y)    -> Log(op,unroll_expr env_it x,unroll_expr env_it y)
-    | Shuffle(v,l)   -> Shuffle(unroll_var env_it v,l)
     | Arith(op,x,y)  -> Arith(op,unroll_expr env_it x,unroll_expr env_it y)
+    | Shift(op,e,ae) -> Shift(op,unroll_expr env_it e,simpl_arith env_it ae)
+    | Shuffle(v,l)   -> Shuffle(unroll_var env_it v,l)
+    | Mask(e,i)      -> Mask(unroll_expr env_it e,i)
+    | Pack(l,t)      -> Pack(List.map (unroll_expr env_it) l,t)
     | Fun(f,l)       -> Fun(f,List.map (unroll_expr env_it) l)
-    | _ -> assert false
+    | Fun_v _ -> assert false
 
   let rec unroll_deq (env_it:(ident,int) Hashtbl.t) (deq:deq) : deq =
     { deq with content =
@@ -195,20 +197,24 @@ let rec propagate_expr (expand_env:(var,var list) Hashtbl.t) (e:expr) : expr =
                       | l -> Tuple(List.map (fun x -> ExpVar x) l) end
   | Tuple l -> Tuple(List.map (propagate_expr expand_env) l)
   | Not e -> Not (propagate_expr expand_env e)
-  | Shift(op,e,ae) ->
-     Shift(op,propagate_expr expand_env e,ae)
   | Log(op,e1,e2) ->
      Log(op,propagate_expr expand_env e1,propagate_expr expand_env e2)
-  | Shuffle(v,pat) ->
-     Shuffle(List.hd (propagate_var expand_env v),pat)
   | Arith(op,e1,e2) ->
      Arith(op,propagate_expr expand_env e1,propagate_expr expand_env e2)
+  | Shift(op,e,ae) ->
+     Shift(op,propagate_expr expand_env e,ae)
+  | Shuffle(v,pat) ->
+     Shuffle(List.hd (propagate_var expand_env v),pat)
+  | Mask(e,i) ->
+     Mask(propagate_expr expand_env e, i)
+  | Pack(l,t) ->
+     Pack (List.map (propagate_expr expand_env) l, t)
   | Fun(x,es) ->
      let l = List.map (propagate_expr expand_env) es in
      (match l with
       | [Tuple l'] -> Fun(x,l')
       | _ -> Fun(x,l))
-  | _ -> assert false
+  | Fun_v _ -> assert false
 
 (* propagate_deqs iterates through deqs mainly to call propagate_expr
    and propagate_vars. Note that in some case (described above in this

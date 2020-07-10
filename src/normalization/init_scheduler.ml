@@ -1,6 +1,11 @@
 (***************************************************************************** )
                               init_scheduler.ml
 
+  /!\ Currently disabled!
+  (I don't remember why, but I'd guess "because it's buggy". And if I were to
+   guess further, I'd say "probably because of arrays")
+  /!\
+
   Schedule the equations of each nodes according to their dependencies.
   (basically, it "imperativize" the code)
 

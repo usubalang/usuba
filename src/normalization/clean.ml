@@ -4,29 +4,32 @@ open Usuba_AST
 
 (* Clean.clean_vars_decl removes unused variables from variable declarations of nodes
    (unused variables will likely be variables that have been optimized out) *)
-let rec clean_var env (var:var) : unit =
+let rec collect_var env (var:var) : unit =
   match var with
   | Var id -> Hashtbl.replace env id 1
   | Index(v,_)
-  | Range(v,_,_) | Slice(v,_) -> clean_var env v
+  | Range(v,_,_) | Slice(v,_) -> collect_var env v
 
-let rec clean_expr env (e:expr) : unit =
+let rec collect_expr env (e:expr) : unit =
   match e with
-  | ExpVar(v) -> clean_var env v
-  | Tuple l -> List.iter (clean_expr env) l
-  | Not e -> clean_expr env e
-  | Shift(_,x,_) -> clean_expr env x
-  | Log(_,x,y) -> clean_expr env x; clean_expr env y
-  | Arith(_,x,y) -> clean_expr env x; clean_expr env y
-  | Fun(_,l) -> List.iter (clean_expr env) l
-  | Fun_v(_,_,l) -> List.iter (clean_expr env) l
-  | _ -> ()
+  | Const _      -> ()
+  | ExpVar(v)    -> collect_var env v
+  | Tuple l      -> List.iter (collect_expr env) l
+  | Not e        -> collect_expr env e
+  | Log(_,x,y)   -> collect_expr env x; collect_expr env y
+  | Arith(_,x,y) -> collect_expr env x; collect_expr env y
+  | Shift(_,x,_) -> collect_expr env x
+  | Shuffle(v,_) -> collect_var env v
+  | Mask(e,_)    -> collect_expr env e
+  | Pack(l,_)    -> List.iter (collect_expr env) l
+  | Fun(_,l)     -> List.iter (collect_expr env) l
+  | Fun_v(_,_,l) -> List.iter (collect_expr env) l
 
 let clean_in_deqs (vars:p) (deqs:deq list) : p =
   let env = Hashtbl.create 100 in
   let rec aux d = match d.content with
-    | Eqn(l,e,_) -> List.iter (clean_var env) l;
-                    clean_expr env e
+    | Eqn(l,e,_) -> List.iter (collect_var env) l;
+                    collect_expr env e
     | Loop(_,_,_,d,_) -> List.iter aux d in
   List.iter aux deqs;
   List.sort_uniq (fun a b -> compare a b)

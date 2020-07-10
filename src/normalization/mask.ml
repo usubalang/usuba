@@ -60,17 +60,19 @@ module Get_consts = struct
     | ExpVar v      -> [ var_is_const env_const env_not_const v ]
     | Tuple l       -> flat_map rec_call l
     | Not e'        -> rec_call e'
-    | Shift(_,e',_) -> rec_call e'
     | Log(_,x,y)    -> List.map2 (fun a b -> a && b) (rec_call x) (rec_call y)
-    | Shuffle(v,_)  -> [ var_is_const env_const env_not_const v ]
     | Arith(_,x,y)  -> List.map2 (fun a b -> a && b) (rec_call x) (rec_call y)
+    | Shift(_,e',_) -> rec_call e'
+    | Shuffle(v,_)  -> [ var_is_const env_const env_not_const v ]
+    | Mask(e',_)    -> rec_call e'
+    | Pack(l,_)     -> flat_map rec_call l
     | Fun(f,l)      ->
        let params_consts = flat_map rec_call l in
        if f.name = "refresh" then params_consts
        else get_consts_inner_def env_fun params_consts f
-    | _ -> Printf.eprintf "expr_is_const: not supported expression: %s.\n"
-                          (Usuba_print.expr_to_str e);
-           assert false
+    | Fun_v _ -> Printf.eprintf "expr_is_const: not supported expression: %s.\n"
+                                (Usuba_print.expr_to_str e);
+                 assert false
 
 
   and get_consts_deqs (env_fun:(ident,def) Hashtbl.t)
@@ -403,6 +405,8 @@ let mask_eqn (env_var:(ident,typ) Hashtbl.t)
      | Log(Xor,ExpVar x,ExpVar y) -> mask_xor env_var env_const orig vl x y
      | Log(And as op,ExpVar x,ExpVar y)
      | Log(Or as op,ExpVar x,ExpVar y)  -> mask_and_or env_var env_const orig vl op x y
+     | Mask(ExpVar v,i) -> (* TODO(Mask) *) assert false
+     | Pack(l,typ)      -> (* TODO(Pack) *) assert false
      | _ -> Printf.eprintf "Cannot mask expression: %s.\n"
                            (Usuba_print.expr_to_str e);
             assert false

@@ -129,6 +129,8 @@ let rec expand_expr env_var env_keep env env_it force (e:expr) : expr =
                 | _ -> ExpVar x) l)
   | Tuple el -> Tuple(List.map rec_call el)
   | Not e' -> Not (rec_call e')
+  | Log(op,e1,e2) -> Log(op,rec_call e1,rec_call e2)
+  | Arith(op,e1,e2) -> Arith(op,rec_call e1,rec_call e2)
   | Shift(op,e1,ae) ->
      let e1' = expand_expr env_var env_keep env env_it
                            (if force = Keep then Split else force) e1 in
@@ -140,10 +142,10 @@ let rec expand_expr env_var env_keep env env_it force (e:expr) : expr =
        iterator has a value -> need to unroll). *)
        check_need_unroll_it env_it ae;
      Shift(op,e1',simpl_arith env ae)
-  | Log(op,e1,e2) -> Log(op,rec_call e1,rec_call e2)
   | Shuffle(v,pat) -> Tuple(List.map (fun x -> Shuffle(x,pat))
                                      (expand_var env_var env_keep env force v))
-  | Arith(op,e1,e2) -> Arith(op,rec_call e1,rec_call e2)
+  | Mask(e,i) -> Mask(rec_call e,i)
+  | Pack(l,t) -> Pack(List.map rec_call l,t)
   | Fun(f,el) ->
      if f.name = "refresh" then
        Fun(f,List.map (expand_expr env_var env_keep env env_it

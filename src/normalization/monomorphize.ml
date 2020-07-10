@@ -212,8 +212,6 @@ module Bslice = struct
        specialize_const n typ
     | ExpVar v -> ExpVar (specialize_var env_var v)
     | Not (ExpVar v) -> Not (ExpVar(specialize_var env_var v))
-    | Shift(op,ExpVar x, ae) ->
-       Shift(op,ExpVar(specialize_var env_var x),ae)
     | Log(op,ExpVar x, ExpVar y) ->
        Log(op,ExpVar(specialize_var env_var x),ExpVar(specialize_var env_var y))
     | Log(op,ExpVar x, y) ->
@@ -222,9 +220,13 @@ module Bslice = struct
        Log(op,x,ExpVar(specialize_var env_var y))
     | Log(op,x,y) ->
        Log(op,x,y)
-    | Shuffle(v,l) -> Shuffle(specialize_var env_var v,l)
     | Arith(op,ExpVar x,ExpVar y) ->
        Arith(op,ExpVar(specialize_var env_var x),ExpVar(specialize_var env_var y))
+    | Shift(op,ExpVar x, ae) ->
+       Shift(op,ExpVar(specialize_var env_var x),ae)
+    | Shuffle(v,l) -> Shuffle(specialize_var env_var v,l)
+    | Mask(ExpVar v,i) -> Mask(ExpVar (specialize_var env_var v), i)
+    | Pack(l,typ) -> Pack(List.map (specialize_expr env_dir env_m env_var) l,typ)
     | _ -> Printf.eprintf "Monomorphize::Bslice::specialize_expr: Invalid expr: %s\n"
              (Usuba_print.expr_to_str e);
            assert false
@@ -370,28 +372,32 @@ let rec indexify_expr (idx:ident) (e:expr) : expr =
 let rec node_call_can_be_optimized
           (all_nodes:(ident,def) Hashtbl.t)
           (f:ident) =
-  let is_80percent_log (deqs:deq list) : bool =
-    let rec get_logs (deqs:deq list) : int * int =
-      List.fold_left (fun (logs,tot) deq ->
-                      match deq.content with
-                      | Eqn(_,Log(_,_,_),_)
-                        | Eqn(_,Not _,_) -> (logs+1, tot+1)
-                      | Loop(_,_,_,dl,_) ->
-                         let (logs',tot') = get_logs dl in
-                         (logs+logs', tot+tot')
-                      | _ -> (logs, tot+1)) (0,0) deqs in
-    let (logs, tot) = get_logs deqs in
-    (float_of_int logs) >= (float_of_int tot) *. 0.8 in
+  (* Turns out this might not be such a good heuristic. TODO: remove
+     or uncomment, but don't let this comment hanging. *)
+  (* let is_80percent_log (deqs:deq list) : bool = *)
+  (*   let rec get_logs (deqs:deq list) : int * int = *)
+  (*     List.fold_left (fun (logs,tot) deq -> *)
+  (*                     match deq.content with *)
+  (*                     | Eqn(_,Log(_,_,_),_) *)
+  (*                       | Eqn(_,Not _,_) -> (logs+1, tot+1) *)
+  (*                     | Loop(_,_,_,dl,_) -> *)
+  (*                        let (logs',tot') = get_logs dl in *)
+  (*                        (logs+logs', tot+tot') *)
+  (*                     | _ -> (logs, tot+1)) (0,0) deqs in *)
+  (*   let (logs, tot) = get_logs deqs in *)
+  (*   (float_of_int logs) >= (float_of_int tot) *. 0.8 in *)
 
   let rec expr_can_opt (e:expr) : bool =
     match e with
     | Const _ | ExpVar _ -> true
-    | Tuple l -> List.for_all expr_can_opt l
-    | Not e -> expr_can_opt e
-    | Shift _ -> false
+    | Tuple l    -> List.for_all expr_can_opt l
+    | Not e      -> expr_can_opt e
     | Log(_,x,y) -> (expr_can_opt x) && (expr_can_opt y)
-    | Shuffle _ -> false
-    | Arith _ -> false
+    | Arith _    -> false
+    | Shift _    -> false
+    | Shuffle _  -> false
+    | Mask _     -> false
+    | Pack _     -> false
     | Fun(f',l) ->
        if f'.name = "refresh" then true
        else (node_call_can_be_optimized all_nodes f') &&

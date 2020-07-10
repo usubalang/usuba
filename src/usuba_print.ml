@@ -115,6 +115,10 @@ let rec expr_to_str_types = function
                   ^ (expr_to_str_types y) ^ ")"
   | Shuffle(v,l) -> sprintf "Shuffle: Shuffle(%s,[%s])" (var_to_str v)
                             (join "," (List.map string_of_int l))
+  | Mask(e,i) -> sprintf "Mask: Mask(%s,%d)" (expr_to_str_types e) i
+  | Pack(l,Some t) -> sprintf "Pack: Pack(%s |> %s)" (join "," (List.map expr_to_str_types l))
+                              (typ_to_str t)
+  | Pack(l,None) -> sprintf "Pack: Pack(%s)" (join "," (List.map expr_to_str_types l))
   | Arith(o,x,y) -> "Arith: " ^ "(" ^ (expr_to_str_types x) ^ (arith_op_to_str o)
                     ^ (expr_to_str_types y) ^ ")"
   | Shift(o,x,y) -> "Shift: " ^ "(" ^ (expr_to_str_types x) ^ (shift_op_to_str o)
@@ -133,10 +137,14 @@ let rec expr_to_str = function
                           (log_op_to_str o) (expr_to_str y)
   | Shuffle(v,l) -> sprintf "Shuffle(%s,[%s])" (var_to_str v)
                             (join "," (List.map string_of_int l))
-  | Arith(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
-                            (arith_op_to_str o) (expr_to_str y)
-  | Shift(o,x,y) -> sprintf "(%s %s %s)" (expr_to_str x)
-                            (shift_op_to_str o) (arith_to_str y)
+  | Mask(e,i)      -> sprintf "Mask(%s,%d)" (expr_to_str e) i
+  | Pack(l,Some t) -> sprintf "Pack(%s |> %s)" (join "," (List.map expr_to_str l))
+                              (typ_to_str t)
+  | Pack(l,None)   -> sprintf "Pack(%s)" (join "," (List.map expr_to_str l))
+  | Arith(o,x,y)   -> sprintf "(%s %s %s)" (expr_to_str x)
+                              (arith_op_to_str o) (expr_to_str y)
+  | Shift(o,x,y)   -> sprintf "(%s %s %s)" (expr_to_str x)
+                              (shift_op_to_str o) (arith_to_str y)
   | Not e -> sprintf "(~ %s)" (expr_to_str e)
   | Fun(f,l) -> sprintf "%s(%s)" f.name (join "," (List.map expr_to_str l))
   | Fun_v(f,e,l) -> sprintf "%s[%s](%s)" f.name (arith_to_str e)

@@ -32,14 +32,16 @@ module Simplify_tuples = struct
      Tuple.  *)
   let rec simpl_tuple (e:expr) : expr list =
     match e with
-    | Tuple l -> flat_map simpl_tuple l
-    | Not e   -> [ Not (expr_from_list (simpl_tuple e)) ]
-    | Shift(op,e,n) -> [ Shift(op,expr_from_list (simpl_tuple e),n) ]
+    | Tuple l       -> flat_map simpl_tuple l
+    | Not e         -> [ Not (expr_from_list (simpl_tuple e)) ]
     | Log(op,x,y)   -> [ Log(op,expr_from_list (simpl_tuple x),
                              expr_from_list (simpl_tuple y)) ]
     | Arith(op,x,y) -> [ Arith(op, expr_from_list (simpl_tuple x),
                                expr_from_list (simpl_tuple y)) ]
-    | Fun(f,l)     ->
+    | Shift(op,e,n) -> [ Shift(op,expr_from_list (simpl_tuple e),n) ]
+    | Mask(e,i)     -> [ Mask(expr_from_list (simpl_tuple e),i) ]
+    | Pack(l,t)     -> [ Pack(flat_map simpl_tuple l,t) ]
+    | Fun(f,l)      ->
        (* If |l| is a Tuple, then the reccursive call goes into Tuple,
           effectively removing the Tuple. *)
        [ Fun(f,flat_map simpl_tuple l) ]

@@ -252,15 +252,17 @@ let get_reg_size env (v:var) : int =
 
 let rec get_expr_reg_size env (e:expr) : int =
   match e with
-  | Const(n,None) -> Printf.fprintf stderr "Unsafe inference of `Const %d' size.\n" n;
-                     1
+  | Const(n,None)     -> Printf.fprintf stderr "Unsafe inference of `Const %d' size.\n" n;
+                         1
   | Const(n,Some typ) -> reg_size typ
-  | ExpVar v -> get_reg_size env v
-  | Not e -> get_expr_reg_size env e
-  | Shift(_,e,_) -> get_expr_reg_size env e
-  | Log(_,e,_) -> get_expr_reg_size env e
-  | Shuffle(v,_) -> get_reg_size env v
-  | Arith(_,e,_) -> get_expr_reg_size env e
+  | ExpVar v          -> get_reg_size env v
+  | Not e             -> get_expr_reg_size env e
+  | Log(_,e,_)        -> get_expr_reg_size env e
+  | Arith(_,e,_)      -> get_expr_reg_size env e
+  | Shift(_,e,_)      -> get_expr_reg_size env e
+  | Shuffle(v,_)      -> get_reg_size env v
+  | Mask(e,_)         -> get_expr_reg_size env e
+  | Pack(_,Some typ)  -> reg_size typ
   | Fun _ -> Printf.fprintf stderr "Not implemented yet, get_reg_size(Fun...).\n";
              assert false
   | Tuple l -> Printf.fprintf stderr "Non linear expression Tuple(%s), can't get reg_size.\n"
@@ -271,16 +273,18 @@ let rec get_expr_reg_size env (e:expr) : int =
 
 let rec get_expr_type env_fun env_var (e:expr) : typ list =
   match e with
-  | Const(n,None) -> Printf.fprintf stderr "Unsafe inference of `Const %d' type.\n" n;
-                     [ Nat ]
+  | Const(n,None)     -> Printf.fprintf stderr "Unsafe inference of `Const %d' type.\n" n;
+                         [ Nat ]
   | Const(n,Some typ) -> [ typ ]
-  | ExpVar v -> [ get_var_type env_var v ]
-  | Tuple l -> flat_map (get_expr_type env_fun env_var) l
-  | Not e -> get_expr_type env_fun env_var e
-  | Shift(_,e,_) -> get_expr_type env_fun env_var e
-  | Log(_,e,_) -> get_expr_type env_fun env_var e
-  | Shuffle(v,_) -> [ get_var_type env_var v ]
-  | Arith(_,e,_) -> get_expr_type env_fun env_var e
+  | ExpVar v          -> [ get_var_type env_var v ]
+  | Tuple l           -> flat_map (get_expr_type env_fun env_var) l
+  | Not e             -> get_expr_type env_fun env_var e
+  | Log(_,e,_)        -> get_expr_type env_fun env_var e
+  | Arith(_,e,_)      -> get_expr_type env_fun env_var e
+  | Shift(_,e,_)      -> get_expr_type env_fun env_var e
+  | Shuffle(v,_)      -> [ get_var_type env_var v ]
+  | Mask(e,_)         -> get_expr_type env_fun env_var e
+  | Pack(_,Some typ)  -> [ typ ]
   | Fun(f,_) ->
      if f.name = "rand" then [ Uint(default_dir,Mint 1,1) ]
      else
@@ -291,12 +295,14 @@ let rec get_expr_type env_fun env_var (e:expr) : typ list =
 let rec get_normed_expr_type env_var (e:expr) : typ =
   match e with
   | Const(n,Some typ) -> typ
-  | ExpVar v -> get_var_type env_var v
-  | Not e -> get_normed_expr_type env_var e
-  | Shift(_,e,_) -> get_normed_expr_type env_var e
-  | Log(_,e,_) -> get_normed_expr_type env_var e
-  | Shuffle(v,_) -> get_var_type env_var v
-  | Arith(_,e,_) -> get_normed_expr_type env_var e
+  | ExpVar v          -> get_var_type env_var v
+  | Not e             -> get_normed_expr_type env_var e
+  | Log(_,e,_)        -> get_normed_expr_type env_var e
+  | Arith(_,e,_)      -> get_normed_expr_type env_var e
+  | Shift(_,e,_)      -> get_normed_expr_type env_var e
+  | Shuffle(v,_)      -> get_var_type env_var v
+  | Mask(e,_)         -> get_normed_expr_type env_var e
+  | Pack(_,Some typ)  -> typ
   | _ -> Printf.eprintf "get_normed_expr_type: error: unnormed expr: %s.\n"
            (Usuba_print.expr_to_str e);
          assert false
@@ -515,34 +521,16 @@ let default_bits_per_reg (arch:arch) : int =
 let p_size (p:p) : int =
   List.fold_left (fun sum vd -> sum + (typ_size vd.vd_typ)) 0 p
 
-let var_constr_to_str (v:var) : string =
-  match v with
-  | Var _   -> "Var"
-  | Index _ -> "Index"
-  | Range _ -> "Range"
-  | Slice _ -> "Slice"
-
-let get_expr_constr_str (e:expr) : string =
-  match e with
-  | Const _   -> "Const"
-  | ExpVar _  -> "ExpVar"
-  | Tuple _   -> "Tuple"
-  | Not _     -> "Not"
-  | Shift _   -> "Shift"
-  | Log _     -> "Log"
-  | Shuffle _ -> "Shuffle"
-  | Arith _   -> "Arith"
-  | Fun _     -> "Fun"
-  | Fun_v _   -> "Fun_v"
-
 let rec contains_fun (e:expr) : bool =
     match e with
   | Const _ | ExpVar _ | Shuffle _ -> false
   | Tuple l       -> List.exists contains_fun l
   | Not e'        -> contains_fun e'
-  | Shift(_,e',_) -> (contains_fun e')
+  | Shift(_,e',_) -> contains_fun e'
   | Log(_,x,y)    -> (contains_fun x) || (contains_fun y)
   | Arith(_,x,y)  -> (contains_fun x) || (contains_fun y)
+  | Mask(e',_)    -> contains_fun e'
+  | Pack(l,_)     -> List.exists contains_fun l
   | Fun _         -> true
   | Fun_v _       -> true
 

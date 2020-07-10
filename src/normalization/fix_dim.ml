@@ -113,12 +113,14 @@ let rec dim_expr (v_tgt:var) (dim:int) (size:int) (e:expr) : expr =
   | ExpVar v       -> ExpVar(dim_var v_tgt dim size v)
   | Tuple l        -> Tuple(List.map (dim_expr v_tgt dim size) l)
   | Not e          -> Not(dim_expr v_tgt dim size e)
-  | Shift(op,e,ae) -> Shift(op,dim_expr v_tgt dim size e,ae)
   | Log(op,x,y)    -> Log(op,dim_expr v_tgt dim size x,dim_expr v_tgt dim size y)
-  | Shuffle(v,l)   -> Shuffle(dim_var v_tgt dim size v,l)
   | Arith(op,x,y)  -> Arith(op,dim_expr v_tgt dim size x,dim_expr v_tgt dim size y)
+  | Shift(op,e,ae) -> Shift(op,dim_expr v_tgt dim size e,ae)
+  | Shuffle(v,l)   -> Shuffle(dim_var v_tgt dim size v,l)
+  | Mask(e,i)      -> Mask(dim_expr v_tgt dim size e,i)
+  | Pack(l,t)      -> Pack(List.map (dim_expr v_tgt dim size) l,t)
   | Fun(f,l)       -> Fun(f,List.map (dim_expr v_tgt dim size) l)
-  | _              -> assert false
+  | Fun_v _ -> assert false
 
 (* Updates |v_tgt| (for 'var_target') by merging its two innermost arrays *)
 let rec dim_deq (v_tgt:var) (dim:int) (size:int) (deq:deq) : deq =

@@ -1,3 +1,4 @@
+(* This file contains the index of the S-boxes in Usubac's database. *)
 
 let sboxes = [
 

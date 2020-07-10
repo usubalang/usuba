@@ -22,15 +22,17 @@ let list_from_perm env_var (perm:int list) (l:expr list) : expr list =
 let rec apply_perm_e env_fun env_var (e:expr) : expr =
   match e with
   | Const _ | ExpVar _ | Shuffle _ -> e
-  | Tuple l -> Tuple (List.map (apply_perm_e env_fun env_var) l)
-  | Not e -> Not (apply_perm_e env_fun env_var e)
-  | Shift(op,e,n) -> Shift(op,apply_perm_e env_fun env_var e,n)
-  | Log(op,x,y) -> Log(op,apply_perm_e env_fun env_var x,apply_perm_e env_fun env_var y)
+  | Tuple l       -> Tuple (List.map (apply_perm_e env_fun env_var) l)
+  | Not e         -> Not (apply_perm_e env_fun env_var e)
+  | Log(op,x,y)   -> Log(op,apply_perm_e env_fun env_var x,apply_perm_e env_fun env_var y)
   | Arith(op,x,y) -> Arith(op,apply_perm_e env_fun env_var x,apply_perm_e env_fun env_var y)
-  | Fun(f,l) -> let l' = List.map (apply_perm_e env_fun env_var) l in
-                (match env_fetch env_fun f with
-                 | Some perm -> Tuple (list_from_perm env_var perm l')
-                 | None -> Fun(f,l'))
+  | Shift(op,e,n) -> Shift(op,apply_perm_e env_fun env_var e,n)
+  | Mask(e,i)     -> Mask(apply_perm_e env_fun env_var e,i)
+  | Pack(l,t)     -> Pack(List.map (apply_perm_e env_fun env_var) l,t)
+  | Fun(f,l)      -> let l' = List.map (apply_perm_e env_fun env_var) l in
+                     (match env_fetch env_fun f with
+                      | Some perm -> Tuple (list_from_perm env_var perm l')
+                      | None -> Fun(f,l'))
   | Fun_v(_,_,_) -> assert false
 
 

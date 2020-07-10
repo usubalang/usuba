@@ -1,3 +1,55 @@
+(*********************************************************************
+                             remove_sync.ml
+
+  Removes the `:=` throughout the program.
+
+  Reminder of how `:=` works:
+
+    x := x ^ y;
+    z = x ^ a;
+
+  is transformed into:
+
+    _shadow_x1_ = x ^ y;
+    z = _shadow_x1_ ^ a;
+
+  Basically, we introduce a new variable every time.
+
+
+  TODO: this does not really work on arrays for now, and produces
+  wrong code (ie not within Usuba) semantics for scalars in loops
+  since it produces a single variable. For instance:
+
+     forall i in [1, 5] {
+       x := x * 2;
+       y[i] = ~x
+     }
+
+  will produce:
+
+     forall i in [1, 5] {
+         _shadow_x1_ = x * 2;
+         y[i] = ~_shadow_x1_;
+     }
+
+  which is wrong for two reasons:
+
+    - the result is wrong: `x` is not multiplied by 2 every iteration
+
+    - _shadow_x1_ is assigned multiple time, which is not allowed in
+      Usuba.
+
+  Instead, we should generate something like:
+
+      _shadow_x1_[0] = x;
+      forall i in [i, 5] {
+         _shadow_x1_[i+1] = _shadow_x1_[i] * 2;
+         y[i] = ~_shadow_x1_[i+1];
+      }
+
+
+ ********************************************************************)
+
 open Basic_utils
 open Utils
 open Usuba_AST
@@ -67,13 +119,15 @@ let rec clean_expr (env_var : (ident,typ) Hashtbl.t)
                         | l -> Tuple(List.map (fun x -> ExpVar x) l))
   | Tuple l         -> Tuple (List.map rec_call l)
   | Not e           -> Not (rec_call e)
-  | Shift(op,e,ae)  -> Shift(op,rec_call e,ae)
   | Log(op,e1,e2)   -> Log(op,rec_call e1,rec_call e2)
+  | Arith(op,e1,e2) -> Arith(op,rec_call e1,rec_call e2)
+  | Shift(op,e,ae)  -> Shift(op,rec_call e,ae)
   | Shuffle(v,l)    -> (match clean_var env_var env_replace v with
                         | [ x ] -> Shuffle(x, l)
                         | xs -> Tuple(List.map (fun x -> Shuffle(x,l)) xs))
-  | Arith(op,e1,e2) -> Arith(op,rec_call e1,rec_call e2)
-  | Fun(f,l)        -> Fun(f,List.map (rec_call) l)
+  | Mask(e,i)       -> Mask(rec_call e,i)
+  | Pack(l,t)       -> Pack(List.map rec_call l,t)
+  | Fun(f,l)        -> Fun(f,List.map rec_call l)
   | _               -> assert false
 
 
