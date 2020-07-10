@@ -1,4 +1,5 @@
 # Specification: https://csrc.nist.gov/csrc/media/publications/fips/46/3/archive/1999-10-25/documents/fips46-3.pdf
+# Supported mode: bitslicing
 
 _no_inline table[] sbox (a:b6) returns ( out:b4 ) [
 {
@@ -171,16 +172,17 @@ tel
 node des ( plaintext : b64, key : b64 )
      returns ( ciphered : b64 )
 vars
-    des : b64[17],
+    state : b64[17],
     left : b32, right : b32
 let
     # Initialisation (initial permutation)
-    des[0] = init_p(plaintext);
+    state[0] = init_p(plaintext);
 
     # Computing the 16 rounds
-    forall i in [1,16] { des[i] = des_single(des[i-1],roundkey<i-1>(key)) }
+    # XXX: use imperative loop
+    forall i in [1,16] { state[i] = des_single(state[i-1],roundkey<i-1>(key)) }
 
     # Regrouping left and right and computing final permuation
-    (left,right) = des[16];
+    (left,right) = state[16];
     ciphered = final_p(right,left)
 tel

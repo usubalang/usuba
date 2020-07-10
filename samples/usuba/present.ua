@@ -1,11 +1,12 @@
 # Specification: http://www.lightweightcrypto.org/present/present_ches2007.pdf
+# Supported mode: ???
 
-_no_inline table sbox (a:v4) returns (out:v4) {
+table sbox (a:v4) returns (out:v4) {
     12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2
 }
 
 // Warning: 1-indexed
-_no_inline perm pLayer (a:b64) returns (out:b64) {
+perm pLayer (a:b64) returns (out:b64) {
       1,  5,  9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49, 53, 57, 61,
       2,  6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50, 54, 58, 62,
       3,  7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59, 63,
@@ -18,6 +19,7 @@ vars
     sbox_out : b4[16]
 let
     sbox_in = inp ^ key;
+    # XXX: lifting b4 -> b4[16] of sbox
     forall i in [0, 15] { sbox_out[i] = sbox(sbox_in[i]) }
     out = pLayer(sbox_out)
 tel
@@ -27,6 +29,7 @@ vars
     tmp : b64[32]
 let
     tmp[0] = plain;
+    # XXX: use imperative loops
     forall i in [1, 31] {
       tmp[i] = present_round(tmp[i-1], key[i-1])
     }

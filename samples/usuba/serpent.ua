@@ -1,6 +1,7 @@
 # Specification: https://www.cl.cam.ac.uk/~rja14/Papers/serpent.pdf
+# Supported mode: ???
 
-_no_inline table[] sbox (input:v4) returns (out:v4) [
+table[] sbox (input:v4) returns (out:v4) [
     { 3, 8,15, 1,10, 6, 5,11,14,13, 4, 2, 7, 0, 9,12 } ;
 	{15,12, 2, 7, 9, 0, 5,10, 1,11,14, 8, 6,13, 3, 4 } ;
 	{ 8, 6, 7, 9, 3,12,10,15,13, 1,14, 4, 0,11, 5, 2 } ;
@@ -11,9 +12,12 @@ _no_inline table[] sbox (input:v4) returns (out:v4) [
 	{ 1,13,15, 0,14, 8, 2,11, 7, 4,12,10, 9, 3, 5, 6 }
 ]
 
-
-_no_inline node transform (x:u32x4) returns (out:u32x4)
+# XXX: in-place update of x
+node transform (x:u32x4) returns (out:u32x4)
 let
+    # XXX: an example illustrating the value of :=
+    #      otherwise, there are way too many variables
+    # XXX: assignment over arrays, fishy
     x[0] := x[0] <<< 13;
     x[2] := x[2] <<< 3;
     x[1] := x[1] ^ x[0] ^ x[2];
@@ -33,6 +37,7 @@ vars
 let
     tmp[0] = plaintext;
 
+    # XXX: use imperative loops
     forall i in [0,30] {
         tmp[i+1] = transform(sbox<i%8>(tmp[i] ^ keys[i]))
     }

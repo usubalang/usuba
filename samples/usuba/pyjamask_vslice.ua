@@ -1,5 +1,9 @@
 # V-sliced version
 # Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/pyjamask-spec-round2.pdf
+# Supported mode: bitsliced, v-sliced, (h-sliced?)
+
+# XXX: `mat_mult` and `MixRows` amount to `col_mult`, `MixRows` in pyjamask_bitslice (only difference)
+# how to reconcile?
 
 table SubBytes (i:v4) returns (o:v4) {
   0x2, 0xd, 0x3, 0x9, 0x7, 0xb, 0xa, 0x6, 0xe, 0x0, 0xf, 0x4, 0x8, 0x5, 0x1, 0xc
@@ -20,7 +24,11 @@ let
     res_tmp[0] = 0;
 
     forall i in [0, 31] {
+        # XXX: replace `(vec << i) >>! 31` with `mask(vec, i)`
         mask[i] = (vec << i) >>! 31;
+
+        # Because `mat_col` is a publicly-known constant (`M` in
+        # `MixRows`), we don't need to mask this multiplication
         res_tmp[i+1] = res_tmp[i] ^ (mask[i] & mat_col[i]);
         mat_col[i+1] = mat_col[i] >>> 1;
     }

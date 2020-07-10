@@ -1,9 +1,11 @@
 # Specification: https://eprint.iacr.org/2014/084.pdf
+# Supported mode: ???
 
-_no_inline table SubColumn (input:v4) returns (out:v4) {
+table SubColumn (input:v4) returns (out:v4) {
     6, 5, 12, 10, 1, 14, 7, 9, 11, 0, 3, 13, 8, 15, 4, 2
 }
 
+# XXX: in-place update of input
 node ShiftRows (input:u16x4) returns (out:u16x4)
 vars
 let
@@ -20,6 +22,7 @@ let
 
     tmp[0] = plain;
 
+    # XXX: use imperative loops
     forall i in [0,24] {
       tmp[i+1] = ShiftRows( SubColumn( tmp[i] ^ key[i] ) )
     }

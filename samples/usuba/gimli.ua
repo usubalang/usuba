@@ -1,5 +1,9 @@
 # V-sliced version
 # Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/gimli-spec-round2.pdf
+# Supported mode: bitslicing, v-slicing, (h-slicing?)
+
+# XXX: only difference with gimli_bitslicing.ua: refresh(.)
+# XXX: two versions (!) + another in gimli_bitslicing of `SPbox` because of the refresh(.)
 
 node SPbox_Rx (col:u32[3]) returns (colR:u32[3])
 vars

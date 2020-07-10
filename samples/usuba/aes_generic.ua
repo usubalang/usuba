@@ -1,6 +1,25 @@
 # V-sliced version, without key-schedule
 # Specification: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf
 
+# XXX: the difference between ShiftRows here vs. in aes_mslice is due
+# to the distinct memory layout
+# XXX: the difference between {RL32, RL64, MixColumn} here and
+# aes_mslice vs. {MixColumn_single, MixColumn} in aes would be hidden
+# away by specifying directly a matrix multiplication and synthezing
+# the suitable code in both cases
+#     Want: specific a matricial operation, a layout and get a code
+#     generator to produce these variants
+
+# XXX: the difference between {SubBytes} here and aes_mslice
+# vs. {SubBytes_single, SubBytes} in aes is due to the lack of an
+# implicit `lift` operator
+
+# XXX: code duplication between aes_mslice, aes_generic and aes is due
+# to the lack of an `extern` mechanism that would allow us to
+# factorize some definitions in a common file while providing custom
+# implementations. We could in principle overload bitslicing
+# vs. n-slicing but this won't help for aes_mslice vs. aes_generic.
+
 table SubBytes (input:v8) returns (output:v8) {
     99, 124, 119, 123, 242, 107, 111, 197, 48, 1, 103, 43, 254, 215, 171, 118,
     202, 130, 201, 125, 250, 89, 71, 240, 173, 212, 162, 175, 156, 164, 114, 192,
@@ -56,6 +75,11 @@ let
 tel
 
 
+node AddRoundKey(i:b128,key:b128) returns (r:b128)
+let
+    r = i ^ key
+tel
+
 
 node AES (plain:u16x8,key:u16x8[11]) returns (cipher:u16x8)
 vars
@@ -66,10 +90,10 @@ let
 
     # 9 rounds (the last is special)
     forall i in [1,9] {
-      tmp[i] = MixColumn( ShiftRows( SubBytes( tmp[i-1] ) ) ) ^ key[i]
+      tmp[i] = AddRoundKey(MixColumn( ShiftRows( SubBytes( tmp[i-1]))), key[i])
     }
 
     # Last (10th) round (no MixColumn)
-    cipher = ShiftRows(SubBytes(tmp[9])) ^ key[10]
+    cipher = AddRoundKey(ShiftRows(SubBytes(tmp[9])), key[10])
 
 tel

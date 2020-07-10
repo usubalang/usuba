@@ -1,6 +1,7 @@
 # Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/SKINNY-spec-round2.pdf
+# Supported mode: bitslicing
 
-node sbox_calc(a:b8) returns (b:b8)
+node sbox_calc(a:v8) returns (b:v8)
 let
     b = (a[0], a[1], a[2], a[3] ^ ~(a[0] | a[1]),
          a[4], a[5], a[6], a[7] ^ ~(a[4] | a[5]))
@@ -29,15 +30,18 @@ let
     b = sbox_last_quarter(sbox_quarter(sbox_quarter(sbox_quarter(a))))
 tel
 
+# XXX: in-place update of state
 node SubCell(state:b8[4][4]) returns (stateR:b8[4][4])
 let
     forall i in [0, 3] {
       forall j in [0, 3] {
+        # XXX: lift of sbox from b8 to b8[4][4]
         stateR[i][j] = sbox(state[i][j])
       }
     }
 tel
 
+# XXX: in-place update of state
 node AddConstants(state:b8[4][4], c:b8) returns (stateR:b8[4][4])
 let
     stateR[0][0] = state[0][0] ^ (c & 0xf);
@@ -48,6 +52,8 @@ let
     stateR[3] = state[3];
 tel
 
+# XXX: split in two nodes, one producing stateR, the other keyCellsR
+# XXX: both should perform in-place updates on, respectively, state and keyCells
 node AddKey(state:b8[4][4], keyCells:b8[2][4][4])
      returns (stateR:b8[4][4], keyCellsR:b8[2][4][4])
 vars
@@ -83,8 +89,10 @@ let
     stateR = state[0, 1, 2, 3, 7, 4, 5, 6, 10, 11, 8, 9, 13, 14, 15, 12]
 tel
 
+# XXX: why b8[4][4] and not b8x4[4]?
 node MixColumn(state:b8[4][4]) returns (stateR:b8[4][4])
 let
+    # XXX: lift from b8[4] to b8[4][4]
     forall j in [0, 3] {
         state[1][j] ^:= state[2][j];
         state[2][j] ^:= state[0][j];
@@ -110,6 +118,7 @@ let
     state[0] = input;
     keyCells[0] = tweaky;
 
+    # XXX: use imperative loops
     forall i in [0, 47] {
         (tmp[i], keyCells[i+1]) = AddKey(AddConstants(SubCell(state[i]), RC[i]), keyCells[i]);
         state[i+1] = MixColumn(ShiftRows(tmp[i]))

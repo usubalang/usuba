@@ -17,6 +17,7 @@ tel
 
 node SubBytesAll (input:b32[4]) returns (output:b32[4])
 let
+    # XXX: lift of SybBytes from b4 to b32[4] (NON-TRIVIAL!)
     forall i in [0, 31] {
        output[0..3][i] = SubBytes(input[0..3][i])
     }
@@ -38,21 +39,27 @@ vars
     M: b32[4][33]
 let
     # Manually unrolling the loop over M so that M can be partially linearized away...
+    # XXX: ie. all that to get in-place update
+
+    # XXX: write `0x... : b32` instead
     M[0][0] = (1,0,1,0,0,0,1,1,1,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,1);
     forall idx in [0,31] {
         output[0][idx] = col_mult(input[0], M[0][idx]);
         M[0][idx+1] = M[0][idx] >>> 1
     }
+    # XXX: write `0x... : b32` instead
     M[1][0] = (0,1,1,0,0,0,1,1,0,1,0,0,0,0,0,1,0,1,1,1,0,0,0,0,0,0,1,0,0,0,0,1);
     forall idx in [0,31] {
         output[1][idx] = col_mult(input[1], M[1][idx]);
         M[1][idx+1] = M[1][idx] >>> 1
     }
+    # XXX: write `0x... : b32` instead
     M[2][0] = (0,1,1,0,1,0,0,1,0,0,1,0,1,1,0,0,1,1,1,1,0,0,1,0,1,0,0,0,0,0,0,0);
     forall idx in [0,31] {
         output[2][idx] = col_mult(input[2], M[2][idx]);
         M[2][idx+1] = M[2][idx] >>> 1
     }
+    # XXX: write `0x... : b32` instead
     M[3][0] = (0,1,0,0,1,0,0,0,1,0,1,0,0,1,0,1,0,1,0,0,1,0,0,0,0,0,0,1,0,0,1,1);
     forall idx in [0,31] {
         output[3][idx] = col_mult(input[3], M[3][idx]);

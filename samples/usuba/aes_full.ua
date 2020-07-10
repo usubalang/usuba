@@ -1,6 +1,10 @@
 # Bitsliced version, with key-schedule
 # Specification: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf
 
+# XXX: this should just `include aes.ua`
+
+# XXX: BEGIN REDUNDANT
+
 table SubBytes_single (input:v8) returns (output:v8) {
     99, 124, 119, 123, 242, 107, 111, 197, 48, 1, 103, 43, 254, 215, 171, 118,
     202, 130, 201, 125, 250, 89, 71, 240, 173, 212, 162, 175, 156, 164, 114, 192,
@@ -57,6 +61,8 @@ let
     }
 tel
 
+# XXX: END REDUNDANT
+
 node sched_core (key:b8[4], rcon:b8) returns (subkey:b8[4])
 vars
     tmp:b8[4]
@@ -102,6 +108,7 @@ let
     r = i ^ key
 tel
 
+# XXX: replace with a node that calls `AES` from `aes.ua` with the output of `key_sched`
 node AES (plain:b128,key:b128) returns (cipher:b1[128])
 vars
     tmp : b128[10],
@@ -120,3 +127,4 @@ let
     # Last (10th) round (no MixColumn)
     cipher = AddRoundKey(ShiftRows(SubBytes(tmp[9])), subkeys[10])
 tel
+

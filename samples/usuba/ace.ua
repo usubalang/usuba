@@ -1,5 +1,22 @@
 # Specification:
 # https://uwaterloo.ca/communications-security-lab/sites/ca.communications-security-lab/files/uploads/files/ace-spec-round2.pdf
+# Supported mode: bitslicing, v-slice, (m-slice?)
+
+# XXX: exploit ad-hoc polymorphism to overwrite this node with the
+# corresponding one in ace_bitslice. Use the other one when bitslicing
+# (remove the need for the file `ace_bitslice`.
+#
+# Syntax:
+#   declare f(x:u32) returns (y:u32)
+#   node f(x) returns (y)
+#   let
+#     ...
+#   tel
+#   node f(x: b32) returns (y: b32)
+#   let
+#     ...
+#   tel
+  
 
 node f(x:u32) returns (y:u32)
 let
@@ -12,6 +29,7 @@ vars
 let
     round[0] = input;
 
+    # XXX: imperative loop
     forall i in [0, 7] {
       round[i+1] = ( f(round[i][0]) ^ round[i][1] ^ 0xfffffffe ^ ((rc >> i) & 1),
                      round[i][0] );
@@ -37,7 +55,7 @@ node ACE(input:u32x2[5]) returns (output:u32x2[5])
 vars
     SC:u32[3][16],
     RC:u32[3][16],
-    tmp:u32x2[17][5]
+    state:u32x2[17][5]
 let
     SC = (0x50,0x5c,0x91,0x8d,0x53,0x60,0x68,0xe1,0xf6,0x9d,0x40,0x4f,0xbe,0x5b,0xe9,0x7f,
           0x28,0xae,0x48,0xc6,0xa9,0x30,0x34,0x70,0x7b,0xce,0x20,0x27,0x5f,0xad,0x74,0x3f,
@@ -46,11 +64,12 @@ let
           0x53,0x5d,0x49,0x7f,0xbe,0x1d,0x28,0x6c,0x82,0x47,0x6b,0x88,0xdc,0x8b,0x59,0xc6,
           0x43,0xe4,0x5e,0xcc,0x32,0x4e,0x75,0x25,0xfd,0xf9,0x76,0xa0,0xb0,0x09,0x1e,0xad);
 
-    tmp[0] = input;
+    state[0] = input;
 
+    # XXX: imperative loop
     forall i in [0, 15] {
-        tmp[i+1] = ACE_step(tmp[i], RC[0,1,2][i],SC[0,1,2][i]);
+        state[i+1] = ACE_step(state[i], RC[0,1,2][i],SC[0,1,2][i]);
     }
 
-    output = tmp[16];
+    output = state[16];
 tel

@@ -1,4 +1,9 @@
 # Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/subterranean-spec-round2.pdf
+# Supported mode: ???
+
+# XXX: this is an example of cipher where pretty every equation should
+# turn into an in-place update
+# XXX: similarly, loops ought to turn into updates with temps
 
 node chi(state:b257) returns (stateR:b257)
 let
@@ -11,6 +16,7 @@ tel
 
 node iota(state:b257) returns (stateR:b257)
 let
+    # XXX: want to only write `state[0] <- state[0] ^ 1` here
     stateR[0] = state[0] ^ 1;
     forall i in [1, 256] { stateR[i] = state[i] }
 tel
@@ -18,6 +24,7 @@ tel
 node theta(state:b257) returns (stateR:b257)
 let
     forall i in [0, 256] {
+        # XXX: in-place update will certainly require a few temp vars here
         stateR[i] = state[i] ^ state[(i+3)%257] ^ state[(i+8)%257]
     }
 tel
@@ -44,11 +51,13 @@ perm phi(state:b257) returns (stateR:b257) {
 
 node round(state:b257) returns (stateR:b257)
 let
+    # phi is not in-place
     stateR = phi(theta(iota(chi(state))))
 tel
 
 node xor1(state:b257) returns (stateR:b257)
 let
+    # XXX: want to only write `state[1] <- state[1] ^ 1` here
     stateR[0] = state[0];
     stateR[1] = state[1] ^ 1;
     forall i in [2, 256] { stateR[i] = state[i] }

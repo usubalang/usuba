@@ -1,5 +1,6 @@
 # Bitsliced version, without key-schedule
 # Specification: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf
+# Supported mode: bitsliced, v-sliced, h-sliced
 
 table SubBytes_single (input:v8) returns (output:v8) {
     99, 124, 119, 123, 242, 107, 111, 197, 48, 1, 103, 43, 254, 215, 171, 118,
@@ -22,6 +23,7 @@ table SubBytes_single (input:v8) returns (output:v8) {
 
 node SubBytes (inputSB:b8[16]) returns (out:b8[16])
 let
+    # XXX: lifting of SubBytes from b8 to b8[16]
     forall i in [0,15] {
       out[i] = SubBytes_single(inputSB[i])
     }
@@ -42,6 +44,7 @@ let
     o = times2(i) ^ i
 tel
 
+# XXX: this could be automatically produced by a matrix multiplication by a constant matrix
 node MixColumn_single (inp:b8[4]) returns (out:b8[4])
 let
     out[0] = times2(inp[0]) ^ times3(inp[1]) ^ inp[2] ^ inp[3];
@@ -53,6 +56,7 @@ tel
 node MixColumn (inp:b32[4]) returns (out:b32[4])
 let
     forall i in [0,3] {
+       # XXX: implicit type conversion from b32 to b8
        out[i] = MixColumn_single(inp[i])
     }
 tel
@@ -70,6 +74,7 @@ let
     # Initial AddRoundKey
     tmp[0] = AddRoundKey(plain, key[0]);
 
+    # XXX: use imperative loops
     # 9 rounds (the last is special)
     forall i in [1,9] {
       tmp[i] = AddRoundKey(MixColumn(ShiftRows(SubBytes(tmp[i-1]))), key[i])

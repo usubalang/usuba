@@ -1,12 +1,14 @@
 # H-sliced version
 # Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/photon-beetle-spec-round2.pdf
 
+# DEBUG ONLY
+
 # Note that Photon Vslice is not valid Usuba per-se: it uses a table,
 # which cannot be converted to a circuit given how it's called. (well,
 # it would be doable, but would require a lot of machinery in the
 # like of sbox(a&1,(a>>1)&1,(a>>2)&1,...))
 
-_no_inline table Sbox (x:u4) returns (y:u4) {
+table Sbox (x:u4) returns (y:u4) {
     12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2
 }
 
@@ -18,6 +20,8 @@ let
         }
     }
 tel
+
+# END DEBUG
 
 node ShiftRows(x:u4[8][8]) returns (y:u4[8][8])
 let

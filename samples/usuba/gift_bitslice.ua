@@ -18,6 +18,9 @@ let
     S' = (S3, S1, S2, S0)
 tel
 
+# XXX: add this node to gift.ua and exploit ad-hoc polymorphism to
+# choose that implementation when bitslicing (and only then)
+
 node PermBits(S:b32[4]) returns (S':b32[4])
 let
     S'[0] = S[0][2,6,10,14,18,22,26,30,1,5,9,13,17,21,25,29,0,4,8,12,16,20,24,28,3,7,11,15,19,23,27,31];
@@ -36,6 +39,7 @@ tel
 
 node KeyUpdate(W:b32[8]) returns (W':b32[8])
 let
+    # XXX: need a temporary variable for W[0] and update W in-place
     W'[0] = ((W[6] >> 2)  ^ (W[6] << 14)) & 0xffff:b32;
     W'[1] = ((W[7] >> 12) ^ (W[7] << 4))  & 0xffff:b32;
     W'[7..2] = W[5..0];
@@ -50,6 +54,8 @@ let
     round[0] = P;
     W[0] = K;
 
+    # XXX: type annotations could be removed if typing constraints
+    # where more boldly propagated
     GIFT_RC = (
         0x01:b32, 0x03:b32, 0x07:b32, 0x0F:b32, 0x1F:b32,
         0x3E:b32, 0x3D:b32, 0x3B:b32, 0x37:b32, 0x2F:b32,

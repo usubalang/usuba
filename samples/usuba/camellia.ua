@@ -1,8 +1,12 @@
 # Specification: https://info.isl.ntt.co.jp/crypt/eng/camellia/dl/01espec.pdf
+# Supported mode: ???
 # Misc.:
 #   https://info.isl.ntt.co.jp/crypt/eng/camellia/
 
-_no_inline table SBOX1 (a:u8) returns (b:u8) {
+# XXX: does that still work?
+# XXX: is this bitslicing only?
+
+table SBOX1 (a:u8) returns (b:u8) {
  112, 130,  44, 236, 179,  39, 192, 229, 228, 133,  87,  53, 234,  12, 174,  65,
   35, 239, 107, 147,  69,  25, 165,  33, 237,  14,  79,  78,  29, 101, 146, 189,
  134, 184, 175, 143, 124, 235,  31, 206,  62,  48, 220,  95,  94, 197,  11,  26,

@@ -1,7 +1,7 @@
 # Specification:
 # https://uwaterloo.ca/communications-security-lab/sites/ca.communications-security-lab/files/uploads/files/ace-spec-round2.pdf
 
-node f(x:u32) returns (y:u32)
+node f(x:b32) returns (y:b32)
 let
     y = ((x <<< 5) & x) ^ (x <<< 1)
 tel

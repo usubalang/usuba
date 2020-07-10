@@ -58,6 +58,11 @@ let
 tel
 
 
+node AddRoundKey(i:b128,key:b128) returns (r:b128)
+let
+    r = i ^ key
+tel
+
 
 node AES (plain:u16x8,key:u16x8[11]) returns (cipher:u16x8)
 vars
@@ -68,10 +73,10 @@ let
 
     # 9 rounds (the last is special)
     forall i in [1,9] {
-      tmp[i] = MixColumn( ShiftRows( SubBytes( tmp[i-1] ) ) ) ^ key[i]
+      tmp[i] = AddRoundKey(MixColumn( ShiftRows( SubBytes( tmp[i-1]))), key[i])
     }
 
     # Last (10th) round (no MixColumn)
-    cipher = ShiftRows(SubBytes(tmp[9])) ^ key[10]
+    cipher = AddRoundKey(ShiftRows(SubBytes(tmp[9])), key[10])
 
 tel

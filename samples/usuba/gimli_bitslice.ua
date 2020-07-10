@@ -5,7 +5,7 @@
 # be directly bitsliced by Usuba. This is why there are two versions
 # of Gimli here: the first one uses u32 while the second one uses b32.
 
-_no_inline node SPbox (col:b32[3]) returns (colR:b32[3])
+node SPbox (col:b32[3]) returns (colR:b32[3])
 vars
     x, y, z : b32
 let
@@ -25,16 +25,20 @@ let
     }
 tel
 
+# XXX: imperative update of state
 node SmallSwap (state:b32[3][4]) returns (stateR:b32[3][4])
 let
     stateR = (state[0][1,0,3,2], state[1,2][0..3]);
 tel
 
+# XXX: imperative update of state
 node BigSwap (state:b32[3][4]) returns (stateR:b32[3][4])
 let
+    # XXX: need a temp for update
     stateR = (state[0][2,3,0,1], state[1,2][0..3]);
 tel
 
+# XXX: imperative update of state
 node AddRC (state:b32[3][4],rc:b32) returns (stateR:b32[3][4])
 let
     stateR = (state[0][0] ^ rc, state[0][1..3], state[1,2])
@@ -50,6 +54,7 @@ let
 
     round[0] = state;
 
+    # XXX: support static conditionals to unroll this tedious composition
     forall r in [0,5] {
       round[r+1] = NonlinearLayer(
                      BigSwap(

@@ -1,7 +1,8 @@
-# Bitsliced version
+# Bitsliced version (only known version)
 # Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/photon-beetle-spec-round2.pdf
+# Supported mode: bitslicing
 
-_no_inline table Sbox (x:b4) returns (y:b4) {
+table Sbox (x:b4) returns (y:b4) {
     12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2
 }
 
@@ -9,6 +10,7 @@ node SubCells(x:b4[8][8]) returns (y:b4[8][8])
 let
     forall i in [0, 7] {
         forall j in [0, 7] {
+            # XXX: use lifting from b4 to b4[8][8]
             y[i][j] = Sbox(x[i][j]) 
         }
     }
@@ -18,6 +20,7 @@ node ShiftRows(x:b4[8][8]) returns (y:b4[8][8])
 let
     forall i in [0, 7] {
         forall j in [0, 7] {
+            # XXX: using lifting from b4[8] to b4[>8<][8] (on inner dimension)
             y[i][j] = x[i][(j+i) % 8]
         }
     }
@@ -34,7 +37,7 @@ let
     }
 tel
 
-
+# BEGIN MATRIX MULT
 node xtimes(e:b4) returns (e':b4)
 vars
     t, c: b4
@@ -70,10 +73,11 @@ let
     
     Y = x[8]
 tel
-
+# END MATRIX MULT
 
 node MixColumnSerial(X:b4[8][8]) returns (Y:b4[8][8])
 let
+    # XXX: lifting MixColumnRow from b4[8] to b4[>8<][8]
     forall i in [0, 7] { Y[0..7][i] = MixColumnRow(X[0..7][i]) }
 tel
 
@@ -85,6 +89,7 @@ vars
 let
     RC = (1:b4, 3:b4, 7:b4, 14:b4, 13:b4, 11:b4, 6:b4, 12:b4, 9:b4, 2:b4, 5:b4, 10:b4);
     
+    # XXX: imperative loop
     state[0] = plain;
     forall i in [0, 11] {
         state[i+1] =

@@ -1,4 +1,5 @@
 # Specification: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/ascon-spec-round2.pdf
+# Supported mode: ???
 # Misc.:
 #   https://ascon.iaik.tugraz.at/
 
@@ -32,6 +33,7 @@ let
               0x96, 0x87, 0x78, 0x69, 0x5a, 0x4b);
 
     state[0] = input;
+    # XXX: use imperative loop
     forall i in [0, 11] {
         state[i+1] = LinearLayer(Sbox(AddConstant(state[i],consts[i])))
     }
