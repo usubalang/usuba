@@ -100,11 +100,15 @@ Record def := {
   p_out : p;
   opt   : list def_opt;
   node  : def_i;
-}.
+             }.
+
+Inductive def_or_inc := Def (d:def) | Inc (s:string).
 
 Record prog := {
   nodes : list def;
 }.
+
+
 
 
 Inductive arch :=
@@ -123,6 +127,7 @@ Record config := {
   warnings     : bool; (* Doesn't do anything... I think *)
   verbose      : N;    (* 5   = prints which passes are getting executed,
                           100 = prints the Usuba program after each pass *)
+  path         : list string; (* Path to search for "include" directives *)
   type_check   : bool; (* Enables type-checking *)
   check_tbl    : bool; (* Enables verification of tables to circuit conversion *)
   auto_inline  : bool; (* Lets Usuba chose which nodes to inline or not *)
@@ -178,6 +183,6 @@ Record config := {
 
 Set Extraction KeepSingleton.
 Extraction "usuba_AST.ml"
-           config prog def def_opt def_i p var_d var_d_opt
+           config prog def_or_inc def def_opt def_i p var_d var_d_opt
            deq deq_i expr var typ arith_expr shift_op
            arith_op log_op ident arch.

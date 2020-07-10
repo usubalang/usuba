@@ -130,8 +130,10 @@ let rewrite_single_table (id:ident) (p_in:p) (p_out:p)
   if conf.precal_tbl then
     try
       let (found,_) = List.find (fun (a,b) -> b = l) Sbox_index.sboxes in
-      let file_name = Config.data_dir ^ "/sboxes/" ^ found ^ ".ua" in
-      let new_node = Rename.rename_def (List.nth (Parser_api.parse_file file_name).nodes 0) in
+      let sbox_dir = Config.data_dir ^ "/sboxes/" in
+      let file_name = sbox_dir ^ found ^ ".ua" in
+      let new_node = Rename.rename_def
+                       (List.nth (Parser_api.parse_file [ sbox_dir ] file_name).nodes 0) in
       { new_node with id = id;
                       p_in = fix_p p_in new_node.p_in;
                       p_out = fix_p p_out new_node.p_out;

@@ -10,6 +10,7 @@ open Config
 
 let warnings    = ref false
 let verbose     = ref 1
+let path        = ref [ "." ]
 let type_check  = ref true
 let check_tbl   = ref false
 
@@ -127,6 +128,7 @@ let main () =
   let speclist =
     [ "-w", Arg.Set warnings, "Activate warnings";
       "-v", Arg.Set_int verbose, "Set verbosity level";
+      "-I", Arg.String (fun s -> path := s :: !path), "Add the directory to the list of directories to be searched for includes.";
       "-check-tbl", Arg.Set check_tbl, "Activate verification of tables";
       "-no-type-check", Arg.Clear type_check, "Deactivate type checking";
       "-no-inline", Arg.Set no_inline, "Deactivate inlining opti";
@@ -185,12 +187,13 @@ let main () =
   let usage_msg = "Usage: usuba [switches] [files]" in
 
   let compile s =
-    let prog = Parser_api.parse_file s in
     let bits_per_reg = if !bits_per_reg <> 64 then !bits_per_reg
                        else if !shares <> 1 then 32 else
                          bits_in_arch !arch in
 
     let pre_sched = !pre_schedule (* && !scheduling *) in
+
+    let path = (Filename.dirname s) :: (List.rev !path) in
 
     if !maskVerif then (
       unroll    := true;
@@ -207,6 +210,7 @@ let main () =
     let conf = {
         warnings       =   !warnings;
         verbose        =   !verbose;
+        path           =   path; (* local var *)
         type_check     =   !type_check;
         check_tbl      =   !check_tbl;
         auto_inline    =   !auto_inline;
@@ -252,7 +256,9 @@ let main () =
         bench_bitsched =   !bench_bitsched || !bench_all;
         bench_msched   =   !bench_msched   || !bench_all;
         bench_sharevar =   !bench_sharevar || !bench_all;
-      } in
+    } in
+
+    let prog = Parser_api.parse_file conf.path s in
 
     compile s prog conf in
 

@@ -15,6 +15,7 @@ exception Skip
 let default_conf : config =
   { warnings       = true;
     verbose        = 1;
+    path           = [ "." ];
     type_check     = true;
     check_tbl      = false;
     auto_inline    = true;

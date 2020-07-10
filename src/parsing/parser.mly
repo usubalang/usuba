@@ -36,6 +36,7 @@
 %token TOK_LAZYLIFT
 %token TOK_PIPELINED
 %token TOK_SAFEEXIT
+%token TOK_INCLUDE
 
 %token TOK_NAT
 %token TOK_B
@@ -78,6 +79,7 @@
 %token <Usuba_AST.ident> TOK_id_no_x
 %token <int> TOK_int
 %token <Usuba_AST.dir> TOK_dir
+%token <string> TOK_str
 
 %token TOK_EOF
 
@@ -97,7 +99,7 @@
 
 
 (******************************** Entry Point *********************************)
-%start<Usuba_AST.prog> prog
+%start<Usuba_AST.def_or_inc list> prog
 %start<Usuba_AST.arith_expr> arith_exp_a
 %start<Usuba_AST.var> var_a
 %start<Usuba_AST.expr> exp_a
@@ -107,7 +109,7 @@
 %%
 
 prog:
-  | body=list(def) TOK_EOF { { nodes = body } }
+  | body=list(def_or_inc) TOK_EOF { body }
 
 %inline log_op:
   | TOK_AND   { And }
@@ -289,6 +291,14 @@ opt_def:
    | TOK_NOINLINE { No_inline }
    | TOK_INTERLEAVE TOK_LPAREN n=TOK_int TOK_RPAREN { Interleave n }
    | TOK_NOOPT    { No_opt    }
+
+
+def_or_inc:
+   | d=def { Def d }
+   | s=inc { Inc s }
+
+inc:
+  | TOK_INCLUDE s=TOK_str { s }
 
 def:
   (* A node *)
