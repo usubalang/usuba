@@ -1,18 +1,18 @@
 # Specification: https://eprint.iacr.org/2011/697.pdf
 # Supported mode: ???
 
-table sBox (x:b4) returns (y:b4) {
+table sBox : b4 -> b4 {
     0xe,0xd,0xb,0x0,0x2,0x1,0x4,0xf,0x7,0xa,0x8,0x5,0x9,0xc,0x3,0x6
 }
 
-node sBoxLayer(state:b8[20]) returns (stateR:b8[20])
+node sBoxLayer(*state:b8[20])
 let
     # XXX: first level of lifting
     forall i in [0, 19] {
         # XXX: second level of lifting
         # XXX: lifting b4 -> b8[20] of sBox
-        stateR[i][0..3] = sBox(state[i][0..3]);
-        stateR[i][4..7] = sBox(state[i][4..7]);
+        state[i][0..3] := sBox(state[i][0..3]);
+        state[i][4..7] := sBox(state[i][4..7]);
     }
 tel
 
@@ -33,35 +33,51 @@ let
     stateR[19][0] = state[19][0];
 tel
 
-# XXX: in-place update of state
-node counterLayer(state:b8[20],counter:b8) returns (stateR:b8[20])
+node counterLayer(*state:b8[20],counter:b8)
 let
-    stateR[1..18] = state[1..18];
-    stateR[0]     = state[0]  ^ counter;
-    stateR[19]    = state[19] ^ counter[7..0];
+    state[0]  ^:= (counter, 0);
+    state[19] ^:= (0, counter[6..0]);
 tel
 
-# XXX: in-place update of state
-node lfsr(counter:b8) returns (counterR:b8)
+# XXX: this may not  actually be in-place?
+node lfsr(*counter:b7)
 let
-    # XXX: dispense with :b8?
-    counterR = ((counter << 1) | (((0x40:b8 & counter) >> 6) ^ ((0x20:b8 & counter) >> 5))) & 0x7f:b8;
+    counter :=   (counter << 1)
+               | (((0x40 & counter) >> 6)
+                ^ ((0x20 & counter) >> 5));
 tel
 
 node permutation(input:b8[20]) returns (output:b8[20])
 vars
-    state:b8[81][20],
-    # XXX: why a u7?
-    counter:b8[81] # Actually u7, but this is maintained manually
+    state:b8[20],
+    counter:b7
 let
-    state[0]   = input;
-    counter[0] = 0x75:b8;
 
-    # XXX: use imperative loops
-    forall i in [0, 79] {
-        state[i+1]   = pLayer(sBoxLayer(counterLayer(state[i],counter[i])));
-        counter[i+1] = lfsr(counter[i]);
+    forall i in [0, 80] {
+     i = 0:    state   = input;
+               counter = 0x75;
+     _    :    state   := pLayer(sBoxLayer(counterLayer(state,counter)));
+               counter := lfsr(counter);
     }
 
-    output = state[80];
+    output = state;
 tel
+
+
+# XXX: Is this the "same"? yes if unrolling and constant propagation from counter[0]
+
+# node permutation'(input:b8[20], counter: b7[80]) returns (output:b8[20])
+# let
+#    ...
+# tel
+
+# node permutation(input:b8[20]) returns (output:b8[20])
+# vars
+#     counter: b7[80]
+# let
+#     counter[0] = 0x75
+#     forall i in [1, 80]{
+#       counter[i] = lfsr(counter[i-1])
+#     }
+#     permutation'(input, counter)
+# tel

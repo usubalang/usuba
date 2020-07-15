@@ -5,7 +5,7 @@
 # XXX: only difference with gimli_bitslicing.ua: refresh(.)
 # XXX: two versions (!) + another in gimli_bitslicing of `SPbox` because of the refresh(.)
 
-node SPbox_Rx (col:u32[3]) returns (colR:u32[3])
+node SPbox_Rx (*col:u32[3])
 vars
     x, y, z, x_R : u32
 let
@@ -15,9 +15,9 @@ let
 
     x_R = refresh(x);
 
-    colR[2] = x ^ (z << 1) ^ ((y&z) << 2);
-    colR[1] = y ^ x        ^ ((x_R|z) << 1);
-    colR[0] = z ^ y        ^ ((x_R&y) << 3);
+    col[2] := x ^ (z << 1) ^ ((y&z) << 2);
+    col[1] := y ^ x        ^ ((x_R|z) << 1);
+    col[0] := z ^ y        ^ ((x_R&y) << 3);
 tel
 
 node SPbox_Rxy (col:u32[3]) returns (colR:u32[3])

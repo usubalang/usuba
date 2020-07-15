@@ -21,7 +21,7 @@ let
     y2 = (y0 & y1_R) ^ x3
 tel
 
-node lbox(x,y:u32) returns (xr,yr:u32)
+node lbox(*x,*y:u32)
 vars
     a, b, c, d: u32
 let
@@ -38,18 +38,18 @@ let
     b := b ^ (c >>> 25);
     a := a ^ (c >>> 15);
     b := b ^ (d >>> 15);
-    (xr, yr) = (a,b)
+    (x, y) := (a,b)
 tel
 
-node lbox_layer(state:u32x4) returns (stateR:u32x4)
+node lbox_layer(*state:u32x4)
 let
-    stateR = (lbox(state[0], state[1]), 
+    state := (lbox(state[0], state[1]),
               lbox(state[2], state[3]))
 tel
 
-node add_rc(state:u32x4, rc:u32x4) returns (stateR:u32x4)
+node add_rc(*state:u32x4, rc:u32x4)
 let
-    stateR = state ^ rc
+    state := state ^ rc
 tel
 
 node tweakey (key,tweak:u32x4) returns (tk:u32x4[3])
@@ -63,36 +63,35 @@ let
 tel
 
 
-node clyde128 (state,key,tweak:u32x4) returns (cipher:u32x4)
+node clyde128 (plain,key,tweak:u32x4) returns (cipher:u32x4)
 vars
     rc:u32x4[12],
-    round:u32x4[19],
+    state:u32x4[19],
     tk:u32x4[3]
 let
-    rc[0]  = (1, 0, 0, 0);
-    rc[1]  = (0, 1, 0, 0);
-    rc[2]  = (0, 0, 1, 0);
-    rc[3]  = (0, 0, 0, 1);
-    rc[4]  = (1, 1, 0, 0);
-    rc[5]  = (0, 1, 1, 0);
-    rc[6]  = (0, 0, 1, 1);
-    rc[7]  = (1, 1, 0, 1);
-    rc[8]  = (1, 0, 1, 0);
-    rc[9]  = (0, 1, 0, 1);
-    rc[10] = (1, 1, 1, 0);
-    rc[11] = (0, 1, 1, 1);
+    rc = ((1, 0, 0, 0),
+          (0, 1, 0, 0),
+          (0, 0, 1, 0),
+          (0, 0, 0, 1),
+          (1, 1, 0, 0),
+          (0, 1, 1, 0),
+          (0, 0, 1, 1),
+          (1, 1, 0, 1),
+          (1, 0, 1, 0),
+          (0, 1, 0, 1),
+          (1, 1, 1, 0),
+          (0, 1, 1, 1));
 
     tk = tweakey(key,tweak);
 
-    round[0] = state ^ tk[0];
-
-    # XXX: need imperative loop: UGLY!
     forall s in [0, 5] {
-      round[s*3+1] = add_rc(lbox_layer(sbox_R(round[s*3])), rc[s*2]);
-      round[s*3+2] = add_rc(lbox_layer(sbox(round[s*3+1])), rc[s*2+1]);
-      round[s*3+3] = round[s*3+2] ^ tk[(s+1)%3];
+      s = 0: state = plain ^ tk[0];
+      _    : forall rho in [0, 1] {
+              rho = 0: state := add_rc(lbox_layer(sbox_R(state)), rc[2*s + rho]);
+              rho = 1: state := add_rc(lbox_layer(sbox(state)), rc[2*s + rho]);
+             }
+             state := state ^ tk[(s + 1) % 3];
     }
 
-    cipher = round[18]
-
+    cipher = state
 tel

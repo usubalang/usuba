@@ -5,31 +5,47 @@
 # turn into an in-place update
 # XXX: similarly, loops ought to turn into updates with temps
 
-node chi(state:b257) returns (stateR:b257)
-let
-    forall i in [0, 254] {
-        stateR[i] = state[i] ^ ((1 ^ state[i+1]) & state[i+2]);
-    }
-    stateR[255] = state[255] ^ ((1 ^ state[256]) & state[0]);
-    stateR[256] = state[256] ^ ((1 ^ state[0]) & state[1]);
-tel
-
-node iota(state:b257) returns (stateR:b257)
-let
-    # XXX: want to only write `state[0] <- state[0] ^ 1` here
-    stateR[0] = state[0] ^ 1;
-    forall i in [1, 256] { stateR[i] = state[i] }
-tel
-
-node theta(state:b257) returns (stateR:b257)
+node chi(*state:b257)
 let
     forall i in [0, 256] {
-        # XXX: in-place update will certainly require a few temp vars here
-        stateR[i] = state[i] ^ state[(i+3)%257] ^ state[(i+8)%257]
+      state[i] ^:= (1 ^ state[(i+1) % 257]) & state[(i+2) % 257];
     }
 tel
 
-perm phi(state:b257) returns (stateR:b257) {
+# Equivalently, but perhaps more evidently perf:
+# node chi(*state:b257)
+# let
+#     tmp0 = state[0]
+#     tmp1 = state[1]
+#     forall i in [0, 254] {
+#        state[i]   := state[i] ^ ((1 ^ state[i+1]) & state[i+2]);
+#     }
+#     state[255] := state[255] ^ ((1 ^ state[256]) & tmp0);
+#     state[256] := state[256] ^ ((1 ^ tmp0) & tmp1);
+# tel
+
+node iota(*state:b257)
+let
+    state[0] := state[0] ^ 1;
+tel
+
+node theta(*state:b257)
+let
+    forall i in [0, 256] {
+        # XXX: in-place update will require (quite) a few temp vars here if you make a `for` loop
+        state[i] ^:= state[(i+3)%257] ^ state[(i+8)%257]
+    }
+tel
+
+# Explicitly breaking sharing:
+# node theta(state:b257) returns (stateR: b257)
+# let
+#     forall i in [0, 256] {
+#         stateR[i] = state[i] ^ state[(i+3)%257] ^ state[(i+8)%257]
+#     }
+# tel
+
+perm phi : b257 -> b257 {
       1,  13,  25,  37,  49,  61,  73,  85,  97, 109, 121, 133, 145, 157, 169, 181,
     193, 205, 217, 229, 241, 253,   8,  20,  32,  44,  56,  68,  80,  92, 104, 116,
     128, 140, 152, 164, 176, 188, 200, 212, 224, 236, 248, 3, 15, 27, 39,  51,  63,
@@ -49,24 +65,21 @@ perm phi(state:b257) returns (stateR:b257) {
 }
 
 
-node round(state:b257) returns (stateR:b257)
+node round(*state:b257)
 let
     # phi is not in-place
-    stateR = phi(theta(iota(chi(state))))
+    state := phi(theta(iota(chi(state))))
 tel
 
-node xor1(state:b257) returns (stateR:b257)
+node xor1(*state:b257)
 let
-    # XXX: want to only write `state[1] <- state[1] ^ 1` here
-    stateR[0] = state[0];
-    stateR[1] = state[1] ^ 1;
-    forall i in [2, 256] { stateR[i] = state[i] }
+    state[1] ^:= 1;
 tel
 
 node blank(state:b257) returns (stateR:b257)
-vars tmp:b257[9]
 let
-    tmp[0] = state;
-    forall i in [0, 7] { tmp[i+1] = xor1(round(tmp[i])); }
-    stateR = tmp[8];
+    forall i in [0, 8] {
+      i = 0: stateR = state;
+      _    : stateR := xor1(round(stateR))
+    }
 tel
