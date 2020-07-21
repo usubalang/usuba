@@ -9,6 +9,7 @@ let optimize (runner:pass_runner) (prog: Usuba_AST.prog) (conf:config) : Usuba_A
 
   runner#run_modules_bench
            [
+             Inplace.as_pass, true,                        Pass_runner.Always;
              Interleave.as_pass, conf.interleave > 0,      Pass_runner.Custom conf.bench_inter;
              Simple_opts.as_pass, true,                    Pass_runner.Always;
              Fuse_loop_general.as_pass, conf.loop_fusion,  Pass_runner.Always;

@@ -65,7 +65,7 @@ Inductive expr :=
 Inductive stmt_opt := Unroll | No_unroll | Pipelined | Safe_exit.
 
 Inductive _deq_i (X:Type) : Type :=
-  | Eqn (vs: list var)(e: expr)(sync:bool)
+  | Eqn (vs: list var) (e: expr) (imp:bool)
   | Loop (x: ident)(ae1 ae2: arith_expr)(dl: list X) (opts:list stmt_opt).
 
 Inductive deq := {
@@ -80,10 +80,11 @@ Definition deq_i := _deq_i deq.
 Inductive var_d_opt := Pconst | PlazyLift.
 
 Inductive var_d := {
-  vd_id   : ident;
-  vd_typ  : typ;
-  vd_opts : list var_d_opt;
-  vd_orig : list (ident * var_d); (* A list of functions from where this variable was inlined *)
+  vd_id      : ident;
+  vd_typ     : typ;
+  vd_inplace : bool;
+  vd_opts    : list var_d_opt;
+  vd_orig    : list (ident * var_d); (* A list of functions from where this variable was inlined *)
 }.
 
 Definition p := list var_d.
@@ -102,7 +103,7 @@ Record def := {
   p_out : p;
   opt   : list def_opt;
   node  : def_i;
-             }.
+}.
 
 Inductive def_or_inc := Def (d:def) | Inc (s:string).
 

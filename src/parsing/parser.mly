@@ -11,6 +11,11 @@
      | [] -> raise Syntax_error
      | x::[] -> ExpVar x
      | _ -> Tuple (List.map (fun x -> ExpVar x) l)
+
+  (* Adds |def|'s inputs that are in-place to its outputs *)
+  let fix_p_out (def:def) : def =
+    { def with p_out = (List.filter (fun vd -> vd.vd_inplace) def.p_in) @ def.p_out }
+
 %}
 
 /*******************\
@@ -241,9 +246,22 @@ opt_var_d:
   TOK_CONST { Pconst }
   | TOK_LAZYLIFT { PlazyLift }
 
+var_ident:
+  | TOK_STAR id=ident { id, true  }
+  | id=ident          { id, false }
+
+var_d_in:
+  ids=separated_list(TOK_COMMA, var_ident) TOK_COLON attr=list(opt_var_d) t=typ
+  { List.map (fun x -> { vd_id = fst x; vd_typ=t; vd_inplace = snd x;
+                         vd_opts=attr; vd_orig=[] }) ids }
+
 var_d:
   ids=separated_list(TOK_COMMA, ident) TOK_COLON attr=list(opt_var_d) t=typ
-  { List.map (fun x -> { vd_id = x; vd_typ=t; vd_opts=attr; vd_orig=[] }) ids }
+  { List.map (fun x -> { vd_id = x; vd_typ=t; vd_inplace = false;
+                         vd_opts=attr; vd_orig=[] }) ids }
+
+p_in:
+  | l=separated_list(TOK_COMMA, var_d_in) { List.flatten l }
 
 p:
   | l=separated_list(TOK_COMMA, var_d) { List.flatten l }
@@ -300,46 +318,51 @@ def_or_inc:
 inc:
   | TOK_INCLUDE s=TOK_str { s }
 
+returns:
+  | (* Normal return *) TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN { p_out }
+  | (* No return specified (node is in place) *) { [] }
+
 def:
   (* A node *)
-  | opts=list(opt_def) TOK_NODE f=ident TOK_LPAREN p_in=p TOK_RPAREN
-    TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
+  | opts=list(opt_def) TOK_NODE f=ident TOK_LPAREN p_in=p_in TOK_RPAREN
+    p_out=returns
     TOK_VAR vars=p TOK_LET body=deqs TOK_TEL
-    { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Single(vars,body) } }
+    { fix_p_out { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Single(vars,body) } }
   (* A node without local variables *)
-  | opts=list(opt_def) TOK_NODE f=ident TOK_LPAREN p_in=p TOK_RPAREN
-    TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
+  | opts=list(opt_def) TOK_NODE f=ident TOK_LPAREN p_in=p_in TOK_RPAREN
+    p_out=returns
     TOK_LET body=deqs TOK_TEL
-    { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Single([],body) } }
+    { fix_p_out { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Single([],body) } }
   (* A permutation *)
-  | opts=list(opt_def) TOK_PERM f=ident TOK_LPAREN p_in=p TOK_RPAREN
-    TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
+  | opts=list(opt_def) TOK_PERM f=ident TOK_LPAREN p_in=p_in TOK_RPAREN
+    p_out=returns
     TOK_LCURLY l=intlist TOK_RCURLY
-  { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Perm l } }
+  { fix_p_out { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Perm l } }
   (* A table *)
-  | opts=list(opt_def) TOK_TABLE f=ident TOK_LPAREN p_in=p TOK_RPAREN
-    TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
+  | opts=list(opt_def) TOK_TABLE f=ident TOK_LPAREN p_in=p_in TOK_RPAREN
+    p_out=returns
     TOK_LCURLY l=intlist TOK_RCURLY
-  { { id=f;p_in=p_in;p_out=p_out;opt=Is_table::opts;node=Table l } }
+  { fix_p_out { id=f;p_in=p_in;p_out=p_out;opt=Is_table::opts;node=Table l } }
 
   (* ARRAYS *)
   (* An array of nodes *)
-  | opts=list(opt_def) TOK_NODE TOK_LBRACKET TOK_RBRACKET f=ident TOK_LPAREN p_in=p
-    TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
+  | opts=list(opt_def) TOK_NODE TOK_LBRACKET TOK_RBRACKET f=ident TOK_LPAREN p_in=p_in
+    TOK_RPAREN p_out=returns TOK_LBRACKET
     l = def_list TOK_RBRACKET
-    { { id=f;p_in=p_in;p_out=p_out;opt=opts;
-        node=Multiple (List.map (fun (x,y) -> Single(x,y)) l) } }
+    { fix_p_out { id=f;p_in=p_in;p_out=p_out;opt=opts;
+                  node=Multiple (List.map (fun (x,y) -> Single(x,y)) l) } }
   (* An array of permutations *)
-  | opts=list(opt_def) TOK_PERM TOK_LBRACKET TOK_RBRACKET f=ident TOK_LPAREN p_in=p
-    TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
+  | opts=list(opt_def) TOK_PERM TOK_LBRACKET TOK_RBRACKET f=ident TOK_LPAREN p_in=p_in
+    TOK_RPAREN p_out=returns TOK_LBRACKET
     l = permlist TOK_RBRACKET
-  { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Multiple (List.map (fun x -> Perm x ) l) } }
+    { fix_p_out { id=f;p_in=p_in;p_out=p_out;opt=opts;
+                  node=Multiple (List.map (fun x -> Perm x ) l) } }
   (* An array of table *)
-  | opts=list(opt_def) TOK_TABLE TOK_LBRACKET TOK_RBRACKET f=ident TOK_LPAREN p_in=p
-    TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
+  | opts=list(opt_def) TOK_TABLE TOK_LBRACKET TOK_RBRACKET f=ident TOK_LPAREN p_in=p_in
+    TOK_RPAREN p_out=returns TOK_LBRACKET
     l = permlist TOK_RBRACKET
-  { { id=f;p_in=p_in;p_out=p_out;opt=Is_table::opts;
-      node=Multiple (List.map (fun x -> Table x) l) } }
+    { fix_p_out { id=f;p_in=p_in;p_out=p_out;opt=Is_table::opts;
+                  node=Multiple (List.map (fun x -> Table x) l) } }
 def_a: d=def TOK_EOF { d }
 
 intlist: l=separated_nonempty_list(TOK_COMMA, TOK_int) { l }

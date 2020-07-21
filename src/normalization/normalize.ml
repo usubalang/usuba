@@ -11,7 +11,7 @@ let norm_prog (rename:bool) (prog:prog) (conf:config) : prog =
                           Expand_multiples.as_pass;
                           Convert_tables.as_pass;
                           Expand_array.as_pass;
-                          Remove_sync.as_pass;
+                          (* Remove_sync.as_pass; *)
                           Init_scheduler.as_pass;
                           Normalize_core.as_pass;
                           Monomorphize.as_pass;
@@ -30,7 +30,9 @@ let optimize (prog:prog) (conf:config) : prog =
 
   let prog =
     runner#run_modules_guard
-           [ Simple_opts.as_pass,          true;
+           [
+             (* Inplace.as_pass,              true; *)
+             Simple_opts.as_pass,          true;
              Pre_schedule.as_pass,         conf.pre_schedule;
              Normalize_core.as_pass,       true ] prog in
 

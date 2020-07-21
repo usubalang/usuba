@@ -156,15 +156,16 @@ let gen_list_0_int (n: int) : int list =
     else aux (n-1) ((n-1) :: acc)
   in aux n []
 
-let make_var_d (id:ident) (typ:typ)
+let make_var_d (id:ident) (typ:typ) (inplace:bool)
                (opts:var_d_opt list) (orig:(ident*var_d) list) : var_d =
-  { vd_id   = id;
-    vd_typ  = typ;
-    vd_opts = opts;
-    vd_orig = orig }
+  { vd_id      = id;
+    vd_typ     = typ;
+    vd_inplace = inplace;
+    vd_opts    = opts;
+    vd_orig    = orig }
 
-let simple_var_d (id:ident) = make_var_d id bool [] []
-let simple_typed_var_d (id:ident) (typ:typ) = make_var_d id typ [] []
+let simple_var_d (id:ident) = make_var_d id bool false [] []
+let simple_typed_var_d (id:ident) (typ:typ) = make_var_d id typ false [] []
 
 let env_fetch env v =
   (* try *)
@@ -342,6 +343,12 @@ let rec expand_var_partial env_var ?(env_it=Hashtbl.create 100) (v:var) : var li
 let expand_vd (vd:var_d) : var list =
   expand_var (build_env_var [vd] [] []) (Var vd.vd_id)
 
+(* Takes an expression that is an ExpVar and returns the var *)
+let expr_to_var (e:expr) : var =
+  match e with
+  | ExpVar v -> v
+  | _ -> assert false
+
 (* Returns the base variable of a variable (ie, remove ranges/slices/index) *)
 let rec get_var_base (v:var) : var =
   match v with
@@ -353,6 +360,9 @@ let rec get_base_name (v:var) : ident =
   match v with
   | Var x -> x
   | Index(v,_) | Slice(v,_) | Range(v,_,_) -> get_base_name v
+
+let get_expr_base_name (e:expr) : ident =
+  get_base_name (expr_to_var e)
 
 let rec replace_base (v:var) (id:ident) : var =
   match v with
@@ -571,3 +581,7 @@ let get_deq_expr (deq:deq) : expr =
 let all_vars_same_m (var_l:var_d list) : bool =
   let first_m = get_type_m (List.hd var_l).vd_typ in
   List.for_all (fun vd -> get_type_m vd.vd_typ = first_m) var_l
+
+(* Returns true if |f| is a primitive *)
+let is_primitive (f:ident) : bool =
+  List.mem f.name [ "refresh" ]

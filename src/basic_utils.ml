@@ -195,3 +195,12 @@ let list_to_tuple2 l = match l with
 let list_to_tuple3 l = match l with
   | [ x; y; z ] -> (x, y, z)
   | _ -> assert false
+
+(* Replace the start of |l| with |startl|. *)
+let rec replace_start (l:'a list) (start_l:'a list) : 'a list =
+  match start_l with
+  | [] -> l
+  | start_hd :: start_tl ->
+     match l with
+     | [] -> start_l
+     | _ :: tl -> start_hd :: (replace_start tl start_tl)

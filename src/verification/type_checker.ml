@@ -69,22 +69,37 @@ let build_env_fun (backtrace:string list) (prog:prog) : (ident,def) Hashtbl.t =
 
 (* Using a custom build_env_var to check for variable redefinition. *)
 let build_env_var (backtrace:string list) (p_in:p) (p_out:p) (vars:p) : (ident, typ) Hashtbl.t =
-  let env = Hashtbl.create 100 in
+  let ret_env = Hashtbl.create 100 in
 
-  let add_to_env vd =
+  let add_to_env (env:(ident,typ) Hashtbl.t) (vd:var_d) : unit =
     match Hashtbl.mem env vd.vd_id with
-    | true -> eprintf
-                "[Type error] Redeclaration of variable `%s'.\n"
-                vd.vd_id.name;
-              print_backtrace backtrace;
-              error := true;
+    | true ->
+       eprintf
+         "[Type error] Redeclaration of variable `%s'.\n"
+         vd.vd_id.name;
+       print_backtrace backtrace;
+       error := true;
     | false -> Hashtbl.add env vd.vd_id vd.vd_typ in
 
-  List.iter add_to_env p_in;
-  List.iter add_to_env p_out;
-  List.iter add_to_env vars;
+  let add_all_to_env (is_local_var:bool) (p:p) : unit =
+    let local_env = Hashtbl.create 100 in
+    List.iter (add_to_env local_env) p;
+    Hashtbl.iter (fun id typ ->
+                  match Hashtbl.mem ret_env id with
+                  | true  -> if is_local_var then
+                               (eprintf "[Type error] Local variable `%s' is already declared as a parameter.\n"
+                                        id.name;
+                                print_backtrace backtrace;
+                                error := true)
+                            (* else, variable will be modified in place *)
+                  | false -> Hashtbl.add ret_env id typ) local_env in
 
-  env
+
+  add_all_to_env false p_in;
+  add_all_to_env false p_out;
+  add_all_to_env true vars;
+
+  ret_env
 
 (* Returns a string representation of env_it *)
 let env_it_to_str (env_it:(ident,int) Hashtbl.t) : string =

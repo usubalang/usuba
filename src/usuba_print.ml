@@ -169,7 +169,8 @@ let full_vd_to_str (vd:var_d) =
           (full_typ_to_str vd.vd_typ)
 
 let vd_to_str (vd:var_d) =
-  sprintf "%s : %s %s"
+  sprintf "%s%s : %s %s"
+          (if vd.vd_inplace then "*" else "")
           vd.vd_id.name
           (var_d_opt_to_str_l vd.vd_opts)
           (typ_to_str vd.vd_typ)
