@@ -1,0 +1,42 @@
+\documentclass[crop,rgb,tikz,10pt]{standalone}
+
+\usepackage[style=numeric,maxbibnames=99]{biblatex}
+
+\usetikzlibrary{matrix,chains,patterns}
+
+
+\begin{document}
+\begin{tikzpicture}[node distance=.5cm,start chain=going below,scale=1, every node/.style={scale=1}]
+
+\foreach \D in {1,2,4} {
+  \foreach \Rs in {1,2,4} {
+    %% Scale color over all present blocks
+    % \pgfmathtruncatemacro{\maxblock}{32/(\D * \Rs)}
+    %% Same colors throughout
+    \ifthenelse{\Rs = 1 \and \D = 1}
+               {\pgfmathtruncatemacro{\maxblock}{32}}
+               {\pgfmathtruncatemacro{\maxblock}{20}}
+
+    \node[on chain] {$(D, R_s) = (\D, \Rs)$};
+    \begin{scope}[node distance=0cm,start branch=array going left]
+      \foreach \x in {0,...,31} {
+        \pgfmathtruncatemacro{\block}{Mod(\x/\D,32/(\D * \Rs))}
+        \pgfmathtruncatemacro{\copy}{1+(\x/\D)/(32 / (\D * \Rs))}
+        \pgfmathtruncatemacro{\share}{1+Mod(\x,\D)}
+
+        %% Continuous coloring per blocks
+        % \pgfmathsetmacro{\ratio}{\block/\maxblock}
+        %% Maximize contrast
+        \pgfmathsetmacro{\ratio}{(Mod(\block, 2) * (\maxblock / 2) + \block/2)/\maxblock}
+        \definecolor{currentcolor}{hsb}{\ratio, 1, 1}
+        \ifthenelse{\Rs=1 \AND \D=1}{
+            \colorlet{currentcolor}{white}}{}
+
+        \node[rectangle,draw,fill=currentcolor!50,text width=.28cm,on chain]
+             {\scriptsize{$b_{\block}^{\share}$}};
+      }
+    \end{scope}
+  }
+}
+\end{tikzpicture}
+\end{document}
