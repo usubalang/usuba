@@ -28,7 +28,7 @@ my $bench_opts  = "-D WARMUP=10000 -D NB_RUN=1000000";
 my $c_headers   = "-I ../../../arch";
 my $bin_dir     = "bin";
 my @archs       = qw(sse avx);
-my $nb_run      = 10;
+my $nb_run      = 30;
 
 my %c_opts = (
     sse2 => "-O3 -msse2 -fno-tree-vectorize -fno-slp-vectorize",
