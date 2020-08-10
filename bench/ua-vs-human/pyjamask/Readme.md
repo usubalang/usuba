@@ -3,6 +3,10 @@ Comparison of the performance of an Usuba-generated Pyjamask implementation and 
 
 ## Performances
 
+```
+Usuba: 136.70   +-0.66
+Ref  : 268.94   +-1.75  (x1.97)
+```
 
 ## Correctness
 
