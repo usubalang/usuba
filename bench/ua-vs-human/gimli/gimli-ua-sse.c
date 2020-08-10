@@ -2912,14 +2912,6 @@ uint32_t bench_speed() {
   /* Primitive call */
   gimli__(state__,stateR__);
 
-  for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 4; j++) {
-      uint32_t *tmp = (uint32_t*) &stateR__[i][j];
-      printf("%08x ", tmp[0]);
-    }
-    printf("\n");
-  }
-
   /* Preventing outputs from being optimized out */
   asm volatile("" : "+m" (stateR__));
 
@@ -3027,3 +3019,4 @@ let
 tel
 
 */
+ 

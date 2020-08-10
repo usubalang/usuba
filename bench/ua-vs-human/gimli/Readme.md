@@ -3,6 +3,20 @@ Comparison of the performance of an Usuba-generated Gimli implementation and the
 
 ## Performances
 
+```
+Arch: sse
+Usuba: 3.11   +-0.02
+Ref  : 3.68   +-0.03  (x1.19)
+Ref 2: 3.70   +-0.04  (x1.19)
+
+********************************************************************************
+
+Arch: avx
+Usuba: 1.57   +-0.01
+Ref  : 1.90   +-0.01  (x1.21)
+Ref 2: 1.50   +-0.01  (x0.95)
+```
+
 ## Correctness
 
 The current benchmark does not check for correctness. However, the
