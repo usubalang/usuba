@@ -13,16 +13,16 @@ use List::Util qw( sum );
 use FindBin;
 chdir "$FindBin::Bin";
 
-my $gen     = "@ARGV" =~ /-g/;
-my $compile = "@ARGV" =~ /-c/;
-my $run     = !@ARGV || "@ARGV" =~ /-r/;
+my $gen     = "@ARGV" =~ /-[ag]/;
+my $compile = "@ARGV" =~ /-[ac]/;
+my $run     = !@ARGV || "@ARGV" =~ /-[ar]/;
 
 
 my $cc          = "clang";
 my $c_opts      = "-O3 -march=native -fno-tree-vectorize -fno-slp-vectorize";
 my $source_file = "ascon.ua";
 my $usubac      = "../../../usubac";
-my $ua_opts     = "-gen-bench -inline-all";
+my $ua_opts     = "-gen-bench -inline-all -unroll";
 my $bench_main  = "../../../experimentations/bench_generic/bench.c";
 my $bench_opts  = "-D WARMUP=10000 -D NB_RUN=1000000";
 my $c_headers   = "-I ../../../arch";

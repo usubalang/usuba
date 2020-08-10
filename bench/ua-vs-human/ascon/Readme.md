@@ -3,7 +3,13 @@ Comparison of the performance of an Usuba-generated Ascon implementation and the
 
 ## Performances
 
-TODO
+```
+Usuba: 3.73   +-0.05
+Ref  : 4.96   +-0.07  (x1.33)
+
+Usuba no inter: 4.22   +-0.07  (x1.13)
+Usuba no sched: 4.65   +-0.08  (x1.25)
+```
 
 ## Correctness
 

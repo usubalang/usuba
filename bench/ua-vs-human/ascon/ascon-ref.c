@@ -103,9 +103,9 @@ uint32_t bench_speed() {
   /* Primitive call */
   P12();
 
-
-  printf("%16lx %16lx %16lx %16lx %16lx\n",
-         s.x0, s.x1, s.x2, s.x3, s.x4);
+  // Uncomment for debug
+  /* printf("%16lx %16lx %16lx %16lx %16lx\n", */
+  /*        s.x0, s.x1, s.x2, s.x3, s.x4); */
 
   /* Preventing outputs from being optimized out */
   asm volatile("" : "+m" (s));
