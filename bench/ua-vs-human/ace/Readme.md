@@ -1,4 +1,4 @@
-Comparison of the performance of an Usuba-generated Ascon implementation and the reference speed-optimized implementation
+Comparison of the performance of an Usuba-generated Ace implementation and the reference speed-optimized implementation
 ===
 
 ## Performances
@@ -32,7 +32,7 @@ Usuba no unrolling: 12.59   +-0.03  (x1.23)
 ## Correctness
 
 The current benchmark does not check for correctness. However, the
-Usubac compiler checks for the correctness of the Ascon cipher in its
+Usubac compiler checks for the correctness of the AsconAce cipher in its
 continuous integration tests.
 
 If you want to check to the codes running here are indeed correct, do
