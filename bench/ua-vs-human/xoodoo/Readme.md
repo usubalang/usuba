@@ -3,6 +3,10 @@ Comparison of the performance of an Usuba-generated Xoodoo implementation and th
 
 ## Performances
 
+```
+Usuba: 5.77   +-0.04
+Ref  : 6.30   +-0.05  (x1.09)
+```
 
 ## Correctness
 
