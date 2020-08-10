@@ -32,9 +32,11 @@ let
     consts = (0xf0, 0xe1, 0xd2, 0xc3, 0xb4, 0xa5,
               0x96, 0x87, 0x78, 0x69, 0x5a, 0x4b);
 
-    forall i in [0, 11] {
-     i = 0: state = input;
-     _    : state = LinearLayer(Sbox(AddConstant(state,consts[i])))
+    state = input;
+
+    forall i in [1, 11] {
+         state := LinearLayer(Sbox(AddConstant(state,consts[i])))
     }
+
     output = state
 tel
