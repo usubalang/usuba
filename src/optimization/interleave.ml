@@ -43,8 +43,6 @@ in this file. *)
 
   TODO:
 
-    - do not duplicate constant variables
-
     - think about whether there should be a special case to not
       interleave the body of functions that are less than |grain|
       instructions long. Pro: it would make smaller code, and probably
@@ -62,58 +60,66 @@ in this file. *)
 module Interleave_generic = struct
 
   (* Adds the suffix |suffix| at the end of a var *)
-  let rec update_var (suffix:int) (v:var) : var =
-    match v with
-    | Var v -> Var { v with name = sprintf "%s__%d" v.name suffix }
-    | Index(v,ae) -> Index(update_var suffix v,ae)
-    | _ -> assert false
+  let rec update_var (env_var:(ident,var_d) Hashtbl.t)
+                     (suffix:int) (v:var) : var =
+    if List.mem Pconst (Hashtbl.find env_var (get_base_name v)).vd_opts then v
+    else
+      match v with
+      | Var v -> Var { v with name = sprintf "%s__%d" v.name suffix }
+      | Index(v,ae) -> Index(update_var env_var suffix v,ae)
+      | _ -> assert false
 
   (* Adds the suffix |suffix| at the end of the vars contained in |e| *)
-  let rec update_expr (suffix:int) (e:expr) : expr =
+  let rec update_expr (env_var:(ident,var_d) Hashtbl.t)
+                      (suffix:int) (e:expr) : expr =
     match e with
     | Const _  -> e
-    | ExpVar v -> ExpVar (update_var suffix v)
-    | Tuple l  -> Tuple (List.map (update_expr suffix) l)
-    | Not e    -> Not (update_expr suffix e)
-    | Shift(op,e,ae) -> Shift(op,update_expr suffix e,ae)
-    | Log(op,x,y)    -> Log(op,update_expr suffix x,update_expr suffix y)
-    | Arith(op,x,y)  -> Arith(op,update_expr suffix x,update_expr suffix y)
-    | Shuffle(v,l)   -> Shuffle(update_var suffix v,l)
+    | ExpVar v -> ExpVar (update_var env_var suffix v)
+    | Tuple l  -> Tuple (List.map (update_expr env_var suffix) l)
+    | Not e    -> Not (update_expr env_var suffix e)
+    | Shift(op,e,ae) -> Shift(op,update_expr env_var suffix e,ae)
+    | Log(op,x,y)    -> Log(op,update_expr env_var suffix x,update_expr env_var suffix y)
+    | Arith(op,x,y)  -> Arith(op,update_expr env_var suffix x,update_expr env_var suffix y)
+    | Shuffle(v,l)   -> Shuffle(update_var env_var suffix v,l)
     | _ -> assert false
 
   (* Duplicates variables in |lhs| (return values of |f|) and
      expressions of |l| (input arguments of |f|). *)
-  let update_funcall (inter_factor:int) (lhs:var list) (f:ident)
+  let update_funcall (inter_factor:int) (env_var:(ident,var_d) Hashtbl.t)
+                     (lhs:var list) (f:ident)
                      (l:expr list) (sync:bool) : deq_i =
     let lhs = flat_map (fun v ->
-                        v :: (List.map (fun suffix -> update_var suffix v)
+                        v :: (List.map (fun suffix -> update_var env_var suffix v)
                                        (gen_list_bounds 2 inter_factor))) lhs in
     let e_fun = Fun(f,flat_map
                         (fun e ->
-                         e :: (List.map (fun suffix -> update_expr suffix e)
+                         e :: (List.map (fun suffix -> update_expr env_var suffix e)
                                         (gen_list_bounds 2 inter_factor))) l) in
     Eqn(lhs,e_fun,sync)
 
   (* Returns |deqs| with the suffix |suffix| added at the end of each
      of the variables in each of the expression of |deqs|. *)
-  let schedule_deqs (suffix:int) (deqs:deq list) : deq list =
+  let schedule_deqs (env_var:(ident,var_d) Hashtbl.t)
+                    (suffix:int) (deqs:deq list) : deq list =
     List.map (fun deq ->
               { deq with content = match deq.content with
                          | Eqn(lhs,rhs,sync) ->
-                            Eqn(List.map (update_var suffix) lhs,
-                                update_expr suffix rhs, sync)
+                            Eqn(List.map (update_var env_var suffix) lhs,
+                                update_expr env_var suffix rhs, sync)
                          | _ -> (* Loops should not reach this point *)
                             assert false }) deqs
 
   (* Returns |deqs| duplicated |inter_factor| times by calling
      |schedule_deqs| |inter_factor| times. *)
-  let schedule_now (inter_factor:int) (deqs:deq list) : deq list =
-    flat_map (fun suffix -> schedule_deqs suffix deqs)
+  let schedule_now (inter_factor:int) (env_var:(ident,var_d) Hashtbl.t)
+                   (deqs:deq list) : deq list =
+    flat_map (fun suffix -> schedule_deqs env_var suffix deqs)
              (gen_list_bounds 2 inter_factor)
 
   (* The function that actually does the interleaving. *)
-  let rec interleave_deqs (inter_factor:int) (grain:int) (deqs:deq list)
-          : deq list =
+  let rec interleave_deqs (inter_factor:int) (grain:int)
+                          (env_var:(ident,var_d) Hashtbl.t)
+                          (deqs:deq list) : deq list =
     (* aux iterates |deqs| while constructing a list of |grain|
        instructions that need to be scheduled once after |grain|
        instructions have been seen.
@@ -126,12 +132,12 @@ module Interleave_generic = struct
      *)
     let rec aux (remain:int) (ready:deq list) (nexts:deq list) =
       match nexts with
-      | [] -> schedule_now inter_factor (List.rev ready)
+      | [] -> schedule_now inter_factor env_var (List.rev ready)
       | nexts_hd::nexts_tl ->
          match remain with
          | 0 -> (* |ready| contains |grain| instructions and they need
                    to be duplicated |inter_factor| times *)
-            (schedule_now inter_factor (List.rev ready)) @
+            (schedule_now inter_factor env_var (List.rev ready)) @
               (* continue on with the next batch (|remain| set to
                  |grain|, and |ready| set to []) *)
               (aux grain [] nexts)
@@ -144,15 +150,15 @@ module Interleave_generic = struct
                (* A function call -> need to schedule |ready| now,
                   duplicate the inputs/outputs of the function call,
                   and continue with the next instructions. *)
-               (schedule_now inter_factor (List.rev ready)) @
+               (schedule_now inter_factor env_var (List.rev ready)) @
                  [ { nexts_hd with
-                     content = update_funcall inter_factor lhs f l sync } ] @
+                     content = update_funcall inter_factor env_var lhs f l sync } ] @
                    (aux grain [] nexts_tl)
             | Loop(i,ei,ef,dls,opts) ->
                (* A loop -> need to schedule |ready| now, duplicate
                   the loops body, and continue with the next
                   instructions. *)
-               (schedule_now inter_factor (List.rev ready)) @
+               (schedule_now inter_factor env_var (List.rev ready)) @
                  [ { nexts_hd with
                      content = Loop(i,ei,ef,aux grain [] dls,opts) } ] @
                    (aux grain [] nexts_tl)
@@ -168,23 +174,36 @@ module Interleave_generic = struct
     flat_map
       (fun vd ->
        vd ::
-         (List.map
-            (fun i ->
-             { vd with
-               vd_id = { vd.vd_id with
-                         name = sprintf "%s__%d" vd.vd_id.name i } })
-            (gen_list_bounds 2 inter_factor))) vdl
+         (if List.mem Pconst vd.vd_opts then []
+          else List.map
+                 (fun i ->
+                  { vd with
+                    vd_id = { vd.vd_id with
+                              name = sprintf "%s__%d" vd.vd_id.name i } })
+                 (gen_list_bounds 2 inter_factor))) vdl
+
+  (* Using a custom build_env_var to have opts and not just types in it. *)
+  (* Note that local variables (|vars|) can't be const, but it's
+     easier it the environment contains all variables (no need to
+     find_opt, find is enough). *)
+  let build_env_var (p_in:p) (p_out:p) (vars:p) : (ident,var_d) Hashtbl.t =
+    let env_var = Hashtbl.create 100 in
+    List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd) p_in;
+    List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd) p_out;
+    List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd) vars;
+    env_var
 
   let interleave_def (inter_factor:int) (grain:int) (def:def) : def =
-    let p_in = update_vds inter_factor def.p_in in
-    let p_out = update_vds inter_factor def.p_out in
+    let p_in    = update_vds inter_factor def.p_in in
+    let p_out   = update_vds inter_factor def.p_out in
     { def with p_in = p_in;
                p_out = p_out;
                node =
                  match def.node with
                  | Single(vars,body) ->
+                    let env_var = build_env_var p_in p_out vars in
                     Single(update_vds inter_factor vars,
-                           interleave_deqs inter_factor grain body)
+                           interleave_deqs inter_factor grain env_var body)
                  | _ -> def.node }
 
   let interleave (prog:prog) (conf:config) : prog =
