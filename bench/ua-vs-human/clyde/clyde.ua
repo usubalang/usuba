@@ -1,0 +1,1 @@
+../../../samples/usuba/clyde_64bit.ua
