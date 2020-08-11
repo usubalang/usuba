@@ -361,8 +361,6 @@ uint32_t bench_speed() {
   /* Primitive call */
   gift__(P__, K__,C__);
 
-  printf("%08x %08x %08x %08x\n", C__[0], C__[1], C__[2], C__[3]);
-
   /* Preventing outputs from being optimized out */
   asm volatile("" : "+m" (C__));
 
@@ -452,3 +450,4 @@ let
 tel
 
 */
+ 

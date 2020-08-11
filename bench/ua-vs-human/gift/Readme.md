@@ -3,7 +3,10 @@ Comparison of the performance of an Usuba-generated Gift implementation and the 
 
 ## Performances
 
-
+```
+Usuba: 327.13   +-2.16
+Ref  : 523.90   +-2.14  (x1.60)
+```
 
 ## Correctness
 
