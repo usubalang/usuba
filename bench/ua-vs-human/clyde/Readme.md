@@ -3,6 +3,10 @@ Comparison of the performance of an Usuba-generated Clyde implementation and the
 
 ## Performances
 
+```
+Usuba: 10.79   +-0.04
+Ref  : 15.22   +-0.07  (x1.41)
+```
 
 ## Correctness
 
