@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 =usage
-    
+
     ./compile.pl [-g] [-c] [-r]
 
 To compile and run, `./compile.pl` (or `./compile.pl -c -r`).
@@ -10,7 +10,7 @@ To compile only, `./compile.pl -c`.
 To run only, `./compile.pl -r`
 
 =cut
-    
+
 
 use strict;
 use warnings;
@@ -21,7 +21,7 @@ use FindBin;
 use File::Path qw(make_path);
 
 my $NB_LOOP = 20;
-my $CC      = 'icc';
+my $CC      = 'clang';
 my $CFLAGS  = '-O3 -std=gnu11';
 my $HEADERS = '-I ../../arch -I .';
 $| = 1;
@@ -33,7 +33,7 @@ my $run     = !@ARGV || "@ARGV" =~ /-r/;
 
 my $cipher   = 'rectangle';
 my @archs = qw( std sse avx avx2 avx512 );
-my @slicings = qw( vslice-inter bitslice hslice  );
+my @slicings = qw( vslice-inter bitslice hslice-inter  );
 
 my @binaries;
 
@@ -61,10 +61,10 @@ if ($gen) {
         my $source = "samples/usuba/rectangle_bitslice.ua";
         system "./usubac -B -arch $arch -o $pwd/bitslice/$arch.c $source";
     }
-    # Hslice
+    # Hslice + interleaving
     for my $arch (qw(sse avx avx512)) {
         my $source = "samples/usuba/rectangle.ua";
-        system "./usubac -H -arch $arch -o $pwd/hslice/$arch.c $source";
+        system "./usubac -H -arch $arch -o $pwd/hslice-inter/$arch.c $source";
     }
     # Vslice + interleaving
     for my $arch (qw(std sse avx avx512)) {
@@ -84,12 +84,12 @@ for my $arch (@archs) {
         my $bin = "bin/$arch-$slicing";
 
         my $arch_flag = $comp_opt{$CC}->{$arch};
-        
+
         my $source_dir = "$slicing/$arch.c";
         if    ($arch eq 'avx')  { $source_dir = "$slicing/sse.c" }
         elsif ($arch eq 'avx2') { $source_dir = "$slicing/avx.c" }
-        
-        next if $arch eq 'std' && $slicing eq 'hslice';
+
+        next if $arch eq 'std' && $slicing eq 'hslice-inter';
         my $cmd = "$CC $arch_flag $CFLAGS $HEADERS -I . -D $arch main.c key.c $slicing/stream.c $source_dir -o $bin";
         system $cmd if $compile;
         push @binaries, $bin;
@@ -132,42 +132,41 @@ for my $bin (keys %res) {
 # Printing formatted results for plotting
 { # STD
     open my $FP_OUT, '>', 'plot/std.dat';
-    printf $FP_OUT 
+    printf $FP_OUT
 q{"Rectangle cipher" %.2f %.2f -
 Transposition %.2f %.2f -},
-    map { my $measure = $_; map { $res{"bin/std-$_"}->{$measure} / $NB_LOOP } 
+    map { my $measure = $_; map { $res{"bin/std-$_"}->{$measure} / $NB_LOOP }
           qw(vslice-inter bitslice) } qw(total ortho);
 }
 { # SSE
     open my $FP_OUT, '>', 'plot/sse.dat';
-    printf $FP_OUT 
+    printf $FP_OUT
 q{"Rectangle cipher" %.2f %.2f %.2f
 Transposition %.2f %.2f %.2f},
-    map { my $measure = $_; map { $res{"bin/sse-$_"}->{$measure} / $NB_LOOP } 
-          qw(vslice-inter bitslice hslice) } qw(total ortho);
+    map { my $measure = $_; map { $res{"bin/sse-$_"}->{$measure} / $NB_LOOP }
+          qw(vslice-inter bitslice hslice-inter) } qw(total ortho);
 }
 { # AVX
     open my $FP_OUT, '>', 'plot/avx.dat';
-    printf $FP_OUT 
+    printf $FP_OUT
 q{"Rectangle cipher" %.2f %.2f %.2f
 Transposition %.2f %.2f %.2f},
-    map { my $measure = $_; map { $res{"bin/avx-$_"}->{$measure} / $NB_LOOP } 
-          qw(vslice-inter bitslice hslice) } qw(total ortho);
+    map { my $measure = $_; map { $res{"bin/avx-$_"}->{$measure} / $NB_LOOP }
+          qw(vslice-inter bitslice hslice-inter) } qw(total ortho);
 }
 { # AVX2
     open my $FP_OUT, '>', 'plot/avx2.dat';
-    printf $FP_OUT 
+    printf $FP_OUT
 q{"Rectangle cipher" %.2f %.2f %.2f
 Transposition %.2f %.2f %.2f},
-    map { my $measure = $_; map { $res{"bin/avx2-$_"}->{$measure} / $NB_LOOP } 
-          qw(vslice-inter bitslice hslice) } qw(total ortho);
+    map { my $measure = $_; map { $res{"bin/avx2-$_"}->{$measure} / $NB_LOOP }
+          qw(vslice-inter bitslice hslice-inter) } qw(total ortho);
 }
 { # AVX512
     open my $FP_OUT, '>', 'plot/avx512.dat';
-    printf $FP_OUT 
+    printf $FP_OUT
 q{"Rectangle cipher" %.2f %.2f %.2f
 Transposition %.2f %.2f %.2f},
-    map { my $measure = $_; map { $res{"bin/avx512-$_"}->{$measure} / $NB_LOOP } 
-          qw(vslice-inter bitslice hslice) } qw(total ortho);
+    map { my $measure = $_; map { $res{"bin/avx512-$_"}->{$measure} / $NB_LOOP }
+          qw(vslice-inter bitslice hslice-inter) } qw(total ortho);
 }
-

@@ -29,6 +29,41 @@
 #define PARALLEL_FACTOR 64
 #include "STD.h"
 
+
+
+void real_ortho(uint64_t data[]) {
+  uint64_t mask_l[6] = {
+	0xaaaaaaaaaaaaaaaaUL,
+	0xccccccccccccccccUL,
+	0xf0f0f0f0f0f0f0f0UL,
+	0xff00ff00ff00ff00UL,
+	0xffff0000ffff0000UL,
+	0xffffffff00000000UL
+  };
+
+  uint64_t mask_r[6] = {
+	0x5555555555555555UL,
+	0x3333333333333333UL,
+	0x0f0f0f0f0f0f0f0fUL,
+	0x00ff00ff00ff00ffUL,
+	0x0000ffff0000ffffUL,
+	0x00000000ffffffffUL
+  };
+
+  for (int i = 0; i < 6; i ++) {
+    int n = (1UL << i);
+    for (int j = 0; j < 64; j += (2 * n))
+      for (int k = 0; k < n; k ++) {
+        uint64_t u = data[j + k] & mask_l[i];
+        uint64_t v = data[j + k] & mask_r[i];
+        uint64_t x = data[j + n + k] & mask_l[i];
+        uint64_t y = data[j + n + k] & mask_r[i];
+        data[j + k] = u | (x >> n);
+        data[j + n + k] = (v << n) | y;
+      }
+  }
+}
+
 #define rectangle(in,key,out) {                                     \
     for (int i = 0; i < 64; i++)                                    \
       ((uint64_t*)in)[i] = __builtin_bswap64(((uint64_t*)in)[i]);   \
@@ -38,6 +73,7 @@
     for (int i = 0; i < 64; i++)                                    \
       ((uint64_t*)out)[i] = __builtin_bswap64(((uint64_t*)out)[i]); \
   }
+
 
 void ortho_speed ( unsigned char *out,
                    unsigned char *in,
@@ -65,7 +101,7 @@ void real_ortho_128x64(__m128i data[]) {
     _mm_set1_epi64x(0xffff0000ffff0000UL),
     _mm_set1_epi64x(0xffffffff00000000UL),
     _mm_set_epi64x(0x0000000000000000UL,0xffffffffffffffffUL),
-  
+
   };
 
   __m128i mask_r[7] = {
@@ -77,7 +113,7 @@ void real_ortho_128x64(__m128i data[]) {
     _mm_set1_epi64x(0x00000000ffffffffUL),
     _mm_set_epi64x(0xffffffffffffffffUL,0x0000000000000000UL),
   };
-  
+
   for (int i = 0; i < 6; i ++) {
     int n = (1UL << i);
     for (int j = 0; j < 64; j += (2 * n))
@@ -93,7 +129,7 @@ void real_ortho_128x64(__m128i data[]) {
           /* Note the "inversion" of srli and slli. */
           data[j + k] = _mm_or_si128(u, _mm_slli_si128(x, 8));
           data[j + n + k] = _mm_or_si128(_mm_srli_si128(v, 8), y);
-        } 
+        }
       }
   }
 }
@@ -139,7 +175,7 @@ void real_ortho_256x64(__m256i data[]) {
     _mm256_set1_epi64x(0xffffffff00000000UL),
     _mm256_set_epi64x(0UL,-1UL,0UL,-1UL),
     _mm256_set_epi64x(0UL,0UL,-1UL,-1UL),
-  
+
   };
 
   __m256i mask_r[8] = {
@@ -152,7 +188,7 @@ void real_ortho_256x64(__m256i data[]) {
     _mm256_set_epi64x(-1UL,0UL,-1UL,0UL),
     _mm256_set_epi64x(-1UL,-1UL,0UL,0UL),
   };
-  
+
   for (int i = 0; i < 6; i ++) {
     int n = (1UL << i);
     for (int j = 0; j < 64; j += (2 * n))
@@ -229,7 +265,7 @@ void real_ortho_512x64(__m512i data[]) {
     _mm512_set_epi64(-1UL,-1UL,0UL,0UL,-1UL,-1UL,0UL,0UL),
     _mm512_set_epi64(-1UL,-1UL,-1UL,-1UL,0UL,0UL,0UL,0UL),
   };
-  
+
   for (int i = 0; i < 6; i ++) {
     int n = (1UL << i);
     for (int j = 0; j < 64; j += (2 * n))
@@ -303,8 +339,8 @@ int crypto_stream_ecb( unsigned char *out,
       for (int k = 0; k < 16; k++)
         key[i][63-(j*16+k)] = (char_key[i*4+j] >> k) & 1 ? ONES : ZERO;
   }
-  
-  
+
+
   while (inlen >= PARALLEL_FACTOR * BLOCK_SIZE) {
     rectangle(in,key,out);
     inlen -= PARALLEL_FACTOR * BLOCK_SIZE;
