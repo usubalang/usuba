@@ -38,11 +38,13 @@ let optimize (prog:prog) (conf:config) : prog =
     conf.pre_schedule && (Inline.is_more_aggressive_than_auto conf) in
 
   runner#run_modules_bench
-         [
+           [
+           Simple_opts.as_pass,          true,               Pass_runner.Always;
            Inline.as_pass_pre,           guard_pre_inline,   Pass_runner.Toggle conf.bench_bitsched;
            Normalize_core.as_pass,       guard_pre_inline,   Pass_runner.Always;
            Pre_schedule.as_pass,         guard_pre_inline,   Pass_runner.Toggle conf.bench_bitsched;
            Normalize_core.as_pass,       guard_pre_inline,   Pass_runner.Always;
+           Simple_opts.as_pass,          true,               Pass_runner.Always;
            Inline.as_pass,               true,               Pass_runner.Custom conf.bench_inline;
            Simple_opts.as_pass,          true,               Pass_runner.Always;
            Pre_schedule.as_pass,         conf.pre_schedule,  Pass_runner.Toggle conf.bench_bitsched;
