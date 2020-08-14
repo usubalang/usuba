@@ -1,9 +1,9 @@
 archi                              "GP 64-bit"   "SSE 128-bit"     "AVX 128-bit"     "AVX2 256-bit"    "AVX512 512-bit"
-"Rectangle    \n        (bitslice)"        0.63        1         1.12      2.23     4.93
-"  DES    \n        (bitslice)"            0.63        1         1.14      2.17     4.97  
-"  AES    \n        (bitslice)"            0.56        1         1.12      1.92     2.69  
-"Rectangle    \n       (hslice)  "          0          1         1.02      1.92     4.23  
-"   AES    \n        (hslice)"              0          1         1.08      2.08     4.75 
-"Rectangle     \n      (vslice)  "         0.16        1         1.00      2.51     4.17  
-"Serpent      \n     (vslice) "            0.48        1         1.08      1.98     3.63  
-"Chacha20       \n     (vslice)  "         0.38        1         0.99      1.98     3.03  
+"Rectangle    \n        (bitslice)"        0.60        1         1.12      2.20     3.51
+"  DES    \n        (bitslice)"            0.60        1         1.47      2.83     4.34
+"  AES    \n        (bitslice)"            0.52        1         1.20      2.25     3.04
+"Rectangle    \n       (hslice)  "          0          1         0.98      1.94     2.60
+"   AES    \n        (hslice)"              0          1         1.05      2.05     3.22
+"Chacha20       \n     (vslice)  "         0.42        1         1.15      2.28     4.36
+"Serpent      \n     (vslice) "            0.33        1         1.09      2.12     3.26
+"Rectangle     \n      (vslice)  "         0.15        1         1.05      2.04     2.47

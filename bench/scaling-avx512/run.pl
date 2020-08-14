@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 =usage
-    
+
     ./compile.pl [-g] [-c] [-r] [-l]
 
 To compile and run, `./compile.pl` (or `./compile.pl -c -r -l`).
@@ -11,7 +11,7 @@ To run only, `./compile.pl -r`.
 To collect the results only, `./compile -l`.
 
 =cut
-    
+
 use strict;
 use warnings;
 no warnings qw( numeric );
@@ -28,10 +28,10 @@ my $collect = "@ARGV" =~ /-l/;
 if (!$collect) {
     say "Running DES bitslice...";
     system "./des/compile.pl @ARGV";
-    
+
     say "Running AES bitslice...";
     system "./aes-bs/compile.pl @ARGV";
-    
+
     say "Running AES h-slice...";
     system "./aes-hs/compile.pl @ARGV";
 
@@ -49,7 +49,7 @@ my @ciphers = qw(des aes-bs aes-hs chacha20 serpent rectangle);
 if (!@ARGV || $collect) {
 
     my %results;
-    
+
     for my $cipher (@ciphers) {
         my $res_file = "$cipher/results.txt";
         open my $FP_IN, '<', $res_file;
@@ -81,22 +81,22 @@ open my $FP_OUT, '>', 'plot/data-speedup.dat';
 printf $FP_OUT
 q{archi                              "GP 64-bit"   "SSE 128-bit"     "AVX 128-bit"     "AVX2 256-bit"    "AVX512 512-bit"
 "Rectangle    \n        (bitslice)"        %.2f        1         %.2f      %.2f     %.2f
-"  DES    \n        (bitslice)"            %.2f        1         %.2f      %.2f     %.2f  
-"  AES    \n        (bitslice)"            %.2f        1         %.2f      %.2f     %.2f  
-"Rectangle    \n       (hslice)  "          0          1         %.2f      %.2f     %.2f  
-"   AES    \n        (hslice)"              0          1         %.2f      %.2f     %.2f 
-"Rectangle     \n      (vslice)  "         %.2f        1         %.2f      %.2f     %.2f  
-"Serpent      \n     (vslice) "            %.2f        1         %.2f      %.2f     %.2f  
-"Chacha20       \n     (vslice)  "         %.2f        1         %.2f      %.2f     %.2f  },
+"  DES    \n        (bitslice)"            %.2f        1         %.2f      %.2f     %.2f
+"  AES    \n        (bitslice)"            %.2f        1         %.2f      %.2f     %.2f
+"Rectangle    \n       (hslice)  "          0          1         %.2f      %.2f     %.2f
+"   AES    \n        (hslice)"              0          1         %.2f      %.2f     %.2f
+"Chacha20       \n     (vslice)  "         %.2f        1         %.2f      %.2f     %.2f
+"Serpent      \n     (vslice) "            %.2f        1         %.2f      %.2f     %.2f
+"Rectangle     \n      (vslice)  "         %.2f        1         %.2f      %.2f     %.2f  },
     (map { $formatted{rectangle}->{"bitslice-$_"} }     qw(std avx avx2 avx512)),
     (map { $formatted{des}->{$_} }                      qw(std avx avx2 avx512)),
     (map { $formatted{"aes-bs"}->{$_} }                 qw(std avx avx2 avx512)),
-    (map { $formatted{rectangle}->{"hslice-$_"} }       qw(    avx avx2 avx512)),
+    (map { $formatted{rectangle}->{"hslice-inter-$_"} } qw(    avx avx2 avx512)),
     (map { $formatted{"aes-hs"}->{$_} }                 qw(    avx avx2 avx512)),
-    (map { $formatted{rectangle}->{"vslice-inter-$_"} } qw(std avx avx2 avx512)),
+    (map { $formatted{chacha20}->{$_} }                 qw(std avx avx2 avx512)),
     (map { $formatted{serpent}->{$_} }                  qw(std avx avx2 avx512)),
-    (map { $formatted{chacha20}->{$_} }                 qw(std avx avx2 avx512));
-        
+    (map { $formatted{rectangle}->{"vslice-inter-$_"} } qw(std avx avx2 avx512));
+
 }
 
 chdir "plot";

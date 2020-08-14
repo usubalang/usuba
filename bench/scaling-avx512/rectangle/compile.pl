@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 =usage
-    
+
     ./compile.pl [-g] [-c] [-r]
 
 To compile and run, `./compile.pl` (or `./compile.pl -c -r`).
@@ -19,8 +19,8 @@ use v5.14;
 use FindBin;
 use File::Path qw(make_path);
 
-my $NB_LOOP = 1;
-my $CC      = 'icc';
+my $NB_LOOP = 20;
+my $CC      = 'clang';
 my $CFLAGS  = '-O3 -std=gnu11';
 my $HEADERS = '-I ../../../arch';
 $| = 1;
@@ -32,7 +32,7 @@ my $run     = !@ARGV || "@ARGV" =~ /-r/;
 
 my $cipher   = 'rectangle';
 my @archs = qw( std sse avx avx2 avx512 );
-my @slicings = qw( bitslice vslice hslice vslice-inter );
+my @slicings = qw( bitslice hslice-inter vslice-inter );
 
 my $pwd = $FindBin::Bin;
 
@@ -47,20 +47,16 @@ if ($gen) {
         my $source = "samples/usuba/rectangle_bitslice.ua";
         system "./usubac -B -arch $arch -o $pwd/bitslice/$arch.c $source";
     }
-    # Hslice
+    # Hslice + interleaving
     for my $arch (qw(sse avx avx512)) {
         my $source = "samples/usuba/rectangle.ua";
-        system "./usubac -H -arch $arch -o $pwd/hslice/$arch.c $source";
-    }
-    # Vslice
-    for my $arch (qw(std sse avx avx512)) {
-        my $source = "samples/usuba/rectangle.ua";
-        system "./usubac -V -lf -arch $arch -o $pwd/vslice/$arch.c $source";
+        system "./usubac -H -arch $arch -interleave 2 -o $pwd/hslice/$arch.c $source";
     }
     # Vslice + interleaving
     for my $arch (qw(std sse avx avx512)) {
         my $source = "samples/usuba/rectangle.ua";
-        system "./usubac -V -lf -arch $arch -interleave 5 -o $pwd/vslice-inter/$arch.c $source";
+        my $lf = $arch =~ /avx/ ? '-lf' : '';
+        system "./usubac -V $lf -arch $arch -interleave 5 -o $pwd/vslice-inter/$arch.c $source";
     }
 
     say " done.";
@@ -74,17 +70,17 @@ for my $slicing (@slicings) {
     for my $arch (@archs) {
         my $bin = "bin/$slicing-$arch";
 
-        my $arch_flag = '-D $arch';
-        if    ($arch eq 'sse')    { $arch_flag = '-xSSE4.2 -D sse'         }
-        elsif ($arch eq 'avx')    { $arch_flag = '-xAVX -D sse'            }
-        elsif ($arch eq 'avx2')   { $arch_flag = '-xAVX2 -D avx'           }
+        my $arch_flag = "-D $arch";
+        if    ($arch eq 'sse')    { $arch_flag = '-msse4.2 -D sse'         }
+        elsif ($arch eq 'avx')    { $arch_flag = '-mavx -D sse'            }
+        elsif ($arch eq 'avx2')   { $arch_flag = '-mavx2 -D avx'           }
         elsif ($arch eq 'avx512') { $arch_flag = '-march=native -D avx512' }
-        
+
         my $source_dir = "$slicing/$arch.c";
         if    ($arch eq 'avx')  { $source_dir = "$slicing/sse.c" }
         elsif ($arch eq 'avx2') { $source_dir = "$slicing/avx.c" }
-        
-        next if $arch eq 'std' && $slicing eq 'hslice';
+
+        next if $arch eq 'std' && $slicing =~ /hslice/;
         my $cmd = "$CC $arch_flag $CFLAGS $HEADERS -I . -D $arch main_speed.c key.c $slicing/stream.c $source_dir -o $bin";
         system $cmd if $compile;
         push @binaries, $bin;
@@ -100,7 +96,7 @@ my %res;
 for ( 1 .. $NB_LOOP ) {
     print "\rRunning Benchs... $_/$NB_LOOP";
     for my $bin (@binaries) {
-        my $cycles = sprintf "%03.02f", (`./$bin` || 0); 
+        my $cycles = sprintf "%03.02f", (`./$bin` || 0);
         push @{ $res{$bin}->{details} }, $cycles;
         $res{$bin}->{total} += $cycles;
     }

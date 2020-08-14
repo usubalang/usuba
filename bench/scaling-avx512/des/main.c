@@ -68,11 +68,11 @@
 
 /* Bench the implementation */
 void speed() {
-  
+
   uint64_t key_std    = 0x133457799BBCDFF1;
   DATATYPE key_ortho[KEY_SIZE];
   DATATYPE key_cst[KEY_SIZE];
-  
+
   for (int i = 0; i < 64; i++)
     key_ortho[63-i] = key_cst[63-i] = (key_std >> i) & 1 ? SET_ALL_ONE() : SET_ALL_ZERO();
 
@@ -87,7 +87,7 @@ void speed() {
                                                                         \
                                                                         \
     for (int i = 0; i < CHUNK_SIZE / REG_SIZE; i++) {                   \
-      memcpy(key_ortho,key_cst,KEY_SIZE * (REG_SIZE/8));                \
+      /* memcpy(key_ortho,key_cst,KEY_SIZE * (REG_SIZE/8)); */                \
       des__((DATATYPE*)&plain_ortho[i*64], key_ortho, (DATATYPE*)&cipher_ortho[i*64]); \
     }                                                                   \
                                                                         \
@@ -107,7 +107,7 @@ void speed() {
   printf("%.2f cycle/byte\n",(double)timer/NB_LOOP/(CHUNK_SIZE*(BLOC_SIZE/8)));
 
   FILE* fp = fopen("/dev/null","w");
-  fwrite(plain_std,CHUNK_SIZE,1,fp);  
+  fwrite(plain_std,CHUNK_SIZE,1,fp);
 }
 
 int main() {

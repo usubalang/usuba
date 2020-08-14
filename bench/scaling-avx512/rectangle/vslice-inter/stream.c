@@ -79,9 +79,14 @@
 #error No arch specified.
 #endif
 
+#if defined(AVX) || defined(AVX512)
 void Rectangle__ (DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t* key__,
                   DATATYPE cipher__[4],DATATYPE cipher____2[4]);
-  
+#else
+void Rectangle__ (DATATYPE plain__[4],DATATYPE plain____2[4],DATATYPE* key__,
+                  DATATYPE cipher__[4],DATATYPE cipher____2[4]);
+#endif
+
 int crypto_stream_ecb( unsigned char *out,
                        unsigned char *in,
                        unsigned long long inlen,
@@ -89,8 +94,12 @@ int crypto_stream_ecb( unsigned char *out,
                        )
 {
 
+#if defined(AVX) || defined(AVX512)
   uint16_t key[208];
-  
+#else
+  DATATYPE key[208];
+#endif
+
   while (inlen > 0) {
     rectangle(in,key,out);
     inlen -= PARALLEL_FACTOR * BLOCK_SIZE;

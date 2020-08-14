@@ -1,4 +1,5 @@
-set terminal svg size 1000,400 fsize 16
+set terminal svg size 1000,400
+#fsize 16
 #set output 'speedup.pdf'
 set output 'speedup.svg'
 
@@ -33,8 +34,8 @@ set xtics scale 0
 set ytics scale 0.5
 
 #set key font ",14"
-#set xtics font ",14" 
-#set ytics font ",14" 
+#set xtics font ",14"
+#set ytics font ",14"
 
 
 set style fill solid border rgb "black"
@@ -52,7 +53,7 @@ plot 'data-speedup.dat' using 2:xtic(1) title col fs pattern 1 lt 1, \
         '' using 3:xtic(1) title col fs pattern 2 lt 2, \
         '' using 4:xtic(1) title col fs pattern 7 lt 3, \
         '' using 5:xtic(1) title col fs pattern 6 lt 4, \
-        '' using 6:xtic(1) title col fs pattern 5 lt 5, 
+        '' using 6:xtic(1) title col fs pattern 5 lt 5,
 
 #set output
 #system('pdflatex speedup.tex')

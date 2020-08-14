@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 =usage
-    
+
     ./compile.pl [-g] [-c] [-r]
 
 To compile and run, `./compile.pl` (or `./compile.pl -c -r`).
@@ -20,7 +20,7 @@ use FindBin;
 use File::Path qw(make_path);
 
 my $NB_LOOP = 20;
-my $CC      = 'icc';
+my $CC      = 'clang';
 my $CFLAGS  = '-O3 -std=gnu11';
 my $HEADERS = '-I ../../../arch';
 $| = 1;
@@ -58,15 +58,15 @@ for my $arch (@archs) {
     my $bin = "bin/$arch";
 
     my $arch_flag = '';
-    if    ($arch eq 'sse')    { $arch_flag = '-xSSE4.2'      }
-    elsif ($arch eq 'avx')    { $arch_flag = '-xAVX'         }
-    elsif ($arch eq 'avx2')   { $arch_flag = '-xAVX2'        }
+    if    ($arch eq 'sse')    { $arch_flag = '-msse4.2'      }
+    elsif ($arch eq 'avx')    { $arch_flag = '-mavx'         }
+    elsif ($arch eq 'avx2')   { $arch_flag = '-mavx2'        }
     elsif ($arch eq 'avx512') { $arch_flag = '-march=native' }
 
     my $source_dir = "$arch/stream.c";
     if    ($arch eq 'avx')  { $source_dir = "sse/stream.c" }
     elsif ($arch eq 'avx2') { $source_dir = "avx/stream.c" }
-    
+
     my $cmd = "$CC $CFLAGS $arch_flag $HEADERS -I . main_speed.c $source_dir -o $bin";
     system $cmd if $compile;
     push @binaries, $bin;
@@ -81,7 +81,7 @@ my %res;
 for ( 1 .. $NB_LOOP ) {
     print "\rRunning Benchs... $_/$NB_LOOP";
     for my $bin (@binaries) {
-        my $cycles = sprintf "%03.02f", `./$bin`; 
+        my $cycles = sprintf "%03.02f", `./$bin`;
         push @{ $res{$bin}->{details} }, $cycles;
         $res{$bin}->{total} += $cycles;
     }
