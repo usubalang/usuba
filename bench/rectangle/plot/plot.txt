@@ -31,6 +31,8 @@ plot \
      "std.dat" u 2, '' u 3, \
      newhistogram "SSE\n(128-bit)" fs pattern 2 lt 1, \
      "sse.dat" u 2, '' u 3, '' u 4,\
+     newhistogram "AVX\n(128-bit)" fs pattern 2 lt 1, \
+     "avx.dat" u 2, '' u 3, '' u 4, \
      newhistogram "AVX2\n(256-bit)" fs pattern 2 lt 1, \
      "avx2.dat" u 2, '' u 3, '' u 4, \
      newhistogram "AVX512\n(512-bit)" fs pattern 2 lt 1, \

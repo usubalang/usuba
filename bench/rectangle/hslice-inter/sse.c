@@ -65,24 +65,6 @@ void SubColumn__H16 (/*inputs*/ DATATYPE a0__,DATATYPE a0____2,DATATYPE a1__,DAT
 void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],DATATYPE key__[26][4], /*outputs*/ DATATYPE cipher__[4],DATATYPE cipher____2[4]) {
 
   // Variables declaration
-  DATATYPE ShiftRows__H16_1__tmp12_;
-  DATATYPE ShiftRows__H16_1__tmp12___2;
-  DATATYPE ShiftRows__H16_1__tmp13_;
-  DATATYPE ShiftRows__H16_1__tmp13___2;
-  DATATYPE ShiftRows__H16_1__tmp14_;
-  DATATYPE ShiftRows__H16_1__tmp14___2;
-  DATATYPE ShiftRows__H16_1__tmp15_;
-  DATATYPE ShiftRows__H16_1__tmp15___2;
-  DATATYPE ShiftRows__H16_1__tmp16_;
-  DATATYPE ShiftRows__H16_1__tmp16___2;
-  DATATYPE ShiftRows__H16_1__tmp17_;
-  DATATYPE ShiftRows__H16_1__tmp17___2;
-  DATATYPE ShiftRows__H16_1__tmp18_;
-  DATATYPE ShiftRows__H16_1__tmp18___2;
-  DATATYPE ShiftRows__H16_1__tmp19_;
-  DATATYPE ShiftRows__H16_1__tmp19___2;
-  DATATYPE ShiftRows__H16_1__tmp20_;
-  DATATYPE ShiftRows__H16_1__tmp20___2;
   DATATYPE _tmp1_[4];
   DATATYPE _tmp1___2[4];
   DATATYPE _tmp2_[4];
@@ -92,57 +74,39 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],DATATYPE
 
   // Instructions (body)
   tmp__[0] = plain__[0];
-  tmp____2[0] = plain____2[0];
   tmp__[1] = plain__[1];
+  tmp____2[0] = plain____2[0];
   tmp____2[1] = plain____2[1];
   tmp__[2] = plain__[2];
-  tmp____2[2] = plain____2[2];
   tmp__[3] = plain__[3];
+  tmp____2[2] = plain____2[2];
   tmp____2[3] = plain____2[3];
   for (int i__ = 0; i__ <= 24; i__++) {
     _tmp1_[0] = XOR(tmp__[0],key__[i__][0]);
-    _tmp1___2[0] = XOR(tmp____2[0],key__[i__][0]);
     _tmp1_[1] = XOR(tmp__[1],key__[i__][1]);
+    _tmp1___2[0] = XOR(tmp____2[0],key__[i__][0]);
     _tmp1___2[1] = XOR(tmp____2[1],key__[i__][1]);
     _tmp1_[2] = XOR(tmp__[2],key__[i__][2]);
-    _tmp1___2[2] = XOR(tmp____2[2],key__[i__][2]);
     _tmp1_[3] = XOR(tmp__[3],key__[i__][3]);
+    _tmp1___2[2] = XOR(tmp____2[2],key__[i__][2]);
     _tmp1___2[3] = XOR(tmp____2[3],key__[i__][3]);
     SubColumn__H16(_tmp1_[0],_tmp1___2[0],_tmp1_[1],_tmp1___2[1],_tmp1_[2],_tmp1___2[2],_tmp1_[3],_tmp1___2[3],&_tmp2_[0],&_tmp2___2[0],&_tmp2_[1],&_tmp2___2[1],&_tmp2_[2],&_tmp2___2[2],&_tmp2_[3],&_tmp2___2[3]);
     tmp__[0] = _tmp2_[0];
+    tmp__[1] = PERMUT_16(_tmp2_[1],1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0);
     tmp____2[0] = _tmp2___2[0];
-    ShiftRows__H16_1__tmp18_ = PERMUT_16(_tmp2_[1],1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0);
-    ShiftRows__H16_1__tmp18___2 = PERMUT_16(_tmp2___2[1],1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0);
-    ShiftRows__H16_1__tmp19_ = PERMUT_16(_tmp2_[2],12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11);
-    ShiftRows__H16_1__tmp19___2 = PERMUT_16(_tmp2___2[2],12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11);
-    ShiftRows__H16_1__tmp20_ = PERMUT_16(_tmp2_[3],13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12);
-    ShiftRows__H16_1__tmp20___2 = PERMUT_16(_tmp2___2[3],13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12);
-    ShiftRows__H16_1__tmp15_ = ShiftRows__H16_1__tmp18_;
-    ShiftRows__H16_1__tmp15___2 = ShiftRows__H16_1__tmp18___2;
-    ShiftRows__H16_1__tmp16_ = ShiftRows__H16_1__tmp19_;
-    ShiftRows__H16_1__tmp16___2 = ShiftRows__H16_1__tmp19___2;
-    ShiftRows__H16_1__tmp17_ = ShiftRows__H16_1__tmp20_;
-    ShiftRows__H16_1__tmp17___2 = ShiftRows__H16_1__tmp20___2;
-    ShiftRows__H16_1__tmp12_ = ShiftRows__H16_1__tmp15_;
-    ShiftRows__H16_1__tmp12___2 = ShiftRows__H16_1__tmp15___2;
-    ShiftRows__H16_1__tmp13_ = ShiftRows__H16_1__tmp16_;
-    ShiftRows__H16_1__tmp13___2 = ShiftRows__H16_1__tmp16___2;
-    ShiftRows__H16_1__tmp14_ = ShiftRows__H16_1__tmp17_;
-    ShiftRows__H16_1__tmp14___2 = ShiftRows__H16_1__tmp17___2;
-    tmp__[1] = ShiftRows__H16_1__tmp12_;
-    tmp____2[1] = ShiftRows__H16_1__tmp12___2;
-    tmp__[2] = ShiftRows__H16_1__tmp13_;
-    tmp____2[2] = ShiftRows__H16_1__tmp13___2;
-    tmp__[3] = ShiftRows__H16_1__tmp14_;
-    tmp____2[3] = ShiftRows__H16_1__tmp14___2;
+    tmp____2[1] = PERMUT_16(_tmp2___2[1],1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0);
+    tmp__[2] = PERMUT_16(_tmp2_[2],12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11);
+    tmp__[3] = PERMUT_16(_tmp2_[3],13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12);
+    tmp____2[2] = PERMUT_16(_tmp2___2[2],12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11);
+    tmp____2[3] = PERMUT_16(_tmp2___2[3],13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12);
   }
   cipher__[0] = XOR(tmp__[0],key__[25][0]);
-  cipher____2[0] = XOR(tmp____2[0],key__[25][0]);
   cipher__[1] = XOR(tmp__[1],key__[25][1]);
+  cipher____2[0] = XOR(tmp____2[0],key__[25][0]);
   cipher____2[1] = XOR(tmp____2[1],key__[25][1]);
   cipher__[2] = XOR(tmp__[2],key__[25][2]);
-  cipher____2[2] = XOR(tmp____2[2],key__[25][2]);
   cipher__[3] = XOR(tmp__[3],key__[25][3]);
+  cipher____2[2] = XOR(tmp____2[2],key__[25][2]);
   cipher____2[3] = XOR(tmp____2[3],key__[25][3]);
 
 }

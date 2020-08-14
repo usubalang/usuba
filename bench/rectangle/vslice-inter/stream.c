@@ -242,9 +242,14 @@ void ortho_speed ( unsigned char *out,
 #error No arch specified.
 #endif
 
+#if defined(AVX) || defined(AVX512)
+void Rectangle__ (DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t key__[26][4],
+                  DATATYPE cipher__[4],DATATYPE cipher____2[4]);
+#else
 void Rectangle__ (DATATYPE plain__[4],DATATYPE plain____2[4],DATATYPE key__[26][4],
                   DATATYPE cipher__[4],DATATYPE cipher____2[4]);
-  
+#endif
+
 int crypto_stream_ecb( unsigned char *out,
                        unsigned char *in,
                        unsigned long long inlen,
@@ -254,11 +259,18 @@ int crypto_stream_ecb( unsigned char *out,
 
   uint16_t key[208];
   Key_Schedule(k,key);
+#if defined(AVX) || defined(AVX512)
+  uint16_t keys[26][4];
+  for (int i = 0; i < 26; i++)
+    for (int j = 0; j < 4; j++)
+      keys[i][j] = key[i*4+j];
+#else
   DATATYPE keys[26][4];
   for (int i = 0; i < 26; i++)
     for (int j = 0; j < 4; j++)
       keys[i][j] = LIFT_16(key[i*4+j]);
-  
+#endif
+
   while (inlen >= PARALLEL_FACTOR * BLOCK_SIZE) {
     rectangle(in,keys,out);
     inlen -= PARALLEL_FACTOR * BLOCK_SIZE;

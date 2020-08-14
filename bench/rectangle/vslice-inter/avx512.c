@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 /* Do NOT change the order of those define/include */
-#define NO_RUNTIME
+
 #ifndef BITS_PER_REG
 #define BITS_PER_REG 512
 #endif
@@ -13,57 +13,57 @@
 #include "AVX512.h"
 
 /* auxiliary functions */
-void SubColumn__V16 (/*inputs*/ DATATYPE a0,DATATYPE a0__2,DATATYPE a1,DATATYPE a1__2,DATATYPE a2,DATATYPE a2__2,DATATYPE a3,DATATYPE a3__2, /*outputs*/ DATATYPE* b0,DATATYPE* b0__2,DATATYPE* b1,DATATYPE* b1__2,DATATYPE* b2,DATATYPE* b2__2,DATATYPE* b3,DATATYPE* b3__2) {
-  
+void SubColumn__V16 (/*inputs*/ DATATYPE a0__,DATATYPE a0____2,DATATYPE a1__,DATATYPE a1____2,DATATYPE a2__,DATATYPE a2____2,DATATYPE a3__,DATATYPE a3____2, /*outputs*/ DATATYPE* b0__,DATATYPE* b0____2,DATATYPE* b1__,DATATYPE* b1____2,DATATYPE* b2__,DATATYPE* b2____2,DATATYPE* b3__,DATATYPE* b3____2) {
+
   // Variables declaration
-  DATATYPE t1;
-  DATATYPE t11;
-  DATATYPE t11__2;
-  DATATYPE t1__2;
-  DATATYPE t2;
-  DATATYPE t2__2;
-  DATATYPE t3;
-  DATATYPE t3__2;
-  DATATYPE t5;
-  DATATYPE t5__2;
-  DATATYPE t6;
-  DATATYPE t6__2;
-  DATATYPE t8;
-  DATATYPE t8__2;
-  DATATYPE t9;
-  DATATYPE t9__2;
+  DATATYPE t1__;
+  DATATYPE t1____2;
+  DATATYPE t11__;
+  DATATYPE t11____2;
+  DATATYPE t2__;
+  DATATYPE t2____2;
+  DATATYPE t3__;
+  DATATYPE t3____2;
+  DATATYPE t5__;
+  DATATYPE t5____2;
+  DATATYPE t6__;
+  DATATYPE t6____2;
+  DATATYPE t8__;
+  DATATYPE t8____2;
+  DATATYPE t9__;
+  DATATYPE t9____2;
 
   // Instructions (body)
-  t1 = NOT(a1);
-  t3 = XOR(a2,a3);
-  t1__2 = NOT(a1__2);
-  t3__2 = XOR(a2__2,a3__2);
-  t8 = XOR(a1,a2);
-  t8__2 = XOR(a1__2,a2__2);
-  t2 = AND(a0,t1);
-  t5 = OR(a3,t1);
-  t2__2 = AND(a0__2,t1__2);
-  t5__2 = OR(a3__2,t1__2);
-  *b0 = XOR(t2,t3);
-  t6 = XOR(a0,t5);
-  *b0__2 = XOR(t2__2,t3__2);
-  t6__2 = XOR(a0__2,t5__2);
-  t11 = OR(*b0,t8);
-  *b1 = XOR(a2,t6);
-  t9 = AND(t3,t6);
-  t11__2 = OR(*b0__2,t8__2);
-  *b1__2 = XOR(a2__2,t6__2);
-  t9__2 = AND(t3__2,t6__2);
-  *b2 = XOR(t6,t11);
-  *b3 = XOR(t8,t9);
-  *b2__2 = XOR(t6__2,t11__2);
-  *b3__2 = XOR(t8__2,t9__2);
+  t1__ = NOT(a1__);
+  t3__ = XOR(a2__,a3__);
+  t1____2 = NOT(a1____2);
+  t3____2 = XOR(a2____2,a3____2);
+  t8__ = XOR(a1__,a2__);
+  t8____2 = XOR(a1____2,a2____2);
+  t2__ = AND(a0__,t1__);
+  t5__ = OR(a3__,t1__);
+  t2____2 = AND(a0____2,t1____2);
+  t5____2 = OR(a3____2,t1____2);
+  *b0__ = XOR(t2__,t3__);
+  t6__ = XOR(a0__,t5__);
+  *b0____2 = XOR(t2____2,t3____2);
+  t6____2 = XOR(a0____2,t5____2);
+  t11__ = OR(*b0__,t8__);
+  *b1__ = XOR(a2__,t6__);
+  t9__ = AND(t3__,t6__);
+  t11____2 = OR(*b0____2,t8____2);
+  *b1____2 = XOR(a2____2,t6____2);
+  t9____2 = AND(t3____2,t6____2);
+  *b2__ = XOR(t6__,t11__);
+  *b3__ = XOR(t8__,t9__);
+  *b2____2 = XOR(t6____2,t11____2);
+  *b3____2 = XOR(t8____2,t9____2);
 
 }
 
 /* main function */
 void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t key__[26][4], /*outputs*/ DATATYPE cipher__[4],DATATYPE cipher____2[4]) {
-  
+
   // Variables declaration
   DATATYPE _tmp1_[4];
   DATATYPE _tmp1___2[4];
@@ -111,21 +111,23 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],uint16_t
 
 }
 
+/* Additional functions */
+
 
 /* **************************************************************** */
 /*                            Usuba source                          */
 /*                                                                  */
 /*
 
- _no_inline table SubColumn(input :  v4 :: base)
-  returns out :  v4 :: base
+ table SubColumn(input :  v4)
+  returns out :  v4
 {
   6, 5, 12, 10, 1, 14, 7, 9, 11, 0, 3, 13, 8, 15, 4, 2
 }
 
 
- node ShiftRows(input :  u16x4 :: base)
-  returns out :  u16x4 :: base
+ node ShiftRows(input :  u16x4)
+  returns out :  u16x4
 vars
 
 let
@@ -135,10 +137,10 @@ let
   (out[3]) = (input[3] <<< 13)
 tel
 
- node Rectangle(plain :  u16x4 :: base,key : const u16x4[26] :: base)
-  returns cipher :  u16x4 :: base
+ node Rectangle(plain :  u16x4,key : const u16x4[26])
+  returns cipher :  u16x4
 vars
-  tmp :  u16x4[26] :: base
+  tmp :  u16x4[26]
 let
   (tmp[0]) = plain;
   forall i in [0,24] {

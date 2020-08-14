@@ -64,12 +64,13 @@ if ($gen) {
     # Hslice + interleaving
     for my $arch (qw(sse avx avx512)) {
         my $source = "samples/usuba/rectangle.ua";
-        system "./usubac -H -arch $arch -o $pwd/hslice-inter/$arch.c $source";
+        system "./usubac -H -arch $arch -interleave 2 -o $pwd/hslice-inter/$arch.c $source";
     }
     # Vslice + interleaving
     for my $arch (qw(std sse avx avx512)) {
         my $source = "samples/usuba/rectangle.ua";
-        system "./usubac -V -lf -arch $arch -interleave 5 -o $pwd/vslice-inter/$arch.c $source";
+        my $lf = $arch =~ /avx/ ? '-lf' : '';
+        system "./usubac -V $lf -arch $arch -interleave 5 -o $pwd/vslice-inter/$arch.c $source";
     }
 
     say " done.";
