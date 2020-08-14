@@ -44,7 +44,7 @@ if ($gen) {
     # Note that "avx" actually generates the avx2 code:
     # the avx code is the same as the sse, with differents C compiler flags
     for my $arch (qw(std sse avx avx512)) {
-        system "./usubac -V -arch $arch -inline-all -sched-n 16 -o $pwd/$arch/chacha20.c $source";
+        system "./usubac -V -arch $arch -inline-all -no-arr -sched-n 4 -o $pwd/$arch/chacha20.c $source";
     }
 
     say " done.";
