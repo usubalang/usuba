@@ -24,7 +24,7 @@ my $source_file = "xoodoo.ua";
 my $usubac      = "../../../usubac";
 my $ua_opts     = "-gen-bench -inline-all -unroll";
 my $bench_main  = "../../../experimentations/bench_generic/bench.c";
-my $bench_opts  = "-D WARMUP=10000 -D NB_RUN=4000000";
+my $bench_opts  = "-D WARMUP=10000 -D NB_RUN=400000";
 my $c_headers   = "-I ../../../arch";
 my $bin_dir     = "bin";
 my $nb_run      = 30;
@@ -40,13 +40,14 @@ if ($gen) {
     say "Generating C files...";
     # Generating default Usuba
     system "$usubac $ua_opts -o xoodoo-ua.c $source_file";
+    system "$usubac $ua_opts -interleave 2 -o xoodoo-ua-inter.c $source_file";
 }
 
 
 if ($compile) {
     say "Compiling C files...";
     mkdir "bin" unless -d "bin";
-    for my $file (qw(xoodoo-ua xoodoo-ref)) {
+    for my $file (qw(xoodoo-ua xoodoo-ua-inter xoodoo-ref)) {
         system "$cc $c_opts $bench_main $bench_opts $c_headers $file.c -o $bin_dir/$file";
     }
 }
@@ -58,7 +59,7 @@ if ($run) {
     my %times;
 
     for (1 .. $nb_run) {
-        for my $bench (qw(xoodoo-ua xoodoo-ref)) {
+        for my $bench (qw(xoodoo-ua xoodoo-ua-inter xoodoo-ref)) {
             push @{$times{$bench}}, (`./$bin_dir/$bench` =~ s/ .*$//r)+0;
         }
     }
@@ -68,4 +69,7 @@ if ($run) {
 
     my ($ref, $ref_stdev) = avg_stdev(@{$times{"xoodoo-ref"}});
     printf "Ref  : %.2f   +-%.2f  (x%.2f)\n", $ref, $ref_stdev, $ref/$ua;
+
+    my ($ua_i, $ua_stdev_i) = avg_stdev(@{$times{"xoodoo-ua-inter"}});
+    printf "\nUsuba inter  : %.2f   +-%.2f  (x%.2f)\n", $ua_i, $ua_stdev_i, $ua_i/$ua;
 }
