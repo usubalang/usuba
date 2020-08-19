@@ -238,7 +238,7 @@ data hazards, and bring the IPC up while increasing performance. We
 will examine each case one by one in the next section.
 
 
-### Factor and grain
+### Factor and granularity
 
 We now know that interleaving can indeed increase performances of
 ciphers suffering from tight dependencies.Our interleaving algorithm
@@ -295,7 +295,7 @@ a1 = a2 ^ t2;                                           \
 
 The user can use the flags `-inter-factor <n>` and `-inter-granul <n>`
 to instruct Usubac to generate a code using a given interleaving
-factor and grain.
+factor and granularity.
 
 The granularity is only up to a function call or loop, since we do not
 duplicate function calls but rather the arguments in a function
@@ -334,15 +334,15 @@ Note that interleaving is done after inlining and unrolling in the
 pipeline, which means that any node call still present in the Usuba0
 code will not be inlined.
 
-To evaluate how the factor and the grain impact performance, we
+To evaluate how the factor and the granularity impact performance, we
 generated implementations of 10 ciphers with different factors (0
-(without interleaving), 2, 3, 4 and 5), and different grains (1, 2, 3,
-4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30, 50, 100, 200). We used Usubac's
-`-unroll` and `-inline-all` flags to fully unroll and inline the codes
-(this flags will be discussed in a later post) in order to eliminate
-the impact of loops and function calls from our experiment. Overall,
-we generated 19.5 millions of lines of C code in 700 files for this
-benchmark.
+(without interleaving), 2, 3, 4 and 5), and different granularities
+(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30, 50, 100, 200). We used
+Usubac's `-unroll` and `-inline-all` flags to fully unroll and inline
+the codes (this flags will be discussed in a later post) in order to
+eliminate the impact of loops and function calls from our
+experiment. Overall, we generated 19.5 millions of lines of C code in
+700 files for this benchmark.
 
 We benchmarked our interleaved implementations on general purpose
 registers rather than SIMD ones, and verified that the front-end was
