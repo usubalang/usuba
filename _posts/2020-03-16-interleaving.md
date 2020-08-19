@@ -103,7 +103,7 @@ and `a3` while the other computes it on a second input, `a0_2`,
 `a1_2`, `a2_2` and `a3_2`. This code runs in 7 cycles; or 3.5 cycles
 per S-box, which is much closer to the ideal 3 cycles/S-box. We shall
 call it 2-interleaved.
-ports
+
 Despite the interleaving, some data dependencies remain, and it may be
 tempting to interleave a third execution of the S-box. However, since
 each S-box requires 7 registers (4 for the input, and 3 temporaries),
@@ -241,14 +241,17 @@ will examine each case one by one in the next section.
 ### Factor and grain
 
 We now know that interleaving can indeed increase performances of
-ciphers suffering from tight dependencies. In order to optimize
-this interleaving, we parametrized Usubac's algorithms by both a
-factor and a grain. The factor corresponds to how many implementations
-are interleaved, while the grain describes the granularity at which
-instructions are interleaved. For instance, the Rectangle
-2-interleaved S-box above has a factor of 2 and a granularity of 1
-since instructions from the first and the second S-box are interleaved
-one by one. A granularity of 2 would be the following code:
+ciphers suffering from tight dependencies.Our interleaving algorithm
+is parametrized by a factor and a granularity. The factor determines
+the number of implementations to be interleaved, while the granularity
+describes how the implementations are interleaved: 1 instruction from
+an implementation followed by 1 from another one would be a
+granularity of 1, while 5 instructions from an implementation followed
+by 5 from another one would be a granularity of 5. For instance, the
+Rectangle 2-interleaved S-box above has a factor of 2 and a
+granularity of 1 since instructions from the first and the second
+S-box are interleaved one by one. A granularity of 2 would be the
+following code:
 
 ```c
 t0 = ~a1;                                               \
@@ -290,11 +293,11 @@ a1 = a2 ^ t2;                                           \
                        a1_2 = a2_2 ^ t2_2;              \
 ```
 
-The user can use the flags `-inter-factor <n>` and `-inter-grain <n>`
+The user can use the flags `-inter-factor <n>` and `-inter-granul <n>`
 to instruct Usubac to generate a code using a given interleaving
 factor and grain.
 
-The grain is only up to a function call or loop, since we do not
+The granularity is only up to a function call or loop, since we do not
 duplicate function calls but rather the arguments in a function
 call. The rational being that interleaving is supposed to reduce
 pipeline stalls within functions (resp. loops), and duplicating
@@ -327,6 +330,9 @@ state[2,6,10,14] := QR(state[2,6,10,14]);
 state_2[0,4,8,12]  := QR(state_2[0,4,8,12]);
 ```
 
+Note that interleaving is done after inlining and unrolling in the
+pipeline, which means that any node call still present in the Usuba0
+code will not be inlined.
 
 To evaluate how the factor and the grain impact performance, we
 generated implementations of 10 ciphers with different factors (0
@@ -383,8 +389,8 @@ instructions in 3 cycles), and it is indeed slightly faster (less than
 containing more spilling, and is 1.25x faster than the non-interleaved
 implementation.
 
-Ace also contains other idioms which can limit CPU utilization, like
-`0xfffffffe ^ ((rc >> i) & 1)` which also cannot execute in less than
+Ace also contains other idioms that can limit CPU utilization, like
+`0xfffffffe ^ ((rc >> i) & 1)`, which also cannot execute in less than
 3 cycles despite containing only 3 instructions. Those idioms benefit
 from interleaving as well.
 
@@ -409,23 +415,26 @@ instructions), performance start to decrease.
 
 We have already shown Rectangle's S-box in this post's
 introduction. It contains 12 instructions, and could be executed in 4
-cycles if it wasn't for their dependencies: its run time is actually
-5.24 cycles. Interleaving 2 (resp. 3) times Rectangle gives a speedup
-of x1.26 (resp. x1.13), regardless of the granularity. The number of
-loads and stores in the 2-interleaved Rectangle implementation is
-twice more than in the non-interleaved implementation: interleaving
-introduced no spilling at all. On the other hand, the 3-interleaved
-implementation contains 4 times more memory operations than the
-non-interleaved one.
+cycles if it wasn't slowed down by data-dependencies: its run time is
+actually 5.24 cycles. Interleaving 2 (resp. 3) times Rectangle gives a
+speedup of x1.26 (resp. x1.13), regardless of the granularity. The
+number of loads and stores in the 2-interleaved Rectangle
+implementation is exactly twice the number of loads and stores in the
+non-interleaved implementation: interleaving introduced no spilling at
+all. On the other hand, the 3-interleaved implementation suffers from
+spilling and thus contains 4 times more memory operations than the
+non-interleaved one, which results in slower performance than the
+2-interleaved version.
 
 Interleaving 4 or 5 instances with a small granularity (less than 10)
-introduces too much spilling which reduces performances. Increasing
-the granularity reduces this spilling while still allowing the C
-compiler to schedule the instructions in a way to reduce the impact of
-data hazards. For instance, 5-interleaved Rectangle with a granularity
-of 50 contains twice less memory loads and stores than with a
-granularity of 2.
-
+introduces too much spilling which reduces performance. Increasing
+granularity reduces spilling while still allowing the C compiler to
+schedule the instructions in a way to reduce the impact of data
+hazards. For instance, 5-interleaved Rectangle with a granularity of
+50 contains twice less memory loads and stores than with a granularity
+of 2: temporary variables from all 5 implementations tend not to be
+alive at the same time when the granularity is large enough, while
+they are when the granularity is small.
 
 
 
@@ -439,12 +448,14 @@ Serpent only requires 5 registers (4 for the state and 1 temporary
 register used in the S-box). Its linear layer contains 28 instructions
 `xor`s and shifts, yet executes in 14 cycles due to data
 dependencies. Likewise, the S-boxes were optimized by Osvik [2] to put
-a very low pressure on the registers, at the expense of data
-dependencies. For instance, the first S-box contains 17 instructions,
-but executes in 8 cycles. This choice made sense back when there were
-only 8 general purpose registers available, among which one was
-reserved for the stack pointer, and one was use to keep a pointer to
-the key, leaving only 6 registers available. 
+a very low pressure on the registers, and to exploit a superscalar CPU
+that is able to execute only two bitwise instructions per cycle
+(whereas modern Intel CPUs can do 3 or 4 bitwise instructions per
+cycles). For instance, the first S-box contains 17 instructions, but
+executes in 8 cycles. This choice made sense back when there were only
+8 general purpose registers available, among which one was reserved
+for the stack pointer, and one was use to keep a pointer to the key,
+leaving only 6 registers available.
 
 Now that we have 16 registers available, interleaving several
 implementations of Serpent makes sense and does greatly improve
@@ -463,15 +474,15 @@ less spilling than on GP registers, making it 1.05 times faster than
 </p>
 
 
-The current best AVX implementation of Serpent is -to the best of our
+The current best AVX2 implementation of Serpent is -to the best of our
 knowledge- the one from the [Linux
 kernel](https://github.com/torvalds/linux/blob/ac309e7744bee222df6de0122facaf2d9706fa70/arch/x86/crypto/serpent-avx2-asm_64.S),
-written by Kivilinna [3], and only uses 2-interleaving. Kivilinna
+written by Kivilinna [3], which uses 2-interleaving. Kivilinna
 mentions that he experimentally came to the conclusion that
 interleaving at a granularity of 8 is optimal for the S-boxes and that
 10 or 11 is optimal for the linear layer. Using Usuba, we are able to
-systemize this experimental approach and we observe that with Clang,
-the granularity as a very low impact on the performances.
+systemize this experimental approach and we observe that, with Clang,
+granularity has a very low impact on performance.
 
 
 #### Ascon
@@ -499,8 +510,8 @@ let
 tel
 ```
 
-This linear layer is not limited by data-dependencies, but by the
-rotations: general purpose rotations can only be executed by ports 0
+This linear layer is not bottlenecked on data-dependencies, but by the
+rotations: general purpose rotations can only be executed on ports 0
 and 6. Only two rotations can be executed each cycle, and this code
 can therefore not be executed in less than 7 cycles: 5 cycles for all
 the rotations, followed by two additional cycles to finish computing
@@ -509,12 +520,12 @@ the rotations, followed by two additional cycles to finish computing
 
 There are two ways that Ascon can benefit from interleaving. First, if
 the linear layer is executed two (resp. three) times simultaneously,
-the last 2 extra cycles computing a single `xor` each become two
-cycles computing two (resp. three) `xor`s each; saving one (resp. two)
-cycle. Second, out-of-order execution can allow the S-box of one
-instance of Ascon to execute while the linear layer of the other copy
-executes, thus allowing a full saturation of the CPU despite the
-rotations being only able to use ports 0 and 6.
+the last 2 extra cycles computing a single `xor` now computed two
+(resp. three) `xor`s each, thus saving one (resp. two) cycle. Second,
+out-of-order execution can allow the S-box of one instance of Ascon to
+execute while the linear layer of the other copy executes, thus
+allowing a full saturation of the CPU despite the rotations being only
+able to use ports 0 and 6.
 
 To understand how interleaving impacts performances, we used Linux's
 `perf` tool to get the IPC, numbers of loads and stores, and the
@@ -613,16 +624,15 @@ indicates that no spilling has been introduced. However, only 72% of
 the cycles use 3 cycles or more, which is still no very
 high. 3-interleaved Ascon suffers from a lot more spilling: it
 contains about 10 times more memory operations than without
-interleaving. However, it also brings the IPC up tp 3.80, and uses 3
+interleaving. However, it also brings the IPC up to 3.80, and uses 3
 ports or more on 91% of the cycles.
 
-However, interleaving a fourth or a fifth copy of Ascon doesn't
+However, interleaving a fourth or a fifth copy of Ascon does not
 increase performances further, which is not surprising since
 3-interleaved Ascon already almost saturates the CPU
 ports. Furthermore, 4 and 5-interleaved Ascon even reduces the port
-usage, probably because too much time is spent waiting on memory
-operations to be completed.
-
+usage, because of the added memory operations (due to spilling) that
+bottleneck the computation.
 
 
 
@@ -707,7 +717,7 @@ in the following table:
 
 Interleaving twice increases performances by x1.18, while interleaving
 three times increases performances by 1.31x, depsite increasing the
-amount of memory operations by 9.8 (and thefore the amout of memory
+amount of memory operations by 9.8 (and therefore the amount of memory
 operations per input by 3.3). Even the 5-interleaved version is more
 efficient than the non-interleaved one, despite containing 66 times
 more loads and stores.
@@ -753,38 +763,38 @@ to introduce spilling.
 
 #### Overall impact of factor and granularity
 
-All of the examples we considered show that large granularities (50
-and above) reduce the impact of interleaving, regardless of whether it
-was positive or negative. Most of the times, the granularity has
-little to no impact on the performances, as long as it is
-below 20. There are a few exceptions, which can be attributed to
-either compiler or CPU effects, and can be seen on Clyde, Gift, and
-Xoodoo. For instance, on Xoodoo 3-interleaved, granularities of 12 and
-20 are 1.26 times than granularities of 10, 15 and 30. Using `perf`,
-we can see that the implementations with a granularity of 10, 15 and
-30 do 1.53 more memory accesses than the ones with a granularity of 12
-and 20, hinting toward a compiler issue.
+All of the examples we considered show that choosing a coarse
+granularity (50 instructions or more) reduces the impact of
+interleaving, regardless of whether it was positive or negative. Most
+of the times, the granularity has little to no impact on the
+performances, as long as it is below 20. There are a few exceptions,
+which can be attributed to either compiler or CPU effects, and can be
+witnessed on Clyde, Gift, and Xoodoo. For instance, on Xoodoo
+3-interleaved, granularities of 12 and 20 are 1.26 times than
+granularities of 10, 15 and 30. When monitoring the programs, we
+observe that implementations with a granularity of 10, 15 and 30 do
+1.53 more memory accesses than the ones with a granularity of 12 and
+20, thus showing that our optimizations always risk to be nullified by
+poor choices from the C compiler's heuristics.
 
 
 Determining the ideal interleaving factor for a given cipher is a
-complex task because it depends both the register pressure and the
-data dependencies. In some cases, like Pyjamask, introducing some
-spilling in order to reduce the amount of data hazards is worth it,
-while in other cases, like Rectangle, spilling deteriorates the
-performances. Furthermore, while we can compute the maximum number of
+complex task because it depends both on register pressure and data
+dependencies. In some cases, like Pyjamask, introducing some spilling
+in order to reduce the amount of data hazards is worth it, while in
+other cases, like Rectangle, spilling deteriorates
+performance. Furthermore, while we can compute the maximum number of
 live variables in an Usuba0 program, the C compiler is free to
 schedule the generated C code how it sees fit, potentially reducing or
 increasing the amount of live variables.
 
 
-Fortunately, Usubac automates the interleaving optimization, which we
-can leverage to releave the programer from the burden of determining
-himself the optimal interleaving parameters. When ran with the option
-`-auto-interleave`, Usubac automatically benchmarks several
+Fortunately, Usubac's autotuner fully automates the interleaving
+transformation, thus releaving programmers from the burden of
+determining by hand the optimal interleaving parameters. When ran with
+the autotuner enabled, Usubac automatically benchmarks several
 interleaving factors (0, 2, 3 and 4) in order to find out which is
-best. This suffers from the limitation of loosing some genericity in
-the C code generated: we only test its optimality with one compiler on
-one platform.
+best.
 
 We do not benchmark the granularity when selecting the ideal
 interleaving setup, since its influence on performances is
