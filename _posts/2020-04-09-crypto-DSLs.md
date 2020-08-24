@@ -16,22 +16,23 @@ hidden: false
 
 Cryptol [1] started from the observation that due to the lack of
 standard for specifying cryptographic algorithms, papers described
-their ciphers using a combination of english (too ambiguous) and
-pseudo-codes (ill-suited to describe mathematical operations) while
-providing reference implementations in C (too low-level). Thus,
-Cryptol is a programming language for speficying cryptographic
-algorithms, from protocols and modes of operations down to
-primitives. It covers a broder range than Usuba, which focuses solely
-on primitives. 
+their ciphers using a combination of english (which Cryptol's author
+deem "ambiguous") and pseudo-codes (which tends to "obscure the
+underlying mathematics") while providing reference implementations in
+C ("far too low-level"). Thus, Cryptol is a programming language for
+speficying cryptographic algorithms, from protocols and modes of
+operations down to primitives. It covers a broder range than Usuba,
+which focuses solely on primitives.
 
-Usuba's design was driven by existing CPU architectures, but still
-aims at providing a semantics abstract enough to allow reasoning on
-combinational circuits. Often, ciphers are specified at this level of
-abstraction, but not always: AES for instance is defined in terms of
-operations in a finite field. Cryptol handles well this type of
-cipher, by providing high-level mathematical abstractions, even when
-they do not trivially map to any commonly used hardware. As such,
-Cryptol natively supports polynomials and field arithmetics. For
+Usuba's design and abstractions were driven by existing CPU
+architectures, but still aims at providing a semantics abstract enough
+to allow reasoning on combinational circuits. Often, ciphers are
+specified at this level of abstraction, but not always: AES for
+instance is defined in terms of operations in a finite field. Cryptol
+handles well this type of cipher, by providing high-level mathematical
+abstractions, even when they do not trivially map to any commonly used
+hardware. As such, Cryptol natively supports polynomials and field
+arithmetics, allowing it to express naturally ciphers like AES. For
 instance, AES's multiplication in GF(2<sup>8</sup>) modulo the
 irreducible polynome <i>x<sup>8</sup> + x<sup>4</sup> +
 x<sup>3</sup> + x + 1</i> can be written in Cryptol as:
@@ -47,11 +48,10 @@ Cryptol basic types are bitvectors, similar to Usuba's
 <code>u<i>n</i></code> types, which can be grouped in tuples, similar
 to what Usuba offers. However, where tuples are at the core of Usuba's
 programs, Cryptol's main construction is sequences, which, unlike
-tuples, contains elements of the same type. Several builtins allow to
-construct and manipulate sequences: comprehensions, enumerations,
-infinite sequences, indexing and appending operators. Furthermore, in
-Cryptol, bitvectors can be specified using boolean sequences. For
-instance, the expression
+tuples, contain elements of the same type. Several operators allow to
+manipulate sequences: comprehensions, enumerations, infinite
+sequences, indexing and appending operators. Furthermore, bitvectors
+can be specified using boolean sequences. For instance, the expression
 
 ```
 [True, False, True, False, True, False]
@@ -94,7 +94,7 @@ validation).
 Overall, Cryptol is a very expressive language for cryptography, but
 falls short on the performance aspect. With Usuba we restricted the
 problem tackled by Cryptol to only symmetric primitives in order to
-focus on performances, and adopted a bottum-view, offering only only
+focus on performances, and adopted a bottom-up view, offering only
 high-level constructions that we are able to compile to efficient
 code. Furthermore, the automatic slicing and masking done by Usuba are
 missing in Cryptol.
@@ -102,8 +102,8 @@ missing in Cryptol.
 
 ### CAO
 
-CAO [3,4] is a domain-specific programming language (DSL), that
-focuses on cryptographic primitives. Like Usuba, CAO started from the
+CAO [3,4] is a domain-specific programming language (DSL) that focuses
+on cryptographic primitives. Like Usuba, CAO started from the
 observation that writing primitives in C either leads to poor
 performances because the C compiler is unable to optimize them well,
 or to unmaintainable code because optimizations are done by hand.
@@ -126,7 +126,7 @@ typedef f := gf[2 ** 8] over $ ** 8 + $ ** 4 + $ ** 3 + $ + 1
 
 AES's Mixcolumn can then be written at a higher level in CAO than in
 Usuba, allowing the programming to dirrectly appeal to operators in
-GF(2<sup>8</sup>), which are missing from Usuba.
+GF(2<sup>8</sup>), which Usuba does not provide.
 
 To support public-key cryptography, CAO also provides conditionals in
 the language. However, to prevent timing attacks, variables can be
@@ -137,7 +137,7 @@ expressed at all.
 
 Because of the exotic types introduced when dealing with public-key
 cryptography (first-order polynomials, very large integers of some
-finite fields...), CAO applies some optimizations to its programs
+finite fields...), CAO applies several optimizations to its programs
 before generating C code. For instance, C compilers' strength
 reduction pass (replacing "strong" operations by "weaker" once, for
 instance replacing a multiplication by several additions) will not
@@ -146,7 +146,7 @@ handle finite field arithmetics, but CAO's does.
 CAO also tries to offer a way for programs to be resilient against
 side-channel attacks, by providing an operator `?`, which introduces
 fresh randomness. However, since introducing randomness throughout the
-computation [5] is not proven to be secured, CAO uses Hidden Markov
+computation is not proven to be secured [5], CAO uses Hidden Markov
 Models to try and break it. Usuba integrates recent progresses in
 provable countermeasures against side-channel attacks [6], thus
 providing a stronger security.
@@ -277,11 +277,11 @@ n`. Finally, Usuba borrows from BSC the algorithm to convert lookup
 tables into circuits.
 
 Usuba improves upon BSC by expanding the range of optimizations beyond
-mere copy propagation (removing assigment of a variable to
-another). Furthermore, BSC does not offer loop constructions, and
-inlines every function, producing unnecessary large
-codes. Benchmarking BSC against Usuba on DES shows that Usuba is about
-10% faster, mainly thanks to its scheduling algorithm.
+mere copy propagation. Furthermore, BSC does not offer loop
+constructions, and inlines every function, producing unnecessary large
+codes. Benchmarking BSC against Usuba on DES (the only available
+example of BSC code) shows that Usuba is about 10% faster, mainly
+thanks to its scheduling algorithm.
 
 Similarly, m-slicing was only introduced almost a decade after BSC
 [14,15], and most SIMD extensions post-date BSC: SSE instructions sets
