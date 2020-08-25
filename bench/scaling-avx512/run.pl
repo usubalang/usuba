@@ -40,6 +40,9 @@ if (!$collect) {
 
     say "Running Serpent v-slice...";
     system "./serpent/compile.pl @ARGV";
+
+    say "Running Rectangle...";
+    system "./rectangle/compile.pl @ARGV";
 }
 
 
