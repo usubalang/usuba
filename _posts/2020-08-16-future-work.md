@@ -11,7 +11,18 @@ comments: false
 hidden: true
 ---
 
+Summary:
 
+ - peephole optimizations on AVX512 using `vpternlog` for instance, cf Backend
+ 
+ - targetting assembly to optimize masked implementations on embedded devices. cf Tornado
+
+ - hybrid/generalized mslicing, cf here
+ 
+ - mslicing on general purpose registers, cf here
+ 
+ - incorporate mode of operation, cf here
+ 
 
 ## mslicing on general purpose registers
 
@@ -208,41 +219,65 @@ shuffles would be allowed if the architectures offers instructions to
 shuffle _m_-bit words.
 
 
-## Peephole optimizations on AVX-512
-
-
-`vpternlog`
-
- - for now, only used to replaced `xor`s and `or`s by Clang/GCC
- 
- - example to optimize something
- 
- 
-Old text:
- 
-Additionally,
-Clang optimizes several `xor` and `or` of Serpent by combining them
-into a single `vpternlog` instruction. This new AVX512 instruction
-computes any three-operand binary function at once. The AVX2
-implementation of Serpent thus contains 652 `or`s and 1408 `xor`s. Of
-those 652 `or`s, 186 are used to emulate rotations (6 rotations per
-round for 31 rounds), which leaves a total of `652 - 372 + 1408 =
-1688` `xor`s and `or`s not use in rotations. On the other hand, the
-AVX512 implementation contains 280 `or`s, 1336 `xor`s and 72
-`vpternlog`, or a total of 1668.
-
-
-
-## Optimizations for low-end CPUs
-
- - Stoffelen's scheduler
-
 
 ## Mode of operation
 
- - counter caching ref
- - counter caching with slicing
+One of the commonly used mode of operation is counter mode (CTR). In
+this mode (as illustrated below), a counter is encrypted by the
+primitive (rather than encrypting the plaintext directly), and the
+output of the primitive is `xor`ed with a block of plaintext to
+produce the ciphertext. The counter is incremented by one for each
+subsequent block of the plaintext to encrypt.
+
+<p align="center" style="margin-top:30px;margin-bottom:30px;">
+<img style="height:auto;width:auto;max-width:100%" src="{{ site.baseurl }}/assets/images/blog/CTR.png">
+</p>
+
+For 256 consecutives block to encrypt, only the last byte of the
+counter changes, and the other remain contant. Hongjun Wu and later
+Bernstein and Schwabe [1] observed that the last byte of AES's input
+only impacts 4 bytes during the first round:
+
+<p align="center" style="margin-top:30px;margin-bottom:30px;">
+<img style="height:auto;width:auto;max-width:100%" src="{{ site.baseurl }}/assets/images/blog/AES-round-CTR.png">
+</p>
+
+The results of the first round of `AddRoundKey`, `SubBytes` and
+`ShiftRows` on the first 15 bytes, as well as `MixColumns` on 12 bytes
+can thus be cached and reused for 256 encryptions. Concretely, the
+first round of AES only require computing `AddRoundKey` and `SubBytes`
+on a single byte (`ShiftRows` does not require computation), and
+`MixColumns` on 4 bytes instead of 16. Similarly, 12 of the 16
+`AddRoundKey` and `SubBytes` of the second round can be
+cached. Additionally, Park and Lee [2] showed that some values can be
+pre-computed to speed up computation even further. Only 4 bytes of the
+output of the first round depends on the last byte, which can take 256
+values. Thus, it is possible to precompte all 256 possible values for
+those 4 bytes (which can be stored a 1KB table (4 * 256 = 1KB)), and
+reuse them until incremeting the counter changes the 6<sup>th</sup>
+byte from the end of the counter (<i>b<sub>10</sub></i> on the figure
+above, which is an input of the same `MixColumn` as
+<i>b<sub>15</sub></i>), or once every 1 trillion block.
+
+
+To integrate such optimizations in Usuba, we will have to broaden the
+scope of Usuba to include modes of operations. Then, two approaches
+could be used. The less ambitious one consists in manually
+implementing counter-caching optimizations, which might be doable in a
+way to speedup other ciphers than AES as well. The more ambitious and
+powerful one is rely on the existing optimzer of Usuba to detect such
+optimization opportunities. For instance, common subexpression
+elimination should be able to factorize redundant computations from
+one plaintext to the next one. Integrating pre-computing to the
+existing optimizations of Usuba however would require more
+investigations.
+
+
 
 
 ---
 ## References
+
+[1] D. J. Bernstein, P. Schwabe, [New AES Software Speed Records](cr.yp.to/aes-speed/aesspeed-20080908.pdf), INDOCRYPT, 2008.
+
+[2] J. H. Park, D. H. Lee, [FACE: Fast AES CTR mode Encryption Techniques based on the Reuse of Repetitive Data](https://tches.iacr.org/index.php/TCHES/article/download/7283/6460), TCHES, 2018.
