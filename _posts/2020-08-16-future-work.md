@@ -360,19 +360,23 @@ extract two SMT from the pipeline, one before the optimizations, and
 one after. We then feed them to the Z3 SMT solver [5], which checks
 wether they are equivalent. Extraction of SMT equations from an Usuba0
 program is straightforward thanks to our dataflow semantics: an Usuba0
-program _is_ a set of equations.
+program _is_ a set of equations. Extracting equations from hslice
+programs however requires mapping shuffles to existing constructions
+of SMT solvers, which we leave for future work.
 
 
-The following Table reports the time (in second) that Z3 took to check
-the equivalence of some Usuba program before and after
+The following Table reports the time (in seconds) that Z3 took to
+check the equivalence of some Usuba program before and after
 optimizations. Checking the equivalence between pre and
 post-optimization Usuba0 program took from 3 secondes to 6000 secondes
 to Z3. We have not analyzed why some ciphers are faster to verify for
 Z3. Code size may have an impact (AES's code is much larger than any
-other cipher we considered), but vslice Rectangle's code is much
-smaller than its bitslice code, yet verification is slower. In any
-case, our premilinary results show that this approach is practical and
-require little investement.
+other cipher we considered), but there must be more at play since
+vslice Rectangle's code is much smaller than its bitsliced
+counterpart, yet verification is slower. In any case, our premilinary
+results show that this approach is practical (_i.e._ it can verify
+equivalence of Usuba0 programs in reasonable time) and require little
+investement to be implemented.
 
 
 <style type="text/css">
