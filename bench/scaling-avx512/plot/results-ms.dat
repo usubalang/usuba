@@ -1,0 +1,14 @@
+cipher "GP (64-bit)"   "SSE (128-bit)"     "AVX (128-bit)"     "AVX2 (256-bit)"    "AVX512 (512-bit)"
+"AES \n (hslice)"   0.00  1  1.00   2.04   2.94
+"Rectangle \n (hslice)"   0.00  1  0.96   1.91   2.59
+"ACE \n (vslice)"   0.38  1  1.11   2.21   5.35
+"Ascon \n (vslice)"   0.76  1  1.16   2.31   4.25
+"Chacha20 \n (vslice)"   0.41  1  0.99   1.96   4.30
+"Clyde \n (vslice)"   0.48  1  1.11   2.22   5.07
+"Gift \n (vslice)"   0.32  1  1.29   2.55   3.63
+"Gift-fix \n (vslice)"   0.27  1  1.00   1.97   3.23
+"Gimli \n (vslice)"   0.30  1  1.25   2.48   3.51
+"Pyjamask \n (vslice)"   0.30  1  1.12   2.20   2.76
+"Rectangle \n (vslice)"   0.15  1  1.04   2.06   2.66
+"Serpent \n (vslice)"   0.34  1  1.02   2.03   3.32
+"Xoodoo \n (vslice)"   0.30  1  1.21   2.37   4.33
