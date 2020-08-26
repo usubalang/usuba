@@ -436,9 +436,9 @@ could either target CompCert [15,16], a certified C compiler that
 produces x86 assembly code. Or, if we decide to generate assembly code
 ourselves (for better performances, as shown in the [Tornado post]({{
 site.baseurl }}{% post_url 2020-07-02-tornado %})), we can draw
-inspiration from CompCert's proofs and to generate Jasmin assembly
-[7]. The Jasmin's certified compiler would then be used to generate
-x86 assembly code.
+inspiration from CompCert's proofs to certify generatation of Jasmin
+assembly [7]. The Jasmin's certified compiler would then be used to
+generate x86 assembly code.
 
 
 ## GPU
