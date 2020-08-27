@@ -29,10 +29,11 @@ correctness of Usubac's pipeline, and, finally, targetting GPUs.
 
 ## mslicing on general purpose registers
 
-In Section Monomorphization, we mentioned that the lack of x86-64
-instruction to shift 4 16-bit works in a single 64-bit register
+In Section Monomorphization of the [Evaluation post]({{ site.baseurl 
+}}{% post_url 2020-08-09-eval %}), we mentioned that the lack of
+x86-64 instruction to shift 4 16-bit works in a single 64-bit register
 prevents us from parallelizing Rectangle's vsliced implementation on
-general purpose registers. 
+general purpose registers.
 
 In practice though, the `_pdep_u64` intrinsic could be used to
 interleave several inputs of vsliced Rectangle in the same 64-bit
