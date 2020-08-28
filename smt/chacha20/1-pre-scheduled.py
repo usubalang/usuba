@@ -1,5 +1,12 @@
 
-from z3 import *
+from pyboolector import *
+from timeit import default_timer as timer
+
+btor = Boolector()
+
+# Inputs
+plain_ = [ btor.Var(btor.BitVecSort(32), 'plain_[%d]' % (c0)) for c0 in range(16)]
+
 
 ######################################################################
 #                          Original program                          #
@@ -10,10 +17,10 @@ def orig_QR_start_V32(a_,b_,c_,d_):
 
   aR_ = a_ + b_
   _tmp1_ = d_ ^ aR_
-  dR_ = RotateLeft(_tmp1_,16)
+  dR_ = btor.Rol(_tmp1_,16)
   cR_ = c_ + dR_
   _tmp2_ = b_ ^ cR_
-  bR_ = RotateLeft(_tmp2_,12)
+  bR_ = btor.Rol(_tmp2_,12)
 
   return (aR_,bR_,cR_,dR_)
 
@@ -23,10 +30,10 @@ def orig_QR_end_V32(a_,b_,c_,d_):
 
   aR_ = a_ + b_
   _tmp3_ = d_ ^ aR_
-  dR_ = RotateLeft(_tmp3_,8)
+  dR_ = btor.Rol(_tmp3_,8)
   cR_ = c_ + dR_
   _tmp4_ = b_ ^ cR_
-  bR_ = RotateLeft(_tmp4_,7)
+  bR_ = btor.Rol(_tmp4_,7)
 
   return (aR_,bR_,cR_,dR_)
 
@@ -119,10 +126,7 @@ def orig_Chacha20_(plain_):
   return (cipher_)
 
 
-orig_plain_ = [ BitVec('plain_[%d]' % (c0), 32) for c0 in range(16)]
-
-
-(orig_cipher_) = orig_Chacha20_(orig_plain_)
+(orig_cipher_) = orig_Chacha20_(plain_)
  
 
 
@@ -136,10 +140,10 @@ def dest_QR_start_V32(a_,b_,c_,d_):
 
   aR_ = a_ + b_
   _tmp1_ = d_ ^ aR_
-  dR_ = RotateLeft(_tmp1_,16)
+  dR_ = btor.Rol(_tmp1_,16)
   cR_ = c_ + dR_
   _tmp2_ = b_ ^ cR_
-  bR_ = RotateLeft(_tmp2_,12)
+  bR_ = btor.Rol(_tmp2_,12)
 
   return (aR_,bR_,cR_,dR_)
 
@@ -149,10 +153,10 @@ def dest_QR_end_V32(a_,b_,c_,d_):
 
   aR_ = a_ + b_
   _tmp3_ = d_ ^ aR_
-  dR_ = RotateLeft(_tmp3_,8)
+  dR_ = btor.Rol(_tmp3_,8)
   cR_ = c_ + dR_
   _tmp4_ = b_ ^ cR_
-  bR_ = RotateLeft(_tmp4_,7)
+  bR_ = btor.Rol(_tmp4_,7)
 
   return (aR_,bR_,cR_,dR_)
 
@@ -245,16 +249,39 @@ def dest_Chacha20_(plain_):
   return (cipher_)
 
 
-dest_plain_ = [ BitVec('plain_[%d]' % (c0), 32) for c0 in range(16)]
-
-
-(dest_cipher_) = dest_Chacha20_(dest_plain_)
+(dest_cipher_) = dest_Chacha20_(plain_)
  
 
 
 ######################################################################
 #                        Equivalence checking                        #
 ######################################################################
-s = Solver()
-s.add(Or(orig_cipher_[0] != dest_cipher_[0], orig_cipher_[1] != dest_cipher_[1], orig_cipher_[2] != dest_cipher_[2], orig_cipher_[3] != dest_cipher_[3], orig_cipher_[4] != dest_cipher_[4], orig_cipher_[5] != dest_cipher_[5], orig_cipher_[6] != dest_cipher_[6], orig_cipher_[7] != dest_cipher_[7], orig_cipher_[8] != dest_cipher_[8], orig_cipher_[9] != dest_cipher_[9], orig_cipher_[10] != dest_cipher_[10], orig_cipher_[11] != dest_cipher_[11], orig_cipher_[12] != dest_cipher_[12], orig_cipher_[13] != dest_cipher_[13], orig_cipher_[14] != dest_cipher_[14], orig_cipher_[15] != dest_cipher_[15]))
-print(s.check())
+
+ortmp0 = orig_cipher_[0] != dest_cipher_[0]
+ortmp1 = btor.Or(orig_cipher_[1] != dest_cipher_[1], ortmp0)
+ortmp2 = btor.Or(orig_cipher_[2] != dest_cipher_[2], ortmp1)
+ortmp3 = btor.Or(orig_cipher_[3] != dest_cipher_[3], ortmp2)
+ortmp4 = btor.Or(orig_cipher_[4] != dest_cipher_[4], ortmp3)
+ortmp5 = btor.Or(orig_cipher_[5] != dest_cipher_[5], ortmp4)
+ortmp6 = btor.Or(orig_cipher_[6] != dest_cipher_[6], ortmp5)
+ortmp7 = btor.Or(orig_cipher_[7] != dest_cipher_[7], ortmp6)
+ortmp8 = btor.Or(orig_cipher_[8] != dest_cipher_[8], ortmp7)
+ortmp9 = btor.Or(orig_cipher_[9] != dest_cipher_[9], ortmp8)
+ortmp10 = btor.Or(orig_cipher_[10] != dest_cipher_[10], ortmp9)
+ortmp11 = btor.Or(orig_cipher_[11] != dest_cipher_[11], ortmp10)
+ortmp12 = btor.Or(orig_cipher_[12] != dest_cipher_[12], ortmp11)
+ortmp13 = btor.Or(orig_cipher_[13] != dest_cipher_[13], ortmp12)
+ortmp14 = btor.Or(orig_cipher_[14] != dest_cipher_[14], ortmp13)
+ortmp15 = btor.Or(orig_cipher_[15] != dest_cipher_[15], ortmp14)
+btor.Assert(ortmp15)
+
+
+start = timer()
+res = btor.Sat()
+end = timer()
+print("Running time: " + str(end - start))
+if res == btor.SAT:
+  print('SAT')
+  #btor.Print_model()
+else:
+  print('UNSAT')

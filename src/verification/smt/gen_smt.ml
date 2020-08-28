@@ -100,12 +100,12 @@ module PythonSMT = struct
       | Array(typ',s) -> get_dim_list (s :: acc) typ'
       | _ -> assert false in
     match typ with
-    | Uint(_,Mint 1,1) -> sprintf "btor.Var(btor.BoolSort(), '%s')" name
+    | Uint(_,Mint 1,1) -> sprintf "btor.Var(btor.BitVecSort(1), '%s')" name
     | Uint(_,Mint m,1) -> sprintf "btor.Var(btor.BitVecSort(%d),'%s')" m name
     | _ -> let base, sizes = get_dim_list [] typ in
            let opening_brackets = String.make (List.length sizes) '[' in
            let base_type, end_type = match base with
-             | 1 -> "btor.Var", "btor.BoolSort()"
+             | 1 -> "btor.Var", "btor.BitVecSort(1)"
              | k -> "btor.Var", sprintf "btor.BitVecSort(%d)" k in
            let var_name = name ^
                             (join "" (List.map (fun _ -> "[%d]") sizes)) in
@@ -174,18 +174,11 @@ module PythonSMT = struct
     match e with
     | Const b  -> if b = 1 then "True" else "False"
     | ExpVar v -> var_to_smt v
-    | Not e -> (match slicing with
-                | Bslice -> sprintf "Not(%s)" (expr_to_smt slicing msize e)
-                | _ -> sprintf "~ %s" (expr_to_smt slicing msize e))
-    | Log(op,x,y) -> (match slicing with
-                      | Bslice -> sprintf "%s(%s,%s)" 
-                                          (log_op_to_smt slicing op)
-                                          (expr_to_smt slicing msize x)
-                                          (expr_to_smt slicing msize y)
-                      | _ -> sprintf "%s %s %s" 
+    | Not e -> sprintf "~ %s" (expr_to_smt slicing msize e)
+    | Log(op,x,y) -> sprintf "%s %s %s" 
                                      (expr_to_smt slicing msize x)
                                      (log_op_to_smt slicing op)
-                                     (expr_to_smt slicing msize y))
+                                     (expr_to_smt slicing msize y)
     | Arith(op,x,y) -> sprintf "%s %s %s"
                                (expr_to_smt slicing msize x)
                                (arith_op_to_smt op)
@@ -298,6 +291,24 @@ module PythonSMT = struct
 (prefix ^ (norm_ident entry.id))
 (join "," (List.map (fun vd ->  (norm_ident vd.vid)) entry.p_in))
 
+let flat_ors l1 l2 = 
+  let var_idx oc n = Format.fprintf oc "ortmp%d" n in
+  let rec go n l1 l2 =
+    match l1, l2 with
+    | [], [] -> Format.asprintf "btor.Assert(%a)\n" var_idx n
+    | v1 :: vs1, v2 :: vs2 -> 
+       Format.asprintf "%a = btor.Or(orig_%s != dest_%s, %a)\n"
+         var_idx (n+1)
+         (var_to_smt v1) (var_to_smt v2)
+         var_idx n ^
+       go (n+1) vs1 vs2
+  in
+  match l1, l2 with
+  | v1 :: vs1, v2 :: vs2  -> 
+     Format.asprintf "%a = orig_%s != dest_%s\n" var_idx 0 (var_to_smt v1) (var_to_smt v2) ^
+     go 0 vs1 vs2
+  | _ -> assert(false)
+
   let gen_smt (orig:prog) (dest:prog) : string =
     let orig_smt = prog_to_smt "orig" orig in
     let dest_smt = prog_to_smt "dest" dest in
@@ -319,6 +330,7 @@ module PythonSMT = struct
     sprintf
 "
 from pyboolector import *
+from timeit import default_timer as timer
 
 btor = Boolector()
 
@@ -342,9 +354,12 @@ btor = Boolector()
 #                        Equivalence checking                        #
 ######################################################################
 
-btor.Assert(%s)
+%s
 
+start = timer()
 res = btor.Sat()
+end = timer()
+print(\"Running time: \" + str(end - start))
 if res == btor.SAT:
   print('SAT')
   #btor.Print_model()
@@ -354,13 +369,10 @@ else:
 inputs
 orig_smt
 dest_smt
-(List.fold_left2
-   (fun acc v1 v2 -> sprintf "btor.Or(orig_%s != dest_%s, %s)"
-                       (var_to_smt v1) (var_to_smt v2) acc)
-   "0"
-   out_orig out_dest)
+(flat_ors  out_orig out_dest)
     
 end
+
 
 let print_gen_smt (orig:prog) (dest:prog) (filename:string) : unit =
   let ext = ".py" (* ".smt.l" *) in

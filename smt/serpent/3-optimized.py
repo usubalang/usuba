@@ -1,5 +1,13 @@
 
-from z3 import *
+from pyboolector import *
+from timeit import default_timer as timer
+
+btor = Boolector()
+
+# Inputs
+plaintext_ = [ btor.Var(btor.BitVecSort(32), 'plaintext_[%d]' % (c0)) for c0 in range(4)]
+keys_ = [[ btor.Var(btor.BitVecSort(32), 'keys_[%d][%d]' % (c0,c1)) for c1 in range(4)] for c0 in range(33)]
+
 
 ######################################################################
 #                          Original program                          #
@@ -209,22 +217,22 @@ def orig_transform_V32(x_):
   out_ = [ None for _ in range(4)]
 
 
-  _shadow_x_1_ = (x_[0] << 13) | ((x_[0] >> (32-13)) & 0x00001fff)
-  _shadow_x_2_ = (x_[2] << 3) | ((x_[2] >> (32-3)) & 0x00000007)
+  _shadow_x_1_ = btor.Rol(x_[0],13)
+  _shadow_x_2_ = btor.Rol(x_[2],3)
   _tmp1_ = x_[1] ^ _shadow_x_1_
   _shadow_x_3_ = _tmp1_ ^ _shadow_x_2_
   _tmp2_ = x_[3] ^ _shadow_x_2_
   _tmp3_ = _shadow_x_1_ << 3
   _shadow_x_4_ = _tmp2_ ^ _tmp3_
-  _shadow_x_5_ = (_shadow_x_3_ << 1) | ((_shadow_x_3_ >> (32-1)) & 0x00000001)
-  _shadow_x_6_ = (_shadow_x_4_ << 7) | ((_shadow_x_4_ >> (32-7)) & 0x0000007f)
+  _shadow_x_5_ = btor.Rol(_shadow_x_3_,1)
+  _shadow_x_6_ = btor.Rol(_shadow_x_4_,7)
   _tmp4_ = _shadow_x_1_ ^ _shadow_x_5_
   _shadow_x_7_ = _tmp4_ ^ _shadow_x_6_
   _tmp5_ = _shadow_x_2_ ^ _shadow_x_6_
   _tmp6_ = _shadow_x_5_ << 7
   _shadow_x_8_ = _tmp5_ ^ _tmp6_
-  _shadow_x_9_ = (_shadow_x_7_ << 5) | ((_shadow_x_7_ >> (32-5)) & 0x0000001f)
-  _shadow_x_10_ = (_shadow_x_8_ << 22) | ((_shadow_x_8_ >> (32-22)) & 0x003fffff)
+  _shadow_x_9_ = btor.Rol(_shadow_x_7_,5)
+  _shadow_x_10_ = btor.Rol(_shadow_x_8_,22)
   out_[0] = _shadow_x_9_
   out_[1] = _shadow_x_5_
   out_[2] = _shadow_x_10_
@@ -501,11 +509,7 @@ def orig_Serpent_(plaintext_,keys_):
   return (ciphertext_)
 
 
-orig_plaintext_ = [ BitVec('plaintext_[%d]' % (c0), 32) for c0 in range(4)]
-orig_keys_ = [[ BitVec('keys_[%d][%d]' % (c0,c1), 32) for c1 in range(4)] for c0 in range(33)]
-
-
-(orig_ciphertext_) = orig_Serpent_(orig_plaintext_,orig_keys_)
+(orig_ciphertext_) = orig_Serpent_(plaintext_,keys_)
  
 
 
@@ -718,15 +722,15 @@ def dest_transform_V32(x_):
   out_ = [ None for _ in range(4)]
 
 
-  _shadow_x_1_ = (x_[0] << 13) | ((x_[0] >> (32-13)) & 0x00001fff)
-  _shadow_x_2_ = (x_[2] << 3) | ((x_[2] >> (32-3)) & 0x00000007)
+  _shadow_x_1_ = btor.Rol(x_[0],13)
+  _shadow_x_2_ = btor.Rol(x_[2],3)
   _tmp1_ = x_[1] ^ _shadow_x_1_
   _tmp3_ = _shadow_x_1_ << 3
   _tmp2_ = x_[3] ^ _shadow_x_2_
   _shadow_x_3_ = _tmp1_ ^ _shadow_x_2_
   _shadow_x_4_ = _tmp2_ ^ _tmp3_
-  _shadow_x_5_ = (_shadow_x_3_ << 1) | ((_shadow_x_3_ >> (32-1)) & 0x00000001)
-  _shadow_x_6_ = (_shadow_x_4_ << 7) | ((_shadow_x_4_ >> (32-7)) & 0x0000007f)
+  _shadow_x_5_ = btor.Rol(_shadow_x_3_,1)
+  _shadow_x_6_ = btor.Rol(_shadow_x_4_,7)
   _tmp4_ = _shadow_x_1_ ^ _shadow_x_5_
   _tmp6_ = _shadow_x_5_ << 7
   out_[1] = _shadow_x_5_
@@ -734,8 +738,8 @@ def dest_transform_V32(x_):
   out_[3] = _shadow_x_6_
   _shadow_x_7_ = _tmp4_ ^ _shadow_x_6_
   _shadow_x_8_ = _tmp5_ ^ _tmp6_
-  _shadow_x_9_ = (_shadow_x_7_ << 5) | ((_shadow_x_7_ >> (32-5)) & 0x0000001f)
-  _shadow_x_10_ = (_shadow_x_8_ << 22) | ((_shadow_x_8_ >> (32-22)) & 0x003fffff)
+  _shadow_x_9_ = btor.Rol(_shadow_x_7_,5)
+  _shadow_x_10_ = btor.Rol(_shadow_x_8_,22)
   out_[0] = _shadow_x_9_
   out_[2] = _shadow_x_10_
 
@@ -1010,17 +1014,27 @@ def dest_Serpent_(plaintext_,keys_):
   return (ciphertext_)
 
 
-dest_plaintext_ = [ BitVec('plaintext_[%d]' % (c0), 32) for c0 in range(4)]
-dest_keys_ = [[ BitVec('keys_[%d][%d]' % (c0,c1), 32) for c1 in range(4)] for c0 in range(33)]
-
-
-(dest_ciphertext_) = dest_Serpent_(dest_plaintext_,dest_keys_)
+(dest_ciphertext_) = dest_Serpent_(plaintext_,keys_)
  
 
 
 ######################################################################
 #                        Equivalence checking                        #
 ######################################################################
-s = Solver()
-s.add(Or(orig_ciphertext_[0] != dest_ciphertext_[0], orig_ciphertext_[1] != dest_ciphertext_[1], orig_ciphertext_[2] != dest_ciphertext_[2], orig_ciphertext_[3] != dest_ciphertext_[3]))
-print(s.check())
+
+ortmp0 = orig_ciphertext_[0] != dest_ciphertext_[0]
+ortmp1 = btor.Or(orig_ciphertext_[1] != dest_ciphertext_[1], ortmp0)
+ortmp2 = btor.Or(orig_ciphertext_[2] != dest_ciphertext_[2], ortmp1)
+ortmp3 = btor.Or(orig_ciphertext_[3] != dest_ciphertext_[3], ortmp2)
+btor.Assert(ortmp3)
+
+
+start = timer()
+res = btor.Sat()
+end = timer()
+print("Running time: " + str(end - start))
+if res == btor.SAT:
+  print('SAT')
+  #btor.Print_model()
+else:
+  print('UNSAT')
