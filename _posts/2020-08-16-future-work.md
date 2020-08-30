@@ -18,13 +18,7 @@ post_url 2020-06-06-backend %}), and improving the performances on
 embedded devices (_e.g._ by targeting assembly rather than C) is
 discussed in the [Tornado post]({{ site.baseurl }}{% post_url
 2020-07-02-tornado %}). We propose in this post several additional
-ideas to improve Usuba: extending vslicing and hslicing to allow
-parallelism even on general purpose registers, combining vslicing and
-hslicing to achieve an "hybrid" mslicing (useful to implement ciphers
-like Chacha20 and Gimli), incorporating modes of operations in Usuba
-rather than focussing solely on primitives, targeting other SIMD
-architectures (_e.g._ Neon and AltiVec), achieving end-to-end
-correctness of Usubac's pipeline, and, finally, targetting GPUs.
+ideas to improve Usuba.
  
 
 ## mslicing on general purpose registers
@@ -35,13 +29,13 @@ x86-64 instruction to shift 4 16-bit works in a single 64-bit register
 prevents us from parallelizing Rectangle's vsliced implementation on
 general purpose registers.
 
-In practice though, the `_pdep_u64` intrinsic could be used to
-interleave several inputs of vsliced Rectangle in the same 64-bit
-register. This instructions take a register `a` and an integer `mask`
+In practice though, the `_pdep_u64` intrinsic can be used to
+interleave 4 independent 64-bit inputs of Rectangle in 4 64-bit
+registers. This instruction takes a register `a` and an integer `mask`
 as parameters, and dispatches the bits of `a` to a new registers
-following the pattern in `mask`. For instance, using `_pdep_u64` with
-the mask `0x8888888888888888` would dispatch a 16-bit input of
-Rectangle into a 64-bit register as follows:
+following the pattern specified in `mask`. For instance, using
+`_pdep_u64` with the mask `0x8888888888888888` would dispatch a 16-bit
+input of Rectangle into a 64-bit register as follows:
 
 <p align="center" style="margin-top:30px;margin-bottom:30px;">
 <img style="height:auto;width:auto;max-width:100%" src="{{ site.baseurl }}/assets/images/blog/pdep_u64-1.png">
@@ -54,8 +48,8 @@ using the mask `0x4444444444444444`:
 <img style="height:auto;width:auto;max-width:100%" src="{{ site.baseurl }}/assets/images/blog/pdep_u64-2.png">
 </p>
 
-Repeating the process with two more inputs and the masks
-`0x2222222222222222` and `0x1111111111111111`, and combining the
+Repeating the process with two more inputs using the masks
+`0x2222222222222222` and `0x1111111111111111`, and then combining the
 results (using a simple `or`) would produce a 64-bit register
 containing 4 interleaved 16-bit inputs of Rectangle. Since Rectangle's
 whole input is 64-bit, this process needs to be repeated 4
@@ -67,14 +61,14 @@ can now be done by a simple left-rotation by 8:
 <img style="height:auto;width:auto;max-width:100%" src="{{ site.baseurl }}/assets/images/blog/rectangle-std-inter.png">
 </p>
 
-In essence, this technique is similar to hslicing in its data layout,
-but similar to vslicing in the instructions it offers. Bits of the
-input are split along the horizontal direction of the registers, but
-the lack of vector instructions on general purpose registers prevents
-the use of `Shuffle`s, and requires using standard vsliced
-instructions, except for arithmetic instructions. We leave for future
-work the investigation of how this mode of slicing could be
-incorporated within Usuba.
+In essence, this technique relies on a data-layout inspired by
+hslicing (bits of the input are split along the horizontal direction
+of the registers), while offering access to a limit set of vslice
+instructions: bitwise instructions and shifts/rotates can be used, but
+arithmetic instructions cannot. We leave for future work the
+investigation of how this mode of slicing could be incorporated within
+Usuba in order to increase performance when vector extensions are not
+available.
 
 
 
@@ -119,7 +113,7 @@ represent the first 4 calls to `DR` as:
 <img style="height:auto;width:auto;max-width:70%" src="{{ site.baseurl }}/assets/images/blog/chacha20-round.png">
 </p>
 
-In vslicing, each 32-bit work of the state would be mapped to an SIMD
+In vslicing, each 32-bit work of the state would be mapped to a SIMD
 register, and those registers would be filled with independent
 inputs. For instance, on SSE, 4 states would be processed in parallel:
 
@@ -133,17 +127,18 @@ The last 4 calls to `QR` in the second half of `DR` would then be:
 <img style="height:auto;width:auto;max-width:100%" src="{{ site.baseurl }}/assets/images/blog/chacha20-round-vslice-2.png">
 </p>
 
-Using pure vslicing in that case however may not be optimal, because
-16 registers are required, which leaves no unused registers for
-temporary variables on SSE or AVX. In practice, at least one register
-of the state will have to be spilled to memory.
+Using pure vslicing may be sub-optimal because 16 registers are
+required, which leaves no register for temporary variables on SSE or
+AVX. In practice, at least one register of the state will have to be
+spilled to memory.
 
 Rather than parallelizing Chacha20 by filling SSE or AVX register with
-independent inputs, it is possible to do the parallization for a
-single instance on SSE registers (or two instances on AVX2). Since the
-first 4 calls to `QR` operate on independent values, we an pack the 16
-32-bit words of the state within 4 SSE (or AVX) registers, and a
-single call to `QR` will compute it four times on a _single_ input:
+independent inputs, it is possible to do the parallelization of a
+single instance on SSE registers (respectively, two instances on
+AVX2). Since the first 4 calls to `QR` operate on independent values,
+we can pack the 16 32-bit words of the state within 4 SSE (or AVX)
+registers, and a single call to `QR` will compute it four times on a
+_single_ input:
 
 <p align="center" style="margin-top:30px;margin-bottom:30px;">
 <img style="height:auto;width:auto;max-width:100%" src="{{ site.baseurl }}/assets/images/blog/chacha20-round-par.png">
@@ -164,54 +159,51 @@ calls:
 <img style="height:auto;width:auto;max-width:100%" src="{{ site.baseurl }}/assets/images/blog/chacha20-round-par-3.png">
 </p>
 
-This technique has the advantage over vslicing that it requires less
-parallelism: on SSE (resp. AVX), 4 (resp. 8), it requires only 1
-(resp. 2) independent inputs to reach the maximal throughput, while in
-vslicing, it required 4 (resp. 8). Similarly, the latency is divided
-by 4 compared to vslicing, which will speed up applications that
-require encrypting less than 4 blocks.
+Compared to vslicing, this technique requires less independent inputs:
+on SSE (resp. AVX), it requires only 1 (resp. 2) independent inputs to
+reach the maximal throughput, while in vslicing, it requires 4
+(resp. 8). Also, the latency is divided by 4 compared to vslicing,
+which will speed up applications that require encrypting less than 4
+blocks.
 
 The downside is that it requires additional shuffles to reorganize the
-data withing each round and at the end of each round, which will slow
-down the cipher compared to vslicing. Furthermore, recall from the
+data withing each round and at the end of each round, which incurs an
+overhead compared to vslicing. Furthermore, recall from the
 [Scheduling post]({{ site.baseurl }}{% post_url 2020-05-09-scheduling
 %}) that Chacha20's quarter round (`QR`) is bound by
-data-dependencies. In vslicing, 4 rounds needed to be computed, and
-Usuba's scheduling algorithm was able to interleave them, thus
-removing any stalls related to data dependencies. This is not possible
-with this new implementation, since only two calls to `QR` remain,
-both of which cannot be computed simultaneously.
+data-dependencies. In vslicing, Usuba's scheduling algorithm is able
+to interleave 4 quarter rounds, thus removing any stalls related to
+data dependencies. This is not possible with this mixed sliced form,
+since only two calls to `QR` remain, both of which cannot be computed
+simultaneously.
 
-However, the decrease in register pressure allows such an
-implementation of Chacha20 to be implemented without any spilling,
-which improves its performances. Furthermore, because this
-implementation only uses 5 registers (4 for the state + 1 temporary),
-it can be interleaved 3 times without introducing any spilling. This
-interleaving would remove that data hazards from `QR`, like Usubac's
-scheduling did for the vsliced implementation. The performances of
-this spill-free 3-interleaved implementation (but containing
-additional shuffles) would need to be compared to the classical
-vsliced one. As shown in the [evaluation]({{ site.baseurl }}{%
-post_url 2020-08-09-eval %}), the fastest implementation of Gimli on
-AVX2 uses this technique, and is faster than Usuba's vsliced
-implementation.
+However, a lower register pressure allows such an implementation of
+Chacha20 to be implemented without any spilling, which improves
+performance. Furthermore, because this implementation only uses 5
+registers (4 for the state + 1 temporary), it could be interleaved 3
+times without introducing any spilling. This interleaving would remove
+the data hazards from `QR`. The performances of this spill-free
+3-interleaved implementation (despite containing additional shuffles)
+would need to be compared to the classical vsliced one. As shown in
+the [evaluation]({{ site.baseurl }}{% post_url 2020-08-09-eval %}),
+the fastest implementation of Gimli on AVX2 uses this technique, and
+is faster than Usuba's vsliced implementation.
 
-We can see this technique as a generalization of mslicing, sharing
-similarities with both hslicing and vslicing. One way to incorpore it
-to Usuba would be to, instead of representing types with a direction
-<i>D</i> and a word size <i>m</i>
-(<code>u<i><sub>D</sub>m</i></code>), represent them with a word size
-<i>m</i> and a vector size <i>V</i>
-(<code>u<i>m</i><sup>V</sup></code>). The word size would correspond
+We can understand this technique as an intermediary stage between
+vertical and horizontal slicing. One way to incorpore it to Usuba
+would be to represent atomic types with a word size <i>m</i> and a
+vector size <i>V</i> (<code>u<i>m</i><sup>V</sup></code>), instead of
+a direction <i>D</i> and a word size <i>m</i>
+(<code>u<i><sub>D</sub>m</i></code>). The word size would correspond
 to the size of the packed elements within SIMD registers, and the
-vector size represent how many elements of the same input are packed
-within the same input. For instance, Chacha20's new implementation
-would represent its state into 4 values of type
+vector size would represent how many elements of a given input are
+packed within the same input. For instance, Chacha20's new
+implementation would manipulate a state of 4 values of type
 <code>u<i>32</i><sup>4</sup></code>.
 
 Using this representation, a vslice type
 <code>u<i><sub>V</sub>m</i></code> would correspond to
-<code>u<i>32</i><sup>1</sup></code>, while an hslice type
+<code>u<i>m</i><sup>1</sup></code>, while an hslice type
 <code>u<i><sub>H</sub>m</i></code> would correspond to
 <code>u<i>1</i><sup>m</sup></code>, and a bitslice type
 <code>u<i><sub>D</sub>1</i></code> would unsurprisingly correspond to
@@ -257,40 +249,35 @@ on a single byte (`ShiftRows` does not require computation), and
 `MixColumns` on 4 bytes instead of 16. Similarly, 12 of the 16
 `AddRoundKey` and `SubBytes` of the second round can be
 cached. Additionally, Park and Lee [2] showed that some values can be
-pre-computed to speed up computation even further. Only 4 bytes of the
+pre-computed to speed up computation even further (while keeping the
+constant-time property of sliced implementations). Only 4 bytes of the
 output of the first round depends on the last byte, which can take 256
 values. Thus, it is possible to precompte all 256 possible values for
 those 4 bytes (which can be stored a 1KB table (4 * 256 = 1KB)), and
-reuse them until incremeting the counter changes the 6<sup>th</sup>
-byte from the end of the counter (<i>b<sub>10</sub></i> on the figure
-above, which is an input of the same `MixColumn` as
-<i>b<sub>15</sub></i>), or once every 1 trillion block.
+reuse them until incrementing the counter past the 6<sup>th</sup>
+least significant byte of the counter (<i>b<sub>10</sub></i> on the
+figure above, which is an input of the same `MixColumn` as
+<i>b<sub>15</sub></i>), that is, once every 1 trillion block.
 
 
 To integrate such optimizations in Usuba, we will have to broaden the
-scope of Usuba to include modes of operations. Then, two approaches
-could be used. The less ambitious one consists in manually
-implementing counter-caching optimizations, which might be doable in a
-way to speedup other ciphers than AES as well. The more ambitious and
-powerful one is rely on the existing optimzer of Usuba to detect such
-optimization opportunities. For instance, common subexpression
-elimination should be able to factorize redundant computations from
-one plaintext to the next one. Integrating pre-computing to the
-existing optimizations of Usuba however would require more
-investigations.
+scope of Usuba to support modes of operations: Usuba currently does
+not offer support statful computations and forces loops' bounds to be
+known at compile-time. We would then need to extend the optimizer to
+exploit the specificities of Usuba's new programming model.
 
 
-## AltiVec & Neon
+## Systematic Evaluation on Diverse Vectorized Architectures
 
 
-We focused our evaluation on Intel SIMD, because of their wide
-availability. Other architectures, such as AltiVec on PowerPC and Neon
-on ARM, offer similar instructions as SSE and AVX. In particular, both
-AltiVec and Neon provide 128-bit registers supporting 8/16/32/64-bit
-arithmetic and shift instructions (used in vslicing), shuffles (used
-in hslicing) and 128-bit bitwise instructions (used in all slicing
-types). As a proof-of-concept, we thus implemented AltiVec and Neon
-backends in Usubac.
+We focused our evaluation of vectorization to Intel architectures,
+because of their wide availability. Other architectures, such as
+AltiVec on PowerPC and Neon on ARM, offer similar instructions as SSE
+and AVX. In particular, both AltiVec and Neon provide 128-bit
+registers supporting 8/16/32/64-bit arithmetic and shift instructions
+(used in vslicing), shuffles (used in hslicing) and 128-bit bitwise
+instructions (used in all slicing types). As a proof-of-concept, we
+thus implemented AltiVec and Neon backends in Usubac.
 
 The figure below shows the speedup offered by vector extensions on a
 bitslice DES (including the transposition) on several architectures:
@@ -314,13 +301,10 @@ comparatively to a 64-bit baseline. ARM's Neon extensions only offer
 Intel's AVX2 (note that ARMv7 has 32-bit registers whereas Skylake has
 64-bit registers).
 
-Still, the reality is more complex: Intel, ARM and PowerPC CPUs are
-very different, each with their own pipelines, their own execution
-units, their own instruction sets and their own latencies. We leave to
-future work to conduct a proper evaluation of bitslicing and mslicing
-on ARM and PowerPC, for which Usubac's Neon and AltiVec backend should
-prove useful.
-
+This benchmark only deals with bitslicing, and thus does not exploit
+arithmetic instructions, shuffles, or other architecture-specific SIMD
+instructions. We leave to future work to extend this preliminary
+evaluation to other ciphers and slicing modes.
 
 
 ## Verification
@@ -344,106 +328,48 @@ proving that each each normalization pass preserves the semantics of
 the input program. Several work already showed how to prove the
 correctness of normalization of dataflow languages [3,13,14].
 
-For the backend (the optimizations), using _translation validation_
-[4] might be more practical. The principle of translation validation
-is to check wether the program after optimizations has the same
-behavior as the program before the optimizations. This does not
-guarantee that the compiler is correct, but it does guarantee that the
-compilation of a given program is correct. However, translation
-validation leads to a more easily extensible compiler than prooving
-the correctness of each pass, since adding a new pass of optimization
-does not impact the verification and does not require a proof of
-correctness for this pass.
+For the backend (optimizations), using _translation validation_ [4]
+would certainly be more practical. The principle of translation
+validation is to check wether the program obtained after optimization
+has the same behavior as the program before optimization. This does
+not guarantee that the compiler is correct for all possible input
+programs, but it does guarantee that the compilation of a given
+program is correct. Translation validation leads to a more easily
+extensible compiler than proving the correctness of each pass, since
+adding a new pass of optimization does not impact the verification and
+does not require a proof of correctness for this pass.
 
-We already implemented a proof-of-concept translation validation for
-the optimizations of the Usubac compiler. The principle is simple: we
-extract two SMT from the pipeline, one before the optimizations, and
-one after. We then feed them to the Z3 SMT solver [5], which checks
-wether they are equivalent. Extraction of SMT equations from an Usuba0
-program is straightforward thanks to our dataflow semantics: an Usuba0
-program _is_ a set of equations. Extracting equations from hslice
-programs however requires mapping shuffles to existing constructions
-of SMT solvers, which we leave for future work.
+We implemented a proof-of-concept translation validation for the
+optimizations of the Usubac compiler. The principle is simple: we
+extract two SAT formulas from the pipeline, one before the
+optimizations, and one after. We then feed them to the Boolector SMT
+solver [5], which checks wether they are equivalent (or, more
+precisely, wether an input exists such that feeding it to both
+formulas produces two distinct outputs). Extraction of a SAT formula
+from an Usuba0 program is straightforward thanks to our dataflow
+semantics: an Usuba0 program is simply a set of equations.
 
-
-The following Table reports the time (in seconds) that Z3 took to
-check the equivalence of some Usuba program before and after
-optimizations. Checking the equivalence between pre and
-post-optimization Usuba0 program took from 3 secondes to 6000 secondes
-to Z3. We have not analyzed why some ciphers are faster to verify for
-Z3. Code size may have an impact (AES's code is much larger than any
-other cipher we considered), but there must be more at play since
-vslice Rectangle's code is much smaller than its bitsliced
-counterpart, yet verification is slower. In any case, our premilinary
-results show that this approach is practical (_i.e._ it can verify
-equivalence of Usuba0 programs in reasonable time) and require little
+We used this translation validation approach to verify the correctness
+of our optimizations for Rectangle (bitslice and vslice), DES
+(bitslice), AES (bitslice), Chacha20 (vslice) and Serpent (vslice). In
+all cases, Boolector can able to confirm the equivalence of the
+programs pre and post-optimizations in less than a second, thus
+showing that this approach is practical (_i.e._ it can verify
+equivalence of Usuba0 programs in reasonable time) and requires little
 investement to be implemented.
 
-
-<style type="text/css">
-.tg  {border-collapse:collapse;border-spacing:0;}
-.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg .tg-baqh{text-align:center;vertical-align:top}
-.tg .tg-amwm{font-weight:bold;text-align:center;vertical-align:top}
-</style>
-<center>
-<table class="tg" style="undefined;table-layout: fixed; width: 273px;margin-top:25px;margin-bottom:25px">
-<colgroup>
-<col style="width: 140px">
-<col style="width: 133px">
-</colgroup>
-<thead>
-  <tr>
-    <th class="tg-amwm">cipher</th>
-    <th class="tg-amwm">verification time</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td class="tg-baqh">Rectangle (vslice)</td>
-    <td class="tg-baqh">120 sec</td>
-  </tr>
-  <tr>
-    <td class="tg-baqh">Rectangle (bitslice)</td>
-    <td class="tg-baqh">51 sec</td>
-  </tr>
-  <tr>
-    <td class="tg-baqh">DES (bitslice)</td>
-    <td class="tg-baqh">3 sec</td>
-  </tr>
-  <tr>
-    <td class="tg-baqh">AES (bitslice)</td>
-    <td class="tg-baqh">6000 sec</td>
-  </tr>
-  <tr>
-    <td class="tg-baqh">Chacha20 (vslice)</td>
-    <td class="tg-baqh">3 sec</td>
-  </tr>
-  <tr>
-    <td class="tg-baqh">Serpent (vslice)</td>
-    <td class="tg-baqh">3 sec</td>
-  </tr>
-</tbody>
-</table>
-</center>
-
 For additional confidence in the translation validation approach, a
-certified SMT solver, like SMTCoq [17], could be used. (technically,
-SMTCoq is not an SMT solver, but rather checks the correctness of
-proof witnesses provided by SMT solvers)
+certified SAT solver, such as SMTCoq [17], could be used. 
 
 Finally, translation from Usuba0 to imperative code can be formally
 verified using existing techniques of the dataflow community [3]. We
 could either target CompCert [15,16], a certified C compiler that
 produces x86 assembly code. Or, if we decide to generate assembly code
-ourselves (for better performances, as shown in the [Tornado post]({{
-site.baseurl }}{% post_url 2020-07-02-tornado %})), we can draw
-inspiration from CompCert's proofs to certify generatation of Jasmin
-assembly [7]. The Jasmin's certified compiler would then be used to
-generate x86 assembly code.
+ourselves (to improve performances, as motivated in the [Tornado
+post]({{ site.baseurl }}{% post_url 2020-07-02-tornado %})), we can
+generate Jasmin assembly [7] and benefit from its mechanized
+semantics. In both cases (CompCert and Jasmin), some work might be
+required to support SIMD instruction sets.
 
 
 ## GPU
@@ -459,21 +385,20 @@ cracking [30,31], random number generation [32,33] or disk encryption
 
 Both bitslice [25,26,27] and mslice [23,24] implementations of AES
 have been demonstrated on GPUs. Additionally, Nishikawa _et al._ [24]
-showed that GPUs offer a large design space: computation is broke down
-into many threads, registers are a shared resource between threads, a
-limited amount of thread can be executed simultaneously... Nishikawa
-_et al._ [24] thus proposed an evaluation of the impact of some of
-those parameters on an msliced AES. Usuba could improve upon their
-work by automatically performing a more exhaustive evaluation of the
-GPU parameters, in order to produce highly efficient GPU code for any
-cipher.
+showed that GPUs offer a large design space: computation is broken
+down into many threads, registers are a shared resource between
+threads, a limited amount of thread can be executed
+simultaneously... Nishikawa _et al._ [24] thus proposed an evaluation
+of the impact of some of those parameters on an msliced AES. Usuba
+could provide an oportunity to systematically explore this design
+space across a wide range of ciphers.
 
 
 
 ---
 ## References
 
-[1] D. J. Bernstein, P. Schwabe, [New AES Software Speed Records](cr.yp.to/aes-speed/aesspeed-20080908.pdf), INDOCRYPT, 2008.
+[1] D. J. Bernstein, P. Schwabe, [New AES Software Speed Records](https://cr.yp.to/aes-speed/aesspeed-20080908.pdf), INDOCRYPT, 2008.
 
 [2] J. H. Park, D. H. Lee, [FACE: Fast AES CTR mode Encryption Techniques based on the Reuse of Repetitive Data](https://tches.iacr.org/index.php/TCHES/article/download/7283/6460), TCHES, 2018.
  
@@ -481,7 +406,7 @@ cipher.
 
 [4] A. Pnueli _et al._, [Translation validation](https://link.springer.com/content/pdf/10.1007/BFb0054170.pdf), TACAS, 1998.
 
-[5] L. De Moura, N. Bjørner, [Z3: An efficient SMT solver](https://link.springer.com/content/pdf/10.1007/978-3-540-78800-3_24.pdf), TACAS, 2008.
+[5] A. Niemetz _and al._, [Boolector 2.0 system description](https://content.iospress.com/download/journal-on-satisfiability-boolean-modeling-and-computation/sat190101?id=journal-on-satisfiability-boolean-modeling-and-computation%2Fsat190101), Journal on Satisfiability, Boolean Modeling and Computation, 2015.
 
 [6] J. K. Zinzindohoué _et al._, [HACL*: A verified modern cryptographic library](https://eprint.iacr.org/2017/536.pdf), ACM Conference on Computer and Communications Security, 2017.
 
