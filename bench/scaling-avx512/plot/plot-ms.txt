@@ -21,7 +21,7 @@ set style fill solid border rgb "black"
 set key samplen 3
 #set key font ",12"
 set key spacing 0.8
-set key at 7.6,5.3
+set key at 11,6.1
 
 set ytics 0,1
 set grid ytics
@@ -41,7 +41,7 @@ set ytics scale 0.5
 set style fill solid border rgb "black"
 
 set xrange [-0.6:12.8]
-#set yrange [0:5]
+set yrange [0:6.2]
 
 set linetype 1 lc rgb '#b30000'
 set linetype 2 lc rgb '#FF9E00'
