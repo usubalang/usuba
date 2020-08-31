@@ -1,4 +1,4 @@
-set terminal svg size 900,400 fsize 16
+set terminal svg size 900,400 fsize 18
 set output 'slicing-compare.svg'
 # set terminal pdf font ",16"
 # set output 'slicing-compare.pdf'
@@ -11,7 +11,7 @@ set xtics ("vslice" 0, "bitslice" 1, "vslice" 3, "bitlsice" 4, "hslice" 5,"vslic
 
 set border 3 # remove top and right plot-border
 
-set key outside width -30
+set key outside width -30 opaque
 
 set grid y
 set grid noxtics ytics
@@ -19,7 +19,6 @@ set tics nomirror
 set xtics rotate by 45 right# offset 0,-1.5
 set xtics scale 0
 set ytics scale 0.5
-
 
 set ylabel "cycles/byte" offset 2
 set xlabel " "
