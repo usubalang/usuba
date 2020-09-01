@@ -2,21 +2,21 @@
 # gets generated in the generated code. To test the other functions, you'll
 # have to put them last in the file or comment the rest.
 
-node tes_op (a:u8) returns (b:u8)
+node tes_op (a:b8) returns (b:b8)
 vars
 let
-    b = a & 12
+    b = a & 12:b8
 tel
 
-node test_size (a:u6) returns (b:u8,d:u5)
+node test_size (a:b6) returns (b:b8,d:b5)
 vars
 let
-    b = 11;
-    d = 11
+    b = 11:b8;
+    d = 11:b5
 tel
 
-node test_tuple (a:u3) returns (b:u8)
+node test_tuple (a:b3) returns (b:b8)
 vars
 let
-    b = (a,6)
+    b = (a,6:b5)
 tel
