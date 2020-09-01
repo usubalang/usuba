@@ -7,8 +7,8 @@
 
 # Quarter round
 # XXX: in-place update
-node QR (a:u<V>32, b:u<V>32, c:u<V>32, d:u<V>32)
-     returns (aR:u<V>32, bR:u<V>32, cR:u<V>32, dR:u<V>32)
+node QR (a:u32, b:u32, c:u32, d:u32)
+     returns (aR:u32, bR:u32, cR:u32, dR:u32)
 let
     a := a + b;
     d := (d ^ a) <<< 16;
@@ -22,7 +22,7 @@ tel
 
 # Double round
 # XXX: in-place update
-node DR (state:u<V>32x16) returns (stateR:u<V>32x16)
+node DR (state:u32x16) returns (stateR:u32x16)
 let
     state[0,4,8,12]  := QR(state[0,4,8,12]);
     state[1,5,9,13]  := QR(state[1,5,9,13]);
@@ -36,9 +36,9 @@ let
 tel
 
 # Main
-node Chacha20 (plain:u<V>32x16) returns (cipher:u<V>32x16)
+node Chacha20 (plain:u32x16) returns (cipher:u32x16)
 vars
-    state : u<V>32x16[11]
+    state : u32x16[11]
 let
     state[0] = plain;
     # XXX: imperative loop
