@@ -6,7 +6,7 @@
 # XXX: does that still work?
 # XXX: is this bitslicing only?
 
-table SBOX1 (a:u8) returns (b:u8) {
+table SBOX1 (a:b8) returns (b:b8) {
  112, 130,  44, 236, 179,  39, 192, 229, 228, 133,  87,  53, 234,  12, 174,  65,
   35, 239, 107, 147,  69,  25, 165,  33, 237,  14,  79,  78,  29, 101, 146, 189,
  134, 184, 175, 143, 124, 235,  31, 206,  62,  48, 220,  95,  94, 197,  11,  26,
@@ -26,18 +26,18 @@ table SBOX1 (a:u8) returns (b:u8) {
 }
 
 
-node[] SBOX (a:u8) returns (b:u8) [
-let b = SBOX1(a) tel;
-let b = SBOX1(a) <<< 1 tel;
-let b = SBOX1(a) <<< 7 tel;
-let b = SBOX1(a <<< 1) tel
+node[] SBOX (a:b8) returns (b:b8) [
+          let b = SBOX1(a)               tel;
+vars t:b8 let t = SBOX1(a); b = t <<< 1  tel;
+vars t:b8 let t = SBOX1(a); b = t <<< 7  tel;
+vars t:b8 let t = a <<< 1;  b = SBOX1(t) tel
 ]
 
 
-node FLINV (f_in:u64,key:u64) returns (f_out:u64)
+node FLINV (f_in:b64,key:b64) returns (f_out:b64)
 vars
-    y1:u32, y2:u32,
-    k1:u32, k2:u32
+    y1:b32, y2:b32,
+    k1:b32, k2:b32
 let
     (y1,y2) = f_in;
     (k1,k2) = key;
@@ -46,10 +46,10 @@ let
 tel
 
 
-node FL (f_in:u64,key:u64) returns (f_out:u64)
+node FL (f_in:b64,key:b64) returns (f_out:b64)
 vars
-    x1:u32, x2:u32,
-    k1:u32, k2:u32
+    x1:b32, x2:b32,
+    k1:b32, k2:b32
 let
     (x1,x2) = f_in;
     (k1,k2) = key;
@@ -57,11 +57,11 @@ let
     f_out = (x2 ^ ((x1 & k1) <<< 1), x1 ^ (x2 | k2))
 tel
 
-node F (f_in:u64,key:u64) returns (f_out:u64)
+node F (f_in:b64,key:b64) returns (f_out:b64)
 vars
-    t_in:u8[8],
-    t_out:u8[8],
-    y:u8[8]
+    t_in:b8[8],
+    t_out:b8[8],
+    y:b8[8]
 let
     t_in = f_in ^ key;
 
@@ -83,11 +83,11 @@ let
     f_out = y
 tel
 
-node camellia (plaintext:u128, kw:u64[4], k:u64[18], ke:u64[4])
-     returns (ciphertext:u128)
+node camellia (plaintext:b128, kw:b64[4], k:b64[18], ke:b64[4])
+     returns (ciphertext:b128)
 vars
-    D1 : u64[12],
-    D2 : u64[12]
+    D1 : b64[12],
+    D2 : b64[12]
 let
    (D1[0],D2[0]) = plaintext ^ kw[0,1];
 
