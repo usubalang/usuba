@@ -58,13 +58,13 @@ let
 tel
 
 
-node AddRoundKey(i:b128,key:b128) returns (r:b128)
+node AddRoundKey(i:u16x8,key:u16x8) returns (r:u16x8)
 let
     r = i ^ key
 tel
 
 
-node AES (plain:u16x8,key:u16x8[11]) returns (cipher:u16x8)
+node AES (plain:u16x8,key:const u16x8[11]) returns (cipher:u16x8)
 vars
     tmp : u16x8[10]
 let

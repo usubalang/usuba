@@ -75,7 +75,7 @@ let
 tel
 
 
-node AddRoundKey(i:b128,key:b128) returns (r:b128)
+node AddRoundKey(i:u16x8,key:u16x8) returns (r:u8x16)
 let
     r = i ^ key
 tel
