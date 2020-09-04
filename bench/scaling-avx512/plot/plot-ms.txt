@@ -33,14 +33,16 @@ set xlabel " "
 set xtics scale 0
 set ytics scale 0.5
 
-#set key font ",14"
-#set xtics font ",14"
-#set ytics font ",14"
+
+set key font ",16"
+set xtics font ",16"
+set ytics font ",16"
+set ylabel font ",16"
 
 
 set style fill solid border rgb "black"
 
-set xrange [-0.6:12.8]
+set xrange [-0.45:12.5]
 set yrange [0:6.2]
 
 set linetype 1 lc rgb '#b30000'

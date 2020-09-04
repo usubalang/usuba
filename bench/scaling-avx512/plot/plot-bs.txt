@@ -21,7 +21,7 @@ set style fill solid border rgb "black"
 set key samplen 3
 #set key font ",12"
 set key spacing 0.8
-set key at 15.5,5.4
+set key at 15.5,5.6
 
 set ytics 0,1
 set grid ytics
@@ -33,9 +33,10 @@ set xlabel " "
 set xtics scale 0
 set ytics scale 0.5
 
-#set key font ",14"
-#set xtics font ",14"
-#set ytics font ",14"
+set key font ",16"
+set xtics font ",16"
+set ytics font ",16"
+set ylabel font ",16"
 
 
 set style fill solid border rgb "black"
