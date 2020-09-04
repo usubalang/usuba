@@ -403,7 +403,7 @@ let gen_bench (node:def) (conf:config) : string =
   return %d;
 }"
   (* inputs *)
-  (join "\n  " (List.map (fun s -> s ^ " = { 0 };")
+  (join "\n  " (List.map (fun s -> s ^ ";")
                          (List.map (fun vd -> var_decl_to_c conf vd false) node.p_in)))
   (join "\n  " (List.map (fun vd ->
                           let modifier = match vd.vd_typ with
@@ -412,7 +412,7 @@ let gen_bench (node:def) (conf:config) : string =
                                   (rename vd.vd_id.name)) node.p_in))
 
   (* outputs *)
-  (join "\n  " (List.map (fun s -> s ^ " = { 0 };")
+  (join "\n  " (List.map (fun s -> s ^ ";")
                          (List.map (fun vd -> var_decl_to_c conf vd true) node.p_out)))
 
   (* node call *)
