@@ -10,6 +10,12 @@
 (* ************************************************************************** *)
 
 
+(* TODO: the function environment used throughout this module is
+called either |env| or |env_fun| --> it should be called |env_fun|
+everywhere. Futhermore, its type is "(string,def) Hashtbl.t" --> it
+should be "(ident,def) Hashtbl.t". *)
+
+
 open Usuba_AST
 open Basic_utils
 open Utils
@@ -19,10 +25,55 @@ open Inline_core
 let pre_inline = ref false
 let orig_conf  = ref default_conf
 
+module Is_linear = struct
+
+  let rec is_linear_expr (env_fun:(string,def) Hashtbl.t) (e:expr) : bool =
+    match e with
+    | Const _ | ExpVar _ -> true
+    | Tuple l       -> List.for_all (is_linear_expr env_fun) l
+    | Not e'        -> is_linear_expr env_fun e'
+    | Log(op,x,y)   -> (match op with
+                        | And | Or | Andn -> false
+                        | _ -> true)
+    | Arith(op,x,y) -> (match op with
+                        | Add | Sub -> true
+                        | Mul | Div | Mod -> false)
+    | Shift(_,e',_) -> is_linear_expr env_fun e'
+    | Shuffle _     -> true
+    | Mask(e',_)    -> is_linear_expr env_fun e'
+    | Pack(l,_)     -> List.for_all (is_linear_expr env_fun) l
+    | Fun(f,l)      -> (is_linear_def_by_name env_fun f)
+                       && (List.for_all (is_linear_expr env_fun) l)
+    | Fun_v(f,_,l)  -> (is_linear_def_by_name env_fun f)
+                       && (List.for_all (is_linear_expr env_fun) l)
+
+  and is_linear_deqs (env_fun:(string,def) Hashtbl.t) (deqs:deq list) : bool =
+    List.for_all (fun deq -> match deq.content with
+                             | Eqn(_,e,_) -> is_linear_expr env_fun e
+                             | Loop(_,_,_,dl,_) -> is_linear_deqs env_fun dl) deqs
+
+  and is_linear_def_i (env_fun:(string,def) Hashtbl.t) (def_i:def_i) : bool =
+    match def_i with
+    | Single(_,body) -> is_linear_deqs env_fun body
+    | Multiple l     -> List.for_all (is_linear_def_i env_fun) l
+    | _ -> false
+
+  and is_linear_def (env_fun:(string,def) Hashtbl.t) (def:def) : bool =
+    is_linear_def_i env_fun def.node
+
+  and is_linear_def_by_name (env_fun:(string,def) Hashtbl.t) (f:ident) : bool =
+    if is_builtin f then true
+    else is_linear_def env_fun (Hashtbl.find env_fun f.name)
+
+  let is_linear (env_fun:(string,def) Hashtbl.t) (def:def) : bool =
+    is_linear_def env_fun def
+
+end
+
 (* Returns true is the inlining level in |conf| is more aggressive
    than auto_inline. *)
 let is_more_aggressive_than_auto (conf:config) : bool =
-  if conf.inline_all || conf.heavy_inline then true
+  if conf.inline_all || conf.heavy_inline || conf.auto_inline then true
   else false
 
 
@@ -54,6 +105,8 @@ let is_more_than_n_percent_assign (n:int) (deqs:deq list) : bool =
 
 (* Heuristically decides (ie returns true of false) if |def| should be
    inlined or not. *)
+(* TODO: add a criteria related to live variables? (obtainable using
+   Get_live_vars.live_def) *)
 let should_inline_heuristic (def:def) : bool =
   let in_size  = List.fold_left (+) 0
                     (List.map (fun vd -> typ_size vd.vd_typ) def.p_in) in
@@ -81,6 +134,9 @@ let should_inline_heuristic (def:def) : bool =
     because of the hack to keep lookup tables with -keep-tables) *)
     false
 
+(* Pre-inlining inlines linear nodes *)
+let should_pre_inline env (def:def) : bool =
+  Is_linear.is_linear env def
 
 (* Returns true if def doesn't contain any function call,
    or if those calls are to functions that are not going
@@ -105,6 +161,7 @@ let rec is_call_free env inlined conf (def:def) : bool =
     - every function call it contains is to a node that should not be inlined
     - the heuristic decides that this node is worth being inlined *)
 and can_inline env inlined conf (node:def) : bool =
+  (* Printf.printf "Can_inline(%s) (pre_inline=%b)\n" node.id.name !pre_inline; *)
   if Hashtbl.find inlined node.id.name then
     false (* Already inlined *)
   else if not (is_single node.node) then
@@ -119,7 +176,8 @@ and can_inline env inlined conf (node:def) : bool =
     (* Node doesn't contain any function call that should be inlined
        -> heuristically deciding to inline it or not *)
     (is_inline node) ||
-      ((not (is_noinline node)) && (should_inline_heuristic node))
+      ((not (is_noinline node)) && (if !pre_inline then should_pre_inline env node else
+                                      should_inline_heuristic node))
   else
     false
 
