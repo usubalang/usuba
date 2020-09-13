@@ -9,7 +9,7 @@ use FindBin;
 use File::Temp qw( tempdir );
 
 my $ua_dir = "$FindBin::Bin/../..";
-my @ciphers = qw(des ascon gift present rectangle serpent);
+my @ciphers = qw(ace_bitslice aes ascon clyde_bitslice des gift gimli photon_bitslice present pyjamask_bitslice rectangle serpent skinny_bitslice spongent subterranean xoodoo);
 my $work_dir = tempdir();
 
 
@@ -17,7 +17,7 @@ my $work_dir = tempdir();
 say "Compiling Usuba files";
 chdir $ua_dir;
 for my $cipher (@ciphers) {
-    system "./usubac -unroll -gen-bench -no-sched -B -o $work_dir/$cipher.c samples/usuba/$cipher.ua";
+    system "./usubac -no-arr -unroll -inline-all -no-sched -no-pre-sched -gen-bench -B -o $work_dir/$cipher.c samples/usuba/$cipher.ua";
 }
 
 # Compiling C files to ASM

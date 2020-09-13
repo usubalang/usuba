@@ -3,10 +3,20 @@ Just a simple script to compute approximatively how much spilling is in some bit
 The last time I ran that script, I got the following results (Clang 7.0.0):
 
 ```
-       des: 0.41 (6081 / 14822)
-     ascon: 0.42 (20551 / 49174)
-      gift: 0.54 (19502 / 36289)
-   present: 0.24 (3533 / 14967)
- rectangle: 0.26 (2980 / 11582)
-   serpent: 0.41 (22581 / 54672)
+ace_bitslice: 0.49 (47456 / 97121)
+       aes: 0.35 (15347 / 43812)
+     ascon: 0.42 (20440 / 49196)
+clyde_bitslice: 0.54 (16564 / 30641)
+       des: 0.40 (5938 / 14783)
+      gift: 0.53 (19170 / 36248)
+     gimli: 0.61 (39187 / 64057)
+photon_bitslice: 0.40 (30077 / 75124)
+   present: 0.24 (3533 / 14938)
+pyjamask_bitslice: 0.46 (21868 / 47613)
+ rectangle: 0.26 (2980 / 11553)
+   serpent: 0.44 (23024 / 52420)
+skinny_bitslice: 0.56 (30345 / 54454)
+  spongent: 0.19 (26265 / 135933)
+subterranean: 0.38 (8437 / 22408)
+    xoodoo: 0.49 (22337 / 45302)
 ```
