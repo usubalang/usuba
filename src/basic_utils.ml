@@ -12,7 +12,7 @@
    which is removed *)
 let rec map_no_end f = function
   | [] -> []
-  | [x] -> []
+  | [_] -> []
   | hd::tl -> (f hd) :: (map_no_end f tl)
 
 (* pow a b == a ** b *)
@@ -80,7 +80,7 @@ let uniq (l:'a list) : 'a list =
 let common_elem l1 l2 = List.fold_left (fun x y -> x || List.mem y l2) false l1
 
 (* Alias for String.concat *)
-let rec join = String.concat
+let join = String.concat
 
 (* Returns true if s1 contains s2 *)
 let contains (s1:string) (s2:string) : bool =
