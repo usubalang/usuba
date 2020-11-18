@@ -32,7 +32,7 @@ my $cflags = "-march=native -O3 -fno-tree-vectorize -fno-slp-vectorize -Wall -We
 my $bench_nb_run = 300000;
 my $work_dir = '/tmp/usuba_perfs';
 my $ua_source_dir = "$FindBin::Bin/samples/usuba";
-my $ua_flags = '-gen-bench -arch avx';
+my $ua_flags = '-gen-bench -arch avx -unroll -inline-all';
 my $bench_main = "$FindBin::Bin/experimentations/bench_generic/bench.c";
 my $res_dir = "$FindBin::Bin/perf_bench_res";
 my $ref_files_dir = "$FindBin::Bin/perf_ref_files";
@@ -44,11 +44,13 @@ my %ciphers = (
     'AES-bs'              => [ 'aes.ua',                '-B' ],
     'AES-hs'              => [ 'aes_mslice.ua',         '-H' ],
     'AES-vs'              => [ 'aes_generic.ua',        '-V' ],
+    'ACE-vs-inter'        => [ 'ace.ua',                '-V', '-interleave 2' ],
     'ACE-vs'              => [ 'ace.ua',                '-V' ],
     'ACE-bs'              => [ 'ace_bitslice.ua',       '-B' ],
-    'Ascon-vs-inter'      => [ 'ascon.ua',              '-V' ],
-    'Ascon-vs'            => [ 'ascon.ua',              '-V', '-interleave 2' ],
+    'Ascon-vs-inter'      => [ 'ascon.ua',              '-V', '-interleave 2' ],
+    'Ascon-vs'            => [ 'ascon.ua',              '-V' ],
     'Ascon-bs'            => [ 'ascon.ua',              '-B' ],
+    'Clyde-vs-inter'      => [ 'clyde.ua',              '-V', '-interleave 2' ],
     'Clyde-vs'            => [ 'clyde.ua',              '-V' ],
     'Clyde-bs'            => [ 'clyde_bitslice.ua',     '-B' ],
     'DES'                 => [ 'des.ua',                '-B' ],
@@ -199,6 +201,10 @@ sub run {
     say join "-+-", ("-" x ($longest_str_cipher)), map { "-" x 8 } 1 .. 3;
 
     for my $cipher (sort keys %ciphers) {
+
+        if (! $times{$cipher}{new}{raw}) {
+            printf "%*s |   Something went wrong; skipping\n", $longest_str_cipher, $cipher;
+        }
 
         # Removing faster/slower measures
         @{$times{$cipher}{new}{raw}} =
