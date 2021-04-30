@@ -16,3 +16,6 @@ fi
 
 # Installing required packages from opam
 opam install -y coq ocamlbuild menhir
+
+# Installing required modules for Perl scripts
+sudo cpanm Crypt::Mode::ECB
