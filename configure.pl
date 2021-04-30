@@ -6,6 +6,7 @@ use v5.14;
 $| = 1;
 
 use FindBin;
+use version;
 use JSON::PP;
 
 
@@ -18,7 +19,6 @@ sub check_dependencies {
     check_cmd_version('OCaml', 'ocaml', '4.05.0');
     check_cmd_version('Coq', 'coqc', '8.8.1');
     check_cmd_version('OCamlBuild', 'ocamlbuild', '0.12.0');
-
 }
 
 sub check_cmd_version {
@@ -33,7 +33,7 @@ sub check_cmd_version {
         my ($got_version) = `$cmd --version 2>&1` =~ /(\d+\.\d+\.\d+)/;
         if (! $got_version) {
             say "[error] version not recognized.";
-        } elsif ($got_version lt $exp_version) {
+        } elsif (compare_versions($got_version, $exp_version) < 0) {
             say "[error] version $got_version < $exp_version";
         } else {
             say "[success]";
@@ -76,4 +76,10 @@ sub gen_config {
     say $FH qq{let tightprove = "$config->{tightprove}"};
 
     say "[done]";
+}
+
+
+sub compare_versions {
+    my ($v1, $v2) = @_;
+    return version->parse($v1) <=> version->parse($v2);
 }
