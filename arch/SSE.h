@@ -68,6 +68,11 @@
 #define LIFT_32(x) _mm_set1_epi32(x)
 #define LIFT_64(x) _mm_set1_epi64x(x)
 
+#define BITMASK(x,n,c) _mm_sub_epi##c(ZERO, __mm_and_si128(_mm_slli_epi##c(x,n), _mm_set1_epi##c(1)))
+
+#define PACK_8x2_to_16(a,b)  /* TODO: implement with shuffles */
+#define PACK_16x2_to_32(a,b) /* TODO: implement with shuffles */
+#define PACK_32x2_to_64(a,b) /* TODO: implement with shuffles */
 
 #define ORTHOGONALIZE(in,out) orthogonalize(in,out)
 #define UNORTHOGONALIZE(in,out) unorthogonalize(in,out)

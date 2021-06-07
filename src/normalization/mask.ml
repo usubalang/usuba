@@ -64,8 +64,8 @@ module Get_consts = struct
     | Arith(_,x,y)  -> List.map2 (fun a b -> a && b) (rec_call x) (rec_call y)
     | Shift(_,e',_) -> rec_call e'
     | Shuffle(v,_)  -> [ var_is_const env_const env_not_const v ]
-    | Mask(e',_)    -> rec_call e'
-    | Pack(l,_)     -> flat_map rec_call l
+    | Bitmask(e',_) -> rec_call e'
+    | Pack(e1,e2,_) -> List.map2 (fun a b -> a && b) (rec_call e1) (rec_call e2)
     | Fun(f,l)      ->
        let params_consts = flat_map rec_call l in
        if f.name = "refresh" then params_consts
@@ -405,8 +405,8 @@ let mask_eqn (env_var:(ident,typ) Hashtbl.t)
      | Log(Xor,ExpVar x,ExpVar y) -> mask_xor env_var env_const orig vl x y
      | Log(And as op,ExpVar x,ExpVar y)
      | Log(Or as op,ExpVar x,ExpVar y)  -> mask_and_or env_var env_const orig vl op x y
-     | Mask(ExpVar v,i) -> (* TODO(Mask) *) assert false
-     | Pack(l,typ)      -> (* TODO(Pack) *) assert false
+     | Bitmask(ExpVar v,i) -> (* TODO(Mask) *) assert false
+     | Pack(e1,e2,typ)  -> (* TODO(Pack) *) assert false
      | _ -> Printf.eprintf "Cannot mask expression: %s.\n"
                            (Usuba_print.expr_to_str e);
             assert false

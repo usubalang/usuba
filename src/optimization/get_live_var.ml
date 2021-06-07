@@ -16,6 +16,8 @@ let rec add_right env_var live e =
   | Shuffle(v,_) -> List.iter (fun v -> Hashtbl.replace live (get_var_base v) true)
                               (expand_var env_var v)
   | Arith(_,x,y) -> add_right env_var live x; add_right env_var live y
+  | Bitmask(e',_) -> add_right env_var live e'
+  | Pack(e1,e2,_) -> add_right env_var live e1; add_right env_var live e2
   | Fun(_,l) -> List.iter (add_right env_var live) l
   | _ -> assert false
 

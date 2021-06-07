@@ -172,7 +172,9 @@ let rec fold_expr (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
   | Log(op,e1,e2)   -> fold_log env_var op (fold_expr env_var e1)
                                 (fold_expr env_var e2)
   | Arith(op,e1,e2) -> fold_arith env_var op (fold_expr env_var e1)
-                                  (fold_expr env_var e2)
+                         (fold_expr env_var e2)
+  | Bitmask(e',ae)      -> Bitmask(fold_expr env_var e', ae)
+  | Pack(e1,e2,t)   -> Pack(fold_expr env_var e1,fold_expr env_var e2,t)
   | Fun(f,l)        -> Fun(f,List.map (fold_expr env_var) l)
   | _ -> Printf.eprintf "fold_expr: Cannot fold unnormalized expression: %s.\n"
                         (Usuba_print.expr_to_str e);

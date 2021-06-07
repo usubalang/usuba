@@ -39,8 +39,8 @@ let rec unroll_in_expr (env_it:(ident,int) Hashtbl.t) (e:expr) : expr =
   | Arith(op,x,y)   -> Arith(op,unroll_in_expr env_it x,unroll_in_expr env_it y)
   | Shift(op,e',ae) -> Shift(op,unroll_in_expr env_it e',simpl_arith env_it ae)
   | Shuffle(v,l)    -> Shuffle(unroll_in_var env_it v,l)
-  | Mask(e,i)       -> Mask(unroll_in_expr env_it e,i)
-  | Pack(l,t)       -> Pack(List.map (unroll_in_expr env_it) l,t)
+  | Bitmask(e,ae)   -> Bitmask(unroll_in_expr env_it e,simpl_arith env_it ae)
+  | Pack(e1,e2,t)   -> Pack(unroll_in_expr env_it e1, unroll_in_expr env_it e2,t)
   | Fun(f,l)        -> Fun(f,List.map (unroll_in_expr env_it) l)
   | Fun_v(f,x,l)    -> Fun_v(f, simpl_arith env_it x,
                              List.map (unroll_in_expr env_it) l)

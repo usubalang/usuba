@@ -117,8 +117,8 @@ module Unroll = struct
     | Arith(op,x,y)  -> Arith(op,unroll_expr env_it x,unroll_expr env_it y)
     | Shift(op,e,ae) -> Shift(op,unroll_expr env_it e,simpl_arith env_it ae)
     | Shuffle(v,l)   -> Shuffle(unroll_var env_it v,l)
-    | Mask(e,i)      -> Mask(unroll_expr env_it e,i)
-    | Pack(l,t)      -> Pack(List.map (unroll_expr env_it) l,t)
+    | Bitmask(e,ae)      -> Bitmask(unroll_expr env_it e,simpl_arith env_it ae)
+    | Pack(e1,e2,t)  -> Pack(unroll_expr env_it e1, unroll_expr env_it e2, t)
     | Fun(f,l)       -> Fun(f,List.map (unroll_expr env_it) l)
     | Fun_v _ -> assert false
 
@@ -205,10 +205,10 @@ let rec propagate_expr (expand_env:(var,var list) Hashtbl.t) (e:expr) : expr =
      Shift(op,propagate_expr expand_env e,ae)
   | Shuffle(v,pat) ->
      Shuffle(List.hd (propagate_var expand_env v),pat)
-  | Mask(e,i) ->
-     Mask(propagate_expr expand_env e, i)
-  | Pack(l,t) ->
-     Pack (List.map (propagate_expr expand_env) l, t)
+  | Bitmask(e,ae) ->
+     Bitmask(propagate_expr expand_env e, ae)
+  | Pack(e1,e2,t) ->
+     Pack (propagate_expr expand_env e1, propagate_expr expand_env e2, t)
   | Fun(x,es) ->
      let l = List.map (propagate_expr expand_env) es in
      (match l with

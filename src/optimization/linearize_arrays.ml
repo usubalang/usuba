@@ -124,6 +124,9 @@ let rec replace_expr to_linearize (e:expr) : expr =
   | Arith(op,x,y)  -> Arith(op,replace_expr to_linearize x,
                             replace_expr to_linearize y)
   | Shuffle(v,pat) -> Shuffle(replace_var to_linearize v,pat)
+  | Bitmask(e',ae) -> Bitmask(replace_expr to_linearize e', ae)
+  | Pack(e1,e2,t)  -> Pack(replace_expr to_linearize e1,
+                           replace_expr to_linearize e2, t)
   | Fun(f,l)       -> Fun(f,List.map (replace_expr to_linearize) l)
   | _ -> assert false
 

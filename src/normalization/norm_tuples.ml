@@ -39,8 +39,9 @@ module Simplify_tuples = struct
     | Arith(op,x,y) -> [ Arith(op, expr_from_list (simpl_tuple x),
                                expr_from_list (simpl_tuple y)) ]
     | Shift(op,e,n) -> [ Shift(op,expr_from_list (simpl_tuple e),n) ]
-    | Mask(e,i)     -> [ Mask(expr_from_list (simpl_tuple e),i) ]
-    | Pack(l,t)     -> [ Pack(flat_map simpl_tuple l,t) ]
+    | Bitmask(e,ae)     -> [ Bitmask(expr_from_list (simpl_tuple e),ae) ]
+    | Pack(e1,e2,t) -> [ Pack(expr_from_list (simpl_tuple e1),
+                              expr_from_list (simpl_tuple e2), t) ]
     | Fun(f,l)      ->
        (* If |l| is a Tuple, then the reccursive call goes into Tuple,
           effectively removing the Tuple. *)

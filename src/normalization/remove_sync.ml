@@ -125,8 +125,8 @@ let rec clean_expr (env_var : (ident,typ) Hashtbl.t)
   | Shuffle(v,l)    -> (match clean_var env_var env_replace v with
                         | [ x ] -> Shuffle(x, l)
                         | xs -> Tuple(List.map (fun x -> Shuffle(x,l)) xs))
-  | Mask(e,i)       -> Mask(rec_call e,i)
-  | Pack(l,t)       -> Pack(List.map rec_call l,t)
+  | Bitmask(e,ae)   -> Bitmask(rec_call e,ae)
+  | Pack(e1,e2,t)   -> Pack(rec_call e1, rec_call e2, t)
   | Fun(f,l)        -> Fun(f,List.map rec_call l)
   | _               -> assert false
 

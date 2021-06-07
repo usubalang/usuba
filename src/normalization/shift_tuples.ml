@@ -72,8 +72,8 @@ let rec shift_expr (env_var:(ident,typ) Hashtbl.t) (e:expr) : expr =
                shift will be performed. *)
             Shift(op,e',n))
             | _ -> Shift(op,e',n))
-  | Mask(e,i) -> Mask(shift_expr env_var e,i)
-  | Pack(l,t) -> Pack(List.map (shift_expr env_var) l,t)
+  | Bitmask(e,ae) -> Bitmask(shift_expr env_var e,ae) (* TODO: something to do here? *)
+  | Pack(e1,e2,t) -> Pack(shift_expr env_var e1, shift_expr env_var e2, t)
   | Fun(f,l)  -> Fun(f,List.map (shift_expr env_var) l)
   | Fun_v(f,ei,l) -> Fun_v(f,ei,List.map (shift_expr env_var) l)
   | _ -> e

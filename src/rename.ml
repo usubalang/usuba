@@ -39,17 +39,19 @@ let rec rename_var (v:var) =
 
 let rec rename_expr (e:expr) =
   match e with
-  | Const(c,t) -> Const(c,t)
-  | ExpVar v -> ExpVar (rename_var v)
-  | Tuple l  -> Tuple(List.map rename_expr l)
-  | Log(op,x,y) -> Log(op,rename_expr x,rename_expr y)
-  | Shuffle(v,l) -> Shuffle(rename_var v,l)
+  | Const(c,t)    -> Const(c,t)
+  | ExpVar v      -> ExpVar (rename_var v)
+  | Tuple l       -> Tuple(List.map rename_expr l)
+  | Not e         -> Not (rename_expr e)
+  | Log(op,x,y)   -> Log(op,rename_expr x,rename_expr y)
   | Arith(op,x,y) -> Arith(op,rename_expr x,rename_expr y)
   | Shift(op,x,y) -> Shift(op,rename_expr x,rename_arith_expr y)
-  | Not e -> Not (rename_expr e)
-  | Fun(f,l) -> if is_builtin f then Fun(f,List.map rename_expr l)
-                else Fun(fresh_suffix f "'",List.map rename_expr l)
-  | Fun_v(f,e,l) -> Fun_v(fresh_suffix f "'",rename_arith_expr e,List.map rename_expr l)
+  | Shuffle(v,l)  -> Shuffle(rename_var v,l)
+  | Bitmask(e,ae)     -> Bitmask(rename_expr e, rename_arith_expr ae)
+  | Pack(e1,e2,t) -> Pack(rename_expr e1, rename_expr e2, t)
+  | Fun(f,l)      -> if is_builtin f then Fun(f,List.map rename_expr l)
+                     else Fun(fresh_suffix f "'",List.map rename_expr l)
+  | Fun_v(f,e,l)  -> Fun_v(fresh_suffix f "'",rename_arith_expr e,List.map rename_expr l)
 
 
 

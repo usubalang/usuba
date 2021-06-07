@@ -144,8 +144,8 @@ let rec expand_expr env_var env_keep env env_it force (e:expr) : expr =
      Shift(op,e1',simpl_arith env ae)
   | Shuffle(v,pat) -> Tuple(List.map (fun x -> Shuffle(x,pat))
                                      (expand_var env_var env_keep env force v))
-  | Mask(e,i) -> Mask(rec_call e,i)
-  | Pack(l,t) -> Pack(List.map rec_call l,t)
+  | Bitmask(e,ae) -> Bitmask(rec_call e,ae)
+  | Pack(e1,e2,t) -> Pack(rec_call e1, rec_call e2, t)
   | Fun(f,el) ->
      if f.name = "refresh" then
        Fun(f,List.map (expand_expr env_var env_keep env env_it

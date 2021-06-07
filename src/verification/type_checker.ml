@@ -503,15 +503,19 @@ let rec get_expr_type
      | Const(n,None) -> eprintf "get_expr_type should be called only on typed expression. Exiting.\n";
                         assert false
      | Const(n,Some typ) -> [ typ ]
-     | ExpVar v -> [ get_var_type backtrace env_var env_it v ]
-     | Tuple l -> flat_map (get_expr_type env_fun env_var env_it) l
-     | Not e -> get_expr_type env_fun env_var env_it e
-     | Shift(_,e,_) -> get_expr_type env_fun env_var env_it e
-     | Log(_,e,_) -> get_expr_type env_fun env_var env_it e
-     | Shuffle(v,_) -> [ get_var_type backtrace env_var env_it v ]
-     | Arith(_,e,_) -> get_expr_type env_fun env_var env_it e
+     | ExpVar v          -> [ get_var_type backtrace env_var env_it v ]
+     | Tuple l           -> flat_map (get_expr_type env_fun env_var env_it) l
+     | Not e             -> get_expr_type env_fun env_var env_it e
+     | Shift(_,e,_)      -> get_expr_type env_fun env_var env_it e
+     | Log(_,e,_)        -> get_expr_type env_fun env_var env_it e
+     | Shuffle(v,_)      -> [ get_var_type backtrace env_var env_it v ]
+     | Bitmask(e,_)      -> get_expr_type env_fun env_var env_it e
+     | Pack(_,_,Some typ) -> [ typ ]
+     | Pack(_,_,None)     -> eprintf "get_expr_type should be called only on typed expression. Exiting.\n";
+                        assert false
+     | Arith(_,e,_)      -> get_expr_type env_fun env_var env_it e
      | Fun(f,l)
-     | Fun_v(f,_,l) ->
+     | Fun_v(f,_,l)      ->
         if f.name = "rand" then [ Uint(default_dir,Mint 1,1) ]
         else if f.name = "refresh" then
           (if List.length l <> 1 then
@@ -565,6 +569,8 @@ let rec get_nonconsts_bits (backtrace:string list)
   | Log(_,x,y)        -> max (rec_call x) (rec_call y)
   | Shuffle(v,_)      -> var_size v
   | Arith(_,x,y)      -> max (rec_call x) (rec_call y)
+  | Bitmask(e,_)      -> rec_call e
+  | Pack(e1,e2,_)     -> (rec_call e1) + (rec_call e2) (* TODO: is that correct? *)
   | Fun(f,_)
   | Fun_v(f,_,_)      ->
      let def = Hashtbl.find env_fun f in
@@ -738,6 +744,23 @@ let rec type_expr (backtrace:string list)
      let vd_typ = expand_typ (get_var_type backtrace env_var env_it v) in
      match_types_asgn backtrace vd_typ lhs_types;
      Shuffle(v,l)
+  | Bitmask(e,ae) ->
+     let e' = rec_call e in
+     (* TODO: check that |ae| is less than the number of bits in |e'| *)
+     Bitmask(e', ae)
+  | Pack(e1,e2,Some typ) ->
+     if List.hd !lhs_types <> typ then
+       (eprintf "[Type error] Pack should return type '%s' but type '%s' was specified as annotation.\n" (typ_to_str (List.hd !lhs_types)) (typ_to_str typ);
+        print_backtrace backtrace;
+        raise Fatal_type_error);
+     lhs_types := List.tl !lhs_types;
+     (* TODO: verifications on e1 and e2 *)
+     Pack(e1,e2,Some typ)
+  | Pack(e1,e2,None) ->
+     (* TODO: handle this case *)
+     eprintf "[Type error] Please specify explicitely the return type of Pack.\n";
+     print_backtrace backtrace;
+     raise Fatal_type_error
   | Fun(f,l) ->
      (* Need to match |l| against the parameters of |f|, and the
         return values of |f| against |lhs_types|. *)
@@ -815,7 +838,7 @@ let rec type_expr (backtrace:string list)
      Fun_v(f.id, ae, typed_l)
 
 
-(* The types of the left han-side are always computable (since it's
+(* The types of the left-hand side are always computable (since it's
    only vars, which have been declared with their types). The right
    hand-side might need some inference because of constants. *)
 (* Note that even though indices can be computed (since we are passing

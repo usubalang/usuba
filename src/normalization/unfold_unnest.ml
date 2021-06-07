@@ -49,8 +49,8 @@ let rec get_expr_type env_fun env_var (ltyp:typ list) (e:expr) : typ list =
   | Arith(_,e,_)      -> get_expr_type env_fun env_var ltyp e
   | Shift(_,e,_)      -> get_expr_type env_fun env_var ltyp e
   | Shuffle(v,_)      -> [ get_var_type env_var v ]
-  | Mask(e,_)         -> get_expr_type env_fun env_var ltyp e
-  | Pack(_,Some typ)  -> [ typ ]
+  | Bitmask(e,_)         -> get_expr_type env_fun env_var ltyp e
+  | Pack(_,_,Some typ)  -> [ typ ]
   | Fun(f,l) ->
      if f.name = "rand" then [ Uint(default_dir,Mint 1,1) ]
      else if f.name = "refresh" then
@@ -137,8 +137,8 @@ let rec expand_expr env_var (e:expr) : expr list =
       with Not_found -> (* |ae| does not simplify to a Const *)
         [ Shift(op,x',ae) ])
   | Shuffle(v,pat) -> List.map (fun x -> Shuffle(x,pat)) (expand_var env_var v)
-  | Mask _ -> assert false (* TODO(Mask) *)
-  | Pack _ -> assert false (* TODO(Pack) *)
+  | Bitmask _ -> [ e ] (* TODO: is that correct? *)
+  | Pack _ -> [ e ] (* TODO: is that correct? *)
   | Fun(f,l) -> if f.name = "refresh" && List.length l <> 1 then
                   flat_map (fun v -> expand_expr env_var (Fun(f,[v])))
                            (flat_map (expand_expr env_var) l)
@@ -277,8 +277,26 @@ and norm_expr env_var env_fun (its:(ident*int) list)
   | Shift(op,e,n) ->
      let (deqs,e') = remove_call env_var env_fun its (dir,mtyp) ltyp e in
      deqs, Shift(op,e',n)
-  | Mask _ -> assert false (* TODO(Mask) *)
-  | Pack _ -> assert false (* TODO(Pack) *)
+  | Bitmask(e,i) ->
+     let (deqs,e') = remove_call env_var env_fun its (dir,mtyp) ltyp e in
+     deqs,
+     ( match e' with
+       | Tuple [ e' ] -> Bitmask(e', i)
+       | Tuple _ -> assert false
+       | _ -> Bitmask(e', i) )
+  | Pack(e1,e2,typ) ->
+     let (deqs1, e1') = remove_call env_var env_fun its (dir,mtyp) ltyp e1 in
+     let (deqs2, e2') = remove_call env_var env_fun its (dir,mtyp) ltyp e2 in
+     deqs1 @ deqs2,
+     let e1' = match e1' with
+       | Tuple [ e' ] -> e'
+       | Tuple _ -> assert false
+       | _ -> e1' in
+     let e2' = match e2' with
+       | Tuple [ e' ] -> e'
+       | Tuple _ -> assert false
+       | _ -> e2' in
+     Pack(e1',e2',typ)
   | Fun(f,l) ->
      if f.name = "refresh" && List.length l > 1 then
        norm_expr env_var env_fun its (dir,mtyp) ltyp

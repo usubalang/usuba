@@ -23,6 +23,8 @@ let _ =
      "forall", TOK_FORALL;
      "in", TOK_IN;
      "Shuffle", TOK_SHUFFLE;
+     "Bitmask", TOK_BITMASK;
+     "Pack", TOK_PACK;
      "_inline", TOK_INLINE;
      "_no_inline", TOK_NOINLINE;
      "_unroll", TOK_UNROLL;

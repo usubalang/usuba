@@ -139,6 +139,9 @@ module Compute_keeps = struct
                         compute_keep_expr env_keep env_var y
     | Arith(_,x,y)   -> compute_keep_expr env_keep env_var x;
                         compute_keep_expr env_keep env_var y
+    | Bitmask(e',_)     -> compute_keep_expr env_keep env_var e'
+    | Pack(e1,e2,_)  -> compute_keep_expr env_keep env_var e1;
+                        compute_keep_expr env_keep env_var e2
     | _ -> Printf.eprintf "compute_keep_expr: invalid expr: %s.\n"
              (Usuba_print.expr_to_str e);
            assert false
@@ -265,7 +268,11 @@ module Backwards_cp = struct
     | Log(op,x,y)     -> Log(op,propagate_in_expr optimized_away x,
                              propagate_in_expr optimized_away y)
     | Arith(op,x,y)   -> Arith(op,propagate_in_expr optimized_away x,
-                                   propagate_in_expr optimized_away y)
+                               propagate_in_expr optimized_away y)
+    | Bitmask(e',ae)      -> Bitmask(propagate_in_expr optimized_away e',
+                               propagate_in_aexpr optimized_away ae)
+    | Pack(e1,e2,t)   -> Pack(propagate_in_expr optimized_away e1,
+                              propagate_in_expr optimized_away e2, t)
     | Fun(f,l)        -> Fun(f,(List.map (propagate_in_expr optimized_away) l))
     | _ -> Printf.eprintf "propagate_in_expr: invalid expr: %s.\n"
                           (Usuba_print.expr_to_str e);
@@ -386,7 +393,11 @@ let rec propagate_in_expr  (optimized_away:(var,expr*((ident*deq_i) list)) Hasht
   | Log(op,x,y)     -> [], Log(op,propagate_in_expr_rec optimized_away x,
                                  propagate_in_expr_rec optimized_away y)
   | Arith(op,x,y)   -> [], Arith(op,propagate_in_expr_rec optimized_away x,
-                                   propagate_in_expr_rec optimized_away y)
+                                 propagate_in_expr_rec optimized_away y)
+  | Bitmask(e',ae)      -> [], Bitmask(propagate_in_expr_rec optimized_away e',
+                                       propagate_in_aexpr optimized_away ae)
+  | Pack(e1,e2,t)   -> [], Pack(propagate_in_expr_rec optimized_away e1,
+                                propagate_in_expr_rec optimized_away e2, t)
   | Fun(f,l)        -> [], Fun(f,(List.map (propagate_in_expr_rec optimized_away) l))
   | _ -> Printf.eprintf "propagate_in_expr: invalid expr: %s.\n"
            (Usuba_print.expr_to_str e);

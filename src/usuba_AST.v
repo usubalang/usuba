@@ -56,8 +56,8 @@ Inductive expr :=
   | Arith (op: arith_op)(e1 e2: expr)
   | Shift (op: shift_op)(e: expr)(ae: arith_expr)
   | Shuffle (v:var) (pat: list N)
-  | Mask (e:expr) (i:N)
-  | Pack (es:list expr) (t:option typ)
+  | Bitmask (e:expr) (ae: arith_expr)
+  | Pack (e1 e2:expr) (t:option typ)
   | Fun (x: ident)(es: list expr)
   | Fun_v (x: ident)(ae: arith_expr)(es: list expr) (* nodes arrays *)
 .

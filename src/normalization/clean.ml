@@ -12,18 +12,18 @@ let rec collect_var env (var:var) : unit =
 
 let rec collect_expr env (e:expr) : unit =
   match e with
-  | Const _      -> ()
-  | ExpVar(v)    -> collect_var env v
-  | Tuple l      -> List.iter (collect_expr env) l
-  | Not e        -> collect_expr env e
-  | Log(_,x,y)   -> collect_expr env x; collect_expr env y
-  | Arith(_,x,y) -> collect_expr env x; collect_expr env y
-  | Shift(_,x,_) -> collect_expr env x
-  | Shuffle(v,_) -> collect_var env v
-  | Mask(e,_)    -> collect_expr env e
-  | Pack(l,_)    -> List.iter (collect_expr env) l
-  | Fun(_,l)     -> List.iter (collect_expr env) l
-  | Fun_v(_,_,l) -> List.iter (collect_expr env) l
+  | Const _       -> ()
+  | ExpVar(v)     -> collect_var env v
+  | Tuple l       -> List.iter (collect_expr env) l
+  | Not e         -> collect_expr env e
+  | Log(_,x,y)    -> collect_expr env x; collect_expr env y
+  | Arith(_,x,y)  -> collect_expr env x; collect_expr env y
+  | Shift(_,x,_)  -> collect_expr env x
+  | Shuffle(v,_)  -> collect_var env v
+  | Bitmask(e,_)  -> collect_expr env e
+  | Pack(e1,e2,_) -> collect_expr env e1; collect_expr env e2
+  | Fun(_,l)      -> List.iter (collect_expr env) l
+  | Fun_v(_,_,l)  -> List.iter (collect_expr env) l
 
 let clean_in_deqs (vars:p) (deqs:deq list) : p =
   let env = Hashtbl.create 100 in

@@ -26,6 +26,8 @@
 %token TOK_FORALL
 %token TOK_IN
 %token TOK_SHUFFLE
+%token TOK_BITMASK
+%token TOK_PACK
 %token TOK_INLINE
 %token TOK_NOINLINE
 %token TOK_UNROLL
@@ -190,6 +192,10 @@ exp:
   | x=exp o=arith_op y=exp { Arith(o,x,y) }
   | x=exp o=shift_op y=arith_exp { Shift(o,x,y) }
   | TOK_TILDE x=exp { Not x }
+  | TOK_BITMASK TOK_LPAREN e=exp TOK_COMMA ae=arith_exp TOK_RPAREN { Bitmask(e,ae) }
+  | TOK_PACK TOK_LPAREN e1=exp TOK_COMMA e2=exp TOK_RPAREN { Pack(e1,e2,None) }
+  | TOK_PACK TOK_LPAREN e1=exp TOK_COMMA e2=exp TOK_RPAREN
+    TOK_COLON t=typ { Pack(e1,e2,Some t) }
   | f=ident TOK_LPAREN args=explist TOK_RPAREN { Fun(f, args) }
   | f=ident TOK_LT n=arith_exp TOK_GT
     TOK_LPAREN args=explist TOK_RPAREN { Fun_v(f, n, args) }

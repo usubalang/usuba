@@ -118,6 +118,23 @@ let rec expr_to_c (m:mtyp)
                                  (List.length l)
                                  (var_to_c lift_env env v)
                                  (join "," (List.map string_of_int l))
+  | Bitmask(e',ae) -> sprintf "BITMASK(%s, %s, %d)"
+                    (expr_to_c m lift_env env env_var e')
+                    (aexpr_to_c ae)
+                    (match m with
+                     | Mint m_val -> m_val
+                     | _ -> assert false)
+  | Pack(e1,e2,Some typ) ->
+     let args_m = get_type_m (get_normed_expr_type env_var e1) in
+     sprintf "PACK_%dx2_to_%d(%s,%s)"
+       (match args_m with
+        | Mint m_val -> m_val
+        | _ -> assert false)
+       (match m with
+        | Mint m_val -> m_val
+        | _ -> assert false)
+       (expr_to_c args_m lift_env env env_var e1)
+       (expr_to_c args_m lift_env env env_var e2)
   | Shift(op,e,ae) ->
      sprintf "%s(%s,%s,%d)"
              (shift_op_to_c op)

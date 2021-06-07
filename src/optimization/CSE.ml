@@ -69,6 +69,8 @@ let rec cse_expr (env_expr:(expr,var list) Hashtbl.t) (e:expr) : expr =
      | Shift(op,e',ae) -> Shift(op,cse_expr env_expr e',ae)
      | Log(op,x,y)     -> Log(op,cse_expr env_expr x,cse_expr env_expr y)
      | Arith(op,x,y)   -> Arith(op,cse_expr env_expr x,cse_expr env_expr y)
+     | Bitmask(e',ae)      -> Bitmask(cse_expr env_expr e',ae)
+     | Pack(e1,e2,t)   -> Pack(cse_expr env_expr e1,cse_expr env_expr e2,t)
      | Fun(f,l)        -> Fun(f,List.map (cse_expr env_expr) l)
      | _ -> Printf.eprintf "cse_expr: invalid expr: %s.\n"
               (Usuba_print.expr_to_str e);

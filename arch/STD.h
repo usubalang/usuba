@@ -56,6 +56,13 @@
 #define LIFT_32(x) (x)
 #define LIFT_64(x) (x)
 
+#define BITMASK(x,n,c) -(((x) >> (n)) & 1)
+
+#define PACK_8x2_to_16(a,b)  ((((uint16_t)(a)) << 8) | ((uint16_t) (b)))
+#define PACK_16x2_to_32(a,b) ((((uint32_t)(a)) << 16) | ((uint32_t) (b)))
+#define PACK_32x2_to_64(a,b) ((((uint64_t)(a)) << 32) | ((uint64_t) (b)))
+
+
 #define refresh(x,y) *(y) = x
 
 #ifndef DATATYPE

@@ -40,8 +40,8 @@ module Is_linear = struct
                         | Mul | Div | Mod -> false)
     | Shift(_,e',_) -> is_linear_expr env_fun e'
     | Shuffle _     -> true
-    | Mask(e',_)    -> is_linear_expr env_fun e'
-    | Pack(l,_)     -> List.for_all (is_linear_expr env_fun) l
+    | Bitmask(e',_)    -> is_linear_expr env_fun e'
+    | Pack(e1,e2,_) -> (is_linear_expr env_fun e1) && (is_linear_expr env_fun e2)
     | Fun(f,l)      -> (is_linear_def_by_name env_fun f)
                        && (List.for_all (is_linear_expr env_fun) l)
     | Fun_v(f,_,l)  -> (is_linear_def_by_name env_fun f)

@@ -225,8 +225,9 @@ module Bslice = struct
     | Shift(op,ExpVar x, ae) ->
        Shift(op,ExpVar(specialize_var env_var x),ae)
     | Shuffle(v,l) -> Shuffle(specialize_var env_var v,l)
-    | Mask(ExpVar v,i) -> Mask(ExpVar (specialize_var env_var v), i)
-    | Pack(l,typ) -> Pack(List.map (specialize_expr env_dir env_m env_var) l,typ)
+    | Bitmask(ExpVar v,ae) -> Bitmask(ExpVar (specialize_var env_var v), ae)
+    | Pack(e1,e2,typ) -> Pack(specialize_expr env_dir env_m env_var e1,
+                              specialize_expr env_dir env_m env_var e2, typ)
     | _ -> Printf.eprintf "Monomorphize::Bslice::specialize_expr: Invalid expr: %s\n"
              (Usuba_print.expr_to_str e);
            assert false
@@ -396,7 +397,7 @@ let rec node_call_can_be_optimized
     | Arith _    -> false
     | Shift _    -> false
     | Shuffle _  -> false
-    | Mask _     -> false
+    | Bitmask _  -> false
     | Pack _     -> false
     | Fun(f',l) ->
        if f'.name = "refresh" then true

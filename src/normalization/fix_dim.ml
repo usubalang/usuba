@@ -117,8 +117,8 @@ let rec dim_expr (v_tgt:var) (dim:int) (size:int) (e:expr) : expr =
   | Arith(op,x,y)  -> Arith(op,dim_expr v_tgt dim size x,dim_expr v_tgt dim size y)
   | Shift(op,e,ae) -> Shift(op,dim_expr v_tgt dim size e,ae)
   | Shuffle(v,l)   -> Shuffle(dim_var v_tgt dim size v,l)
-  | Mask(e,i)      -> Mask(dim_expr v_tgt dim size e,i)
-  | Pack(l,t)      -> Pack(List.map (dim_expr v_tgt dim size) l,t)
+  | Bitmask(e,ae)      -> Bitmask(dim_expr v_tgt dim size e,ae)
+  | Pack(e1,e2,t)  -> Pack(dim_expr v_tgt dim size e1,dim_expr v_tgt dim size e2, t)
   | Fun(f,l)       -> Fun(f,List.map (dim_expr v_tgt dim size) l)
   | Fun_v _ -> assert false
 

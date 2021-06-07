@@ -27,8 +27,8 @@ let rec apply_perm_e env_fun env_var (e:expr) : expr =
   | Log(op,x,y)   -> Log(op,apply_perm_e env_fun env_var x,apply_perm_e env_fun env_var y)
   | Arith(op,x,y) -> Arith(op,apply_perm_e env_fun env_var x,apply_perm_e env_fun env_var y)
   | Shift(op,e,n) -> Shift(op,apply_perm_e env_fun env_var e,n)
-  | Mask(e,i)     -> Mask(apply_perm_e env_fun env_var e,i)
-  | Pack(l,t)     -> Pack(List.map (apply_perm_e env_fun env_var) l,t)
+  | Bitmask(e,ae)     -> Bitmask(apply_perm_e env_fun env_var e,ae)
+  | Pack(e1,e2,t) -> Pack(apply_perm_e env_fun env_var e1,apply_perm_e env_fun env_var e2,t)
   | Fun(f,l)      -> let l' = List.map (apply_perm_e env_fun env_var) l in
                      (match env_fetch env_fun f with
                       | Some perm -> Tuple (list_from_perm env_var perm l')

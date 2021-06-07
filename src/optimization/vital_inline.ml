@@ -46,8 +46,9 @@ module Must_inline = struct
     | Shift(_,e',ae) -> (must_inline_expr env_var env_in e') ||
                           (must_inline_shift env_var env_in e' ae)
     | Shuffle _      -> false
-    | Mask(e',_)     -> must_inline_expr env_var env_in e'
-    | Pack(l,_)      -> List.exists (must_inline_expr env_var env_in) l
+    | Bitmask(e',_)     -> must_inline_expr env_var env_in e'
+    | Pack(e1,e2,_)  -> (must_inline_expr env_var env_in e1) ||
+                          (must_inline_expr env_var env_in e2)
     | Fun(_,l)       -> List.exists (must_inline_expr env_var env_in) l
     | Fun_v(_,_,l)   -> List.exists (must_inline_expr env_var env_in) l
 

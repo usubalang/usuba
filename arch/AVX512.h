@@ -71,6 +71,13 @@
 #define LIFT_32(x) _mm512_set1_epi32(x)
 #define LIFT_64(x) _mm512_set1_epi64(x)
 
+
+#define BITMASK(x,n,c) _mm512_sub_epi##c(ZERO, __mm512_and_si512(_mm512_slli_epi##c(x,n), _mm512_set1_epi##c(1)))
+
+#define PACK_8x2_to_16(a,b)  /* TODO: implement with shuffles */
+#define PACK_16x2_to_32(a,b) /* TODO: implement with shuffles */
+#define PACK_32x2_to_64(a,b) /* TODO: implement with shuffles */
+
 #define DATATYPE __m512i
 
 #define SET_ALL_ONE()  ONES
