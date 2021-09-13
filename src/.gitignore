@@ -1,6 +1,8 @@
 *.mli
 *.glob
 *.vo
+*.vok
+*.vos
 *.aux
 usuba_AST.ml
 config.ml
