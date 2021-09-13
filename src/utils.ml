@@ -56,6 +56,7 @@ let default_conf : config =
     gen_bench      = false;
     keep_tables    = false;
     compact        = false;
+    arm_asm        = false;
     bench_inline   = false;
     bench_inter    = false;
     bench_bitsched = false;

@@ -175,6 +175,7 @@ Record config := {
                           them into circuits *)
   compact      : bool; (* (broken) Generates loops when unfolding
                           operators instead of a list of equations. *)
+  arm_asm      : bool;  (* If true, generates assembly for ARM v8 *)
   (* Benchmarking flags (for automatic selection of best opti to use or not) *)
   bench_inline   : bool; (* Inlining: inline_all vs auto_inline vs _no_inline *)
   bench_inter    : bool; (* Interleaving: which factor? (0, 2, 3) *)

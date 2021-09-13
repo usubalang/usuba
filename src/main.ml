@@ -66,6 +66,8 @@ let bench_sharevar = ref false
 
 let keep_tables  = ref false
 
+let arm_asm = ref false
+
 let str_to_arch = function
   | "std"     -> Std
   | "mmx"     -> MMX
@@ -85,10 +87,13 @@ let bits_in_arch = function
   | Neon     -> 128
   | AltiVec  -> 128
 
-let gen_output_filename (file_in: string) : string =
+let gen_output_filename (file_in: string) (gen_asm: bool) : string =
   let full_name = List.hd (String.split_on_char '.' file_in) in
   let out_name = last (String.split_on_char '/' full_name) in
-  out_name ^ ".c"
+  match gen_asm with
+  | true -> out_name ^ ".s"
+  | false -> out_name ^ ".c"
+
 
 
 let compile (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
@@ -98,18 +103,19 @@ let compile (file_in: string) (prog: Usuba_AST.prog) (conf:config) : unit =
   (* Normalizing AND optimizing *)
   let normed_prog = Normalize.compile prog conf in
 
-  (* Generating a string of C code *)
-  let c_prog_str = Usuba_to_c.prog_to_c prog normed_prog conf file_in in
+  (* Compiled to C or ASM *)
+  let compiled_prog = match conf.arm_asm with
+    | true  -> Armv7.prog_to_asm prog normed_prog conf file_in
+    | false -> Usuba_to_c.prog_to_c prog normed_prog conf file_in in
 
   (* Opening out file *)
   let out = match !output with
-    | ""  -> open_out (gen_output_filename file_in)
+    | ""  -> open_out (gen_output_filename file_in conf.arm_asm)
     | str -> open_out str in
 
-  (* Printing the C code *)
-  fprintf out "%s" c_prog_str;
+  (* Printing the compiled code code *)
+  fprintf out "%s" compiled_prog;
   close_out out
-
 
 
 let run_tests () : unit =
@@ -183,6 +189,7 @@ let main () =
       "-keep-tables", Arg.Set keep_tables, "Keep lookup tables (can't use SIMD)";
       "-compact", Arg.Set compact, "Generates more compact code (for bitslicing only)";
       "-tests", Arg.Unit (fun () -> run_tests ()), "Run tests";
+      "-arm-asm", Arg.Set arm_asm, "Generate assembly for ARM v8";
     ] in
   let usage_msg = "Usage: usuba [switches] [files]" in
 
@@ -251,6 +258,7 @@ let main () =
         gen_bench      =   !gen_bench;
         keep_tables    =   !keep_tables;
         compact        =   !compact;
+        arm_asm        =   !arm_asm;
         bench_inline   =   !bench_inline   || !bench_all;
         bench_inter    =   !bench_inter    || !bench_all;
         bench_bitsched =   !bench_bitsched || !bench_all;
