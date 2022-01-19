@@ -1,0 +1,133 @@
+name: Build and Test (OCaml and ICC)
+
+# For any push and pull request we try to build the project
+on: [push,pull_request]
+
+env:
+  OCAML_DEFAULT_VERSION: 4.13.1
+  # Add OPAMYES=true to the environment, this is usefill to replace `-y` option
+  # in any opam call
+  OPAMYES: true
+
+jobs:
+  build-and-test:
+    # Basic test to check if the project can be built (using dune build)
+    # This test also check that `.opam` files are synced with dune-project
+    # If this test fails, no more make building test are done
+    name: Build and Test
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code of the current branch
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Retrieve the opam cache with unique key
+      # A new cache is created/used if the `.opam` files changes or
+      # if we use another ocaml version
+      # This action only retrieve the .opam/ directory
+      - name: Retrieve opam cache
+        uses: actions/cache@v2
+        id: cache-opam
+        with:
+          path: ~/.opam
+          key: v2-${{ runner.os }}-test-actions-${{ env.OCAML_DEFAULT_VERSION }}-${{ hashFiles('*.opam') }}
+
+      # Get an OCaml environment with opam installed and the proper ocaml version
+      # opam will use opam cache environment if retrieved
+      - name: Use OCaml ${{ env.OCAML_DEFAULT_VERSION }}
+        uses: avsm/setup-ocaml@v1
+        with:
+          ocaml-version: ${{ env.OCAML_DEFAULT_VERSION }}
+
+      # Install dependencies (TODO when we have a clean repo, not now)
+      # - name: opam install deps
+      #   run: opam install ./*.opam --deps-only
+
+      # Make sure the env is synced
+      - name: eval opam env
+        run: eval $(opam env)
+
+      - name: install ocaml dependencies
+        run: opam install coq ocamlbuild menhir
+
+      # Export opam's path
+      - name: export opam path
+        run: |
+          echo "$HOME/.opam/${{ env.OCAML_DEFAULT_VERSION }}/bin" >> $GITHUB_PATH
+
+        # List installed packages (for debug purposes this information can be useful)
+      - name: opam list
+        run: opam list
+
+      - name: perl info
+        run: |
+          perl --version
+      - name: setup locallib
+        run: |
+          PERL_LOCAL_LIB_ROOT="$HOME/perl5"
+          echo "PERL_LOCAL_LIB_ROOT=$PERL_LOCAL_LIB_ROOT" >> $GITHUB_ENV
+          echo "PERL5LIB=$PERL_LOCAL_LIB_ROOT/lib/perl5" >> $GITHUB_ENV
+          echo "PERL_MB_OPT=--install_base \"$PERL_LOCAL_LIB_ROOT/\"" >> $GITHUB_ENV
+          echo "PERL_MM_OPT=INSTALL_BASE=$PERL_LOCAL_LIB_ROOT" >> $GITHUB_ENV
+          echo "PATH=$PERL_LOCAL_LIB_ROOT/bin:$PATH" >> $GITHUB_ENV
+      - name: install cpanm
+        run: cpan App::cpanminus
+
+      - name: test cpanm
+        run: cpanm -v Path::Tiny
+
+      - name: CPAN installs
+        run: |
+          cpan File::Copy::Recursive
+          cpan JSON
+          cpan List::MoreUtils
+          cpan Data::Printer
+          cpan -fi Statistics::Test::WilcoxonRankSum
+
+      - name: configure
+        run: ./configure.pl
+
+      # `dune build` (will update the *.opam file if the dune-project was updated)
+      # (all of this will be done when the build system is upgraded to use dune)
+      - name: make
+        run: make
+
+      # Add Intel oneAPI to the apt sources list and update apt
+      - name: DL key
+        run: |
+          wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+          | gpg --dearmor \
+          | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" \
+          | sudo tee /etc/apt/sources.list.d/oneAPI.list
+          sudo apt update
+
+      - name: Install ICC
+        run: sudo apt install -y intel-hpckit
+
+      - name: check ICC
+        run: |
+          /opt/intel/oneapi/compiler/latest/linux/bin/intel64/icc --version
+
+      - name: path with icc
+        run: echo "/opt/intel/oneapi/compiler/latest/linux/bin/intel64/" >> $GITHUB_PATH
+
+      - name: path
+        run: echo $GITHUB_PATH
+
+      - name: Check icc in path
+        run: icc --version
+
+      - name: Temporary ulimit
+        run: ulimit -s unlimited
+
+      - name: Test
+        run: make test
+
+      # Monitor changes in repo's files
+      # If there are some changes, stop the workflow and suggest changes in the PR
+      - uses: getsentry/action-git-diff-suggestions@main
+        with:
+          message: 'The following changes have been made after `make test`:'
