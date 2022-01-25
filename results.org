@@ -1,0 +1,356 @@
+* https://github.com/usubalang/usuba/tree/master/experimentations/add
+
+#+begin_src shell
+|    **addition type**   |  **cycles/loop (AVX / SSE / GP)** |  **cycles/add  (AVX / SSE / GP)** |
+| ---------------------- | --------------------------------- | --------------------------------- |
+|  8-bit        bitslice |    12.78   /   16.82  /  17.15   |     0.05   /    0.13  /   0.54   |
+|  8-bit   packed_single |     1.06   /    1.06  /   1.06   |     0.03   /    0.07  /   1.06   |
+|  8-bit packed_parallel |     1.59   /    1.61  /   1.03   |     0.02   /    0.03  /   0.34   |
+|         &nbsp;         |             &nbsp;                |                &nbsp;             |
+| 16-bit        bitslice |    33.56   /   80.04  /  36.98   |     0.13   /    0.63  /   1.16   |
+| 16-bit   packed_single |     1.07   /    1.06  /   1.05   |     0.07   /    0.13  /   1.05   |
+| 16-bit packed_parallel |     1.58   /    1.60  /   1.04   |     0.03   /    0.07  /   0.34   |
+|         &nbsp;         |             &nbsp;                |                &nbsp;             |
+| 32-bit        bitslice |    167.03   /   161.96  /  77.31   |     0.65   /    1.27  /   2.42   |
+| 32-bit   packed_single |    1.10   /    1.05  /   1.05   |      0.14   /    0.26  /   1.05   |
+| 32-bit packed_parallel |     1.59   /    1.58  /   1.04   |     0.07   /    0.13  /   0.35   |
+#+end_src
+
+* https://github.com/usubalang/usuba/tree/master/experimentations/usuba-vs-bsc
+
+#+begin_src shell
+des-usuba => 17.086 +-0.121 [17.07, 17.19, 17.11, 17.2, 17.3, 17.24, 17.15, 17.05, 16.96, 17.03, 17.03, 17.2, 16.92, 16.89, 16.95]
+  des-bsc => 17.419 +-0.142 [17.33, 17.2, 17.42, 17.36, 17.29, 17.36, 17.43, 17.49, 17.41, 17.4, 17.44, 17.45, 17.88, 17.46, 17.36]
+
+Summary:
+des-usuba => 17.086 +-0.121
+  des-bsc => 17.419 +-0.142
+#+end_src
+
+* https://github.com/usubalang/usuba/tree/master/experimentations/code-size-CSECPCF
+
+#+begin_src shell
+  Fatal error: exception Stack overflow
+  Raised by primitive operation at Stdlib__Hashtbl.find in file "hashtbl.ml", line 541, characters 9-23
+  Called from UsubaLib__Utils.get_var_type in file "src/utils.ml", line 220, characters 6-24
+  Called from UsubaLib__Utils.expand_var in file "src/utils.ml", line 319, characters 12-34
+  Called from UsubaLib__Fuse_loop_general.update_env_ready.(fun) in file "src/optimization/fuse_loop_general.ml", line 183, characters 16-46
+  Called from Stdlib__List.iter in file "list.ml", line 110, characters 12-15
+  Called from UsubaLib__Fuse_loop_general.iter_env_it.aux.(fun) in file "src/optimization/fuse_loop_general.ml", line 60, characters 12-19
+  Called from Stdlib__List.iter in file "list.ml", line 110, characters 12-15
+  Called from UsubaLib__Fuse_loop_general.fuse_loops_deqs in file "src/optimization/fuse_loop_general.ml", line 231, characters 10-54
+[...]
+#+end_src
+
+* https://github.com/usubalang/usuba/tree/master/bench/inlining
+
+#+begin_src shell
+Arch: std
+      cipher | -no-inline | -inline-all |
+-------------|------------|-------------|-------
+      ACE-bs |      x1.00 |       x1.37 |  x1.36
+      ACE-vs |      x1.00 |       x0.66 |  x1.00
+      AES-bs |      x1.00 |       x0.71 |  x0.69
+    Ascon-bs |      x1.00 |       x0.83 |  x0.98
+    Ascon-vs |      x1.00 |       x0.94 |  x0.99
+    Chacha20 |      x1.00 |       x0.79 |  x0.80
+    Clyde-bs |      x1.00 |       x0.99 |  x0.98
+    Clyde-vs |      x1.00 |       x0.82 |  x0.84
+         DES |      x1.00 |       x0.72 |  x0.76
+     Gift-bs |      x1.00 |       x0.36 |  x0.36
+    Gift-fix |      x1.00 |       x0.94 |  x1.00
+     Gift-vs |      x1.00 |       x0.58 |  x1.00
+    Gimli-bs |      x1.00 |       x1.19 |  x1.19
+    Gimli-vs |      x1.00 |       x1.04 |  x1.00
+   Photon-bs |      x1.00 |       x1.32 |  x1.26
+     Present |      x1.00 |       x0.77 |  x0.99
+ Pyjamask-bs |      x1.00 |       x0.18 |  x0.17
+ Pyjamask-vs |      x1.00 |       x0.73 |  x1.00
+Rectangle-bs |      x1.00 |       x0.59 |  x0.57
+Rectangle-vs |      x1.00 |       x0.99 |  x0.99
+     Serpent |      x1.00 |       x0.96 |  x0.97
+   Skinny-bs |      x1.00 |       x0.54 |  x0.48
+    Spongent |      x1.00 |       x0.86 |  x0.83
+Subterranean |      x1.00 |       x0.46 |  x0.48
+   Xoodoo-bs |      x1.00 |       x0.62 |  x0.62
+   Xoodoo-vs |      x1.00 |       x0.80 |  x0.97
+
+
+Arch: sse
+      cipher | -no-inline | -inline-all |
+-------------|------------|-------------|-------
+      ACE-bs |      x1.00 |       x1.21 |  x1.21
+      ACE-vs |      x1.00 |       x0.68 |  x1.00
+      AES-bs |      x1.00 |       x1.02 |  x0.78
+      AES-hs |      x1.00 |       x1.00 |  x0.98
+    Ascon-bs |      x1.00 |       x0.63 |  x0.63
+    Ascon-vs |      x1.00 |       x0.98 |  x0.97
+    Chacha20 |      x1.00 |       x0.84 |  x0.85
+    Clyde-bs |      x1.00 |       x0.89 |  x0.74
+    Clyde-vs |      x1.00 |       x0.98 |  x0.99
+         DES |      x1.00 |       x0.55 |  x0.54
+     Gift-bs |      x1.00 |       x0.37 |  x0.31
+    Gift-fix |      x1.00 |       x1.01 |  x1.02
+     Gift-vs |      x1.00 |       x0.98 |  x0.91
+    Gimli-bs |      x1.00 |       x0.95 |  x0.95
+    Gimli-vs |      x1.00 |       x1.04 |  x1.01
+   Photon-bs |      x1.00 |       x0.90 |  x0.86
+     Present |      x1.00 |       x0.87 |  x0.98
+ Pyjamask-bs |      x1.00 |       x0.72 |  x0.65
+ Pyjamask-vs |      x1.00 |       x1.00 |  x0.97
+Rectangle-bs |      x1.00 |       x0.44 |  x0.42
+Rectangle-hs |      x1.00 |       x1.03 |  x1.03
+Rectangle-vs |      x1.00 |       x1.01 |  x1.02
+     Serpent |      x1.00 |       x0.98 |  x0.99
+   Skinny-bs |      x1.00 |       x0.46 |  x0.45
+    Spongent |      x1.00 |       x0.62 |  x0.60
+Subterranean |      x1.00 |       x0.40 |  x0.40
+   Xoodoo-bs |      x1.00 |       x0.69 |  x0.66
+   Xoodoo-vs |      x1.00 |       x0.99 |  x1.01
+
+
+Arch: avx
+      cipher | -no-inline | -inline-all |
+-------------|------------|-------------|-------
+      ACE-bs |      x1.00 |       x0.96 |  x0.95
+      ACE-vs |      x1.00 |       x0.68 |  x1.00
+      AES-bs |      x1.00 |       x0.77 |  x0.61
+      AES-hs |      x1.00 |       x1.01 |  x0.99
+    Ascon-bs |      x1.00 |       x0.44 |  x0.45
+    Ascon-vs |      x1.00 |       x0.98 |  x0.98
+    Chacha20 |      x1.00 |       x0.87 |  x0.86
+    Clyde-bs |      x1.00 |       x0.61 |  x0.62
+    Clyde-vs |      x1.00 |       x1.00 |  x1.03
+         DES |      x1.00 |       x0.49 |  x0.46
+     Gift-bs |      x1.00 |       x0.20 |  x0.21
+    Gift-fix |      x1.00 |       x1.00 |  x0.99
+     Gift-vs |      x1.00 |       x0.95 |  x0.88
+    Gimli-bs |      x1.00 |       x0.58 |  x0.59
+    Gimli-vs |      x1.00 |       x1.02 |  x1.01
+   Photon-bs |      x1.00 |       x0.64 |  x0.62
+     Present |      x1.00 |       x0.82 |  x1.02
+ Pyjamask-bs |      x1.00 |       x0.57 |  x0.61
+ Pyjamask-vs |      x1.00 |       x0.99 |  x0.98
+Rectangle-bs |      x1.00 |       x0.27 |  x0.26
+Rectangle-hs |      x1.00 |       x1.02 |  x1.03
+Rectangle-vs |      x1.00 |       x1.00 |  x1.01
+     Serpent |      x1.00 |       x0.99 |  x0.99
+   Skinny-bs |      x1.00 |       x0.28 |  x0.28
+    Spongent |      x1.00 |       x0.40 |  x0.39
+Subterranean |      x1.00 |       x0.20 |  x0.20
+   Xoodoo-bs |      x1.00 |       x0.35 |  x0.34
+   Xoodoo-vs |      x1.00 |       x0.99 |  x1.00
+#+end_src
+
+* https://github.com/usubalang/usuba/tree/master/bench/scheduling-bs
+
+#+begin_src shell
+Arch: std
+      cipher | -no-pre-sched |        | -no-pre-sched -no-compact-mono | -no-compact-mono
+-------------|---------------|--------|--------------------------------|-----------------
+      ACE-bs |         x1.00 |  x1.00 |                          x1.00 |            x0.99
+      AES-bs |         x1.00 |  x0.90 |                          x0.99 |            x0.90
+    Ascon-bs |         x1.00 |  x0.74 |                          x1.18 |            x1.31
+    Clyde-bs |         x1.00 |  x0.91 |                          x1.38 |            x1.09
+         DES |         x1.00 |  x0.87 |                          x1.00 |            x0.86
+     Gift-bs |            x- |     x- |                             x- |               x-
+    Gimli-bs |         x1.00 |  x1.03 |                          x1.03 |            x0.96
+   Photon-bs |         x1.00 |  x0.97 |                          x1.01 |            x1.06
+     Present |         x1.00 |  x1.13 |                          x1.01 |            x1.12
+ Pyjamask-bs |         x1.00 |     x- |                          x1.00 |               x-
+Rectangle-bs |         x1.00 |  x0.69 |                          x0.89 |            x0.69
+  Serpent-bs |         x1.00 |  x0.73 |                          x1.25 |            x1.22
+   Skinny-bs |         x1.00 |  x0.83 |                          x0.99 |            x0.83
+    Spongent |         x1.00 |  x1.00 |                          x1.00 |            x1.00
+Subterranean |         x1.00 |  x0.99 |                          x1.00 |            x1.00
+      Xoodoo |         x1.00 |  x0.37 |                          x1.01 |            x0.80
+
+
+Arch: sse
+      cipher | -no-pre-sched |        | -no-pre-sched -no-compact-mono | -no-compact-mono
+-------------|---------------|--------|--------------------------------|-----------------
+      ACE-bs |         x1.00 |  x1.00 |                          x1.00 |            x1.00
+      AES-bs |         x1.00 |  x0.89 |                          x0.99 |            x0.89
+    Ascon-bs |         x1.00 |  x0.64 |                          x1.43 |            x1.45
+    Clyde-bs |         x1.00 |  x0.68 |                          x1.07 |            x0.70
+         DES |         x1.00 |  x0.83 |                          x1.00 |            x0.82
+     Gift-bs |            x- |     x- |                             x- |               x-
+    Gimli-bs |         x1.00 |  x1.00 |                          x1.00 |            x1.00
+   Photon-bs |         x1.00 |  x1.01 |                          x1.01 |            x1.01
+     Present |         x1.00 |  x0.99 |                          x0.99 |            x0.99
+ Pyjamask-bs |         x1.00 |     x- |                          x0.97 |               x-
+Rectangle-bs |         x1.00 |  x0.74 |                          x0.99 |            x0.74
+  Serpent-bs |         x1.00 |  x0.61 |                          x1.14 |            x1.12
+   Skinny-bs |         x1.00 |  x0.85 |                          x1.00 |            x0.86
+    Spongent |         x1.00 |  x0.99 |                          x1.00 |            x0.99
+Subterranean |         x1.00 |  x0.99 |                          x1.01 |            x1.00
+      Xoodoo |         x1.00 |  x0.35 |                          x1.00 |            x0.91
+
+
+Arch: avx
+      cipher | -no-pre-sched |        | -no-pre-sched -no-compact-mono | -no-compact-mono
+-------------|---------------|--------|--------------------------------|-----------------
+      ACE-bs |         x1.00 |  x1.01 |                          x0.99 |            x1.01
+      AES-bs |         x1.00 |  x0.93 |                          x1.01 |            x0.91
+    Ascon-bs |         x1.00 |  x0.76 |                          x1.28 |            x1.30
+    Clyde-bs |         x1.00 |  x0.72 |                          x1.08 |            x0.83
+         DES |         x1.00 |  x0.87 |                          x1.01 |            x0.86
+     Gift-bs |            x- |     x- |                             x- |               x-
+    Gimli-bs |         x1.00 |  x1.00 |                          x1.00 |            x1.00
+   Photon-bs |         x1.00 |  x0.92 |                          x1.02 |            x0.93
+     Present |         x1.00 |  x0.99 |                          x0.99 |            x1.00
+ Pyjamask-bs |         x1.00 |     x- |                          x1.02 |               x-
+Rectangle-bs |         x1.00 |  x0.81 |                          x1.01 |            x0.81
+  Serpent-bs |         x1.00 |  x0.79 |                          x1.13 |            x1.11
+   Skinny-bs |         x1.00 |  x0.85 |                          x0.99 |            x0.86
+    Spongent |         x1.00 |  x0.99 |                          x1.00 |            x1.01
+Subterranean |         x1.00 |  x1.00 |                          x1.02 |            x1.00
+      Xoodoo |         x1.00 |  x0.50 |                          x0.99 |            x0.88
+#+end_src
+
+* https://github.com/usubalang/usuba/tree/master/experimentations/spilling-bs
+
+#+begin_src shell
+ace_bitslice: 0.49 (47291 / 96248)
+       aes: 0.36 (15942 / 44208)
+     ascon: 0.42 (20336 / 48957)
+clyde_bitslice: 0.54 (16477 / 30347)
+       des: 0.40 (5915 / 14686)
+      gift: 0.53 (19162 / 35966)
+     gimli: 0.61 (39005 / 63813)
+photon_bitslice: 0.40 (29927 / 74547)
+   present: 0.24 (3526 / 14781)
+pyjamask_bitslice: 0.46 (21838 / 47311)
+ rectangle: 0.26 (2990 / 11383)
+   serpent: 0.44 (22721 / 51555)
+skinny_bitslice: 0.56 (30139 / 53993)
+  spongent: 0.20 (26428 / 134240)
+subterranean: 0.37 (8418 / 22474)
+    xoodoo: 0.49 (22327 / 45288)
+#+end_src
+
+* https://github.com/usubalang/usuba/tree/master/bench/scheduling
+
+Compilation from usuba to C is extremely long (and don't end in the allocated time for gift-vs)
+
+#+begin_src shell
+Arch: std
+      cipher | -no-sched | -sched-n 2 | -sched-n 3 | -sched-n 4 | -sched-n 5 | -sched-n 10
+-------------|-----------|------------|------------|------------|------------|------------
+      ACE-vs |     x1.00 |      x0.83 |      x0.76 |      x0.72 |      x0.69 |       x0.68
+    Ascon-vs |     x1.00 |      x0.97 |      x0.96 |      x0.96 |      x0.93 |       x0.88
+    Chacha20 |     x1.00 |      x0.95 |      x1.00 |      x0.98 |      x0.99 |       x0.98
+    Clyde-vs |     x1.00 |      x0.98 |      x1.00 |      x0.97 |      x0.95 |       x0.95
+    Gift-fix |     x1.00 |      x1.00 |      x1.01 |      x1.01 |      x1.01 |       x1.00
+     Gift-vs |     x1.00 |      x0.99 |      x1.00 |      x0.99 |      x1.01 |          x-
+    Gimli-vs |        x- |         x- |         x- |         x- |         x- |          x-
+#+end_src
+
+* https://github.com/usubalang/usuba/tree/master/bench/interleaving
+
+#+begin_src shell
+serpent-inter : 25.84  [ 25.71, 26.09, 25.46, 25.83, 26.06, 25.34, 26.24, 26.14, 26.10, 25.47 ]  {25056 bytes}
+      serpent : 34.13  [ 34.07, 33.78, 33.36, 33.69, 34.02, 35.26, 33.21, 34.30, 35.14, 34.43 ]  {20952 bytes}
+
+Running benchs pyjamask... done.
+Results pyjamask:
+     pyjamask : 143.53  [ 144.17, 149.14, 142.15, 143.94, 141.90, 143.13, 142.01, 143.35, 142.48, 143.02 ]  {16600 bytes}
+pyjamask-inter : 239.46  [ 249.06, 241.93, 239.52, 241.37, 241.01, 235.13, 237.27, 235.76, 236.87, 236.71 ]  {16608 bytes}
+
+Running benchs ace... done.
+Results ace:
+          ace : 36.46  [ 36.33, 36.27, 36.23, 36.23, 36.62, 36.72, 37.51, 35.98, 36.44, 36.26 ]  {16592 bytes}
+    ace-inter : 39.74  [ 39.50, 40.55, 39.52, 39.73, 39.79, 40.28, 39.45, 39.55, 39.64, 39.37 ]  {20696 bytes}
+
+Running benchs gift... done.
+Results gift:
+         gift : 342.96  [ 341.83, 343.71, 342.89, 343.27, 342.87, 342.40, 342.83, 343.42, 342.69, 343.73 ]  {16672 bytes}
+   gift-inter : 383.28  [ 383.03, 382.72, 383.10, 383.08, 383.18, 384.48, 383.61, 383.93, 383.26, 382.40 ]  {20776 bytes}
+
+Running benchs rectangle... done.
+Results rectangle:
+rectangle-inter : 24.07  [ 24.09, 24.15, 24.04, 24.13, 24.03, 24.06, 24.04, 24.07, 24.05, 23.99 ]  {16608 bytes}
+    rectangle : 26.26  [ 26.06, 26.23, 26.41, 26.25, 26.11, 26.17, 26.15, 26.60, 26.40, 26.18 ]  {16608 bytes}
+
+Running benchs ascon... done.
+Results ascon:
+  ascon-inter : 4.25  [ 4.27, 4.23, 4.25, 4.25, 4.24, 4.24, 4.24, 4.23, 4.24, 4.27 ]  {16600 bytes}
+        ascon : 4.53  [ 4.57, 4.53, 4.56, 4.51, 4.52, 4.53, 4.53, 4.53, 4.55, 4.51 ]  {16592 bytes}
+
+Running benchs gimli... done.
+Results gimli:
+        gimli : 11.62  [ 10.50, 10.50, 10.53, 10.86, 11.53, 16.82, 11.44, 11.92, 11.07, 10.98 ]  {16632 bytes}
+  gimli-inter : 15.08  [ 13.52, 13.52, 13.64, 15.08, 22.22, 14.60, 15.32, 14.40, 14.32, 14.14 ]  {20736 bytes}
+
+Running benchs xoodoo... done.
+Results xoodoo:
+       xoodoo : 7.10  [ 7.17, 7.14, 7.03, 7.10, 7.09, 7.07, 7.05, 7.05, 7.07, 7.22 ]  {16592 bytes}
+ xoodoo-inter : 9.34  [ 9.33, 9.29, 9.25, 9.38, 9.42, 9.34, 9.28, 9.35, 9.39, 9.39 ]  {16600 bytes}
+
+Running benchs chacha20... done.
+Results chacha20:
+     chacha20 : 6.67  [ 6.71, 6.60, 6.64, 6.71, 6.63, 6.82, 6.65, 6.68, 6.62, 6.68 ]  {16560 bytes}
+chacha20-inter : 10.62  [ 10.64, 10.58, 10.57, 10.65, 10.55, 10.61, 10.78, 10.62, 10.58, 10.59 ]  {16568 bytes}
+
+Running benchs clyde... done.
+Results clyde:
+        clyde : 19.92  [ 20.02, 20.16, 19.81, 19.67, 19.81, 19.76, 20.05, 19.89, 20.15, 19.84 ]  {16560 bytes}
+  clyde-inter : 20.75  [ 20.63, 20.79, 20.59, 20.70, 20.86, 20.56, 20.94, 20.73, 21.07, 20.62 ]  {16568 bytes}
+#+end_src
+
+* https://github.com/usubalang/usuba/tree/master/bench/interleaving-params
+
+Compilation took too long
+
+* https://github.com/usubalang/usuba/tree/master/bench/ua-vs-human
+
+No supercop
+
+* https://github.com/usubalang/usuba/tree/master/bench/scaling-avx512
+
+C compilation goes wrong (./run.pl -g -c -r)
+
+#+begin_src shell
+Compiling the C sources.../home/mattias/usuba/bench/scaling-avx512/C/Ascon-vs-std.c:13:10: fatal error: 'STD.h' file not found
+#include "STD.h"
+         ^~~~~~~
+1 error generated.
+/home/mattias/usuba/bench/scaling-avx512/C/Ascon-vs-sse.c:13:10: fatal error: 'SSE.h' file not found
+#include "SSE.h"
+         ^~~~~~~
+1 error generated.
+/home/mattias/usuba/bench/scaling-avx512/C/Ascon-vs-avx512.c:13:10: fatal error: 'AVX512.h' file not found
+#include "AVX512.h"
+         ^~~~~~~~~~
+1 error generated.
+/home/mattias/usuba/bench/scaling-avx512/C/Ascon-vs-avx.c:13:10: fatal error: 'AVX.h' file not found
+#+end_src
+
+* https://github.com/usubalang/usuba/tree/master/bench/rectangle
+
+./run.pl -g -c -r
+Some issues with avx (hence the '0.00' results)
+
+#+begin_src shell
+  hslice-inter/avx512.c:51:11: error: always_inline function '_mm512_or_si512' requires target feature 'avx512f', but would be inlined into function 'SubColumn__H16' that is compiled without support for 'avx512f'
+    t11__ = OR(*b0__,t8__);
+#+end_src
+
+#+begin_src shell
+  avx512-vslice-inter : 0.00/0.00  [ 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 ]
+  avx512-bitslice : 0.00/0.00  [ 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 ]
+  avx512-hslice-inter : 0.00/0.00  [ 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 ]
+  avx2-vslice-inter : 6.29/0.50  [ 6.13, 6.30, 6.39, 6.21, 6.30, 6.30, 6.47, 6.14, 6.15, 6.23, 5.99, 6.38, 6.41, 6.17, 6.31, 6.23, 6.24, 6.56, 6.33, 6.49 ]
+  avx2-hslice-inter : 6.93/2.82  [ 6.98, 6.98, 7.07, 6.98, 6.83, 6.89, 7.06, 6.73, 6.65, 7.05, 6.73, 6.83, 7.05, 7.06, 6.80, 6.90, 7.04, 7.14, 6.73, 7.06 ]
+  avx2-bitslice : 10.93/2.04  [ 10.88, 10.97, 11.31, 11.12, 11.04, 11.05, 11.21, 10.88, 11.05, 11.30, 10.57, 10.71, 10.71, 10.56, 11.20, 10.21, 10.61, 11.28, 10.72, 11.21 ]
+  avx-vslice-inter : 11.08/1.01  [ 11.13, 11.09, 11.23, 11.35, 10.96, 11.04, 11.03, 10.82, 10.97, 11.26, 11.37, 11.29, 10.52, 10.89, 11.18, 10.86, 10.54, 11.35, 11.61, 11.04 ]
+  sse-vslice-inter : 11.84/1.01  [ 11.46, 12.02, 11.65, 11.97, 12.18, 11.62, 11.96, 11.63, 12.20, 11.46, 11.95, 12.21, 11.96, 11.53, 12.36, 11.47, 11.14, 12.14, 12.37, 11.46 ]
+  avx-hslice-inter : 13.79/5.59  [ 13.78, 13.59, 13.71, 13.69, 13.70, 13.80, 14.36, 13.62, 14.02, 14.00, 13.21, 13.63, 13.72, 13.96, 13.71, 13.44, 13.55, 14.20, 14.19, 13.93 ]
+  sse-hslice-inter : 14.51/6.20  [ 14.59, 14.20, 14.20, 14.85, 14.42, 14.87, 14.47, 14.76, 14.29, 14.27, 14.05, 14.80, 14.94, 14.87, 14.26, 13.39, 14.94, 14.93, 14.70, 14.45 ]
+  avx-bitslice : 19.29/4.02  [ 19.58, 18.98, 19.58, 19.17, 19.17, 19.27, 19.66, 19.59, 18.94, 19.53, 19.36, 19.02, 18.92, 18.76, 18.35, 19.44, 18.90, 20.08, 19.68, 19.83 ]
+  sse-bitslice : 20.00/4.48  [ 19.52, 19.90, 19.69, 20.42, 20.51, 19.83, 20.07, 20.68, 19.75, 19.40, 20.23, 20.50, 20.84, 19.11, 19.35, 19.44, 18.91, 20.93, 20.84, 20.09 ]
+  std-bitslice : 22.72/8.08  [ 22.67, 22.32, 21.92, 22.97, 22.33, 22.82, 22.42, 22.05, 22.72, 22.60, 22.57, 23.17, 22.32, 22.67, 22.93, 22.02, 23.35, 23.42, 23.80, 23.33 ]
+  std-vslice-inter : 70.47/0.00  [ 69.58, 70.10, 70.41, 71.04, 70.41, 71.55, 69.81, 70.32, 71.33, 70.23, 71.31, 71.73, 70.14, 69.47, 68.41, 67.40, 68.55, 72.28, 73.48, 71.78 ]
+#+end_src
+
+* https://github.com/DadaIsCrazy/usuba/blob/master/bench_nist.pl

@@ -1,0 +1,12 @@
+(executable
+ (name main)
+ (public_name usuba)
+ (package usuba)
+ (libraries usuba-lib
+            ; usuba-common
+))
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))

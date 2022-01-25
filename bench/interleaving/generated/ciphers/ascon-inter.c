@@ -13,14 +13,96 @@
 #include "STD.h"
 
 /* auxiliary functions */
+void Sbox__V64 (/*inputs*/ DATATYPE x__[5],DATATYPE x____2[5], /*outputs*/ DATATYPE xr__[5],DATATYPE xr____2[5]) {
 
+  // Variables declaration
+  DATATYPE _shadow_t0__4_;
+  DATATYPE _shadow_t0__4___2;
+  DATATYPE _shadow_t1__5_;
+  DATATYPE _shadow_t1__5___2;
+  DATATYPE _shadow_t2__6_;
+  DATATYPE _shadow_t2__6___2;
+  DATATYPE _shadow_t3__7_;
+  DATATYPE _shadow_t3__7___2;
+  DATATYPE _shadow_t4__8_;
+  DATATYPE _shadow_t4__8___2;
+  DATATYPE _shadow_x0__1_;
+  DATATYPE _shadow_x0__1___2;
+  DATATYPE _shadow_x0__9_;
+  DATATYPE _shadow_x0__9___2;
+  DATATYPE _shadow_x1__10_;
+  DATATYPE _shadow_x1__10___2;
+  DATATYPE _shadow_x2__11_;
+  DATATYPE _shadow_x2__11___2;
+  DATATYPE _shadow_x2__3_;
+  DATATYPE _shadow_x2__3___2;
+  DATATYPE _shadow_x3__12_;
+  DATATYPE _shadow_x3__12___2;
+  DATATYPE _shadow_x4__2_;
+  DATATYPE _shadow_x4__2___2;
+  DATATYPE t0__;
+  DATATYPE t0____2;
+  DATATYPE t1__;
+  DATATYPE t1____2;
+  DATATYPE t2__;
+  DATATYPE t2____2;
+  DATATYPE t3__;
+  DATATYPE t3____2;
+  DATATYPE t4__;
+  DATATYPE t4____2;
+
+  // Instructions (body)
+  _shadow_x0__1_ = XOR(x__[0],x__[4]);
+  _shadow_x4__2_ = XOR(x__[4],x__[3]);
+  _shadow_x2__3_ = XOR(x__[2],x__[1]);
+  t1__ = NOT(x__[1]);
+  t3__ = NOT(x__[3]);
+  _shadow_x0__1___2 = XOR(x____2[0],x____2[4]);
+  _shadow_x4__2___2 = XOR(x____2[4],x____2[3]);
+  _shadow_x2__3___2 = XOR(x____2[2],x____2[1]);
+  t1____2 = NOT(x____2[1]);
+  t3____2 = NOT(x____2[3]);
+  t0__ = NOT(_shadow_x0__1_);
+  t4__ = NOT(_shadow_x4__2_);
+  t2__ = NOT(_shadow_x2__3_);
+  _shadow_t1__5_ = AND(t1__,_shadow_x2__3_);
+  _shadow_t3__7_ = AND(t3__,_shadow_x4__2_);
+  t0____2 = NOT(_shadow_x0__1___2);
+  t4____2 = NOT(_shadow_x4__2___2);
+  t2____2 = NOT(_shadow_x2__3___2);
+  _shadow_t1__5___2 = AND(t1____2,_shadow_x2__3___2);
+  _shadow_t3__7___2 = AND(t3____2,_shadow_x4__2___2);
+  _shadow_t0__4_ = AND(t0__,x__[1]);
+  _shadow_t4__8_ = AND(t4__,_shadow_x0__1_);
+  _shadow_t2__6_ = AND(t2__,x__[3]);
+  _shadow_x0__9_ = XOR(_shadow_x0__1_,_shadow_t1__5_);
+  _shadow_x2__11_ = XOR(_shadow_x2__3_,_shadow_t3__7_);
+  _shadow_t0__4___2 = AND(t0____2,x____2[1]);
+  _shadow_t4__8___2 = AND(t4____2,_shadow_x0__1___2);
+  _shadow_t2__6___2 = AND(t2____2,x____2[3]);
+  _shadow_x0__9___2 = XOR(_shadow_x0__1___2,_shadow_t1__5___2);
+  _shadow_x2__11___2 = XOR(_shadow_x2__3___2,_shadow_t3__7___2);
+  xr__[4] = XOR(_shadow_x4__2_,_shadow_t0__4_);
+  _shadow_x3__12_ = XOR(x__[3],_shadow_t4__8_);
+  _shadow_x1__10_ = XOR(x__[1],_shadow_t2__6_);
+  xr__[2] = NOT(_shadow_x2__11_);
+  xr____2[4] = XOR(_shadow_x4__2___2,_shadow_t0__4___2);
+  _shadow_x3__12___2 = XOR(x____2[3],_shadow_t4__8___2);
+  _shadow_x1__10___2 = XOR(x____2[1],_shadow_t2__6___2);
+  xr____2[2] = NOT(_shadow_x2__11___2);
+  xr__[0] = XOR(_shadow_x0__9_,xr__[4]);
+  xr__[3] = XOR(_shadow_x3__12_,_shadow_x2__11_);
+  xr__[1] = XOR(_shadow_x1__10_,_shadow_x0__9_);
+  xr____2[0] = XOR(_shadow_x0__9___2,xr____2[4]);
+  xr____2[3] = XOR(_shadow_x3__12___2,_shadow_x2__11___2);
+  xr____2[1] = XOR(_shadow_x1__10___2,_shadow_x0__9___2);
+
+}
 
 /* main function */
 void ascon12__ (/*inputs*/ DATATYPE input__[5],DATATYPE input____2[5], /*outputs*/ DATATYPE output__[5],DATATYPE output____2[5]) {
 
   // Variables declaration
-  DATATYPE AddConstant__V64_1__tmp1_;
-  DATATYPE AddConstant__V64_1__tmp1___2;
   DATATYPE LinearLayer__V64_1__tmp10_;
   DATATYPE LinearLayer__V64_1__tmp10___2;
   DATATYPE LinearLayer__V64_1__tmp11_;
@@ -51,50 +133,6 @@ void ascon12__ (/*inputs*/ DATATYPE input__[5],DATATYPE input____2[5], /*outputs
   DATATYPE LinearLayer__V64_1__tmp8___2;
   DATATYPE LinearLayer__V64_1__tmp9_;
   DATATYPE LinearLayer__V64_1__tmp9___2;
-  DATATYPE Sbox__V64_1__shadow_t0__4_;
-  DATATYPE Sbox__V64_1__shadow_t0__4___2;
-  DATATYPE Sbox__V64_1__shadow_t1__5_;
-  DATATYPE Sbox__V64_1__shadow_t1__5___2;
-  DATATYPE Sbox__V64_1__shadow_t2__6_;
-  DATATYPE Sbox__V64_1__shadow_t2__6___2;
-  DATATYPE Sbox__V64_1__shadow_t3__7_;
-  DATATYPE Sbox__V64_1__shadow_t3__7___2;
-  DATATYPE Sbox__V64_1__shadow_t4__8_;
-  DATATYPE Sbox__V64_1__shadow_t4__8___2;
-  DATATYPE Sbox__V64_1__shadow_x0__15_;
-  DATATYPE Sbox__V64_1__shadow_x0__15___2;
-  DATATYPE Sbox__V64_1__shadow_x0__1_;
-  DATATYPE Sbox__V64_1__shadow_x0__1___2;
-  DATATYPE Sbox__V64_1__shadow_x0__9_;
-  DATATYPE Sbox__V64_1__shadow_x0__9___2;
-  DATATYPE Sbox__V64_1__shadow_x1__10_;
-  DATATYPE Sbox__V64_1__shadow_x1__10___2;
-  DATATYPE Sbox__V64_1__shadow_x1__14_;
-  DATATYPE Sbox__V64_1__shadow_x1__14___2;
-  DATATYPE Sbox__V64_1__shadow_x2__11_;
-  DATATYPE Sbox__V64_1__shadow_x2__11___2;
-  DATATYPE Sbox__V64_1__shadow_x2__17_;
-  DATATYPE Sbox__V64_1__shadow_x2__17___2;
-  DATATYPE Sbox__V64_1__shadow_x2__3_;
-  DATATYPE Sbox__V64_1__shadow_x2__3___2;
-  DATATYPE Sbox__V64_1__shadow_x3__12_;
-  DATATYPE Sbox__V64_1__shadow_x3__12___2;
-  DATATYPE Sbox__V64_1__shadow_x3__16_;
-  DATATYPE Sbox__V64_1__shadow_x3__16___2;
-  DATATYPE Sbox__V64_1__shadow_x4__13_;
-  DATATYPE Sbox__V64_1__shadow_x4__13___2;
-  DATATYPE Sbox__V64_1__shadow_x4__2_;
-  DATATYPE Sbox__V64_1__shadow_x4__2___2;
-  DATATYPE Sbox__V64_1_t0__;
-  DATATYPE Sbox__V64_1_t0____2;
-  DATATYPE Sbox__V64_1_t1__;
-  DATATYPE Sbox__V64_1_t1____2;
-  DATATYPE Sbox__V64_1_t2__;
-  DATATYPE Sbox__V64_1_t2____2;
-  DATATYPE Sbox__V64_1_t3__;
-  DATATYPE Sbox__V64_1_t3____2;
-  DATATYPE Sbox__V64_1_t4__;
-  DATATYPE Sbox__V64_1_t4____2;
   DATATYPE _tmp29_[5];
   DATATYPE _tmp29___2[5];
   DATATYPE _tmp30_[5];
@@ -105,6 +143,9 @@ void ascon12__ (/*inputs*/ DATATYPE input__[5],DATATYPE input____2[5], /*outputs
   DATATYPE state____2[5];
 
   // Instructions (body)
+  state__[0] = input__[0];
+  state__[1] = input__[1];
+  state__[2] = input__[2];
   consts__[0] = LIFT_64(0xf0);
   consts__[1] = LIFT_64(0xe1);
   consts__[2] = LIFT_64(0xd2);
@@ -112,9 +153,9 @@ void ascon12__ (/*inputs*/ DATATYPE input__[5],DATATYPE input____2[5], /*outputs
   consts__[4] = LIFT_64(0xb4);
   consts__[5] = LIFT_64(0xa5);
   consts__[6] = LIFT_64(0x96);
-  consts__[7] = LIFT_64(0x87);
-  consts__[8] = LIFT_64(0x78);
-  consts__[9] = LIFT_64(0x69);
+  state____2[0] = input____2[0];
+  state____2[1] = input____2[1];
+  state____2[2] = input____2[2];
   consts____2[0] = LIFT_64(0xf0);
   consts____2[1] = LIFT_64(0xe1);
   consts____2[2] = LIFT_64(0xd2);
@@ -122,129 +163,71 @@ void ascon12__ (/*inputs*/ DATATYPE input__[5],DATATYPE input____2[5], /*outputs
   consts____2[4] = LIFT_64(0xb4);
   consts____2[5] = LIFT_64(0xa5);
   consts____2[6] = LIFT_64(0x96);
+  consts__[7] = LIFT_64(0x87);
+  consts__[8] = LIFT_64(0x78);
+  consts__[9] = LIFT_64(0x69);
+  consts__[10] = LIFT_64(0x5a);
+  consts__[11] = LIFT_64(0x4b);
+  state__[3] = input__[3];
+  state__[4] = input__[4];
   consts____2[7] = LIFT_64(0x87);
   consts____2[8] = LIFT_64(0x78);
   consts____2[9] = LIFT_64(0x69);
-  consts__[10] = LIFT_64(0x5a);
-  consts__[11] = LIFT_64(0x4b);
-  state__[0] = input__[0];
-  state__[1] = input__[1];
-  state__[2] = input__[2];
-  state__[3] = input__[3];
-  state__[4] = input__[4];
   consts____2[10] = LIFT_64(0x5a);
   consts____2[11] = LIFT_64(0x4b);
-  state____2[0] = input____2[0];
-  state____2[1] = input____2[1];
-  state____2[2] = input____2[2];
   state____2[3] = input____2[3];
   state____2[4] = input____2[4];
   for (int i__ = 0; i__ <= 11; i__++) {
-    AddConstant__V64_1__tmp1_ = XOR(state__[2],consts__[i__]);
     _tmp29_[0] = state__[0];
     _tmp29_[1] = state__[1];
+    _tmp29_[2] = XOR(state__[2],consts__[i__]);
     _tmp29_[3] = state__[3];
     _tmp29_[4] = state__[4];
-    AddConstant__V64_1__tmp1___2 = XOR(state____2[2],consts____2[i__]);
     _tmp29___2[0] = state____2[0];
     _tmp29___2[1] = state____2[1];
+    _tmp29___2[2] = XOR(state____2[2],consts____2[i__]);
     _tmp29___2[3] = state____2[3];
     _tmp29___2[4] = state____2[4];
-    _tmp29_[2] = AddConstant__V64_1__tmp1_;
-    Sbox__V64_1_t1__ = NOT(_tmp29_[1]);
-    Sbox__V64_1_t3__ = NOT(_tmp29_[3]);
-    Sbox__V64_1__shadow_x0__1_ = XOR(_tmp29_[0],_tmp29_[4]);
-    Sbox__V64_1__shadow_x4__2_ = XOR(_tmp29_[4],_tmp29_[3]);
-    _tmp29___2[2] = AddConstant__V64_1__tmp1___2;
-    Sbox__V64_1_t1____2 = NOT(_tmp29___2[1]);
-    Sbox__V64_1_t3____2 = NOT(_tmp29___2[3]);
-    Sbox__V64_1__shadow_x0__1___2 = XOR(_tmp29___2[0],_tmp29___2[4]);
-    Sbox__V64_1__shadow_x4__2___2 = XOR(_tmp29___2[4],_tmp29___2[3]);
-    Sbox__V64_1__shadow_x2__3_ = XOR(_tmp29_[2],_tmp29_[1]);
-    Sbox__V64_1_t0__ = NOT(Sbox__V64_1__shadow_x0__1_);
-    Sbox__V64_1_t4__ = NOT(Sbox__V64_1__shadow_x4__2_);
-    Sbox__V64_1__shadow_t3__7_ = AND(Sbox__V64_1_t3__,Sbox__V64_1__shadow_x4__2_);
-    Sbox__V64_1__shadow_x2__3___2 = XOR(_tmp29___2[2],_tmp29___2[1]);
-    Sbox__V64_1_t0____2 = NOT(Sbox__V64_1__shadow_x0__1___2);
-    Sbox__V64_1_t4____2 = NOT(Sbox__V64_1__shadow_x4__2___2);
-    Sbox__V64_1__shadow_t3__7___2 = AND(Sbox__V64_1_t3____2,Sbox__V64_1__shadow_x4__2___2);
-    Sbox__V64_1_t2__ = NOT(Sbox__V64_1__shadow_x2__3_);
-    Sbox__V64_1__shadow_t1__5_ = AND(Sbox__V64_1_t1__,Sbox__V64_1__shadow_x2__3_);
-    Sbox__V64_1__shadow_t0__4_ = AND(Sbox__V64_1_t0__,_tmp29_[1]);
-    Sbox__V64_1__shadow_t4__8_ = AND(Sbox__V64_1_t4__,Sbox__V64_1__shadow_x0__1_);
-    Sbox__V64_1__shadow_x2__11_ = XOR(Sbox__V64_1__shadow_x2__3_,Sbox__V64_1__shadow_t3__7_);
-    Sbox__V64_1_t2____2 = NOT(Sbox__V64_1__shadow_x2__3___2);
-    Sbox__V64_1__shadow_t1__5___2 = AND(Sbox__V64_1_t1____2,Sbox__V64_1__shadow_x2__3___2);
-    Sbox__V64_1__shadow_t0__4___2 = AND(Sbox__V64_1_t0____2,_tmp29___2[1]);
-    Sbox__V64_1__shadow_t4__8___2 = AND(Sbox__V64_1_t4____2,Sbox__V64_1__shadow_x0__1___2);
-    Sbox__V64_1__shadow_x2__11___2 = XOR(Sbox__V64_1__shadow_x2__3___2,Sbox__V64_1__shadow_t3__7___2);
-    Sbox__V64_1__shadow_t2__6_ = AND(Sbox__V64_1_t2__,_tmp29_[3]);
-    Sbox__V64_1__shadow_x0__9_ = XOR(Sbox__V64_1__shadow_x0__1_,Sbox__V64_1__shadow_t1__5_);
-    Sbox__V64_1__shadow_x4__13_ = XOR(Sbox__V64_1__shadow_x4__2_,Sbox__V64_1__shadow_t0__4_);
-    Sbox__V64_1__shadow_x3__12_ = XOR(_tmp29_[3],Sbox__V64_1__shadow_t4__8_);
-    Sbox__V64_1__shadow_x2__17_ = NOT(Sbox__V64_1__shadow_x2__11_);
-    Sbox__V64_1__shadow_t2__6___2 = AND(Sbox__V64_1_t2____2,_tmp29___2[3]);
-    Sbox__V64_1__shadow_x0__9___2 = XOR(Sbox__V64_1__shadow_x0__1___2,Sbox__V64_1__shadow_t1__5___2);
-    Sbox__V64_1__shadow_x4__13___2 = XOR(Sbox__V64_1__shadow_x4__2___2,Sbox__V64_1__shadow_t0__4___2);
-    Sbox__V64_1__shadow_x3__12___2 = XOR(_tmp29___2[3],Sbox__V64_1__shadow_t4__8___2);
-    Sbox__V64_1__shadow_x2__17___2 = NOT(Sbox__V64_1__shadow_x2__11___2);
-    Sbox__V64_1__shadow_x1__10_ = XOR(_tmp29_[1],Sbox__V64_1__shadow_t2__6_);
-    Sbox__V64_1__shadow_x0__15_ = XOR(Sbox__V64_1__shadow_x0__9_,Sbox__V64_1__shadow_x4__13_);
-    _tmp30_[4] = Sbox__V64_1__shadow_x4__13_;
-    Sbox__V64_1__shadow_x3__16_ = XOR(Sbox__V64_1__shadow_x3__12_,Sbox__V64_1__shadow_x2__11_);
-    _tmp30_[2] = Sbox__V64_1__shadow_x2__17_;
-    Sbox__V64_1__shadow_x1__10___2 = XOR(_tmp29___2[1],Sbox__V64_1__shadow_t2__6___2);
-    Sbox__V64_1__shadow_x0__15___2 = XOR(Sbox__V64_1__shadow_x0__9___2,Sbox__V64_1__shadow_x4__13___2);
-    _tmp30___2[4] = Sbox__V64_1__shadow_x4__13___2;
-    Sbox__V64_1__shadow_x3__16___2 = XOR(Sbox__V64_1__shadow_x3__12___2,Sbox__V64_1__shadow_x2__11___2);
-    _tmp30___2[2] = Sbox__V64_1__shadow_x2__17___2;
-    Sbox__V64_1__shadow_x1__14_ = XOR(Sbox__V64_1__shadow_x1__10_,Sbox__V64_1__shadow_x0__9_);
-    _tmp30_[0] = Sbox__V64_1__shadow_x0__15_;
-    LinearLayer__V64_1__tmp14_ = R_ROTATE(_tmp30_[4],7,64);
-    _tmp30_[3] = Sbox__V64_1__shadow_x3__16_;
-    LinearLayer__V64_1__tmp8_ = R_ROTATE(_tmp30_[2],1,64);
-    Sbox__V64_1__shadow_x1__14___2 = XOR(Sbox__V64_1__shadow_x1__10___2,Sbox__V64_1__shadow_x0__9___2);
-    _tmp30___2[0] = Sbox__V64_1__shadow_x0__15___2;
-    LinearLayer__V64_1__tmp10_ = R_ROTATE(_tmp30_[2],6,64);
-    _tmp30___2[3] = Sbox__V64_1__shadow_x3__16___2;
-    LinearLayer__V64_1__tmp8___2 = R_ROTATE(_tmp30___2[2],1,64);
-    _tmp30_[1] = Sbox__V64_1__shadow_x1__14_;
+    Sbox__V64(_tmp29_,_tmp29___2,_tmp30_,_tmp30___2);
     LinearLayer__V64_1__tmp2_ = R_ROTATE(_tmp30_[0],19,64);
     LinearLayer__V64_1__tmp4_ = R_ROTATE(_tmp30_[0],28,64);
-    LinearLayer__V64_1__tmp11_ = R_ROTATE(_tmp30_[3],10,64);
-    LinearLayer__V64_1__tmp9_ = XOR(_tmp30_[2],LinearLayer__V64_1__tmp8_);
-    _tmp30___2[1] = Sbox__V64_1__shadow_x1__14___2;
+    LinearLayer__V64_1__tmp5_ = R_ROTATE(_tmp30_[1],61,64);
+    LinearLayer__V64_1__tmp7_ = R_ROTATE(_tmp30_[1],39,64);
+    LinearLayer__V64_1__tmp8_ = R_ROTATE(_tmp30_[2],1,64);
     LinearLayer__V64_1__tmp2___2 = R_ROTATE(_tmp30___2[0],19,64);
     LinearLayer__V64_1__tmp4___2 = R_ROTATE(_tmp30___2[0],28,64);
-    LinearLayer__V64_1__tmp13_ = R_ROTATE(_tmp30_[3],17,64);
-    LinearLayer__V64_1__tmp9___2 = XOR(_tmp30___2[2],LinearLayer__V64_1__tmp8___2);
-    LinearLayer__V64_1__tmp5_ = R_ROTATE(_tmp30_[1],61,64);
+    LinearLayer__V64_1__tmp5___2 = R_ROTATE(_tmp30___2[1],61,64);
+    LinearLayer__V64_1__tmp7___2 = R_ROTATE(_tmp30___2[1],39,64);
+    LinearLayer__V64_1__tmp8___2 = R_ROTATE(_tmp30___2[2],1,64);
     LinearLayer__V64_1__tmp3_ = XOR(_tmp30_[0],LinearLayer__V64_1__tmp2_);
-    LinearLayer__V64_1__tmp7_ = R_ROTATE(_tmp30_[1],39,64);
+    LinearLayer__V64_1__tmp10_ = R_ROTATE(_tmp30_[2],6,64);
+    LinearLayer__V64_1__tmp6_ = XOR(_tmp30_[1],LinearLayer__V64_1__tmp5_);
+    LinearLayer__V64_1__tmp11_ = R_ROTATE(_tmp30_[3],10,64);
+    LinearLayer__V64_1__tmp9_ = XOR(_tmp30_[2],LinearLayer__V64_1__tmp8_);
+    LinearLayer__V64_1__tmp3___2 = XOR(_tmp30___2[0],LinearLayer__V64_1__tmp2___2);
+    LinearLayer__V64_1__tmp13_ = R_ROTATE(_tmp30_[3],17,64);
+    LinearLayer__V64_1__tmp6___2 = XOR(_tmp30___2[1],LinearLayer__V64_1__tmp5___2);
+    LinearLayer__V64_1__tmp14_ = R_ROTATE(_tmp30_[4],7,64);
+    LinearLayer__V64_1__tmp9___2 = XOR(_tmp30___2[2],LinearLayer__V64_1__tmp8___2);
+    state__[0] = XOR(LinearLayer__V64_1__tmp3_,LinearLayer__V64_1__tmp4_);
+    LinearLayer__V64_1__tmp16_ = R_ROTATE(_tmp30_[4],41,64);
+    state__[1] = XOR(LinearLayer__V64_1__tmp6_,LinearLayer__V64_1__tmp7_);
     LinearLayer__V64_1__tmp12_ = XOR(_tmp30_[3],LinearLayer__V64_1__tmp11_);
     state__[2] = XOR(LinearLayer__V64_1__tmp9_,LinearLayer__V64_1__tmp10_);
-    LinearLayer__V64_1__tmp5___2 = R_ROTATE(_tmp30___2[1],61,64);
-    LinearLayer__V64_1__tmp3___2 = XOR(_tmp30___2[0],LinearLayer__V64_1__tmp2___2);
-    LinearLayer__V64_1__tmp7___2 = R_ROTATE(_tmp30___2[1],39,64);
-    LinearLayer__V64_1__tmp10___2 = R_ROTATE(_tmp30___2[2],6,64);
-    LinearLayer__V64_1__tmp11___2 = R_ROTATE(_tmp30___2[3],10,64);
-    LinearLayer__V64_1__tmp6_ = XOR(_tmp30_[1],LinearLayer__V64_1__tmp5_);
-    state__[0] = XOR(LinearLayer__V64_1__tmp3_,LinearLayer__V64_1__tmp4_);
-    LinearLayer__V64_1__tmp13___2 = R_ROTATE(_tmp30___2[3],17,64);
-    state__[3] = XOR(LinearLayer__V64_1__tmp12_,LinearLayer__V64_1__tmp13_);
-    LinearLayer__V64_1__tmp14___2 = R_ROTATE(_tmp30___2[4],7,64);
-    LinearLayer__V64_1__tmp6___2 = XOR(_tmp30___2[1],LinearLayer__V64_1__tmp5___2);
     state____2[0] = XOR(LinearLayer__V64_1__tmp3___2,LinearLayer__V64_1__tmp4___2);
-    LinearLayer__V64_1__tmp15_ = XOR(_tmp30_[4],LinearLayer__V64_1__tmp14_);
-    state____2[2] = XOR(LinearLayer__V64_1__tmp9___2,LinearLayer__V64_1__tmp10___2);
-    LinearLayer__V64_1__tmp12___2 = XOR(_tmp30___2[3],LinearLayer__V64_1__tmp11___2);
-    state__[1] = XOR(LinearLayer__V64_1__tmp6_,LinearLayer__V64_1__tmp7_);
-    LinearLayer__V64_1__tmp16_ = R_ROTATE(_tmp30_[4],41,64);
-    LinearLayer__V64_1__tmp16___2 = R_ROTATE(_tmp30___2[4],41,64);
-    LinearLayer__V64_1__tmp15___2 = XOR(_tmp30___2[4],LinearLayer__V64_1__tmp14___2);
+    LinearLayer__V64_1__tmp10___2 = R_ROTATE(_tmp30___2[2],6,64);
     state____2[1] = XOR(LinearLayer__V64_1__tmp6___2,LinearLayer__V64_1__tmp7___2);
-    state____2[3] = XOR(LinearLayer__V64_1__tmp12___2,LinearLayer__V64_1__tmp13___2);
+    LinearLayer__V64_1__tmp15_ = XOR(_tmp30_[4],LinearLayer__V64_1__tmp14_);
+    LinearLayer__V64_1__tmp11___2 = R_ROTATE(_tmp30___2[3],10,64);
+    LinearLayer__V64_1__tmp13___2 = R_ROTATE(_tmp30___2[3],17,64);
+    LinearLayer__V64_1__tmp14___2 = R_ROTATE(_tmp30___2[4],7,64);
+    LinearLayer__V64_1__tmp16___2 = R_ROTATE(_tmp30___2[4],41,64);
+    state__[3] = XOR(LinearLayer__V64_1__tmp12_,LinearLayer__V64_1__tmp13_);
+    state____2[2] = XOR(LinearLayer__V64_1__tmp9___2,LinearLayer__V64_1__tmp10___2);
     state__[4] = XOR(LinearLayer__V64_1__tmp15_,LinearLayer__V64_1__tmp16_);
+    LinearLayer__V64_1__tmp12___2 = XOR(_tmp30___2[3],LinearLayer__V64_1__tmp11___2);
+    LinearLayer__V64_1__tmp15___2 = XOR(_tmp30___2[4],LinearLayer__V64_1__tmp14___2);
+    state____2[3] = XOR(LinearLayer__V64_1__tmp12___2,LinearLayer__V64_1__tmp13___2);
     state____2[4] = XOR(LinearLayer__V64_1__tmp15___2,LinearLayer__V64_1__tmp16___2);
   }
   output__[0] = state__[0];
@@ -263,16 +246,16 @@ void ascon12__ (/*inputs*/ DATATYPE input__[5],DATATYPE input____2[5], /*outputs
 /* Additional functions */
 uint32_t bench_speed() {
   /* Inputs */
-  DATATYPE input__[5] = { 0 };
-  DATATYPE input____2[5] = { 0 };
+  DATATYPE input__[5];
+  DATATYPE input____2[5];
 
   /* Preventing inputs from being optimized out */
   asm volatile("" : "+m" (input__));
   asm volatile("" : "+m" (input____2));
 
   /* Outputs */
-  DATATYPE output__[5] = { 0 };
-  DATATYPE output____2[5] = { 0 };
+  DATATYPE output__[5];
+  DATATYPE output____2[5];
   /* Primitive call */
   ascon12__(input__, input____2,output__, output____2);
 
@@ -289,45 +272,45 @@ uint32_t bench_speed() {
 /*                                                                  */
 /*
 
- table Sbox(x :  v5 :: base)
-  returns y :  v5 :: base
+ table Sbox(x :  v5)
+  returns y :  v5
 {
   4, 11, 31, 20, 26, 21, 9, 2, 27, 5, 8, 18, 29, 3, 6, 28, 30, 19, 7, 14, 0, 13, 17, 24, 16, 12, 1, 25, 22, 10, 15, 23
 }
 
 
- node AddConstant(state :  u64x5 :: base,c :  u64 :: base)
-  returns stateR :  u64x5 :: base
+ node AddConstant(state :  u64x5,c :  u64)
+  returns stateR :  u64x5
 vars
 
 let
-(stateR) = (state[0,1],(state[2] ^ c),state[3,4])
+  (stateR) = (state[0,1],(state[2] ^ c),state[3,4])
 tel
 
- node LinearLayer(state :  u64x5 :: base)
-  returns stateR :  u64x5 :: base
+ node LinearLayer(state :  u64x5)
+  returns stateR :  u64x5
 vars
 
 let
-(stateR[0]) = ((state[0] ^ (state[0] >>> 19)) ^ (state[0] >>> 28));
-(stateR[1]) = ((state[1] ^ (state[1] >>> 61)) ^ (state[1] >>> 39));
-(stateR[2]) = ((state[2] ^ (state[2] >>> 1)) ^ (state[2] >>> 6));
-(stateR[3]) = ((state[3] ^ (state[3] >>> 10)) ^ (state[3] >>> 17));
-(stateR[4]) = ((state[4] ^ (state[4] >>> 7)) ^ (state[4] >>> 41))
+  (stateR[0]) = ((state[0] ^ (state[0] >>> 19)) ^ (state[0] >>> 28));
+  (stateR[1]) = ((state[1] ^ (state[1] >>> 61)) ^ (state[1] >>> 39));
+  (stateR[2]) = ((state[2] ^ (state[2] >>> 1)) ^ (state[2] >>> 6));
+  (stateR[3]) = ((state[3] ^ (state[3] >>> 10)) ^ (state[3] >>> 17));
+  (stateR[4]) = ((state[4] ^ (state[4] >>> 7)) ^ (state[4] >>> 41))
 tel
 
- node ascon12(input :  u64x5 :: base)
-  returns output :  u64x5 :: base
+ node ascon12(input :  u64x5)
+  returns output :  u64x5
 vars
-  consts :  u64[12] :: base,
-  state :  u64x5[13] :: base
+  consts :  u64[12],
+  state :  u64x5[13]
 let
-(consts) = (240,225,210,195,180,165,150,135,120,105,90,75);
-(state[0]) = input;
-forall i in [0,11] {
-(state[(i + 1)]) = LinearLayer(Sbox(AddConstant(state[i],consts[i])))
-};
-(output) = state[12]
+  (consts) = (0xf0:u64,0xe1:u64,0xd2:u64,0xc3:u64,0xb4:u64,0xa5:u64,0x96:u64,0x87:u64,0x78:u64,0x69:u64,0x5a:u64,0x4b:u64);
+  (state[0]) = input;
+  forall i in [0,11] {
+    (state[(i + 1)]) = LinearLayer(Sbox(AddConstant(state[i],consts[i])))
+  };
+  (output) = state[12]
 tel
 
 */

@@ -13,7 +13,53 @@
 #include "STD.h"
 
 /* auxiliary functions */
+void chi__V32 (/*inputs*/ DATATYPE A__[3][4], /*outputs*/ DATATYPE R__[3][4]) {
 
+  // Variables declaration
+  DATATYPE B__[3][4];
+  DATATYPE _tmp4_[4];
+  DATATYPE _tmp5_[4];
+  DATATYPE _tmp6_[4];
+
+  // Instructions (body)
+  _tmp4_[0] = NOT(A__[1][0]);
+  _tmp4_[1] = NOT(A__[1][1]);
+  _tmp4_[2] = NOT(A__[1][2]);
+  _tmp4_[3] = NOT(A__[1][3]);
+  _tmp5_[0] = NOT(A__[2][0]);
+  _tmp5_[1] = NOT(A__[2][1]);
+  _tmp5_[2] = NOT(A__[2][2]);
+  _tmp5_[3] = NOT(A__[2][3]);
+  _tmp6_[0] = NOT(A__[0][0]);
+  _tmp6_[1] = NOT(A__[0][1]);
+  B__[0][0] = AND(_tmp4_[0],A__[2][0]);
+  B__[0][1] = AND(_tmp4_[1],A__[2][1]);
+  B__[0][2] = AND(_tmp4_[2],A__[2][2]);
+  B__[0][3] = AND(_tmp4_[3],A__[2][3]);
+  B__[1][0] = AND(_tmp5_[0],A__[0][0]);
+  B__[1][1] = AND(_tmp5_[1],A__[0][1]);
+  B__[1][2] = AND(_tmp5_[2],A__[0][2]);
+  B__[1][3] = AND(_tmp5_[3],A__[0][3]);
+  _tmp6_[2] = NOT(A__[0][2]);
+  _tmp6_[3] = NOT(A__[0][3]);
+  B__[2][0] = AND(_tmp6_[0],A__[1][0]);
+  B__[2][1] = AND(_tmp6_[1],A__[1][1]);
+  R__[0][0] = XOR(A__[0][0],B__[0][0]);
+  R__[0][1] = XOR(A__[0][1],B__[0][1]);
+  R__[0][2] = XOR(A__[0][2],B__[0][2]);
+  R__[0][3] = XOR(A__[0][3],B__[0][3]);
+  R__[1][0] = XOR(A__[1][0],B__[1][0]);
+  R__[1][1] = XOR(A__[1][1],B__[1][1]);
+  B__[2][2] = AND(_tmp6_[2],A__[1][2]);
+  B__[2][3] = AND(_tmp6_[3],A__[1][3]);
+  R__[1][2] = XOR(A__[1][2],B__[1][2]);
+  R__[1][3] = XOR(A__[1][3],B__[1][3]);
+  R__[2][0] = XOR(A__[2][0],B__[2][0]);
+  R__[2][1] = XOR(A__[2][1],B__[2][1]);
+  R__[2][2] = XOR(A__[2][2],B__[2][2]);
+  R__[2][3] = XOR(A__[2][3],B__[2][3]);
+
+}
 
 /* main function */
 void xoodoo__ (/*inputs*/ DATATYPE input__[3][4], /*outputs*/ DATATYPE output__[3][4]) {
@@ -24,10 +70,6 @@ void xoodoo__ (/*inputs*/ DATATYPE input__[3][4], /*outputs*/ DATATYPE output__[
   DATATYPE round__V32_1__tmp7_[3][4];
   DATATYPE round__V32_1__tmp8_[3][4];
   DATATYPE round__V32_1__tmp9_[3][4];
-  DATATYPE round__V32_1_chi__V32_1_B__[3][4];
-  DATATYPE round__V32_1_chi__V32_1__tmp4_[4];
-  DATATYPE round__V32_1_chi__V32_1__tmp5_[4];
-  DATATYPE round__V32_1_chi__V32_1__tmp6_[4];
   DATATYPE round__V32_1_theta__V32_1_E__[4];
   DATATYPE round__V32_1_theta__V32_1_P__[4];
   DATATYPE round__V32_1_theta__V32_1__tmp1_[4];
@@ -36,6 +78,18 @@ void xoodoo__ (/*inputs*/ DATATYPE input__[3][4], /*outputs*/ DATATYPE output__[
   DATATYPE state__[3][4];
 
   // Instructions (body)
+  state__[0][3] = input__[0][3];
+  state__[1][3] = input__[1][3];
+  state__[2][3] = input__[2][3];
+  state__[0][0] = input__[0][0];
+  state__[1][0] = input__[1][0];
+  state__[2][0] = input__[2][0];
+  state__[0][1] = input__[0][1];
+  state__[1][1] = input__[1][1];
+  state__[2][1] = input__[2][1];
+  state__[0][2] = input__[0][2];
+  state__[1][2] = input__[1][2];
+  state__[2][2] = input__[2][2];
   RC__[0] = LIFT_32(0x58);
   RC__[1] = LIFT_32(0x38);
   RC__[2] = LIFT_32(0x3c0);
@@ -48,37 +102,28 @@ void xoodoo__ (/*inputs*/ DATATYPE input__[3][4], /*outputs*/ DATATYPE output__[
   RC__[9] = LIFT_32(0xf0);
   RC__[10] = LIFT_32(0x1a0);
   RC__[11] = LIFT_32(0x12);
-  state__[0][0] = input__[0][0];
-  state__[0][1] = input__[0][1];
-  state__[0][2] = input__[0][2];
-  state__[0][3] = input__[0][3];
-  state__[1][0] = input__[1][0];
-  state__[1][1] = input__[1][1];
-  state__[1][2] = input__[1][2];
-  state__[1][3] = input__[1][3];
-  state__[2][0] = input__[2][0];
-  state__[2][1] = input__[2][1];
-  state__[2][2] = input__[2][2];
-  state__[2][3] = input__[2][3];
   for (int i__ = 0; i__ <= 11; i__++) {
+    round__V32_1_theta__V32_1__tmp1_[3] = XOR(state__[0][3],state__[1][3]);
     round__V32_1_theta__V32_1__tmp1_[0] = XOR(state__[0][0],state__[1][0]);
     round__V32_1_theta__V32_1__tmp1_[1] = XOR(state__[0][1],state__[1][1]);
     round__V32_1_theta__V32_1__tmp1_[2] = XOR(state__[0][2],state__[1][2]);
-    round__V32_1_theta__V32_1__tmp1_[3] = XOR(state__[0][3],state__[1][3]);
+    round__V32_1_theta__V32_1_P__[3] = XOR(round__V32_1_theta__V32_1__tmp1_[3],state__[2][3]);
     round__V32_1_theta__V32_1_P__[0] = XOR(round__V32_1_theta__V32_1__tmp1_[0],state__[2][0]);
     round__V32_1_theta__V32_1_P__[1] = XOR(round__V32_1_theta__V32_1__tmp1_[1],state__[2][1]);
     round__V32_1_theta__V32_1_P__[2] = XOR(round__V32_1_theta__V32_1__tmp1_[2],state__[2][2]);
-    round__V32_1_theta__V32_1_P__[3] = XOR(round__V32_1_theta__V32_1__tmp1_[3],state__[2][3]);
-    for (int i__16 = 0; i__16 <= 3; i__16++) {
-      round__V32_1_theta__V32_1__tmp2_ = L_ROTATE(round__V32_1_theta__V32_1_P__[((i__16 + 3) % 4)],5,32);
-      round__V32_1_theta__V32_1__tmp3_ = L_ROTATE(round__V32_1_theta__V32_1_P__[((i__16 + 3) % 4)],14,32);
-      round__V32_1_theta__V32_1_E__[i__16] = XOR(round__V32_1_theta__V32_1__tmp2_,round__V32_1_theta__V32_1__tmp3_);
+    for (int i__15 = 0; i__15 <= 3; i__15++) {
+      round__V32_1_theta__V32_1__tmp2_ = L_ROTATE(round__V32_1_theta__V32_1_P__[((i__15 + 3) % 4)],5,32);
+      round__V32_1_theta__V32_1__tmp3_ = L_ROTATE(round__V32_1_theta__V32_1_P__[((i__15 + 3) % 4)],14,32);
+      round__V32_1_theta__V32_1_E__[i__15] = XOR(round__V32_1_theta__V32_1__tmp2_,round__V32_1_theta__V32_1__tmp3_);
     }
-    for (int i__27 = 0; i__27 <= 2; i__27++) {
-      round__V32_1__tmp7_[i__27][0] = XOR(state__[i__27][0],round__V32_1_theta__V32_1_E__[0]);
-      round__V32_1__tmp7_[i__27][1] = XOR(state__[i__27][1],round__V32_1_theta__V32_1_E__[1]);
-      round__V32_1__tmp7_[i__27][2] = XOR(state__[i__27][2],round__V32_1_theta__V32_1_E__[2]);
-      round__V32_1__tmp7_[i__27][3] = XOR(state__[i__27][3],round__V32_1_theta__V32_1_E__[3]);
+    for (int i__26 = 0; i__26 <= 2; i__26++) {
+      round__V32_1__tmp7_[i__26][0] = XOR(state__[i__26][0],round__V32_1_theta__V32_1_E__[0]);
+      round__V32_1__tmp7_[i__26][1] = XOR(state__[i__26][1],round__V32_1_theta__V32_1_E__[1]);
+      round__V32_1__tmp7_[i__26][2] = XOR(state__[i__26][2],round__V32_1_theta__V32_1_E__[2]);
+      round__V32_1__tmp7_[i__26][3] = XOR(state__[i__26][3],round__V32_1_theta__V32_1_E__[3]);
+    }
+    for (int i__37 = 0; i__37 <= 3; i__37++) {
+      round__V32_1__tmp8_[2][i__37] = L_ROTATE(round__V32_1__tmp7_[2][i__37],11,32);
     }
     round__V32_1__tmp8_[0][0] = round__V32_1__tmp7_[0][0];
     round__V32_1__tmp8_[0][1] = round__V32_1__tmp7_[0][1];
@@ -88,10 +133,8 @@ void xoodoo__ (/*inputs*/ DATATYPE input__[3][4], /*outputs*/ DATATYPE output__[
     round__V32_1__tmp8_[1][1] = round__V32_1__tmp7_[1][0];
     round__V32_1__tmp8_[1][2] = round__V32_1__tmp7_[1][1];
     round__V32_1__tmp8_[1][3] = round__V32_1__tmp7_[1][2];
-    for (int i__38 = 0; i__38 <= 3; i__38++) {
-      round__V32_1__tmp8_[2][i__38] = L_ROTATE(round__V32_1__tmp7_[2][i__38],11,32);
-    }
     round__V32_1__tmp9_[2][0] = round__V32_1__tmp8_[2][0];
+    round__V32_1__tmp9_[2][1] = round__V32_1__tmp8_[2][1];
     round__V32_1__tmp9_[0][0] = XOR(round__V32_1__tmp8_[0][0],RC__[i__]);
     round__V32_1__tmp9_[0][1] = round__V32_1__tmp8_[0][1];
     round__V32_1__tmp9_[0][2] = round__V32_1__tmp8_[0][2];
@@ -100,55 +143,17 @@ void xoodoo__ (/*inputs*/ DATATYPE input__[3][4], /*outputs*/ DATATYPE output__[
     round__V32_1__tmp9_[1][1] = round__V32_1__tmp8_[1][1];
     round__V32_1__tmp9_[1][2] = round__V32_1__tmp8_[1][2];
     round__V32_1__tmp9_[1][3] = round__V32_1__tmp8_[1][3];
-    round__V32_1__tmp9_[2][1] = round__V32_1__tmp8_[2][1];
     round__V32_1__tmp9_[2][2] = round__V32_1__tmp8_[2][2];
     round__V32_1__tmp9_[2][3] = round__V32_1__tmp8_[2][3];
-    round__V32_1_chi__V32_1__tmp5_[0] = NOT(round__V32_1__tmp9_[2][0]);
-    round__V32_1_chi__V32_1__tmp6_[0] = NOT(round__V32_1__tmp9_[0][0]);
-    round__V32_1_chi__V32_1__tmp6_[1] = NOT(round__V32_1__tmp9_[0][1]);
-    round__V32_1_chi__V32_1__tmp4_[0] = NOT(round__V32_1__tmp9_[1][0]);
-    round__V32_1_chi__V32_1__tmp4_[1] = NOT(round__V32_1__tmp9_[1][1]);
-    round__V32_1_chi__V32_1__tmp4_[2] = NOT(round__V32_1__tmp9_[1][2]);
-    round__V32_1_chi__V32_1__tmp4_[3] = NOT(round__V32_1__tmp9_[1][3]);
-    round__V32_1_chi__V32_1__tmp5_[1] = NOT(round__V32_1__tmp9_[2][1]);
-    round__V32_1_chi__V32_1__tmp5_[2] = NOT(round__V32_1__tmp9_[2][2]);
-    round__V32_1_chi__V32_1__tmp5_[3] = NOT(round__V32_1__tmp9_[2][3]);
-    round__V32_1_chi__V32_1_B__[1][0] = AND(round__V32_1_chi__V32_1__tmp5_[0],round__V32_1__tmp9_[0][0]);
-    round__V32_1_chi__V32_1__tmp6_[2] = NOT(round__V32_1__tmp9_[0][2]);
-    round__V32_1_chi__V32_1__tmp6_[3] = NOT(round__V32_1__tmp9_[0][3]);
-    round__V32_1_chi__V32_1_B__[0][0] = AND(round__V32_1_chi__V32_1__tmp4_[0],round__V32_1__tmp9_[2][0]);
-    round__V32_1_chi__V32_1_B__[0][1] = AND(round__V32_1_chi__V32_1__tmp4_[1],round__V32_1__tmp9_[2][1]);
-    round__V32_1_chi__V32_1_B__[0][2] = AND(round__V32_1_chi__V32_1__tmp4_[2],round__V32_1__tmp9_[2][2]);
-    round__V32_1_chi__V32_1_B__[0][3] = AND(round__V32_1_chi__V32_1__tmp4_[3],round__V32_1__tmp9_[2][3]);
-    round__V32_1_chi__V32_1_B__[1][1] = AND(round__V32_1_chi__V32_1__tmp5_[1],round__V32_1__tmp9_[0][1]);
-    round__V32_1_chi__V32_1_B__[1][2] = AND(round__V32_1_chi__V32_1__tmp5_[2],round__V32_1__tmp9_[0][2]);
-    round__V32_1_chi__V32_1_B__[1][3] = AND(round__V32_1_chi__V32_1__tmp5_[3],round__V32_1__tmp9_[0][3]);
-    round__V32_1_chi__V32_1_B__[2][0] = AND(round__V32_1_chi__V32_1__tmp6_[0],round__V32_1__tmp9_[1][0]);
-    round__V32_1_chi__V32_1_B__[2][1] = AND(round__V32_1_chi__V32_1__tmp6_[1],round__V32_1__tmp9_[1][1]);
-    round__V32_1_chi__V32_1_B__[2][2] = AND(round__V32_1_chi__V32_1__tmp6_[2],round__V32_1__tmp9_[1][2]);
-    round__V32_1_chi__V32_1_B__[2][3] = AND(round__V32_1_chi__V32_1__tmp6_[3],round__V32_1__tmp9_[1][3]);
-    round__V32_1__tmp10_[0][0] = XOR(round__V32_1__tmp9_[0][0],round__V32_1_chi__V32_1_B__[0][0]);
-    round__V32_1__tmp10_[0][1] = XOR(round__V32_1__tmp9_[0][1],round__V32_1_chi__V32_1_B__[0][1]);
-    round__V32_1__tmp10_[0][2] = XOR(round__V32_1__tmp9_[0][2],round__V32_1_chi__V32_1_B__[0][2]);
-    round__V32_1__tmp10_[0][3] = XOR(round__V32_1__tmp9_[0][3],round__V32_1_chi__V32_1_B__[0][3]);
-    round__V32_1__tmp10_[1][0] = XOR(round__V32_1__tmp9_[1][0],round__V32_1_chi__V32_1_B__[1][0]);
-    round__V32_1__tmp10_[1][1] = XOR(round__V32_1__tmp9_[1][1],round__V32_1_chi__V32_1_B__[1][1]);
-    round__V32_1__tmp10_[1][2] = XOR(round__V32_1__tmp9_[1][2],round__V32_1_chi__V32_1_B__[1][2]);
-    round__V32_1__tmp10_[1][3] = XOR(round__V32_1__tmp9_[1][3],round__V32_1_chi__V32_1_B__[1][3]);
-    round__V32_1__tmp10_[2][0] = XOR(round__V32_1__tmp9_[2][0],round__V32_1_chi__V32_1_B__[2][0]);
-    round__V32_1__tmp10_[2][1] = XOR(round__V32_1__tmp9_[2][1],round__V32_1_chi__V32_1_B__[2][1]);
-    round__V32_1__tmp10_[2][2] = XOR(round__V32_1__tmp9_[2][2],round__V32_1_chi__V32_1_B__[2][2]);
-    round__V32_1__tmp10_[2][3] = XOR(round__V32_1__tmp9_[2][3],round__V32_1_chi__V32_1_B__[2][3]);
+    chi__V32(round__V32_1__tmp9_,round__V32_1__tmp10_);
+    for (int i__48 = 0; i__48 <= 3; i__48++) {
+      state__[1][i__48] = L_ROTATE(round__V32_1__tmp10_[1][i__48],1,32);
+      state__[2][i__48] = L_ROTATE(round__V32_1__tmp10_[2][((i__48 + 2) % 4)],8,32);
+    }
     state__[0][0] = round__V32_1__tmp10_[0][0];
     state__[0][1] = round__V32_1__tmp10_[0][1];
     state__[0][2] = round__V32_1__tmp10_[0][2];
     state__[0][3] = round__V32_1__tmp10_[0][3];
-    for (int i__49 = 0; i__49 <= 3; i__49++) {
-      state__[1][i__49] = L_ROTATE(round__V32_1__tmp10_[1][i__49],1,32);
-    }
-    for (int i__510 = 0; i__510 <= 3; i__510++) {
-      state__[2][i__510] = L_ROTATE(round__V32_1__tmp10_[2][((i__510 + 2) % 4)],8,32);
-    }
   }
   output__[0][0] = state__[0][0];
   output__[0][1] = state__[0][1];
@@ -168,13 +173,13 @@ void xoodoo__ (/*inputs*/ DATATYPE input__[3][4], /*outputs*/ DATATYPE output__[
 /* Additional functions */
 uint32_t bench_speed() {
   /* Inputs */
-  DATATYPE input__[3][4] = { 0 };
+  DATATYPE input__[3][4];
 
   /* Preventing inputs from being optimized out */
   asm volatile("" : "+m" (input__));
 
   /* Outputs */
-  DATATYPE output__[3][4] = { 0 };
+  DATATYPE output__[3][4];
   /* Primitive call */
   xoodoo__(input__,output__);
 
@@ -190,88 +195,86 @@ uint32_t bench_speed() {
 /*                                                                  */
 /*
 
- node theta(A :  u32[3][4] :: base)
-  returns R :  u32[3][4] :: base
+ node theta(A :  u32[3][4])
+  returns R :  u32[3][4]
 vars
-  P :  u32[4] :: base,
-  E :  u32[4] :: base
+  P :  u32[4],
+  E :  u32[4]
 let
-(P) = ((A[0] ^ A[1]) ^ A[2]);
-forall i in [0,3] {
-(E[i]) = ((P[((i + 3) % 4)] <<< 5) ^ (P[((i + 3) % 4)] <<< 14))
-};
-forall i in [0,2] {
-(R[i]) = (A[i] ^ E)
-}
+  (P) = ((A[0] ^ A[1]) ^ A[2]);
+  forall i in [0,3] {
+    (E[i]) = ((P[((i + 3) % 4)] <<< 5) ^ (P[((i + 3) % 4)] <<< 14))
+  };
+  forall i in [0,2] {
+    (R[i]) = (A[i] ^ E)
+  }
 tel
 
- node rho_west(A :  u32[3][4] :: base)
-  returns R :  u32[3][4] :: base
+ node rho_west(A :  u32[3][4])
+  returns R :  u32[3][4]
 vars
 
 let
-(R[0]) = A[0];
-(R[1]) = (A[1] >>> 1);
-forall i in [0,3] {
-(R[2][i]) = (A[2][i] <<< 11)
-}
+  (R[0]) = A[0];
+  (R[1]) = (A[1] >>> 1);
+  forall i in [0,3] {
+    (R[2][i]) = (A[2][i] <<< 11)
+  }
 tel
 
- node iota(A :  u32[3][4] :: base,rc :  u32 :: base)
-  returns R :  u32[3][4] :: base
+ node iota(A :  u32[3][4],rc :  u32)
+  returns R :  u32[3][4]
 vars
 
 let
-(R[0][0]) = (A[0][0] ^ rc);
-(R[0][1 .. 3]) = A[0][1 .. 3];
-(R[1,2]) = A[1,2]
+  (R[0][0]) = (A[0][0] ^ rc);
+  (R[0][1 .. 3]) = A[0][1 .. 3];
+  (R[1,2]) = A[1,2]
 tel
 
- node chi(A :  u32[3][4] :: base)
-  returns R :  u32[3][4] :: base
+ node chi(A :  u32[3][4])
+  returns R :  u32[3][4]
 vars
-  B :  u32[3][4] :: base
+  B :  u32[3][4]
 let
-(B[0]) = ((~ A[1]) & A[2]);
-(B[1]) = ((~ A[2]) & A[0]);
-(B[2]) = ((~ A[0]) & A[1]);
-(R) = (A ^ B)
+  (B[0]) = ((~ A[1]) & A[2]);
+  (B[1]) = ((~ A[2]) & A[0]);
+  (B[2]) = ((~ A[0]) & A[1]);
+  (R) = (A ^ B)
 tel
 
- node rho_east(A :  u32[3][4] :: base)
-  returns R :  u32[3][4] :: base
+ node rho_east(A :  u32[3][4])
+  returns R :  u32[3][4]
 vars
 
 let
-(R[0]) = A[0];
-forall i in [0,3] {
-(R[1][i]) = (A[1][i] <<< 1)
-};
-forall i in [0,3] {
-(R[2][i]) = (A[2][((i + 2) % 4)] <<< 8)
-}
+  (R[0]) = A[0];
+  forall i in [0,3] {
+    (R[1][i]) = (A[1][i] <<< 1);
+    (R[2][i]) = (A[2][((i + 2) % 4)] <<< 8)
+  }
 tel
 
- node round(state :  u32[3][4] :: base,rc :  u32 :: base)
-  returns stateR :  u32[3][4] :: base
+ node round(state :  u32[3][4],rc :  u32)
+  returns stateR :  u32[3][4]
 vars
 
 let
-(stateR) = rho_east(chi(iota(rho_west(theta(state)),rc)))
+  (stateR) = rho_east(chi(iota(rho_west(theta(state)),rc)))
 tel
 
- node xoodoo(input :  u32[3][4] :: base)
-  returns output :  u32[3][4] :: base
+ node xoodoo(input :  u32[3][4])
+  returns output :  u32[3][4]
 vars
-  state :  u32[13][3][4] :: base,
-  RC :  u32[12] :: base
+  state :  u32[13][3][4],
+  RC :  u32[12]
 let
-(RC) = (88,56,960,208,288,20,96,44,896,240,416,18);
-(state[0]) = input;
-forall i in [0,11] {
-(state[(i + 1)]) = round(state[i],RC[i])
-};
-(output) = state[12]
+  (RC) = (0x58:u32,0x38:u32,0x3c0:u32,0xd0:u32,0x120:u32,0x14:u32,0x60:u32,0x2c:u32,0x380:u32,0xf0:u32,0x1a0:u32,0x12:u32);
+  (state[0]) = input;
+  forall i in [0,11] {
+    (state[(i + 1)]) = round(state[i],RC[i])
+  };
+  (output) = state[12]
 tel
 
 */

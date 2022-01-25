@@ -13,120 +13,158 @@
 #include "STD.h"
 
 /* auxiliary functions */
+void SPbox_Rx__V32 (/*inputs*/ DATATYPE col__0__,DATATYPE col__0____2,DATATYPE col__1__,DATATYPE col__1____2,DATATYPE col__2__,DATATYPE col__2____2, /*outputs*/ DATATYPE* colR__0__,DATATYPE* colR__0____2,DATATYPE* colR__1__,DATATYPE* colR__1____2,DATATYPE* colR__2__,DATATYPE* colR__2____2) {
 
+  // Variables declaration
+  DATATYPE _tmp10_;
+  DATATYPE _tmp10___2;
+  DATATYPE _tmp1_;
+  DATATYPE _tmp1___2;
+  DATATYPE _tmp2_;
+  DATATYPE _tmp2___2;
+  DATATYPE _tmp3_;
+  DATATYPE _tmp3___2;
+  DATATYPE _tmp4_;
+  DATATYPE _tmp4___2;
+  DATATYPE _tmp5_;
+  DATATYPE _tmp5___2;
+  DATATYPE _tmp6_;
+  DATATYPE _tmp6___2;
+  DATATYPE _tmp7_;
+  DATATYPE _tmp7___2;
+  DATATYPE _tmp8_;
+  DATATYPE _tmp8___2;
+  DATATYPE _tmp9_;
+  DATATYPE _tmp9___2;
+  DATATYPE x__;
+  DATATYPE x____2;
+  DATATYPE x_R__;
+  DATATYPE x_R____2;
+  DATATYPE y__;
+  DATATYPE y____2;
+  DATATYPE _tmp35_;
+  DATATYPE _tmp34_;
+
+  // Instructions (body)
+  x__ = L_ROTATE(col__0__,24,32);
+  x____2 = L_ROTATE(col__0____2,24,32);
+  y__ = L_ROTATE(col__1__,9,32);
+  _tmp1_ = L_SHIFT(col__2__,1,32);
+  y____2 = L_ROTATE(col__1____2,9,32);
+  _tmp1___2 = L_SHIFT(col__2____2,1,32);
+  _tmp34_ = x__;
+  _tmp35_ = x____2;
+  x_R__ = _tmp34_;
+  x_R____2 = _tmp35_;
+  _tmp3_ = AND(y__,col__2__);
+  _tmp5_ = XOR(y__,x__);
+  _tmp8_ = XOR(col__2__,y__);
+  _tmp2_ = XOR(x__,_tmp1_);
+  _tmp3___2 = AND(y____2,col__2____2);
+  _tmp5___2 = XOR(y____2,x____2);
+  _tmp8___2 = XOR(col__2____2,y____2);
+  _tmp2___2 = XOR(x____2,_tmp1___2);
+  _tmp6_ = OR(x_R__,col__2__);
+  _tmp6___2 = OR(x_R____2,col__2____2);
+  _tmp4_ = L_SHIFT(_tmp3_,2,32);
+  _tmp9_ = AND(x_R__,y__);
+  _tmp9___2 = AND(x_R____2,y____2);
+  _tmp4___2 = L_SHIFT(_tmp3___2,2,32);
+  _tmp7_ = L_SHIFT(_tmp6_,1,32);
+  _tmp7___2 = L_SHIFT(_tmp6___2,1,32);
+  *colR__2__ = XOR(_tmp2_,_tmp4_);
+  _tmp10_ = L_SHIFT(_tmp9_,3,32);
+  _tmp10___2 = L_SHIFT(_tmp9___2,3,32);
+  *colR__2____2 = XOR(_tmp2___2,_tmp4___2);
+  *colR__1__ = XOR(_tmp5_,_tmp7_);
+  *colR__1____2 = XOR(_tmp5___2,_tmp7___2);
+  *colR__0__ = XOR(_tmp8_,_tmp10_);
+  *colR__0____2 = XOR(_tmp8___2,_tmp10___2);
+
+}
+
+void SPbox_Rxy__V32 (/*inputs*/ DATATYPE col__0__,DATATYPE col__0____2,DATATYPE col__1__,DATATYPE col__1____2,DATATYPE col__2__,DATATYPE col__2____2, /*outputs*/ DATATYPE* colR__0__,DATATYPE* colR__0____2,DATATYPE* colR__1__,DATATYPE* colR__1____2,DATATYPE* colR__2__,DATATYPE* colR__2____2) {
+
+  // Variables declaration
+  DATATYPE _tmp11_;
+  DATATYPE _tmp11___2;
+  DATATYPE _tmp12_;
+  DATATYPE _tmp12___2;
+  DATATYPE _tmp13_;
+  DATATYPE _tmp13___2;
+  DATATYPE _tmp14_;
+  DATATYPE _tmp14___2;
+  DATATYPE _tmp15_;
+  DATATYPE _tmp15___2;
+  DATATYPE _tmp16_;
+  DATATYPE _tmp16___2;
+  DATATYPE _tmp17_;
+  DATATYPE _tmp17___2;
+  DATATYPE _tmp18_;
+  DATATYPE _tmp18___2;
+  DATATYPE _tmp19_;
+  DATATYPE _tmp19___2;
+  DATATYPE _tmp20_;
+  DATATYPE _tmp20___2;
+  DATATYPE x__;
+  DATATYPE x____2;
+  DATATYPE x_R__;
+  DATATYPE x_R____2;
+  DATATYPE y__;
+  DATATYPE y____2;
+  DATATYPE y_R__;
+  DATATYPE y_R____2;
+  DATATYPE _tmp39_;
+  DATATYPE _tmp38_;
+  DATATYPE _tmp37_;
+  DATATYPE _tmp36_;
+
+  // Instructions (body)
+  x__ = L_ROTATE(col__0__,24,32);
+  x____2 = L_ROTATE(col__0____2,24,32);
+  y__ = L_ROTATE(col__1__,9,32);
+  y____2 = L_ROTATE(col__1____2,9,32);
+  _tmp11_ = L_SHIFT(col__2__,1,32);
+  _tmp11___2 = L_SHIFT(col__2____2,1,32);
+  _tmp36_ = x__;
+  _tmp37_ = x____2;
+  x_R__ = _tmp36_;
+  x_R____2 = _tmp37_;
+  _tmp15_ = XOR(y__,x__);
+  _tmp18_ = XOR(col__2__,y__);
+  _tmp38_ = y__;
+  _tmp39_ = y____2;
+  y_R__ = _tmp38_;
+  y_R____2 = _tmp39_;
+  _tmp15___2 = XOR(y____2,x____2);
+  _tmp18___2 = XOR(col__2____2,y____2);
+  _tmp12_ = XOR(x__,_tmp11_);
+  _tmp12___2 = XOR(x____2,_tmp11___2);
+  _tmp16_ = OR(x_R__,col__2__);
+  _tmp16___2 = OR(x_R____2,col__2____2);
+  _tmp13_ = AND(y_R__,col__2__);
+  _tmp13___2 = AND(y_R____2,col__2____2);
+  _tmp19_ = AND(x_R__,y_R__);
+  _tmp19___2 = AND(x_R____2,y_R____2);
+  _tmp17_ = L_SHIFT(_tmp16_,1,32);
+  _tmp17___2 = L_SHIFT(_tmp16___2,1,32);
+  _tmp14_ = L_SHIFT(_tmp13_,2,32);
+  _tmp14___2 = L_SHIFT(_tmp13___2,2,32);
+  _tmp20_ = L_SHIFT(_tmp19_,3,32);
+  _tmp20___2 = L_SHIFT(_tmp19___2,3,32);
+  *colR__1__ = XOR(_tmp15_,_tmp17_);
+  *colR__1____2 = XOR(_tmp15___2,_tmp17___2);
+  *colR__2__ = XOR(_tmp12_,_tmp14_);
+  *colR__2____2 = XOR(_tmp12___2,_tmp14___2);
+  *colR__0__ = XOR(_tmp18_,_tmp20_);
+  *colR__0____2 = XOR(_tmp18___2,_tmp20___2);
+
+}
 
 /* main function */
 void gimli__ (/*inputs*/ DATATYPE state__[3][4],DATATYPE state____2[3][4], /*outputs*/ DATATYPE stateR__[3][4],DATATYPE stateR____2[3][4]) {
 
   // Variables declaration
-  DATATYPE AddRC__V32_1__tmp21_;
-  DATATYPE AddRC__V32_1__tmp21___2;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp10_;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp10___2;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp1_;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp1___2;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp2_;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp2___2;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp3_;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp3___2;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp4_;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp4___2;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp5_;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp5___2;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp6_;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp6___2;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp7_;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp7___2;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp8_;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp8___2;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp9_;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp9___2;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x__;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x____2;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x_R__;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x_R____2;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_y__;
-  DATATYPE NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_y____2;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp10_;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp10___2;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp1_;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp1___2;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp2_;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp2___2;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp3_;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp3___2;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp4_;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp4___2;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp5_;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp5___2;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp6_;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp6___2;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp7_;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp7___2;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp8_;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp8___2;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp9_;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp9___2;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x__;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x____2;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x_R__;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x_R____2;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_y__;
-  DATATYPE NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_y____2;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp10_;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp10___2;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp1_;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp1___2;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp2_;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp2___2;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp3_;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp3___2;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp4_;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp4___2;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp5_;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp5___2;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp6_;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp6___2;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp7_;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp7___2;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp8_;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp8___2;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp9_;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp9___2;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x__;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x____2;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x_R__;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x_R____2;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_y__;
-  DATATYPE NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_y____2;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp11_;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp11___2;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp12_;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp12___2;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp13_;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp13___2;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp14_;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp14___2;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp15_;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp15___2;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp16_;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp16___2;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp17_;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp17___2;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp18_;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp18___2;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp19_;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp19___2;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp20_;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp20___2;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x__;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x____2;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x_R__;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x_R____2;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y__;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y____2;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y_R__;
-  DATATYPE NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y_R____2;
   DATATYPE _tmp28_[3][4];
   DATATYPE _tmp28___2[3][4];
   DATATYPE _tmp29_[3][4];
@@ -143,216 +181,101 @@ void gimli__ (/*inputs*/ DATATYPE state__[3][4],DATATYPE state____2[3][4], /*out
   DATATYPE rc____2[6];
   DATATYPE round__[3][4];
   DATATYPE round____2[3][4];
-  DATATYPE _tmp43_[4];
-  DATATYPE _tmp42_[4];
-  DATATYPE _tmp41_[4];
-  DATATYPE _tmp40_[4];
-  DATATYPE _tmp39_[4];
-  DATATYPE _tmp38_[4];
-  DATATYPE _tmp37_[4];
-  DATATYPE _tmp36_[4];
-  DATATYPE _tmp35_[4];
-  DATATYPE _tmp34_[4];
 
   // Instructions (body)
-  rc__[0] = LIFT_32(0x9e377918);
-  rc__[1] = LIFT_32(0x9e377914);
-  rc__[2] = LIFT_32(0x9e377910);
-  rc__[3] = LIFT_32(0x9e37790c);
-  rc__[4] = LIFT_32(0x9e377908);
-  rc__[5] = LIFT_32(0x9e377904);
   round__[0][0] = state__[0][0];
   round__[0][1] = state__[0][1];
   round__[0][2] = state__[0][2];
   round__[0][3] = state__[0][3];
-  rc____2[0] = LIFT_32(0x9e377918);
-  rc____2[1] = LIFT_32(0x9e377914);
-  rc____2[2] = LIFT_32(0x9e377910);
-  rc____2[3] = LIFT_32(0x9e37790c);
-  rc____2[4] = LIFT_32(0x9e377908);
-  rc____2[5] = LIFT_32(0x9e377904);
-  round____2[0][0] = state____2[0][0];
-  round____2[0][1] = state____2[0][1];
-  round____2[0][2] = state____2[0][2];
-  round____2[0][3] = state____2[0][3];
   round__[1][0] = state__[1][0];
   round__[1][1] = state__[1][1];
   round__[1][2] = state__[1][2];
   round__[1][3] = state__[1][3];
   round__[2][0] = state__[2][0];
   round__[2][1] = state__[2][1];
-  round__[2][2] = state__[2][2];
-  round__[2][3] = state__[2][3];
+  round____2[0][0] = state____2[0][0];
+  round____2[0][1] = state____2[0][1];
+  round____2[0][2] = state____2[0][2];
+  round____2[0][3] = state____2[0][3];
   round____2[1][0] = state____2[1][0];
   round____2[1][1] = state____2[1][1];
   round____2[1][2] = state____2[1][2];
   round____2[1][3] = state____2[1][3];
   round____2[2][0] = state____2[2][0];
   round____2[2][1] = state____2[2][1];
+  round__[2][2] = state__[2][2];
+  round__[2][3] = state__[2][3];
+  rc__[0] = LIFT_32(0x9e377918);
+  rc__[1] = LIFT_32(0x9e377914);
+  rc__[2] = LIFT_32(0x9e377910);
+  rc__[3] = LIFT_32(0x9e37790c);
+  rc__[4] = LIFT_32(0x9e377908);
+  rc__[5] = LIFT_32(0x9e377904);
   round____2[2][2] = state____2[2][2];
   round____2[2][3] = state____2[2][3];
+  rc____2[0] = LIFT_32(0x9e377918);
+  rc____2[1] = LIFT_32(0x9e377914);
+  rc____2[2] = LIFT_32(0x9e377910);
+  rc____2[3] = LIFT_32(0x9e37790c);
+  rc____2[4] = LIFT_32(0x9e377908);
+  rc____2[5] = LIFT_32(0x9e377904);
   for (int r__ = 0; r__ <= 5; r__++) {
     for (int i__1 = 0; i__1 <= 3; i__1++) {
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x__ = L_ROTATE(round__[0][i__1],24,32);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_y__ = L_ROTATE(round__[1][i__1],9,32);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x____2 = L_ROTATE(round____2[0][i__1],24,32);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_y____2 = L_ROTATE(round____2[1][i__1],9,32);
-      _tmp34_[r__] = NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x__;
-      _tmp35_[r__] = NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x____2;
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x_R__ = _tmp34_[r__];
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x_R____2 = _tmp35_[r__];
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp1_ = L_SHIFT(round__[2][i__1],1,32);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp2_ = XOR(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x__,NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp1_);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp3_ = AND(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_y__,round__[2][i__1]);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp4_ = L_SHIFT(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp3_,2,32);
-      _tmp28_[2][i__1] = XOR(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp2_,NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp4_);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp5_ = XOR(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_y__,NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x__);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp6_ = OR(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x_R__,round__[2][i__1]);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp7_ = L_SHIFT(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp6_,1,32);
-      _tmp28_[1][i__1] = XOR(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp5_,NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp7_);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp8_ = XOR(round__[2][i__1],NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_y__);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp1___2 = L_SHIFT(round____2[2][i__1],1,32);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp2___2 = XOR(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x____2,NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp1___2);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp3___2 = AND(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_y____2,round____2[2][i__1]);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp4___2 = L_SHIFT(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp3___2,2,32);
-      _tmp28___2[2][i__1] = XOR(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp2___2,NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp4___2);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp5___2 = XOR(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_y____2,NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x____2);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp6___2 = OR(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x_R____2,round____2[2][i__1]);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp7___2 = L_SHIFT(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp6___2,1,32);
-      _tmp28___2[1][i__1] = XOR(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp5___2,NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp7___2);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp8___2 = XOR(round____2[2][i__1],NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_y____2);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp9_ = AND(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x_R__,NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_y__);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp10_ = L_SHIFT(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp9_,3,32);
-      _tmp28_[0][i__1] = XOR(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp8_,NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp10_);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp9___2 = AND(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_x_R____2,NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1_y____2);
-      NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp10___2 = L_SHIFT(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp9___2,3,32);
-      _tmp28___2[0][i__1] = XOR(NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp8___2,NonlinearLayer_Rx__V32_1_SPbox_Rx__V32_1__tmp10___2);
+      SPbox_Rx__V32(round__[0][i__1],round____2[0][i__1],round__[1][i__1],round____2[1][i__1],round__[2][i__1],round____2[2][i__1],&_tmp28_[0][i__1],&_tmp28___2[0][i__1],&_tmp28_[1][i__1],&_tmp28___2[1][i__1],&_tmp28_[2][i__1],&_tmp28___2[2][i__1]);
     }
     _tmp29_[0][0] = _tmp28_[0][1];
     _tmp29_[0][1] = _tmp28_[0][0];
     _tmp29_[0][2] = _tmp28_[0][3];
     _tmp29_[0][3] = _tmp28_[0][2];
     _tmp29_[1][0] = _tmp28_[1][0];
-    _tmp29_[1][1] = _tmp28_[1][1];
-    _tmp29_[1][2] = _tmp28_[1][2];
-    _tmp29_[1][3] = _tmp28_[1][3];
-    _tmp29_[2][0] = _tmp28_[2][0];
-    _tmp29_[2][1] = _tmp28_[2][1];
     _tmp29___2[0][0] = _tmp28___2[0][1];
     _tmp29___2[0][1] = _tmp28___2[0][0];
     _tmp29___2[0][2] = _tmp28___2[0][3];
     _tmp29___2[0][3] = _tmp28___2[0][2];
     _tmp29___2[1][0] = _tmp28___2[1][0];
+    _tmp30_[0][0] = XOR(_tmp29_[0][0],rc__[r__]);
+    _tmp30_[0][1] = _tmp29_[0][1];
+    _tmp30_[0][2] = _tmp29_[0][2];
+    _tmp30_[0][3] = _tmp29_[0][3];
+    _tmp30_[1][0] = _tmp29_[1][0];
+    _tmp30___2[0][0] = XOR(_tmp29___2[0][0],rc____2[r__]);
+    _tmp30___2[0][1] = _tmp29___2[0][1];
+    _tmp30___2[0][2] = _tmp29___2[0][2];
+    _tmp30___2[0][3] = _tmp29___2[0][3];
+    _tmp30___2[1][0] = _tmp29___2[1][0];
+    _tmp29_[1][1] = _tmp28_[1][1];
+    _tmp29_[1][2] = _tmp28_[1][2];
+    _tmp29_[1][3] = _tmp28_[1][3];
+    _tmp29_[2][0] = _tmp28_[2][0];
+    _tmp29_[2][1] = _tmp28_[2][1];
     _tmp29___2[1][1] = _tmp28___2[1][1];
     _tmp29___2[1][2] = _tmp28___2[1][2];
     _tmp29___2[1][3] = _tmp28___2[1][3];
     _tmp29___2[2][0] = _tmp28___2[2][0];
     _tmp29___2[2][1] = _tmp28___2[2][1];
-    _tmp29_[2][2] = _tmp28_[2][2];
-    _tmp29_[2][3] = _tmp28_[2][3];
-    AddRC__V32_1__tmp21_ = XOR(_tmp29_[0][0],rc__[r__]);
-    _tmp30_[0][1] = _tmp29_[0][1];
-    _tmp30_[0][2] = _tmp29_[0][2];
-    _tmp30_[0][3] = _tmp29_[0][3];
-    _tmp30_[1][0] = _tmp29_[1][0];
     _tmp30_[1][1] = _tmp29_[1][1];
     _tmp30_[1][2] = _tmp29_[1][2];
-    _tmp29___2[2][2] = _tmp28___2[2][2];
-    _tmp29___2[2][3] = _tmp28___2[2][3];
-    AddRC__V32_1__tmp21___2 = XOR(_tmp29___2[0][0],rc____2[r__]);
-    _tmp30_[0][0] = AddRC__V32_1__tmp21_;
-    _tmp30___2[0][1] = _tmp29___2[0][1];
-    _tmp30___2[0][2] = _tmp29___2[0][2];
-    _tmp30___2[0][3] = _tmp29___2[0][3];
-    _tmp30___2[1][0] = _tmp29___2[1][0];
-    _tmp30___2[1][1] = _tmp29___2[1][1];
-    _tmp30___2[1][2] = _tmp29___2[1][2];
     _tmp30_[1][3] = _tmp29_[1][3];
     _tmp30_[2][0] = _tmp29_[2][0];
-    _tmp30___2[0][0] = AddRC__V32_1__tmp21___2;
     _tmp30_[2][1] = _tmp29_[2][1];
-    _tmp30_[2][2] = _tmp29_[2][2];
-    _tmp30_[2][3] = _tmp29_[2][3];
+    _tmp30___2[1][1] = _tmp29___2[1][1];
+    _tmp30___2[1][2] = _tmp29___2[1][2];
     _tmp30___2[1][3] = _tmp29___2[1][3];
     _tmp30___2[2][0] = _tmp29___2[2][0];
     _tmp30___2[2][1] = _tmp29___2[2][1];
+    _tmp29_[2][2] = _tmp28_[2][2];
+    _tmp29_[2][3] = _tmp28_[2][3];
+    _tmp29___2[2][2] = _tmp28___2[2][2];
+    _tmp29___2[2][3] = _tmp28___2[2][3];
+    _tmp30_[2][2] = _tmp29_[2][2];
+    _tmp30_[2][3] = _tmp29_[2][3];
     _tmp30___2[2][2] = _tmp29___2[2][2];
     _tmp30___2[2][3] = _tmp29___2[2][3];
     for (int i__4 = 0; i__4 <= 3; i__4++) {
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x__ = L_ROTATE(_tmp30_[0][i__4],24,32);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y__ = L_ROTATE(_tmp30_[1][i__4],9,32);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x____2 = L_ROTATE(_tmp30___2[0][i__4],24,32);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y____2 = L_ROTATE(_tmp30___2[1][i__4],9,32);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp11_ = L_SHIFT(_tmp30_[2][i__4],1,32);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp11___2 = L_SHIFT(_tmp30___2[2][i__4],1,32);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp15_ = XOR(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y__,NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x__);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp18_ = XOR(_tmp30_[2][i__4],NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y__);
-      _tmp36_[r__] = NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x__;
-      _tmp37_[r__] = NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x____2;
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x_R__ = _tmp36_[r__];
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x_R____2 = _tmp37_[r__];
-      _tmp38_[r__] = NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y__;
-      _tmp39_[r__] = NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y____2;
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y_R__ = _tmp38_[r__];
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y_R____2 = _tmp39_[r__];
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp15___2 = XOR(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y____2,NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x____2);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp18___2 = XOR(_tmp30___2[2][i__4],NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y____2);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp12_ = XOR(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x__,NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp11_);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp12___2 = XOR(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x____2,NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp11___2);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp16_ = OR(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x_R__,_tmp30_[2][i__4]);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp16___2 = OR(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x_R____2,_tmp30___2[2][i__4]);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp13_ = AND(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y_R__,_tmp30_[2][i__4]);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp13___2 = AND(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y_R____2,_tmp30___2[2][i__4]);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp19_ = AND(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x_R__,NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y_R__);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp19___2 = AND(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_x_R____2,NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1_y_R____2);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp17_ = L_SHIFT(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp16_,1,32);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp17___2 = L_SHIFT(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp16___2,1,32);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp14_ = L_SHIFT(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp13_,2,32);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp14___2 = L_SHIFT(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp13___2,2,32);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp20_ = L_SHIFT(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp19_,3,32);
-      NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp20___2 = L_SHIFT(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp19___2,3,32);
-      _tmp31_[1][i__4] = XOR(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp15_,NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp17_);
-      _tmp31___2[1][i__4] = XOR(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp15___2,NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp17___2);
-      _tmp31_[2][i__4] = XOR(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp12_,NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp14_);
-      _tmp31___2[2][i__4] = XOR(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp12___2,NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp14___2);
-      _tmp31_[0][i__4] = XOR(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp18_,NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp20_);
-      _tmp31___2[0][i__4] = XOR(NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp18___2,NonlinearLayer_Rxy__V32_1_SPbox_Rxy__V32_1__tmp20___2);
+      SPbox_Rxy__V32(_tmp30_[0][i__4],_tmp30___2[0][i__4],_tmp30_[1][i__4],_tmp30___2[1][i__4],_tmp30_[2][i__4],_tmp30___2[2][i__4],&_tmp31_[0][i__4],&_tmp31___2[0][i__4],&_tmp31_[1][i__4],&_tmp31___2[1][i__4],&_tmp31_[2][i__4],&_tmp31___2[2][i__4]);
     }
     for (int i__2 = 0; i__2 <= 3; i__2++) {
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x__ = L_ROTATE(_tmp31_[0][i__2],24,32);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_y__ = L_ROTATE(_tmp31_[1][i__2],9,32);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x____2 = L_ROTATE(_tmp31___2[0][i__2],24,32);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_y____2 = L_ROTATE(_tmp31___2[1][i__2],9,32);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp1_ = L_SHIFT(_tmp31_[2][i__2],1,32);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp1___2 = L_SHIFT(_tmp31___2[2][i__2],1,32);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp3_ = AND(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_y__,_tmp31_[2][i__2]);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp5_ = XOR(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_y__,NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x__);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp8_ = XOR(_tmp31_[2][i__2],NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_y__);
-      _tmp40_[r__] = NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x__;
-      _tmp41_[r__] = NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x____2;
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x_R__ = _tmp40_[r__];
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x_R____2 = _tmp41_[r__];
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp3___2 = AND(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_y____2,_tmp31___2[2][i__2]);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp5___2 = XOR(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_y____2,NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x____2);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp8___2 = XOR(_tmp31___2[2][i__2],NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_y____2);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp2_ = XOR(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x__,NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp1_);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp2___2 = XOR(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x____2,NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp1___2);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp4_ = L_SHIFT(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp3_,2,32);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp6_ = OR(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x_R__,_tmp31_[2][i__2]);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp6___2 = OR(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x_R____2,_tmp31___2[2][i__2]);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp9_ = AND(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x_R__,NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_y__);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp9___2 = AND(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_x_R____2,NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1_y____2);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp4___2 = L_SHIFT(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp3___2,2,32);
-      _tmp32_[2][i__2] = XOR(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp2_,NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp4_);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp7_ = L_SHIFT(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp6_,1,32);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp7___2 = L_SHIFT(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp6___2,1,32);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp10_ = L_SHIFT(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp9_,3,32);
-      NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp10___2 = L_SHIFT(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp9___2,3,32);
-      _tmp32___2[2][i__2] = XOR(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp2___2,NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp4___2);
-      _tmp32_[1][i__2] = XOR(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp5_,NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp7_);
-      _tmp32___2[1][i__2] = XOR(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp5___2,NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp7___2);
-      _tmp32_[0][i__2] = XOR(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp8_,NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp10_);
-      _tmp32___2[0][i__2] = XOR(NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp8___2,NonlinearLayer_Rx__V32_2_SPbox_Rx__V32_1__tmp10___2);
+      SPbox_Rx__V32(_tmp31_[0][i__2],_tmp31___2[0][i__2],_tmp31_[1][i__2],_tmp31___2[1][i__2],_tmp31_[2][i__2],_tmp31___2[2][i__2],&_tmp32_[0][i__2],&_tmp32___2[0][i__2],&_tmp32_[1][i__2],&_tmp32___2[1][i__2],&_tmp32_[2][i__2],&_tmp32___2[2][i__2]);
     }
     _tmp33_[0][0] = _tmp32_[0][2];
     _tmp33_[0][1] = _tmp32_[0][3];
@@ -379,40 +302,7 @@ void gimli__ (/*inputs*/ DATATYPE state__[3][4],DATATYPE state____2[3][4], /*out
     _tmp33___2[2][2] = _tmp32___2[2][2];
     _tmp33___2[2][3] = _tmp32___2[2][3];
     for (int i__3 = 0; i__3 <= 3; i__3++) {
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x__ = L_ROTATE(_tmp33_[0][i__3],24,32);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_y__ = L_ROTATE(_tmp33_[1][i__3],9,32);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x____2 = L_ROTATE(_tmp33___2[0][i__3],24,32);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_y____2 = L_ROTATE(_tmp33___2[1][i__3],9,32);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp1_ = L_SHIFT(_tmp33_[2][i__3],1,32);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp1___2 = L_SHIFT(_tmp33___2[2][i__3],1,32);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp3_ = AND(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_y__,_tmp33_[2][i__3]);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp5_ = XOR(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_y__,NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x__);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp8_ = XOR(_tmp33_[2][i__3],NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_y__);
-      _tmp42_[r__] = NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x__;
-      _tmp43_[r__] = NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x____2;
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x_R__ = _tmp42_[r__];
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x_R____2 = _tmp43_[r__];
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp3___2 = AND(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_y____2,_tmp33___2[2][i__3]);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp5___2 = XOR(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_y____2,NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x____2);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp8___2 = XOR(_tmp33___2[2][i__3],NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_y____2);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp2_ = XOR(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x__,NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp1_);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp2___2 = XOR(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x____2,NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp1___2);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp4_ = L_SHIFT(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp3_,2,32);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp6_ = OR(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x_R__,_tmp33_[2][i__3]);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp6___2 = OR(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x_R____2,_tmp33___2[2][i__3]);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp9_ = AND(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x_R__,NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_y__);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp9___2 = AND(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_x_R____2,NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1_y____2);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp4___2 = L_SHIFT(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp3___2,2,32);
-      round__[2][i__3] = XOR(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp2_,NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp4_);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp7_ = L_SHIFT(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp6_,1,32);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp7___2 = L_SHIFT(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp6___2,1,32);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp10_ = L_SHIFT(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp9_,3,32);
-      NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp10___2 = L_SHIFT(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp9___2,3,32);
-      round____2[2][i__3] = XOR(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp2___2,NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp4___2);
-      round__[1][i__3] = XOR(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp5_,NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp7_);
-      round____2[1][i__3] = XOR(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp5___2,NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp7___2);
-      round__[0][i__3] = XOR(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp8_,NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp10_);
-      round____2[0][i__3] = XOR(NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp8___2,NonlinearLayer_Rx__V32_3_SPbox_Rx__V32_1__tmp10___2);
+      SPbox_Rx__V32(_tmp33_[0][i__3],_tmp33___2[0][i__3],_tmp33_[1][i__3],_tmp33___2[1][i__3],_tmp33_[2][i__3],_tmp33___2[2][i__3],&round__[0][i__3],&round____2[0][i__3],&round__[1][i__3],&round____2[1][i__3],&round__[2][i__3],&round____2[2][i__3]);
     }
   }
   stateR__[0][0] = round__[0][0];
@@ -445,16 +335,16 @@ void gimli__ (/*inputs*/ DATATYPE state__[3][4],DATATYPE state____2[3][4], /*out
 /* Additional functions */
 uint32_t bench_speed() {
   /* Inputs */
-  DATATYPE state__[3][4] = { 0 };
-  DATATYPE state____2[3][4] = { 0 };
+  DATATYPE state__[3][4];
+  DATATYPE state____2[3][4];
 
   /* Preventing inputs from being optimized out */
   asm volatile("" : "+m" (state__));
   asm volatile("" : "+m" (state____2));
 
   /* Outputs */
-  DATATYPE stateR__[3][4] = { 0 };
-  DATATYPE stateR____2[3][4] = { 0 };
+  DATATYPE stateR__[3][4];
+  DATATYPE stateR____2[3][4];
   /* Primitive call */
   gimli__(state__, state____2,stateR__, stateR____2);
 
@@ -471,98 +361,98 @@ uint32_t bench_speed() {
 /*                                                                  */
 /*
 
- node SPbox_Rx(col :  u32[3] :: base)
-  returns colR :  u32[3] :: base
+ node SPbox_Rx(col :  u32[3])
+  returns colR :  u32[3]
 vars
-  x :  u32 :: base,
-  y :  u32 :: base,
-  z :  u32 :: base,
-  x_R :  u32 :: base
+  x :  u32,
+  y :  u32,
+  z :  u32,
+  x_R :  u32
 let
-(x) = (col[0] <<< 24);
-(y) = (col[1] <<< 9);
-(z) = col[2];
-(x_R) = refresh(x);
-(colR[2]) = ((x ^ (z << 1)) ^ ((y & z) << 2));
-(colR[1]) = ((y ^ x) ^ ((x_R | z) << 1));
-(colR[0]) = ((z ^ y) ^ ((x_R & y) << 3))
+  (x) = (col[0] <<< 24);
+  (y) = (col[1] <<< 9);
+  (z) = col[2];
+  (x_R) = refresh(x);
+  (colR[2]) = ((x ^ (z << 1)) ^ ((y & z) << 2));
+  (colR[1]) = ((y ^ x) ^ ((x_R | z) << 1));
+  (colR[0]) = ((z ^ y) ^ ((x_R & y) << 3))
 tel
 
- node SPbox_Rxy(col :  u32[3] :: base)
-  returns colR :  u32[3] :: base
+ node SPbox_Rxy(col :  u32[3])
+  returns colR :  u32[3]
 vars
-  x :  u32 :: base,
-  y :  u32 :: base,
-  z :  u32 :: base,
-  x_R :  u32 :: base,
-  y_R :  u32 :: base
+  x :  u32,
+  y :  u32,
+  z :  u32,
+  x_R :  u32,
+  y_R :  u32
 let
-(x) = (col[0] <<< 24);
-(y) = (col[1] <<< 9);
-(z) = col[2];
-(x_R) = refresh(x);
-(y_R) = refresh(y);
-(colR[2]) = ((x ^ (z << 1)) ^ ((y_R & z) << 2));
-(colR[1]) = ((y ^ x) ^ ((x_R | z) << 1));
-(colR[0]) = ((z ^ y) ^ ((x_R & y_R) << 3))
+  (x) = (col[0] <<< 24);
+  (y) = (col[1] <<< 9);
+  (z) = col[2];
+  (x_R) = refresh(x);
+  (y_R) = refresh(y);
+  (colR[2]) = ((x ^ (z << 1)) ^ ((y_R & z) << 2));
+  (colR[1]) = ((y ^ x) ^ ((x_R | z) << 1));
+  (colR[0]) = ((z ^ y) ^ ((x_R & y_R) << 3))
 tel
 
- node NonlinearLayer_Rx(state :  u32x4[3] :: base)
-  returns stateR :  u32x4[3] :: base
+ node NonlinearLayer_Rx(state :  u32x4[3])
+  returns stateR :  u32x4[3]
 vars
 
 let
-forall i in [0,3] {
-(stateR[0 .. 2][i]) = SPbox_Rx(state[0 .. 2][i])
-}
+  forall i in [0,3] {
+    (stateR[0 .. 2][i]) = SPbox_Rx(state[0 .. 2][i])
+  }
 tel
 
- node NonlinearLayer_Rxy(state :  u32x4[3] :: base)
-  returns stateR :  u32x4[3] :: base
+ node NonlinearLayer_Rxy(state :  u32x4[3])
+  returns stateR :  u32x4[3]
 vars
 
 let
-forall i in [0,3] {
-(stateR[0 .. 2][i]) = SPbox_Rxy(state[0 .. 2][i])
-}
+  forall i in [0,3] {
+    (stateR[0 .. 2][i]) = SPbox_Rxy(state[0 .. 2][i])
+  }
 tel
 
- node SmallSwap(state :  u32x4[3] :: base)
-  returns stateR :  u32x4[3] :: base
+ node SmallSwap(state :  u32x4[3])
+  returns stateR :  u32x4[3]
 vars
 
 let
-(stateR) = (state[0][1,0,3,2],state[1,2][0 .. 3])
+  (stateR) = (state[0][1,0,3,2],state[1,2][0 .. 3])
 tel
 
- node BigSwap(state :  u32x4[3] :: base)
-  returns stateR :  u32x4[3] :: base
+ node BigSwap(state :  u32x4[3])
+  returns stateR :  u32x4[3]
 vars
 
 let
-(stateR) = (state[0][2,3,0,1],state[1,2][0 .. 3])
+  (stateR) = (state[0][2,3,0,1],state[1,2][0 .. 3])
 tel
 
- node AddRC(state :  u32x4[3] :: base,rc :  u32 :: base)
-  returns stateR :  u32x4[3] :: base
+ node AddRC(state :  u32x4[3],rc :  u32)
+  returns stateR :  u32x4[3]
 vars
 
 let
-(stateR) = ((state[0][0] ^ rc),state[0][1 .. 3],state[1,2])
+  (stateR) = ((state[0][0] ^ rc),state[0][1 .. 3],state[1,2])
 tel
 
- node gimli(state :  u32x4[3] :: base)
-  returns stateR :  u32x4[3] :: base
+ node gimli(state :  u32x4[3])
+  returns stateR :  u32x4[3]
 vars
-  rc :  u32[6] :: base,
-  round :  u32x4[7][3] :: base
+  rc :  u32[6],
+  round :  u32x4[7][3]
 let
-(rc) = (2654435608,2654435604,2654435600,2654435596,2654435592,2654435588);
-(round[0]) = state;
-forall r in [0,5] {
-(round[(r + 1)]) = NonlinearLayer_Rx(BigSwap(NonlinearLayer_Rx(NonlinearLayer_Rxy(AddRC(SmallSwap(NonlinearLayer_Rx(round[r])),rc[r])))))
-};
-(stateR) = round[6]
+  (rc) = (0x9e377918:u32,0x9e377914:u32,0x9e377910:u32,0x9e37790c:u32,0x9e377908:u32,0x9e377904:u32);
+  (round[0]) = state;
+  forall r in [0,5] {
+    (round[(r + 1)]) = NonlinearLayer_Rx(BigSwap(NonlinearLayer_Rx(NonlinearLayer_Rxy(AddRC(SmallSwap(NonlinearLayer_Rx(round[r])),rc[r])))))
+  };
+  (stateR) = round[6]
 tel
 
 */

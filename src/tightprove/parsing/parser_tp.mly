@@ -1,9 +1,6 @@
 
 %{
   open Tp_AST
-  open Lexing
-  open Utils
-  exception Syntax_error
 %}
 
 /*******************\

@@ -13,7 +13,33 @@
 #include "STD.h"
 
 /* auxiliary functions */
+void SubBytes__V32 (/*inputs*/ DATATYPE s0__,DATATYPE s1__,DATATYPE s2__,DATATYPE s3__, /*outputs*/ DATATYPE ret__[4]) {
 
+  // Variables declaration
+  DATATYPE _shadow_s0__1_;
+  DATATYPE _shadow_s1__4_;
+  DATATYPE _shadow_s2__5_;
+  DATATYPE _shadow_s3__2_;
+  DATATYPE _tmp1_;
+  DATATYPE _tmp2_;
+  DATATYPE _tmp3_;
+  DATATYPE _tmp4_;
+
+  // Instructions (body)
+  _shadow_s0__1_ = XOR(s0__,s3__);
+  _tmp2_ = AND(s1__,s2__);
+  _tmp1_ = AND(_shadow_s0__1_,s1__);
+  ret__[0] = XOR(_shadow_s0__1_,_tmp2_);
+  _shadow_s3__2_ = XOR(s3__,_tmp1_);
+  _tmp3_ = AND(s2__,_shadow_s3__2_);
+  _tmp4_ = AND(ret__[0],_shadow_s3__2_);
+  ret__[2] = NOT(_shadow_s3__2_);
+  _shadow_s1__4_ = XOR(s1__,_tmp3_);
+  _shadow_s2__5_ = XOR(s2__,_tmp4_);
+  ret__[1] = XOR(_shadow_s1__4_,ret__[0]);
+  ret__[3] = XOR(_shadow_s2__5_,_shadow_s1__4_);
+
+}
 
 /* main function */
 void pyjamask__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE key__[15][4], /*outputs*/ DATATYPE ciphertext__[4]) {
@@ -25,18 +51,6 @@ void pyjamask__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE key__[15][4], /*out
   DATATYPE MixRows__V32_1_mat_mult__V32_1_mask__;
   DATATYPE MixRows__V32_1_mat_mult__V32_1_mat_col__[33];
   DATATYPE MixRows__V32_1_mat_mult__V32_1_res_tmp__;
-  DATATYPE SubBytes__V32_1__shadow_s0__1_;
-  DATATYPE SubBytes__V32_1__shadow_s0__3_;
-  DATATYPE SubBytes__V32_1__shadow_s1__4_;
-  DATATYPE SubBytes__V32_1__shadow_s1__7_;
-  DATATYPE SubBytes__V32_1__shadow_s2__5_;
-  DATATYPE SubBytes__V32_1__shadow_s2__6_;
-  DATATYPE SubBytes__V32_1__shadow_s3__2_;
-  DATATYPE SubBytes__V32_1__shadow_s3__8_;
-  DATATYPE SubBytes__V32_1__tmp1_;
-  DATATYPE SubBytes__V32_1__tmp2_;
-  DATATYPE SubBytes__V32_1__tmp3_;
-  DATATYPE SubBytes__V32_1__tmp4_;
   DATATYPE _tmp11_[4];
   DATATYPE _tmp12_[4];
   DATATYPE round__[4];
@@ -55,22 +69,7 @@ void pyjamask__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE key__[15][4], /*out
     MixRows__V32_1_M__[1] = LIFT_32(0x63417021);
     MixRows__V32_1_M__[2] = LIFT_32(0x692cf280);
     MixRows__V32_1_M__[3] = LIFT_32(0x48a54813);
-    SubBytes__V32_1__shadow_s0__1_ = XOR(_tmp11_[0],_tmp11_[3]);
-    SubBytes__V32_1__tmp1_ = AND(SubBytes__V32_1__shadow_s0__1_,_tmp11_[1]);
-    SubBytes__V32_1__shadow_s3__2_ = XOR(_tmp11_[3],SubBytes__V32_1__tmp1_);
-    SubBytes__V32_1__tmp2_ = AND(_tmp11_[1],_tmp11_[2]);
-    SubBytes__V32_1__shadow_s0__3_ = XOR(SubBytes__V32_1__shadow_s0__1_,SubBytes__V32_1__tmp2_);
-    SubBytes__V32_1__tmp3_ = AND(_tmp11_[2],SubBytes__V32_1__shadow_s3__2_);
-    SubBytes__V32_1__shadow_s1__4_ = XOR(_tmp11_[1],SubBytes__V32_1__tmp3_);
-    SubBytes__V32_1__tmp4_ = AND(SubBytes__V32_1__shadow_s0__3_,SubBytes__V32_1__shadow_s3__2_);
-    SubBytes__V32_1__shadow_s2__5_ = XOR(_tmp11_[2],SubBytes__V32_1__tmp4_);
-    SubBytes__V32_1__shadow_s2__6_ = XOR(SubBytes__V32_1__shadow_s2__5_,SubBytes__V32_1__shadow_s1__4_);
-    SubBytes__V32_1__shadow_s1__7_ = XOR(SubBytes__V32_1__shadow_s1__4_,SubBytes__V32_1__shadow_s0__3_);
-    SubBytes__V32_1__shadow_s3__8_ = NOT(SubBytes__V32_1__shadow_s3__2_);
-    _tmp12_[0] = SubBytes__V32_1__shadow_s0__3_;
-    _tmp12_[1] = SubBytes__V32_1__shadow_s1__7_;
-    _tmp12_[2] = SubBytes__V32_1__shadow_s3__8_;
-    _tmp12_[3] = SubBytes__V32_1__shadow_s2__6_;
+    SubBytes__V32(_tmp11_[0],_tmp11_[1],_tmp11_[2],_tmp11_[3],_tmp12_);
     for (int i__2 = 0; i__2 <= 3; i__2++) {
       MixRows__V32_1_mat_mult__V32_1_mat_col__[0] = MixRows__V32_1_M__[i__2];
       MixRows__V32_1_mat_mult__V32_1_res_tmp__ = LIFT_32(0x0);
@@ -94,15 +93,15 @@ void pyjamask__ (/*inputs*/ DATATYPE plaintext__[4],DATATYPE key__[15][4], /*out
 /* Additional functions */
 uint32_t bench_speed() {
   /* Inputs */
-  DATATYPE plaintext__[4] = { 0 };
-  DATATYPE key__[15][4] = { 0 };
+  DATATYPE plaintext__[4];
+  DATATYPE key__[15][4];
 
   /* Preventing inputs from being optimized out */
   asm volatile("" : "+m" (plaintext__));
   asm volatile("" : "+m" (key__));
 
   /* Outputs */
-  DATATYPE ciphertext__[4] = { 0 };
+  DATATYPE ciphertext__[4];
   /* Primitive call */
   pyjamask__(plaintext__, key__,ciphertext__);
 
@@ -118,59 +117,59 @@ uint32_t bench_speed() {
 /*                                                                  */
 /*
 
- table SubBytes(i :  v4 :: base)
-  returns o :  v4 :: base
+ table SubBytes(i :  v4)
+  returns o :  v4
 {
   2, 13, 3, 9, 7, 11, 10, 6, 14, 0, 15, 4, 8, 5, 1, 12
 }
 
 
- node AddRoundKey(i :  u32x4 :: base,k :  u32x4 :: base)
-  returns o :  u32x4 :: base
+ node AddRoundKey(i :  u32x4,k :  u32x4)
+  returns o :  u32x4
 vars
 
 let
-(o) = (i ^ k)
+  (o) = (i ^ k)
 tel
 
- node mat_mult(col : const u32 :: base,vec :  u32 :: base)
-  returns res :  u32 :: base
+ node mat_mult(col :  u32,vec :  u32)
+  returns res :  u32
 vars
-  mat_col :  u32[33] :: base,
-  res_tmp :  u32[33] :: base,
-  mask :  u32[32] :: base
+  mat_col :  u32[33],
+  res_tmp :  u32[33],
+  mask :  u32[32]
 let
-(mat_col[0]) = col;
-(res_tmp[0]) = 0;
-forall i in [0,31] {
-(mask[i]) = ((vec << i) >>! 31);
-(res_tmp[(i + 1)]) = (res_tmp[i] ^ (mask[i] & mat_col[i]));
-(mat_col[(i + 1)]) = (mat_col[i] >>> 1)
-};
-(res) = res_tmp[32]
+  (mat_col[0]) = col;
+  (res_tmp[0]) = 0x0:u32;
+  forall i in [0,31] {
+    (mask[i]) = ((vec << i) >>! 31);
+    (res_tmp[(i + 1)]) = (res_tmp[i] ^ (mask[i] & mat_col[i]));
+    (mat_col[(i + 1)]) = (mat_col[i] >>> 1)
+  };
+  (res) = res_tmp[32]
 tel
 
- node MixRows(input :  u32x4 :: base)
-  returns output :  u32x4 :: base
+ node MixRows(input :  u32x4)
+  returns output :  u32x4
 vars
-  M : const u32[4] :: base
+  M :  u32[4]
 let
-(M) = (2743472261,1665232929,1764553344,1218791443);
-forall i in [0,3] {
-(output[i]) = mat_mult(M[i],input[i])
-}
+  (M) = (0xa3861085:u32,0x63417021:u32,0x692cf280:u32,0x48a54813:u32);
+  forall i in [0,3] {
+    (output[i]) = mat_mult(M[i],input[i])
+  }
 tel
 
- node pyjamask(plaintext :  u32x4 :: base,key :  u32x4[15] :: base)
-  returns ciphertext :  u32x4 :: base
+ node pyjamask(plaintext :  u32x4,key :  u32x4[15])
+  returns ciphertext :  u32x4
 vars
-  round :  u32x4[15] :: base
+  round :  u32x4[15]
 let
-(round[0]) = plaintext;
-forall i in [0,13] {
-(round[(i + 1)]) = MixRows(SubBytes(AddRoundKey(round[i],key[i])))
-};
-(ciphertext) = AddRoundKey(round[14],key[14])
+  (round[0]) = plaintext;
+  forall i in [0,13] {
+    (round[(i + 1)]) = MixRows(SubBytes(AddRoundKey(round[i],key[i])))
+  };
+  (ciphertext) = AddRoundKey(round[14],key[14])
 tel
 
 */

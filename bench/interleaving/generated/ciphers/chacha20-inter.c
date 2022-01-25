@@ -447,16 +447,16 @@ void Chacha20__ (/*inputs*/ DATATYPE plain__[16],DATATYPE plain____2[16], /*outp
 /* Additional functions */
 uint32_t bench_speed() {
   /* Inputs */
-  DATATYPE plain__[16] = { 0 };
-  DATATYPE plain____2[16] = { 0 };
+  DATATYPE plain__[16];
+  DATATYPE plain____2[16];
 
   /* Preventing inputs from being optimized out */
   asm volatile("" : "+m" (plain__));
   asm volatile("" : "+m" (plain____2));
 
   /* Outputs */
-  DATATYPE cipher__[16] = { 0 };
-  DATATYPE cipher____2[16] = { 0 };
+  DATATYPE cipher__[16];
+  DATATYPE cipher____2[16];
   /* Primitive call */
   Chacha20__(plain__, plain____2,cipher__, cipher____2);
 
@@ -473,46 +473,46 @@ uint32_t bench_speed() {
 /*                                                                  */
 /*
 
- node QR(a :  u<V>32 :: base,b :  u<V>32 :: base,c :  u<V>32 :: base,d :  u<V>32 :: base)
-  returns aR :  u<V>32 :: base,bR :  u<V>32 :: base,cR :  u<V>32 :: base,dR :  u<V>32 :: base
+ node QR(a :  u32,b :  u32,c :  u32,d :  u32)
+  returns aR :  u32,bR :  u32,cR :  u32,dR :  u32
 vars
 
 let
-(a) := (a + b);
-(d) := ((d ^ a) <<< 16);
-(c) := (c + d);
-(b) := ((b ^ c) <<< 12);
-(aR) = (a + b);
-(dR) = ((d ^ aR) <<< 8);
-(cR) = (c + dR);
-(bR) = ((b ^ cR) <<< 7)
+  (a) := (a + b);
+  (d) := ((d ^ a) <<< 16);
+  (c) := (c + d);
+  (b) := ((b ^ c) <<< 12);
+  (aR) = (a + b);
+  (dR) = ((d ^ aR) <<< 8);
+  (cR) = (c + dR);
+  (bR) = ((b ^ cR) <<< 7)
 tel
 
- node DR(state :  u<V>32x16 :: base)
-  returns stateR :  u<V>32x16 :: base
+ node DR(state :  u32x16)
+  returns stateR :  u32x16
 vars
 
 let
-(state[0,4,8,12]) := QR(state[0,4,8,12]);
-(state[1,5,9,13]) := QR(state[1,5,9,13]);
-(state[2,6,10,14]) := QR(state[2,6,10,14]);
-(state[3,7,11,15]) := QR(state[3,7,11,15]);
-(stateR[0,5,10,15]) = QR(state[0,5,10,15]);
-(stateR[1,6,11,12]) = QR(state[1,6,11,12]);
-(stateR[2,7,8,13]) = QR(state[2,7,8,13]);
-(stateR[3,4,9,14]) = QR(state[3,4,9,14])
+  (state[0,4,8,12]) := QR(state[0,4,8,12]);
+  (state[1,5,9,13]) := QR(state[1,5,9,13]);
+  (state[2,6,10,14]) := QR(state[2,6,10,14]);
+  (state[3,7,11,15]) := QR(state[3,7,11,15]);
+  (stateR[0,5,10,15]) = QR(state[0,5,10,15]);
+  (stateR[1,6,11,12]) = QR(state[1,6,11,12]);
+  (stateR[2,7,8,13]) = QR(state[2,7,8,13]);
+  (stateR[3,4,9,14]) = QR(state[3,4,9,14])
 tel
 
- node Chacha20(plain :  u<V>32x16 :: base)
-  returns cipher :  u<V>32x16 :: base
+ node Chacha20(plain :  u32x16)
+  returns cipher :  u32x16
 vars
-  state :  u<V>32x16[11] :: base
+  state :  u32x16[11]
 let
-(state[0]) = plain;
-forall i in [1,10] {
-(state[i]) = DR(state[(i - 1)])
-};
-(cipher) = state[10]
+  (state[0]) = plain;
+  forall i in [1,10] {
+    (state[i]) = DR(state[(i - 1)])
+  };
+  (cipher) = state[10]
 tel
 
 */

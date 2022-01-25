@@ -1,0 +1,7 @@
+(ocamllex
+ (modules lexer_tp))
+
+(menhir
+ (infer true)
+ (modules parser_tp)
+ (flags --explain))

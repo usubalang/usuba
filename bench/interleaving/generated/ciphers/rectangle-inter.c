@@ -114,9 +114,9 @@ void Rectangle__ (/*inputs*/ DATATYPE plain__[4],DATATYPE plain____2[4],DATATYPE
 /* Additional functions */
 uint32_t bench_speed() {
   /* Inputs */
-  DATATYPE plain__[4] = { 0 };
-  DATATYPE plain____2[4] = { 0 };
-  DATATYPE key__[26][4] = { 0 };
+  DATATYPE plain__[4];
+  DATATYPE plain____2[4];
+  DATATYPE key__[26][4];
 
   /* Preventing inputs from being optimized out */
   asm volatile("" : "+m" (plain__));
@@ -124,8 +124,8 @@ uint32_t bench_speed() {
   asm volatile("" : "+m" (key__));
 
   /* Outputs */
-  DATATYPE cipher__[4] = { 0 };
-  DATATYPE cipher____2[4] = { 0 };
+  DATATYPE cipher__[4];
+  DATATYPE cipher____2[4];
   /* Primitive call */
   Rectangle__(plain__, plain____2, key__,cipher__, cipher____2);
 
@@ -142,34 +142,34 @@ uint32_t bench_speed() {
 /*                                                                  */
 /*
 
- _no_inline table SubColumn(input :  v4 :: base)
-  returns out :  v4 :: base
+ table SubColumn(input :  v4)
+  returns out :  v4
 {
   6, 5, 12, 10, 1, 14, 7, 9, 11, 0, 3, 13, 8, 15, 4, 2
 }
 
 
- node ShiftRows(input :  u16x4 :: base)
-  returns out :  u16x4 :: base
+ node ShiftRows(input :  u16x4)
+  returns out :  u16x4
 vars
 
 let
-(out[0]) = input[0];
-(out[1]) = (input[1] <<< 1);
-(out[2]) = (input[2] <<< 12);
-(out[3]) = (input[3] <<< 13)
+  (out[0]) = input[0];
+  (out[1]) = (input[1] <<< 1);
+  (out[2]) = (input[2] <<< 12);
+  (out[3]) = (input[3] <<< 13)
 tel
 
- node Rectangle(plain :  u16x4 :: base,key : const u16x4[26] :: base)
-  returns cipher :  u16x4 :: base
+ node Rectangle(plain :  u16x4,key : const u16x4[26])
+  returns cipher :  u16x4
 vars
-  tmp :  u16x4[26] :: base
+  tmp :  u16x4[26]
 let
-(tmp[0]) = plain;
-forall i in [0,24] {
-(tmp[(i + 1)]) = ShiftRows(SubColumn((tmp[i] ^ key[i])))
-};
-(cipher) = (tmp[25] ^ key[25])
+  (tmp[0]) = plain;
+  forall i in [0,24] {
+    (tmp[(i + 1)]) = ShiftRows(SubColumn((tmp[i] ^ key[i])))
+  };
+  (cipher) = (tmp[25] ^ key[25])
 tel
 
 */

@@ -1,4 +1,5 @@
 _build
+_opam
 *.native
 *~
 *.cmo
@@ -18,3 +19,9 @@ tcc-no*
 z3
 usubac
 supercop-data
+
+# Generated files
+config.ml
+lexer_tp.ml
+
+observations.org
