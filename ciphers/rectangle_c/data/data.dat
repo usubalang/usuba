@@ -1,7 +1,0 @@
-
-Title                  "vsliced"   "bitsliced"   "hsliced"
-"GP\n(64-bits)"          29.26        15.92          -
-"SSE\n(128-bits)"        4.04        8.90         14.98
-"AVX\n(128-bits)"        3.94        8.29         14.57
-"AVX2\n(256-bits)"       1.97        4.03         7.71
-"AVX512\n(512-bits)"     1.19        2.05         3.64

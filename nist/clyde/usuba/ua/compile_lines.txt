@@ -1,5 +1,0 @@
-./usubac -no-sched -light-inline -V -o nist/clyde/usuba/ua/clyde_ua_vslice.c nist/clyde/usuba/ua/clyde.ua
-./usubac -no-sched -light-inline -B -o nist/clyde/usuba/ua/clyde_ua_bitslice.c nist/clyde/usuba/ua/clyde_bitslice.ua
-clang -D UA_V -Wall -Wextra -O3 -march=native -I../../../../arch main.c utils.c -o main && ./main
-clang -D UA_B -Wall -Wextra -O3 -march=native -I../../../../arch main.c utils.c -o main && ./main
-clang -D REF  -Wall -Wextra -O3 -march=native -I../../../../arch main.c utils.c -o main && ./main

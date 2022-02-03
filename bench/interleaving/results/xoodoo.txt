@@ -1,2 +1,0 @@
-xoodoo 7.10 16592
-xoodoo-inter 9.34 16600

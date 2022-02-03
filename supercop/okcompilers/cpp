@@ -1,1 +1,0 @@
-clang++ -march=native -O3 -fomit-frame-pointer -std=gnu++11

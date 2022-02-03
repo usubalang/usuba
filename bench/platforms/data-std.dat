@@ -1,4 +1,0 @@
-archi   32-bits   64-bits   128-bits   256-bits  512-bits
-ARMv7      1         0         3          0         0
-PowerPC    0         1        2.37        0         0
-SKL        0         1        1.85       3.63      6.49

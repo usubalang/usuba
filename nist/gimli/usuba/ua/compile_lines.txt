@@ -1,5 +1,0 @@
-./usubac -light-inline -no-sched -V -o nist/gimli/usuba/ua/gimli_ua_vslice.c nist/gimli/usuba/ua/gimli.ua
-./usubac -light-inline -no-sched -B -o nist/gimli/usuba/ua/gimli_ua_bitslice.c nist/gimli/usuba/ua/gimli_bitslice.ua
-clang -D UA_B -I ../../../../arch -Wall -Wextra main.c -o main && ./main
-clang -D UA_V -I ../../../../arch -Wall -Wextra main.c -o main && ./main
-clang -D REF  -I ../../../../arch -Wall -Wextra main.c -o main && ./main

@@ -1,5 +1,0 @@
-./usubac -B -no-linearize-arr -no-sched -o nist/photon/usuba/ua/photon_ua_bitslice.c -arch std -no-share nist/photon/usuba/ua/photon_bitslice.ua
-./usubac -V -keep-tables -no-sched -o nist/photon/usuba/ua/photon_ua_vslice.c -arch std -no-share nist/photon/usuba/ua/photon_vslice.ua
-clang -D UA_V -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main
-clang -D UA_B -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main
-clang -D REF  -Wall -Wextra -O3 -march=native -I../../../../arch main.c -o main && ./main

@@ -1,9 +1,0 @@
-hslice-gcc 1.80
-hslice-clang 1.82
-hslice-icc 1.88
-vslice-clang 1.89
-vslice-icc 1.97
-vslice-gcc 2.01
-bitslice-icc 2.10
-bitslice-gcc 2.12
-bitslice-clang 2.12

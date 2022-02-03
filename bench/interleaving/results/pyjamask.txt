@@ -1,2 +1,0 @@
-pyjamask 143.53 16600
-pyjamask-inter 239.46 16608

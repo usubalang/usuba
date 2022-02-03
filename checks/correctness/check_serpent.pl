@@ -9,6 +9,9 @@ use File::Path qw( remove_tree );
 use File::Copy;
 use FindBin;
 
+use require::relative "../../subroutines.pl";
+
+my $samples = samples_location();
 
 sub error {
     say "************ ERROR **************\n\n";
@@ -36,7 +39,7 @@ mkdir $temp_dir;
 
 # Compiling Usuba DES.
 say "Compiling Serpent from Usuba to C...";
-error if system "./usubac -V -o $temp_dir/serpent.c -arch sse -no-share samples/usuba/serpent.ua" ;
+error if system "./usubac -V -o $temp_dir/serpent.c -arch sse -no-share $samples/usuba/serpent.ua" ;
 {
     local $^I = "";
     local @ARGV = "$temp_dir/serpent.c";

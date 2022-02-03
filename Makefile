@@ -3,7 +3,7 @@
 # Directories
 SRC_DIR := src
 BIN_DIR := bin
-
+SAMPLES_DIR := ../examples/samples
 # MENHIR := menhir
 # MENHIRFLAGS := --infer --explain
 # INCLUDES := -I normalization -I optimization -I parsing -I c_gen -I verification -I c_gen/runtimes -I tests -I tightprove -I tightprove/parsing -I maskverif
@@ -25,4 +25,5 @@ clean:
 
 test: all
 	./usubac -tests
-	./run_checks.pl
+	@echo $(SAMPLES_DIR)
+	./run_checks.pl --samples $(SAMPLES_DIR)

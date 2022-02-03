@@ -1,4 +1,0 @@
-bin/avx512 1.36
-bin/avx2 3.11
- bin/avx 5.98
- bin/sse 6.46

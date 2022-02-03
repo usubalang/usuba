@@ -1,1 +1,0 @@
-../ua/pyjamask_bitslice.ua

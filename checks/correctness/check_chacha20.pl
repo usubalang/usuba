@@ -11,6 +11,9 @@ use File::Copy::Recursive qw(rcopy dircopy);
 $File::Copy::Recursive::CPRFComp = 1;
 use FindBin;
 
+use require::relative "../../subroutines.pl";
+
+my $samples = samples_location();
 
 sub error {
     say "************ ERROR **************\n\n";
@@ -38,7 +41,7 @@ mkdir $temp_dir;
 
 # Compiling Usuba DES.
 say "Compiling Chacha20 from Usuba to C...";
-error if system "./usubac -V -o $temp_dir/chacha20.c -arch sse -no-share samples/usuba/chacha20.ua" ;
+error if system "./usubac -V -o $temp_dir/chacha20.c -arch sse -no-share $samples/usuba/chacha20.ua" ;
 {
     local $^I = "";
     local @ARGV = "$temp_dir/chacha20.c";

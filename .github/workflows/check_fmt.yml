@@ -62,7 +62,7 @@ jobs:
 
       # Generate config.ml file
       - name: configure
-        run: ./configure.pl
+        run: ./configure
 
       - name: check ocamlformat
         run: dune build @fmt || (echo \"dune build @fmt failed. You should dune build @fmt --auto-promote and push.\"; exit 2)

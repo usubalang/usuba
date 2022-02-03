@@ -28,7 +28,8 @@ TODO")
    ocaml
    dune
   (usuba-lib (= :version))
-  (usuba-common (= :version))
+  ; Not needed for now
+  ; (usuba-common (= :version))
   (odoc :with-doc)
  )
 )

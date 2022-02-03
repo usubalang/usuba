@@ -1,6 +1,0 @@
-kwan-avx 3.63
-  ua-avx 3.74
-kwan-sse 6.50
-  ua-sse 6.64
-  ua-std 11.47
-kwan-std 12.01

@@ -23,6 +23,10 @@ use File::Path qw( remove_tree );
 use File::Copy;
 use FindBin;
 
+require './subroutines.pl';
+
+my $samples = samples_location();
+
 sub error {
     say "************ ERROR **************\n\n";
     exit 1;
@@ -43,7 +47,7 @@ say "\n\n-----------------------------------------------------------------------
 say "---------------------- Correctness verifications ----------------------";
 say "-----------------------------------------------------------------------\n\n";
 for my $test (glob('checks/correctness/*.pl')) {
-    if (system("./$test 1") != 0) {
+    if (system("./$test 1 --samples $samples") != 0) {
         $status{$test} = 0;
     } else {
         $status{$test} = 1;

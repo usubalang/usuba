@@ -1,4 +1,0 @@
-rectangle-nolazy-inter 4.01 21336
-rectangle-lazy-inter 4.29 21336
-rectangle-lazy-nointer 5.20 17240
-rectangle-nolazy-nointer 5.61 17240

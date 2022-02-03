@@ -1,2 +1,0 @@
-chacha20 6.67 16560
-chacha20-inter 10.62 16568

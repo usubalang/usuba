@@ -1,2 +1,0 @@
-ascon-inter 4.25 16600
-ascon 4.53 16592

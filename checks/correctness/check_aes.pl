@@ -15,6 +15,10 @@ sub error {
     exit 1;
 }
 
+use require::relative "../../subroutines.pl";
+
+my $samples = samples_location();
+
 my $temp_dir = "tmp_aes";
 
 say "############################## Bitslice AES ###########################";
@@ -41,7 +45,7 @@ copy $_, "." for glob "$FindBin::Bin/aes/{main.c,stream.h,aes_ctr.pl}";
 chdir "..";
 say "Compiling AES from Usuba to C...";
 for my $arch (qw(std sse avx)) {
-    error if system "./usubac -B -o $temp_dir/$arch/aes.c -arch $arch -no-share -no-sched samples/usuba/aes.ua" ;
+    error if system "./usubac -B -o $temp_dir/$arch/aes.c -arch $arch -no-share -no-sched $samples/usuba/aes.ua" ;
 }
 
 chdir $temp_dir;

@@ -9,6 +9,10 @@ use File::Path qw( remove_tree );
 use File::Copy;
 use FindBin;
 
+use require::relative "../../subroutines.pl";
+
+my $samples = samples_location();
+
 sub error {
     say "************ ERROR **************\n\n";
     exit 1;
@@ -22,7 +26,7 @@ say "################################## DES ################################";
 chdir "$FindBin::Bin/../..";
 
 # Compiling the compiler.
-unless ($ARGV[0]) { 
+unless ($ARGV[0]) {
     say "Compiling...";
     error if system 'make';
 }
@@ -35,7 +39,7 @@ mkdir $temp_dir;
 
 # Compiling Usuba DES.
 say "Regenerating the DES code...";
-error if system "./usubac -no-arr -B -o $temp_dir/des.c -arch avx samples/usuba/des.ua" ;
+error if system "./usubac -no-arr -B -o $temp_dir/des.c -arch avx $samples/usuba/des.ua" ;
 {
     local $^I = "";
     local @ARGV = "$temp_dir/des.c";
