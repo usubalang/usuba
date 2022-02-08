@@ -1,2 +1,0 @@
-rectangle-inter 25.14 8464
-rectangle 28.44 8456

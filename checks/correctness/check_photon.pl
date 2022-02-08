@@ -11,6 +11,9 @@ use File::Copy::Recursive qw(rcopy dircopy);
 $File::Copy::Recursive::CPRFComp = 1;
 use FindBin;
 
+use require::relative "../../subroutines.pl";
+
+my $samples = samples_location();
 
 sub error {
     say "************ ERROR **************\n\n";
@@ -39,7 +42,7 @@ for my $slicing ('vslice', 'bitslice') {
     # Compiling Usuba Clyde.
     say "Compiling Photon from Usuba to C...";
     my $slicing_flag = $slicing eq 'vslice' ? '-V -keep-tables' : '-B';
-    error if system "./usubac $slicing_flag -o $temp_dir/photon_ua_$slicing.c -arch std -no-sched samples/usuba/photon_$slicing.ua";
+    error if system "./usubac $slicing_flag -o $temp_dir/photon_ua_$slicing.c -arch std -no-sched $samples/usuba/photon_$slicing.ua";
 
     chdir $temp_dir;
     copy $_, "." for glob "$FindBin::Bin/photon/*";

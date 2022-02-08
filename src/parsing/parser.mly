@@ -1,12 +1,11 @@
 
 %{
   open Usuba_AST
-  open Lexing
   open Utils
   exception Syntax_error
 
   (* convert a left_asgn list into an expression *)
-  let rec left_to_right (l: var list) : expr =
+  let left_to_right (l: var list) : expr =
     match l with
      | [] -> raise Syntax_error
      | x::[] -> ExpVar x

@@ -1,1 +1,0 @@
-pyjamask_vslice.ua

@@ -1,1 +1,0 @@
-../../../samples/usuba/xoodoo.ua

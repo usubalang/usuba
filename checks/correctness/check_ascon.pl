@@ -17,6 +17,10 @@ sub error {
     exit 1;
 }
 
+use require::relative "../../subroutines.pl";
+
+my $samples = samples_location();
+
 # Compiling the compiler.
 unless ($ARGV[0]) {
     say "Compiling...";
@@ -39,7 +43,7 @@ for my $slicing ('vslice', 'bitslice') {
     # Compiling Usuba Clyde.
     say "Compiling Ascon from Usuba to C...";
     my $slicing_flag = $slicing eq 'vslice' ? '-V' : '-B';
-    error if system "./usubac $slicing_flag -o $temp_dir/ascon_ua_$slicing.c -arch std -no-sched samples/usuba/ascon.ua";
+    error if system "./usubac $slicing_flag -o $temp_dir/ascon_ua_$slicing.c -arch std -no-sched $samples/usuba/ascon.ua";
 
     chdir $temp_dir;
     copy $_, "." for glob "$FindBin::Bin/ascon/*";

@@ -1,1 +1,0 @@
-../../../samples/usuba/pyjamask.ua

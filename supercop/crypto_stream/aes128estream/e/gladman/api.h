@@ -1,2 +1,0 @@
-#define crypto_stream_aes128estream_e_gladman_KEYBYTES 16
-#define crypto_stream_aes128estream_e_gladman_NONCEBYTES 16

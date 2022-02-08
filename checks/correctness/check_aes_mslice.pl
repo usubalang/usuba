@@ -14,6 +14,10 @@ sub error {
     exit 1;
 }
 
+use require::relative "../../subroutines.pl";
+
+my $samples = samples_location();
+
 my $temp_dir = "tmp_aes_mslice";
 
 say "############################### AES Mslice ############################";
@@ -35,7 +39,7 @@ mkdir $temp_dir;
 
 # Compiling Usuba AES.
 say "Compiling AES from Usuba to C...";
-error if system "./usubac -H -o $temp_dir/aes.c -arch sse -no-share samples/usuba/aes_mslice.ua" ;
+error if system "./usubac -H -o $temp_dir/aes.c -arch sse -no-share $samples/usuba/aes_mslice.ua" ;
 {
     local $^I = "";
     local @ARGV = "$temp_dir/aes.c";

@@ -23,6 +23,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Checkout private repo examples
+        uses: actions/checkout@v2
+        with:
+          repository: usubalang/examples
+          path: './examples'
+
       # Retrieve the opam cache with unique key
       # A new cache is created/used if the `.opam` files changes or
       # if we use another ocaml version
@@ -50,14 +56,14 @@ jobs:
         run: eval $(opam env)
 
       - name: install ocaml dependencies
-        run: opam install coq ocamlbuild menhir
+        run: opam install --deps-only .
 
       # Export opam's path
       - name: export opam path
         run: |
           echo "$HOME/.opam/${{ env.OCAML_DEFAULT_VERSION }}/bin" >> $GITHUB_PATH
 
-        # List installed packages (for debug purposes this information can be useful)
+      # List installed packages (for debug purposes this information can be useful)
       - name: opam list
         run: opam list
 
@@ -85,9 +91,11 @@ jobs:
           cpan List::MoreUtils
           cpan Data::Printer
           cpan -fi Statistics::Test::WilcoxonRankSum
+          cpan require::relative
 
+      # Generate config.ml file
       - name: configure
-        run: ./configure.pl
+        run: ./configure
 
       # `dune build` (will update the *.opam file if the dune-project was updated)
       # (all of this will be done when the build system is upgraded to use dune)
@@ -124,7 +132,7 @@ jobs:
         run: ulimit -s unlimited
 
       - name: Test
-        run: make test
+        run: make test SAMPLES_DIR="./examples"
 
       # Monitor changes in repo's files
       # If there are some changes, stop the workflow and suggest changes in the PR

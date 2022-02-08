@@ -1,4 +1,0 @@
-serpent-nolazy-inter 10.74 42000
-serpent-lazy-inter 10.83 42000
-serpent-nolazy-nointer 13.77 29712
-serpent-lazy-nointer 13.95 29712

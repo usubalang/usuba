@@ -1,0 +1,102 @@
+(include_subdirs unqualified)
+
+(documentation
+ (package usuba-lib))
+
+(library
+ (name UsubaLib)
+ (public_name usuba-lib)
+ ; external dependencies
+ (libraries unix str)
+ ; Specifying modules one by one because we don't want to include them all
+ (modules_without_implementation usuba_AST)
+ (modules
+  ; assert_lang
+  basic_utils
+  clear_origins
+  config
+  interp
+  pass_runner
+  perfs
+  rename
+  usuba_AST
+  usuba_print
+  utils
+  ; maskverif
+  usuba_to_maskverif
+  ; optimization
+  CSE
+  constant_folding
+  copy_propagation
+  fuse_loop_general
+  fuse_loops
+  get_live_var
+  inline
+  inline_core
+  interleave
+  linearize_arrays
+  pre_schedule
+  remove_dead_code
+  scheduler
+  share_var
+  simple_opts
+  vital_inline
+  ; tightprove
+  print_tp
+  tightprove
+  tightprove_to_usuba
+  tp_AST
+  tp_IO
+  usuba_to_tightprove
+  ; tightprove/parsing
+  lexer_tp
+  parser_api_tp
+  parser_tp
+  ; verification
+  ; bdd_verif
+  soundness
+  type_checker
+  ; c_gen
+  nodes_to_c_fdti
+  nodes_to_c_masked
+  nodes_to_c
+  nodes_to_c_ua_masked
+  usuba_to_c
+  ; c_gen/runtimes
+  genC_standalone
+  ; normalization
+  clean
+  expand_array
+  expand_parameters
+  init_scheduler
+  monomorphize
+  normalize_inner_core
+  norm_tuples
+  sbox_index
+  unfold_unnest
+  convert_tables
+  expand_multiples
+  expand_permut
+  fix_dim
+  mask
+  normalize_core
+  normalize
+  remove_sync
+  shift_tuples
+  unroll
+  ; parsing
+  lexer
+  parser_api
+  parser
+  ; tests
+  test_constant_folding
+  test_copy_propagation
+  test_CSE
+  test_monomorphize
+  test_pass_runner
+  test_remove_dead_code))
+
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))

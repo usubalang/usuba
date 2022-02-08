@@ -1,5 +1,0 @@
-
-- The paths are probably wrong: those folders should be one level upper in the hierarchy
-
-
-- plot/data-speedup.dat contains data reported by hand from files scaling-avx512/*/*/results.txt

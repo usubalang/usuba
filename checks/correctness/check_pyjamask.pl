@@ -11,6 +11,9 @@ use File::Copy::Recursive qw(rcopy dircopy);
 $File::Copy::Recursive::CPRFComp = 1;
 use FindBin;
 
+use require::relative "../../subroutines.pl";
+
+my $samples = samples_location();
 
 sub error {
     say "************ ERROR **************\n\n";
@@ -42,7 +45,7 @@ for my $slicing ('bitslice', 'vslice') {
     # Compiling Usuba DES.
     say "Compiling Pyjamask from Usuba to C...";
     my $slicing_flag = $slicing eq 'bitslice' ? '-B' : '-V';
-    error if system "./usubac $slicing_flag -o $temp_dir/pyjamask_ua_$slicing.c -arch std -no-share -no-sched samples/usuba/pyjamask_$slicing.ua" ;
+    error if system "./usubac $slicing_flag -o $temp_dir/pyjamask_ua_$slicing.c -arch std -no-share -no-sched $samples/usuba/pyjamask_$slicing.ua" ;
 
     chdir $temp_dir;
     copy $_, "." for glob "$FindBin::Bin/pyjamask/*";

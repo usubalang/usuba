@@ -1,0 +1,9 @@
+ciphers/*
+ciphers/*/*
+ciphers/*/*/*
+ciphers/*/*/*/*
+
+# Temporary
+src/normalization/sbox_index.ml
+src/normalization/fix_all_params.ml
+src/config.ml

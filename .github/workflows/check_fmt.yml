@@ -1,0 +1,68 @@
+name: Check formatting
+
+# For any push and pull request we try to build the project
+on: [push,pull_request]
+
+env:
+  OCAML_DEFAULT_VERSION: 4.13.1
+  # Add OPAMYES=true to the environment, this is usefill to replace `-y` option
+  # in any opam call
+  OPAMYES: true
+
+jobs:
+  check-format:
+    # Basic test to check if the project can be built (using dune build)
+    # This test also check that `.opam` files are synced with dune-project
+    # If this test fails, no more make building test are done
+    name: Check Format
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code of the current branch
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Retrieve the opam cache with unique key
+      # A new cache is created/used if the `.opam` files changes or
+      # if we use another ocaml version
+      # This action only retrieve the .opam/ directory
+      - name: Retrieve opam cache
+        uses: actions/cache@v2
+        id: cache-opam
+        with:
+          path: ~/.opam
+          key: v2-${{ runner.os }}-test-actions-${{ env.OCAML_DEFAULT_VERSION }}-${{ hashFiles('*.opam') }}
+
+      # Get an OCaml environment with opam installed and the proper ocaml version
+      # opam will use opam cache environment if retrieved
+      - name: Use OCaml ${{ env.OCAML_DEFAULT_VERSION }}
+        uses: avsm/setup-ocaml@v1
+        with:
+          ocaml-version: ${{ env.OCAML_DEFAULT_VERSION }}
+
+      # Install dependencies (TODO when we have a clean repo, not now)
+      # - name: opam install deps
+      #   run: opam install ./*.opam --deps-only
+
+      # Make sure the env is synced
+      - name: eval opam env
+        run: eval $(opam env)
+
+      - name: install ocaml dependencies
+        run: opam install --deps-only .
+
+      - name: install ocamlformat
+        run: opam install ocamlformat
+
+      # Export opam's path
+      - name: export opam path
+        run: |
+          echo "$HOME/.opam/${{ env.OCAML_DEFAULT_VERSION }}/bin" >> $GITHUB_PATH
+
+      # Generate config.ml file
+      - name: configure
+        run: ./configure
+
+      - name: check ocamlformat
+        run: dune build @fmt || (echo \"dune build @fmt failed. You should dune build @fmt --auto-promote and push.\"; exit 2)
