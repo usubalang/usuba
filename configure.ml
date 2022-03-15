@@ -3,9 +3,12 @@
 let config_file = Filename.concat "src" "config.ml"
 let cwd = Sys.getcwd ()
 
-(* Default data_dir is ../examples/data *)
+(* Default data_dir is ../benchmarks/examples/data *)
 let data_dir =
-  ref Filename.(concat cwd @@ concat ".." @@ Filename.concat "examples" "data")
+  ref
+    Filename.(
+      concat cwd @@ concat ".." @@ concat "benchmarks"
+      @@ concat "examples" "data")
 
 (* Default arch_dir is ./arch *)
 let arch_dir = ref (Filename.concat cwd "arch")
@@ -39,7 +42,7 @@ let args =
       "Configure in black&white. You don't want fancy colors" );
     ( "--datadir",
       Arg.String (set_dir data_dir),
-      "DIR where the examples are stored for testing" );
+      "DIR where the examples are stored for testing (not mandatory)" );
     ( "--mandir",
       Arg.String (set_dir arch_dir),
       "DIR where to find the C headers for each architecture." );
@@ -47,15 +50,16 @@ let args =
       Arg.String (set_dir tightprove_cache),
       "DIR to use as a cache for tightprove when compiling Usuba files with \
        `-tp`. If you do not already have a cache from a previous installation \
-       of Usuba, you can probably leave it as is" );
+       of Usuba, you can probably leave it as is (not mandatory)" );
     ( "--sage",
       Arg.String (set_dir sage),
       "BIN the command to invoke to run SageMath. If you have a system-wide \
        installation of SageMath, then setting it as 'sage' should work. \
-       Otherwise, specify the full path of you sage installation." );
+       Otherwise, specify the full path of you sage installation. (not \
+       mandatory)" );
     ( "--tightprove",
       Arg.String (set_dir tightprove),
-      "BIN the full path of the tightPROVE+ binary" );
+      "BIN the full path of the tightPROVE+ binary (not mandatory)" );
   ]
 
 let () =
@@ -74,10 +78,17 @@ let tightprove = !tightprove
 let quiet = !quiet
 let nocolor = !nocolor
 
-type style = Normal | FG_Black | FG_Red | FG_Green | FG_Default | BG_Default
+type style =
+  | Normal
+  | FG_Black
+  | FG_Red
+  | FG_Green
+  | FG_Yellow
+  | FG_Default
+  | BG_Default
 
 let close_tag = function
-  | FG_Black | FG_Red | FG_Green | FG_Default -> FG_Default
+  | FG_Black | FG_Red | FG_Green | FG_Yellow | FG_Default -> FG_Default
   | BG_Default -> BG_Default
   | _ -> Normal
 
@@ -88,6 +99,7 @@ let style_of_tag = function
       | "fg_black" -> FG_Black
       | "fg_red" -> FG_Red
       | "fg_green" -> FG_Green
+      | "fg_yellow" -> FG_Yellow
       | "fg_default" -> FG_Default
       | "bg_default" -> BG_Default
       | _ -> raise Not_found)
@@ -99,6 +111,7 @@ let to_ansi_value = function
   | FG_Black -> "30"
   | FG_Red -> "31"
   | FG_Green -> "32"
+  | FG_Yellow -> "33"
   | FG_Default -> "39"
   | BG_Default -> "49"
 
@@ -127,8 +140,9 @@ let _ =
 let printf fmt =
   if quiet then Format.(ifprintf std_formatter fmt) else Format.printf fmt
 
-let print_good fmt = printf ("@{<fg_green>" ^^ fmt ^^ "@}")
-let print_bad fmt = printf ("@{<fg_red>" ^^ fmt ^^ "@}")
+let print_good fmt = printf ("@{<fg_green>" ^^ fmt ^^ "@}@.")
+let print_absent fmt = printf ("@{<fg_yellow>" ^^ fmt ^^ "@}@.")
+let print_bad fmt = printf ("@{<fg_red>" ^^ fmt ^^ "@}@.")
 
 let flush_channel oc =
   let rec aux acc =
@@ -138,39 +152,42 @@ let flush_channel oc =
   in
   aux []
 
-let check_exec e =
-  printf "Checking for %s... " e;
+let check_exec ?(mandatory = true) e =
+  printf "  Checking for %s... @?" e;
   let cmd_out = Unix.open_process_in (Format.sprintf "which %s" e) in
   let e = flush_channel cmd_out in
   match Unix.close_process_in cmd_out with
-  | Unix.WEXITED 0 -> print_good "%s@," e
-  | _ -> print_bad "no@,"
+  | Unix.WEXITED 0 -> print_good "%s" e
+  | _ ->
+      if mandatory then print_bad "no"
+      else print_absent "absent but not mandatory"
 
 let ocaml_version () =
-  printf "Checking OCaml version (>= 4.05.0)... ";
+  printf "  Checking OCaml version (>= 4.05.0)... @?";
   let e = Sys.ocaml_version in
   match String.split_on_char '.' e with
   | major :: minor :: patchlevel :: _
     when int_of_string major >= 4
          && int_of_string minor >= 5
          && int_of_string patchlevel >= 0 ->
-      print_good "%s@," e
+      print_good "%s" e
   | _ -> print_bad "< 4.05.0"
 
 let dependencies () =
-  printf "Checking for dependencies... ";
-  let cmd_out =
-    Unix.open_process_in "dune external-lib-deps --missing @@default 2>&1"
-  in
+  printf "  Checking for dependencies... @?";
+  let cmd_out = Unix.open_process_in "opam install --deps-only -y . 2>&1" in
   let e = flush_channel cmd_out in
   match Unix.close_process_in cmd_out with
-  | Unix.WEXITED 0 -> print_good "ok %s@," e
-  | _ -> print_bad "no:@,%s@," e
+  | Unix.WEXITED 0 -> print_good "ok: %s" e
+  | _ ->
+      print_absent "Could not install dependencies, try do it manually:@,%s" e
 
 let check_env () =
   check_exec "opam";
   check_exec "dune";
-  check_exec "icc";
+  check_exec ~mandatory:false "icc";
+  check_exec ~mandatory:false "clang";
+  check_exec ~mandatory:false "gcc";
   dependencies ();
   ocaml_version ()
 
@@ -200,6 +217,6 @@ let gen_config () =
 let () =
   printf "@[<v 2>Generating files@,";
   gen_config ();
-  printf "@.@[<v 2>Checking env@,";
+  printf "@.Checking env@.";
   check_env ();
   printf "@."
