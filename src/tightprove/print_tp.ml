@@ -25,8 +25,7 @@ let asgn_to_str (asgn : asgn) : string =
   sprintf "%s = %s\n" asgn.lhs (expr_to_str asgn.rhs)
 
 let def_to_str (def : def) : string =
-  sprintf "rs=%d\n\n%s\n\n%s\n" (* m *)
-    def.rs
+  sprintf "rs=%d\n\n%s\n\n%s\n" (* m *) def.rs
     (* inputs *)
     (join "" (List.map (sprintf "in %s\n") def.inputs))
     (* body *)
