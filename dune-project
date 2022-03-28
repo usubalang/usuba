@@ -44,6 +44,7 @@ TODO")
    ocaml
    dune
    menhir
+   ppx_deriving
   (usuba_pp (= :version))
   (odoc :with-doc)
  )
