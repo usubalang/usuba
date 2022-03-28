@@ -3,6 +3,7 @@ open Lexing
 open Usuba_AST
 open Printf
 open Basic_utils
+open Usuba_pp
 
 let print_position outx lexbuf =
   let pos = lexbuf.lex_curr_p in
@@ -28,7 +29,15 @@ let rec parse_file (path : string list) (filename : string) : Usuba_AST.prog =
   let lex = from_channel f in
   try
     lex.lex_curr_p <- { lex.lex_curr_p with pos_fname = filename };
-    { nodes = resolve_includes path (Parser.prog Lexer.token lex) }
+    let def_or_inc_list = Parser.prog Lexer.token lex in
+    Format.eprintf "@[<v 1>Def_or_inc_list:@,%a@."
+      List.(pp Usuba_AST.pp_def_or_inc)
+      def_or_inc_list;
+    let def_list = resolve_includes path def_or_inc_list in
+    Format.eprintf "@[<v 1>Def_list:@,%a@,@."
+      List.(pp Usuba_AST.pp_def)
+      def_list;
+    { nodes = def_list }
   with
   | SyntaxError msg ->
       fprintf stderr "%a: %s\n" print_position lex msg;

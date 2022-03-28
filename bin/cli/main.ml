@@ -1,8 +1,9 @@
-open UsubaLib
+open Usuba_lib
 open Usuba_AST
 open Printf
 open Basic_utils
 open Utils
+open Usuba_pp
 
 let warnings = ref false
 let verbose = ref 1
@@ -85,9 +86,11 @@ let compile (file_in : string) (prog : Usuba_AST.prog) (conf : config) : unit =
   let prog =
     if conf.type_check then Type_checker.type_prog prog conf else prog
   in
+  Format.eprintf "@[<v 1>Typechecking:@,%a@,@." Usuba_AST.pp_prog prog;
 
   (* Normalizing AND optimizing *)
   let normed_prog = Normalize.compile prog conf in
+  Format.eprintf "@[<v 1>Normalization:@,%a@,@." Usuba_AST.pp_prog prog;
 
   (* Generating a string of C code *)
   let c_prog_str = Usuba_to_c.prog_to_c prog normed_prog conf file_in in
@@ -257,6 +260,8 @@ let main () =
     let pre_sched = !pre_schedule (* && !scheduling *) in
 
     let path = Filename.dirname s :: List.rev !path in
+
+    Format.eprintf "%a@." List.(pp String.pp) path;
 
     if !maskVerif then (
       unroll := true;

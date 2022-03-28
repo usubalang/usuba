@@ -12,6 +12,7 @@ depends: [
   "ocaml"
   "dune" {>= "2.8"}
   "menhir"
+  "usuba_pp" {= version}
   "odoc" {with-doc}
 ]
 build: [
