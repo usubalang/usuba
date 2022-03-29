@@ -261,8 +261,6 @@ let main () =
 
     let path = Filename.dirname s :: List.rev !path in
 
-    Format.eprintf "%a@." List.(pp String.pp) path;
-
     if !maskVerif then (
       unroll := true;
       no_arr := true;
