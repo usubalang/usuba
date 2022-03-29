@@ -1,7 +1,6 @@
 (library
  (name Usuba_pp)
- (public_name usuba_pp)
-)
+ (public_name usuba_pp))
 
 (env
  (dev

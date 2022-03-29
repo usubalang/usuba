@@ -94,8 +94,8 @@
   test_monomorphize
   test_pass_runner
   test_remove_dead_code)
- (preprocess (pps ppx_deriving.show))
-)
+ (preprocess
+  (pps ppx_deriving.show)))
 
 (env
  (dev

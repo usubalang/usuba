@@ -3,8 +3,8 @@
  (public_name usuba)
  (package usuba)
  (libraries
-   usuba_lib
-   usuba_pp
+  usuba_lib
+  usuba_pp
   ; usuba-common
   ))
 
