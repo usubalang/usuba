@@ -41,12 +41,11 @@ type expr =
 
 type stmt_opt = Unroll | No_unroll | Pipelined | Safe_exit
 
-type 'a _deq_i =
+type deq_i =
   | Eqn of var list * expr * bool
-  | Loop of ident * arith_expr * arith_expr * 'a list * stmt_opt list
+  | Loop of ident * arith_expr * arith_expr * deq list * stmt_opt list
 
-type deq = { content : deq _deq_i; orig : (ident * deq _deq_i) list }
-type deq_i = deq _deq_i
+and deq = { content : deq_i; orig : (ident * deq_i) list }
 
 val pp_deq_i : Format.formatter -> deq_i -> unit
 

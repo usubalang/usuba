@@ -49,15 +49,13 @@ type expr =
 
 type stmt_opt = Unroll | No_unroll | Pipelined | Safe_exit [@@deriving show]
 
-type 'a _deq_i =
+type deq_i =
   | Eqn of var list * expr * bool
-  | Loop of ident * arith_expr * arith_expr * 'a list * stmt_opt list
+  | Loop of ident * arith_expr * arith_expr * deq list * stmt_opt list
 [@@deriving show]
 
-type deq = { content : deq _deq_i; orig : (ident * deq _deq_i) list }
-[@@deriving show]
+and deq = { content : deq_i; orig : (ident * deq_i) list } [@@deriving show]
 
-type deq_i = deq _deq_i [@@deriving show]
 type var_d_opt = Pconst | PlazyLift [@@deriving show]
 
 type var_d = {
