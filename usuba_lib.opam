@@ -13,6 +13,8 @@ depends: [
   "dune" {>= "2.8"}
   "menhir"
   "ppx_deriving"
+  "sexplib"
+  "ppx_sexp_conv"
   "usuba_pp" {= version}
   "odoc" {with-doc}
 ]

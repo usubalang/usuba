@@ -5,6 +5,7 @@
  (libraries
   usuba_lib
   usuba_pp
+  sexplib
   ; usuba-common
   ))
 

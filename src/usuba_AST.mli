@@ -48,6 +48,7 @@ type deq_i =
 and deq = { content : deq_i; orig : (ident * deq_i) list }
 
 val pp_deq_i : Format.formatter -> deq_i -> unit
+val sexp_of_deq_i : deq_i -> Sexplib.Sexp.t
 
 type var_d_opt = Pconst | PlazyLift
 
@@ -70,14 +71,17 @@ type def_opt = Inline | No_inline | Interleave of int | No_opt | Is_table
 type def = { id : ident; p_in : p; p_out : p; opt : def_opt list; node : def_i }
 
 val pp_def : Format.formatter -> def -> unit
+val sexp_of_def : def -> Sexplib.Sexp.t
 
 type def_or_inc = Def of def | Inc of string
 
 val pp_def_or_inc : Format.formatter -> def_or_inc -> unit
+val sexp_of_def_or_inc : def_or_inc -> Sexplib.Sexp.t
 
 type prog = { nodes : def list }
 
 val pp_prog : Format.formatter -> prog -> unit
+val sexp_of_prog : prog -> Sexplib.Sexp.t
 
 type arch = Std | MMX | SSE | AVX | AVX512 | Neon | AltiVec
 type slicing = H | V | B

@@ -1,6 +1,6 @@
 (lang dune 2.8)
 
-(implicit_transitive_deps false)
+(implicit_transitive_deps true)
 
 ; Menhir options
 (using menhir 2.0)
@@ -27,6 +27,7 @@ TODO")
  (depends
    ocaml
    dune
+   sexplib
   (usuba_lib (= :version))
   (usuba_pp (= :version))
   ; Not needed for now
@@ -45,6 +46,8 @@ TODO")
    dune
    menhir
    ppx_deriving
+   sexplib
+   ppx_sexp_conv
   (usuba_pp (= :version))
   (odoc :with-doc)
  )

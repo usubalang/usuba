@@ -11,6 +11,7 @@ bug-reports: "https://github.com/usuba-lang/usuba/issues"
 depends: [
   "ocaml"
   "dune" {>= "2.8"}
+  "sexplib"
   "usuba_lib" {= version}
   "usuba_pp" {= version}
   "odoc" {with-doc}

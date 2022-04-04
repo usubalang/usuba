@@ -7,7 +7,7 @@
  (name Usuba_lib)
  (public_name usuba_lib)
  ; external dependencies
- (libraries unix str usuba_pp)
+ (libraries unix str usuba_pp sexplib ppx_sexp_conv)
  ; Specifying modules one by one because we don't want to include them all
  (modules
   ; assert_lang
@@ -95,7 +95,7 @@
   test_pass_runner
   test_remove_dead_code)
  (preprocess
-  (pps ppx_deriving.show)))
+  (pps ppx_deriving.show ppx_sexp_conv)))
 
 (env
  (dev

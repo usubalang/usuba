@@ -91,6 +91,9 @@ let compile (file_in : string) (prog : Usuba_AST.prog) (conf : config) : unit =
   (* Normalizing AND optimizing *)
   let normed_prog = Normalize.compile prog conf in
   Format.eprintf "@[<v 1>Normalization:@,%a@,@." Usuba_AST.pp_prog prog;
+  Format.eprintf "@[<v 1>Normalization as S-Expression:@,%a@,@."
+    Sexplib.Sexp.pp_hum
+    (Usuba_AST.sexp_of_prog prog);
 
   (* Generating a string of C code *)
   let c_prog_str = Usuba_to_c.prog_to_c prog normed_prog conf file_in in
