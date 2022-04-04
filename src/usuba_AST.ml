@@ -136,6 +136,7 @@ type config = {
   shares : int;
   gen_bench : bool;
   keep_tables : bool;
+  dump_sexp : bool;
   compact : bool;
   bench_inline : bool;
   bench_inter : bool;
