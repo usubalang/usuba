@@ -1,6 +1,6 @@
 (lang dune 2.8)
 
-(implicit_transitive_deps false)
+(implicit_transitive_deps true)
 
 ; Menhir options
 (using menhir 2.0)
@@ -27,9 +27,40 @@ TODO")
  (depends
    ocaml
    dune
-  (usuba-lib (= :version))
+   sexplib
+  (usuba_lib (= :version))
+  (usuba_pp (= :version))
   ; Not needed for now
   ; (usuba-common (= :version))
+  (odoc :with-doc)
+ )
+)
+
+(package
+ (name usuba_lib)
+ (synopsis "Usuba Library")
+ (description "\
+TODO")
+ (depends
+   ocaml
+   dune
+   menhir
+   ppx_deriving
+   sexplib
+   ppx_sexp_conv
+  (usuba_pp (= :version))
+  (odoc :with-doc)
+ )
+)
+
+(package
+ (name usuba_pp)
+ (synopsis "Usuba PP")
+ (description "\
+Pretty printing for stdlib modules")
+ (depends
+   ocaml
+   dune
   (odoc :with-doc)
  )
 )
@@ -47,16 +78,3 @@ TODO")
 ;   (odoc :with-doc)
 ;  )
 ; )
-
-(package
- (name usuba-lib)
- (synopsis "Usuba Library")
- (description "\
-TODO")
- (depends
-   ocaml
-   dune
-   menhir
-  (odoc :with-doc)
- )
-)

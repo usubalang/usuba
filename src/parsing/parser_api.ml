@@ -3,6 +3,7 @@ open Lexing
 open Usuba_AST
 open Printf
 open Basic_utils
+open Usuba_pp
 
 let print_position outx lexbuf =
   let pos = lexbuf.lex_curr_p in
