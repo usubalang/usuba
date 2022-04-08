@@ -1,4 +1,4 @@
-
+- run
 - Add dir/m inference to type-checker
 - Make sure that functions that can't have the same input/output don't
 - Rewrite Unfold_unnest (in particular, temporaries in loops should have better types)
