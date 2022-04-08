@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all clean configure
 
 # Directories
 SRC_DIR := src
@@ -12,12 +12,20 @@ DUNE := dune
 MAIN := main
 
 all:
+	@if [ ! -f ./src/config.ml ]; then \
+		echo "config.ml was not found.";\
+		echo "./configure will be executed but you can/should rerun it if your directories are not located in the same places"; \
+		./configure; \
+	fi
+	@echo $(FILE_EXISTS)
 	$(DUNE) build
 	chmod +w _build/default/bin/cli/main.exe
 	cp _build/default/bin/cli/main.exe usubac
 
 # ./main.native -tests
 # cp main.native ../usubac
+
+configure:
 
 clean:
 	rm -f *~ .*~ usubac

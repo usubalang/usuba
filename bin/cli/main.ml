@@ -1,8 +1,8 @@
-open UsubaLib
+open Usuba_lib
 open Usuba_AST
-open Printf
 open Basic_utils
 open Utils
+open Usuba_pp
 
 let warnings = ref false
 let verbose = ref 1
@@ -55,6 +55,7 @@ let bench_bitsched = ref false
 let bench_msched = ref false
 let bench_sharevar = ref false
 let keep_tables = ref false
+let dump_sexp = ref false
 
 let str_to_arch = function
   | "std" -> Std
@@ -75,10 +76,10 @@ let bits_in_arch = function
   | Neon -> 128
   | AltiVec -> 128
 
-let gen_output_filename (file_in : string) : string =
+let gen_output_filename ?(ext = ".c") file_in =
   let full_name = List.hd (String.split_on_char '.' file_in) in
   let out_name = last (String.split_on_char '/' full_name) in
-  out_name ^ ".c"
+  out_name ^ ext
 
 let compile (file_in : string) (prog : Usuba_AST.prog) (conf : config) : unit =
   (* Type-checking *)
@@ -89,19 +90,26 @@ let compile (file_in : string) (prog : Usuba_AST.prog) (conf : config) : unit =
   (* Normalizing AND optimizing *)
   let normed_prog = Normalize.compile prog conf in
 
-  (* Generating a string of C code *)
-  let c_prog_str = Usuba_to_c.prog_to_c prog normed_prog conf file_in in
+  match conf.dump_sexp with
+  | true ->
+      let out = open_out (gen_output_filename ~ext:".ua0" file_in) in
+      let ppf = Format.formatter_of_out_channel out in
+      Format.fprintf ppf "%a" Sexplib.Sexp.pp_hum (Usuba_AST.sexp_of_prog prog);
+      close_out out
+  | false ->
+      (* Generating a string of C code *)
+      let c_prog_str = Usuba_to_c.prog_to_c prog normed_prog conf file_in in
 
-  (* Opening out file *)
-  let out =
-    match !output with
-    | "" -> open_out (gen_output_filename file_in)
-    | str -> open_out str
-  in
+      (* Opening out file *)
+      let out =
+        match !output with
+        | "" -> open_out (gen_output_filename file_in)
+        | str -> open_out str
+      in
 
-  (* Printing the C code *)
-  fprintf out "%s" c_prog_str;
-  close_out out
+      (* Printing the C code *)
+      Printf.fprintf out "%s" c_prog_str;
+      close_out out
 
 let run_tests () : unit =
   Test_constant_folding.test ();
@@ -194,6 +202,9 @@ let main () =
         "Specify the order of ti and fd (tifd or fdti)" );
       ("-lf", Arg.Set lazylift, "Enable lazy lifting");
       ("-o", Arg.Set_string output, "Set the output filename");
+      ( "-dump-sexp",
+        Arg.Set dump_sexp,
+        "Dump a s-expression of the compiled file to file.ua0" );
       ( "-H",
         Arg.Unit
           (fun () ->
@@ -316,6 +327,7 @@ let main () =
         gen_bench = !gen_bench;
         keep_tables = !keep_tables;
         compact = !compact;
+        dump_sexp = !dump_sexp;
         bench_inline = !bench_inline || !bench_all;
         bench_inter = !bench_inter || !bench_all;
         bench_bitsched = !bench_bitsched || !bench_all;
