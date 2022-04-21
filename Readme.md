@@ -36,8 +36,8 @@ Finally, some additional resources that could be useful:
 
 ## Installation
 
-Usuba is written in OCaml and Coq. On a Debian system, you should be
-able to install OCaml and Coq, as well as the required modules with:
+Usuba is written in OCaml. On a Debian system, you should be able to
+setup the base environment with
 
     ./install_deps.sh
 
