@@ -91,7 +91,11 @@ let compile (file_in : string) (prog : Usuba_AST.prog) (conf : config) : unit =
 
   match conf.dump_sexp with
   | true ->
-      let out = open_out (gen_output_filename ~ext:".ua0" file_in) in
+      let out =
+        match !output with
+        | "" -> open_out (gen_output_filename ~ext:".ua0" file_in)
+        | str -> open_out str
+      in
       let ppf = Format.formatter_of_out_channel out in
       Format.fprintf ppf "%a" Sexplib.Sexp.pp_hum
         (Usuba_AST.sexp_of_prog normed_prog);
