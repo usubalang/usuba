@@ -345,6 +345,11 @@ let main () =
     compile s prog conf
   in
 
-  Arg.parse speclist compile usage_msg
+  let input_files = ref [] in
+  let anon_fun filename = input_files := filename :: !input_files in
+
+  Arg.parse speclist anon_fun usage_msg;
+
+  List.iter (fun file -> compile file) !input_files
 
 let () = main ()
