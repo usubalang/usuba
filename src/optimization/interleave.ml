@@ -228,7 +228,7 @@ module Interleave_generic = struct
     List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd) vars;
     env_var
 
-  let interleave_def (inter_factor : int) (grain : int) (def : def) : def =
+  let interleave_def ~(inter_factor : int) ~(grain : int) (def : def) : def =
     let p_in = update_vds inter_factor def.p_in in
     let p_out = update_vds inter_factor def.p_out in
     {
@@ -242,7 +242,7 @@ module Interleave_generic = struct
             Single
               ( update_vds inter_factor vars,
                 interleave_deqs inter_factor grain env_var body )
-        | _ -> def.node);
+        | _ -> failwith "Def.node should be Single");
     }
 
   let interleave (prog : prog) (conf : config) : prog =
@@ -252,7 +252,7 @@ module Interleave_generic = struct
        architecture to maximize parallelism *)
     let grain = if conf.interleave = 0 then 1 else conf.interleave in
     if inter_factor > 1 then
-      { nodes = List.map (interleave_def inter_factor grain) prog.nodes }
+      { nodes = List.map (interleave_def ~inter_factor ~grain) prog.nodes }
     else (* Nothing to do if inter_factor is less than 2 *)
       prog
 end
