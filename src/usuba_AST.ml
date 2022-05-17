@@ -136,12 +136,12 @@ type config = {
   shares : int;
   gen_bench : bool;
   keep_tables : bool;
-  dump_sexp : bool;
   compact : bool;
   bench_inline : bool;
   bench_inter : bool;
   bench_bitsched : bool;
   bench_msched : bool;
   bench_sharevar : bool;
+  dump_sexp : bool;
 }
 [@@deriving show]
