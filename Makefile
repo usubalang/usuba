@@ -22,11 +22,6 @@ all:
 	chmod +w _build/default/bin/cli/main.exe
 	cp _build/default/bin/cli/main.exe usubac
 
-# ./main.native -tests
-# cp main.native ../usubac
-
-configure:
-
 clean:
 	rm -f *~ .*~ usubac
 	$(DUNE) clean

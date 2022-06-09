@@ -4,6 +4,13 @@ end
 
 module String = struct
   let pp ppf s = Format.fprintf ppf "%s" s
+
+  let pp_lowercase ?(ocaml_ident = true) ppf s =
+    let s = String.lowercase_ascii s in
+    Format.fprintf ppf "%s"
+      (if ocaml_ident then
+       String.map (function '.' -> 'D' | '-' -> 'H' | c -> c) s
+      else s)
 end
 
 module List = struct
