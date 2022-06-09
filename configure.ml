@@ -7,10 +7,8 @@ let cwd = Sys.getcwd ()
 
 (* Default data_dir is ../benchmarks/examples/data *)
 let data_dir =
-  ref
-    Filename.(
-      concat cwd @@ concat ".." @@ concat "benchmarks"
-      @@ concat "examples" "data")
+  let home = try Sys.getenv "HOME" with Not_found -> "" in
+  ref Filename.(concat home @@ concat "benchmarks" @@ concat "examples" "data")
 
 (* Default arch_dir is ./arch *)
 let arch_dir = ref (Filename.concat cwd "arch")
