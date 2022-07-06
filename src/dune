@@ -1,17 +1,17 @@
 (include_subdirs unqualified)
 
 (documentation
- (package usuba-lib))
+ (package usuba_lib))
 
 (library
- (name UsubaLib)
- (public_name usuba-lib)
+ (name Usuba_lib)
+ (public_name usuba_lib)
  ; external dependencies
- (libraries unix str)
+ (libraries unix str usuba_pp sexplib ppx_sexp_conv menhirLib)
  ; Specifying modules one by one because we don't want to include them all
- (modules_without_implementation usuba_AST)
  (modules
   ; assert_lang
+  ansi_terminal
   basic_utils
   clear_origins
   config
@@ -94,7 +94,9 @@
   test_CSE
   test_monomorphize
   test_pass_runner
-  test_remove_dead_code))
+  test_remove_dead_code)
+ (preprocess
+  (pps ppx_deriving.show ppx_sexp_conv)))
 
 (env
  (dev

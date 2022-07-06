@@ -62,6 +62,7 @@ let default_conf : config =
     bench_bitsched = false;
     bench_msched = false;
     bench_sharevar = false;
+    dump_sexp = false;
   }
 
 let default_dir = Varslice { uid = -1; name = "D" }

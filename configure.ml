@@ -1,5 +1,7 @@
 #!/usr/bin/env -S ocaml unix.cma
 
+open Ansi_terminal
+
 let config_file = Filename.concat "src" "config.ml"
 let cwd = Sys.getcwd ()
 
@@ -31,6 +33,7 @@ let set_dir r dir =
 
 let quiet = ref false
 let nocolor = ref false
+let nodeps = ref false
 
 let args =
   [
@@ -40,6 +43,7 @@ let args =
     ( "--nocolor",
       Arg.Set nocolor,
       "Configure in black&white. You don't want fancy colors" );
+    ("--nodeps", Arg.Set nodeps, "Configure without checking for dependencies");
     ( "--datadir",
       Arg.String (set_dir data_dir),
       "DIR where the examples are stored for testing (not mandatory)" );
@@ -78,67 +82,13 @@ let tightprove = !tightprove
 let quiet = !quiet
 let nocolor = !nocolor
 
-type style =
-  | Normal
-  | FG_Black
-  | FG_Red
-  | FG_Green
-  | FG_Yellow
-  | FG_Default
-  | BG_Default
-
-let close_tag = function
-  | FG_Black | FG_Red | FG_Green | FG_Yellow | FG_Default -> FG_Default
-  | BG_Default -> BG_Default
-  | _ -> Normal
-
-let style_of_tag = function
-  | Format.String_tag s -> (
-      match s with
-      | "n" -> Normal
-      | "fg_black" -> FG_Black
-      | "fg_red" -> FG_Red
-      | "fg_green" -> FG_Green
-      | "fg_yellow" -> FG_Yellow
-      | "fg_default" -> FG_Default
-      | "bg_default" -> BG_Default
-      | _ -> raise Not_found)
-  | _ -> raise Not_found
-
-(* See https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters for some values *)
-let to_ansi_value = function
-  | Normal -> "0"
-  | FG_Black -> "30"
-  | FG_Red -> "31"
-  | FG_Green -> "32"
-  | FG_Yellow -> "33"
-  | FG_Default -> "39"
-  | BG_Default -> "49"
-
-let ansi_tag = Printf.sprintf "\x1B[%sm"
-let start_mark_ansi_stag t = ansi_tag @@ to_ansi_value @@ style_of_tag t
-
-let stop_mark_ansi_stag t =
-  ansi_tag @@ to_ansi_value @@ close_tag @@ style_of_tag t
-
-let add_ansi_marking formatter =
-  let open Format in
-  pp_set_mark_tags formatter true;
-  let old_fs = pp_get_formatter_stag_functions formatter () in
-  pp_set_formatter_stag_functions formatter
-    {
-      old_fs with
-      mark_open_stag = start_mark_ansi_stag;
-      mark_close_stag = stop_mark_ansi_stag;
-    }
+let printf fmt =
+  if quiet then Format.(ifprintf std_formatter fmt) else Format.printf fmt
 
 let _ =
   if not nocolor then (
     add_ansi_marking Format.std_formatter;
     add_ansi_marking Format.err_formatter)
-
-let printf fmt =
-  if quiet then Format.(ifprintf std_formatter fmt) else Format.printf fmt
 
 let print_good fmt = printf ("@{<fg_green>" ^^ fmt ^^ "@}@.")
 let print_absent fmt = printf ("@{<fg_yellow>" ^^ fmt ^^ "@}@.")
@@ -174,13 +124,15 @@ let ocaml_version () =
   | _ -> print_bad "< 4.05.0"
 
 let dependencies () =
-  printf "  Checking for dependencies... @?";
-  let cmd_out = Unix.open_process_in "opam install --deps-only -y . 2>&1" in
-  let e = flush_channel cmd_out in
-  match Unix.close_process_in cmd_out with
-  | Unix.WEXITED 0 -> print_good "ok: %s" e
-  | _ ->
-      print_absent "Could not install dependencies, try do it manually:@,%s" e
+  if not !nodeps then (
+    printf "  Checking for dependencies... @?";
+
+    let cmd_out = Unix.open_process_in "opam install --deps-only -y . 2>&1" in
+    let e = flush_channel cmd_out in
+    match Unix.close_process_in cmd_out with
+    | Unix.WEXITED 0 -> print_good "ok: %s" e
+    | _ ->
+        print_absent "Could not install dependencies, try do it manually:@,%s" e)
 
 let check_env () =
   check_exec "opam";
@@ -210,6 +162,68 @@ let gen_config () =
   Format.fprintf ppo {|let tightprove_cache = "%s"@,|} tightprove_cache;
   Format.fprintf ppo {|let sage = "%s"@,|} sage;
   Format.fprintf ppo {|let tightprove = "%s"@.|} tightprove;
+  Format.fprintf ppo
+    {|
+type arch = Std | MMX | SSE | AVX | AVX512 | Neon | AltiVec
+[@@@deriving show, sexp]
+
+type slicing = H | V | B [@@@deriving show, sexp]
+
+type config = {
+  warning_as_error : bool;
+  verbose : int;
+  path : string list;
+  type_check : bool;
+  check_tbl : bool;
+  auto_inline : bool;
+  light_inline : bool;
+  inline_all : bool;
+  heavy_inline : bool;
+  no_inline : bool;
+  compact_mono : bool;
+  fold_const : bool;
+  cse : bool;
+  copy_prop : bool;
+  loop_fusion : bool;
+  pre_schedule : bool;
+  scheduling : bool;
+  schedule_n : int;
+  share_var : bool;
+  linearize_arr : bool;
+  precal_tbl : bool;
+  archi : arch;
+  bits_per_reg : int;
+  no_arr : bool;
+  arr_entry : bool;
+  unroll : bool;
+  interleave : int;
+  inter_factor : int;
+  fdti : string;
+  lazylift : bool;
+  slicing_set : bool;
+  slicing_type : slicing;
+  m_set : bool;
+  m_val : int;
+  tightPROVE : bool;
+  tightprove_dir : string;
+  maskVerif : bool;
+  masked : bool;
+  ua_masked : bool;
+  shares : int;
+  gen_bench : bool;
+  keep_tables : bool;
+  compact : bool;
+  bench_inline : bool;
+  bench_inter : bool;
+  bench_bitsched : bool;
+  bench_msched : bool;
+  bench_sharevar : bool;
+  dump_sexp : bool;
+  parse_only : bool;
+  type_only : bool;
+}
+[@@@deriving show]
+|};
   print_good "done";
   printf "@.";
   close_out co
