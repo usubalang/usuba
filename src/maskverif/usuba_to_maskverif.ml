@@ -1,9 +1,6 @@
 open Usuba_AST
-open Basic_utils
-open Utils
-open Printf
 
-let ident_to_str id = Str.global_replace (Str.regexp "'") "_" id.name
+let ident_to_str id = Str.global_replace (Str.regexp "'") "_" (Ident.name id)
 let m_as_int = function Mint m -> m | _ -> assert false
 
 let arith_op_to_str = function
@@ -14,10 +11,10 @@ let arith_op_to_str = function
   | Mod -> "%"
 
 let rec arith_to_str = function
-  | Const_e i -> sprintf "0x%x" i
-  | Var_e v -> v.name
+  | Const_e i -> Format.sprintf "0x%x" i
+  | Var_e v -> Ident.name v
   | Op_e (op, x, y) ->
-      sprintf "(%s %s %s)" (arith_to_str x) (arith_op_to_str op)
+      Format.sprintf "(%s %s %s)" (arith_to_str x) (arith_op_to_str op)
         (arith_to_str y)
 
 let log_op_to_str = function And -> "AND" | Or -> "OR" | _ -> assert false
@@ -26,7 +23,7 @@ let shift_op_to_str = function
   | Lshift -> "#lsl"
   | Rshift -> "#lsr"
   | RAshift ->
-      Printf.eprintf "Cannot generate arithmetic shifts for maskverif.\n";
+      Format.eprintf "Cannot generate arithmetic shifts for maskverif.@.";
       assert false
   | Lrotate -> "#rol"
   | Rrotate -> "#ror"
@@ -34,45 +31,45 @@ let shift_op_to_str = function
 let var_to_str = function
   | Var v -> ident_to_str v
   | v ->
-      Printf.eprintf "Cannot have arrays for maskverif (%s).\n"
-        (Usuba_print.var_to_str v);
+      Format.eprintf "Cannot have arrays for maskverif (%a).@."
+        (Usuba_print.pp_var ()) v;
       assert false
 
 let rec expr_to_str (env_var : (ident, typ) Hashtbl.t) = function
-  | Const (c, Some (Uint (_, Mint m, _))) -> sprintf "[0x%x:w%d; 0D]" c m
+  | Const (c, Some (Uint (_, Mint m, _))) -> Format.sprintf "[0x%x:w%d; 0D]" c m
   | ExpVar v -> var_to_str v
   | Log (Xor, x, y) ->
-      sprintf "%s ^w%d %s" (expr_to_str env_var x)
-        (m_as_int (get_type_m (get_normed_expr_type env_var x)))
+      Format.sprintf "%s ^w%d %s" (expr_to_str env_var x)
+        (m_as_int (Utils.get_type_m (Utils.get_normed_expr_type env_var x)))
         (expr_to_str env_var y)
   | Log (op, x, y) ->
-      sprintf "%s(%s,%s)" (log_op_to_str op) (expr_to_str env_var x)
+      Format.sprintf "%s(%s,%s)" (log_op_to_str op) (expr_to_str env_var x)
         (expr_to_str env_var y)
   | Arith (o, x, y) ->
-      sprintf "%s %s %s" (expr_to_str env_var x) (arith_op_to_str o)
+      Format.sprintf "%s %s %s" (expr_to_str env_var x) (arith_op_to_str o)
         (expr_to_str env_var y)
   | Shift (op, e, ae) ->
-      sprintf "%s(%s,%s)" (shift_op_to_str op) (expr_to_str env_var e)
+      Format.sprintf "%s(%s,%s)" (shift_op_to_str op) (expr_to_str env_var e)
         (arith_to_str ae)
-  | Not e -> sprintf "NOT(%s)" (expr_to_str env_var e)
+  | Not e -> Format.sprintf "NOT(%s)" (expr_to_str env_var e)
   | Fun (f, l) ->
-      sprintf "%s(%s)" (ident_to_str f)
-        (join "," (List.map (expr_to_str env_var) l))
+      Format.sprintf "%s(%s)" (ident_to_str f)
+        (Basic_utils.join "," (List.map (expr_to_str env_var) l))
   | e ->
-      Printf.eprintf "expr_to_str: invalid expr `%s`\n"
-        (Usuba_print.expr_to_str e);
+      Format.eprintf "expr_to_str: invalid expr `%a`\n" (Usuba_print.pp_expr ())
+        e;
       assert false
 
 let pat_to_str pat =
   match pat with
   | [] -> assert false
   | [ x ] -> var_to_str x
-  | _ -> "(" ^ join "," (List.map var_to_str pat) ^ ")"
+  | _ -> "(" ^ Basic_utils.join "," (List.map var_to_str pat) ^ ")"
 
 let deq_to_str (env_var : (ident, typ) Hashtbl.t) (d : deq) : string =
   match d.content with
   | Eqn (pat, e, _) ->
-      sprintf "  %s %s= %s;\n" (pat_to_str pat)
+      Format.sprintf "  %s %s= %s;\n" (pat_to_str pat)
         (match e with
         | Fun _ | Log (And, _, _) | Log (Or, _, _) -> ""
         | _ -> ":")
@@ -80,24 +77,25 @@ let deq_to_str (env_var : (ident, typ) Hashtbl.t) (d : deq) : string =
   | _ -> assert false
 
 let vd_to_str (vd : var_d) : string =
-  sprintf "w%d %s[0:D]"
-    (m_as_int (get_type_m vd.vd_typ))
+  Format.sprintf "w%d %s[0:D]"
+    (m_as_int (Utils.get_type_m vd.vd_typ))
     (ident_to_str vd.vd_id)
 
 let single_node_to_str (id : ident) (p_in : p) (p_out : p) (vars : p)
     (deq : deq list) =
-  let env_var = build_env_var p_in p_out vars in
-  sprintf "proc %s:\n  inputs: %s\n  outputs: %s\n  shares: %s;\n\n%s\nend\n"
+  let env_var = Utils.build_env_var p_in p_out vars in
+  Format.sprintf
+    "proc %s:\n  inputs: %s\n  outputs: %s\n  shares: %s;\n\n%s\nend\n"
     (* function name *)
     (ident_to_str id)
     (* inputs *)
-    (join ", " (List.map vd_to_str p_in))
+    (Basic_utils.join ", " (List.map vd_to_str p_in))
     (* outputs *)
-    (join ", " (List.map vd_to_str p_out))
+    (Basic_utils.join ", " (List.map vd_to_str p_out))
     (* local variables *)
-    (join ", " (List.map vd_to_str vars))
+    (Basic_utils.join ", " (List.map vd_to_str vars))
     (* body *)
-    (join "" (List.map (deq_to_str env_var) deq))
+    (Basic_utils.join "" (List.map (deq_to_str env_var) deq))
 
 let def_to_str (def : def) =
   match def.node with
@@ -105,9 +103,9 @@ let def_to_str (def : def) =
   | _ -> assert false
 
 let prog_to_str (prog : prog) : string =
-  join "\n\n" (List.map def_to_str prog.nodes)
+  Basic_utils.join "\n\n" (List.map def_to_str prog.nodes)
 
-let print_prog (prog : prog) : unit = Printf.printf "%s" (prog_to_str prog)
+let print_prog (prog : prog) : unit = Format.printf "%s" (prog_to_str prog)
 
 let run _ (prog : prog) _ : prog =
   print_prog prog;

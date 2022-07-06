@@ -1,12 +1,11 @@
 open Usuba_AST
 open Tp_AST
-open Printf
 
 (* true if bitslicing; false if vslicing *)
 let bitslice = ref true
 
 let ident_to_str (id : Usuba_AST.ident) : string =
-  Str.global_replace (Str.regexp "'") "_" id.name
+  Str.global_replace (Str.regexp "'") "_" (Ident.name id)
 
 let arith_to_int (ae : Usuba_AST.arith_expr) : int = Utils.eval_arith_ne ae
 
@@ -20,16 +19,16 @@ let shift_op_to_tp (op : Usuba_AST.shift_op) : Tp_AST.shift_op =
   | Lrotate -> Lrotate
   | Rrotate -> Rrotate
   | RAshift ->
-      Printf.eprintf "Cannot generate arithmetic shifts for tightprove.\n";
+      Format.eprintf "Cannot generate arithmetic shifts for tightprove.@.";
       assert false
 
 let rec var_to_tp (v : Usuba_AST.var) : string =
   match v with
   | Var v -> ident_to_str v
-  | Index (v, e) -> sprintf "%s[%d]" (var_to_tp v) (arith_to_int e)
+  | Index (v, e) -> Format.asprintf "%s[%d]" (var_to_tp v) (arith_to_int e)
   | _ ->
-      Printf.eprintf "Invalid var to convert to tp: %s\n"
-        (Usuba_print.var_to_str v);
+      Format.eprintf "Invalid var to convert to tp: %a@."
+        (Usuba_print.pp_var ()) v;
       assert false
 
 (* Warning: shadows above function *)
@@ -49,11 +48,11 @@ let expr_to_tp (vars_corres : (string, Usuba_AST.var) Hashtbl.t)
       Log (log_op_to_tp op, var_to_tp vars_corres x, var_to_tp vars_corres y)
   | Shift (op, ExpVar e, ae) ->
       Shift (shift_op_to_tp op, var_to_tp vars_corres e, arith_to_int ae)
-  | Fun (f, [ ExpVar v ]) when f.name = "refresh" ->
+  | Fun (f, [ ExpVar v ]) when Ident.name f = "refresh" ->
       Refresh (var_to_tp vars_corres v)
   | e ->
-      Printf.eprintf "expr_to_str: invalid expr `%s`\n"
-        (Usuba_print.expr_to_str e);
+      Format.eprintf "expr_to_str: invalid expr `%a`@." (Usuba_print.pp_expr ())
+        e;
       assert false
 
 let deq_to_tp (vars_corres : (string, Usuba_AST.var) Hashtbl.t)
@@ -65,13 +64,14 @@ let deq_to_tp (vars_corres : (string, Usuba_AST.var) Hashtbl.t)
 
 let rec vd_typ_to_tp (typ : Usuba_AST.typ) (acc : string) : string =
   match typ with
-  | Uint (_, _, 1) -> sprintf "%s" acc
-  | Uint (_, _, n) -> sprintf "%s[%d]" acc n
-  | Array (typ', n) -> vd_typ_to_tp typ' (sprintf "%s[%d]" acc (arith_to_int n))
+  | Uint (_, _, 1) -> Format.sprintf "%s" acc
+  | Uint (_, _, n) -> Format.sprintf "%s[%d]" acc n
+  | Array (typ', n) ->
+      vd_typ_to_tp typ' (Format.sprintf "%s[%d]" acc (arith_to_int n))
   | _ -> assert false
 
 let vd_to_tp (vd : Usuba_AST.var_d) : string =
-  sprintf "%s%s" (ident_to_str vd.vd_id) (vd_typ_to_tp vd.vd_typ "")
+  Format.sprintf "%s%s" (ident_to_str vd.vd_id) (vd_typ_to_tp vd.vd_typ "")
 
 let get_node_body (def : Usuba_AST.def) : Usuba_AST.deq list =
   match def.node with Single (_, body) -> body | _ -> assert false

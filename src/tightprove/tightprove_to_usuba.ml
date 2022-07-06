@@ -8,7 +8,7 @@ open Tp_AST
 let gen_var (new_vars : (Usuba_AST.var, Usuba_AST.var) Hashtbl.t)
     (vars_corres : (string, Usuba_AST.var) Hashtbl.t) (v : string) (rv : var) :
     unit =
-  let new_v = Var (Utils.fresh_ident v) in
+  let new_v = Var (Ident.create_fresh v) in
   Hashtbl.add vars_corres v new_v;
   (* |rv| might be already a refresh-generated variable; in that case,
      we want to add the refreshed variable to |new_vars|, in order to
@@ -86,22 +86,23 @@ let find_orig (new_vars : (Usuba_AST.var, Usuba_AST.var) Hashtbl.t)
       | Some origin ->
           Hashtbl.add deqs_corres old_deqi deqi;
           if !contains_refreshed then
-            ((Utils.fresh_ident "", old_deqi) :: origin, deqi)
+            ((Ident.create_fresh "", old_deqi) :: origin, deqi)
           else (origin, deqi)
       | None -> (
           match Hashtbl.find_opt deqs_origins old_deqi_rev with
           | Some origin ->
               Hashtbl.add deqs_corres old_deqi_rev deqi_rev;
               if !contains_refreshed then
-                ((Utils.fresh_ident "", old_deqi_rev) :: origin, deqi_rev)
+                ((Ident.create_fresh "", old_deqi_rev) :: origin, deqi_rev)
               else (origin, deqi_rev)
           | None -> (
               Hashtbl.add deqs_corres old_deqi deqi;
               match e' with
-              | Fun (f, _) when f.name = "refresh" || f.name = "ref" ->
+              | Fun (f, _) when Ident.name f = "refresh" || Ident.name f = "ref"
+                ->
                   ([], deqi)
               | _ ->
-                  Printf.printf "%s\n" (Usuba_print.expr_to_str e');
+                  Format.printf "%a@." (Usuba_print.pp_expr ()) e';
                   assert false)))
   | _ -> assert false
 
@@ -130,7 +131,7 @@ let asgn_to_ua (vars_corres : (string, Usuba_AST.var) Hashtbl.t)
              already being known) *)
           gen_var new_vars vars_corres asgn.lhs (var_to_ua vars_corres v);
         Usuba_AST.Fun
-          ( Utils.fresh_ident "refresh",
+          ( Ident.create_fresh "refresh",
             [ Usuba_AST.ExpVar (var_to_ua vars_corres v) ] )
     | Tp_AST.BitToReg _ ->
         Printf.fprintf stderr "Not implemented: bit_to_reg.\n";

@@ -72,3 +72,4 @@ print "\n";
 printf " %2d / %d test%s failed.\n", $n_fails, $n_total, $n_fails > 1 ? "s" : " ";
 printf " %2d / %d test%s succeeded.\n", $n_ok, $n_total, $n_ok    > 1 ? "s" : " ";
 print "\n";
+error if ($n_fails > 0);

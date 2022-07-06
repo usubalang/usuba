@@ -73,7 +73,7 @@ module Simplify_tuples = struct
         { def with node = Single (p_var, simpl_deqs body) }
     | _ -> def
 
-  let run _ (prog : prog) (_ : config) : prog =
+  let run _ (prog : prog) (_ : Config.config) : prog =
     { nodes = List.map simpl_tuples_def prog.nodes }
 
   let as_pass = (run, "Simplify_tuples")
@@ -146,7 +146,7 @@ let rec norm_tuples_def (def : def) : def =
   (* Fixpoint to make sure every tuples are complitely simplified. *)
   if def <> def' then norm_tuples_def def' else def
 
-let rec run (runner : pass_runner) (prog : prog) (conf : config) : prog =
+let rec run (runner : pass_runner) (prog : prog) (conf : Config.config) : prog =
   let prog' =
     runner#run_modules
       [ Simplify_tuples.as_pass; Split_tuples.as_pass; Simplify_tuples.as_pass ]

@@ -23,7 +23,8 @@ let rec pow a = function
       b * b * if n mod 2 = 0 then 1 else a
 
 (* Returns the last element of a list *)
-let last l = List.nth l (List.length l - 1)
+let rec last l =
+  match l with [] -> raise Not_found | [ e ] -> e | _ :: tl -> last tl
 
 let rec apply_last l f =
   match l with [ x ] -> [ f x ] | hd :: tl -> hd :: apply_last tl f | [] -> []
@@ -32,7 +33,12 @@ let rec apply_last l f =
 let is_empty = function [] -> true | _ -> false
 
 (* Alias for List.flatten @@ List.map *)
-let flat_map f l = List.flatten @@ List.map f l
+let flat_map f l =
+  let rec aux f acc = function
+    | [] -> List.rev acc
+    | x :: l -> aux f (List.rev_append (f x) acc) l
+  in
+  aux f [] l
 
 let for_alli (f : int -> 'a -> bool) (l : 'a list) : bool =
   let i = ref 0 in

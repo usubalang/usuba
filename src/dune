@@ -11,6 +11,7 @@
  ; Specifying modules one by one because we don't want to include them all
  (modules
   ; assert_lang
+  ident
   ansi_terminal
   basic_utils
   clear_origins
@@ -86,6 +87,8 @@
   unroll
   ; parsing
   lexer
+  backtrace
+  errors
   parser_api
   parser
   ; tests

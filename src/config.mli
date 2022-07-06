@@ -9,6 +9,7 @@ type slicing = H | V | B
 
 (* The compiler's configuration *)
 type config = {
+  output : string; (* Base output file *)
   warning_as_error : bool; (* Doesn't do anything... I think *)
   verbose : int;
   (* 5 = prints which passes are getting executed,
@@ -72,8 +73,6 @@ type config = {
   bench_sharevar : bool; (* Share var: yes or no *)
   dump_sexp : bool;
       (* Dump a s-expression corresponding to the compiled usuba program *)
-  parse_only : bool;
-  type_only : bool;
 }
 
 val pp_config : Format.formatter -> config -> unit

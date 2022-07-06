@@ -1,13 +1,10 @@
 open Lexer
 open Lexing
 open Usuba_AST
-open Printf
-open Basic_utils
-open Usuba_pp
 
-let print_position outx lexbuf =
+let print_position ppf lexbuf =
   let pos = lexbuf.lex_curr_p in
-  fprintf outx "%s:%d:%d" pos.pos_fname pos.pos_lnum
+  Format.fprintf ppf "%s:%d:%d" pos.pos_fname pos.pos_lnum
     (pos.pos_cnum - pos.pos_bol + 1)
 
 let get_include_filename (path : string list) (filename : string) : string =
@@ -20,8 +17,9 @@ let get_include_filename (path : string list) (filename : string) : string =
            path)
         filename
     with Not_found ->
-      eprintf "File '%s' not found in path. Path contains: [%s].\n" filename
-        (join "; " (List.map (fun s -> "\"" ^ s ^ "\"") path));
+      Format.eprintf "File '%s' not found in path. Path contains: [%s].@."
+        filename
+        (Basic_utils.join "; " (List.map (fun s -> "\"" ^ s ^ "\"") path));
       assert false
 
 let rec parse_file (path : string list) (filename : string) : Usuba_AST.prog =
@@ -32,14 +30,14 @@ let rec parse_file (path : string list) (filename : string) : Usuba_AST.prog =
     { nodes = resolve_includes path (Parser.prog Lexer.token lex) }
   with
   | SyntaxError msg ->
-      fprintf stderr "%a: %s\n" print_position lex msg;
+      Format.eprintf "%a: %s\n" print_position lex msg;
       exit (-1)
   | Parser.Error ->
-      fprintf stderr "%a: syntax error\n" print_position lex;
+      Format.eprintf "%a: syntax error\n" print_position lex;
       exit (-1)
 
 and resolve_includes (path : string list) (l : def_or_inc list) : def list =
-  flat_map
+  Basic_utils.flat_map
     (fun x ->
       match x with
       | Def d -> [ d ]
@@ -56,10 +54,10 @@ let parse_generic
   let lex = from_string str in
   try parse_fun Lexer.token lex with
   | SyntaxError msg ->
-      fprintf stderr "%a: %s\n" print_position lex msg;
+      Format.eprintf "%a: %s\n" print_position lex msg;
       exit (-1)
   | Parser.Error ->
-      fprintf stderr "%a: syntax error\n" print_position lex;
+      Format.eprintf "%a: syntax error\n" print_position lex;
       exit (-1)
 
 let parse_prog (str : string) : Usuba_AST.prog =

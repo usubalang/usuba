@@ -1,310 +1,399 @@
 open Usuba_AST
-open Basic_utils
-open Printf
 
-let lift_comma f l = join "," (List.map f l)
-let lift_space f l = join " " (List.map f l)
+let pp_list_comma f l =
+  Format.(pp_print_list ~pp_sep:(fun ppf () -> Format.fprintf ppf ",") f) l
+
+let pp_list_comma_cut f l =
+  Format.(pp_print_list ~pp_sep:(fun ppf () -> Format.fprintf ppf ",@,") f) l
+
+let pp_list_space f l =
+  Format.(pp_print_list ~pp_sep:(fun ppf () -> Format.fprintf ppf " ") f) l
+
+let pp_list_semi_cut f l =
+  Format.(pp_print_list ~pp_sep:(fun ppf () -> Format.fprintf ppf ";@,") f) l
+
+let pp_list_newline f l =
+  Format.(pp_print_list ~pp_sep:(fun ppf () -> Format.fprintf ppf "@.@.") f) l
 
 let unfold_andn e =
   match e with Log (Andn, x, y) -> Log (And, Not x, y) | _ -> e
 
-let rec log_op_to_str = function
-  | And -> "&"
-  | Or -> "|"
-  | Xor -> "^"
-  | Andn -> "&~"
-  | Masked op -> log_op_to_str op
+let rec pp_log_op ppf op =
+  Format.fprintf ppf "%s"
+    (match op with
+    | And -> "&"
+    | Or -> "|"
+    | Xor -> "^"
+    | Andn -> "&~"
+    | Masked op -> Format.asprintf "%a" pp_log_op op)
 
-let arith_op_to_str = function
-  | Add -> "+"
-  | Mul -> "*"
-  | Sub -> "-"
-  | Div -> "/"
-  | Mod -> "%"
+let pp_arith_op ppf op =
+  Format.fprintf ppf "%s"
+    (match op with
+    | Add -> "+"
+    | Mul -> "*"
+    | Sub -> "-"
+    | Div -> "/"
+    | Mod -> "%")
 
-let shift_op_to_str = function
-  | Lshift -> "<<"
-  | Rshift -> ">>"
-  | RAshift -> ">>!"
-  | Lrotate -> "<<<"
-  | Rrotate -> ">>>"
+let pp_shift_op ppf op =
+  Format.fprintf ppf "%s"
+    (match op with
+    | Lshift -> "<<"
+    | Rshift -> ">>"
+    | RAshift -> ">>!"
+    | Lrotate -> "<<<"
+    | Rrotate -> ">>>")
 
-let rec arith_to_str = function
-  | Const_e i -> string_of_int i
-  | Var_e v -> v.name
+let rec pp_arith ?(typed = false) ?(detailed = false) () ppf = function
+  | Const_e i -> Format.fprintf ppf "%s%d" (if typed then "Const_e: " else "") i
+  | Var_e v ->
+      Format.fprintf ppf "%s%a"
+        (if typed then "Var_e: " else "")
+        (Ident.pp ~detailed ()) v
   | Op_e (op, x, y) ->
-      sprintf "(%s %s %s)" (arith_to_str x) (arith_op_to_str op)
-        (arith_to_str y)
+      Format.fprintf ppf "%s(%a %a %a)"
+        (if typed then "Op_e: " else "")
+        (pp_arith ~typed ~detailed ())
+        x pp_arith_op op
+        (pp_arith ~typed ~detailed ())
+        y
 
-let rec arith_to_str_types = function
-  | Const_e i -> "Const_e: " ^ string_of_int i
-  | Var_e v -> "Var_e: " ^ v.name
-  | Op_e (op, x, y) ->
-      "Op_e(" ^ arith_to_str_types x ^ " " ^ arith_op_to_str op ^ " "
-      ^ arith_to_str_types y ^ ")"
-
-let m_to_str m =
+let pp_full_m ?(detailed = false) () ppf m =
   match m with
-  | Mint n -> sprintf "%d" n
+  | Mint n -> Format.fprintf ppf "%d" n
   | Mnat -> assert false
-  | Mvar id -> id.name
+  | Mvar id -> Format.fprintf ppf "%a" (Ident.pp ~detailed ()) id
 
-let dir_to_str d =
+let pp_dir ?(detailed = false) () ppf d =
   match d with
-  | Hslice -> "<H>"
-  | Vslice -> "<V>"
-  | Bslice -> "<B>"
+  | Hslice -> Format.fprintf ppf "<H>"
+  | Vslice -> Format.fprintf ppf "<V>"
+  | Bslice -> Format.fprintf ppf "<B>"
   | Natdir -> assert false
-  | Mslice i -> sprintf "<%d>" i
-  | Varslice v -> if v.name = "D" then "" else sprintf "<%s>" v.name
+  | Mslice i -> Format.fprintf ppf "<%d>" i
+  | Varslice v ->
+      if Ident.name v = "D" then ()
+      else Format.fprintf ppf "<%a>" (Ident.pp ~detailed ()) v
 
-let rec full_typ_to_str typ =
-  match typ with
-  | Nat -> "nat"
+let rec pp_full_typ ?(typed = false) ~detailed () ppf = function
+  | Nat -> Format.fprintf ppf "nat"
   | Uint (d, m, n) ->
-      let dir_str = dir_to_str d in
-      let m_str =
-        match m with
-        | Mint i -> string_of_int i
-        | Mnat -> assert false
-        | Mvar id -> id.name
-      in
-      sprintf "u%s%sx%d" dir_str m_str n
-  | Array (typ, n) -> sprintf "%s[%s]" (full_typ_to_str typ) (arith_to_str n)
-
-let rec typ_to_str ?(acc = "") typ =
-  match typ with
-  | Nat -> "nat"
-  | Uint (d, m, n) ->
-      let dir_str = dir_to_str d in
-      sprintf "%s%s"
-        (match m with
-        | Mint 1 -> sprintf "b%s%d" dir_str n
-        | Mint i ->
-            if n = 1 then sprintf "u%s%d" dir_str i
-            else sprintf "u%s%dx%d" dir_str i n
-        | Mnat -> assert false
-        | Mvar id ->
-            if id.name = "m" then sprintf "v%s%d" dir_str n
-            else sprintf "u%s%sx%d" dir_str id.name n)
-        acc
+      Format.fprintf ppf "u%a%ax%d" (pp_dir ~detailed ()) d
+        (pp_full_m ~detailed ()) m n
   | Array (typ, n) ->
-      typ_to_str ~acc:(sprintf "%s[%s]" acc (arith_to_str n)) typ
+      Format.fprintf ppf "%a[%a]"
+        (pp_full_typ ~typed ~detailed ())
+        typ
+        (pp_arith ~typed ~detailed ())
+        n
 
-let typ_to_str_l = lift_comma typ_to_str
+let rec pp_typ ?(typed = false) ?(acc = "") ?(detailed = false) () ppf typ =
+  match typ with
+  | Nat -> Format.fprintf ppf "nat"
+  | Uint (d, m, n) ->
+      (match m with
+      | Mint 1 -> Format.fprintf ppf "b%a%d" (pp_dir ~detailed ()) d n
+      | Mint i ->
+          if n = 1 then Format.fprintf ppf "u%a%d" (pp_dir ~detailed ()) d i
+          else Format.fprintf ppf "u%a%dx%d" (pp_dir ~detailed ()) d i n
+      | Mnat -> assert false
+      | Mvar id ->
+          if Ident.name id = "m" then
+            Format.fprintf ppf "v%a%d" (pp_dir ~detailed ()) d n
+          else
+            Format.fprintf ppf "u%a%ax%d" (pp_dir ~detailed ()) d
+              (Ident.pp ~detailed ()) id n);
+      Format.fprintf ppf "%s" acc
+  | Array (typ, n) ->
+      Format.fprintf ppf "%a"
+        (pp_typ ~detailed
+           ~acc:(Format.asprintf "%s[%a]" acc (pp_arith ~typed ~detailed ()) n)
+           ())
+        typ
 
-let rec var_to_str = function
-  | Var v -> v.name
-  | Index (v, e) -> sprintf "%s[%s]" (var_to_str v) (arith_to_str e)
-  | Range (v, ei, ef) ->
-      sprintf "%s[%s .. %s]" (var_to_str v) (arith_to_str ei) (arith_to_str ef)
-  | Slice (v, l) ->
-      sprintf "%s[%s]" (var_to_str v) (join "," (List.map arith_to_str l))
+let pp_typ_list ?(typed = false) ?(acc = "") ?(detailed = false) () =
+  pp_list_comma (pp_typ ~typed ~detailed ~acc ())
 
-let var_to_str_l = lift_comma var_to_str
-
-let rec var_to_str_types = function
-  | Var v -> sprintf "Var: %s" v.name
+let rec pp_var ?(typed = false) ?(detailed = false) () ppf = function
+  | Var v ->
+      Format.fprintf ppf "%s%a"
+        (if typed then "Var: " else "")
+        (Ident.pp ~detailed ()) v
   | Index (v, e) ->
-      sprintf "Index: %s[%s]" (var_to_str_types v) (arith_to_str_types e)
+      Format.fprintf ppf "%s%a[%a]"
+        (if typed then "Index: " else "")
+        (pp_var ~typed ~detailed ())
+        v
+        (pp_arith ~typed ~detailed ())
+        e
   | Range (v, ei, ef) ->
-      sprintf "Range: %s[%s..%s] " (var_to_str_types v) (arith_to_str_types ei)
-        (arith_to_str_types ef)
+      Format.fprintf ppf "%s%a[%a .. %a]"
+        (if typed then "Range: " else "")
+        (pp_var ~typed ~detailed ())
+        v
+        (pp_arith ~typed ~detailed ())
+        ei
+        (pp_arith ~detailed ~typed ())
+        ef
   | Slice (v, l) ->
-      sprintf "Splice: %s[%s]" (var_to_str_types v)
-        (join "," (List.map arith_to_str_types l))
+      Format.fprintf ppf "%s%a[%a]"
+        (if typed then "Slice: " else "")
+        (pp_var ~typed ~detailed ())
+        v
+        (pp_list_comma (pp_arith ~typed ~detailed ()))
+        l
 
-let rec expr_to_str_types = function
-  | Const (c, _) -> "Const: " ^ string_of_int c
-  | ExpVar v -> "ExpVar: " ^ var_to_str v
-  | Tuple t -> "Tuple: (" ^ join "," (List.map expr_to_str_types t) ^ ")"
-  | Log (Andn, x, y) ->
-      "Andn: " ^ expr_to_str_types (unfold_andn (Log (Andn, x, y)))
+let pp_var_list ?(typed = false) ?(detailed = false) () =
+  pp_list_comma (pp_var ~typed ~detailed ())
+
+let pp_params_list ?(typed = false) ?(detailed = false) () ppf el =
+  Format.fprintf ppf "(%a)" (pp_list_comma (pp_var ~typed ~detailed ())) el
+
+let rec pp_expr ?(typed = false) ?(detailed = false) () ppf = function
+  | Const (c, Some t) ->
+      Format.fprintf ppf "%s0x%x:%a"
+        (if typed then "Const: " else "")
+        c
+        (pp_typ ~typed ~detailed ())
+        t
+  | Const (c, None) ->
+      Format.fprintf ppf "%s0x%x" (if typed then "Const: : " else "") c
+  | ExpVar v ->
+      Format.fprintf ppf "%s%a"
+        (if typed then "ExpVar: " else "")
+        (pp_var ~typed ~detailed ())
+        v
+  | Tuple t ->
+      Format.fprintf ppf "%s(%a)"
+        (if typed then "Tuple: " else "")
+        (pp_list_comma (pp_expr ~typed ~detailed ()))
+        t
   | Log (o, x, y) ->
-      "Log: " ^ "(" ^ expr_to_str_types x ^ log_op_to_str o
-      ^ expr_to_str_types y ^ ")"
+      Format.fprintf ppf "%s(%a %a %a)"
+        (if typed then "Log: " else "")
+        (pp_expr ~typed ~detailed ())
+        x pp_log_op o
+        (pp_expr ~typed ~detailed ())
+        y
   | Shuffle (v, l) ->
-      sprintf "Shuffle: Shuffle(%s,[%s])" (var_to_str v)
-        (join "," (List.map string_of_int l))
+      Format.fprintf ppf "%sShuffle(%a,[%a])"
+        (if typed then "Shuffle: " else "")
+        (pp_var ~typed ~detailed ())
+        v
+        (pp_list_comma Usuba_pp.Int.pp)
+        l
   | Bitmask (e, ae) ->
-      sprintf "Bitmask: Bitmask(%s,%s)" (expr_to_str_types e)
-        (arith_to_str_types ae)
+      Format.fprintf ppf "%sBitmask(%a,%a)"
+        (if typed then "Bitmask: " else "")
+        (pp_expr ~typed ~detailed ())
+        e
+        (pp_arith ~typed ~detailed ())
+        ae
   | Pack (e1, e2, _) ->
-      sprintf "Pack: Pack(%s, %s)" (expr_to_str_types e1) (expr_to_str_types e2)
+      Format.fprintf ppf "%sPack(%a, %a)"
+        (if typed then "Pack: " else "")
+        (pp_expr ~typed ~detailed ())
+        e1
+        (pp_expr ~typed ~detailed ())
+        e2
   | Arith (o, x, y) ->
-      "Arith: " ^ "(" ^ expr_to_str_types x ^ arith_op_to_str o
-      ^ expr_to_str_types y ^ ")"
+      Format.fprintf ppf "%s(%a %a %a)"
+        (if typed then "Arith: " else "")
+        (pp_expr ~typed ~detailed ())
+        x pp_arith_op o
+        (pp_expr ~typed ~detailed ())
+        y
   | Shift (o, x, y) ->
-      "Shift: " ^ "(" ^ expr_to_str_types x ^ shift_op_to_str o ^ arith_to_str y
-      ^ ")"
-  | Not e -> "Not: ~" ^ expr_to_str_types e
+      Format.fprintf ppf "%s(%a %a %a)"
+        (if typed then "Shift: " else "")
+        (pp_expr ~typed ~detailed ())
+        x pp_shift_op o
+        (pp_arith ~typed ~detailed ())
+        y
+  | Not e ->
+      Format.fprintf ppf "%s(¬%a)"
+        (if typed then "Not: " else "")
+        (pp_expr ~typed ~detailed ())
+        e
   | Fun (f, l) ->
-      "Fun: " ^ f.name ^ "(" ^ join "," (List.map expr_to_str_types l) ^ ")"
+      Format.fprintf ppf "%s%a(%a)"
+        (if typed then "Fun: " else "")
+        (Ident.pp ~detailed ()) f
+        (pp_list_comma (pp_expr ~typed ~detailed ()))
+        l
   | Fun_v (f, e, l) ->
-      "Fun_v: " ^ f.name ^ "[" ^ arith_to_str e ^ "]" ^ "("
-      ^ join "," (List.map expr_to_str_types l)
-      ^ ")"
+      Format.fprintf ppf "%s%a[%a](%a)"
+        (if typed then "Fun: " else "")
+        (Ident.pp ~detailed ()) f
+        (pp_arith ~typed ~detailed ())
+        e
+        (pp_list_comma (pp_expr ~typed ~detailed ()))
+        l
 
-let rec expr_to_str = function
-  | Const (c, Some t) -> sprintf "0x%x:%s" c (typ_to_str t)
-  | Const (c, None) -> sprintf "0x%x" c
-  | ExpVar v -> var_to_str v
-  | Tuple t -> sprintf "(%s)" (join "," (List.map expr_to_str t))
-  | Log (o, x, y) ->
-      sprintf "(%s %s %s)" (expr_to_str x) (log_op_to_str o) (expr_to_str y)
-  | Shuffle (v, l) ->
-      sprintf "Shuffle(%s,[%s])" (var_to_str v)
-        (join "," (List.map string_of_int l))
-  | Bitmask (e, ae) ->
-      sprintf "Bitmask(%s,%s)" (expr_to_str e) (arith_to_str ae)
-  | Pack (e1, e2, _) -> sprintf "Pack(%s, %s)" (expr_to_str e1) (expr_to_str e2)
-  | Arith (o, x, y) ->
-      sprintf "(%s %s %s)" (expr_to_str x) (arith_op_to_str o) (expr_to_str y)
-  | Shift (o, x, y) ->
-      sprintf "(%s %s %s)" (expr_to_str x) (shift_op_to_str o) (arith_to_str y)
-  | Not e -> sprintf "(~ %s)" (expr_to_str e)
-  | Fun (f, l) -> sprintf "%s(%s)" f.name (join "," (List.map expr_to_str l))
-  | Fun_v (f, e, l) ->
-      sprintf "%s[%s](%s)" f.name (arith_to_str e)
-        (join "," (List.map expr_to_str l))
+let pp_expr_list ?(typed = false) ?(detailed = false) () =
+  pp_list_comma (pp_expr ~typed ~detailed ())
 
-let expr_to_str_l = lift_comma expr_to_str
-let pat_to_str pat = "(" ^ join "," (List.map var_to_str pat) ^ ")"
-let pat_to_str_types pat = "(" ^ join "," (List.map var_to_str_types pat) ^ ")"
+let pp_var_d_opt ppf (vopt : var_d_opt) =
+  Format.fprintf ppf "%s"
+    (match vopt with Pconst -> "const" | PlazyLift -> "lazyLift")
 
-let var_d_opt_to_str (vopt : var_d_opt) =
-  match vopt with Pconst -> "const" | PlazyLift -> "lazyLift"
+let pp_var_d_opt_list = pp_list_space pp_var_d_opt
 
-let var_d_opt_to_str_l = lift_space var_d_opt_to_str
+let pp_vd ?(full = false) ?(typed = false) ?(detailed = false) () ppf
+    (vd : var_d) =
+  Format.fprintf ppf "%a : %a %a" (Ident.pp ~detailed ()) vd.vd_id
+    pp_var_d_opt_list vd.vd_opts
+    (if full then pp_full_typ ~detailed ~typed ()
+    else pp_typ ~typed ~detailed ())
+    vd.vd_typ
 
-let full_vd_to_str (vd : var_d) =
-  sprintf "%s : %s %s" vd.vd_id.name
-    (var_d_opt_to_str_l vd.vd_opts)
-    (full_typ_to_str vd.vd_typ)
+let pp_p ?(full = false) ?(typed = false) ?(detailed = false) () =
+  pp_list_comma (pp_vd ~typed ~full ~detailed ())
 
-let vd_to_str (vd : var_d) =
-  sprintf "%s : %s %s" vd.vd_id.name
-    (var_d_opt_to_str_l vd.vd_opts)
-    (typ_to_str vd.vd_typ)
+let pp_optstmt ppf o =
+  Format.fprintf ppf "%s"
+    (match o with
+    | Unroll -> "_unroll"
+    | No_unroll -> "_no_unroll"
+    | Pipelined -> "_pipelined"
+    | Safe_exit -> "_safe_exit")
 
-let p_to_str = lift_comma vd_to_str
-
-let optstmt_to_str = function
-  | Unroll -> "_unroll"
-  | No_unroll -> "_no_unroll"
-  | Pipelined -> "_pipelined"
-  | Safe_exit -> "_safe_exit"
-
-let rec deq_i_to_str ?(indent = "") (deq_i : deq_i) =
+let rec pp_deq_i ?(typed = false) ?(detailed = false) () ppf (deq_i : deq_i) =
   match deq_i with
   | Eqn (pat, e, sync) ->
-      sprintf "%s%s %s= %s" indent (pat_to_str pat)
+      Format.fprintf ppf "%a %s= %a"
+        (pp_params_list ~detailed ~typed ())
+        pat
         (if sync then ":" else "")
-        (expr_to_str e)
+        (pp_expr ~typed ~detailed ())
+        e
   | Loop (id, ei, ef, d, opts) ->
-      sprintf "%s%s%sforall %s in [%s,%s] {\n%s\n%s}" indent
-        (join " " (List.map optstmt_to_str opts))
+      Format.fprintf ppf
+        "@[<v 0>@[<v 2>%a%sforall %a in [%a,%a] {@,@[<v 2>%a@]@]@,}@]"
+        (pp_list_space pp_optstmt) opts
         (if List.length opts > 0 then " " else "")
-        id.name (arith_to_str ei) (arith_to_str ef)
-        (join ";\n" (List.map (deq_to_str ~indent:(indent ^ "  ")) d))
-        indent
+        (Ident.pp ~detailed ()) id
+        (pp_arith ~typed ~detailed ())
+        ei
+        (pp_arith ~typed ~detailed ())
+        ef
+        (pp_list_semi_cut (pp_deq ~detailed ()))
+        d
 
-and deq_to_str ?(indent = "") (deq : deq) = deq_i_to_str ~indent deq.content
+and pp_deq ?(typed = false) ?(detailed = false) () ppf (deq : deq) =
+  pp_deq_i ~detailed ~typed () ppf deq.content
 
-let deq_i_to_str_l = lift_comma deq_i_to_str
-let deq_to_str_l = lift_comma deq_to_str
+let pp_deq_i_list ?(typed = false) ?(detailed = false) () =
+  pp_list_comma (pp_deq_i ~detailed ~typed ())
 
-let rec deq_to_str_types ?(indent = "") (deq : deq) =
-  match deq.content with
-  | Eqn (pat, e, sync) ->
-      sprintf "%s%s %s= %s" indent (pat_to_str_types pat)
-        (if sync then ":" else "")
-        (expr_to_str_types e)
-  | Loop (id, ei, ef, d, opts) ->
-      sprintf "%s%s forall %s in [%s,%s] {\n%s\n%s}" indent
-        (join " " (List.map optstmt_to_str opts))
-        id.name (arith_to_str_types ei) (arith_to_str_types ef)
-        (join ";\n" (List.map (deq_to_str_types ~indent:(indent ^ "  ")) d))
-        indent
+let pp_deq_list ?(typed = false) ?(detailed = false) () =
+  pp_list_comma (pp_deq ~typed ~detailed ())
 
-let single_node_to_str (id : ident) (p_in : p) (p_out : p) (vars : p)
-    (deq : deq list) =
-  "node " ^ id.name ^ "(" ^ p_to_str p_in ^ ")\n  returns " ^ p_to_str p_out
-  ^ "\nvars\n"
-  ^ join ",\n" (List.map (fun x -> "  " ^ vd_to_str x) vars)
-  ^ "\nlet\n"
-  ^ join ";\n" (List.map (deq_to_str ~indent:"  ") deq)
-  ^ "\ntel"
+let pp_body ?(typed = false) ?(detailed = false) (vars : p) ppf (deq : deq list)
+    =
+  (match vars with
+  | [] -> ()
+  | vars ->
+      Format.fprintf ppf "@[<v 2>vars@,%a@]@,"
+        (pp_list_comma_cut (pp_vd ~typed ~detailed ()))
+        vars);
+  Format.fprintf ppf "@[<v 2>let@,%a@]@,tel"
+    (pp_list_semi_cut (pp_deq ~typed ~detailed ()))
+    deq
 
-let optdef_to_str = function
-  | Inline -> "_inline"
-  | No_inline -> "_no_inline"
-  | Interleave n -> sprintf "_interleave(%d)" n
-  | No_opt -> "_no_opt"
-  | Is_table -> ""
+let pp_single_node ?(typed = false) ?(detailed = false) (id : ident) (p_in : p)
+    (p_out : p) (vars : p) ppf (deq : deq list) =
+  Format.fprintf ppf "@[<v 2>node %a(%a) returns %a@,%a@]"
+    (Ident.pp ~detailed ()) id (pp_p ~typed ~detailed ()) p_in
+    (pp_p ~typed ~detailed ()) p_out
+    (pp_body ~typed ~detailed vars)
+    deq
 
-let def_to_str (def : def) =
+let pp_multiple_nodes ?(typed = false) ?(detailed = false) (id : ident)
+    (p_in : p) (p_out : p) ppf (def_list : def_i list) =
+  Format.fprintf ppf "@[<v 2>node[] %a(%a) returns %a[@[<v 2>@,%a@]@,]"
+    (Ident.pp ~detailed ()) id (pp_p ~typed ~detailed ()) p_in
+    (pp_p ~typed ~detailed ()) p_out
+    (fun ppf l ->
+      List.iter
+        (function
+          | Single (vars, deq) -> (pp_body ~typed ~detailed vars) ppf deq
+          | _ -> assert false)
+        l)
+    def_list
+
+let pp_perm_or_table_body ppf perm =
+  Format.fprintf ppf "{@[<hov 2>%a@]}" (pp_list_semi_cut Usuba_pp.Int.pp) perm
+
+let pp_single_perm_or_table ?(header = "perm") ?(typed = false)
+    ?(detailed = false) (id : ident) (p_in : p) (p_out : p) ppf perm_or_table =
+  Format.fprintf ppf "@[<v 2>%s %a(%a) returns %a@,[@[<v 2>@,%a@]@,]@]@]" header
+    (Ident.pp ~detailed ()) id (pp_p ~typed ~detailed ()) p_in
+    (pp_p ~typed ~detailed ()) p_out pp_perm_or_table_body perm_or_table
+
+let pp_multiple_perm_or_table ?(header = "perm") ?(typed = false)
+    ?(detailed = false) (id : ident) (p_in : p) (p_out : p) ppf
+    perm_or_table_list =
+  Format.fprintf ppf "@[<v 2>%s %a(%a) returns %a@,[@[<v 2>@,%a@]@,@]@]" header
+    (Ident.pp ~detailed ()) id (pp_p ~typed ~detailed ()) p_in
+    (pp_p ~typed ~detailed ()) p_out
+    (fun ppf l ->
+      List.iter
+        (fun def ->
+          match (def, header) with
+          | Perm l, "perm" -> pp_perm_or_table_body ppf l
+          | Table l, "table" -> pp_perm_or_table_body ppf l
+          | _ -> assert false)
+        l)
+    perm_or_table_list
+
+let pp_optdef ppf o =
+  Format.fprintf ppf "%s"
+    (match o with
+    | Inline -> "_inline "
+    | No_inline -> "_no_inline "
+    | Interleave n -> Format.sprintf "_interleave(%d) " n
+    | No_opt -> "_no_opt "
+    | Is_table -> "")
+
+let pp_def ?(typed = false) ?(detailed = false) () ppf (def : def) =
   let id, p_in, p_out = (def.id, def.p_in, def.p_out) in
-  join " " (List.map optdef_to_str def.opt)
-  ^ " "
-  ^
+  Format.fprintf ppf "%a" (pp_list_space pp_optdef) def.opt;
   match def.node with
-  | Single (vars, deq) -> single_node_to_str id p_in p_out vars deq
+  | Single (vars, deq) ->
+      Format.fprintf ppf "%a"
+        (pp_single_node ~typed ~detailed id p_in p_out vars)
+        deq
   | Perm l ->
-      "perm " ^ id.name ^ "(" ^ p_to_str p_in ^ ")\n  returns " ^ p_to_str p_out
-      ^ "\n{\n  "
-      ^ join ", " (List.map string_of_int l)
-      ^ "\n}\n"
+      Format.fprintf ppf "%a"
+        (pp_single_perm_or_table ~typed ~detailed id p_in p_out)
+        l
   | Table l ->
-      "table " ^ id.name ^ "(" ^ p_to_str p_in ^ ")\n  returns "
-      ^ p_to_str p_out ^ "\n{\n  "
-      ^ join ", " (List.map string_of_int l)
-      ^ "\n}\n"
+      Format.fprintf ppf "%a"
+        (pp_single_perm_or_table ~header:"table" ~typed ~detailed id p_in p_out)
+        l
   | Multiple l -> (
-      match List.nth l 0 with
+      match List.hd l with
       | Single _ ->
-          "node " ^ id.name ^ "(" ^ p_to_str p_in ^ ")\n  returns "
-          ^ p_to_str p_out ^ "\n[\n"
-          ^ join "\n;\n"
-              (List.map
-                 (fun x ->
-                   match x with
-                   | Single (v, d) ->
-                       "vars\n"
-                       ^ join ",\n" (List.map (fun x -> "  " ^ vd_to_str x) v)
-                       ^ "\nlet\n"
-                       ^ join ";\n" (List.map deq_to_str d)
-                       ^ "\ntel\n"
-                   | _ -> assert false)
-                 l)
-          ^ "\n]\n"
+          Format.fprintf ppf "%a"
+            (pp_multiple_nodes ~typed ~detailed id p_in p_out)
+            l
       | Perm _ ->
-          "perm[] " ^ id.name ^ "(" ^ p_to_str p_in ^ ")\n  returns "
-          ^ p_to_str p_out ^ "\n[ "
-          ^ join "\n;\n"
-              (List.map
-                 (fun x ->
-                   match x with
-                   | Perm l -> "[" ^ join ", " (List.map string_of_int l) ^ "]"
-                   | _ -> assert false)
-                 l)
-          ^ "\n]\n"
+          Format.fprintf ppf "%a"
+            (pp_multiple_perm_or_table ~typed ~detailed id p_in p_out)
+            l
       | Table _ ->
-          "table[] " ^ id.name ^ "(" ^ p_to_str p_in ^ ")\n  returns "
-          ^ p_to_str p_out ^ "\n[ "
-          ^ join "\n;\n"
-              (List.map
-                 (fun x ->
-                   match x with
-                   | Table l -> "{" ^ join ", " (List.map string_of_int l) ^ "}"
-                   | _ -> assert false)
-                 l)
-          ^ "\n]\n"
+          Format.fprintf ppf "%a"
+            (pp_multiple_perm_or_table ~header:"table" ~typed ~detailed id p_in
+               p_out)
+            l
       | _ -> assert false)
 
-let def_to_str_l = lift_comma def_to_str
+let pp_def_list ?(typed = false) ?(detailed = false) () =
+  pp_list_comma (pp_def ~typed ~detailed ())
 
-let prog_to_str (prog : prog) : string =
-  join "\n\n" (List.map def_to_str prog.nodes)
-
-let print_prog (prog : prog) : unit = print_endline (prog_to_str prog)
+let pp_prog ?(typed = false) ?(detailed = false) () ppf (prog : prog) =
+  Format.fprintf ppf "%a@."
+    (pp_list_newline (pp_def ~typed ~detailed ()))
+    prog.nodes

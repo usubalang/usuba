@@ -1,13 +1,12 @@
 open Usuba_AST
-open Utils
 open Constant_folding
 open Parser_api
 
 let test_vslice () =
   (* Setting up env *)
   let env_var = Hashtbl.create 10 in
-  Hashtbl.add env_var (fresh_ident "x") (Uint (Vslice, Mint 8, 1));
-  Hashtbl.add env_var (fresh_ident "y") (Uint (Vslice, Mint 8, 1));
+  Hashtbl.add env_var (Ident.create_unbound "x") (Uint (Vslice, Mint 8, 1));
+  Hashtbl.add env_var (Ident.create_unbound "y") (Uint (Vslice, Mint 8, 1));
 
   (*                            Arithmetics                       *)
   (* Multiplication *)
@@ -121,8 +120,8 @@ let test_vslice () =
 let test_bitslice () =
   (* Setting up env *)
   let env_var = Hashtbl.create 10 in
-  Hashtbl.add env_var (fresh_ident "x") (Uint (Bslice, Mint 1, 1));
-  Hashtbl.add env_var (fresh_ident "y") (Uint (Bslice, Mint 1, 1));
+  Hashtbl.add env_var (Ident.create_unbound "x") (Uint (Bslice, Mint 1, 1));
+  Hashtbl.add env_var (Ident.create_unbound "y") (Uint (Bslice, Mint 1, 1));
 
   (*                              Logical                         *)
   (* And *)

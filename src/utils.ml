@@ -1,20 +1,10 @@
 open Usuba_AST
 open Basic_utils
 
-exception Invalid_AST of string
-exception Error of string
-exception Syntax_error
-exception Not_implemented of string
-exception Empty_list
-exception Undeclared of ident
-exception Invalid_param_size
-exception Invalid_operator_call
-exception Break
-exception Skip
-
-let default_conf : config =
+let default_conf : Config.config =
   {
-    warnings = true;
+    output = "";
+    warning_as_error = true;
     verbose = 1;
     path = [ "." ];
     type_check = true;
@@ -65,8 +55,8 @@ let default_conf : config =
     dump_sexp = false;
   }
 
-let default_dir = Varslice { uid = -1; name = "D" }
-let default_m = Mvar { uid = -1; name = "m" }
+let default_dir = Varslice (Ident.create_unbound "D")
+let default_m = Mvar (Ident.create_unbound "m")
 let bool = Uint (Bslice, Mint 1, 1)
 let make_env () = Hashtbl.create 100
 let env_update env v e = Hashtbl.replace env v e
@@ -114,18 +104,6 @@ let rec simpl_arith (env : (ident, int) Hashtbl.t) (e : arith_expr) : arith_expr
 let simpl_arith_ne (e : arith_expr) : arith_expr =
   simpl_arith (Hashtbl.create 100) e
 
-let fresh_ident (name : string) : ident =
-  (* XXX: glue code, not actually maintaining a freshness of uid *)
-  { uid = -1; name }
-
-let fresh_suffix (id : ident) (suff : string) : ident =
-  fresh_ident (id.name ^ suff)
-
-let fresh_prefix (pref : string) (id : ident) : ident =
-  fresh_ident (pref ^ id.name)
-
-let fresh_concat (x : ident) (y : ident) : ident = fresh_ident (x.name ^ y.name)
-
 let gen_list (id : string) (n : int) : string list =
   let rec aux n acc =
     if n <= 0 then acc else aux (n - 1) ((id ^ string_of_int n) :: acc)
@@ -141,7 +119,7 @@ let gen_list0 (id : string) (n : int) : string list =
 let gen_list_0 (id : ident) (n : int) : ident list =
   let rec aux n acc =
     if n <= 0 then acc
-    else aux (n - 1) (fresh_suffix id (string_of_int (n - 1)) :: acc)
+    else aux (n - 1) (Ident.fresh_suffixed id (string_of_int (n - 1)) :: acc)
   in
   aux n []
 
@@ -195,8 +173,8 @@ let reg_size (t : typ) : int =
   match t with
   | Uint (_, Mint i, 1) -> i
   | _ ->
-      Printf.fprintf stderr "Non linear type `%s', can't get reg_size.\n"
-        (Usuba_print.typ_to_str t);
+      Format.eprintf "Non linear type `%a', can't get reg_size.\n"
+        (Usuba_print.pp_typ ()) t;
       assert false
 
 let elem_size (t : typ) : int =
@@ -212,16 +190,15 @@ let rec get_var_type env (v : var) : typ =
       | Uint (dir, _, 1) -> Uint (dir, Mint 1, 1)
       | _ -> assert false)
   | _ ->
-      Printf.fprintf stderr "Error: get_var_type(%s)\n"
-        (Usuba_print.var_to_str v);
+      Format.eprintf "Error: get_var_type(%a)\n" (Usuba_print.pp_var ()) v;
       assert false
 
 (* Shadowing the above def to add error treatment *)
 let get_var_type env (v : var) : typ =
   try get_var_type env v
   with Not_found ->
-    Printf.fprintf stderr "Error: get_var_type(%s): not found\n"
-      (Usuba_print.var_to_str v);
+    Format.eprintf "Error: get_var_type(%a): not found\n"
+      (Usuba_print.pp_var ()) v;
     raise Not_found
 
 let get_var_size env (v : var) : int = typ_size @@ get_var_type env v
@@ -237,7 +214,7 @@ let rec get_expr_size env (e : expr) : int =
   | Shuffle (v, _) -> get_var_size env v
   | Arith (_, e, _) -> get_expr_size env e
   | Fun _ ->
-      Printf.fprintf stderr "Not implemented yet, get_expr_size(Fun...).\n";
+      Format.eprintf "Not implemented yet, get_expr_size(Fun...).\n";
       assert false
   | _ -> assert false
 
@@ -246,7 +223,7 @@ let get_reg_size env (v : var) : int = reg_size @@ get_var_type env v
 let rec get_expr_reg_size env (e : expr) : int =
   match e with
   | Const (n, None) ->
-      Printf.fprintf stderr "Unsafe inference of `Const %d' size.\n" n;
+      Format.eprintf "Unsafe inference of `Const %d' size.\n" n;
       1
   | Const (_, Some typ) -> reg_size typ
   | ExpVar v -> get_reg_size env v
@@ -259,19 +236,19 @@ let rec get_expr_reg_size env (e : expr) : int =
   | Pack (_, _, Some typ) -> reg_size typ
   | Pack (_, _, None) -> assert false
   | Fun _ ->
-      Printf.fprintf stderr "Not implemented yet, get_reg_size(Fun...).\n";
+      Format.eprintf "Not implemented yet, get_reg_size(Fun...).\n";
       assert false
   | Tuple l ->
-      Printf.fprintf stderr
-        "Non linear expression Tuple(%s), can't get reg_size.\n"
-        (Usuba_print.expr_to_str_l l);
+      Format.eprintf "Non linear expression Tuple(%a), can't get reg_size.\n"
+        (Usuba_print.pp_expr_list ())
+        l;
       assert false
   | _ -> assert false
 
 let rec get_expr_type env_fun env_var (e : expr) : typ list =
   match e with
   | Const (n, None) ->
-      Printf.fprintf stderr "Unsafe inference of `Const %d' type.\n" n;
+      Format.eprintf "Unsafe inference of `Const %d' type.\n" n;
       [ Nat ]
   | Const (_, Some typ) -> [ typ ]
   | ExpVar v -> [ get_var_type env_var v ]
@@ -285,7 +262,7 @@ let rec get_expr_type env_fun env_var (e : expr) : typ list =
   | Pack (_, _, Some typ) -> [ typ ]
   | Pack (_, _, None) -> assert false
   | Fun (f, _) ->
-      if f.name = "rand" then [ Uint (default_dir, Mint 1, 1) ]
+      if Ident.name f = "rand" then [ Uint (default_dir, Mint 1, 1) ]
       else
         let def = Hashtbl.find env_fun f in
         List.map (fun vd -> vd.vd_typ) def.p_out
@@ -303,8 +280,8 @@ let rec get_normed_expr_type env_var (e : expr) : typ =
   | Bitmask (e, _) -> get_normed_expr_type env_var e
   | Pack (_, _, Some typ) -> typ
   | _ ->
-      Printf.eprintf "get_normed_expr_type: error: unnormed expr: %s.\n"
-        (Usuba_print.expr_to_str e);
+      Format.eprintf "get_normed_expr_type: error: unnormed expr: %a.\n"
+        (Usuba_print.pp_expr ()) e;
       assert false
 
 (* Expands a typ into a list of basic (umx1) types *)
@@ -417,7 +394,7 @@ let p_to_vars (p : p) : var list = List.map vd_to_var p
 
 let env_fetch (env : ('b, 'a) Hashtbl.t) (id : ident) : 'a option =
   try
-    let v = Hashtbl.find env id.name in
+    let v = Hashtbl.find env (Ident.name id) in
     Some v
   with Not_found -> None
 
@@ -428,20 +405,21 @@ let env_contains env key : bool =
 type 'a env = (string, 'a) Hashtbl.t
 
 let env_add (env : 'a env) (id : ident) (value : 'a) : unit =
-  Hashtbl.add env id.name value
+  Hashtbl.add env (Ident.name id) value
 
 (* converts an uint_n to n bools *)
 let expand_intn_typed (id : ident) (n : int) =
   let rec aux i =
     if i > n then []
-    else (fresh_suffix id (string_of_int i), bool) :: aux (i + 1)
+    else (Ident.fresh_suffixed id (string_of_int i), bool) :: aux (i + 1)
   in
   aux 1
 
 (* converts an uint_n to n bools (in the format of pat) *)
 let expand_intn_pat (id : ident) (n : int) : var list =
   let rec aux i =
-    if i > n then [] else Var (fresh_suffix id (string_of_int i)) :: aux (i + 1)
+    if i > n then []
+    else Var (Ident.fresh_suffixed id (string_of_int i)) :: aux (i + 1)
   in
   aux 1
 
@@ -449,13 +427,14 @@ let expand_intn_pat (id : ident) (n : int) : var list =
 let expand_intn_expr (id : ident) (n : int) : expr list =
   let rec aux i =
     if i > n then []
-    else ExpVar (Var (fresh_suffix id (string_of_int i))) :: aux (i + 1)
+    else ExpVar (Var (Ident.fresh_suffixed id (string_of_int i))) :: aux (i + 1)
   in
   aux 1
 
 let expand_intn_list (id : ident) (n : int) : ident list =
   let rec aux i =
-    if i > n then [] else fresh_suffix id (string_of_int i) :: aux (i + 1)
+    if i > n then []
+    else Ident.fresh_suffixed id (string_of_int i) :: aux (i + 1)
   in
   aux 1
 
@@ -495,7 +474,7 @@ let is_perm (def : def) : bool =
 let is_const (var : var_d) : bool = List.mem Pconst var.vd_opts
 let is_lazyLift (var : var_d) : bool = List.mem PlazyLift var.vd_opts
 
-let default_bits_per_reg (arch : arch) : int =
+let default_bits_per_reg (arch : Config.arch) : int =
   match arch with
   | Std -> 64
   | MMX -> 64
@@ -534,7 +513,7 @@ let rec simpl_var_indices (v : var) : var =
   | _ -> assert false
 
 let is_builtin (f : ident) : bool =
-  List.mem f.name [ "print"; "rand"; "refresh" ]
+  List.mem (Ident.name f) [ "print"; "rand"; "refresh" ]
 
 (* Returns true if |defi| is a single; false otherwise *)
 let is_single (defi : def_i) = match defi with Single _ -> true | _ -> false

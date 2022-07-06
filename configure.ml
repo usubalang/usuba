@@ -170,6 +170,7 @@ type arch = Std | MMX | SSE | AVX | AVX512 | Neon | AltiVec
 type slicing = H | V | B [@@@deriving show, sexp]
 
 type config = {
+  output : string;
   warning_as_error : bool;
   verbose : int;
   path : string list;
@@ -219,8 +220,6 @@ type config = {
   bench_msched : bool;
   bench_sharevar : bool;
   dump_sexp : bool;
-  parse_only : bool;
-  type_only : bool;
 }
 [@@@deriving show]
 |};

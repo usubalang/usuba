@@ -24,12 +24,12 @@ open Utils
 let rec rename_arith_expr (e : arith_expr) =
   match e with
   | Const_e c -> Const_e c
-  | Var_e v -> Var_e (fresh_suffix v "'")
+  | Var_e v -> Var_e (Ident.fresh_suffixed v "'")
   | Op_e (op, x, y) -> Op_e (op, rename_arith_expr x, rename_arith_expr y)
 
 let rec rename_var (v : var) =
   match v with
-  | Var v -> Var (fresh_suffix v "'")
+  | Var v -> Var (Ident.fresh_suffixed v "'")
   | Index (v, e) -> Index (rename_var v, rename_arith_expr e)
   | Range (v, ei, ef) ->
       Range (rename_var v, rename_arith_expr ei, rename_arith_expr ef)
@@ -49,9 +49,10 @@ let rec rename_expr (e : expr) =
   | Pack (e1, e2, t) -> Pack (rename_expr e1, rename_expr e2, t)
   | Fun (f, l) ->
       if is_builtin f then Fun (f, List.map rename_expr l)
-      else Fun (fresh_suffix f "'", List.map rename_expr l)
+      else Fun (Ident.fresh_suffixed f "'", List.map rename_expr l)
   | Fun_v (f, e, l) ->
-      Fun_v (fresh_suffix f "'", rename_arith_expr e, List.map rename_expr l)
+      Fun_v
+        (Ident.fresh_suffixed f "'", rename_arith_expr e, List.map rename_expr l)
 
 let rename_pat pat = List.map rename_var pat
 
@@ -64,16 +65,16 @@ let rec rename_deq deqs =
           (match d.content with
           | Eqn (pat, expr, sync) -> Eqn (rename_pat pat, rename_expr expr, sync)
           | Loop (id, ei, ef, d, opts) ->
-              Loop (fresh_suffix id "'", ei, ef, rename_deq d, opts));
+              Loop (Ident.fresh_suffixed id "'", ei, ef, rename_deq d, opts));
       })
     deqs
 
 let rename_p (p : p) =
-  List.map (fun vd -> { vd with vd_id = fresh_suffix vd.vd_id "'" }) p
+  List.map (fun vd -> { vd with vd_id = Ident.fresh_suffixed vd.vd_id "'" }) p
 
 let rename_def (def : def) : def =
   {
-    id = fresh_suffix def.id "'";
+    id = Ident.fresh_suffixed def.id "'";
     p_in = rename_p def.p_in;
     p_out = rename_p def.p_out;
     opt = def.opt;

@@ -59,7 +59,7 @@ let gen_tmp =
   let cpt = ref 0 in
   fun env_var typ id ->
     incr cpt;
-    let var = fresh_ident (Printf.sprintf "_shadow_%s%d_" id !cpt) in
+    let var = Ident.create_fresh (Printf.sprintf "_shadow_%s%d_" id !cpt) in
     Hashtbl.add env_var var typ;
     new_vars := simple_typed_var_d var typ :: !new_vars;
     Var var
@@ -169,7 +169,9 @@ let rec clean_deqs (env_var : (ident, typ) Hashtbl.t)
                     List.map
                       (fun v ->
                         let typ = get_var_type env_var v in
-                        let v' = gen_tmp env_var typ (get_base_name v).name in
+                        let v' =
+                          gen_tmp env_var typ (Ident.name (get_base_name v))
+                        in
                         Hashtbl.add env_replace v v';
                         v')
                       lhs

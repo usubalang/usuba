@@ -1,5 +1,3 @@
-open Usuba_AST
-
 (* Returns two filenames:
      - a filename to store the source of |def|
      - a filename to store the _refreshed_ version of |def|.
@@ -10,8 +8,7 @@ open Usuba_AST
    easily create the files should he need to, but doesn't have to
    bother create the directory, which would be trickier)
 *)
-let gen_file_names (def : Tp_AST.def) (conf : Usuba_AST.config) :
-    string * string =
+let gen_file_names (def : Tp_AST.def) (conf : Config.config) : string * string =
   let hashcode = Hashtbl.hash def in
 
   let root_dir = conf.tightprove_dir in
@@ -39,8 +36,8 @@ let gen_file_names (def : Tp_AST.def) (conf : Usuba_AST.config) :
    remains. The answer is probably a textual representation of the
    node. To be future-proof though, we need to 1- settle on a
    representation, 2- normalize variable names *)
-let get_from_cache (def : Tp_AST.def) (conf : Usuba_AST.config) :
-    Tp_AST.def option =
+let get_from_cache (def : Tp_AST.def) (conf : Config.config) : Tp_AST.def option
+    =
   let source_file, refreshed_file = gen_file_names def conf in
 
   if Sys.file_exists source_file && Sys.file_exists refreshed_file then
@@ -68,8 +65,7 @@ let run_tightprove (source_file : string) (refreshed_file : string)
     - if it's already present in the cache, just fetch it from the cache
     - if it's not in the cache, then call tightprove to generate it,
       and update the cache *)
-let get_refreshed_def (def : Tp_AST.def) (conf : Usuba_AST.config) : Tp_AST.def
-    =
+let get_refreshed_def (def : Tp_AST.def) (conf : Config.config) : Tp_AST.def =
   match get_from_cache def conf with
   | Some r_def -> r_def
   | None ->

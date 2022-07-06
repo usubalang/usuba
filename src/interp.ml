@@ -1,6 +1,4 @@
 open Usuba_AST
-open Basic_utils
-open Utils
 
 (* Returns the local vars of |f|, or nothing if |f| doesn't have local
    variables. *)
@@ -32,7 +30,11 @@ module Usuba0 = struct
         let l' = List.flatten (List.map interp_expr_rec l) in
         let f' = Hashtbl.find env_fun f in
         interp_node env_fun f' l'
-    | _ -> raise (Error ("Invalid expression :" ^ Usuba_print.expr_to_str e))
+    | _ ->
+        raise
+          (Errors.Error
+             (Format.asprintf "Invalid expression: %a" (Usuba_print.pp_expr ())
+                e))
 
   and interp_node env_fun (f : def) (l : bool list) : bool list =
     (* the function to evaluate an assignment *)
@@ -42,16 +44,18 @@ module Usuba0 = struct
       let res = interp_expr env_fun env_params env_var expr in
       List.iter2
         (fun x y -> Hashtbl.replace env_var x y)
-        (flat_map (expand_var env_params) vars)
+        (Basic_utils.flat_map (Utils.expand_var env_params) vars)
         res
     in
     (* creating a lexical environement *)
     let env_var : (var, bool) Hashtbl.t = Hashtbl.create 100 in
     (* adding the inputs in the environment *)
-    let env_params = build_env_var f.p_in f.p_out (get_vars f) in
+    let env_params = Utils.build_env_var f.p_in f.p_out (get_vars f) in
     List.iter2
       (fun v y -> Hashtbl.replace env_var v y)
-      (flat_map (expand_var env_params) (p_to_vars f.p_in))
+      (Basic_utils.flat_map
+         (Utils.expand_var env_params)
+         (Utils.p_to_vars f.p_in))
       l;
     (* evaluating the instructions of the node *)
     (match f.node with
@@ -60,26 +64,32 @@ module Usuba0 = struct
           (fun d ->
             match d.content with
             | Eqn (vars, e, _) -> interp_asgn env_fun env_params env_var vars e
-            | _ -> raise (Error "Invalid 'Loop'"))
+            | _ -> raise (Errors.Error "Invalid 'Loop'"))
           deqs
-    | _ -> raise (Error ("Invalid node: " ^ Usuba_print.def_to_str f)));
+    | _ ->
+        raise
+          (Errors.Error
+             (Format.asprintf "Invalid node: %a" (Usuba_print.pp_def ()) f)));
     (* returning the values of the output variables *)
     List.map (Hashtbl.find env_var)
-      (flat_map (expand_var env_params) (p_to_vars f.p_out))
+      (Basic_utils.flat_map
+         (Utils.expand_var env_params)
+         (Utils.p_to_vars f.p_out))
 
   let interp_prog (prog : prog) (input : bool list) : bool list =
     let env_fun = Hashtbl.create 100 in
     (* Collecting the list of nodes *)
     List.iter (fun f -> Hashtbl.replace env_fun f.id f) prog.nodes;
     (* Calling the last node (the entry point by convention) *)
-    interp_node env_fun (last prog.nodes) input
+    interp_node env_fun (Basic_utils.last prog.nodes) input
 end
 
 module Usuba = struct
   (* Note: node is a Table *)
   let interp_table (node : def) (l : bool list) : bool list =
-    let idx = boollist_to_int l in
+    let idx = Basic_utils.boollist_to_int l in
     match node.node with
-    | Table tbl -> int_to_boollist (List.nth tbl idx) (p_size node.p_out)
+    | Table tbl ->
+        Basic_utils.int_to_boollist (List.nth tbl idx) (Utils.p_size node.p_out)
     | _ -> assert false
 end
