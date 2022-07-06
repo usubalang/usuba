@@ -30,9 +30,8 @@ TODO")
    sexplib
   (usuba_lib (= :version))
   (usuba_pp (= :version))
-  ; Not needed for now
-  ; (usuba-common (= :version))
   (odoc :with-doc)
+  (ocamlformat (= 0.22.4))
  )
 )
 
@@ -50,6 +49,7 @@ TODO")
    ppx_sexp_conv
   (usuba_pp (= :version))
   (odoc :with-doc)
+  (ocamlformat (= 0.22.4))
  )
 )
 
@@ -62,19 +62,6 @@ Pretty printing for stdlib modules")
    ocaml
    dune
   (odoc :with-doc)
+  (ocamlformat (= 0.22.4))
  )
 )
-
-; (package
-;  (name usuba-common)
-;  (synopsis "Usuba common modules for binaries")
-;  (description "\
-; TODO")
-;  (depends
-;    ocaml
-;    dune
-;    cmdliner
-;   (usuba-lib (= :version))
-;   (odoc :with-doc)
-;  )
-; )

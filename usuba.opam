@@ -15,6 +15,7 @@ depends: [
   "usuba_lib" {= version}
   "usuba_pp" {= version}
   "odoc" {with-doc}
+  "ocamlformat" {= "0.22.4"}
 ]
 build: [
   ["dune" "subst"] {dev}

@@ -1,2 +1,4 @@
 #!/bin/sh
-exec ocaml unix.cma configure.ml "$@"
+ocamlc -c -o /tmp/ansi_terminal src/ansi_terminal.ml
+ocaml unix.cma -I /tmp/ /tmp/ansi_terminal.cmo configure.ml "$@"
+rm /tmp/ansi_terminal.cmi /tmp/ansi_terminal.cmo

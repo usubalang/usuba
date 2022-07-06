@@ -17,6 +17,7 @@ depends: [
   "ppx_sexp_conv"
   "usuba_pp" {= version}
   "odoc" {with-doc}
+  "ocamlformat" {= "0.22.4"}
 ]
 build: [
   ["dune" "subst"] {dev}

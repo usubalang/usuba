@@ -4,7 +4,7 @@ name: Build and Test (OCaml and ICC)
 on: [push,pull_request]
 
 env:
-  OCAML_DEFAULT_VERSION: 4.13.1
+  OCAML_DEFAULT_VERSION: 4.14.0
   # Add OPAMYES=true to the environment, this is usefill to replace `-y` option
   # in any opam call
   OPAMYES: true
@@ -95,7 +95,7 @@ jobs:
 
       # Generate config.ml file
       - name: configure
-        run: ./configure
+        run: ./configure --datadir "./examples/data"
 
       # `dune build` (will update the *.opam file if the dune-project was updated)
       # (all of this will be done when the build system is upgraded to use dune)
