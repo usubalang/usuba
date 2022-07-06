@@ -94,5 +94,5 @@ let unroll_def (force : bool) (def : def) : def =
 let force_run (prog : prog) _ : prog =
   { nodes = List.map (fun d -> unroll_def true d) prog.nodes }
 
-let run _ (prog : prog) (conf : config) : prog =
+let run _ (prog : prog) (conf : Config.config) : prog =
   { nodes = List.map (fun d -> unroll_def conf.unroll d) prog.nodes }

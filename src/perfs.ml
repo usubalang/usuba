@@ -1,4 +1,3 @@
-open Utils
 open Usuba_AST
 
 (* Number of times to repeat benchmarks when comparing several programs *)
@@ -33,8 +32,8 @@ let bench_code =
    }"
 
 (* Returns the name of the executable generated for |prog|. *)
-let compile (arch : arch) (bitslice : bool) (prog : prog) : string =
-  let conf = { default_conf with gen_bench = true; archi = arch } in
+let compile (arch : Config.arch) (bitslice : bool) (prog : prog) : string =
+  let conf = { Utils.default_conf with gen_bench = true; archi = arch } in
   let c_prog = GenC_standalone.gen_runtime prog prog conf "" in
 
   let bin_filename = Filename.temp_file "usuba-perf-bench" "" in
@@ -71,9 +70,9 @@ let remove_start_end (l : 'a list) : 'a list =
   remove_start (remove_end l 2) 2
 
 (* Returns the performances of each program of |progs|. *)
-let compare_perfs (progs : prog list) (conf : config) : float list =
+let compare_perfs (progs : prog list) (conf : Config.config) : float list =
   let bitslice =
-    get_type_dir List.(hd (hd (hd progs).nodes).p_in).vd_typ = Bslice
+    Utils.get_type_dir List.(hd (hd (hd progs).nodes).p_in).vd_typ = Bslice
   in
   let binaries = List.map (compile conf.archi bitslice) progs in
 

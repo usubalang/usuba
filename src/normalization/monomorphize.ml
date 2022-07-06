@@ -1,6 +1,4 @@
 open Usuba_AST
-open Basic_utils
-open Utils
 
 let compact_mono = ref true
 let compact = ref false
@@ -10,7 +8,7 @@ let gen_counter =
   let cpt = ref 0 in
   fun () ->
     incr cpt;
-    fresh_ident (Printf.sprintf "_idx_%d" !cpt)
+    Ident.create_fresh (Printf.sprintf "_idx_%d" !cpt)
 
 (* Will be used within Hslice/Vslice/Bslice (which is why it's located
    up here) *)
@@ -62,16 +60,16 @@ module Hslice = struct
     | Shift (op, ExpVar v, ae) -> (
         (* m  _has_ to be only one element here *)
         let m =
-          match get_var_type env_var v with
+          match Utils.get_var_type env_var v with
           | Uint (_, Mint m, _) -> m
           | _ -> assert false
         in
-        let l = gen_list_0_int m in
+        let l = Utils.gen_list_0_int m in
         match op with
-        | Lrotate -> Shuffle (v, rotate_l l (eval_arith_ne ae))
-        | Rrotate -> Shuffle (v, rotate_r l (eval_arith_ne ae))
-        | Lshift -> Shuffle (v, shift_l l (eval_arith_ne ae))
-        | Rshift -> Shuffle (v, shift_r l (eval_arith_ne ae))
+        | Lrotate -> Shuffle (v, rotate_l l (Utils.eval_arith_ne ae))
+        | Rrotate -> Shuffle (v, rotate_r l (Utils.eval_arith_ne ae))
+        | Lshift -> Shuffle (v, shift_l l (Utils.eval_arith_ne ae))
+        | Rshift -> Shuffle (v, shift_r l (Utils.eval_arith_ne ae))
         | RAshift ->
             Printf.eprintf "Cannot Hslice arithmetic shifts.\n";
             assert false)
@@ -84,12 +82,12 @@ end
 
 module Vslice = struct
   let get_type_m_as_int (t : typ) : int =
-    match get_type_m t with Mint m -> m | _ -> assert false
+    match Utils.get_type_m t with Mint m -> m | _ -> assert false
 
   (* Converts a shuffle into shifts/xors *)
   let specialize_shuffle (env_var : (ident, typ) Hashtbl.t) (v : var)
       (l : int list) : expr =
-    let v_typ = get_var_type env_var v in
+    let v_typ = Utils.get_var_type env_var v in
     let size = get_type_m_as_int v_typ in
 
     (* Extracts the |orig|-th bit of |v| to index |dst|. *)
@@ -107,7 +105,7 @@ module Vslice = struct
 
     match l with
     | hd :: tl ->
-        fold_left_i ~start:1
+        Basic_utils.fold_left_i ~start:1
           (fun (i : int) (e : expr) (n : int) -> Log (Xor, e, extract_bit n i))
           (extract_bit hd 0) tl
     | [] -> assert false
@@ -137,15 +135,14 @@ module Bslice = struct
     | Uint (Bslice, Mint m, n) -> Array (Uint (Bslice, Mint 1, m), Const_e n)
     | Array (t', n) -> Array (refine_type t', n)
     | _ ->
-        Printf.fprintf stderr "Can't refine_type(%s).\n"
-          (Usuba_print.typ_to_str t);
+        Format.eprintf "Can't refine_type(%a).@." (Usuba_print.pp_typ ()) t;
         assert false
 
   (* get the size in bits of a typ: a unxm has size n*m in bitslicing *)
   let rec get_typ_real_size (typ : typ) : int =
     match typ with
     | Uint (_, Mint m, n) -> m * n
-    | Array (t, n) -> get_typ_real_size t * eval_arith_ne n
+    | Array (t, n) -> get_typ_real_size t * Utils.eval_arith_ne n
     | _ -> assert false
   (* Nat or Uint(_,Mvar _,_) *)
 
@@ -238,15 +235,15 @@ module Bslice = struct
             specialize_expr env_dir env_m env_var e2,
             typ )
     | _ ->
-        Printf.eprintf
-          "Monomorphize::Bslice::specialize_expr: Invalid expr: %s\n"
-          (Usuba_print.expr_to_str e);
+        Format.eprintf
+          "Monomorphize::Bslice::specialize_expr: Invalid expr: %a@."
+          (Usuba_print.pp_expr ()) e;
         assert false
 
   let specialize_vars env_var (vs : var list) : var list =
     List.map (specialize_var env_var) vs
 
-  let loop_log_it = fresh_ident "_log_it"
+  let loop_log_it = Ident.create_fresh "_log_it"
   let apply_loop_it (v : var) : var = Index (v, Var_e loop_log_it)
 
   let specialize_eqn (env_dir : (dir, dir) Hashtbl.t)
@@ -256,7 +253,7 @@ module Bslice = struct
     let e = specialize_expr env_dir env_m env_var e in
     match e with
     | ExpVar v -> (
-        match get_var_m env_var v with
+        match Utils.get_var_m env_var v with
         | Mint m when !compact && m > 1 ->
             (* We have a ^/&/| between two arrays -> generate a loop *)
             {
@@ -282,7 +279,7 @@ module Bslice = struct
             (* Not between two arrays -> leave it as a simple equation *)
             { orig; content = Eqn (vs, e, false) })
     | Log (op, ExpVar x, ExpVar y) -> (
-        match get_var_m env_var x with
+        match Utils.get_var_m env_var x with
         | Mint m when !compact && m > 1 ->
             (* We have a ^/&/| between two arrays -> generate a loop *)
             {
@@ -311,7 +308,7 @@ module Bslice = struct
             (* Not between two arrays -> leave it as a simple equation *)
             { orig; content = Eqn (vs, e, false) })
     | Not (ExpVar v) -> (
-        match get_var_m env_var v with
+        match Utils.get_var_m env_var v with
         | Mint m when !compact && m > 1 ->
             (* We have a ^/&/| between two arrays -> generate a loop *)
             {
@@ -344,9 +341,9 @@ end
 
 (* Generates a function name based on its polymorphic name and its monomorphization *)
 let gen_fun_name (f : ident) (ldir : dir list) (lmtyp : mtyp list) : ident =
-  fresh_ident
-    (f.name
-    ^ join "_"
+  Ident.create_fresh
+    (Ident.name f
+    ^ Basic_utils.join "_"
         (List.map
            (function
              | Hslice -> "H"
@@ -355,7 +352,7 @@ let gen_fun_name (f : ident) (ldir : dir list) (lmtyp : mtyp list) : ident =
              | Natdir -> "Nat"
              | _ -> assert false)
            ldir)
-    ^ join "_"
+    ^ Basic_utils.join "_"
         (List.map
            (function
              | Mint n -> string_of_int n | Mnat -> "nat" | _ -> assert false)
@@ -366,7 +363,7 @@ let refine_types (p : p) : p =
   match p with
   | [] -> []
   | hd :: _ -> (
-      match get_type_dir hd.vd_typ with
+      match Utils.get_type_dir hd.vd_typ with
       | Bslice -> Bslice.refine_types p
       | Hslice -> Hslice.refine_types p
       | Vslice -> Vslice.refine_types p
@@ -380,7 +377,7 @@ let specialize_p (env_dir : (dir, dir) Hashtbl.t)
     p
 
 let specialize_var (env_var : (ident, typ) Hashtbl.t) (v : var) : var =
-  match get_var_dir env_var v with
+  match Utils.get_var_dir env_var v with
   | Bslice -> Bslice.specialize_var env_var v
   | Hslice -> Hslice.specialize_var env_var v
   | Vslice -> Vslice.specialize_var env_var v
@@ -400,13 +397,16 @@ let match_types env_dir env_m (p : p) (typs : typ list) : p =
   let rec update_dir_m (t_dest : typ) (t_dir_m : typ) : typ =
     match t_dest with
     | Nat -> t_dest
-    | Uint (_, _, n) -> Uint (get_type_dir t_dir_m, get_type_m t_dir_m, n)
+    | Uint (_, _, n) ->
+        Uint (Utils.get_type_dir t_dir_m, Utils.get_type_m t_dir_m, n)
     | Array (t, s) -> Array (update_dir_m t t_dir_m, s)
   in
   List.map2
     (fun vd t ->
-      Hashtbl.replace env_dir (get_type_dir vd.vd_typ) (get_type_dir t);
-      Hashtbl.replace env_m (get_type_m vd.vd_typ) (get_type_m t);
+      Hashtbl.replace env_dir
+        (Utils.get_type_dir vd.vd_typ)
+        (Utils.get_type_dir t);
+      Hashtbl.replace env_m (Utils.get_type_m vd.vd_typ) (Utils.get_type_m t);
       { vd with vd_typ = update_dir_m vd.vd_typ t })
     p typs
 
@@ -457,7 +457,7 @@ let rec node_call_can_be_optimized (all_nodes : (ident, def) Hashtbl.t)
     | Bitmask _ -> false
     | Pack _ -> false
     | Fun (f', l) ->
-        if f'.name = "refresh" then true
+        if Ident.name f' = "refresh" then true
         else
           node_call_can_be_optimized all_nodes f' && List.for_all expr_can_opt l
     | _ -> assert false
@@ -469,8 +469,8 @@ let rec node_call_can_be_optimized (all_nodes : (ident, def) Hashtbl.t)
   in
 
   let all_vd_same_m (vdl : var_d list) : bool =
-    let m = get_type_m (List.hd vdl).vd_typ in
-    List.for_all (fun vd -> get_type_m vd.vd_typ = m) vdl
+    let m = Utils.get_type_m (List.hd vdl).vd_typ in
+    List.for_all (fun vd -> Utils.get_type_m vd.vd_typ = m) vdl
   in
 
   let def = Hashtbl.find all_nodes f in
@@ -490,18 +490,20 @@ let rec specialize_general_fun_call (all_nodes : (ident, def) Hashtbl.t)
   let env_dir = Hashtbl.create 10 in
   let env_m = Hashtbl.create 10 in
 
-  let typs_out = List.map (get_var_type env_var) vs in
-  let typs_in = flat_map (get_expr_type (Hashtbl.create 1) env_var) l in
+  let typs_out = List.map (Utils.get_var_type env_var) vs in
+  let typs_in =
+    Basic_utils.flat_map (Utils.get_expr_type (Hashtbl.create 1) env_var) l
+  in
 
   let def = Hashtbl.find all_nodes f in
   let p_in = match_types env_dir env_m def.p_in typs_in in
   let p_out = match_types env_dir env_m def.p_out typs_out in
 
-  let ldir = List.sort compare (values env_dir) in
-  let lmtyp = List.sort compare (values env_m) in
+  let ldir = List.sort compare (Basic_utils.values env_dir) in
+  let lmtyp = List.sort compare (Basic_utils.values env_m) in
   let f' = gen_fun_name f ldir lmtyp in
 
-  replace_key_2nd_layer specialized_nodes f (f', ldir, lmtyp)
+  Basic_utils.replace_key_2nd_layer specialized_nodes f (f', ldir, lmtyp)
     {
       def with
       id = f';
@@ -528,15 +530,17 @@ and specialize_opt_fun_call (all_nodes : (ident, def) Hashtbl.t)
   let env_dir = Hashtbl.create 10 in
   let env_m = Hashtbl.create 10 in
 
-  let typs_out = List.map (get_var_type env_var) vs in
-  let typs_in = flat_map (get_expr_type (Hashtbl.create 1) env_var) l in
+  let typs_out = List.map (Utils.get_var_type env_var) vs in
+  let typs_in =
+    Basic_utils.flat_map (Utils.get_expr_type (Hashtbl.create 1) env_var) l
+  in
 
   let def = Hashtbl.find all_nodes f in
   let p_in = match_types env_dir env_m def.p_in typs_in in
   let p_out = match_types env_dir env_m def.p_out typs_out in
 
   let m_size =
-    match get_type_m (List.hd p_in).vd_typ with
+    match Utils.get_type_m (List.hd p_in).vd_typ with
     | Mint m -> m
     | _ -> assert false
   in
@@ -546,12 +550,12 @@ and specialize_opt_fun_call (all_nodes : (ident, def) Hashtbl.t)
   else
     let p_in =
       List.map
-        (fun vd -> { vd with vd_typ = replace_m vd.vd_typ (Mint 1) })
+        (fun vd -> { vd with vd_typ = Utils.replace_m vd.vd_typ (Mint 1) })
         p_in
     in
     let p_out =
       List.map
-        (fun vd -> { vd with vd_typ = replace_m vd.vd_typ (Mint 1) })
+        (fun vd -> { vd with vd_typ = Utils.replace_m vd.vd_typ (Mint 1) })
         p_out
     in
 
@@ -559,9 +563,11 @@ and specialize_opt_fun_call (all_nodes : (ident, def) Hashtbl.t)
     let lmtyp = [ Mint 1 ] in
     let f' = gen_fun_name f ldir lmtyp in
 
-    List.iter (fun m -> Hashtbl.replace env_m m (Mint 1)) (keys env_m);
+    List.iter
+      (fun m -> Hashtbl.replace env_m m (Mint 1))
+      (Basic_utils.keys env_m);
 
-    replace_key_2nd_layer specialized_nodes f (f', ldir, lmtyp)
+    Basic_utils.replace_key_2nd_layer specialized_nodes f (f', ldir, lmtyp)
       {
         def with
         id = f';
@@ -578,7 +584,7 @@ and specialize_opt_fun_call (all_nodes : (ident, def) Hashtbl.t)
     let idx = gen_counter () in
     let l' =
       List.map (indexify_expr idx)
-        (flat_map Norm_tuples.Simplify_tuples.simpl_tuple
+        (Basic_utils.flat_map Norm_tuples.Simplify_tuples.simpl_tuple
            (List.map
               (Expand_array.expand_expr env_var (Hashtbl.create 1)
                  (Hashtbl.create 1) (Hashtbl.create 1) Expand_array.Split)
@@ -588,14 +594,14 @@ and specialize_opt_fun_call (all_nodes : (ident, def) Hashtbl.t)
       Loop
         ( idx,
           Const_e 0,
-          simpl_arith_ne (Op_e (Sub, Const_e m_size, Const_e 1)),
+          Utils.simpl_arith_ne (Op_e (Sub, Const_e m_size, Const_e 1)),
           [
             {
               orig = [];
               content =
                 Eqn
                   ( List.map (indexify_var idx)
-                      (flat_map (expand_var env_var) vs),
+                      (Basic_utils.flat_map (Utils.expand_var env_var) vs),
                     Fun (f', l'),
                     false );
             };
@@ -627,12 +633,12 @@ and specialize_expr (all_nodes : (ident, def) Hashtbl.t)
   match e with
   (* When a function call happens, we need to specialize the function called *)
   | Fun (f, l) ->
-      if f.name = "refresh" then { orig; content = Eqn (vs, e, sync) }
+      if Ident.name f = "refresh" then { orig; content = Eqn (vs, e, sync) }
       else
         specialize_fun_call all_nodes specialized_nodes env_var orig vs f l sync
   (* Otherwise (not a function call), we delegate to the modules of each Slicing *)
   | _ -> (
-      match get_var_dir env_var (List.hd vs) with
+      match Utils.get_var_dir env_var (List.hd vs) with
       | Hslice ->
           {
             orig;
@@ -687,7 +693,7 @@ and specialize_node (all_nodes : (ident, def) Hashtbl.t)
     (env_dir : (dir, dir) Hashtbl.t) (env_m : (mtyp, mtyp) Hashtbl.t) (p_in : p)
     (p_out : p) (vars : p) (body : deq list) : def_i =
   let vars = specialize_p env_dir env_m vars in
-  let env_var = build_env_var p_in p_out vars in
+  let env_var = Utils.build_env_var p_in p_out vars in
 
   let body =
     specialize_deqs all_nodes specialized_nodes env_dir env_m env_var body
@@ -706,7 +712,7 @@ let specialize_entry (all_nodes : (ident, def) Hashtbl.t)
   let p_in = specialize_p env_dir (Hashtbl.create 1) def.p_in in
   let p_out = specialize_p env_dir (Hashtbl.create 1) def.p_out in
 
-  replace_key_2nd_layer specialized_nodes def.id (def.id, [], [])
+  Basic_utils.replace_key_2nd_layer specialized_nodes def.id (def.id, [], [])
     {
       def with
       p_in = refine_types p_in;
@@ -719,7 +725,7 @@ let specialize_entry (all_nodes : (ident, def) Hashtbl.t)
         | _ -> def.node);
     }
 
-let run _ (prog : prog) (conf : config) : prog =
+let run _ (prog : prog) (conf : Config.config) : prog =
   compact_mono := conf.compact_mono;
   compact := conf.compact;
   bitslice := conf.slicing_set && conf.slicing_type = B;
@@ -732,7 +738,7 @@ let run _ (prog : prog) (conf : config) : prog =
         match conf.slicing_type with V -> Vslice | H -> Hslice | B -> Bslice)
   in
   let env_dir = Hashtbl.create 10 in
-  Hashtbl.add env_dir default_dir spec_dir;
+  Hashtbl.add env_dir Utils.default_dir spec_dir;
 
   (* Environment of all (non-monomorphized) nodes *)
   let all_nodes = Hashtbl.create 10 in
@@ -742,7 +748,9 @@ let run _ (prog : prog) (conf : config) : prog =
   let specialized_nodes = Hashtbl.create 100 in
 
   (* Starting monomorphization from the main *)
-  specialize_entry all_nodes specialized_nodes env_dir (last prog.nodes) conf;
+  specialize_entry all_nodes specialized_nodes env_dir
+    (Basic_utils.last prog.nodes)
+    conf;
 
   (* Monomorphizing the nodes that aren't called by the main *)
   List.iter
@@ -755,10 +763,10 @@ let run _ (prog : prog) (conf : config) : prog =
   (* Reconstructing the program from the monomorphized nodes *)
   {
     nodes =
-      flat_map
+      Basic_utils.flat_map
         (fun def ->
           let monos_hash = Hashtbl.find specialized_nodes def.id in
-          values monos_hash)
+          Basic_utils.values monos_hash)
         prog.nodes;
   }
 

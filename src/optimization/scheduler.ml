@@ -70,7 +70,7 @@ module Basic_scheduler = struct
                       used
                   in
                   pre @ [ (p, e, d.orig) ])
-          | Loop _ -> raise (Error "Invalid Loop"))
+          | Loop _ -> raise (Errors.Error "Invalid Loop"))
         deqs
     in
     List.map
@@ -427,15 +427,15 @@ module Low_pressure_sched = struct
 
   (* TODO: make this more precise.
      Could be 1 on ARM/PowerPC. *)
-  let parallel_arch (arch : arch) : int = match arch with _ -> 15
+  let parallel_arch (arch : Config.arch) : int = match arch with _ -> 15
 
-  let schedule (prog : prog) (conf : config) : prog =
+  let schedule (prog : prog) (conf : Config.config) : prog =
     (* let parallel_lvl = parallel_arch conf.archi in *)
     let parallel_lvl = conf.schedule_n in
     { nodes = List.map (schedule_def parallel_lvl) prog.nodes }
 end
 
-let run _ (prog : prog) (conf : config) : prog =
+let run _ (prog : prog) (conf : Config.config) : prog =
   (* Reg_alloc.alloc_reg prog        *)
   (* Basic_scheduler.schedule prog *)
   (* Random_scheduler.schedule prog  *)

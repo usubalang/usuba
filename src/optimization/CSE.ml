@@ -71,8 +71,8 @@ let rec cse_expr (env_expr : (expr, var list) Hashtbl.t) (e : expr) : expr =
       | Pack (e1, e2, t) -> Pack (cse_expr env_expr e1, cse_expr env_expr e2, t)
       | Fun (f, l) -> Fun (f, List.map (cse_expr env_expr) l)
       | _ ->
-          Printf.eprintf "cse_expr: invalid expr: %s.\n"
-            (Usuba_print.expr_to_str e);
+          Format.eprintf "cse_expr: invalid expr: %a.@."
+            (Usuba_print.pp_expr ()) e;
           assert false)
 
 let rec cse_deqs (env_expr : (expr, var list) Hashtbl.t) (deqs : deq list) :
@@ -96,12 +96,12 @@ let rec cse_deqs (env_expr : (expr, var list) Hashtbl.t) (deqs : deq list) :
                  y = x;
                  z = y;
           *)
-          (match Hashtbl.find_opt env_expr e' with
-          | Some _ -> ()
-          | None -> (
-              match e' with
-              | Const _ -> () (* Don't replace Consts by variables *)
-              | _ -> Hashtbl.add env_expr e' lhs));
+          (match e' with
+          | Const _ -> () (* Don't replace Consts by variables *)
+          | _ -> (
+              match Hashtbl.find_opt env_expr e' with
+              | Some _ -> ()
+              | None -> Hashtbl.add env_expr e' lhs));
           { d with content = Eqn (lhs, e', sync) }
       | Loop (i, ei, ef, dl, opts) ->
           (* Passing a copy of |env_expr| to the loop, so that nothing
@@ -117,7 +117,8 @@ let cse_def (def : def) : def =
          computed. *)
       let env_expr : (expr, var list) Hashtbl.t = Hashtbl.create 100 in
       { def with node = Single (vars, cse_deqs env_expr body) }
-  | _ -> def
+  | Perm _ | Table _ -> def
+  | Multiple _ -> assert false
 
 let run (runner : pass_runner) prog _ =
   runner#run_module Norm_tuples.as_pass { nodes = List.map cse_def prog.nodes }

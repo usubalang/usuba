@@ -4,9 +4,6 @@
   ( *****************************************************************************)
 
 open Usuba_AST
-open Basic_utils
-open Utils
-open Printf
 
 type array_fate = Keep | Remove | Split
 
@@ -31,7 +28,7 @@ let env_remove env v = Hashtbl.remove env v
 
 let env_fetch env v =
   try Hashtbl.find env v
-  with Not_found -> raise (Error ("Not found: " ^ v.name))
+  with Not_found -> raise (Errors.Error ("Not found: " ^ Ident.name v))
 
 (* Using a custom eval_arith to raise Need_unroll with the correct
    argument. *)
@@ -84,10 +81,10 @@ let rec remove_arr (v : var) : var =
   | Var _ -> v
   | Index (v', Const_e i) -> (
       match remove_arr v' with
-      | Var id -> Var (fresh_suffix id (sprintf "%d'" i))
+      | Var id -> Var (Ident.fresh_suffixed id (Format.sprintf "%d'" i))
       | _ -> assert false)
   | _ ->
-      Printf.fprintf stderr "Error: remove_arr(%s)\n" (Usuba_print.var_to_str v);
+      Format.eprintf "Error: remove_arr(%a)@." (Usuba_print.pp_var ()) v;
       assert false
 
 (* Warning: this shadows (and calls) the definition above *)
@@ -98,24 +95,29 @@ let expand_var env_var env_keep env force (v : var) : var list =
   let rec aux (v : var) : var list =
     match v with
     | Var _ -> [ v ]
-    | Index (v', i) -> List.map (fun x -> Index (x, simpl_arith env i)) (aux v')
+    | Index (v', i) ->
+        List.map (fun x -> Index (x, Utils.simpl_arith env i)) (aux v')
     | Range (v', ei, ef) ->
         (* Note: can raise Need_unroll *)
         let ei = eval_arith env ei in
         let ef = eval_arith env ef in
-        flat_map
+        Basic_utils.flat_map
           (fun v'' ->
-            List.map (fun i -> Index (v'', Const_e i)) (gen_list_bounds ei ef))
+            List.map
+              (fun i -> Index (v'', Const_e i))
+              (Basic_utils.gen_list_bounds ei ef))
           (aux v')
-    | Slice (v', el) -> flat_map (fun i -> aux (Index (v', i))) el
+    | Slice (v', el) -> Basic_utils.flat_map (fun i -> aux (Index (v', i))) el
   in
   if force = Remove then
-    List.map (remove_arr env_keep) (flat_map (Utils.expand_var env_var) (aux v))
-  else if force = Split then flat_map (Utils.expand_var env_var) (aux v)
+    List.map (remove_arr env_keep)
+      (Basic_utils.flat_map (Utils.expand_var env_var) (aux v))
+  else if force = Split then
+    Basic_utils.flat_map (Utils.expand_var env_var) (aux v)
   else aux v
 
 let expand_vars env_var env_keep env force (vars : var list) : var list =
-  flat_map (expand_var env_var env_keep env force) vars
+  Basic_utils.flat_map (expand_var env_var env_keep env force) vars
 
 let rec expand_expr env_var env_keep env env_it force (e : expr) : expr =
   let rec_call = expand_expr env_var env_keep env env_it force in
@@ -129,7 +131,8 @@ let rec expand_expr env_var env_keep env env_it force (e : expr) : expr =
              match x with
              | Var id -> (
                  match Hashtbl.find_opt env id with
-                 | Some i -> Const (i, Some (get_var_type env_var (Var id)))
+                 | Some i ->
+                     Const (i, Some (Utils.get_var_type env_var (Var id)))
                  | None -> ExpVar x)
              | _ -> ExpVar x)
            l)
@@ -144,13 +147,13 @@ let rec expand_expr env_var env_keep env env_it force (e : expr) : expr =
           e1
       in
       (* if e1' greater than 1, then it's a shift of a tuple *)
-      if get_expr_size env_var e1' > 1 then
+      if Utils.get_expr_size env_var e1' > 1 then
         (* check_need_unroll_it will raise Need_unroll if ae depends on
            an iterator (since we are performing a shift on a tuple (which
            needs to be done at compile time), but we can only do it if the
            iterator has a value -> need to unroll). *)
         check_need_unroll_it env_it ae;
-      Shift (op, e1', simpl_arith env ae)
+      Shift (op, e1', Utils.simpl_arith env ae)
   | Shuffle (v, pat) ->
       Tuple
         (List.map
@@ -159,7 +162,7 @@ let rec expand_expr env_var env_keep env env_it force (e : expr) : expr =
   | Bitmask (e, ae) -> Bitmask (rec_call e, ae)
   | Pack (e1, e2, t) -> Pack (rec_call e1, rec_call e2, t)
   | Fun (f, el) ->
-      if f.name = "refresh" then
+      if Ident.name f = "refresh" then
         Fun
           ( f,
             List.map
@@ -170,7 +173,7 @@ let rec expand_expr env_var env_keep env env_it force (e : expr) : expr =
   | Fun_v (f, ae, el) ->
       (* Note: can raise Need_unroll *)
       Fun
-        ( fresh_suffix f (sprintf "%d'" (eval_arith env ae)),
+        ( Ident.fresh_suffixed f (Format.sprintf "%d'" (eval_arith env ae)),
           List.map rec_call el )
 
 let rec do_unroll env_var env_keep env force unroll x ei ef deqs : deq list =
@@ -178,11 +181,11 @@ let rec do_unroll env_var env_keep env force unroll x ei ef deqs : deq list =
   let ei = eval_arith env ei in
   let ef = eval_arith env ef in
   let eqs =
-    flat_map
+    Basic_utils.flat_map
       (fun i ->
         env_update env x i;
         expand_deqs env_var env_keep ~env force unroll deqs)
-      (gen_list_bounds ei ef)
+      (Basic_utils.gen_list_bounds ei ef)
   in
   env_remove env x;
   eqs
@@ -190,7 +193,7 @@ let rec do_unroll env_var env_keep env force unroll x ei ef deqs : deq list =
 and expand_deqs env_var env_keep ?(env = make_env ())
     ?(env_it : (ident, bool) Hashtbl.t = make_env ()) (force : array_fate)
     (unroll : bool) (deqs : deq list) : deq list =
-  flat_map
+  Basic_utils.flat_map
     (fun deq ->
       match deq.content with
       | Eqn (lhs, e, sync) ->
@@ -249,28 +252,28 @@ let expand_p (p : p) : p =
     match vd.vd_typ with
     | Nat -> [ vd ]
     | Array (t, size) ->
-        flat_map
+        Basic_utils.flat_map
           (fun i ->
             aux
               {
                 vd with
-                vd_id = fresh_suffix vd.vd_id (sprintf "%d'" i);
+                vd_id = Ident.fresh_suffixed vd.vd_id (Format.sprintf "%d'" i);
                 vd_typ = t;
               })
-          (gen_list_0_int (eval_arith_ne size))
+          (Utils.gen_list_0_int (Utils.eval_arith_ne size))
     | Uint (_, _, 1) -> [ vd ]
     | Uint (dir, m, n) ->
-        flat_map
+        Basic_utils.flat_map
           (fun i ->
             aux
               {
                 vd with
-                vd_id = fresh_suffix vd.vd_id (sprintf "%d'" i);
+                vd_id = Ident.fresh_suffixed vd.vd_id (Format.sprintf "%d'" i);
                 vd_typ = Uint (dir, m, 1);
               })
-          (gen_list_0_int n)
+          (Utils.gen_list_0_int n)
   in
-  flat_map aux p
+  Basic_utils.flat_map aux p
 
 (* cf env_keep description in expand_def:
    env_keep: in the main: contains the parameters (they should be expanded)
@@ -319,7 +322,7 @@ let expand_def (force : array_fate) (unroll : bool) (keep_param : bool)
       (match def.node with
       | Single (vars, body) ->
           (* env_var: contains the variables and their types *)
-          let env_var = build_env_var def.p_in def.p_out vars in
+          let env_var = Utils.build_env_var def.p_in def.p_out vars in
           let vars = expand_p vars in
           update_env_var env_var p_in p_out vars;
           (* env_keep: in the main: contains the parameters
@@ -340,7 +343,7 @@ let rec map_special_last f g l =
   | [ x ] -> [ g x ]
   | hd :: tl -> f hd :: map_special_last f g tl
 
-let run _ (prog : prog) (conf : config) : prog =
+let run _ (prog : prog) (conf : Config.config) : prog =
   let force = if conf.no_arr then Remove else Keep in
   let unroll = conf.unroll in
   {

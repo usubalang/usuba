@@ -25,7 +25,7 @@ let rec opt_def ?(retry : int = 5) (def : def) =
   else def'
 
 let rec _run (runner : pass_runner) ?(retry : int = 20) (prog : prog)
-    (conf : config) : prog =
+    (conf : Config.config) : prog =
   let prog' =
     runner#run_modules_guard
       [
@@ -41,7 +41,7 @@ let rec _run (runner : pass_runner) ?(retry : int = 20) (prog : prog)
     if prog = prog' then prog else _run runner ~retry:(retry - 1) prog' conf
   else prog'
 
-let run (runner : pass_runner) (prog : prog) (conf : config) : prog =
+let run (runner : pass_runner) (prog : prog) (conf : Config.config) : prog =
   _run runner prog conf
 
 let as_pass = (run, "Simple_opts")

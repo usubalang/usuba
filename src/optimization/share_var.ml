@@ -143,8 +143,8 @@ let share_deqs (p_in : p) (p_out : p) (vars : p) (deqs : deq list)
                                    Hashtbl.replace last_used v'
                                      (Hashtbl.find last_used v)
                                  with Not_found ->
-                                   Printf.fprintf stderr "Not_found: %s.\n"
-                                     (Usuba_print.var_to_str v');
+                                   Format.eprintf "Not_found: %a.@."
+                                     (Usuba_print.pp_var ()) v';
                                    raise Not_found);
                                 v'
                             | None -> v))
@@ -168,7 +168,7 @@ let share_def (def : def) (no_arr : bool) : def =
       { def with node = Single (vars, body) }
   | _ -> def
 
-let run _ (prog : prog) (conf : config) : prog =
+let run _ (prog : prog) (conf : Config.config) : prog =
   { nodes = apply_last prog.nodes (fun x -> share_def x conf.no_arr) }
 
 let as_pass = (run, "Share_var")

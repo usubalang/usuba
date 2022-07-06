@@ -138,7 +138,7 @@ let fuse_loops_def (def : def) : def =
       { def with node = Single (vars, fuse_loops_deqs body) }
   | _ -> def
 
-let run _ (prog : prog) (conf : config) : prog =
+let run _ (prog : prog) (conf : Config.config) : prog =
   bitslice := conf.slicing_type = B;
   let prog = { nodes = List.map fuse_loops_def prog.nodes } in
   { nodes = List.map fuse_loops_def prog.nodes }

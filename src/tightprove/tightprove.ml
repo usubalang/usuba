@@ -1,7 +1,4 @@
 open Usuba_AST
-open Basic_utils
-open Utils
-open Printf
 open Pass_runner
 
 module Refresh = struct
@@ -49,7 +46,7 @@ module Refresh = struct
       (refreshes_created_back : (ident, (var, var) Hashtbl.t) Hashtbl.t)
       (f : def) (full_prog : def) (vd : var_d) : deq list * var_d =
     let new_var = Var vd.vd_id in
-    let env_var = build_env_var f.p_in f.p_out (get_vars f.node) in
+    let env_var = Utils.build_env_var f.p_in f.p_out (Utils.get_vars f.node) in
 
     (* Step 1: find |vd|'s initialisation in |full_prog|. *)
     let rec find_vd_init (l : deq list) =
@@ -61,7 +58,8 @@ module Refresh = struct
           | _ -> find_vd_init tl)
     in
     let full_prog =
-      norm_after_inlining env_corres (find_vd_init (get_body full_prog.node))
+      norm_after_inlining env_corres
+        (find_vd_init (Utils.get_body full_prog.node))
     in
     let vd_init = List.hd full_prog in
 
@@ -72,7 +70,7 @@ module Refresh = struct
       | Eqn (_, Fun (_, [ ExpVar v ]), _) -> v
       | _ -> assert false
     in
-    add_key_2nd_layer refreshes_created f.id new_var rv;
+    Basic_utils.add_key_2nd_layer refreshes_created f.id new_var rv;
 
     (* Step 3: iterate |full_prog| up to where |vd| is first used. *)
     let rec find_first_vd_use (l : deq list) =
@@ -81,7 +79,8 @@ module Refresh = struct
       | hd :: tl -> (
           match hd.content with
           | Eqn (_, e, _) ->
-              if List.exists (fun v -> v = new_var) (get_used_vars e) then l
+              if List.exists (fun v -> v = new_var) (Utils.get_used_vars e) then
+                l
               else find_first_vd_use tl
           | _ -> assert false)
     in
@@ -93,7 +92,7 @@ module Refresh = struct
        names before inlining. *)
     let replace_vd_by_v_var (v : var) =
       let v = if v = new_var then rv else v in
-      match find_opt_2nd_layer refreshes_created f.id v with
+      match Basic_utils.find_opt_2nd_layer refreshes_created f.id v with
       | Some v' -> v'
       | None -> v
     in
@@ -121,7 +120,7 @@ module Refresh = struct
           | _ -> assert false)
       | _ ->
           (* Was inlined from somewhere *)
-          snd (last first_use_deq.orig)
+          snd (Basic_utils.last first_use_deq.orig)
     in
 
     (* Step 5: find out which variable |vd| really refreshes (useful
@@ -131,7 +130,9 @@ module Refresh = struct
     in
     let iter2_var (oldv : var) (newv : var) : var option =
       if newv = new_var then
-        match find_opt_2nd_layer refreshes_created_back f.id oldv with
+        match
+          Basic_utils.find_opt_2nd_layer refreshes_created_back f.id oldv
+        with
         | Some r -> Some r
         | None -> Some oldv
       else None
@@ -172,7 +173,7 @@ module Refresh = struct
           if ae_contains_var ae then
             (* Contains a variable index *)
             let new_var_to_write = Index (new_var, ae) in
-            let rr_type = get_var_type env_var rr' in
+            let rr_type = Utils.get_var_type env_var rr' in
             ({ vd with vd_typ = rr_type }, new_var_to_write)
           else (vd, new_var)
       | _ -> (vd, new_var)
@@ -184,7 +185,7 @@ module Refresh = struct
         content =
           Eqn
             ( [ new_var_to_write ],
-              Fun (fresh_ident "refresh", [ ExpVar really_refreshed ]),
+              Fun (Ident.create_fresh "refresh", [ ExpVar really_refreshed ]),
               false );
       }
     in
@@ -240,11 +241,15 @@ module Refresh = struct
       | Arith (_, xf, yf), Arith (op, xo, yo) ->
           Arith (op, merge_expr xf xo, merge_expr yf yo)
       | Fun (_, lf), Fun (f, lo) -> Fun (f, List.map2 merge_expr lf lo)
-      | Fun (f, _), _ when f.name = "refresh" -> raise Skip
+      | Fun (f, _), _ when Ident.name f = "refresh" -> raise Errors.Skip
       | _ -> assert false
     and is_same_orig_deq (d1 : deq) (d2 : deq) : bool =
-      let c1 = match d1.orig with [] -> d1.content | l -> snd (last l) in
-      let c2 = match d2.orig with [] -> d2.content | l -> snd (last l) in
+      let c1 =
+        match d1.orig with [] -> d1.content | l -> snd (Basic_utils.last l)
+      in
+      let c2 =
+        match d2.orig with [] -> d2.content | l -> snd (Basic_utils.last l)
+      in
       c1 = c2
     and update_f_body (f_body : deq list) : deq list =
       match f_body with
@@ -283,16 +288,16 @@ module Refresh = struct
               :: update_f_body tl)
     in
 
-    let new_body = find_deq_in_f (get_body f.node) in
+    let new_body = find_deq_in_f (Utils.get_body f.node) in
 
     (* Step 9: update |refreshes_created_back| *)
     let rec get_initial_rv (v : var) : var =
-      match find_opt_2nd_layer refreshes_created f.id v with
+      match Basic_utils.find_opt_2nd_layer refreshes_created f.id v with
       | Some v' -> get_initial_rv v'
       | None -> v
     in
-    replace_key_2nd_layer refreshes_created_back f.id (get_initial_rv rv)
-      new_var;
+    Basic_utils.replace_key_2nd_layer refreshes_created_back f.id
+      (get_initial_rv rv) new_var;
 
     (new_body, vd)
 
@@ -306,18 +311,18 @@ module Refresh = struct
         (fun deq ->
           match deq.content with
           | Eqn (_, Fun _, _) -> false (* a refresh -> won't have an origin *)
-          | Eqn (_, e, _) -> List.mem (Var vd.vd_id) (get_used_vars e)
+          | Eqn (_, e, _) -> List.mem (Var vd.vd_id) (Utils.get_used_vars e)
           | _ -> assert false)
-        (get_body def.node)
+        (Utils.get_body def.node)
     in
     match using_deq.orig with
     | [] -> Hashtbl.find prog_nodes entry_node
-    | [ hd ] when (fst hd).name = "" ->
+    | [ (id, _) ] when Ident.name id = "" ->
         (* When inserting a refresh, the non-refreshed equation is
            added to the orig list, with an empty function name.
            (see Tightprove_to_usuba.find_orig) *)
         Hashtbl.find prog_nodes entry_node
-    | l -> Hashtbl.find prog_nodes (fst (last l))
+    | l -> Hashtbl.find prog_nodes (fst (Basic_utils.last l))
 
   (* |vd| is a new variable (created using "refresh"), which appears
      in |def| and need to be propagated back to a node in |prog_nodes|. *)
@@ -328,7 +333,9 @@ module Refresh = struct
     let env_var = Hashtbl.create 100 in
     List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd) def.p_in;
     List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd) def.p_out;
-    List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd) (get_vars def.node);
+    List.iter
+      (fun vd -> Hashtbl.add env_var vd.vd_id vd)
+      (Utils.get_vars def.node);
 
     (* Step 1: find out which node to refresh: find which deqs use
        |vd|, and where they come from. *)
@@ -340,13 +347,13 @@ module Refresh = struct
       (fun id vd ->
         match vd.vd_orig with
         | [] -> Hashtbl.add env_corres id id
-        | l -> Hashtbl.add env_corres id (snd (last l)).vd_id)
+        | l -> Hashtbl.add env_corres id (snd (Basic_utils.last l)).vd_id)
       env_var;
     let new_body, vd =
       refresh_function env_corres refreshes_created refreshes_created_back f def
         vd
     in
-    let new_vars = vd :: get_vars f.node in
+    let new_vars = vd :: Utils.get_vars f.node in
 
     Hashtbl.replace prog_nodes f.id
       { f with node = Single (new_vars, new_body) }
@@ -366,12 +373,14 @@ module Refresh = struct
           (* Using |gen_id| to avoid false positive because two functions
              would be using the same variable names. *)
           let gen_id ((f, vd) : ident * var_d) =
-            fresh_ident (sprintf "fun:%s var:%s" f.name vd.vd_id.name)
+            Ident.create_fresh
+              (Format.asprintf "fun:%a var:%a" (Ident.pp ()) f (Ident.pp ())
+                 vd.vd_id)
           in
           let add_to_env (vd : var_d) : unit =
             match vd.vd_orig with
             | [] -> ()
-            | l -> Hashtbl.add env vd.vd_id (gen_id (last l))
+            | l -> Hashtbl.add env vd.vd_id (gen_id (Basic_utils.last l))
           in
           List.iter add_to_env def.p_in;
           List.iter add_to_env def.p_out;
@@ -383,8 +392,8 @@ module Refresh = struct
                  match d.content with
                  | Eqn (_, e, _) ->
                      List.exists
-                       (fun v -> get_base_name v = vd.vd_id)
-                       (get_used_vars e)
+                       (fun v -> Utils.get_base_name v = vd.vd_id)
+                       (Utils.get_used_vars e)
                  | _ -> assert false)
                body)
       | _ -> assert false
@@ -445,7 +454,7 @@ module Refresh = struct
       init_prog.nodes;
 
     (* Now inserting the refreshes in the initial functions *)
-    let entry_node = last init_prog.nodes in
+    let entry_node = Basic_utils.last init_prog.nodes in
     List.iter
       (fun vd ->
         insert_refresh prog_nodes refreshes_created refreshes_created_back
@@ -460,7 +469,7 @@ end
 let is_call_and_loop_free (def : def) : bool =
   let deq_call_free (deq : deq) : bool =
     match deq.content with
-    | Eqn (_, Fun (f, _), _) -> if f.name = "refresh" then true else false
+    | Eqn (_, Fun (f, _), _) -> if Ident.name f = "refresh" then true else false
     | Eqn _ -> true
     | Loop (_, _, _, _, _) -> false
   in
@@ -472,7 +481,8 @@ let is_call_and_loop_free (def : def) : bool =
    normalized again. Mainly, tuples, need to be unfolded again. Since
    there is no function that inlines everything _and_ normalized the
    program after, we define it here.*)
-let clean_inline (runner : pass_runner) (prog : prog) (conf : config) : prog =
+let clean_inline (runner : pass_runner) (prog : prog) (conf : Config.config) :
+    prog =
   let conf =
     {
       conf with
@@ -522,11 +532,13 @@ let match_variables (new_def : def) (old_def : def) : def * var_d list =
               vd)
           vars
       in
-      ({ new_def with node = Single (new_vars, body) }, keys new_refreshes)
+      ( { new_def with node = Single (new_vars, body) },
+        Basic_utils.keys new_refreshes )
   | _ -> assert false
 
 (* Refreshes a program which doesn't contain loops *)
-let refresh_prog (runner : pass_runner) (prog : prog) (conf : config) : prog =
+let refresh_prog (runner : pass_runner) (prog : prog) (conf : Config.config) :
+    prog =
   (* Step 1: fully inline prog *)
   let inlined_prog = clean_inline runner prog conf in
   assert (List.length inlined_prog.nodes = 1);
@@ -560,14 +572,14 @@ let refresh_prog (runner : pass_runner) (prog : prog) (conf : config) : prog =
   Refresh.propagate_refreshes prog r_ua_def new_vars
 
 (* Refreshes a def wich doesnt contain function calls nor loops *)
-let refresh_simple_def (conf : config) (def : def) : def =
-  if is_call_and_loop_free def && all_vars_same_m def.p_in then
+let refresh_simple_def (conf : Config.config) (def : def) : def =
+  if is_call_and_loop_free def && Utils.all_vars_same_m def.p_in then
     let vars_corres, tp_def = Usuba_to_tightprove.usuba_to_tp def in
     let r_tp_def = Tp_IO.get_refreshed_def tp_def conf in
     fst (Tightprove_to_usuba.tp_to_usuba vars_corres def r_tp_def)
   else def
 
-let run (runner : pass_runner) (prog : prog) (conf : config) : prog =
+let run (runner : pass_runner) (prog : prog) (conf : Config.config) : prog =
   let prog = runner#run_module Clear_origins.as_pass prog in
   let prog = { nodes = List.map (refresh_simple_def conf) prog.nodes } in
   let prog = runner#run_module Clear_origins.as_pass prog in

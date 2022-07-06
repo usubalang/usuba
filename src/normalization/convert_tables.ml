@@ -23,7 +23,7 @@ let rewrite_p (p : p) : var list =
   List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd.vd_typ) p;
   flat_map (fun vd -> expand_var env_var ~bitslice:!bitslice (Var vd.vd_id)) p
 
-let tmp_var i = fresh_ident ("tmp_" ^ string_of_int i)
+let tmp_var i = Ident.create_fresh ("tmp_" ^ string_of_int i)
 let fake_mux c a b = Log (Xor, a, Log (And, b, c))
 
 let rewrite_table (id : ident) (p_in : p) (p_out : p) (opt : def_opt list)
@@ -126,7 +126,7 @@ let fix_p (old_p : p) (new_p : p) : p =
       List.map (fun x -> { x with vd_typ = replace_m x.vd_typ m }) new_p
 
 let rewrite_single_table (id : ident) (p_in : p) (p_out : p)
-    (opt : def_opt list) (l : int list) (conf : config) : def =
+    (opt : def_opt list) (l : int list) (conf : Config.config) : def =
   if conf.precal_tbl then
     try
       let found, _ = List.find (fun (_, b) -> b = l) Sbox_index.sboxes in
@@ -154,7 +154,7 @@ let rewrite_single_table (id : ident) (p_in : p) (p_out : p)
       (Norm_tuples.norm_tuples_def
          (Unfold_unnest.norm_def (Hashtbl.create 1) table))
 
-let rewrite_def (def : def) (conf : config) : def =
+let rewrite_def (def : def) (conf : Config.config) : def =
   let id = def.id in
   let p_in = def.p_in in
   let p_out = def.p_out in
@@ -163,7 +163,7 @@ let rewrite_def (def : def) (conf : config) : def =
   | Table l -> rewrite_single_table id p_in p_out opt l conf
   | _ -> def
 
-let run _ (prog : prog) (conf : config) : prog =
+let run _ (prog : prog) (conf : Config.config) : prog =
   bitslice := conf.slicing_set && conf.slicing_type = B;
   if conf.keep_tables then prog
   else { nodes = List.map (fun x -> rewrite_def x conf) prog.nodes }

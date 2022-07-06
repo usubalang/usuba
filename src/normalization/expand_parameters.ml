@@ -283,14 +283,14 @@ let expand_in_node (env_fun : (ident, def) Hashtbl.t) (f : def) (vd : var_d)
   (* First, add the binding to expand the whole array into variables. *)
   Hashtbl.replace expand_env (Var vd.vd_id)
     (List.map
-       (fun i -> Var (fresh_suffix vd.vd_id (sprintf "%d'" i)))
+       (fun i -> Var (Ident.fresh_suffixed vd.vd_id (sprintf "%d'" i)))
        (gen_list_0_int size));
   (* Then, add the bindings to expand Index into variables, and
      generate |vd|'s replacement in p_in or p_out *)
   let new_p =
     List.map
       (fun i ->
-        let id' = fresh_suffix vd.vd_id (sprintf "%d'" i) in
+        let id' = Ident.fresh_suffixed vd.vd_id (sprintf "%d'" i) in
         Hashtbl.replace expand_env (Index (Var vd.vd_id, Const_e i)) [ Var id' ];
         make_var_d id' new_typ vd.vd_opts vd.vd_orig)
       (gen_list_0_int size)
@@ -353,8 +353,9 @@ let expand_expr (env_var : (ident, typ) Hashtbl.t) (e : expr) : expr list =
   | Const _ -> [ e ]
   | ExpVar v -> List.map (fun x -> ExpVar x) (expand_var_partial env_var v)
   | _ ->
-      Printf.fprintf stderr "Invalid expression: %s.\n"
-        (Usuba_print.expr_to_str_types e);
+      Format.eprintf "Invalid expression: %a.@."
+        (Usuba_print.pp_expr ~typed:true ())
+        e;
       assert false
 
 (* See general explanations at the begining of the file. *)

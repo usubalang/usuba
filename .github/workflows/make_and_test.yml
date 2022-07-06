@@ -86,6 +86,8 @@ jobs:
 
       - name: CPAN installs
         run: |
+          cpan Crypt::Mode::ECB
+          cpan Crypt::Mode::CTR
           cpan File::Copy::Recursive
           cpan JSON
           cpan List::MoreUtils
@@ -132,7 +134,7 @@ jobs:
         run: ulimit -s unlimited
 
       - name: Test
-        run: make test SAMPLES_DIR="./examples"
+        run: make test SAMPLES_DIR="./examples/samples"
 
       # Monitor changes in repo's files
       # If there are some changes, stop the workflow and suggest changes in the PR

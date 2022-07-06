@@ -1,6 +1,5 @@
 open Usuba_AST
 open Basic_utils
-open Printf
 
 (* Always: pass should always run
    Toggle: the pass_runner should benchmark the pass and disable if
@@ -14,7 +13,7 @@ open Printf
 type pass_type = Always | Custom of bool | Toggle of bool
 
 (* |def_conf| is the config used by default for all passes. *)
-class pass_runner (def_conf : config) =
+class pass_runner (def_conf : Config.config) =
   object (self)
     (* For passes called within passes, keep track of the callers *)
     val mutable callers : string list = []
@@ -37,7 +36,7 @@ class pass_runner (def_conf : config) =
       let current_str = List.hd callers in
       let callers_str =
         if List.tl callers <> [] then
-          sprintf " (%s ->)" (join " -> " (List.rev (List.tl callers)))
+          Format.asprintf " (%s ->)" (join " -> " (List.rev (List.tl callers)))
         else ""
       in
       Printf.eprintf "[%s]%s %s\n%!" current_str callers_str msg
@@ -46,19 +45,19 @@ class pass_runner (def_conf : config) =
     method private run_pass (conf, action, name) (prog : prog) : prog =
       callers <- name :: callers;
 
-      if conf.verbose >= 5 then self#print "starting...";
+      if conf.Config.verbose >= 5 then self#print "starting...";
 
       let prog' = action self prog conf in
 
       if conf.verbose >= 5 then self#print "done.";
       if conf.verbose >= 100 then
         self#print
-          (sprintf
+          (Format.asprintf
              " Result:\n\
               =========================\n\
-              %s\n\
+              %a\n\
               =========================\n\n"
-             (Usuba_print.prog_to_str prog'));
+             (Usuba_print.pp_prog ()) prog');
 
       callers <- List.tl callers;
 
@@ -66,8 +65,8 @@ class pass_runner (def_conf : config) =
 
     (* Returns |prog| without running the pass, but prints some debug if
        verbosity is high enough *)
-    method private skip_module (conf : config) (name : string) (prog : prog)
-        : prog =
+    method private skip_module (conf : Config.config) (name : string)
+        (prog : prog) : prog =
       callers <- name :: callers;
       if conf.verbose >= 5 then self#print "skipping.";
       callers <- List.tl callers;
@@ -78,26 +77,27 @@ class pass_runner (def_conf : config) =
       List.fold_right self#run_pass (List.rev passes) prog
 
     (* Runs a module *)
-    method run_module ?(conf : config = def_conf) (action, name) (prog : prog)
-        : prog =
+    method run_module ?(conf : Config.config = def_conf) (action, name)
+        (prog : prog) : prog =
       let pass = (conf, action, name) in
       self#run_pass pass prog
 
     (* Runs several modules *)
-    method run_modules ?(conf : config = def_conf) moduls (prog : prog) : prog =
+    method run_modules ?(conf : Config.config = def_conf) moduls (prog : prog)
+        : prog =
       let passes =
         List.map (fun (action, name) -> (conf, action, name)) moduls
       in
       self#run_passes passes prog
 
     (* Runs a module if |guard| is true *)
-    method run_module_guard ?(conf : config = def_conf) (guard : bool)
+    method run_module_guard ?(conf : Config.config = def_conf) (guard : bool)
         (action, name) (prog : prog) : prog =
       if guard then self#run_module ~conf (action, name) prog
       else self#skip_module conf name prog
 
     (* Runs several modules, each protected by a guard *)
-    method run_modules_guard ?(conf : config = def_conf)
+    method run_modules_guard ?(conf : Config.config = def_conf)
         (moduls : (('b * string) * bool) list) (prog : prog) : prog =
       List.fold_right
         (fun ((action, name), guard) prog ->
@@ -107,7 +107,7 @@ class pass_runner (def_conf : config) =
 
     (* Runs several modules, while benchmarking those who require
        benchmarking (those modules are also protected by a guard) *)
-    method run_modules_bench ?(conf : config = def_conf)
+    method run_modules_bench ?(conf : Config.config = def_conf)
         (moduls : (('b * string) * bool * pass_type) list)
         (*        ^^^  ^^^^^^    ^^^^   ^^^^^^^^^ *)
         (*    action    name     guard    bench-type *)
@@ -131,14 +131,14 @@ class pass_runner (def_conf : config) =
        it. *)
     method private run_bench_toggle (conf, action, name)
         (nexts : (('b * string) * bool * pass_type) list) (prog : prog) : prog =
-      self#push_in_bench (sprintf "%s:on" name);
+      self#push_in_bench (Format.sprintf "%s:on" name);
       let prog_opt_on =
         self#run_modules_bench ~conf
           (((action, name), true, Always) :: nexts)
           prog
       in
       self#pop_in_bench ();
-      self#push_in_bench (sprintf "%s:off" name);
+      self#push_in_bench (Format.sprintf "%s:off" name);
       let prog_opt_off =
         self#run_modules_bench ~conf
           (((action, name), false, Always) :: nexts)
@@ -159,7 +159,7 @@ class pass_runner (def_conf : config) =
     (* Just a convenience wrapper to let a module benchmark iself. It is
        used in particular in the Inline and Interleave modules, which
        are more complex than simple on/off. *)
-    method run_custom_bench_pass (conf : config) action
+    method run_custom_bench_pass (conf : Config.config) action
         (_nexts : (('b * string) * bool * pass_type) list) (prog : prog) =
       nexts <- _nexts;
       (* Note that the module called (|action|) is supposed to empty self#nexts *)

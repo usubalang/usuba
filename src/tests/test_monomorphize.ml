@@ -1,9 +1,8 @@
 open Usuba_AST
-open Utils
 open Parser_api
 
 let test_specialize_shuffle_vslice () =
-  let v = fresh_ident "v" in
+  let v = Ident.create_fresh "v" in
   let e = Shuffle (Var v, [ 0; 3; 1; 2 ]) in
   let env = Hashtbl.create 1 in
   Hashtbl.add env v (Uint (Vslice, Mint 4, 1));

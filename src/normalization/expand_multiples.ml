@@ -1,11 +1,9 @@
 open Usuba_AST
-open Basic_utils
-open Utils
 
 let run _ prog _ =
   {
     nodes =
-      flat_map
+      Basic_utils.flat_map
         (fun def ->
           match def.node with
           | Multiple l ->
@@ -13,7 +11,7 @@ let run _ prog _ =
                 (fun i x ->
                   {
                     def with
-                    id = fresh_suffix def.id (Printf.sprintf "%d'" i);
+                    id = Ident.fresh_suffixed def.id (Printf.sprintf "%d'" i);
                     node = x;
                   })
                 l

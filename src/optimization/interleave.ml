@@ -1,7 +1,4 @@
 open Usuba_AST
-open Basic_utils
-open Utils
-open Printf
 
 (* WARNING: this module contains some old code, poorly written and
    document, kept around just in case. Interleave_generic is reasonably
@@ -60,10 +57,12 @@ module Interleave_generic = struct
   (* Adds the suffix |suffix| at the end of a var *)
   let rec update_var (env_var : (ident, var_d) Hashtbl.t) (suffix : int)
       (v : var) : var =
-    if List.mem Pconst (Hashtbl.find env_var (get_base_name v)).vd_opts then v
+    if List.mem Pconst (Hashtbl.find env_var (Utils.get_base_name v)).vd_opts
+    then v
     else
       match v with
-      | Var v -> Var { v with name = sprintf "%s__%d" v.name suffix }
+      | Var v ->
+          Var (Ident.copy v (Format.asprintf "%a__%d" (Ident.pp ()) v suffix))
       | Index (v, ae) -> Index (update_var env_var suffix v, ae)
       | _ -> assert false
 
@@ -88,23 +87,23 @@ module Interleave_generic = struct
   let update_funcall (inter_factor : int) (env_var : (ident, var_d) Hashtbl.t)
       (lhs : var list) (f : ident) (l : expr list) (sync : bool) : deq_i =
     let lhs =
-      flat_map
+      Basic_utils.flat_map
         (fun v ->
           v
           :: List.map
                (fun suffix -> update_var env_var suffix v)
-               (gen_list_bounds 2 inter_factor))
+               (Basic_utils.gen_list_bounds 2 inter_factor))
         lhs
     in
     let e_fun =
       Fun
         ( f,
-          flat_map
+          Basic_utils.flat_map
             (fun e ->
               e
               :: List.map
                    (fun suffix -> update_expr env_var suffix e)
-                   (gen_list_bounds 2 inter_factor))
+                   (Basic_utils.gen_list_bounds 2 inter_factor))
             l )
     in
     Eqn (lhs, e_fun, sync)
@@ -134,9 +133,9 @@ module Interleave_generic = struct
      |schedule_deqs| |inter_factor| times. *)
   let schedule_now (inter_factor : int) (env_var : (ident, var_d) Hashtbl.t)
       (deqs : deq list) : deq list =
-    flat_map
+    Basic_utils.flat_map
       (fun suffix -> schedule_deqs env_var suffix deqs)
-      (gen_list_bounds 2 inter_factor)
+      (Basic_utils.gen_list_bounds 2 inter_factor)
 
   (* The function that actually does the interleaving. *)
   let interleave_deqs (inter_factor : int) (grain : int)
@@ -202,7 +201,7 @@ module Interleave_generic = struct
 
   (* Duplicate |inter_factor| times each var_d of |vdl| *)
   let update_vds (inter_factor : int) (vdl : var_d list) : var_d list =
-    flat_map
+    Basic_utils.flat_map
       (fun vd ->
         vd
         ::
@@ -213,9 +212,10 @@ module Interleave_generic = struct
               {
                 vd with
                 vd_id =
-                  { vd.vd_id with name = sprintf "%s__%d" vd.vd_id.name i };
+                  Ident.copy vd.vd_id
+                    (Format.asprintf "%a__%d" (Ident.pp ()) vd.vd_id i);
               })
-            (gen_list_bounds 2 inter_factor)))
+            (Basic_utils.gen_list_bounds 2 inter_factor)))
       vdl
 
   (* Using a custom build_env_var to have opts and not just types in it. *)
@@ -247,7 +247,7 @@ module Interleave_generic = struct
         | _ -> def.node);
     }
 
-  let interleave (prog : prog) (conf : config) : prog =
+  let interleave (prog : prog) (conf : Config.config) : prog =
     (* Using 2 as default inter_factor; that's a safe bet *)
     let inter_factor = if conf.inter_factor = 0 then 2 else conf.inter_factor in
     (* Using 1 as default grain; that's reasonable given the CPU
@@ -260,12 +260,9 @@ module Interleave_generic = struct
 end
 
 module Dup3 = struct
-  let dup_id id = { id with name = id.name ^ "__2" }
-  let dup3_id id = { id with name = id.name ^ "__3" }
-
   let rec dup3_var (v : var) : var =
     match v with
-    | Var id -> Var (dup3_id id)
+    | Var id -> Var (Ident.copy3_id id)
     | Index (v, i) -> Index (dup3_var v, i)
     | _ -> assert false
 
@@ -284,7 +281,7 @@ module Dup3 = struct
 
   let rec dup_var (v : var) : var =
     match v with
-    | Var id -> Var (dup_id id)
+    | Var id -> Var (Ident.copy2_id id)
     | Index (v, i) -> Index (dup_var v, i)
     | _ -> assert false
 
@@ -302,7 +299,7 @@ module Dup3 = struct
     | _ -> assert false
 
   let rec interleave_deqs (deqs : deq list) : deq list =
-    flat_map
+    Basic_utils.flat_map
       (fun d ->
         match d.content with
         | Eqn (lhs, e, sync) ->
@@ -322,12 +319,12 @@ module Dup3 = struct
       deqs
 
   let dup_p (p : p) : p =
-    flat_map
+    Basic_utils.flat_map
       (fun vd ->
         [
           vd;
-          { vd with vd_id = dup_id vd.vd_id };
-          { vd with vd_id = dup3_id vd.vd_id };
+          { vd with vd_id = Ident.copy2_id vd.vd_id };
+          { vd with vd_id = Ident.copy3_id vd.vd_id };
         ])
       p
 
@@ -343,7 +340,7 @@ module Dup3 = struct
     | _ -> assert false
 
   let interleave (prog : prog) _ : prog =
-    { nodes = apply_last prog.nodes interleave_def }
+    { nodes = Basic_utils.apply_last prog.nodes interleave_def }
 end
 
 (* GP-64: 37.05 -> 27.35  cycles/byte
@@ -352,11 +349,9 @@ end
    AVX2 : 7.70  -> 6.00   cycles/byte
 *)
 module Dup2 = struct
-  let dup_id id = { id with name = id.name ^ "__2" }
-
   let rec dup_var (v : var) : var =
     match v with
-    | Var id -> Var (dup_id id)
+    | Var id -> Var (Ident.copy2_id id)
     | Index (v, i) -> Index (dup_var v, i)
     | _ -> assert false
 
@@ -374,7 +369,7 @@ module Dup2 = struct
     | _ -> assert false
 
   let rec interleave_deqs (deqs : deq list) : deq list =
-    flat_map
+    Basic_utils.flat_map
       (fun d ->
         match d.content with
         | Eqn (lhs, e, sync) ->
@@ -395,7 +390,9 @@ module Dup2 = struct
       deqs
 
   let dup_p (p : p) : p =
-    flat_map (fun vd -> [ vd; { vd with vd_id = dup_id vd.vd_id } ]) p
+    Basic_utils.flat_map
+      (fun vd -> [ vd; { vd with vd_id = Ident.copy2_id vd.vd_id } ])
+      p
 
   let interleave_def (def : def) : def =
     match def.node with
@@ -409,7 +406,7 @@ module Dup2 = struct
     | _ -> assert false
 
   let interleave (prog : prog) _ : prog =
-    { nodes = apply_last prog.nodes interleave_def }
+    { nodes = Basic_utils.apply_last prog.nodes interleave_def }
 end
 
 (* GP-64: 37.05 -> 28.65  cycles/byte
@@ -418,11 +415,9 @@ end
    AVX2 : 7.70  -> 5.95   cycles/byte
 *)
 module Dup2_nofunc = struct
-  let make_2nd_id id = { id with name = id.name ^ "__2" }
-
   let rec make_2nd_var (v : var) : var =
     match v with
-    | Var id -> Var (make_2nd_id id)
+    | Var id -> Var (Ident.copy2_id id)
     | Index (v, i) -> Index (make_2nd_var v, i)
     | _ -> assert false
 
@@ -438,14 +433,14 @@ module Dup2_nofunc = struct
     | Arith (op, x, y) -> Arith (op, make_2nd_expr x, make_2nd_expr y)
     | Fun (f, l) -> Fun (f, List.map make_2nd_expr l)
     | _ ->
-        Printf.printf "Not valid: %s\n" (Usuba_print.expr_to_str e);
+        Format.printf "Not valid: %a@." (Usuba_print.pp_expr ()) e;
         assert false
 
   let dup_var (v : var) : var list = [ v; make_2nd_var v ]
   let dup_expr (e : expr) : expr list = [ e; make_2nd_expr e ]
 
   let rec interleave_deqs (deqs : deq list) : deq list =
-    flat_map
+    Basic_utils.flat_map
       (fun d ->
         match d.content with
         | Eqn (lhs, e, sync) -> (
@@ -456,8 +451,8 @@ module Dup2_nofunc = struct
                     d with
                     content =
                       Eqn
-                        ( flat_map dup_var lhs,
-                          Fun (f, flat_map dup_expr l),
+                        ( Basic_utils.flat_map dup_var lhs,
+                          Fun (f, Basic_utils.flat_map dup_expr l),
                           sync );
                   };
                 ]
@@ -475,7 +470,9 @@ module Dup2_nofunc = struct
       deqs
 
   let dup_p (p : p) : p =
-    flat_map (fun vd -> [ vd; { vd with vd_id = make_2nd_id vd.vd_id } ]) p
+    Basic_utils.flat_map
+      (fun vd -> [ vd; { vd with vd_id = Ident.copy2_id vd.vd_id } ])
+      p
 
   let interleave_def (def : def) : def =
     match def.node with
@@ -523,15 +520,13 @@ module Dup2_nofunc_param = struct
 
     env
 
-  let make_2nd_id id = { id with name = id.name ^ "__2" }
-
   let rec make_2nd_var env_var (v : var) : var =
     match v with
     | Var id -> (
         match
-          List.mem Pconst (Hashtbl.find env_var (get_var_base v)).vd_opts
+          List.mem Pconst (Hashtbl.find env_var (Utils.get_var_base v)).vd_opts
         with
-        | false -> Var (make_2nd_id id)
+        | false -> Var (Ident.copy2_id id)
         | true -> v)
     | Index (v, i) -> Index (make_2nd_var env_var v, i)
     | _ -> assert false
@@ -550,11 +545,13 @@ module Dup2_nofunc_param = struct
         Arith (op, make_2nd_expr env_var x, make_2nd_expr env_var y)
     | Fun (f, l) -> Fun (f, List.map (make_2nd_expr env_var) l)
     | _ ->
-        Printf.printf "Not valid: %s\n" (Usuba_print.expr_to_str e);
+        Format.printf "Not valid: %a@." (Usuba_print.pp_expr ()) e;
         assert false
 
   let dup_var env_var (v : var) : var list =
-    match List.mem Pconst (Hashtbl.find env_var (get_var_base v)).vd_opts with
+    match
+      List.mem Pconst (Hashtbl.find env_var (Utils.get_var_base v)).vd_opts
+    with
     | false -> [ v; make_2nd_var env_var v ]
     | true -> [ v ]
 
@@ -597,8 +594,8 @@ module Dup2_nofunc_param = struct
                       d with
                       content =
                         Eqn
-                          ( flat_map (dup_var env_var) lhs,
-                            Fun (f, flat_map (dup_expr env_var) l),
+                          ( Basic_utils.flat_map (dup_var env_var) lhs,
+                            Fun (f, Basic_utils.flat_map (dup_expr env_var) l),
                             sync );
                     } )
             | _ ->
@@ -622,11 +619,11 @@ module Dup2_nofunc_param = struct
       deqs
 
   let dup_p (p : p) : p =
-    flat_map
+    Basic_utils.flat_map
       (fun vd ->
         match List.mem Pconst vd.vd_opts with
         | true -> [ vd ]
-        | false -> [ vd; { vd with vd_id = make_2nd_id vd.vd_id } ])
+        | false -> [ vd; { vd with vd_id = Ident.copy2_id vd.vd_id } ])
       p
 
   let interleave_def (g : int) (def : def) : def =
@@ -648,7 +645,7 @@ module Dup2_nofunc_param = struct
     { nodes = List.map (interleave_def g) prog.nodes }
 end
 
-let run _ (prog : prog) (conf : config) =
+let run _ (prog : prog) (conf : Config.config) =
   Interleave_generic.interleave prog conf
 (* Dup2_nofunc_param.interleave conf.interleave prog conf *)
 (*Dup2.interleave prog conf*)

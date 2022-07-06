@@ -1,6 +1,11 @@
 open Sexplib.Std
 
-type ident = { uid : int; name : string } [@@deriving show, sexp]
+type ident = Ident.t
+
+let pp_ident = Ident.pp ()
+let ident_of_sexp = Ident.t_of_sexp
+let sexp_of_ident = Ident.sexp_of_t
+
 type log_op = And | Or | Xor | Andn | Masked of log_op [@@deriving show, sexp]
 type arith_op = Add | Mul | Sub | Div | Mod [@@deriving show, sexp]
 
@@ -87,61 +92,3 @@ type def = { id : ident; p_in : p; p_out : p; opt : def_opt list; node : def_i }
 
 type def_or_inc = Def of def | Inc of string [@@deriving show, sexp]
 type prog = { nodes : def list } [@@deriving show, sexp]
-
-type arch = Std | MMX | SSE | AVX | AVX512 | Neon | AltiVec
-[@@deriving show, sexp]
-
-type slicing = H | V | B [@@deriving show, sexp]
-
-type config = {
-  warnings : bool;
-  verbose : int;
-  path : string list;
-  type_check : bool;
-  check_tbl : bool;
-  auto_inline : bool;
-  light_inline : bool;
-  inline_all : bool;
-  heavy_inline : bool;
-  no_inline : bool;
-  compact_mono : bool;
-  fold_const : bool;
-  cse : bool;
-  copy_prop : bool;
-  loop_fusion : bool;
-  pre_schedule : bool;
-  scheduling : bool;
-  schedule_n : int;
-  share_var : bool;
-  linearize_arr : bool;
-  precal_tbl : bool;
-  archi : arch;
-  bits_per_reg : int;
-  no_arr : bool;
-  arr_entry : bool;
-  unroll : bool;
-  interleave : int;
-  inter_factor : int;
-  fdti : string;
-  lazylift : bool;
-  slicing_set : bool;
-  slicing_type : slicing;
-  m_set : bool;
-  m_val : int;
-  tightPROVE : bool;
-  tightprove_dir : string;
-  maskVerif : bool;
-  masked : bool;
-  ua_masked : bool;
-  shares : int;
-  gen_bench : bool;
-  keep_tables : bool;
-  compact : bool;
-  bench_inline : bool;
-  bench_inter : bool;
-  bench_bitsched : bool;
-  bench_msched : bool;
-  bench_sharevar : bool;
-  dump_sexp : bool;
-}
-[@@deriving show]

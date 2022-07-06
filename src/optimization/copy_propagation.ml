@@ -145,8 +145,8 @@ module Compute_keeps = struct
         compute_keep_expr env_keep env_var e1;
         compute_keep_expr env_keep env_var e2
     | _ ->
-        Printf.eprintf "compute_keep_expr: invalid expr: %s.\n"
-          (Usuba_print.expr_to_str e);
+        Format.eprintf "compute_keep_expr: invalid expr: %a.@."
+          (Usuba_print.pp_expr ()) e;
         assert false
 
   (* |in_loop|: true if in a loop, false otherwise. It's used because
@@ -291,8 +291,8 @@ module Backwards_cp = struct
             t )
     | Fun (f, l) -> Fun (f, List.map (propagate_in_expr optimized_away) l)
     | _ ->
-        Printf.eprintf "propagate_in_expr: invalid expr: %s.\n"
-          (Usuba_print.expr_to_str e);
+        Format.eprintf "propagate_in_expr: invalid expr: %a.@."
+          (Usuba_print.pp_expr ()) e;
         assert false
 
   let cp_assign (keep_env : (ident, bool) Hashtbl.t)
@@ -455,8 +455,8 @@ let rec propagate_in_expr
   | Fun (f, l) ->
       ([], Fun (f, List.map (propagate_in_expr_rec optimized_away) l))
   | _ ->
-      Printf.eprintf "propagate_in_expr: invalid expr: %s.\n"
-        (Usuba_print.expr_to_str e);
+      Format.eprintf "propagate_in_expr: invalid expr: %a.@."
+        (Usuba_print.pp_expr ()) e;
       assert false
 
 and propagate_in_expr_rec
@@ -467,8 +467,8 @@ and propagate_in_expr_rec
   | ExpVar v -> fst (propagate_in_var optimized_away v)
   | Tuple l -> Tuple (List.map (propagate_in_expr_rec optimized_away) l)
   | _ ->
-      Printf.eprintf "propagate_in_expr_rec: invalid expr: %s.\n"
-        (Usuba_print.expr_to_str e);
+      Format.eprintf "propagate_in_expr_rec: invalid expr: %a.@."
+        (Usuba_print.pp_expr ()) e;
       assert false
 
 let cp_assign (keep_env : (ident, bool) Hashtbl.t)

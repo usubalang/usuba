@@ -231,6 +231,9 @@ let rec deqs_contain_funcall (deqs : deq list) : bool =
       | Loop (_, _, _, dl, _) -> deqs_contain_funcall dl)
     deqs
 
+(*
+
+*)
 let schedule_def (def : def) : def =
   {
     def with
@@ -251,6 +254,9 @@ let schedule_def (def : def) : def =
 let run _ (prog : prog) _ : prog = { nodes = List.map schedule_def prog.nodes }
 let as_pass = (run, "Pre_schedule")
 
+module Test = struct
+  let test () = ()
+end
 (* let update_hoh hash k1 k2 = *)
 (*   match Hashtbl.find_opt hash k1 with *)
 (*   | Some h -> Hashtbl.replace h k2 true *)

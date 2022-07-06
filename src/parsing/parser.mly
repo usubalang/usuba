@@ -134,28 +134,28 @@ prog:
 ident:
   | id=ident_no_x { id }
   | id=TOK_id     { id }
-  | s=ident e=ident %prec TOK_id_no_x { fresh_ident (s.name ^ e.name) }
+  | s=ident e=ident %prec TOK_id_no_x { Ident.create_fresh (Ident.name s ^ Ident.name e) }
 
 ident_no_x:
   | id=TOK_id_no_x  { id }
-  | TOK_IN     { fresh_ident "in" }
-  | TOK_CROSS  { fresh_ident "x"  }
-  | TOK_U id=ident_no_x  { fresh_ident ("u" ^ id.name) }
-  | TOK_B id=ident_no_x  { fresh_ident ("b" ^ id.name) }
-  | TOK_V id=ident_no_x  { fresh_ident ("v" ^ id.name) }
-  | TOK_U n=TOK_int { fresh_ident ("u" ^ (string_of_int n)) }
-  | TOK_B n=TOK_int { fresh_ident ("b" ^ (string_of_int n)) }
-  | TOK_V n=TOK_int { fresh_ident ("v" ^ (string_of_int n)) }
-  | TOK_U n=TOK_int id=ident_no_x { fresh_ident ("u" ^ (string_of_int n) ^ id.name) }
-  | TOK_B n=TOK_int id=ident_no_x { fresh_ident ("b" ^ (string_of_int n) ^ id.name) }
-  | TOK_V n=TOK_int id=ident_no_x { fresh_ident ("v" ^ (string_of_int n) ^ id.name) }
-  | TOK_U      { fresh_ident "u"  }
-  | TOK_B      { fresh_ident "b"  }
-  | TOK_V      { fresh_ident "v"  }
+  | TOK_IN     { Ident.create_fresh "in" }
+  | TOK_CROSS  { Ident.create_fresh "x"  }
+  | TOK_U id=ident_no_x  { Ident.create_fresh ("u" ^ Ident.name id) }
+  | TOK_B id=ident_no_x  { Ident.create_fresh ("b" ^ Ident.name id) }
+  | TOK_V id=ident_no_x  { Ident.create_fresh ("v" ^ Ident.name id) }
+  | TOK_U n=TOK_int { Ident.create_fresh ("u" ^ (string_of_int n)) }
+  | TOK_B n=TOK_int { Ident.create_fresh ("b" ^ (string_of_int n)) }
+  | TOK_V n=TOK_int { Ident.create_fresh ("v" ^ (string_of_int n)) }
+  | TOK_U n=TOK_int id=ident_no_x { Ident.create_fresh ("u" ^ (string_of_int n) ^ Ident.name id) }
+  | TOK_B n=TOK_int id=ident_no_x { Ident.create_fresh ("b" ^ (string_of_int n) ^ Ident.name id) }
+  | TOK_V n=TOK_int id=ident_no_x { Ident.create_fresh ("v" ^ (string_of_int n) ^ Ident.name id) }
+  | TOK_U      { Ident.create_fresh "u"  }
+  | TOK_B      { Ident.create_fresh "b"  }
+  | TOK_V      { Ident.create_fresh "v"  }
   | d=TOK_dir  { match d with
-                 | Hslice -> fresh_ident "H"
-                 | Vslice -> fresh_ident "V"
-                 | Bslice -> fresh_ident "B"
+                 | Hslice -> Ident.create_fresh "H"
+                 | Vslice -> Ident.create_fresh "V"
+                 | Bslice -> Ident.create_fresh "B"
                  | _ -> raise Syntax_error }
 
 arith_exp:
@@ -268,7 +268,7 @@ primitive_typ:
   | TOK_NAT  { Nat  }
   (* u<D>mxn *)
   | TOK_U dir=dir m=mtyp xn=TOK_id
-    { let s  = xn.name in
+    { let s  = Ident.name xn in
       let re = Str.regexp "^x\\([0-9]+\\)$" in
       match Str.string_match re s 0 with
       | true ->  let n_str :string = Str.matched_group 1 s in

@@ -44,9 +44,9 @@ let is_full_ones (env_var : (ident, typ) Hashtbl.t) (e : expr) =
         match get_type_m typ with
         | Mint m -> m
         | _ ->
-            Printf.eprintf "is_full_ones: need a fixed word size, got: %s:%s\n"
-              (Usuba_print.expr_to_str e)
-              (Usuba_print.typ_to_str (get_normed_expr_type env_var e));
+            Format.eprintf "is_full_ones: need a fixed word size, got: %a:%a@."
+              (Usuba_print.pp_expr ()) e (Usuba_print.pp_typ ())
+              (get_normed_expr_type env_var e);
             assert false
       in
       let minus_one = gen_minus_one msize in
@@ -58,8 +58,8 @@ let gen_full_ones (typ : typ) : int =
     match get_type_m typ with
     | Mint m -> m
     | _ ->
-        Printf.eprintf "gen_full_ones: need a fixed word size, got: %s\n"
-          (Usuba_print.typ_to_str typ);
+        Format.eprintf "gen_full_ones: need a fixed word size, got: %a@."
+          (Usuba_print.pp_typ ()) typ;
         assert false
   in
   gen_minus_one msize
@@ -192,8 +192,8 @@ let rec fold_expr (env_var : (ident, typ) Hashtbl.t) (e : expr) : expr =
   | Pack (e1, e2, t) -> Pack (fold_expr env_var e1, fold_expr env_var e2, t)
   | Fun (f, l) -> Fun (f, List.map (fold_expr env_var) l)
   | _ ->
-      Printf.eprintf "fold_expr: Cannot fold unnormalized expression: %s.\n"
-        (Usuba_print.expr_to_str e);
+      Format.eprintf "fold_expr: Cannot fold unnormalized expression: %a.@."
+        (Usuba_print.pp_expr ()) e;
       assert false
 
 let rec fold_deqs (env_var : (ident, typ) Hashtbl.t) (deqs : deq list) :

@@ -65,7 +65,7 @@ module Is_linear = struct
   and is_linear_def_by_name (env_fun : (string, def) Hashtbl.t) (f : ident) :
       bool =
     if is_builtin f then true
-    else is_linear_def env_fun (Hashtbl.find env_fun f.name)
+    else is_linear_def env_fun (Hashtbl.find env_fun (Ident.name f))
 
   let is_linear (env_fun : (string, def) Hashtbl.t) (def : def) : bool =
     is_linear_def env_fun def
@@ -73,7 +73,7 @@ end
 
 (* Returns true is the inlining level in |conf| is more aggressive
    than auto_inline. *)
-let is_more_aggressive_than_auto (conf : config) : bool =
+let is_more_aggressive_than_auto (conf : Config.config) : bool =
   if conf.inline_all || conf.heavy_inline || conf.auto_inline then true
   else false
 
@@ -146,8 +146,8 @@ let rec is_call_free env inlined conf (def : def) : bool =
   let rec deq_call_free (deq : deq) : bool =
     match deq.content with
     | Eqn (_, Fun (f, _), _) ->
-        if f.name = "refresh" then true
-        else not (can_inline env inlined conf (Hashtbl.find env f.name))
+        if Ident.name f = "refresh" then true
+        else not (can_inline env inlined conf (Hashtbl.find env (Ident.name f)))
     | Eqn _ -> true
     | Loop (_, _, _, dl, _) -> List.for_all deq_call_free dl
   in
@@ -162,9 +162,9 @@ let rec is_call_free env inlined conf (def : def) : bool =
     - it doesn't contain any function call, or
     - every function call it contains is to a node that should not be inlined
     - the heuristic decides that this node is worth being inlined *)
-and can_inline env inlined conf (node : def) : bool =
+and can_inline env inlined (conf : Config.config) (node : def) : bool =
   (* Printf.printf "Can_inline(%s) (pre_inline=%b)\n" node.id.name !pre_inline; *)
-  if Hashtbl.find inlined node.id.name then false (* Already inlined *)
+  if Hashtbl.find inlined (Ident.name node.id) then false (* Already inlined *)
   else if not (is_single node.node) then false
   else if conf.light_inline then is_inline node
     (* Only inline if node is marked as "_inline" *)
@@ -184,11 +184,11 @@ and can_inline env inlined conf (node : def) : bool =
 
 (* Inline every node that should be and hasn't already been
    (inlined contains the status of each node: inlined or not) *)
-let rec _inline (runner : pass_runner) (prog : prog) (conf : config) inlined :
-    prog =
+let rec _inline (runner : pass_runner) (prog : prog) (conf : Config.config)
+    inlined : prog =
   (* A list of every node, needed for "is_call_free" *)
   let env = Hashtbl.create 20 in
-  List.iter (fun x -> Hashtbl.add env x.id.name x) prog.nodes;
+  List.iter (fun x -> Hashtbl.add env (Ident.name x.id) x) prog.nodes;
 
   (* If there is a node that can be inlined *)
   if List.exists (can_inline env inlined conf) prog.nodes then (
@@ -197,7 +197,7 @@ let rec _inline (runner : pass_runner) (prog : prog) (conf : config) inlined :
     (* inline it *)
     let prog' = do_inline prog to_inline in
     (* add it to the hash of inlined nodes *)
-    Hashtbl.replace inlined to_inline.id.name true;
+    Hashtbl.replace inlined (Ident.name to_inline.id) true;
     (* Running basic optimizations; copy propagation in particular is
        useful for the heuristic inlining *)
     let prog' = runner#run_module Simple_opts.as_pass prog' in
@@ -207,20 +207,22 @@ let rec _inline (runner : pass_runner) (prog : prog) (conf : config) inlined :
     prog
 
 (* Main inlining function. _inline actually does most of the job *)
-let run_common (runner : pass_runner) (prog : prog) (conf : config) : prog =
+let run_common (runner : pass_runner) (prog : prog) (conf : Config.config) :
+    prog =
   if conf.no_inline then prog
   else
     (* Hashtbl containing the inlining status of each node:
        false if it is not already inlined, true if it is *)
     let inlined = Hashtbl.create 20 in
-    List.iter (fun x -> Hashtbl.add inlined x.id.name false) prog.nodes;
+    List.iter (fun x -> Hashtbl.add inlined (Ident.name x.id) false) prog.nodes;
     (* The last node is the entry point, it wouldn't make sense to try inline it *)
-    Hashtbl.replace inlined (last prog.nodes).id.name true;
+    Hashtbl.replace inlined (Ident.name (last prog.nodes).id) true;
 
     (* And now, perform the inlining *)
     _inline runner prog conf inlined
 
-let run_pre_inline (runner : pass_runner) (prog : prog) (conf : config) : prog =
+let run_pre_inline (runner : pass_runner) (prog : prog) (conf : Config.config) :
+    prog =
   pre_inline := true;
   orig_conf := conf;
   if is_more_aggressive_than_auto conf then
@@ -236,12 +238,13 @@ let run_pre_inline (runner : pass_runner) (prog : prog) (conf : config) : prog =
     run_common runner prog conf
   else prog
 
-let run_simple (runner : pass_runner) (prog : prog) (conf : config) : prog =
+let run_simple (runner : pass_runner) (prog : prog) (conf : Config.config) :
+    prog =
   pre_inline := false;
   run_common runner prog conf
 
-let run_bench (runner : pass_runner) (prog : prog) (conf : config) nexts : prog
-    =
+let run_bench (runner : pass_runner) (prog : prog) (conf : Config.config) nexts
+    : prog =
   assert conf.bench_inline;
 
   let fully_inlined = run_simple runner prog { conf with inline_all = true } in
@@ -278,7 +281,7 @@ let run_bench (runner : pass_runner) (prog : prog) (conf : config) nexts : prog
 
   prog
 
-let run (runner : pass_runner) (prog : prog) (conf : config) : prog =
+let run (runner : pass_runner) (prog : prog) (conf : Config.config) : prog =
   let nexts = runner#get_nexts () in
   pre_inline := false;
   if not conf.bench_inline then

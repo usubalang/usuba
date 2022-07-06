@@ -32,6 +32,7 @@ clean:
 	$(DUNE) clean
 
 test: all
+	ulimit -s unlimited
 	./usubac -tests
 	@echo $(SAMPLES_DIR)
 	./run_checks.pl --samples $(SAMPLES_DIR)

@@ -1,11 +1,10 @@
 open Usuba_AST
-open Utils
 
 let gen_iterator =
   let cpt = ref 0 in
   fun id ->
     incr cpt;
-    fresh_ident (Printf.sprintf "%s%d" id.name !cpt)
+    Ident.create_fresh (Format.sprintf "%s%d" (Ident.name id) !cpt)
 
 let rec update_aexpr_idx (it_env : (var, var) Hashtbl.t) (ae : arith_expr) :
     arith_expr =
@@ -30,7 +29,7 @@ let add_iterators (its : (ident * int) list) (v : var) : var =
     | Index (v', ae) -> Index (replace_base v' new_base, ae)
     | _ -> assert false
   in
-  let base = get_var_base v in
+  let base = Utils.get_var_base v in
   replace_base v (create_new_base its base)
 
 let rec update_in_var (it_env : (var, var) Hashtbl.t) (v : var) : var =
@@ -50,7 +49,7 @@ let rec update_var_to_var (it_env : (var, var) Hashtbl.t)
       | None -> (
           match v with
           | Var _ ->
-              Printf.fprintf stderr "Fail: %s\n" (Usuba_print.var_to_str v);
+              Format.eprintf "Fail: %a\n" (Usuba_print.pp_var ()) v;
               assert false
           | Index (v', ae) -> Index (update_var_to_var it_env var_env v', ae)
           | _ -> assert false))
@@ -60,7 +59,7 @@ let update_var_to_var (its : (ident * int) list) (it_env : (var, var) Hashtbl.t)
     (var_env : (var, var) Hashtbl.t) (extern_vars : (ident, bool) Hashtbl.t)
     (v : var) : var =
   let v = update_var_to_var it_env var_env v in
-  match Hashtbl.find_opt extern_vars (get_base_name v) with
+  match Hashtbl.find_opt extern_vars (Utils.get_base_name v) with
   | Some _ ->
       v (* Variable comes from "outside" (ie, parameter/return values) *)
   | None -> add_iterators its v
@@ -113,7 +112,7 @@ let update_var_to_expr (its : (ident * int) list)
   let e = update_var_to_expr it_env var_env expr_env v in
   match e with
   | ExpVar v -> (
-      match Hashtbl.find_opt extern_vars (get_base_name v) with
+      match Hashtbl.find_opt extern_vars (Utils.get_base_name v) with
       | Some _ ->
           e (* Variable comes from "outside" (ie, parameter/return values) *)
       | None -> ExpVar (add_iterators its v))
@@ -140,7 +139,7 @@ let rec update_expr (its : (ident * int) list) (it_env : (var, var) Hashtbl.t)
   | Arith (op, x, y) -> Arith (op, rec_call x, rec_call y)
   | Fun (f, l) -> Fun (f, List.map rec_call l)
   | _ ->
-      print_endline (Usuba_print.expr_to_str e);
+      Format.printf "%a@." (Usuba_print.pp_expr ()) e;
       assert false
 
 (* Convert the variable names, and update deq's orig with |f| (since
@@ -193,7 +192,8 @@ let inline_call (its : (ident * int) list) (to_inl : def) (args : expr list)
     (lhs : var list) (cnt : int) : p * deq list =
   (* Define a name conversion function *)
   let conv_name (id : ident) : ident =
-    { id with name = Printf.sprintf "%s_%d_%s" to_inl.id.name cnt id.name }
+    Ident.copy id
+      (Format.asprintf "%a_%d_%a" (Ident.pp ()) to_inl.id cnt (Ident.pp ()) id)
   in
 
   (* Extract body, vars, params and name of the node to inline *)
@@ -213,15 +213,15 @@ let inline_call (its : (ident * int) list) (to_inl : def) (args : expr list)
   List.iter2
     (fun vd v ->
       Hashtbl.add var_env (Var vd.vd_id) v;
-      Hashtbl.add extern_vars (get_base_name v) true)
+      Hashtbl.add extern_vars (Utils.get_base_name v) true)
     p_out lhs;
   (* p_in replaced by the expressions of arguments *)
   List.iter2
     (fun vd e ->
       Hashtbl.add expr_env (Var vd.vd_id) e;
       List.iter
-        (fun v -> Hashtbl.add extern_vars (get_base_name v) true)
-        (get_used_vars e))
+        (fun v -> Hashtbl.add extern_vars (Utils.get_base_name v) true)
+        (Utils.get_used_vars e))
     p_in args;
   (* Create a list containing the new variables names *)
   let vars =
@@ -248,7 +248,7 @@ let inline_call (its : (ident * int) list) (to_inl : def) (args : expr list)
 (* |cnt| is used as a counter for alpha-conversion *)
 let rec inline_in_node ?(its : (ident * int) list = []) ?(cnt : int ref = ref 0)
     (deqs : deq list) (to_inl : def) : p * deq list =
-  let f_inl = to_inl.id.name in
+  let f_inl = Ident.name to_inl.id in
 
   let vars, deqs =
     (* Unpack the list bellow into a single list of vars and
@@ -260,12 +260,14 @@ let rec inline_in_node ?(its : (ident * int) list = []) ?(cnt : int ref = ref 0)
       (List.map
          (fun eqn ->
            match eqn.content with
-           | Eqn (lhs, Fun (f, l), _) when f.name = f_inl ->
+           | Eqn (lhs, Fun (f, l), _) when Ident.name f = f_inl ->
                incr cnt;
                inline_call its to_inl l lhs !cnt
            | Eqn _ -> ([], [ eqn ])
            | Loop (i, ei, ef, dl, opts) ->
-               let size = abs (eval_arith_ne ei - eval_arith_ne ef) + 1 in
+               let size =
+                 abs (Utils.eval_arith_ne ei - Utils.eval_arith_ne ef) + 1
+               in
                let vars, deqs =
                  inline_in_node ~its:((i, size) :: its) ~cnt dl to_inl
                in

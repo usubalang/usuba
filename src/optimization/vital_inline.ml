@@ -75,7 +75,7 @@ end
 (* Inlines only the functions that must be inlined. For now, those are
    functions that use tuple shifts with a shift size depending on a
    parameter *)
-let rec vital_inline (prog : prog) (conf : config) : prog =
+let rec vital_inline (prog : prog) (conf : Config.config) : prog =
   match Must_inline.must_inline prog with
   | None -> prog
   | Some node -> ( try vital_inline (do_inline prog node) conf with _ -> prog)

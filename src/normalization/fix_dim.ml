@@ -314,7 +314,7 @@ module Dir_params = struct
         Hashtbl.replace env_fun def.id { def with node = Single (vars, body) }
     | _ -> ()
 
-  let rec run _ (prog : prog) (conf : config) : prog =
+  let rec run _ (prog : prog) (conf : Config.config) : prog =
     (* Build a hash containing all nodes *)
     let env_fun = Hashtbl.create 100 in
     List.iter (fun node -> Hashtbl.add env_fun node.id node) prog.nodes;
@@ -398,8 +398,8 @@ module Dir_inner = struct
                         else ()
                     (* Not a Const/ExpVar -> not possible *)
                     | _ ->
-                        Printf.printf "Error: %s\n"
-                          (Usuba_print.expr_to_str arg);
+                        Format.eprintf "Error: %a@." (Usuba_print.pp_expr ())
+                          arg;
                         assert false)
                   args;
 
@@ -442,7 +442,8 @@ module Dir_inner = struct
         Hashtbl.replace env_fun def.id { def with node = Single (vars, body) }
     | _ -> ()
 
-  let rec run (runner : pass_runner) (prog : prog) (conf : config) : prog =
+  let rec run (runner : pass_runner) (prog : prog) (conf : Config.config) : prog
+      =
     (* Build a hash containing all nodes *)
     let env_fun = Hashtbl.create 100 in
     List.iter (fun node -> Hashtbl.add env_fun node.id node) prog.nodes;

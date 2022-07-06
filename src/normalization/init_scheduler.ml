@@ -16,19 +16,20 @@
   ( *****************************************************************************)
 
 open Usuba_AST
-open Basic_utils
-open Utils
 
 (* Expands a variable, keeping it's intermediary expensions.
    For instance, if x:bool[2][3], then we'll get:
      (x, x[0], x[1], x[0][0], x[0][1], ...)
 *)
 let rec expand_var_w_inter env_var (v : var) : var list =
-  match get_var_type env_var v with
+  match Utils.get_var_type env_var v with
   | Nat -> [ v ]
   | Uint (_, _, 1) -> [ v ]
   | _ ->
-      v :: flat_map (expand_var_w_inter env_var) (expand_var_partial env_var v)
+      v
+      :: Basic_utils.flat_map
+           (expand_var_w_inter env_var)
+           (Utils.expand_var_partial env_var v)
 
 (* Expands each var of 'vars' and adds it to the table 'ready' *)
 let update_ready (ready : (var, bool) Hashtbl.t)
@@ -66,7 +67,7 @@ let is_ready (env_var : (ident, typ) Hashtbl.t) (ready : (var, bool) Hashtbl.t)
     match Hashtbl.mem ready v with
     | true -> true
     | false -> (
-        let expanded = expand_var_partial env_var v in
+        let expanded = Utils.expand_var_partial env_var v in
         match expanded with
         | [ v' ] when v' = v -> false
         | _ -> List.for_all is_ready_bot expanded)
@@ -89,7 +90,7 @@ let is_ready (env_var : (ident, typ) Hashtbl.t) (ready : (var, bool) Hashtbl.t)
 let schedule_deqs (env_var : (ident, typ) Hashtbl.t) (def : def)
     (deqs : deq list) : deq list =
   let ready = Hashtbl.create 100 in
-  update_ready ready env_var (p_to_vars def.p_in);
+  update_ready ready env_var (Utils.p_to_vars def.p_in);
 
   (* The list of instruction scheduled *)
   let body : deq list ref = ref [] in
@@ -112,7 +113,7 @@ let schedule_deqs (env_var : (ident, typ) Hashtbl.t) (def : def)
             (fun deq' _ ->
               match sched_it deq' with true -> None | false -> Some true)
             (Hashtbl.find to_sched v);
-        let expanded = expand_var_partial env_var v in
+        let expanded = Utils.expand_var_partial env_var v in
         match expanded with
         | [ v' ] when v' = v -> ()
         | _ -> List.iter propagate_bot expanded)
@@ -132,7 +133,7 @@ let schedule_deqs (env_var : (ident, typ) Hashtbl.t) (def : def)
             if
               List.for_all
                 (fun x -> Hashtbl.mem ready x)
-                (expand_var_partial env_var v')
+                (Utils.expand_var_partial env_var v')
             then propagate_top v'
         | _ -> assert false)
     in
@@ -148,7 +149,7 @@ let schedule_deqs (env_var : (ident, typ) Hashtbl.t) (def : def)
     | None -> (
         match deq.content with
         | Eqn (lhs, e, _) ->
-            let used_vars : var list = get_used_vars e in
+            let used_vars : var list = Utils.get_used_vars e in
             if List.for_all (is_ready env_var ready) used_vars then (
               body := deq :: !body;
               update_ready ready env_var lhs;
@@ -165,14 +166,15 @@ let schedule_deqs (env_var : (ident, typ) Hashtbl.t) (def : def)
                           | false -> Some true)
                         h
                   | None -> ())
-                (flat_map (expand_var_w_inter env_var) lhs);
+                (Basic_utils.flat_map (expand_var_w_inter env_var) lhs);
               true)
             else (
               (* dependencies not ready *)
               List.iter (fun v -> update_to_sched to_sched v deq) used_vars;
               false)
         | Loop _ ->
-            Printf.printf "Unexpected loop when scheduling %s.\n" def.id.name;
+            Format.printf "Unexpected loop when scheduling %a.@." (Ident.pp ())
+              def.id;
             assert false)
   in
 
@@ -185,12 +187,12 @@ let schedule_deqs (env_var : (ident, typ) Hashtbl.t) (def : def)
       (fun x ->
         match Hashtbl.find_opt hash x with
         | Some _ -> ()
-        | None ->
-            Printf.printf "Didn't schedule %s\n" (Usuba_print.deq_to_str x))
+        | None -> Format.printf "Didn't schedule %a@." (Usuba_print.pp_deq ()) x)
       deqs;
     raise
-      (Error
-         (Printf.sprintf "Couldn't find a valid scheduling. (%s)" def.id.name)))
+      (Errors.Error
+         (Format.asprintf "Couldn't find a valid scheduling. (%a)" (Ident.pp ())
+            def.id)))
   else List.rev !body
 
 let schedule_def (def : def) : def =
@@ -199,14 +201,14 @@ let schedule_def (def : def) : def =
     node =
       (match def.node with
       | Single (vars, body) ->
-          let env_var = build_env_var def.p_in def.p_out vars in
+          let env_var = Utils.build_env_var def.p_in def.p_out vars in
           Single (vars, schedule_deqs env_var def body)
       | _ -> def.node);
   }
 
 (* Must be called once arrays (and thus Loop) have been removed. *)
 let run _ prog _ =
-  (* Printf.fprintf stderr "Scheduler (simple) disabled.\n"; *)
+  (* Format.fprintf stderr "Scheduler (simple) disabled.@."; *)
   (* if conf.unroll then *)
   (* { nodes = List.map schedule_def prog.nodes } *)
   (* else *)

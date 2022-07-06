@@ -1,60 +1,5 @@
 open Usuba_lib
-open Usuba_AST
-open Utils
-open Usuba_pp
-
-let warnings = ref false
-let verbose = ref 1
-let path = ref [ "." ]
-let type_check = ref true
-let check_tbl = ref false
-let no_inline = ref false
-let auto_inline = ref true
-let inline_all = ref false
-let heavy_inline = ref false
-let light_inline = ref false
-let compact_mono = ref true
-let fold_const = ref true
-let cse = ref true
-let copy_prop = ref true
-let loop_fusion = ref true
-let pre_schedule = ref true
-let scheduling = ref true
-let schedule_n = ref 10
-let share_var = ref false
-let linearize_arr = ref true
-let precal_tbl = ref true
-let no_arr = ref false
-let arr_entry = ref true
-let unroll = ref false
-let interleave = ref 0
-let inter_factor = ref 0
-let arch = ref Std
-let bits_per_reg = ref 64
-let ortho = ref true
-let output = ref ""
-let fdti = ref ""
-let lazylift = ref false
-let tightPROVE = ref false
-let tightprove_dir = ref Config.tightprove_cache
-let maskVerif = ref false
-let masked = ref false
-let ua_masked = ref false
-let shares = ref 1
-let gen_bench = ref false
-let compact = ref false
-let slicing_type = ref B
-let slicing_set = ref false
-let m_val = ref 1
-let m_set = ref false
-let bench_all = ref false
-let bench_inline = ref false
-let bench_inter = ref false
-let bench_bitsched = ref false
-let bench_msched = ref false
-let bench_sharevar = ref false
-let keep_tables = ref false
-let dump_sexp = ref false
+open Config
 
 let str_to_arch = function
   | "std" -> Std
@@ -64,7 +9,7 @@ let str_to_arch = function
   | "avx512" -> AVX512
   | "neon" -> Neon
   | "altivec" -> AltiVec
-  | x -> raise (Error ("Invalid archi: " ^ x))
+  | x -> raise (Errors.Error ("Invalid archi: " ^ x))
 
 let bits_in_arch = function
   | Std -> 64
@@ -83,7 +28,10 @@ let gen_output_filename ?(ext = ".c") file_in =
 let compile (file_in : string) (prog : Usuba_AST.prog) (conf : config) : unit =
   (* Type-checking *)
   let prog =
-    if conf.type_check then Type_checker.type_prog prog conf else prog
+    Errors.exec_with_print_and_fail
+      (Type_checker.type_prog ~conf)
+      (fun prog -> prog)
+      prog
   in
 
   (* Normalizing AND optimizing *)
@@ -92,7 +40,7 @@ let compile (file_in : string) (prog : Usuba_AST.prog) (conf : config) : unit =
   match conf.dump_sexp with
   | true ->
       let out =
-        match !output with
+        match conf.output with
         | "" -> open_out (gen_output_filename ~ext:".ua0" file_in)
         | str -> open_out str
       in
@@ -106,7 +54,7 @@ let compile (file_in : string) (prog : Usuba_AST.prog) (conf : config) : unit =
 
       (* Opening out file *)
       let out =
-        match !output with
+        match conf.output with
         | "" -> open_out (gen_output_filename file_in)
         | str -> open_out str
       in
@@ -127,9 +75,63 @@ let run_tests () : unit =
 let main () =
   Printexc.record_backtrace true;
 
+  let warning_as_error = ref false in
+  let nocolor = ref false in
+  let verbose = ref 1 in
+  let path = ref [ "." ] in
+  let type_check = ref true in
+  let check_tbl = ref false in
+  let no_inline = ref false in
+  let auto_inline = ref true in
+  let inline_all = ref false in
+  let heavy_inline = ref false in
+  let light_inline = ref false in
+  let compact_mono = ref true in
+  let fold_const = ref true in
+  let cse = ref true in
+  let copy_prop = ref true in
+  let loop_fusion = ref true in
+  let pre_schedule = ref true in
+  let scheduling = ref true in
+  let schedule_n = ref 10 in
+  let share_var = ref false in
+  let linearize_arr = ref true in
+  let precal_tbl = ref true in
+  let no_arr = ref false in
+  let arr_entry = ref true in
+  let unroll = ref false in
+  let interleave = ref 0 in
+  let inter_factor = ref 0 in
+  let arch = ref Std in
+  let bits_per_reg = ref 64 in
+  let output = ref "" in
+  let fdti = ref "" in
+  let lazylift = ref false in
+  let tightPROVE = ref false in
+  let tightprove_dir = ref tightprove_cache in
+  let maskVerif = ref false in
+  let masked = ref false in
+  let ua_masked = ref false in
+  let shares = ref 1 in
+  let gen_bench = ref false in
+  let compact = ref false in
+  let slicing_type = ref Config.B in
+  let slicing_set = ref false in
+  let m_val = ref 1 in
+  let m_set = ref false in
+  let bench_all = ref false in
+  let bench_inline = ref false in
+  let bench_inter = ref false in
+  let bench_bitsched = ref false in
+  let bench_msched = ref false in
+  let bench_sharevar = ref false in
+  let keep_tables = ref false in
+  let dump_sexp = ref false in
+
   let speclist =
     [
-      ("-w", Arg.Set warnings, "Activate warnings");
+      ("-w", Arg.Set warning_as_error, "Activate warning as error");
+      ("--no-color", Arg.Set nocolor, "Disable ansi colors for messages");
       ("-v", Arg.Set_int verbose, "Set verbosity level");
       ( "-I",
         Arg.String (fun s -> path := s :: !path),
@@ -285,7 +287,8 @@ let main () =
 
     let conf =
       {
-        warnings = !warnings;
+        output = !output;
+        warning_as_error = !warning_as_error;
         verbose = !verbose;
         path;
         (* local var *)

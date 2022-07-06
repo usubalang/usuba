@@ -9,13 +9,14 @@
   ( *****************************************************************************)
 
 open Usuba_AST
-open Utils
 
 let do_shift (env_var : (ident, typ) Hashtbl.t) (op : shift_op) (l : expr list)
     (n : int) : expr list =
   (* Empty env_fun since unfold_unnest must already have been called *)
   (*                               vvvvvvvvvvvvvvvvvv                *)
-  let typ = List.hd (get_expr_type (Hashtbl.create 1) env_var (List.hd l)) in
+  let typ =
+    List.hd (Utils.get_expr_type (Hashtbl.create 1) env_var (List.hd l))
+  in
   match op with
   | Lrotate ->
       let rec aux i l acc =
@@ -56,7 +57,7 @@ let rec shift (env_var : (ident, typ) Hashtbl.t) (op : shift_op) (e : expr)
   | Shift (op', e', Const_e n') ->
       let t = shift env_var op' e' n' in
       if t = e then Shift (op, e, Const_e n) else shift env_var op t n
-  | _ -> raise (Error "I can't shift this")
+  | _ -> raise (Errors.Error "I can't shift this")
 
 let rec shift_expr (env_var : (ident, typ) Hashtbl.t) (e : expr) : expr =
   match e with
@@ -70,7 +71,7 @@ let rec shift_expr (env_var : (ident, typ) Hashtbl.t) (e : expr) : expr =
       match e' with
       | Tuple _ -> (
           try
-            let n' = eval_arith_ne n in
+            let n' = Utils.eval_arith_ne n in
             shift env_var op e' n'
           with Not_found ->
             (* n depends on a parameter AND the node couldn't be
@@ -98,11 +99,11 @@ let rec shift_deq (env_var : (ident, typ) Hashtbl.t) (deq : deq) : deq =
 let shift_def (def : def) : def =
   match def.node with
   | Single (vars, body) ->
-      let env_var = build_env_var def.p_in def.p_out vars in
+      let env_var = Utils.build_env_var def.p_in def.p_out vars in
       { def with node = Single (vars, List.map (shift_deq env_var) body) }
   | _ -> def
 
-let run _ (prog : prog) (conf : config) : prog =
+let run _ (prog : prog) (conf : Config.config) : prog =
   (* Inlines nodes that _must_ be inlined. *)
   let prog' = Vital_inline.vital_inline prog conf in
   (* And perform shifts *)

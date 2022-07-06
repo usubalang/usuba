@@ -45,8 +45,6 @@
   ( *****************************************************************************)
 
 open Usuba_AST
-open Basic_utils
-open Utils
 
 exception Keep_it
 
@@ -56,7 +54,8 @@ let rec eval_loop_bound (env_it : (ident, int) Hashtbl.t) (ae : arith_expr) :
     int =
   match ae with
   | Const_e n -> n
-  | Var_e id -> if id.name = "MASKING_ORDER" then 2 else Hashtbl.find env_it id
+  | Var_e id ->
+      if Ident.name id = "MASKING_ORDER" then 2 else Hashtbl.find env_it id
   | Op_e (op, x, y) -> (
       let x' = eval_loop_bound env_it x in
       let y' = eval_loop_bound env_it y in
@@ -75,11 +74,12 @@ let rec eval_loop_bound (env_it : (ident, int) Hashtbl.t) (ae : arith_expr) :
 let rec simpl_var env_it (v : var) : var =
   match v with
   | Var _ -> v
-  | Index (v', ae) -> Index (simpl_var env_it v', Const_e (eval_arith env_it ae))
+  | Index (v', ae) ->
+      Index (simpl_var env_it v', Const_e (Utils.eval_arith env_it ae))
   | _ ->
       (* Ranges and Slices should have been removed at that point *)
-      Printf.fprintf stderr "simpl_var: invalide variable %s.\n"
-        (Usuba_print.var_to_str v);
+      Format.eprintf "simpl_var: invalide variable %a.@."
+        (Usuba_print.pp_var ()) v;
       assert false
 
 (* linearize the variables of |p| that are contained in |to_linearize|. *)
@@ -90,8 +90,8 @@ let update_vars to_linearize (vars : p) : p =
     | Array (Array (typ', s), _) -> Array (typ', s)
     | Uint (dir, m, n) when n > 1 -> Uint (dir, m, 1)
     | _ ->
-        Printf.fprintf stderr "update_vars: unexcpected type: %s\n"
-          (Usuba_print.typ_to_str typ);
+        Format.eprintf "update_vars: unexcpected type: %a@."
+          (Usuba_print.pp_typ ()) typ;
         assert false
   in
 
@@ -156,8 +156,8 @@ let rec remove_deepest_index (v : var) : var =
   | Index (v', n) -> (
       match v' with Index _ -> Index (remove_deepest_index v', n) | _ -> v')
   | _ ->
-      Printf.fprintf stderr "remove_deepest_index: unexpected var %s.\n"
-        (Usuba_print.var_to_str v);
+      Format.eprintf "remove_deepest_index: unexpected var %a.@."
+        (Usuba_print.pp_var ()) v;
       assert false
 
 (* The function can_linearize_def that takes a def and a variable
@@ -180,7 +180,7 @@ let rec can_linearize_def (env_fun : (ident, def) Hashtbl.t)
     : unit =
   match def.node with
   | Single (vars, body) ->
-      let env_var = build_env_var def.p_in def.p_out vars in
+      let env_var = Utils.build_env_var def.p_in def.p_out vars in
       (* |defined| is a hash table that contains, for each index and
          such of |v_in|, it's current value: either |v_in|, or
          |v_out|. Accessing |v_in| while defined{v_in} == v_out means
@@ -192,7 +192,7 @@ let rec can_linearize_def (env_fun : (ident, def) Hashtbl.t)
       (* Initialize |defined|: |v_in| points to |v_in|. *)
       List.iter
         (fun v -> Hashtbl.add defined v v)
-        (expand_var env_var ~env_it (Var v_in.vd_id));
+        (Utils.expand_var env_var ~env_it (Var v_in.vd_id));
       can_linearize_def_body env_fun env_it env_var defined body v_in v_out
   | _ ->
       (* The only case we can get here is if there is a |Table|
@@ -217,16 +217,18 @@ and can_linearize_def_body (env_fun : (ident, def) Hashtbl.t)
               try
                 let def_called = Hashtbl.find env_fun f in
                 let param_idx =
-                  find_get_i
+                  Basic_utils.find_get_i
                     (fun e ->
                       match e with
-                      | ExpVar v -> get_base_name v = v_in.vd_id
+                      | ExpVar v -> Utils.get_base_name v = v_in.vd_id
                       | _ -> false)
                     l
                 in
                 let v_in' = List.nth def_called.p_in param_idx in
                 let return_idx =
-                  find_get_i (fun v -> get_base_name v = v_out.vd_id) lhs
+                  Basic_utils.find_get_i
+                    (fun v -> Utils.get_base_name v = v_out.vd_id)
+                    lhs
                 in
                 let v_out' = List.nth def_called.p_out return_idx in
                 can_linearize_def env_fun env_it def_called v_in' v_out'
@@ -240,28 +242,28 @@ and can_linearize_def_body (env_fun : (ident, def) Hashtbl.t)
              (e) doesn't use overriten variables *)
           List.iter
             (fun v ->
-              match get_base_name v = v_in.vd_id with
+              match Utils.get_base_name v = v_in.vd_id with
               | true ->
                   (* This expression uses |v_in| -> need to make
                      sure that |v_in| is available. *)
                   List.iter
                     (fun v -> if Hashtbl.find defined v <> v then raise Keep_it)
-                    (expand_var env_var ~env_it v)
+                    (Utils.expand_var env_var ~env_it v)
               | false -> ()
               (* Does not use |v_in| -> do nothing *))
-            (List.map (simpl_var env_it) (get_used_vars e));
+            (List.map (simpl_var env_it) (Utils.get_used_vars e));
 
           (* Updating |defined| variables *)
           List.iter
             (fun v ->
-              match get_base_name v = v_out.vd_id with
+              match Utils.get_base_name v = v_out.vd_id with
               | true ->
                   (* Writes to v_out -> need to update |defined| *)
                   List.iter
                     (fun v ->
-                      let v' = replace_base v v_in.vd_id in
+                      let v' = Utils.replace_base v v_in.vd_id in
                       Hashtbl.replace defined v' v)
-                    (expand_var env_var ~env_it v)
+                    (Utils.expand_var env_var ~env_it v)
               | false -> ()
               (* Does not write to |v_out| -> do nothing *))
             (List.map (simpl_var env_it) lhs)
@@ -269,8 +271,8 @@ and can_linearize_def_body (env_fun : (ident, def) Hashtbl.t)
           (* A loop: gonna look at every iterations (it is easier that
              trying to do some symbolic reasoning with the loop
              variable) *)
-          let ei = eval_arith env_it ei in
-          let ef = eval_arith env_it ef in
+          let ei = Utils.eval_arith env_it ei in
+          let ef = Utils.eval_arith env_it ef in
           List.iter
             (fun i ->
               Hashtbl.add env_it x i;
@@ -279,7 +281,7 @@ and can_linearize_def_body (env_fun : (ident, def) Hashtbl.t)
                 v_out;
               Hashtbl.remove env_var x;
               Hashtbl.remove env_it x)
-            (gen_list_bounds ei ef))
+            (Basic_utils.gen_list_bounds ei ef))
     deqs
 
 (* can_linearize returns nothing if the array defined by |id| can be
@@ -315,16 +317,18 @@ let rec can_linearize (env_fun : (ident, def) Hashtbl.t)
               try
                 let def = Hashtbl.find env_fun f in
                 let param_idx =
-                  find_get_i
+                  Basic_utils.find_get_i
                     (fun e ->
                       match e with
-                      | ExpVar v -> get_base_name v = id
+                      | ExpVar v -> Utils.get_base_name v = id
                       | _ -> false)
                     l
                 in
                 let v_in = List.nth def.p_in param_idx in
                 let return_idx =
-                  find_get_i (fun v -> get_base_name v = id) lhs
+                  Basic_utils.find_get_i
+                    (fun v -> Utils.get_base_name v = id)
+                    lhs
                 in
                 let v_out = List.nth def.p_out return_idx in
                 can_linearize_def env_fun env_it def v_in v_out
@@ -338,29 +342,29 @@ let rec can_linearize (env_fun : (ident, def) Hashtbl.t)
              (e) doesn't use overriten variables *)
           List.iter
             (fun v ->
-              match get_base_name v = id with
+              match Utils.get_base_name v = id with
               | true ->
                   (* Need to make sure the index accessed are accessible *)
                   List.iter
                     (fun v ->
                       let v' = remove_deepest_index v in
                       if Hashtbl.find defined v' <> v then raise Keep_it)
-                    (expand_var env_var ~env_it v)
+                    (Utils.expand_var env_var ~env_it v)
               | false -> ()
               (* not the variable we are interested into -> do nothing *))
-            (List.map (simpl_var env_it) (get_used_vars e));
+            (List.map (simpl_var env_it) (Utils.get_used_vars e));
 
           (* Updating |defined| variables *)
           List.iter
             (fun v ->
-              match get_base_name v = id with
+              match Utils.get_base_name v = id with
               | true ->
                   (* Need to update |defined| *)
                   List.iter
                     (fun v ->
                       let v' = remove_deepest_index v in
                       Hashtbl.replace defined v' v)
-                    (expand_var env_var ~env_it v)
+                    (Utils.expand_var env_var ~env_it v)
               | false -> ()
               (* not the variable we are interested into -> do nothing *))
             (List.map (simpl_var env_it) lhs)
@@ -368,8 +372,8 @@ let rec can_linearize (env_fun : (ident, def) Hashtbl.t)
           (* A loop: gonna look at every iterations (it is easier that
              trying to do some symbolic reasoning with the loop
              variable) *)
-          let ei = eval_arith env_it ei in
-          let ef = eval_arith env_it ef in
+          let ei = Utils.eval_arith env_it ei in
+          let ef = Utils.eval_arith env_it ef in
           List.iter
             (fun i ->
               Hashtbl.add env_it x i;
@@ -377,7 +381,7 @@ let rec can_linearize (env_fun : (ident, def) Hashtbl.t)
               can_linearize env_fun ~env_it ~defined dl id env_var;
               Hashtbl.remove env_var x;
               Hashtbl.remove env_it x)
-            (gen_list_bounds ei ef))
+            (Basic_utils.gen_list_bounds ei ef))
     deqs
 
 (* Returns variables that are arrays *)
@@ -398,14 +402,14 @@ let get_arrays (vars : p) : p =
    converging, we use the |retry| parameter to avoid looping over and
    over. TODO: remove |retry| here (and maybe add a warning if too
    many recursion, but this really should not happen). *)
-let rec linearize_def ?(retry : int = 5) (conf : config)
+let rec linearize_def ?(retry : int = 5) (conf : Config.config)
     (env_fun : (ident, def) Hashtbl.t) (def : def) : def =
   match def.node with
   | Single (vars, body) ->
       (* Building variable environment. It is only use to expand
          variables we wish to expand (p_in and p_out can therefore be
          omitted. *)
-      let env_var = build_env_var [] [] vars in
+      let env_var = Utils.build_env_var [] [] vars in
       let env_it = Hashtbl.create 10 in
       if conf.ua_masked then Hashtbl.add env_it Mask.masking_order 2;
       (* |to_linearize|: the set of variables to linearize *)
@@ -431,8 +435,8 @@ let rec linearize_def ?(retry : int = 5) (conf : config)
       else new_def
   | _ -> def
 
-let run _ (prog : prog) (conf : config) : prog =
-  let env_fun = build_env_fun prog.nodes in
+let run _ (prog : prog) (conf : Config.config) : prog =
+  let env_fun = Utils.build_env_fun prog.nodes in
   if conf.linearize_arr then
     { nodes = List.map (linearize_def conf env_fun) prog.nodes }
   else prog
