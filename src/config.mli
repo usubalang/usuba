@@ -6,6 +6,7 @@ val tightprove : string
 
 type arch = Std | MMX | SSE | AVX | AVX512 | Neon | AltiVec
 type slicing = H | V | B
+type dump_steps = Usuba | Sexp | AST
 
 (* The compiler's configuration *)
 type config = {
@@ -71,8 +72,14 @@ type config = {
   bench_bitsched : bool; (* Bitslice schedule: yes or no *)
   bench_msched : bool; (* Mslice schedule: yes or no *)
   bench_sharevar : bool; (* Share var: yes or no *)
+  step_counter : int ref;
+      (* Internal counter to create unique identifier for each dump *)
   dump_sexp : bool;
       (* Dump a s-expression corresponding to the compiled usuba program *)
+  dump_steps : dump_steps option;
+      (* Dump the AST at each steps of normalisation/optimisation.
+       * Dumps can be Usuba_AST.prog values in OCaml files or sexp or usuba files in .ua files *)
+  dump_steps_base_file : string; (* Directory where step dumps will be dumped *)
 }
 
 val pp_config : Format.formatter -> config -> unit

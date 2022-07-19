@@ -171,4 +171,4 @@ let share_def (def : def) (no_arr : bool) : def =
 let run _ (prog : prog) (conf : Config.config) : prog =
   { nodes = apply_last prog.nodes (fun x -> share_def x conf.no_arr) }
 
-let as_pass = (run, "Share_var")
+let as_pass = (run, "Share_var", 0)

@@ -111,4 +111,4 @@ let run _ (prog : prog) _ : prog =
   print_prog prog;
   prog
 
-let as_pass = (run, "Usuba_to_maskverif")
+let as_pass = (run, "Usuba_to_maskverif", 0)

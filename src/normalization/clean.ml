@@ -55,4 +55,4 @@ let clean_def (def : def) : def =
   | _ -> def
 
 let run _ prog _ = { nodes = List.map clean_def prog.nodes }
-let as_pass = (run, "Clean")
+let as_pass = (run, "Clean", 0)

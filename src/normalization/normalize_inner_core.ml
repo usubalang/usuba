@@ -13,4 +13,4 @@ let run (runner : pass_runner) (prog : prog) _ : prog =
     ]
     prog
 
-let as_pass = (run, "Normalize_inner_core")
+let as_pass = (run, "Normalize_inner_core", 1)

@@ -168,4 +168,4 @@ let run _ (prog : prog) (conf : Config.config) : prog =
   if conf.keep_tables then prog
   else { nodes = List.map (fun x -> rewrite_def x conf) prog.nodes }
 
-let as_pass = (run, "Convert_tables")
+let as_pass = (run, "Convert_tables", 0)

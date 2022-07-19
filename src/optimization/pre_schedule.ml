@@ -252,7 +252,7 @@ let schedule_def (def : def) : def =
   }
 
 let run _ (prog : prog) _ : prog = { nodes = List.map schedule_def prog.nodes }
-let as_pass = (run, "Pre_schedule")
+let as_pass = (run, "Pre_schedule", 0)
 
 module Test = struct
   let test () = ()

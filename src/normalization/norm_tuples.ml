@@ -76,7 +76,7 @@ module Simplify_tuples = struct
   let run _ (prog : prog) (_ : Config.config) : prog =
     { nodes = List.map simpl_tuples_def prog.nodes }
 
-  let as_pass = (run, "Simplify_tuples")
+  let as_pass = (run, "Simplify_tuples", 0)
 end
 
 (* Split of tuples into assignements of non-tuples:
@@ -134,7 +134,7 @@ module Split_tuples = struct
     | _ -> def
 
   let run _ prog _ = { nodes = List.map split_tuples_def prog.nodes }
-  let as_pass = (run, "Split_tuples")
+  let as_pass = (run, "Split_tuples", 0)
 end
 
 let rec norm_tuples_def (def : def) : def =
@@ -156,4 +156,4 @@ let rec run (runner : pass_runner) (prog : prog) (conf : Config.config) : prog =
   (* Fixpoint to make sure every tuples are complitely simplified. *)
   if prog <> prog' then run runner prog' conf else prog'
 
-let as_pass = (run, "Norm_tuples")
+let as_pass = (run, "Norm_tuples", 1)

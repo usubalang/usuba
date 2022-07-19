@@ -156,16 +156,16 @@ let gen_config () =
     "@[<v 0>(* This file was automatically generated. Manual edits might be \
      overriten whenever the configure script is ran again. *)@,";
   Format.fprintf ppo {|let data_dir = "%s"@,|} data_dir;
-  Format.fprintf ppo {|let arch_dir = "%s"@,|} arch_dir;
-  Format.fprintf ppo {|let tightprove_cache = "%s"@,|} tightprove_cache;
-  Format.fprintf ppo {|let sage = "%s"@,|} sage;
-  Format.fprintf ppo {|let tightprove = "%s"@.|} tightprove;
+  Format.fprintf ppo {|let arch_dir = "%s"@,@,|} arch_dir;
+  Format.fprintf ppo {|@[<v 2>let tightprove_cache =@,"%s"@]@,@,|}
+    tightprove_cache;
+  Format.fprintf ppo {|let sage = "%s"@,@,|} sage;
+  Format.fprintf ppo {|@[<v 2>let tightprove =@,"%s"@]@,@.|} tightprove;
   Format.fprintf ppo
     {|
-type arch = Std | MMX | SSE | AVX | AVX512 | Neon | AltiVec
-[@@@deriving show, sexp]
-
-type slicing = H | V | B [@@@deriving show, sexp]
+type arch = Std | MMX | SSE | AVX | AVX512 | Neon | AltiVec [@@@deriving show]
+type slicing = H | V | B [@@@deriving show]
+type dump_steps = Usuba | Sexp | AST [@@@deriving show]
 
 type config = {
   output : string;
@@ -217,7 +217,10 @@ type config = {
   bench_bitsched : bool;
   bench_msched : bool;
   bench_sharevar : bool;
+  step_counter : int ref;
   dump_sexp : bool;
+  dump_steps : dump_steps option;
+  dump_steps_base_file : string;
 }
 [@@@deriving show]
 |};

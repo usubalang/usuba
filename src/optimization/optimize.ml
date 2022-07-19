@@ -21,4 +21,4 @@ let optimize (runner : pass_runner) (prog : Usuba_AST.prog) (conf : config) :
     ]
     prog
 
-let as_pass = (optimize, "Optimize")
+let as_pass = ((optimize, "Optimize"), 1)

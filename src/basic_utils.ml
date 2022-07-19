@@ -219,3 +219,31 @@ let list_to_tuple2 l = match l with [ x; y ] -> (x, y) | _ -> assert false
 
 let list_to_tuple3 l =
   match l with [ x; y; z ] -> (x, y, z) | _ -> assert false
+
+let dump_to_file prog (conf : Config.config) =
+  incr conf.step_counter;
+  let base =
+    Format.sprintf "%s_%03d" conf.dump_steps_base_file !(conf.step_counter)
+  in
+  let filename = base ^ ".ml" in
+  let co = open_out filename in
+
+  let pp msg = Format.fprintf (Format.formatter_of_out_channel co) msg in
+  pp "open Usuba_lib.Usuba_AST@.@.";
+  pp "let %s = %a@." (Filename.basename base) Usuba_AST.pp_prog prog;
+  close_out co
+
+let dump_caller callers (conf : Config.config) =
+  let co_callers =
+    open_out_gen
+      [ Open_creat; Open_append; Open_text; Open_wronly ]
+      0o666
+      (Format.sprintf "%s.callers" conf.dump_steps_base_file)
+  in
+
+  Format.fprintf
+    (Format.formatter_of_out_channel co_callers)
+    "%a_%03d@."
+    Usuba_pp.String.(pp_lowercase ~ocaml_ident:true)
+    (List.hd callers) !(conf.step_counter);
+  close_out co_callers

@@ -348,7 +348,7 @@ module Dir_params = struct
            prog)
         conf
 
-  let as_pass = (run, "Fix_dim.Dir_params")
+  let as_pass = (run, "Fix_dim.Dir_params", 1)
 end
 
 (* Go through each function call, and, if needed, updates the
@@ -476,5 +476,5 @@ module Dir_inner = struct
            prog)
         conf
 
-  let as_pass = (run, "Fix_dim.Dir_inner")
+  let as_pass = (run, "Fix_dim.Dir_inner", 1)
 end

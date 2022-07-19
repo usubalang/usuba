@@ -113,4 +113,4 @@ let remove_dead_code_def (def : def) : def =
   | _ -> def
 
 let run _ prog _ = { nodes = List.map remove_dead_code_def prog.nodes }
-let as_pass = (run, "Remove_dead_code")
+let as_pass = (run, "Remove_dead_code", 0)

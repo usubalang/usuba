@@ -2,6 +2,25 @@ open Pass_runner
 
 let norm_prog _ prog conf =
   let runner = new pass_runner conf in
+  if conf.dump_steps = Some AST then (
+    let filename = Format.sprintf "%s.callers" conf.dump_steps_base_file in
+    let co = open_out filename in
+    close_out co;
+    let base = Format.sprintf "%s_000" conf.dump_steps_base_file in
+    let filename = base ^ ".ml" in
+    let co = open_out filename in
+
+    let pp msg = Format.fprintf (Format.formatter_of_out_channel co) msg in
+
+    pp "open Usuba_lib.Usuba_AST@.@.let %s = %a@." (Filename.basename base)
+      Usuba_AST.pp_prog prog;
+    close_out co;
+    let filename = conf.dump_steps_base_file ^ "_config.ml" in
+    let co = open_out filename in
+
+    let pp msg = Format.fprintf (Format.formatter_of_out_channel co) msg in
+    pp "open Usuba_lib.Usuba_AST@.@.let conf = %a@." Config.pp_config conf;
+    close_out co);
 
   let normed_prog =
     runner#run_modules
@@ -81,7 +100,7 @@ let optimize prog conf =
     ]
     prog
 
-let compile prog conf =
+let compile prog (conf : Config.config) =
   let normalized = norm_prog true prog conf in
 
   (* Get_live_var.run normalized; *)

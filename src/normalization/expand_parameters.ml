@@ -489,4 +489,4 @@ let run _ prog _ =
 
   { nodes = List.map (fun node -> Hashtbl.find env_fun node.id) prog.nodes }
 
-let as_pass = (run, "Expand_parameters")
+let as_pass = (run, "Expand_parameters", 0)

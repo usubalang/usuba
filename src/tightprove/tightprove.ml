@@ -586,4 +586,4 @@ let run (runner : pass_runner) (prog : prog) (conf : Config.config) : prog =
   let prog = refresh_prog runner prog conf in
   prog
 
-let as_pass = (run, "Tightprove")
+let as_pass = (run, "Tightprove", 1)

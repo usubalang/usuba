@@ -17,7 +17,7 @@
 
 open Usuba_AST
 
-(* Expands a variable, keeping it's intermediary expensions.
+(* Expands a variable, keeping it's intermediary expansions.
    For instance, if x:bool[2][3], then we'll get:
      (x, x[0], x[1], x[0][0], x[0][1], ...)
 *)
@@ -214,4 +214,4 @@ let run _ prog _ =
   (* else *)
   prog
 
-let as_pass = (run, "Init_scheduler")
+let as_pass = (run, "Init_scheduler", 0)

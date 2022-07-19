@@ -41,4 +41,4 @@ let clear_def (def : def) : def =
   }
 
 let run _ prog _ = { nodes = List.map clear_def prog.nodes }
-let as_pass = (run, "Clear_origins")
+let as_pass = (run, "Clear_origins", 0)

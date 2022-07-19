@@ -143,4 +143,4 @@ let run _ (prog : prog) (conf : Config.config) : prog =
   let prog = { nodes = List.map fuse_loops_def prog.nodes } in
   { nodes = List.map fuse_loops_def prog.nodes }
 
-let as_pass = (run, "Fuse_loops")
+let as_pass = (run, "Fuse_loops", 0)

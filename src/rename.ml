@@ -93,4 +93,4 @@ let rename_def (def : def) : def =
   }
 
 let run _ (p : prog) _ = { nodes = List.map rename_def p.nodes }
-let as_pass = (run, "Rename")
+let as_pass = (run, "Rename", 0)

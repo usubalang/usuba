@@ -354,4 +354,4 @@ let run _ (prog : prog) (conf : Config.config) : prog =
         prog.nodes;
   }
 
-let as_pass = (run, "Expand_array")
+let as_pass = (run, "Expand_array", 0)

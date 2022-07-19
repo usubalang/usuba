@@ -441,4 +441,4 @@ let run _ (prog : prog) (conf : Config.config) : prog =
     { nodes = List.map (linearize_def conf env_fun) prog.nodes }
   else prog
 
-let as_pass = (run, "Linearize_arrays")
+let as_pass = (run, "Linearize_arrays", 0)
