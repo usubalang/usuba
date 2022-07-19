@@ -120,7 +120,9 @@ let cse_def (def : def) : def =
   | Perm _ | Table _ -> def
   | Multiple _ -> assert false
 
-let run (runner : pass_runner) prog _ =
-  runner#run_module Norm_tuples.as_pass { nodes = List.map cse_def prog.nodes }
+let run (runner : pass_runner) prog conf =
+  let prog' = { nodes = List.map cse_def prog.nodes } in
+  if conf.Config.dump_steps = Some AST then Basic_utils.dump_to_file prog' conf;
+  runner#run_module Norm_tuples.as_pass prog'
 
-let as_pass = (run, "CSE")
+let as_pass = (run, "CSE", 1)

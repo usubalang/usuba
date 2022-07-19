@@ -36,7 +36,6 @@ let compile (file_in : string) (prog : Usuba_AST.prog) (conf : config) : unit =
 
   (* Normalizing AND optimizing *)
   let normed_prog = Normalize.compile prog conf in
-
   match conf.dump_sexp with
   | true ->
       let out =
@@ -128,6 +127,16 @@ let main () =
   let keep_tables = ref false in
   let dump_sexp = ref false in
 
+  let dump_steps = ref None in
+  let dump_steps_dir = ref (Utils.absolute_dir "~/usuba/steps") in
+
+  let set_dump_steps = function
+    | "usuba" -> dump_steps := Some Usuba
+    | "sexp" -> dump_steps := Some Sexp
+    | "ast" -> dump_steps := Some AST
+    | s -> failwith (Format.sprintf "%s is not a proper dump type" s)
+  in
+
   let speclist =
     [
       ("-w", Arg.Set warning_as_error, "Activate warning as error");
@@ -211,6 +220,12 @@ let main () =
       ( "-dump-sexp",
         Arg.Set dump_sexp,
         "Dump a s-expression of the compiled file to file.ua0" );
+      ( "-dump-steps",
+        Arg.String set_dump_steps,
+        "Dump the modified Usuba files at each step" );
+      ( "-dump-steps-dir",
+        Arg.Set_string dump_steps_dir,
+        "<dir>  Directory in which each step should be dumped" );
       ( "-H",
         Arg.Unit
           (fun () ->
@@ -284,6 +299,11 @@ let main () =
       (* When -no-arr is combined with -ua-masked, the linearization
          could take forever, and is obviously not necessary. *)
       linearize_arr := false;
+    let base_file = Filename.(basename @@ chop_suffix s ".ua") in
+    let dump_steps_dir = Filename.(concat !dump_steps_dir base_file) in
+    (if !dump_steps <> None then
+     try Sys.mkdir dump_steps_dir 0o777 with Sys_error _ -> ());
+    let dump_steps_base_file = Filename.(concat dump_steps_dir base_file) in
 
     let conf =
       {
@@ -334,12 +354,15 @@ let main () =
         gen_bench = !gen_bench;
         keep_tables = !keep_tables;
         compact = !compact;
-        dump_sexp = !dump_sexp;
         bench_inline = !bench_inline || !bench_all;
         bench_inter = !bench_inter || !bench_all;
         bench_bitsched = !bench_bitsched || !bench_all;
         bench_msched = !bench_msched || !bench_all;
         bench_sharevar = !bench_sharevar || !bench_all;
+        step_counter = ref 0;
+        dump_sexp = !dump_sexp;
+        dump_steps = !dump_steps;
+        dump_steps_base_file;
       }
     in
 

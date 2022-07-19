@@ -109,4 +109,4 @@ let run _ (prog : prog) (conf : Config.config) : prog =
   (* And perform shifts *)
   { nodes = List.map shift_def prog'.nodes }
 
-let as_pass = (run, "Shift_tuples")
+let as_pass = (run, "Shift_tuples", 0)

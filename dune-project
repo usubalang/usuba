@@ -1,4 +1,4 @@
-(lang dune 2.8)
+(lang dune 3.3)
 
 (implicit_transitive_deps true)
 
@@ -25,13 +25,13 @@
  (description "\
 TODO")
  (depends
-   ocaml
-   dune
+  (ocaml (= 4.14.0))
+  (dune (= 3.3.1))
    sexplib
   (usuba_lib (= :version))
   (usuba_pp (= :version))
   (odoc :with-doc)
-  (ocamlformat (= 0.22.4))
+  (ocamlformat (= 0.23.0))
  )
 )
 
@@ -41,15 +41,15 @@ TODO")
  (description "\
 TODO")
  (depends
-   ocaml
-   dune
+  (ocaml (= 4.14.0))
+  (dune (= 3.3.1))
    menhir
    ppx_deriving
    sexplib
    ppx_sexp_conv
   (usuba_pp (= :version))
   (odoc :with-doc)
-  (ocamlformat (= 0.22.4))
+  (ocamlformat (= 0.23.0))
  )
 )
 
@@ -59,9 +59,9 @@ TODO")
  (description "\
 Pretty printing for stdlib modules")
  (depends
-   ocaml
-   dune
+  (ocaml (= 4.14.0))
+  (dune (= 3.3.1))
   (odoc :with-doc)
-  (ocamlformat (= 0.22.4))
+  (ocamlformat (= 0.23.0))
  )
 )

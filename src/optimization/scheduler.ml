@@ -442,4 +442,4 @@ let run _ (prog : prog) (conf : Config.config) : prog =
   (* Depth_first_sched.schedule prog *)
   Low_pressure_sched.schedule prog conf
 
-let as_pass = (run, "Sceduler")
+let as_pass = (run, "Scheduler", 0)

@@ -69,4 +69,4 @@ let run _ p _ =
         (rewrite_defs p.nodes);
   }
 
-let as_pass = (run, "Expand_permut")
+let as_pass = (run, "Expand_permut", 0)

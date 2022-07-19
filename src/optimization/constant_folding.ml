@@ -215,4 +215,4 @@ let fold_def (def : def) : def =
   | _ -> def
 
 let run _ prog _ : prog = { nodes = List.map fold_def prog.nodes }
-let as_pass = (run, "Constant_folding")
+let as_pass = (run, "Constant_folding", 0)

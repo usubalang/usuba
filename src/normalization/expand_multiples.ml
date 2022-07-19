@@ -19,4 +19,4 @@ let run _ prog _ =
         prog.nodes;
   }
 
-let as_pass = (run, "Expand_multiples")
+let as_pass = (run, "Expand_multiples", 0)

@@ -21,7 +21,6 @@ open Pass_runner
 open Inline_core
 
 let pre_inline = ref false
-let orig_conf = ref default_conf
 
 module Is_linear = struct
   let rec is_linear_expr (env_fun : (string, def) Hashtbl.t) (e : expr) : bool =
@@ -194,13 +193,17 @@ let rec _inline (runner : pass_runner) (prog : prog) (conf : Config.config)
   if List.exists (can_inline env inlined conf) prog.nodes then (
     (* find the node to inline *)
     let to_inline = List.find (can_inline env inlined conf) prog.nodes in
+
     (* inline it *)
     let prog' = do_inline prog to_inline in
+
+    if conf.dump_steps = Some AST then dump_to_file prog' conf;
     (* add it to the hash of inlined nodes *)
     Hashtbl.replace inlined (Ident.name to_inline.id) true;
     (* Running basic optimizations; copy propagation in particular is
        useful for the heuristic inlining *)
     let prog' = runner#run_module Simple_opts.as_pass prog' in
+
     (* continue inlining *)
     _inline runner prog' conf inlined)
   else (* inlining is done, return the prog *)
@@ -224,8 +227,7 @@ let run_common (runner : pass_runner) (prog : prog) (conf : Config.config) :
 let run_pre_inline (runner : pass_runner) (prog : prog) (conf : Config.config) :
     prog =
   pre_inline := true;
-  orig_conf := conf;
-  if is_more_aggressive_than_auto conf then
+  if is_more_aggressive_than_auto conf then (
     let conf =
       {
         conf with
@@ -235,7 +237,11 @@ let run_pre_inline (runner : pass_runner) (prog : prog) (conf : Config.config) :
         inline_all = false;
       }
     in
-    run_common runner prog conf
+    let prog' = run_common runner prog conf in
+    if conf.dump_steps = Some AST then (
+      dump_to_file prog' conf;
+      dump_caller [ "Inline-pre" ] conf);
+    prog')
   else prog
 
 let run_simple (runner : pass_runner) (prog : prog) (conf : Config.config) :
@@ -284,11 +290,17 @@ let run_bench (runner : pass_runner) (prog : prog) (conf : Config.config) nexts
 let run (runner : pass_runner) (prog : prog) (conf : Config.config) : prog =
   let nexts = runner#get_nexts () in
   pre_inline := false;
-  if not conf.bench_inline then
-    runner#run_modules_bench ~conf
-      (((run_simple, "Inline"), true, Pass_runner.Always) :: nexts)
-      prog
-  else run_bench runner prog conf nexts
+  let prog' =
+    if not conf.bench_inline then
+      runner#run_modules_bench ~conf
+        (((run_simple, "Inline", 1), true, Pass_runner.Always) :: nexts)
+        prog
+    else run_bench runner prog conf nexts
+  in
+  if conf.dump_steps = Some AST then (
+    dump_to_file prog' conf;
+    dump_caller [ "Inline" ] conf);
+  prog'
 
-let as_pass = (run, "Inline")
-let as_pass_pre = (run_pre_inline, "Inline-pre")
+let as_pass = (run, "Inline", 1)
+let as_pass_pre = (run_pre_inline, "Inline-pre", 1)

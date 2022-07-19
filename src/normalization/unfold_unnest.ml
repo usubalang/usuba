@@ -363,4 +363,4 @@ let run _ prog _ : prog =
   let env_fun = Utils.build_env_fun prog.nodes in
   { nodes = List.map (norm_def env_fun) prog.nodes }
 
-let as_pass = (run, "Unfold_unnest")
+let as_pass = (run, "Unfold_unnest", 0)

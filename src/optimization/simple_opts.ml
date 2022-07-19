@@ -44,4 +44,4 @@ let rec _run (runner : pass_runner) ?(retry : int = 20) (prog : prog)
 let run (runner : pass_runner) (prog : prog) (conf : Config.config) : prog =
   _run runner prog conf
 
-let as_pass = (run, "Simple_opts")
+let as_pass = (run, "Simple_opts", 1)

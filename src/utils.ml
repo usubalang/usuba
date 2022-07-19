@@ -53,6 +53,9 @@ let default_conf : Config.config =
     bench_msched = false;
     bench_sharevar = false;
     dump_sexp = false;
+    dump_steps = None;
+    dump_steps_base_file = "";
+    step_counter = ref 0;
   }
 
 let default_dir = Varslice (Ident.create_unbound "D")
@@ -532,3 +535,10 @@ let get_deq_expr (deq : deq) : expr =
 let all_vars_same_m (var_l : var_d list) : bool =
   let first_m = get_type_m (List.hd var_l).vd_typ in
   List.for_all (fun vd -> get_type_m vd.vd_typ = first_m) var_l
+
+let absolute_dir dir =
+  if String.starts_with ~prefix:"~" dir then
+    Filename.concat (Unix.getenv "HOME")
+      (String.sub dir 2 (String.length dir - 2))
+  else if Filename.is_relative dir then Filename.concat (Sys.getcwd ()) dir
+  else dir

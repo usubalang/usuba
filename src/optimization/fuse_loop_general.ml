@@ -272,4 +272,4 @@ let run _ prog _ =
   let prog = { nodes = List.map fuse_loops_def prog.nodes } in
   { nodes = List.map fuse_loops_def prog.nodes }
 
-let as_pass = (run, "Fuse_loop_general")
+let as_pass = (run, "Fuse_loop_general", 0)

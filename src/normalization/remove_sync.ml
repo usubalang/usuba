@@ -191,4 +191,4 @@ let clean_def (def : def) : def =
   | _ -> def
 
 let run _ (prog : prog) _ : prog = { nodes = List.map clean_def prog.nodes }
-let as_pass = (run, "Remove_sync")
+let as_pass = (run, "Remove_sync", 0)

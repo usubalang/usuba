@@ -16,7 +16,8 @@ let test_simple () =
                   (fun n -> { n with id = Ident.fresh_suffixed n.id "_a" })
                   p.nodes;
             }),
-          "a" );
+          "a",
+          0 );
         ( (fun _ p _ ->
             {
               nodes =
@@ -24,7 +25,8 @@ let test_simple () =
                   (fun n -> { n with id = Ident.fresh_suffixed n.id "_b" })
                   p.nodes;
             }),
-          "b" );
+          "b",
+          0 );
       ]
       prog
   in

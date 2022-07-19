@@ -554,4 +554,4 @@ let cp_def (def : def) : def =
   | _ -> def
 
 let run _ prog _ = { nodes = List.map cp_def prog.nodes }
-let as_pass = (run, "Copy_propagation")
+let as_pass = (run, "Copy_propagation", 0)

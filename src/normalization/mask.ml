@@ -764,4 +764,4 @@ let run _ (prog : prog) (_ : Config.config) : prog =
      the constness of the parameters of each node. *)
   { nodes = List.rev_map (mask_def env_fun) (List.rev prog.nodes) }
 
-let as_pass = (run, "Mask")
+let as_pass = (run, "Mask", 0)

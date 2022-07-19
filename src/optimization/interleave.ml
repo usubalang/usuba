@@ -650,4 +650,4 @@ let run _ (prog : prog) (conf : Config.config) =
 (* Dup2_nofunc_param.interleave conf.interleave prog conf *)
 (*Dup2.interleave prog conf*)
 
-let as_pass = (run, "Interleave")
+let as_pass = (run, "Interleave", 0)

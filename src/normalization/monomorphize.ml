@@ -770,4 +770,4 @@ let run _ (prog : prog) (conf : Config.config) : prog =
         prog.nodes;
   }
 
-let as_pass = (run, "Monomorphize")
+let as_pass = (run, "Monomorphize", 0)

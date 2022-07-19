@@ -9,13 +9,13 @@ homepage: "https://usubalang.github.io/usuba/"
 doc: "https://usubalang.github.io/usuba/"
 bug-reports: "https://github.com/usuba-lang/usuba/issues"
 depends: [
-  "ocaml"
-  "dune" {>= "2.8"}
+  "ocaml" {= "4.14.0"}
+  "dune" {>= "3.3" & = "3.3.1"}
   "sexplib"
   "usuba_lib" {= version}
   "usuba_pp" {= version}
   "odoc" {with-doc}
-  "ocamlformat" {= "0.22.4"}
+  "ocamlformat" {= "0.23.0"}
 ]
 build: [
   ["dune" "subst"] {dev}
