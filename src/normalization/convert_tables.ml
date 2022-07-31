@@ -23,7 +23,7 @@ let rewrite_p (p : p) : var list =
   List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd.vd_typ) p;
   flat_map (fun vd -> expand_var env_var ~bitslice:!bitslice (Var vd.vd_id)) p
 
-let tmp_var i = Ident.create_fresh ("tmp_" ^ string_of_int i)
+let tmp_var i = Ident.create_free ("tmp_" ^ string_of_int i)
 let fake_mux c a b = Log (Xor, a, Log (And, b, c))
 
 let rewrite_table (id : ident) (p_in : p) (p_out : p) (opt : def_opt list)

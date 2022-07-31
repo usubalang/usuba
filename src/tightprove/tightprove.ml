@@ -185,7 +185,7 @@ module Refresh = struct
         content =
           Eqn
             ( [ new_var_to_write ],
-              Fun (Ident.create_fresh "refresh", [ ExpVar really_refreshed ]),
+              Fun (Ident.create_free "refresh", [ ExpVar really_refreshed ]),
               false );
       }
     in
@@ -373,7 +373,7 @@ module Refresh = struct
           (* Using |gen_id| to avoid false positive because two functions
              would be using the same variable names. *)
           let gen_id ((f, vd) : ident * var_d) =
-            Ident.create_fresh
+            Ident.create_free
               (Format.asprintf "fun:%a var:%a" (Ident.pp ()) f (Ident.pp ())
                  vd.vd_id)
           in

@@ -4,7 +4,7 @@ let gen_iterator =
   let cpt = ref 0 in
   fun id ->
     incr cpt;
-    Ident.create_fresh (Format.sprintf "%s%d" (Ident.name id) !cpt)
+    Ident.create_free (Format.sprintf "%s%d" (Ident.name id) !cpt)
 
 let rec update_aexpr_idx (it_env : (var, var) Hashtbl.t) (ae : arith_expr) :
     arith_expr =
@@ -192,7 +192,7 @@ let inline_call (its : (ident * int) list) (to_inl : def) (args : expr list)
     (lhs : var list) (cnt : int) : p * deq list =
   (* Define a name conversion function *)
   let conv_name (id : ident) : ident =
-    Ident.copy id
+    Ident.bound_copy id
       (Format.asprintf "%a_%d_%a" (Ident.pp ()) to_inl.id cnt (Ident.pp ()) id)
   in
 

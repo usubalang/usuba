@@ -134,28 +134,28 @@ prog:
 ident:
   | id=ident_no_x { id }
   | id=TOK_id     { id }
-  | s=ident e=ident %prec TOK_id_no_x { Ident.create_fresh (Ident.name s ^ Ident.name e) }
+  | s=ident e=ident %prec TOK_id_no_x { Ident.create_free (Ident.name s ^ Ident.name e) }
 
 ident_no_x:
   | id=TOK_id_no_x  { id }
-  | TOK_IN     { Ident.create_fresh "in" }
-  | TOK_CROSS  { Ident.create_fresh "x"  }
-  | TOK_U id=ident_no_x  { Ident.create_fresh ("u" ^ Ident.name id) }
-  | TOK_B id=ident_no_x  { Ident.create_fresh ("b" ^ Ident.name id) }
-  | TOK_V id=ident_no_x  { Ident.create_fresh ("v" ^ Ident.name id) }
-  | TOK_U n=TOK_int { Ident.create_fresh ("u" ^ (string_of_int n)) }
-  | TOK_B n=TOK_int { Ident.create_fresh ("b" ^ (string_of_int n)) }
-  | TOK_V n=TOK_int { Ident.create_fresh ("v" ^ (string_of_int n)) }
-  | TOK_U n=TOK_int id=ident_no_x { Ident.create_fresh ("u" ^ (string_of_int n) ^ Ident.name id) }
-  | TOK_B n=TOK_int id=ident_no_x { Ident.create_fresh ("b" ^ (string_of_int n) ^ Ident.name id) }
-  | TOK_V n=TOK_int id=ident_no_x { Ident.create_fresh ("v" ^ (string_of_int n) ^ Ident.name id) }
-  | TOK_U      { Ident.create_fresh "u"  }
-  | TOK_B      { Ident.create_fresh "b"  }
-  | TOK_V      { Ident.create_fresh "v"  }
+  | TOK_IN     { Ident.create_free "in" }
+  | TOK_CROSS  { Ident.create_free "x"  }
+  | TOK_U id=ident_no_x  { Ident.create_free ("u" ^ Ident.name id) }
+  | TOK_B id=ident_no_x  { Ident.create_free ("b" ^ Ident.name id) }
+  | TOK_V id=ident_no_x  { Ident.create_free ("v" ^ Ident.name id) }
+  | TOK_U n=TOK_int { Ident.create_free ("u" ^ (string_of_int n)) }
+  | TOK_B n=TOK_int { Ident.create_free ("b" ^ (string_of_int n)) }
+  | TOK_V n=TOK_int { Ident.create_free ("v" ^ (string_of_int n)) }
+  | TOK_U n=TOK_int id=ident_no_x { Ident.create_free ("u" ^ (string_of_int n) ^ Ident.name id) }
+  | TOK_B n=TOK_int id=ident_no_x { Ident.create_free ("b" ^ (string_of_int n) ^ Ident.name id) }
+  | TOK_V n=TOK_int id=ident_no_x { Ident.create_free ("v" ^ (string_of_int n) ^ Ident.name id) }
+  | TOK_U      { Ident.create_free "u"  }
+  | TOK_B      { Ident.create_free "b"  }
+  | TOK_V      { Ident.create_free "v"  }
   | d=TOK_dir  { match d with
-                 | Hslice -> Ident.create_fresh "H"
-                 | Vslice -> Ident.create_fresh "V"
-                 | Bslice -> Ident.create_fresh "B"
+                 | Hslice -> Ident.create_free "H"
+                 | Vslice -> Ident.create_free "V"
+                 | Bslice -> Ident.create_free "B"
                  | _ -> raise Syntax_error }
 
 arith_exp:

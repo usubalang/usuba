@@ -59,7 +59,7 @@ let gen_tmp =
   let cpt = ref 0 in
   fun env_var typ id ->
     incr cpt;
-    let var = Ident.create_fresh (Printf.sprintf "_shadow_%s%d_" id !cpt) in
+    let var = Ident.create_free (Printf.sprintf "_shadow_%s%d_" id !cpt) in
     Hashtbl.add env_var var typ;
     new_vars := simple_typed_var_d var typ :: !new_vars;
     Var var

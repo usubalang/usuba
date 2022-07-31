@@ -62,7 +62,9 @@ module Interleave_generic = struct
     else
       match v with
       | Var v ->
-          Var (Ident.copy v (Format.asprintf "%a__%d" (Ident.pp ()) v suffix))
+          Var
+            (Ident.bound_copy v
+               (Format.asprintf "%a__%d" (Ident.pp ()) v suffix))
       | Index (v, ae) -> Index (update_var env_var suffix v, ae)
       | _ -> assert false
 
@@ -212,7 +214,7 @@ module Interleave_generic = struct
               {
                 vd with
                 vd_id =
-                  Ident.copy vd.vd_id
+                  Ident.bound_copy vd.vd_id
                     (Format.asprintf "%a__%d" (Ident.pp ()) vd.vd_id i);
               })
             (Basic_utils.gen_list_bounds 2 inter_factor)))
@@ -262,7 +264,7 @@ end
 module Dup3 = struct
   let rec dup3_var (v : var) : var =
     match v with
-    | Var id -> Var (Ident.copy3_id id)
+    | Var id -> Var (Ident.bound_copy3 id)
     | Index (v, i) -> Index (dup3_var v, i)
     | _ -> assert false
 
@@ -281,7 +283,7 @@ module Dup3 = struct
 
   let rec dup_var (v : var) : var =
     match v with
-    | Var id -> Var (Ident.copy2_id id)
+    | Var id -> Var (Ident.bound_copy2 id)
     | Index (v, i) -> Index (dup_var v, i)
     | _ -> assert false
 
@@ -323,8 +325,8 @@ module Dup3 = struct
       (fun vd ->
         [
           vd;
-          { vd with vd_id = Ident.copy2_id vd.vd_id };
-          { vd with vd_id = Ident.copy3_id vd.vd_id };
+          { vd with vd_id = Ident.bound_copy2 vd.vd_id };
+          { vd with vd_id = Ident.bound_copy3 vd.vd_id };
         ])
       p
 
@@ -351,7 +353,7 @@ end
 module Dup2 = struct
   let rec dup_var (v : var) : var =
     match v with
-    | Var id -> Var (Ident.copy2_id id)
+    | Var id -> Var (Ident.bound_copy2 id)
     | Index (v, i) -> Index (dup_var v, i)
     | _ -> assert false
 
@@ -391,7 +393,7 @@ module Dup2 = struct
 
   let dup_p (p : p) : p =
     Basic_utils.flat_map
-      (fun vd -> [ vd; { vd with vd_id = Ident.copy2_id vd.vd_id } ])
+      (fun vd -> [ vd; { vd with vd_id = Ident.bound_copy2 vd.vd_id } ])
       p
 
   let interleave_def (def : def) : def =
@@ -417,7 +419,7 @@ end
 module Dup2_nofunc = struct
   let rec make_2nd_var (v : var) : var =
     match v with
-    | Var id -> Var (Ident.copy2_id id)
+    | Var id -> Var (Ident.bound_copy2 id)
     | Index (v, i) -> Index (make_2nd_var v, i)
     | _ -> assert false
 
@@ -471,7 +473,7 @@ module Dup2_nofunc = struct
 
   let dup_p (p : p) : p =
     Basic_utils.flat_map
-      (fun vd -> [ vd; { vd with vd_id = Ident.copy2_id vd.vd_id } ])
+      (fun vd -> [ vd; { vd with vd_id = Ident.bound_copy2 vd.vd_id } ])
       p
 
   let interleave_def (def : def) : def =
@@ -526,7 +528,7 @@ module Dup2_nofunc_param = struct
         match
           List.mem Pconst (Hashtbl.find env_var (Utils.get_var_base v)).vd_opts
         with
-        | false -> Var (Ident.copy2_id id)
+        | false -> Var (Ident.bound_copy2 id)
         | true -> v)
     | Index (v, i) -> Index (make_2nd_var env_var v, i)
     | _ -> assert false
@@ -623,7 +625,7 @@ module Dup2_nofunc_param = struct
       (fun vd ->
         match List.mem Pconst vd.vd_opts with
         | true -> [ vd ]
-        | false -> [ vd; { vd with vd_id = Ident.copy2_id vd.vd_id } ])
+        | false -> [ vd; { vd with vd_id = Ident.bound_copy2 vd.vd_id } ])
       p
 
   let interleave_def (g : int) (def : def) : def =

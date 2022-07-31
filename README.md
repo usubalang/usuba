@@ -83,3 +83,19 @@ macros are loaded with the instruction `#include "XXX.h"` at the
 begining of the C files generated, where `XXX` is one of `STD`, `SSE`,
 `AVX` (which should be `AVX2`), `AVX512`, `Neon`, `AltiVec`. Those
 headers are located in the directory [arch](arch).
+
+## For contributors
+
+If you change some types in `Config.conf` or `Usuba_AST`, you should create a branch for these changes only since they're not supposed to change the behaviour of passes. Once this is done, update the `unit_tests` submodule with:
+
+-
+   ```sh
+   ./scripts/run-selected.sh -- -dump-steps ast -dump-steps-dir unit_tests/rsc
+   ```
+  This will populate the `rsc` dir
+- Go in `unit_tests` and execute:
+   ```sh
+   ./generate.sh --steps-dir rsc
+   ```
+
+This way, the unit_tests will be able to check that your work on the rest of usuba doesn't break the expected behaviour and you can start working on a new branch with algorithmic changes.

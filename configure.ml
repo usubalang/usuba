@@ -125,7 +125,9 @@ let dependencies () =
   if not !nodeps then (
     printf "  Checking for dependencies... @?";
 
-    let cmd_out = Unix.open_process_in "opam install --deps-only -y . 2>&1" in
+    let cmd_out =
+      Unix.open_process_in "opam install --deps-only --with-test -y . 2>&1"
+    in
     let e = flush_channel cmd_out in
     match Unix.close_process_in cmd_out with
     | Unix.WEXITED 0 -> print_good "ok: %s" e
