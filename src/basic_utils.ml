@@ -229,7 +229,7 @@ let dump_to_file prog (conf : Config.config) =
   let co = open_out filename in
 
   let pp msg = Format.fprintf (Format.formatter_of_out_channel co) msg in
-  pp "open Usuba_lib.Usuba_AST@.@.";
+  pp "open Usuba_lib@.open Usuba_AST@.@.";
   pp "let %s = %a@." (Filename.basename base) Usuba_AST.pp_prog prog;
   close_out co
 

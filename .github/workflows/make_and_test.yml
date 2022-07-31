@@ -23,11 +23,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Checkout private repo examples
+      - name: Checkout repo examples
         uses: actions/checkout@v2
         with:
           repository: usubalang/examples
           path: './examples'
+
+      - name: Checkout repo unit_tests
+        uses: actions/checkout@v2
+        with:
+          repository: usubalang/unit_tests
+          path: './unit_tests'
 
       # Retrieve the opam cache with unique key
       # A new cache is created/used if the `.opam` files changes or
@@ -47,16 +53,12 @@ jobs:
         with:
           ocaml-version: ${{ env.OCAML_DEFAULT_VERSION }}
 
-      # Install dependencies (TODO when we have a clean repo, not now)
-      # - name: opam install deps
-      #   run: opam install ./*.opam --deps-only
-
       # Make sure the env is synced
       - name: eval opam env
         run: eval $(opam env)
 
       - name: install ocaml dependencies
-        run: opam install --deps-only .
+        run: opam install --deps-only --with-test .
 
       # Export opam's path
       - name: export opam path
@@ -135,9 +137,3 @@ jobs:
 
       - name: Test
         run: make test SAMPLES_DIR="./examples/samples"
-
-      # Monitor changes in repo's files
-      # If there are some changes, stop the workflow and suggest changes in the PR
-      - uses: getsentry/action-git-diff-suggestions@main
-        with:
-          message: 'The following changes have been made after `make test`:'

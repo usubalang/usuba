@@ -57,7 +57,6 @@ let compile (file_in : string) (prog : Usuba_AST.prog) (conf : config) : unit =
         | "" -> open_out (gen_output_filename file_in)
         | str -> open_out str
       in
-
       (* Printing the C code *)
       Printf.fprintf out "%s" c_prog_str;
       close_out out

@@ -55,7 +55,6 @@ let () =
   Arg.parse specs (fun _ -> ()) usage;
   let usuba_args = !usuba_args in
   let dir = absolute_dir !examples_dir in
-  Format.eprintf "Examples dir: %s@." dir;
   let files = Sys.readdir dir in
   Array.iter
     (fun file ->

@@ -12,14 +12,15 @@ let norm_prog _ prog conf =
 
     let pp msg = Format.fprintf (Format.formatter_of_out_channel co) msg in
 
-    pp "open Usuba_lib.Usuba_AST@.@.let %s = %a@." (Filename.basename base)
-      Usuba_AST.pp_prog prog;
+    pp "open Usuba_lib@.open Usuba_AST@.@.let %s = %a@."
+      (Filename.basename base) Usuba_AST.pp_prog prog;
     close_out co;
     let filename = conf.dump_steps_base_file ^ "_config.ml" in
     let co = open_out filename in
 
     let pp msg = Format.fprintf (Format.formatter_of_out_channel co) msg in
-    pp "open Usuba_lib.Usuba_AST@.@.let conf = %a@." Config.pp_config conf;
+    pp "open Usuba_lib@.@.let conf = %a@." Config.pp_config
+      Config.{ conf with dump_steps = None };
     close_out co);
 
   let normed_prog =

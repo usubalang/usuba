@@ -8,7 +8,7 @@ let gen_counter =
   let cpt = ref 0 in
   fun () ->
     incr cpt;
-    Ident.create_fresh (Printf.sprintf "_idx_%d" !cpt)
+    Ident.create_free (Printf.sprintf "_idx_%d" !cpt)
 
 (* Will be used within Hslice/Vslice/Bslice (which is why it's located
    up here) *)
@@ -243,7 +243,7 @@ module Bslice = struct
   let specialize_vars env_var (vs : var list) : var list =
     List.map (specialize_var env_var) vs
 
-  let loop_log_it = Ident.create_fresh "_log_it"
+  let loop_log_it = Ident.create_free "_log_it"
   let apply_loop_it (v : var) : var = Index (v, Var_e loop_log_it)
 
   let specialize_eqn (env_dir : (dir, dir) Hashtbl.t)
@@ -341,7 +341,7 @@ end
 
 (* Generates a function name based on its polymorphic name and its monomorphization *)
 let gen_fun_name (f : ident) (ldir : dir list) (lmtyp : mtyp list) : ident =
-  Ident.create_fresh
+  Ident.create_free
     (Ident.name f
     ^ Basic_utils.join "_"
         (List.map

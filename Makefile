@@ -4,9 +4,6 @@
 SRC_DIR := src
 BIN_DIR := bin
 SAMPLES_DIR := ../examples/samples
-# MENHIR := menhir
-# MENHIRFLAGS := --infer --explain
-# INCLUDES := -I normalization -I optimization -I parsing -I c_gen -I verification -I c_gen/runtimes -I tests -I tightprove -I tightprove/parsing -I maskverif
 DUNE := dune
 
 MAIN := main
@@ -18,7 +15,7 @@ all:
 		./configure; \
 	fi
 	@echo $(FILE_EXISTS)
-	$(DUNE) build
+	$(DUNE) build bin/cli/main.exe
 	chmod +w _build/default/bin/cli/main.exe
 	cp _build/default/bin/cli/main.exe usubac
 
@@ -29,4 +26,8 @@ clean:
 test: all
 	./usubac -tests
 	@echo $(SAMPLES_DIR)
+	dune build @runtest
 	./run_checks.pl --samples $(SAMPLES_DIR)
+
+unit-test: all
+	dune build @runtest

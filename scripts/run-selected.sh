@@ -1,2 +1,2 @@
 #!/bin/sh
-exec ocaml unix.cma run_selected.ml "$@"
+exec ocaml unix.cma $(dirname $0)/run-selected.ml "$@"

@@ -16,7 +16,7 @@ Here are the changes that were added to Usuba. When creating a pull request, con
 
 Example use:
 
-`./run-selected.sh -- -dump-steps ast -dump-steps-dir ~/usuba_worktree/unit_tests/tests/rsc`
+`./run-selected.sh -- -dump-steps ast -dump-steps-dir tests/rsc`
 
 This will compute `usubac` with some user-provided arguments to a selected list of files that are currently:
 - `("ace.ua", "-V -interleave 2")`
@@ -24,3 +24,11 @@ This will compute `usubac` with some user-provided arguments to a selected list 
 - `("aes_mslice.ua", "-H")`
 - `("ascon.ua", "-V -interleave 2")`
 - `("rectangle.ua", "-H -interleave 2")`
+
+## unit_tests [#30](https://github.com/usubalang/usuba/pull/30)
+
+See the [unit_tests repository](https://github.com/usubalang/unit_tests/commit/2cf99de7ea4b3a49841f14f5e0d40ff141885792).
+
+This repository is linked as a submodule in unit_tests and you shouldn't edit it.
+
+This submodule contains alcotest files for each directory in `unit_tests/rsc` allowing to create unit tests and execute them with `dune build @runtest`. These tests are used to check that refactoring passes does not brake their behaviour.

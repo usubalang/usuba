@@ -163,9 +163,9 @@ module Get_consts = struct
         assert false
 end
 
-let masking_order = Ident.create_fresh "MASKING_ORDER"
+let masking_order = Ident.create_free "MASKING_ORDER"
 let loop_end = Op_e (Sub, Var_e masking_order, Const_e 1)
-let loop_idx = Ident.create_fresh "_mask_idx"
+let loop_idx = Ident.create_free "_mask_idx"
 let make_loop_indexed (v : var) : var = Index (v, Var_e loop_idx)
 
 let mask_var (env_var : (ident, typ) Hashtbl.t)
