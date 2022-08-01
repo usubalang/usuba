@@ -50,6 +50,7 @@
 
  ********************************************************************)
 
+open Prelude
 open Utils
 open Usuba_AST
 
@@ -60,18 +61,18 @@ let gen_tmp =
   fun env_var typ id ->
     incr cpt;
     let var = Ident.create_free (Printf.sprintf "_shadow_%s%d_" id !cpt) in
-    Hashtbl.add env_var var typ;
+    Ident.Hashtbl.add env_var var typ;
     new_vars := simple_typed_var_d var typ :: !new_vars;
     Var var
 
-let clean_var (env_var : (ident, typ) Hashtbl.t)
-    (env_replace : (var, var) Hashtbl.t) (v : var) : var list =
-  match Hashtbl.find_opt env_replace v with
+let clean_var (env_var : typ Ident.Hashtbl.t) (env_replace : var VarHashtbl.t)
+    (v : var) : var list =
+  match VarHashtbl.find_opt env_replace v with
   | Some r -> [ r ]
   | None -> (
       match v with
       | Index (v', ae) -> (
-          match Hashtbl.find_opt env_replace v' with
+          match VarHashtbl.find_opt env_replace v' with
           | Some r -> [ Index (r, ae) ]
           | None -> [ v ])
       | Var _ -> (
@@ -84,7 +85,7 @@ let clean_var (env_var : (ident, typ) Hashtbl.t)
               let change =
                 List.exists
                   (fun x ->
-                    match Hashtbl.find_opt env_replace x with
+                    match VarHashtbl.find_opt env_replace x with
                     | Some _ -> true
                     | None -> false)
                   subv
@@ -92,7 +93,7 @@ let clean_var (env_var : (ident, typ) Hashtbl.t)
               if change then
                 List.map
                   (fun x ->
-                    match Hashtbl.find_opt env_replace x with
+                    match VarHashtbl.find_opt env_replace x with
                     | Some x' -> x'
                     | None -> x)
                   subv
@@ -106,7 +107,7 @@ let clean_var (env_var : (ident, typ) Hashtbl.t)
               let change =
                 List.exists
                   (fun x ->
-                    match Hashtbl.find_opt env_replace x with
+                    match VarHashtbl.find_opt env_replace x with
                     | Some _ -> true
                     | None -> false)
                   subv
@@ -114,7 +115,7 @@ let clean_var (env_var : (ident, typ) Hashtbl.t)
               if change then
                 List.map
                   (fun x ->
-                    match Hashtbl.find_opt env_replace x with
+                    match VarHashtbl.find_opt env_replace x with
                     | Some x' -> x'
                     | None -> x)
                   subv
@@ -122,8 +123,8 @@ let clean_var (env_var : (ident, typ) Hashtbl.t)
           | Nat -> [ v ])
       | _ -> assert false)
 
-let rec clean_expr (env_var : (ident, typ) Hashtbl.t)
-    (env_replace : (var, var) Hashtbl.t) (e : expr) : expr =
+let rec clean_expr (env_var : typ Ident.Hashtbl.t)
+    (env_replace : var VarHashtbl.t) (e : expr) : expr =
   let rec_call = clean_expr env_var env_replace in
   match e with
   | Const _ -> e
@@ -145,8 +146,8 @@ let rec clean_expr (env_var : (ident, typ) Hashtbl.t)
   | Fun (f, l) -> Fun (f, List.map rec_call l)
   | _ -> assert false
 
-let rec clean_deqs (env_var : (ident, typ) Hashtbl.t)
-    (env_replace : (var, var) Hashtbl.t) (deqs : deq list) : deq list =
+let rec clean_deqs (env_var : typ Ident.Hashtbl.t)
+    (env_replace : var VarHashtbl.t) (deqs : deq list) : deq list =
   List.map
     (fun d ->
       {
@@ -154,11 +155,11 @@ let rec clean_deqs (env_var : (ident, typ) Hashtbl.t)
         content =
           (match d.content with
           | Loop (x, ei, ef, dl, opts) ->
-              Hashtbl.add env_var x Nat;
+              Ident.Hashtbl.add env_var x Nat;
               let res =
                 Loop (x, ei, ef, clean_deqs env_var env_replace dl, opts)
               in
-              Hashtbl.remove env_var x;
+              Ident.Hashtbl.remove env_var x;
               res
           | Eqn (lhs, e, sync) -> (
               let e' = clean_expr env_var env_replace e in
@@ -172,7 +173,7 @@ let rec clean_deqs (env_var : (ident, typ) Hashtbl.t)
                         let v' =
                           gen_tmp env_var typ (Ident.name (get_base_name v))
                         in
-                        Hashtbl.add env_replace v v';
+                        VarHashtbl.add env_replace v v';
                         v')
                       lhs
                   in
@@ -185,7 +186,7 @@ let clean_def (def : def) : def =
   | Single (vars, body) ->
       new_vars := [];
       let env_var = build_env_var def.p_in def.p_out vars in
-      let env_replace = Hashtbl.create 100 in
+      let env_replace = VarHashtbl.create 100 in
       let new_body = clean_deqs env_var env_replace body in
       { def with node = Single (vars @ !new_vars, new_body) }
   | _ -> def

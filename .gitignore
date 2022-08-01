@@ -25,3 +25,6 @@ config.ml
 lexer_tp.ml
 
 observations.org
+
+# Unit tests submodule
+unit_tests/

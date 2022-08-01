@@ -1,5 +1,8 @@
 open Copy_propagation
 open Parser_api
+open Usuba_AST
+
+let ( =! ) dl1 dl2 = equal_def dl1 dl2
 
 (* Just a bunch of equations; no loops; no arrays; no functions calls. *)
 let test_simple () =
@@ -24,7 +27,7 @@ let test_simple () =
       \    z = x ^ y;\n\
        tel"
   in
-  assert (result = expected)
+  assert (result =! expected)
 
 (* Still no funcalls and no loops, but some arrays *)
 let test_arrays () =
@@ -54,7 +57,7 @@ let test_arrays () =
       \    z[1] = x[1] ^ y[1];\n\
        tel"
   in
-  assert (result = expected)
+  assert (result =! expected)
 
 (* With a loop (but no funcalls) *)
 let test_loop_nofun () =
@@ -88,7 +91,7 @@ let test_loop_nofun () =
       \    z[1] = a[1];\n\
       \ tel"
   in
-  assert (result = expected)
+  assert (result =! expected)
 
 (* With a funcall (but no loops, no arr) *)
 let test_funcall_noarr () =
@@ -115,7 +118,7 @@ let test_funcall_noarr () =
       \    z = f(a);\n\
        tel"
   in
-  assert (result = expected)
+  assert (result =! expected)
 
 (* With a funcall and arrays (but no loops) *)
 let test_funcall_arr () =
@@ -151,7 +154,7 @@ let test_funcall_arr () =
       \    z[1] = c[1];\n\
        tel"
   in
-  assert (result = expected)
+  assert (result =! expected)
 
 (* With a funcall, arrays and loop. Funcall is outside the loop. *)
 let test_funcall_loop1 () =
@@ -191,7 +194,7 @@ let test_funcall_loop1 () =
       \    z[1] = d[1];\n\
        tel"
   in
-  assert (result = expected)
+  assert (result =! expected)
 
 (* With a funcall, arrays and loop. Funcall is inside the loop. *)
 let test_funcall_loop2 () =
@@ -227,7 +230,7 @@ let test_funcall_loop2 () =
       \    }\n\
        tel"
   in
-  assert (result = expected)
+  assert (result =! expected)
 
 (* Just makes sure that assignments of Consts are indeed removed. *)
 let test_simple_const () =
@@ -248,7 +251,7 @@ let test_simple_const () =
     parse_def
       "node f(x,y:u1) returns (z:u1)\n   vars a,b,c:u1\nlet\n    z = 5;\ntel"
   in
-  assert (result = expected)
+  assert (result =! expected)
 
 (* Shuffle are a bit special because they only work on Vars. Making
    sure that no Shuffle will use a variable that was optimized away or
@@ -280,7 +283,7 @@ let test_shuffle () =
       \    z = c ^ y;\n\
        tel"
   in
-  assert (result = expected)
+  assert (result =! expected)
 
 (* Make sure that Consts assignments are optimized away as well *)
 let test_const () =
@@ -305,7 +308,7 @@ let test_const () =
       \    z = b ^ y;\n\
        tel"
   in
-  assert (result = expected)
+  assert (result =! expected)
 
 (* Make sure that Consts assignments are optimized away as well *)
 let test_const_advanced () =
@@ -331,7 +334,7 @@ let test_const_advanced () =
       \    z = c ^ y;\n\
        tel"
   in
-  assert (result = expected)
+  assert (result =! expected)
 
 let test () =
   test_simple ();

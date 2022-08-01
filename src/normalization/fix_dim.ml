@@ -34,6 +34,7 @@
 
  ********************************************************************)
 
+open Prelude
 open Usuba_AST
 open Utils
 open Pass_runner
@@ -61,7 +62,8 @@ let rec not_same_dim (t1 : typ) (t2 : typ) : bool =
   if get_nested_level t1 <> get_nested_level t2 then false
   else
     match (t1, t2) with
-    | Array (t1', s1), Array (t2', s2) -> s1 <> s2 || not_same_dim t1' t2'
+    | Array (t1', s1), Array (t2', s2) ->
+        (not (equal_arith_expr s1 s2)) || not_same_dim t1' t2'
     | _, _ ->
         (* Here, both t1 and t2 have to be Uint(_,_,_). There
            is not need to check the size of the Uint, because
@@ -86,7 +88,7 @@ let rec get_index_level (v : var) : int =
        (3) x[1][2][3] should become x[1][11].
 *)
 let dim_var (v_tgt : var) (dim : int) (size : int) (v : var) : var =
-  if get_var_base v = v_tgt then (
+  if equal_var (get_var_base v) v_tgt then (
     let index_lvl = get_index_level v in
     (* Depending on |dim|-|index_lvl|, a different transformation
          must be done (see the function's comment above) *)
@@ -195,7 +197,7 @@ let unnest_var (def : def) (var : var) : def =
       let find_interest_var (p : p) : p =
         List.map
           (fun v ->
-            if Var v.vd_id = var_base then (
+            if equal_var (Var v.vd_id) var_base then (
               let t', s = collapse_inner_arrays v.vd_typ in
               old_type := v.vd_typ;
               new_type := t';
@@ -242,7 +244,7 @@ module Dir_params = struct
                    assured that a call has exactly has many args as the function expects *)
 
                 (* Retrieving f's parameters, and checking arguments' types *)
-                let p_in = (Hashtbl.find env_fun f).p_in in
+                let p_in = (Ident.Hashtbl.find env_fun f).p_in in
                 List.iteri
                   (fun i arg ->
                     match arg with
@@ -260,8 +262,9 @@ module Dir_params = struct
                           || not_same_dim exp_type arg_type
                         then (
                           (* Different sizes, need convert arg to a non-nested array *)
-                          Hashtbl.replace env_fun f
-                            (unnest_var (Hashtbl.find env_fun f)
+                          Ident.Hashtbl.replace env_fun f
+                            (unnest_var
+                               (Ident.Hashtbl.find env_fun f)
                                (Var (List.nth p_in i).vd_id));
                           raise Updated
                           (* < isn't checked here: if dim is < than function
@@ -273,7 +276,7 @@ module Dir_params = struct
                   args;
 
                 (* Retrieveing f's returns param, and checking return values' types *)
-                let p_out = (Hashtbl.find env_fun f).p_out in
+                let p_out = (Ident.Hashtbl.find env_fun f).p_out in
                 List.iteri
                   (fun i v ->
                     (* type of the i-th lhs variable *)
@@ -286,8 +289,9 @@ module Dir_params = struct
                       || not_same_dim exp_type ret_type
                     then (
                       (* Different sizes, need convert arg to a non-nested array *)
-                      Hashtbl.replace env_fun f
-                        (unnest_var (Hashtbl.find env_fun f)
+                      Ident.Hashtbl.replace env_fun f
+                        (unnest_var
+                           (Ident.Hashtbl.find env_fun f)
                            (Var (List.nth p_out i).vd_id));
                       raise Updated)
                     else ())
@@ -297,11 +301,11 @@ module Dir_params = struct
             | Eqn (_, _, _) -> deq.content
             (* Reccursive call on loops *)
             | Loop (i, ei, ef, dl, opts) ->
-                Hashtbl.add env_var i Nat;
+                Ident.Hashtbl.add env_var i Nat;
                 let res =
                   Loop (i, ei, ef, fix_deqs env_fun env_var def dl, opts)
                 in
-                Hashtbl.remove env_var i;
+                Ident.Hashtbl.remove env_var i;
                 res);
         })
       deqs
@@ -311,21 +315,25 @@ module Dir_params = struct
     | Single (vars, body) ->
         let env_var = build_env_var def.p_in def.p_out vars in
         let body = fix_deqs env_fun env_var def body in
-        Hashtbl.replace env_fun def.id { def with node = Single (vars, body) }
+        Ident.Hashtbl.replace env_fun def.id
+          { def with node = Single (vars, body) }
     | _ -> ()
 
   let rec run _ (prog : prog) (conf : Config.config) : prog =
     (* Build a hash containing all nodes *)
-    let env_fun = Hashtbl.create 100 in
-    List.iter (fun node -> Hashtbl.add env_fun node.id node) prog.nodes;
+    let env_fun = Ident.Hashtbl.create 100 in
+    List.iter (fun node -> Ident.Hashtbl.add env_fun node.id node) prog.nodes;
 
     try
       (* Fix dimensions within each node *)
       List.iter
-        (fun node -> fix_def env_fun (Hashtbl.find env_fun node.id))
+        (fun node -> fix_def env_fun (Ident.Hashtbl.find env_fun node.id))
         prog.nodes;
       (* Collect fixed nodes *)
-      { nodes = List.map (fun node -> Hashtbl.find env_fun node.id) prog.nodes }
+      {
+        nodes =
+          List.map (fun node -> Ident.Hashtbl.find env_fun node.id) prog.nodes;
+      }
     with Updated ->
       (* Could have introduce unbalancing between parameters/arguments
          and new unwanted arrays/tuples -> need to re-run a bunch of
@@ -333,7 +341,8 @@ module Dir_params = struct
       let runner = new pass_runner conf in
       let prog =
         {
-          nodes = List.map (fun node -> Hashtbl.find env_fun node.id) prog.nodes;
+          nodes =
+            List.map (fun node -> Ident.Hashtbl.find env_fun node.id) prog.nodes;
         }
       in
       run runner
@@ -372,7 +381,7 @@ module Dir_inner = struct
                    assured that a call has exactly has many args as the function expects *)
 
                 (* Retrieving f's parameters, and checking arguments' types *)
-                let p_in = (Hashtbl.find env_fun f).p_in in
+                let p_in = (Ident.Hashtbl.find env_fun f).p_in in
                 List.iteri
                   (fun i arg ->
                     match arg with
@@ -390,7 +399,8 @@ module Dir_inner = struct
                           || not_same_dim arg_type exp_type
                         then (
                           (* Different sizes, need convert arg to a non-nested array *)
-                          Hashtbl.replace env_fun def.id (unnest_var def v);
+                          Ident.Hashtbl.replace env_fun def.id
+                            (unnest_var def v);
                           raise Updated
                           (* < isn't checked here: if dim is < than function
                              expects, then the function must be adapted
@@ -404,7 +414,7 @@ module Dir_inner = struct
                   args;
 
                 (* Retrieveing f's returns param, and checking return values' types *)
-                let p_out = (Hashtbl.find env_fun f).p_out in
+                let p_out = (Ident.Hashtbl.find env_fun f).p_out in
                 List.iteri
                   (fun i v ->
                     (* type of the i-th lhs variable *)
@@ -416,7 +426,7 @@ module Dir_inner = struct
                       || not_same_dim ret_type exp_type
                     then (
                       (* Different sizes, need convert arg to a non-nested array *)
-                      Hashtbl.replace env_fun def.id (unnest_var def v);
+                      Ident.Hashtbl.replace env_fun def.id (unnest_var def v);
                       raise Updated)
                     else ())
                   ret_vars;
@@ -425,11 +435,11 @@ module Dir_inner = struct
             | Eqn (_, _, _) -> deq.content
             (* Reccursive call on loops *)
             | Loop (i, ei, ef, dl, opts) ->
-                Hashtbl.add env_var i Nat;
+                Ident.Hashtbl.add env_var i Nat;
                 let res =
                   Loop (i, ei, ef, fix_deqs env_fun env_var def dl, opts)
                 in
-                Hashtbl.remove env_var i;
+                Ident.Hashtbl.remove env_var i;
                 res);
         })
       deqs
@@ -439,29 +449,34 @@ module Dir_inner = struct
     | Single (vars, body) ->
         let env_var = build_env_var def.p_in def.p_out vars in
         let body = fix_deqs env_fun env_var def body in
-        Hashtbl.replace env_fun def.id { def with node = Single (vars, body) }
+        Ident.Hashtbl.replace env_fun def.id
+          { def with node = Single (vars, body) }
     | _ -> ()
 
   let rec run (runner : pass_runner) (prog : prog) (conf : Config.config) : prog
       =
     (* Build a hash containing all nodes *)
-    let env_fun = Hashtbl.create 100 in
-    List.iter (fun node -> Hashtbl.add env_fun node.id node) prog.nodes;
+    let env_fun = Ident.Hashtbl.create 100 in
+    List.iter (fun node -> Ident.Hashtbl.add env_fun node.id node) prog.nodes;
 
     try
       (* Fix dimensions within each node *)
       List.iter
-        (fun node -> fix_def env_fun (Hashtbl.find env_fun node.id))
+        (fun node -> fix_def env_fun (Ident.Hashtbl.find env_fun node.id))
         prog.nodes;
       (* Collect fixed nodes *)
-      { nodes = List.map (fun node -> Hashtbl.find env_fun node.id) prog.nodes }
+      {
+        nodes =
+          List.map (fun node -> Ident.Hashtbl.find env_fun node.id) prog.nodes;
+      }
     with Updated ->
       (* Could have introduce unbalancing between parameters/arguments
          and new unwanted arrays/tuples -> need to re-run a bunch of
          normalization *)
       let prog =
         {
-          nodes = List.map (fun node -> Hashtbl.find env_fun node.id) prog.nodes;
+          nodes =
+            List.map (fun node -> Ident.Hashtbl.find env_fun node.id) prog.nodes;
         }
       in
       run runner

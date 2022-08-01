@@ -30,7 +30,7 @@ let test_simple () =
       ]
       prog
   in
-  if result = expected then ()
+  if equal_prog result expected then ()
   else (
     Format.eprintf "%a@." Usuba_print.(pp_prog ()) result;
     raise Exit)

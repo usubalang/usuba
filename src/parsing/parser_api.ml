@@ -1,3 +1,4 @@
+open Prelude
 open Lexer
 open Lexing
 open Usuba_AST
@@ -44,7 +45,10 @@ and resolve_includes (path : string list) (l : def_or_inc list) : def list =
       | Inc s ->
           let filename = get_include_filename path s in
           let dirname = Filename.dirname filename in
-          let path = if List.mem dirname path then path else dirname :: path in
+          (* SMTLIB_IMPORT: List.mem of string is authorized *)
+          let path =
+            if Stdlib.List.mem dirname path then path else dirname :: path
+          in
           (parse_file path filename).nodes)
     l
 

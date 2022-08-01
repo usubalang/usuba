@@ -8,13 +8,14 @@
 
  ********************************************************************)
 
+open Prelude
 open Usuba_AST
 
 (* A hashtable to store the possible parameter constness for each
    function. It is updated everytime Get_consts.get_consts_def is
    called. TODO: it would be cleaner to initialize it only once at the
    begining, and not have a global variable for that. *)
-let fun_params : (ident, bool list list) Hashtbl.t = Hashtbl.create 100
+let fun_params : bool list list Ident.Hashtbl.t = Ident.Hashtbl.create 100
 
 (* This modules finds out which variables in a function are
    constants. This is useful because non-linear operations (and/or)
@@ -28,24 +29,24 @@ let fun_params : (ident, bool list list) Hashtbl.t = Hashtbl.create 100
    where it could be it is an array and a previous assignment in one
    of its index was const). *)
 module Get_consts = struct
-  let rec var_is_const (env_const : (ident, bool) Hashtbl.t)
-      (env_not_const : (ident, bool) Hashtbl.t) (v : var) : bool =
+  let rec var_is_const (env_const : bool Ident.Hashtbl.t)
+      (env_not_const : bool Ident.Hashtbl.t) (v : var) : bool =
     let id = Utils.get_base_name v in
     (* Not that a variable _cannot_ be in both |env_const| and
           |env_not_const|. The following 2 asserts make sure of that,
           even though it shouldn't be necessary to check it. *)
-    if Hashtbl.mem env_const id then (
-      if Hashtbl.mem env_not_const id then
+    if Ident.Hashtbl.mem env_const id then (
+      if Ident.Hashtbl.mem env_not_const id then
         Format.printf "%a is both const and not const\n" (Ident.pp ()) id;
-      assert (not (Hashtbl.mem env_not_const id));
+      assert (not (Ident.Hashtbl.mem env_not_const id));
       true)
     else (
-      assert (Hashtbl.mem env_not_const id);
+      assert (Ident.Hashtbl.mem env_not_const id);
       false)
 
-  and expr_is_const (env_fun : (ident, def) Hashtbl.t)
-      (env_const : (ident, bool) Hashtbl.t)
-      (env_not_const : (ident, bool) Hashtbl.t) (e : expr) : bool list =
+  and expr_is_const (env_fun : def Ident.Hashtbl.t)
+      (env_const : bool Ident.Hashtbl.t) (env_not_const : bool Ident.Hashtbl.t)
+      (e : expr) : bool list =
     let rec_call = expr_is_const env_fun env_const env_not_const in
     match e with
     | Const _ -> [ true ]
@@ -61,16 +62,16 @@ module Get_consts = struct
         List.map2 (fun a b -> a && b) (rec_call e1) (rec_call e2)
     | Fun (f, l) ->
         let params_consts = Basic_utils.flat_map rec_call l in
-        if Ident.name f = "refresh" then params_consts
+        if String.equal (Ident.name f) "refresh" then params_consts
         else get_consts_inner_def env_fun params_consts f
     | Fun_v _ ->
         Format.eprintf "expr_is_const: not supported expression: %a.@."
           (Usuba_print.pp_expr ()) e;
         assert false
 
-  and get_consts_deqs (env_fun : (ident, def) Hashtbl.t)
-      (env_const : (ident, bool) Hashtbl.t)
-      (env_not_const : (ident, bool) Hashtbl.t) (deqs : deq list) : unit =
+  and get_consts_deqs (env_fun : def Ident.Hashtbl.t)
+      (env_const : bool Ident.Hashtbl.t) (env_not_const : bool Ident.Hashtbl.t)
+      (deqs : deq list) : unit =
     List.iter
       (fun d ->
         match d.content with
@@ -79,13 +80,13 @@ module Get_consts = struct
               (fun v is_const ->
                 let id = Utils.get_base_name v in
                 if is_const then
-                  match Hashtbl.find_opt env_not_const id with
+                  match Ident.Hashtbl.find_opt env_not_const id with
                   | Some _ -> ()
-                  | None -> Hashtbl.replace env_const id true
+                  | None -> Ident.Hashtbl.replace env_const id true
                 else (
-                  Hashtbl.replace env_not_const id true;
-                  match Hashtbl.find_opt env_const id with
-                  | Some _ -> Hashtbl.remove env_const id
+                  Ident.Hashtbl.replace env_not_const id true;
+                  match Ident.Hashtbl.find_opt env_const id with
+                  | Some _ -> Ident.Hashtbl.remove env_const id
                   | None -> ()))
               lhs
               (expr_is_const env_fun env_const env_not_const e)
@@ -96,38 +97,41 @@ module Get_consts = struct
   (* This function is used on node calls: it returns the constness of
      the return values of |def| rather than an environment with the
      constness of all variables of |def|. *)
-  and get_consts_inner_def (env_fun : (ident, def) Hashtbl.t)
+  and get_consts_inner_def (env_fun : def Ident.Hashtbl.t)
       (consts_in : bool list) (f : ident) : bool list =
     (* Updating |fun_params| *)
-    (if consts_in <> [] then
-     match Hashtbl.find_opt fun_params f with
-     | Some l -> Hashtbl.replace fun_params f (consts_in :: l)
-     | None -> Hashtbl.add fun_params f [ consts_in ]);
+    (* STDLIB_IMPORT: Comparing to an empty list *)
+    (if Stdlib.(consts_in <> []) then
+     match Ident.Hashtbl.find_opt fun_params f with
+     | Some l -> Ident.Hashtbl.replace fun_params f (consts_in :: l)
+     | None -> Ident.Hashtbl.add fun_params f [ consts_in ]);
 
-    let def = Hashtbl.find env_fun f in
+    let def = Ident.Hashtbl.find env_fun f in
 
     let env_const = get_consts_def env_fun ~consts_in def in
 
-    List.map (fun vd -> Hashtbl.mem env_const vd.vd_id) def.p_out
+    List.map (fun vd -> Ident.Hashtbl.mem env_const vd.vd_id) def.p_out
 
   (* Returns a hash containing the constness of all variables of |def|. *)
-  and get_consts_def (env_fun : (ident, def) Hashtbl.t)
-      ?(consts_in : bool list = []) (def : def) : (ident, bool) Hashtbl.t =
+  and get_consts_def (env_fun : def Ident.Hashtbl.t)
+      ?(consts_in : bool list = []) (def : def) : bool Ident.Hashtbl.t =
     match def.node with
     | Single (_, body) ->
-        let env_const = Hashtbl.create 10 in
-        let env_not_const = Hashtbl.create 10 in
+        let env_const = Ident.Hashtbl.create 10 in
+        let env_not_const = Ident.Hashtbl.create 10 in
         (* Setting up |env_const|. *)
         if List.length consts_in <> 0 then
           List.iter2
             (fun vd b ->
-              if b then Hashtbl.add env_const vd.vd_id true
-              else Hashtbl.add env_not_const vd.vd_id true)
+              if b then Ident.Hashtbl.add env_const vd.vd_id true
+              else Ident.Hashtbl.add env_not_const vd.vd_id true)
             def.p_in consts_in
         else
           (* Parameters are assumed not const by default, while nothing
              is assumed for local variables, nor for output variables. *)
-          List.iter (fun vd -> Hashtbl.add env_not_const vd.vd_id true) def.p_in;
+          List.iter
+            (fun vd -> Ident.Hashtbl.add env_not_const vd.vd_id true)
+            def.p_in;
 
         (* Note: we need to unroll the loops before trying to find the
             constants, since an iteration could change a constant into
@@ -144,7 +148,9 @@ module Get_consts = struct
             doing `x[0] = 0`), but in the end of the iteration it turns
             out than `x` is actually no constant.
         *)
-        let body = Unroll.unroll_deqs (Hashtbl.create 10) true def.id body in
+        let body =
+          Unroll.unroll_deqs (Ident.Hashtbl.create 10) true def.id body
+        in
 
         (*                            ^^^^^^^^^^^^^^^^^^  ^^^^             *)
         (*                                   env_it       force            *)
@@ -155,7 +161,9 @@ module Get_consts = struct
            constant but not the next ones. In that case, we remove the
            whole array. This is a bit approximative: ideally we would
            like a finer analysis. TODO! *)
-        Hashtbl.iter (fun id _ -> Hashtbl.remove env_const id) env_not_const;
+        Ident.Hashtbl.iter
+          (fun id _ -> Ident.Hashtbl.remove env_const id)
+          env_not_const;
 
         env_const
     | _ ->
@@ -163,17 +171,16 @@ module Get_consts = struct
         assert false
 end
 
-let masking_order = Ident.create_free "MASKING_ORDER"
+let masking_order = Ident.create_constant "MASKING_ORDER"
 let loop_end = Op_e (Sub, Var_e masking_order, Const_e 1)
-let loop_idx = Ident.create_free "_mask_idx"
+let loop_idx = Ident.create_constant "_mask_idx"
 let make_loop_indexed (v : var) : var = Index (v, Var_e loop_idx)
 
-let mask_var (env_var : (ident, typ) Hashtbl.t)
-    (env_const : (ident, bool) Hashtbl.t) (orig : (ident * deq_i) list)
-    (vl : var) (ve : var) : deq list =
-  match Hashtbl.mem env_const (Utils.get_base_name vl) with
+let mask_var (env_var : typ Ident.Hashtbl.t) (env_const : bool Ident.Hashtbl.t)
+    (orig : (ident * deq_i) list) (vl : var) (ve : var) : deq list =
+  match Ident.Hashtbl.mem env_const (Utils.get_base_name vl) with
   | true -> (
-      match Hashtbl.mem env_const (Utils.get_base_name ve) with
+      match Ident.Hashtbl.mem env_const (Utils.get_base_name ve) with
       | true ->
           (* const = const *)
           [ { orig; content = Eqn ([ vl ], ExpVar ve, false) } ]
@@ -182,7 +189,7 @@ let mask_var (env_var : (ident, typ) Hashtbl.t)
           Printf.eprintf "Cannot convert non-constant into constant.\n";
           assert false)
   | false -> (
-      match Hashtbl.mem env_const (Utils.get_base_name ve) with
+      match Ident.Hashtbl.mem env_const (Utils.get_base_name ve) with
       | true ->
           (* var = const *)
           let typ = Utils.get_var_type env_var vl in
@@ -237,9 +244,9 @@ let mask_var (env_var : (ident, typ) Hashtbl.t)
 (*                                                            ^^^^^    ^^ *)
 (*                                                   (eqn's sync)  (loop's opts)   *)
 
-let mask_cst (env_const : (ident, bool) Hashtbl.t) (orig : (ident * deq_i) list)
+let mask_cst (env_const : bool Ident.Hashtbl.t) (orig : (ident * deq_i) list)
     (vl : var) (c : int) (typ : typ option) : deq list =
-  match Hashtbl.mem env_const (Utils.get_base_name vl) with
+  match Ident.Hashtbl.mem env_const (Utils.get_base_name vl) with
   | true ->
       (* const = const *)
       [ { orig; content = Eqn ([ vl ], Const (c, typ), false) } ]
@@ -288,12 +295,12 @@ let mask_cst (env_const : (ident, bool) Hashtbl.t) (orig : (ident * deq_i) list)
           };
         ]
 
-let mask_shift (env_var : (ident, typ) Hashtbl.t)
-    (env_const : (ident, bool) Hashtbl.t) (orig : (ident * deq_i) list)
-    (vl : var) (op : shift_op) (ve : var) (ae : arith_expr) : deq list =
-  match Hashtbl.mem env_const (Utils.get_base_name vl) with
+let mask_shift (env_var : typ Ident.Hashtbl.t)
+    (env_const : bool Ident.Hashtbl.t) (orig : (ident * deq_i) list) (vl : var)
+    (op : shift_op) (ve : var) (ae : arith_expr) : deq list =
+  match Ident.Hashtbl.mem env_const (Utils.get_base_name vl) with
   | true -> (
-      match Hashtbl.mem env_const (Utils.get_base_name ve) with
+      match Ident.Hashtbl.mem env_const (Utils.get_base_name ve) with
       | true ->
           (* const = const *)
           [ { orig; content = Eqn ([ vl ], Shift (op, ExpVar ve, ae), false) } ]
@@ -302,7 +309,7 @@ let mask_shift (env_var : (ident, typ) Hashtbl.t)
           Printf.eprintf "Cannot convert non-constant into constant.\n";
           assert false)
   | false -> (
-      match Hashtbl.mem env_const (Utils.get_base_name ve) with
+      match Ident.Hashtbl.mem env_const (Utils.get_base_name ve) with
       | true ->
           (* var = const *)
           let typ = Utils.get_var_type env_var vl in
@@ -352,12 +359,11 @@ let mask_shift (env_var : (ident, typ) Hashtbl.t)
             };
           ])
 
-let mask_not (env_var : (ident, typ) Hashtbl.t)
-    (env_const : (ident, bool) Hashtbl.t) (orig : (ident * deq_i) list)
-    (vl : var) (ve : var) : deq list =
-  match Hashtbl.mem env_const (Utils.get_base_name vl) with
+let mask_not (env_var : typ Ident.Hashtbl.t) (env_const : bool Ident.Hashtbl.t)
+    (orig : (ident * deq_i) list) (vl : var) (ve : var) : deq list =
+  match Ident.Hashtbl.mem env_const (Utils.get_base_name vl) with
   | true -> (
-      match Hashtbl.mem env_const (Utils.get_base_name ve) with
+      match Ident.Hashtbl.mem env_const (Utils.get_base_name ve) with
       | true ->
           (* const = const *)
           [ { orig; content = Eqn ([ vl ], Not (ExpVar ve), false) } ]
@@ -366,7 +372,7 @@ let mask_not (env_var : (ident, typ) Hashtbl.t)
           Printf.eprintf "Cannot convert non-constant into constant.\n";
           assert false)
   | false -> (
-      match Hashtbl.mem env_const (Utils.get_base_name ve) with
+      match Ident.Hashtbl.mem env_const (Utils.get_base_name ve) with
       | true ->
           (* var = const *)
           let typ = Utils.get_var_type env_var vl in
@@ -429,22 +435,21 @@ let mask_not (env_var : (ident, typ) Hashtbl.t)
 
 type is_const = Zero | One | Two
 
-let mask_xor (env_var : (ident, typ) Hashtbl.t)
-    (env_const : (ident, bool) Hashtbl.t) (orig : (ident * deq_i) list)
-    (vl : var) (x : var) (y : var) : deq list =
+let mask_xor (env_var : typ Ident.Hashtbl.t) (env_const : bool Ident.Hashtbl.t)
+    (orig : (ident * deq_i) list) (vl : var) (x : var) (y : var) : deq list =
   let cst, x, y =
     if
-      Hashtbl.mem env_const (Utils.get_base_name x)
-      && Hashtbl.mem env_const (Utils.get_base_name y)
+      Ident.Hashtbl.mem env_const (Utils.get_base_name x)
+      && Ident.Hashtbl.mem env_const (Utils.get_base_name y)
     then (Two, x, y)
-    else if Hashtbl.mem env_const (Utils.get_base_name x) then (One, y, x)
-    else if Hashtbl.mem env_const (Utils.get_base_name y) then (One, x, y)
+    else if Ident.Hashtbl.mem env_const (Utils.get_base_name x) then (One, y, x)
+    else if Ident.Hashtbl.mem env_const (Utils.get_base_name y) then (One, x, y)
     else (Zero, x, y)
   in
   let typ = Utils.get_var_type env_var x in
   match cst with
   | Zero -> (
-      match Hashtbl.mem env_const (Utils.get_base_name vl) with
+      match Ident.Hashtbl.mem env_const (Utils.get_base_name vl) with
       | true ->
           (* const = var ^ var *)
           Printf.eprintf "Cannot convert non-constant into constant.\n";
@@ -477,7 +482,7 @@ let mask_xor (env_var : (ident, typ) Hashtbl.t)
             };
           ])
   | One -> (
-      match Hashtbl.mem env_const (Utils.get_base_name vl) with
+      match Ident.Hashtbl.mem env_const (Utils.get_base_name vl) with
       | true ->
           (* const = var ^ const *)
           Printf.eprintf "Cannot convert non-constant into constant.\n";
@@ -518,7 +523,7 @@ let mask_xor (env_var : (ident, typ) Hashtbl.t)
             };
           ])
   | Two -> (
-      match Hashtbl.mem env_const (Utils.get_base_name vl) with
+      match Ident.Hashtbl.mem env_const (Utils.get_base_name vl) with
       | true ->
           (* const = const ^ const *)
           (* Straightforward Xor *)
@@ -560,22 +565,22 @@ let mask_xor (env_var : (ident, typ) Hashtbl.t)
             };
           ])
 
-let mask_and_or (env_var : (ident, typ) Hashtbl.t)
-    (env_const : (ident, bool) Hashtbl.t) (orig : (ident * deq_i) list)
-    (vl : var) (op : log_op) (x : var) (y : var) : deq list =
+let mask_and_or (env_var : typ Ident.Hashtbl.t)
+    (env_const : bool Ident.Hashtbl.t) (orig : (ident * deq_i) list) (vl : var)
+    (op : log_op) (x : var) (y : var) : deq list =
   let cst, x, y =
     if
-      Hashtbl.mem env_const (Utils.get_base_name x)
-      && Hashtbl.mem env_const (Utils.get_base_name y)
+      Ident.Hashtbl.mem env_const (Utils.get_base_name x)
+      && Ident.Hashtbl.mem env_const (Utils.get_base_name y)
     then (Two, x, y)
-    else if Hashtbl.mem env_const (Utils.get_base_name x) then (One, y, x)
-    else if Hashtbl.mem env_const (Utils.get_base_name y) then (One, x, y)
+    else if Ident.Hashtbl.mem env_const (Utils.get_base_name x) then (One, y, x)
+    else if Ident.Hashtbl.mem env_const (Utils.get_base_name y) then (One, x, y)
     else (Zero, x, y)
   in
   let typ = Utils.get_var_type env_var x in
   match cst with
   | Zero -> (
-      match Hashtbl.mem env_const (Utils.get_base_name vl) with
+      match Ident.Hashtbl.mem env_const (Utils.get_base_name vl) with
       | true ->
           (* const = var & var *)
           Printf.eprintf "Cannot convert non-constant into constant.\n";
@@ -590,7 +595,7 @@ let mask_and_or (env_var : (ident, typ) Hashtbl.t)
           ])
   | One -> (
       (* The second operand is a constant *)
-      match Hashtbl.mem env_const (Utils.get_base_name vl) with
+      match Ident.Hashtbl.mem env_const (Utils.get_base_name vl) with
       | true ->
           (* const = var & const *)
           Printf.eprintf "Cannot convert non-constant into constant.\n";
@@ -620,7 +625,7 @@ let mask_and_or (env_var : (ident, typ) Hashtbl.t)
           ])
   | Two -> (
       (* both operands are constant *)
-      match Hashtbl.mem env_const (Utils.get_base_name vl) with
+      match Ident.Hashtbl.mem env_const (Utils.get_base_name vl) with
       | true ->
           (* const = const & const *)
           [
@@ -661,9 +666,8 @@ let mask_and_or (env_var : (ident, typ) Hashtbl.t)
             };
           ])
 
-let mask_eqn (env_var : (ident, typ) Hashtbl.t)
-    (env_const : (ident, bool) Hashtbl.t) (orig : (ident * deq_i) list)
-    (vl : var) (e : expr) : deq list =
+let mask_eqn (env_var : typ Ident.Hashtbl.t) (env_const : bool Ident.Hashtbl.t)
+    (orig : (ident * deq_i) list) (vl : var) (e : expr) : deq list =
   match Utils.get_var_m env_var vl with
   | Mnat ->
       (* not masking nats *) [ { orig; content = Eqn ([ vl ], e, false) } ]
@@ -684,8 +688,8 @@ let mask_eqn (env_var : (ident, typ) Hashtbl.t)
             (Usuba_print.pp_expr ()) e;
           assert false)
 
-let rec mask_deqs (env_var : (ident, typ) Hashtbl.t)
-    (env_const : (ident, bool) Hashtbl.t) (deqs : deq list) : deq list =
+let rec mask_deqs (env_var : typ Ident.Hashtbl.t)
+    (env_const : bool Ident.Hashtbl.t) (deqs : deq list) : deq list =
   Basic_utils.flat_map
     (fun d ->
       match d.content with
@@ -710,25 +714,26 @@ let rec mask_typ (typ : typ) : typ =
       Array (Array (Uint (d, m, 1), Var_e masking_order), Const_e n)
   | Array (typ', s) -> Array (mask_typ typ', s)
 
-let mask_p (env_const : (ident, bool) Hashtbl.t) (p : p) : p =
+let mask_p (env_const : bool Ident.Hashtbl.t) (p : p) : p =
   List.map
     (fun vd ->
       {
         vd with
         vd_typ =
-          (match Hashtbl.find_opt env_const vd.vd_id with
+          (match Ident.Hashtbl.find_opt env_const vd.vd_id with
           | Some _ -> vd.vd_typ
           | None -> mask_typ vd.vd_typ);
       })
     p
 
-let mask_def (env_fun : (ident, def) Hashtbl.t) (def : def) : def =
+let mask_def (env_fun : def Ident.Hashtbl.t) (def : def) : def =
   match def.node with
   | Single (vars, body) ->
       let consts_params =
-        match Hashtbl.find_opt fun_params def.id with
+        match Ident.Hashtbl.find_opt fun_params def.id with
         | Some (hd :: tl) ->
-            if List.for_all (fun x -> x = hd) (hd :: tl) then hd
+            if List.for_all (fun x -> List.equal Bool.equal x hd) (hd :: tl)
+            then hd
             else (
               Format.eprintf
                 "Node %a is called with constness-varying parameters. Usubac \
@@ -758,8 +763,8 @@ let mask_def (env_fun : (ident, def) Hashtbl.t) (def : def) : def =
       assert false
 
 let run _ (prog : prog) (_ : Config.config) : prog =
-  let env_fun = Hashtbl.create 10 in
-  List.iter (fun def -> Hashtbl.add env_fun def.id def) prog.nodes;
+  let env_fun = Ident.Hashtbl.create 10 in
+  List.iter (fun def -> Ident.Hashtbl.add env_fun def.id def) prog.nodes;
   (* Note that we need to iter nodes in reverse order in order to know
      the constness of the parameters of each node. *)
   { nodes = List.rev_map (mask_def env_fun) (List.rev prog.nodes) }

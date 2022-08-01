@@ -1,3 +1,4 @@
+open Prelude
 open Usuba_AST
 open Tp_AST
 
@@ -48,7 +49,7 @@ let expr_to_tp (vars_corres : (string, Usuba_AST.var) Hashtbl.t)
       Log (log_op_to_tp op, var_to_tp vars_corres x, var_to_tp vars_corres y)
   | Shift (op, ExpVar e, ae) ->
       Shift (shift_op_to_tp op, var_to_tp vars_corres e, arith_to_int ae)
-  | Fun (f, [ ExpVar v ]) when Ident.name f = "refresh" ->
+  | Fun (f, [ ExpVar v ]) when String.equal (Ident.name f) "refresh" ->
       Refresh (var_to_tp vars_corres v)
   | e ->
       Format.eprintf "expr_to_str: invalid expr `%a`@." (Usuba_print.pp_expr ())

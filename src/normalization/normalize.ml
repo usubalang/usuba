@@ -20,7 +20,14 @@ let norm_prog _ prog conf =
 
     let pp msg = Format.fprintf (Format.formatter_of_out_channel co) msg in
     pp "open Usuba_lib@.@.let conf = %a@." Config.pp_config
-      Config.{ conf with dump_steps = None };
+      Config.
+        {
+          conf with
+          dump_steps = None;
+          path = [ "." ];
+          dump_steps_base_file = "";
+          tightprove_dir = "";
+        };
     close_out co);
 
   let normed_prog =

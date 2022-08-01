@@ -45,11 +45,12 @@
 
   ( ***************************************************************** *)
 
+open Prelude
 open Usuba_AST
 open Pass_runner
 
-let rec cse_expr (env_expr : (expr, var list) Hashtbl.t) (e : expr) : expr =
-  match Hashtbl.find_opt env_expr e with
+let rec cse_expr (env_expr : var list ExprHashtbl.t) (e : expr) : expr =
+  match ExprHashtbl.find_opt env_expr e with
   | Some vl -> (
       (* Already computed *)
       match vl with
@@ -75,7 +76,7 @@ let rec cse_expr (env_expr : (expr, var list) Hashtbl.t) (e : expr) : expr =
             (Usuba_print.pp_expr ()) e;
           assert false)
 
-let rec cse_deqs (env_expr : (expr, var list) Hashtbl.t) (deqs : deq list) :
+let rec cse_deqs (env_expr : var list ExprHashtbl.t) (deqs : deq list) :
     deq list =
   List.map
     (fun d ->
@@ -99,14 +100,14 @@ let rec cse_deqs (env_expr : (expr, var list) Hashtbl.t) (deqs : deq list) :
           (match e' with
           | Const _ -> () (* Don't replace Consts by variables *)
           | _ -> (
-              match Hashtbl.find_opt env_expr e' with
+              match ExprHashtbl.find_opt env_expr e' with
               | Some _ -> ()
-              | None -> Hashtbl.add env_expr e' lhs));
+              | None -> ExprHashtbl.add env_expr e' lhs));
           { d with content = Eqn (lhs, e', sync) }
       | Loop (i, ei, ef, dl, opts) ->
           (* Passing a copy of |env_expr| to the loop, so that nothing
              from the loop's body leaks outside. *)
-          let env_expr_copy = Hashtbl.copy env_expr in
+          let env_expr_copy = ExprHashtbl.copy env_expr in
           { d with content = Loop (i, ei, ef, cse_deqs env_expr_copy dl, opts) })
     deqs
 
@@ -115,14 +116,15 @@ let cse_def (def : def) : def =
   | Single (vars, body) ->
       (* |env_expr|: the environment of expressions already
          computed. *)
-      let env_expr : (expr, var list) Hashtbl.t = Hashtbl.create 100 in
+      let env_expr : var list ExprHashtbl.t = ExprHashtbl.create 100 in
       { def with node = Single (vars, cse_deqs env_expr body) }
   | Perm _ | Table _ -> def
   | Multiple _ -> assert false
 
 let run (runner : pass_runner) prog conf =
   let prog' = { nodes = List.map cse_def prog.nodes } in
-  if conf.Config.dump_steps = Some AST then Basic_utils.dump_to_file prog' conf;
+  if Option.equal Config.equal_dump_steps conf.Config.dump_steps (Some AST) then
+    Basic_utils.dump_to_file prog' conf;
   runner#run_module Norm_tuples.as_pass prog'
 
 let as_pass = (run, "CSE", 1)

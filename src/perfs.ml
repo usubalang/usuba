@@ -1,3 +1,4 @@
+open Prelude
 open Usuba_AST
 
 (* Number of times to repeat benchmarks when comparing several programs *)
@@ -72,7 +73,9 @@ let remove_start_end (l : 'a list) : 'a list =
 (* Returns the performances of each program of |progs|. *)
 let compare_perfs (progs : prog list) (conf : Config.config) : float list =
   let bitslice =
-    Utils.get_type_dir List.(hd (hd (hd progs).nodes).p_in).vd_typ = Bslice
+    equal_dir
+      (Utils.get_type_dir List.(hd (hd (hd progs).nodes).p_in).vd_typ)
+      Bslice
   in
   let binaries = List.map (compile conf.archi bitslice) progs in
 
@@ -84,8 +87,9 @@ let compare_perfs (progs : prog list) (conf : Config.config) : float list =
   done;
 
   (* Removing extremes *)
+  (* STDLIB_IMPORT: Sorting a list of float *)
   List.iter
-    (fun perf -> perf := remove_start_end (List.sort compare !perf))
+    (fun perf -> perf := remove_start_end (List.sort Stdlib.compare !perf))
     perfs;
 
   (* Computing (and returning) averages *)

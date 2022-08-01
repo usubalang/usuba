@@ -1,5 +1,8 @@
 open Remove_dead_code
 open Parser_api
+open Usuba_AST
+
+let ( =! ) dl1 dl2 = equal_def dl1 dl2
 
 let test_simple () =
   let def =
@@ -22,7 +25,7 @@ let test_simple () =
       \    z = a;\n\
        tel"
   in
-  assert (remove_dead_code_def def = expected)
+  assert (remove_dead_code_def def =! expected)
 
 let test_loop_feedback () =
   let def =
@@ -59,7 +62,7 @@ let test_loop_feedback () =
       \    z[1] = zt[2];\n\
       \ tel"
   in
-  assert (remove_dead_code_def def = expected)
+  assert (remove_dead_code_def def =! expected)
 
 let test () =
   (* test_simple (); *)

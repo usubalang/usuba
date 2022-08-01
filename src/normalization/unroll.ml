@@ -11,13 +11,14 @@
 
  ********************************************************************)
 
+open Prelude
 open Usuba_AST
 open Basic_utils
 open Utils
 
 let pass_name = "Unroll"
 
-let rec unroll_in_var (env_it : (ident, int) Hashtbl.t) (v : var) : var =
+let rec unroll_in_var (env_it : int Ident.Hashtbl.t) (v : var) : var =
   match v with
   | Var _ -> v
   | Index (v', ae) -> Index (unroll_in_var env_it v', simpl_arith env_it ae)
@@ -27,7 +28,7 @@ let rec unroll_in_var (env_it : (ident, int) Hashtbl.t) (v : var) : var =
   | Slice (v', aes) ->
       Slice (unroll_in_var env_it v', List.map (simpl_arith env_it) aes)
 
-let rec unroll_in_expr (env_it : (ident, int) Hashtbl.t) (e : expr) : expr =
+let rec unroll_in_expr (env_it : int Ident.Hashtbl.t) (e : expr) : expr =
   match e with
   | Const _ -> e
   | ExpVar v -> ExpVar (unroll_in_var env_it v)
@@ -46,7 +47,7 @@ let rec unroll_in_expr (env_it : (ident, int) Hashtbl.t) (e : expr) : expr =
   | Fun_v (f, x, l) ->
       Fun_v (f, simpl_arith env_it x, List.map (unroll_in_expr env_it) l)
 
-let rec unroll_deqs (env_it : (ident, int) Hashtbl.t) (force : bool) (f : ident)
+let rec unroll_deqs (env_it : int Ident.Hashtbl.t) (force : bool) (f : ident)
     (deqs : deq list) : deq list =
   flat_map
     (fun deq ->
@@ -56,9 +57,10 @@ let rec unroll_deqs (env_it : (ident, int) Hashtbl.t) (force : bool) (f : ident)
           let new_e = unroll_in_expr env_it e in
           let new_eqn = Eqn (new_lhs, new_e, sync) in
           let new_orig =
-            if new_eqn = deq.content then deq.orig
+            if equal_deq_i new_eqn deq.content then deq.orig
             else (f, deq.content) :: deq.orig
           in
+
           [ { orig = new_orig; content = new_eqn } ]
       | Loop (i, ei, ef, dl, opts) ->
           if force || is_unroll opts then
@@ -66,9 +68,9 @@ let rec unroll_deqs (env_it : (ident, int) Hashtbl.t) (force : bool) (f : ident)
             let ef = eval_arith env_it ef in
             flat_map
               (fun n ->
-                Hashtbl.add env_it i n;
+                Ident.Hashtbl.add env_it i n;
                 let res = unroll_deqs env_it force f dl in
-                Hashtbl.remove env_it i;
+                Ident.Hashtbl.remove env_it i;
                 res)
               (gen_list_bounds ei ef)
           else
@@ -86,7 +88,7 @@ let unroll_def (force : bool) (def : def) : def =
     node =
       (match def.node with
       | Single (vars, body) ->
-          let env_it = Hashtbl.create 10 in
+          let env_it = Ident.Hashtbl.create 10 in
           Single (vars, unroll_deqs env_it force def.id body)
       | _ -> def.node);
   }

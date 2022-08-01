@@ -24,6 +24,7 @@
 
   ( ***************************************************************** *)
 
+open Prelude
 open Usuba_AST
 open Basic_utils
 open Utils
@@ -37,7 +38,7 @@ let is_one (e : expr) = match e with Const (1, _) -> true | _ -> false
 (* Checks if an expression is -1. Note that this depends on the
      expression's type: on a b1, -1 is 0b1; on a u8, -1 is
      0b11111111. *)
-let is_full_ones (env_var : (ident, typ) Hashtbl.t) (e : expr) =
+let is_full_ones (env_var : typ Ident.Hashtbl.t) (e : expr) =
   match e with
   | Const (n, Some typ) ->
       let msize =
@@ -64,7 +65,7 @@ let gen_full_ones (typ : typ) : int =
   in
   gen_minus_one msize
 
-let fold_arith (env_var : (ident, typ) Hashtbl.t) (op : arith_op) (x : expr)
+let fold_arith (env_var : typ Ident.Hashtbl.t) (op : arith_op) (x : expr)
     (y : expr) : expr =
   (* Get the OCaml operator corresponding to the Usuba one. *)
   let ua_op_to_ml (op : arith_op) : int -> int -> int =
@@ -110,8 +111,8 @@ let fold_arith (env_var : (ident, typ) Hashtbl.t) (op : arith_op) (x : expr)
           else if is_one y then zero (* _ % 1 = 0 *)
           else Arith (Mod, x, y))
 
-let fold_log (env_var : (ident, typ) Hashtbl.t) (op : log_op) (x : expr)
-    (y : expr) : expr =
+let fold_log (env_var : typ Ident.Hashtbl.t) (op : log_op) (x : expr) (y : expr)
+    : expr =
   (* Get the OCaml operator corresponding to the Usuba one. *)
   let ua_op_to_ml (op : log_op) : int -> int -> int =
     match op with
@@ -142,21 +143,21 @@ let fold_log (env_var : (ident, typ) Hashtbl.t) (op : log_op) (x : expr)
           else if is_zero y then zero (* _ & 0 = 0 *)
           else if is_full_ones env_var x then y (* 1 & y = y *)
           else if is_full_ones env_var y then x (* x & 1 = x *)
-          else if x = y then x (* x & x = x *)
+          else if equal_expr x y then x (* x & x = x *)
           else Log (And, x, y)
       | Or ->
           if is_zero x then y (* 0 | y = y *)
           else if is_zero y then x (* x | 0 = x *)
           else if is_full_ones env_var x then x (* 1 | y = 1 *)
           else if is_full_ones env_var y then y (* x | 1 = 1 *)
-          else if x = y then x (* x | x = x *)
+          else if equal_expr x y then x (* x | x = x *)
           else Log (Or, x, y)
       | Xor ->
           if is_zero x then y (* 0 ^ y = y  *)
           else if is_zero y then x (* x ^ 0 = x  *)
           else if is_full_ones env_var x then Not y (* 1 ^ y = ~y *)
           else if is_full_ones env_var y then Not x (* x ^ 1 = ~x *)
-          else if x = y then zero (* x ^ x = 0 *)
+          else if equal_expr x y then zero (* x ^ x = 0 *)
           else Log (Xor, x, y)
       | Andn ->
           if is_zero x then y (* ~0 & y = y  *)
@@ -166,7 +167,7 @@ let fold_log (env_var : (ident, typ) Hashtbl.t) (op : log_op) (x : expr)
           else Log (Andn, x, y)
       | _ -> Log (op, x, y))
 
-let fold_not (env_var : (ident, typ) Hashtbl.t) (e : expr) : expr =
+let fold_not (env_var : typ Ident.Hashtbl.t) (e : expr) : expr =
   match e with
   | Const (0, Some typ) -> Const (gen_full_ones typ, Some typ) (* ~1 = 0 *)
   | Const (_, typ) ->
@@ -176,7 +177,7 @@ let fold_not (env_var : (ident, typ) Hashtbl.t) (e : expr) : expr =
 (* Common documentation for all functions bellow: straight-forwardly
    walks down the AST to finally call fold_log and fold_arith. *)
 
-let rec fold_expr (env_var : (ident, typ) Hashtbl.t) (e : expr) : expr =
+let rec fold_expr (env_var : typ Ident.Hashtbl.t) (e : expr) : expr =
   match e with
   | Const _ -> e
   | ExpVar _ -> e
@@ -196,8 +197,7 @@ let rec fold_expr (env_var : (ident, typ) Hashtbl.t) (e : expr) : expr =
         (Usuba_print.pp_expr ()) e;
       assert false
 
-let rec fold_deqs (env_var : (ident, typ) Hashtbl.t) (deqs : deq list) :
-    deq list =
+let rec fold_deqs (env_var : typ Ident.Hashtbl.t) (deqs : deq list) : deq list =
   List.map
     (fun d ->
       match d.content with

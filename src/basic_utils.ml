@@ -9,6 +9,9 @@
 
 (* Apply a function to every elements of a list but the last,
    which is removed *)
+
+open Prelude
+
 let rec map_no_end f = function
   | [] -> []
   | [ _ ] -> []
@@ -89,18 +92,19 @@ let rec remove_nth (l : 'a list) (n : int) =
   | _ -> List.hd l :: remove_nth (List.tl l) (n - 1)
 
 (* Removes duplicates from a list *)
-let uniq (l : 'a list) : 'a list =
-  let mem = Hashtbl.create 50 in
+let uniq : type a. (module Hashtbl.S with type key = a) -> a list -> a list =
+ fun (module H : Hashtbl.S with type key = a) l ->
+  let mem = H.create 50 in
   List.filter
     (fun e ->
-      if Hashtbl.mem mem e then false
+      if H.mem mem e then false
       else (
-        Hashtbl.add mem e true;
+        H.add mem e true;
         true))
     l
 
 (* Returns true if l1 and l2 have at least one common element *)
-let common_elem l1 l2 = List.fold_left (fun x y -> x || List.mem y l2) false l1
+let common_elem l1 l2 eq = List.exists (fun x -> List.exists (eq x) l2) l1
 
 (* Alias for String.concat *)
 let join = String.concat
@@ -114,41 +118,41 @@ let contains (s1 : string) (s2 : string) : bool =
   with Not_found -> false
 
 (* Retrieving the keys of a hash *)
-let keys hash = Hashtbl.fold (fun k _ acc -> k :: acc) hash []
+let keys hash fold = fold (fun k _ acc -> k :: acc) hash []
 
 (* Retrieving the values of a hash *)
-let values hash = Hashtbl.fold (fun _ v acc -> v :: acc) hash []
+let values hash fold = fold (fun _ v acc -> v :: acc) hash []
 
 (* Getting a list of keys,values *)
-let each hash = Hashtbl.fold (fun k v acc -> (k, v) :: acc) hash []
+let each hash fold = fold (fun k v acc -> (k, v) :: acc) hash []
 
 (* Retrieving the keys of a HoH's 2nd layer*)
-let keys_2nd_layer hash k =
-  try keys (Hashtbl.find hash k) with Not_found -> []
+let keys_2nd_layer hash find k fold =
+  try keys (find hash k) fold with Not_found -> []
 
 (* Retrieve a given value of a HoH's 2nd layer *)
-let find_opt_2nd_layer hash k1 k2 =
-  match Hashtbl.find_opt hash k1 with
-  | Some hash2 -> Hashtbl.find_opt hash2 k2
+let find_opt_2nd_layer hash k1 find_opt k2 =
+  match Ident.Hashtbl.find_opt hash k1 with
+  | Some hash2 -> find_opt hash2 k2
   | None -> None
 
 (* Adds a key/val in the 2nd layer of a HoH *)
-let add_key_2nd_layer hash1 k1 k2 v : unit =
-  match Hashtbl.find_opt hash1 k1 with
-  | Some hash2 -> Hashtbl.add hash2 k2 v
+let add_key_2nd_layer hash1 k1 add create k2 v : unit =
+  match Ident.Hashtbl.find_opt hash1 k1 with
+  | Some hash2 -> add hash2 k2 v
   | None ->
-      let hash2 = Hashtbl.create 10 in
-      Hashtbl.add hash2 k2 v;
-      Hashtbl.add hash1 k1 hash2
+      let hash2 = create 10 in
+      add hash2 k2 v;
+      Ident.Hashtbl.add hash1 k1 hash2
 
 (* Adds a key/val in the 2nd layer of a HoH *)
-let replace_key_2nd_layer hash1 k1 k2 v : unit =
-  match Hashtbl.find_opt hash1 k1 with
-  | Some hash2 -> Hashtbl.replace hash2 k2 v
+let replace_key_2nd_layer hash1 k1 replace create k2 v : unit =
+  match Ident.Hashtbl.find_opt hash1 k1 with
+  | Some hash2 -> replace hash2 k2 v
   | None ->
-      let hash2 = Hashtbl.create 10 in
-      Hashtbl.replace hash2 k2 v;
-      Hashtbl.replace hash1 k1 hash2
+      let hash2 = create 10 in
+      replace hash2 k2 v;
+      Ident.Hashtbl.replace hash1 k1 hash2
 
 (* Generates the list of integers between |i| and |f| included.
    For instance: (gen_list_bounds 1 5) ===> [1; 2; 3; 4; 5] *)

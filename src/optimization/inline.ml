@@ -14,6 +14,7 @@
    everywhere. Futhermore, its type is "(string,def) Hashtbl.t" --> it
    should be "(ident,def) Hashtbl.t". *)
 
+open Prelude
 open Usuba_AST
 open Basic_utils
 open Utils
@@ -102,7 +103,8 @@ let is_more_than_n_percent_assign (n : int) (deqs : deq list) : bool =
       (0, 0) deqs
   in
   let asgns, tot = get_assigns deqs in
-  float_of_int tot *. float_of_int n /. 100. <= float_of_int asgns
+  (* STDLIB_IMPORT: Comparing float *)
+  Stdlib.(float_of_int tot *. float_of_int n /. 100. <= float_of_int asgns)
 
 (* Heuristically decides (ie returns true of false) if |def| should be
    inlined or not. *)
@@ -145,7 +147,7 @@ let rec is_call_free env inlined conf (def : def) : bool =
   let rec deq_call_free (deq : deq) : bool =
     match deq.content with
     | Eqn (_, Fun (f, _), _) ->
-        if Ident.name f = "refresh" then true
+        if String.equal (Ident.name f) "refresh" then true
         else not (can_inline env inlined conf (Hashtbl.find env (Ident.name f)))
     | Eqn _ -> true
     | Loop (_, _, _, dl, _) -> List.for_all deq_call_free dl
@@ -197,7 +199,8 @@ let rec _inline (runner : pass_runner) (prog : prog) (conf : Config.config)
     (* inline it *)
     let prog' = do_inline prog to_inline in
 
-    if conf.dump_steps = Some AST then dump_to_file prog' conf;
+    if Option.equal Config.equal_dump_steps conf.dump_steps (Some AST) then
+      dump_to_file prog' conf;
     (* add it to the hash of inlined nodes *)
     Hashtbl.replace inlined (Ident.name to_inline.id) true;
     (* Running basic optimizations; copy propagation in particular is
@@ -238,7 +241,7 @@ let run_pre_inline (runner : pass_runner) (prog : prog) (conf : Config.config) :
       }
     in
     let prog' = run_common runner prog conf in
-    if conf.dump_steps = Some AST then (
+    if Option.equal Config.equal_dump_steps conf.dump_steps (Some AST) then (
       dump_to_file prog' conf;
       dump_caller [ "Inline-pre" ] conf);
     prog')
@@ -273,10 +276,11 @@ let run_bench (runner : pass_runner) (prog : prog) (conf : Config.config) nexts
   in
 
   let prog, selected =
-    if perfs_full < perfs_auto then
-      if perfs_full < perfs_no then (fully_inlined, "always")
+    (* STDLIB_IMPORT: Comparing float *)
+    if Stdlib.(perfs_full < perfs_auto) then
+      if Stdlib.(perfs_full < perfs_no) then (fully_inlined, "always")
       else (no_inlined, "never")
-    else if perfs_no < perfs_auto then (no_inlined, "never")
+    else if Stdlib.(perfs_no < perfs_auto) then (no_inlined, "never")
     else (auto_inlined, "heuristic")
   in
 
@@ -297,7 +301,7 @@ let run (runner : pass_runner) (prog : prog) (conf : Config.config) : prog =
         prog
     else run_bench runner prog conf nexts
   in
-  if conf.dump_steps = Some AST then (
+  if Option.equal Config.equal_dump_steps conf.dump_steps (Some AST) then (
     dump_to_file prog' conf;
     dump_caller [ "Inline" ] conf);
   prog'

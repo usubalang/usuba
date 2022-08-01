@@ -1,10 +1,11 @@
+open Prelude
 open Usuba_AST
 
 (* Clean.clean_vars_decl removes unused variables from variable declarations of nodes
    (unused variables will likely be variables that have been optimized out) *)
 let rec collect_var env (var : var) : unit =
   match var with
-  | Var id -> Hashtbl.replace env id 1
+  | Var id -> Ident.Hashtbl.replace env id 1
   | Index (v, _) | Range (v, _, _) | Slice (v, _) -> collect_var env v
 
 let rec collect_expr env (e : expr) : unit =
@@ -29,7 +30,7 @@ let rec collect_expr env (e : expr) : unit =
   | Fun_v (_, _, l) -> List.iter (collect_expr env) l
 
 let clean_in_deqs (vars : p) (deqs : deq list) : p =
-  let env = Hashtbl.create 100 in
+  let env = Ident.Hashtbl.create 100 in
   let rec aux d =
     match d.content with
     | Eqn (l, e, _) ->
@@ -38,11 +39,10 @@ let clean_in_deqs (vars : p) (deqs : deq list) : p =
     | Loop (_, _, _, d, _) -> List.iter aux d
   in
   List.iter aux deqs;
-  List.sort_uniq
-    (fun a b -> compare a b)
+  List.sort_uniq compare_var_d
     (List.filter
        (fun vd ->
-         match Hashtbl.find_opt env vd.vd_id with
+         match Ident.Hashtbl.find_opt env vd.vd_id with
          | Some _ -> true
          | None -> false)
        vars)

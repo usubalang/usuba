@@ -84,3 +84,9 @@ type config = {
 (** The compiler's configuration *)
 
 val pp_config : Format.formatter -> config -> unit
+
+(** {1 Equality} *)
+
+val equal_arch : arch -> arch -> bool
+val equal_dump_steps : dump_steps -> dump_steps -> bool
+val equal_slicing : slicing -> slicing -> bool

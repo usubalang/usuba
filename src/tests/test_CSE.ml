@@ -1,17 +1,20 @@
 open CSE
 open Parser_api
+open Usuba_AST
+
+let ( =! ) dl1 dl2 = List.equal equal_deq dl1 dl2
 
 let test_simple () =
   let deqs = List.map parse_deq [ "x = a + b"; "y = a + b"; "z = a + b" ] in
-  let deqs' = cse_deqs (Hashtbl.create 10) deqs in
-  assert (deqs' = List.map parse_deq [ "x = a + b"; "y = x"; "z = x" ])
+  let deqs' = cse_deqs (Usuba_AST.ExprHashtbl.create 10) deqs in
+  assert (deqs' =! List.map parse_deq [ "x = a + b"; "y = x"; "z = x" ])
 
 (* Make sure that consts aren't getting replaced by variables *)
 let test_const () =
   let deqs = List.map parse_deq [ "x = 0"; "y = 0" ] in
-  let deqs' = cse_deqs (Hashtbl.create 10) deqs in
-  assert (deqs' <> List.map parse_deq [ "x = 0"; "y = x" ]);
-  assert (deqs' = List.map parse_deq [ "x = 0"; "y = 0" ])
+  let deqs' = cse_deqs (Usuba_AST.ExprHashtbl.create 10) deqs in
+  assert (not (deqs' =! List.map parse_deq [ "x = 0"; "y = x" ]));
+  assert (deqs' =! List.map parse_deq [ "x = 0"; "y = 0" ])
 
 let test_loop () =
   (* Making sure loops aren't uncorrectly optimized *)
@@ -22,8 +25,8 @@ let test_loop () =
         "forall i in [3,4] { x[i] = y[i] ^ z[i] }";
       ]
   in
-  let deqs' = cse_deqs (Hashtbl.create 10) deqs in
-  assert (deqs' = deqs)
+  let deqs' = cse_deqs (Usuba_AST.ExprHashtbl.create 10) deqs in
+  assert (deqs' =! deqs)
 
 let test () =
   test_simple ();

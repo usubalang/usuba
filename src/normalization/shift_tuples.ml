@@ -8,14 +8,15 @@
 
   ( *****************************************************************************)
 
+open Prelude
 open Usuba_AST
 
-let do_shift (env_var : (ident, typ) Hashtbl.t) (op : shift_op) (l : expr list)
+let do_shift (env_var : typ Ident.Hashtbl.t) (op : shift_op) (l : expr list)
     (n : int) : expr list =
   (* Empty env_fun since unfold_unnest must already have been called *)
   (*                               vvvvvvvvvvvvvvvvvv                *)
   let typ =
-    List.hd (Utils.get_expr_type (Hashtbl.create 1) env_var (List.hd l))
+    List.hd (Utils.get_expr_type (Ident.Hashtbl.create 1) env_var (List.hd l))
   in
   match op with
   | Lrotate ->
@@ -47,7 +48,7 @@ let do_shift (env_var : (ident, typ) Hashtbl.t) (op : shift_op) (l : expr list)
       assert false
 
 (* TODO: I'm pretty sure this doesn't cover every cases *)
-let rec shift (env_var : (ident, typ) Hashtbl.t) (op : shift_op) (e : expr)
+let rec shift (env_var : typ Ident.Hashtbl.t) (op : shift_op) (e : expr)
     (n : int) : expr =
   match e with
   | Const _ -> Shift (op, e, Const_e n)
@@ -56,10 +57,10 @@ let rec shift (env_var : (ident, typ) Hashtbl.t) (op : shift_op) (e : expr)
   | Not e -> Not (shift env_var op e n)
   | Shift (op', e', Const_e n') ->
       let t = shift env_var op' e' n' in
-      if t = e then Shift (op, e, Const_e n) else shift env_var op t n
+      if equal_expr t e then Shift (op, e, Const_e n) else shift env_var op t n
   | _ -> raise (Errors.Error "I can't shift this")
 
-let rec shift_expr (env_var : (ident, typ) Hashtbl.t) (e : expr) : expr =
+let rec shift_expr (env_var : typ Ident.Hashtbl.t) (e : expr) : expr =
   match e with
   | ExpVar _ | Const _ -> e
   | Tuple l -> Tuple (List.map (shift_expr env_var) l)
@@ -86,7 +87,7 @@ let rec shift_expr (env_var : (ident, typ) Hashtbl.t) (e : expr) : expr =
   | Fun_v (f, ei, l) -> Fun_v (f, ei, List.map (shift_expr env_var) l)
   | _ -> e
 
-let rec shift_deq (env_var : (ident, typ) Hashtbl.t) (deq : deq) : deq =
+let rec shift_deq (env_var : typ Ident.Hashtbl.t) (deq : deq) : deq =
   {
     deq with
     content =

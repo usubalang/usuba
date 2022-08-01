@@ -1,3 +1,4 @@
+open Prelude
 open Usuba_AST
 open Basic_utils
 open Utils
@@ -33,7 +34,7 @@ module Basic_scheduler = struct
   *)
 
   let schedule_deqs (deqs : deq list) : deq list =
-    let deflist = Hashtbl.create 10 in
+    let deflist = VarHashtbl.create 10 in
     let dep_deqs =
       flat_map
         (fun d ->
@@ -45,16 +46,16 @@ module Basic_scheduler = struct
                   let pre =
                     flat_map
                       (fun x ->
-                        match Hashtbl.find_opt deflist x with
+                        match VarHashtbl.find_opt deflist x with
                         | Some (e, orig) ->
-                            Hashtbl.remove deflist x;
+                            VarHashtbl.remove deflist x;
                             [ ([ x ], e, orig) ]
                         | None -> [])
                       used
                   in
                   match pre with
                   | [] ->
-                      Hashtbl.add deflist (Var v) (e, d.orig);
+                      VarHashtbl.add deflist (Var v) (e, d.orig);
                       []
                   | _ -> pre @ [ (p, e, d.orig) ])
               | _ ->
@@ -62,9 +63,9 @@ module Basic_scheduler = struct
                   let pre =
                     flat_map
                       (fun x ->
-                        match Hashtbl.find_opt deflist x with
+                        match VarHashtbl.find_opt deflist x with
                         | Some (e, orig) ->
-                            Hashtbl.remove deflist x;
+                            VarHashtbl.remove deflist x;
                             [ ([ x ], e, orig) ]
                         | None -> [])
                       used
@@ -76,8 +77,9 @@ module Basic_scheduler = struct
     List.map
       (fun (x, y, orig) -> { orig; content = Eqn (x, y, false) })
       (dep_deqs
-      @ Hashtbl.fold (fun k (e, orig) acc -> ([ k ], e, orig) :: acc) deflist []
-      )
+      @ VarHashtbl.fold
+          (fun k (e, orig) acc -> ([ k ], e, orig) :: acc)
+          deflist [])
 
   let schedule_def (def : def) : def =
     {
@@ -103,18 +105,18 @@ module Random_scheduler = struct
 
   let schedule_deqs (deqs : deq list) (p_in : p) : deq list =
     let init hash v =
-      match Hashtbl.find_opt hash v with
+      match VarHashtbl.find_opt hash v with
       | Some l -> l
       | None ->
           let l = ref [] in
-          Hashtbl.add hash v l;
+          VarHashtbl.add hash v l;
           l
     in
 
     Random.self_init ();
 
-    let imply : (var, deq list ref) Hashtbl.t = Hashtbl.create 100 in
-    let status : (deq, int ref) Hashtbl.t = Hashtbl.create 100 in
+    let imply : deq list ref VarHashtbl.t = VarHashtbl.create 100 in
+    let status : int ref DeqHashtbl.t = DeqHashtbl.create 100 in
     let scheduling : deq list ref = ref [] in
 
     (* Initializing dependance graph *)
@@ -128,7 +130,7 @@ module Random_scheduler = struct
                 let l = init imply x in
                 l := eq :: !l)
               prec;
-            Hashtbl.add status eq (ref (List.length prec))
+            DeqHashtbl.add status eq (ref (List.length prec))
         | _ -> assert false)
       deqs;
 
@@ -136,11 +138,11 @@ module Random_scheduler = struct
     List.iter
       (fun vd ->
         let v = Var vd.vd_id in
-        match Hashtbl.find_opt imply v with
+        match VarHashtbl.find_opt imply v with
         | Some l ->
             List.iter
               (fun eq ->
-                match Hashtbl.find_opt status eq with
+                match DeqHashtbl.find_opt status eq with
                 | Some n -> decr n
                 | None -> ())
               !l
@@ -148,22 +150,24 @@ module Random_scheduler = struct
       p_in;
 
     (* Actually scheduling the code *)
-    while Hashtbl.length status > 0 do
+    while DeqHashtbl.length status > 0 do
       let ready =
-        Hashtbl.fold (fun e n acc -> if !n = 0 then e :: acc else acc) status []
+        DeqHashtbl.fold
+          (fun e n acc -> if !n = 0 then e :: acc else acc)
+          status []
       in
       let selected = List.nth ready (Random.int (List.length ready)) in
-      Hashtbl.remove status selected;
+      DeqHashtbl.remove status selected;
       scheduling := selected :: !scheduling;
       match selected.content with
       | Eqn (p, _, _) ->
           List.iter
             (fun p ->
-              match Hashtbl.find_opt imply p with
+              match VarHashtbl.find_opt imply p with
               | Some l ->
                   List.iter
                     (fun x ->
-                      match Hashtbl.find_opt status x with
+                      match DeqHashtbl.find_opt status x with
                       | Some n -> decr n
                       | None -> ())
                     !l
@@ -199,15 +203,13 @@ module Depth_first_sched = struct
        ~ 0.47 s
   *)
 
-  let exists hash k = Hashtbl.mem hash k
-
-  let update_hoh hash k1 k2 =
-    match Hashtbl.find_opt hash k1 with
-    | Some h -> Hashtbl.replace h k2 true
+  let update_hoh hash k1 replace create k2 =
+    match VarHashtbl.find_opt hash k1 with
+    | Some h -> replace h k2 true
     | None ->
-        let h = Hashtbl.create 60 in
-        Hashtbl.add h k2 true;
-        Hashtbl.add hash k1 h
+        let h = create 60 in
+        replace h k2 true;
+        VarHashtbl.add hash k1 h
 
   type node = {
     current : var list * expr;
@@ -216,18 +218,22 @@ module Depth_first_sched = struct
   }
 
   let build_dep (deqs : deq list) :
-      (var, (var list * expr * (ident * deq_i) list, bool) Hashtbl.t) Hashtbl.t
-      * (var, var list * expr * (ident * deq_i) list) Hashtbl.t =
-    let using = Hashtbl.create 1000 in
-    let decls = Hashtbl.create 1000 in
+      bool DepHashtbl.t VarHashtbl.t
+      * (var list * expr * (ident * deq_i) list) VarHashtbl.t =
+    let using = VarHashtbl.create 1000 in
+    let decls = VarHashtbl.create 1000 in
 
     List.iter
       (fun d ->
         match d.content with
         | Eqn (l, e, _) ->
             let used = get_used_vars e in
-            List.iter (fun x -> update_hoh using x (l, e, d.orig)) used;
-            List.iter (fun x -> Hashtbl.add decls x (l, e, d.orig)) l
+            List.iter
+              (fun x ->
+                update_hoh using x DepHashtbl.replace DepHashtbl.create
+                  (l, e, d.orig))
+              used;
+            List.iter (fun x -> VarHashtbl.add decls x (l, e, d.orig)) l
         | _ -> assert false)
       deqs;
 
@@ -235,9 +241,9 @@ module Depth_first_sched = struct
 
   let schedule_deqs (deqs : deq list) (p_in : p) : deq list =
     let using, decls = build_dep deqs in
-    let available = Hashtbl.create 1000 in
+    let available = VarHashtbl.create 1000 in
 
-    List.iter (fun vd -> Hashtbl.add available (Var vd.vd_id) true) p_in;
+    List.iter (fun vd -> VarHashtbl.add available (Var vd.vd_id) true) p_in;
 
     let scheduling = ref [] in
     let ready = ref [] in
@@ -246,36 +252,44 @@ module Depth_first_sched = struct
     List.iter
       (fun d ->
         match d.content with
-        | Eqn (l, e, _) ->
-            if
-              List.filter (fun x -> not (exists available x)) (get_used_vars e)
-              = []
-            then ready := (l, e, d.orig) :: !ready
+        | Eqn (l, e, _) -> (
+            match
+              List.filter
+                (fun x -> not (VarHashtbl.mem available x))
+                (get_used_vars e)
+            with
+            | [] -> ready := (l, e, d.orig) :: !ready
+            | _ -> ())
         | _ -> assert false)
       deqs;
 
     let rec do_schedule ((l, e, orig) : var list * expr * (ident * deq_i) list)
         =
       (* Only if "l" isn't scheduled already *)
-      if List.filter (fun x -> not (exists available x)) l <> [] then (
+      if
+        Stdlib.(List.filter (fun x -> not (VarHashtbl.mem available x)) l <> [])
+      then (
         (* Scheduling the pre-requisite dependencies *)
         List.iter
           (fun x ->
-            if not (exists available x) then do_schedule (Hashtbl.find decls x))
+            if not (VarHashtbl.mem available x) then
+              do_schedule (VarHashtbl.find decls x))
           (get_used_vars e);
         (* Scheduling the instruction *)
         scheduling := (l, e, orig) :: !scheduling;
         (* Marking it as scheduled *)
-        List.iter (fun x -> Hashtbl.add available x true) l;
+        List.iter (fun x -> VarHashtbl.add available x true) l;
         (* Adding the sons to the Queue of instructions ready to be scheduled *)
         List.iter
           (fun x ->
-            List.iter (fun y -> ready := y :: !ready) (keys_2nd_layer using x))
+            List.iter
+              (fun y -> ready := y :: !ready)
+              (keys_2nd_layer using VarHashtbl.find x DepHashtbl.fold))
           l)
     in
 
     (* While there are still instructions ready; schedule them *)
-    while !ready <> [] do
+    while Stdlib.(!ready <> []) do
       let current = List.hd !ready in
       ready := List.tl !ready;
       do_schedule current
@@ -308,7 +322,8 @@ module Low_pressure_sched = struct
   (* Expands a var a returns the intermediate vars.
      For instance, if x:u1x1[5][2] ->
         get_sub_vars x = x[0], x[1], ..., x[4], x[0][0], x[0][1], x[1][0], ..., x[4][1]. *)
-  let get_sub_vars env_var ?(env_it = Hashtbl.create 100) (v : var) : var list =
+  let get_sub_vars env_var ?(env_it = Ident.Hashtbl.create 100) (v : var) :
+      var list =
     let typ = get_var_type env_var v in
     match typ with
     | Uint (_, _, 1) -> [ v ]
@@ -336,7 +351,8 @@ module Low_pressure_sched = struct
 
   let get_def_vars env_var (deq : deq) : var list =
     match deq.content with
-    | Eqn (vs, _, _) -> uniq (flat_map (get_sub_vars env_var) vs)
+    | Eqn (vs, _, _) ->
+        uniq (module VarHashtbl) (flat_map (get_sub_vars env_var) vs)
     | Loop _ -> []
 
   let rec get_first_n (l : 'a list) (i : int) : 'a list =
@@ -355,8 +371,8 @@ module Low_pressure_sched = struct
             | Eqn (vs, e, _) ->
                 let used = get_dep_vars env_var (get_used_vars e) in
                 let b =
-                  (not (common_elem !prev_def used))
-                  && not (common_elem vs !prev_used)
+                  (not (common_elem !prev_def used equal_var))
+                  && not (common_elem vs !prev_used equal_var)
                 in
                 if b then b
                 else (
@@ -387,7 +403,7 @@ module Low_pressure_sched = struct
     let scheduling = ref [ List.hd deqs ] in
     let todo = ref (List.tl deqs) in
 
-    while !todo <> [] do
+    while Stdlib.(!todo <> []) do
       let exception Found in
       try
         for num_prev = parallel_lvl - 1 downto 1 do

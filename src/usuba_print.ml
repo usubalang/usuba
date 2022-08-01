@@ -1,3 +1,4 @@
+open Prelude
 open Usuba_AST
 
 let pp_list_comma f l =
@@ -73,7 +74,7 @@ let pp_dir ?(detailed = false) () ppf d =
   | Natdir -> assert false
   | Mslice i -> Format.fprintf ppf "<%d>" i
   | Varslice v ->
-      if Ident.name v = "D" then ()
+      if String.equal (Ident.name v) "D" then ()
       else Format.fprintf ppf "<%a>" (Ident.pp ~detailed ()) v
 
 let rec pp_full_typ ?(typed = false) ~detailed () ppf = function
@@ -99,7 +100,7 @@ let rec pp_typ ?(typed = false) ?(acc = "") ?(detailed = false) () ppf typ =
           else Format.fprintf ppf "u%a%dx%d" (pp_dir ~detailed ()) d i n
       | Mnat -> assert false
       | Mvar id ->
-          if Ident.name id = "m" then
+          if String.equal (Ident.name id) "m" then
             Format.fprintf ppf "v%a%d" (pp_dir ~detailed ()) d n
           else
             Format.fprintf ppf "u%a%ax%d" (pp_dir ~detailed ()) d

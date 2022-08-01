@@ -1,3 +1,4 @@
+open Prelude
 open Usuba_AST
 open Basic_utils
 open Utils
@@ -8,8 +9,8 @@ let rec simpl_var env_it (v : var) : var =
   | Index (v', ae) -> Index (simpl_var env_it v', Const_e (eval_arith env_it ae))
   | _ -> assert false
 
-let rec replace_var (env : (var, var) Hashtbl.t) (v : var) : var =
-  match Hashtbl.find_opt env v with
+let rec replace_var (env : var VarHashtbl.t) (v : var) : var =
+  match VarHashtbl.find_opt env v with
   | Some v' -> v'
   | None -> (
       match v with
@@ -17,7 +18,7 @@ let rec replace_var (env : (var, var) Hashtbl.t) (v : var) : var =
       | Index (v', ae) -> Index (replace_var env v', ae)
       | _ -> assert false)
 
-let rec replace_expr (env : (var, var) Hashtbl.t) (e : expr) : expr =
+let rec replace_expr (env : var VarHashtbl.t) (e : expr) : expr =
   match e with
   | Const _ -> e
   | ExpVar v -> ExpVar (replace_var env v)
@@ -30,14 +31,14 @@ let rec replace_expr (env : (var, var) Hashtbl.t) (e : expr) : expr =
   | Fun (f, l) -> Fun (f, List.map (replace_expr env) l)
   | _ -> assert false
 
-let rec get_last_used (env_var : (ident, typ) Hashtbl.t)
-    ?(env_it = Hashtbl.create 100) (last_used : (var, int) Hashtbl.t)
+let rec get_last_used (env_var : typ Ident.Hashtbl.t)
+    ?(env_it = Ident.Hashtbl.create 100) (last_used : int VarHashtbl.t)
     ?(cpt_start = 0) (deqs : deq list) (no_arr : bool) : unit =
   let cpt = ref cpt_start in
 
   let rec update_used_bellow env_it last_used (v : var) : unit =
     let v = simpl_var env_it v in
-    Hashtbl.replace last_used v !cpt;
+    VarHashtbl.replace last_used v !cpt;
     if not no_arr then
       match v with
       | Var _ -> ()
@@ -47,7 +48,7 @@ let rec get_last_used (env_var : (ident, typ) Hashtbl.t)
 
   let rec update_used_above env_var env_it last_used (v : var) : unit =
     let v = simpl_var env_it v in
-    Hashtbl.replace last_used v !cpt;
+    VarHashtbl.replace last_used v !cpt;
     if not no_arr then
       match get_var_type env_var v with
       | Uint (_, _, 1) -> ()
@@ -74,9 +75,9 @@ let rec get_last_used (env_var : (ident, typ) Hashtbl.t)
           let ef = eval_arith env_it ef in
           List.iter
             (fun i ->
-              Hashtbl.add env_it x i;
+              Ident.Hashtbl.add env_it x i;
               get_last_used env_var ~env_it ~cpt_start:!cpt last_used dl no_arr;
-              Hashtbl.remove env_it x)
+              Ident.Hashtbl.remove env_it x)
             (gen_list_bounds ei ef);
           cpt := !cpt + List.length dl)
     deqs
@@ -86,16 +87,16 @@ let share_deqs (p_in : p) (p_out : p) (vars : p) (deqs : deq list)
   (* variables and their types *)
   let env_var = build_env_var p_in p_out vars in
   (* last line at which a variable is used *)
-  let last_used = Hashtbl.create 1000 in
+  let last_used = VarHashtbl.create 1000 in
   get_last_used env_var last_used deqs no_arr;
   (* The inputs (that shouldn't be overused I think) *)
-  let env_in = Hashtbl.create 100 in
-  List.iter (fun vd -> Hashtbl.replace env_in (Var vd.vd_id) true) p_in;
+  let env_in = VarHashtbl.create 100 in
+  List.iter (fun vd -> VarHashtbl.replace env_in (Var vd.vd_id) true) p_in;
   (* out variables, should be kept *)
-  let env_out = Hashtbl.create 100 in
-  List.iter (fun vd -> Hashtbl.replace env_out (Var vd.vd_id) true) p_out;
+  let env_out = VarHashtbl.create 100 in
+  List.iter (fun vd -> VarHashtbl.replace env_out (Var vd.vd_id) true) p_out;
   (* replacement env for variables that have been replaced *)
-  let env_replace = Hashtbl.create 1000 in
+  let env_replace = VarHashtbl.create 1000 in
 
   let rec do_it ?(cpt_start = 0) (deqs : deq list) : deq list =
     let cpt = ref cpt_start in
@@ -112,36 +113,37 @@ let share_deqs (p_in : p) (p_out : p) (vars : p) (deqs : deq list)
                 let avail =
                   List.filter
                     (fun v ->
-                      match Hashtbl.find_opt env_in (get_var_base v) with
+                      match VarHashtbl.find_opt env_in (get_var_base v) with
                       | Some _ -> false
                       | None -> (
-                          match Hashtbl.find_opt last_used v with
+                          match VarHashtbl.find_opt last_used v with
                           | Some n -> n <= !cpt
                           | None -> false))
                     (get_used_vars e)
                 in
-                let used = Hashtbl.create 10 in
+                let used = VarHashtbl.create 10 in
                 Eqn
                   ( List.map
                       (fun v ->
-                        match Hashtbl.find_opt env_out (get_var_base v) with
+                        match VarHashtbl.find_opt env_out (get_var_base v) with
                         | Some _ -> v
                         | None -> (
                             let typ = get_var_type env_var (get_var_base v) in
                             match
                               List.find_opt
                                 (fun v ->
-                                  (not (Hashtbl.mem used v))
-                                  && typ = get_var_type env_var (get_var_base v))
+                                  (not (VarHashtbl.mem used v))
+                                  && equal_typ typ
+                                       (get_var_type env_var (get_var_base v)))
                                 avail
                             with
                             | Some v' ->
-                                Hashtbl.add used v' true;
-                                Hashtbl.replace env_replace (get_var_base v)
+                                VarHashtbl.add used v' true;
+                                VarHashtbl.replace env_replace (get_var_base v)
                                   (get_var_base v');
                                 (try
-                                   Hashtbl.replace last_used v'
-                                     (Hashtbl.find last_used v)
+                                   VarHashtbl.replace last_used v'
+                                     (VarHashtbl.find last_used v)
                                  with Not_found ->
                                    Format.eprintf "Not_found: %a.@."
                                      (Usuba_print.pp_var ()) v';

@@ -10,9 +10,7 @@
     {[
     let f a b = a + b
     ]}
-    In this case, [a] and [b] in [a + b] will be bound to the [a] and [b] parameters of the [f] declaration. If they can't be bound at this point of the program because you don't know which identifier they're bound to, use {!create_unbound}. If you already know the identifier to which they are bound, use {!create_bound}.
-
-
+    In this case, [a] and [b] in [a + b] will be bound to the [a] and [b] parameters of the [f] declaration. If they can't be bound at this point of the program because you don't know which identifier they're bound to, use {!create_unbound}.
  *)
 
 (** {1 Types} *)
@@ -44,6 +42,11 @@ val create_free : string -> t
 (** [create_free name] returns a free [t] with its unique identifier.
 
     {e For compatibility reasons, the current implementation gives [-1] as an identifier to all new free variables} *)
+
+val create_constant : string -> t
+(** [create_constant name] returns a constant [t] with its unique identifier.
+
+    {e Don't use it unless you are declaring an identifier that will never be renamed, modified etc} *)
 
 (** {2 From existing identifiers} *)
 
@@ -91,6 +94,22 @@ val compare : t -> t -> int
 (** [compare t1 t2] returns [0] if [t1] is equal to [t2], a (unspecified) negative integer if [t1] is less than [t2] and a (unspecified) integer if [t1] is greater than [t2].
 
     {e Warning: [compare] is currently implemented on names to stay coherent with how it was done before. This is subject to change. If you need to compare the names of two identifiers , please use [String.compare (name t1) (name t2)].} *)
+
+(** {1 Collections} *)
+val hash : t -> int
+(** [hash t] returns the hash of [t]
+
+    {e Warning: [hash] is currently implemented on names to stay coherent with how it was done before. This is subject to change..} *)
+
+(** [hash] and [equal] are currently based on the name of the identifier *)
+module Hashtbl : sig
+  include Hashtbl.S with type key = t
+
+  val keys : 'a t -> key list
+  val values : 'a t -> 'a list
+  val each : 'a t -> (key * 'a) list
+  val keys_2nd_layer : 'a t t -> key -> key list
+end
 
 (** {1 S-expressions} *)
 

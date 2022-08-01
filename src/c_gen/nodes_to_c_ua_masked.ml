@@ -1,3 +1,4 @@
+open Prelude
 open Usuba_AST
 
 let make_env () = Hashtbl.create 100
@@ -52,7 +53,7 @@ let arith_op_to_c_generic = function
   | Mod -> "MOD"
 
 let rec aexpr_to_c (e : arith_expr) : string =
-  match Utils.simpl_arith (make_env ()) e with
+  match Utils.simpl_arith (Ident.Hashtbl.create 100) e with
   | Const_e n -> Format.sprintf "%d" n
   | Var_e x -> rename (Ident.name x)
   | Op_e (op, x, y) ->
@@ -72,8 +73,8 @@ let const_to_c (m : mtyp) (n : int) : string =
       | Mnat -> Format.sprintf "%d" n
       | _ -> assert false)
 
-let var_to_c (lift_env : (var, int) Hashtbl.t)
-    (env : (string, string) Hashtbl.t) (v : var) : string =
+let var_to_c (lift_env : int VarHashtbl.t) (env : (string, string) Hashtbl.t)
+    (v : var) : string =
   let rec aux (v : var) : string =
     match v with
     | Var id -> (
@@ -83,12 +84,12 @@ let var_to_c (lift_env : (var, int) Hashtbl.t)
     | _ -> assert false
   in
   let cvar = aux v in
-  match Hashtbl.find_opt lift_env (Utils.get_var_base v) with
+  match VarHashtbl.find_opt lift_env (Utils.get_var_base v) with
   | Some n -> Format.sprintf "LIFT_%d(%s)" n cvar
   | None -> cvar
 
-let rec expr_to_c (lift_env : (var, int) Hashtbl.t)
-    (env : (string, string) Hashtbl.t) (env_var : (ident, typ) Hashtbl.t)
+let rec expr_to_c (lift_env : int VarHashtbl.t)
+    (env : (string, string) Hashtbl.t) (env_var : typ Ident.Hashtbl.t)
     (e : expr) : string =
   match e with
   | Const (n, Some typ) -> const_to_c (Utils.get_type_m typ) n
@@ -113,8 +114,8 @@ let rec expr_to_c (lift_env : (var, int) Hashtbl.t)
            (Format.asprintf "Nested expressions not supported: %a.@."
               (Usuba_print.pp_expr ()) e))
 
-let expr_to_c_ret (lift_env : (var, int) Hashtbl.t)
-    (env : (string, string) Hashtbl.t) (env_var : (ident, typ) Hashtbl.t)
+let expr_to_c_ret (lift_env : int VarHashtbl.t)
+    (env : (string, string) Hashtbl.t) (env_var : typ Ident.Hashtbl.t)
     (retvar : var) (e : expr) : string =
   let ret = var_to_c lift_env env retvar in
   match e with
@@ -153,22 +154,23 @@ let expr_to_c_ret (lift_env : (var, int) Hashtbl.t)
         (Errors.Error
            (Format.asprintf "Wrong expr: %a" (Usuba_print.pp_expr ()) e))
 
-let fun_call_to_c (lift_env : (var, int) Hashtbl.t)
-    (env : (string, string) Hashtbl.t) (env_var : (ident, typ) Hashtbl.t)
+let fun_call_to_c (lift_env : int VarHashtbl.t)
+    (env : (string, string) Hashtbl.t) (env_var : typ Ident.Hashtbl.t)
     ?(tabs = "  ") (p : var list) (f : ident) (args : expr list) : string =
   Format.sprintf "%s%s(%s,%s);" tabs
     (rename (Ident.name f))
     (Basic_utils.join "," (List.map (expr_to_c lift_env env env_var) args))
     (Basic_utils.join "," (List.map (fun v -> var_to_c lift_env env v) p))
 
-let rec deqs_to_c (lift_env : (var, int) Hashtbl.t)
-    (env : (string, string) Hashtbl.t) (env_var : (ident, typ) Hashtbl.t)
+let rec deqs_to_c (lift_env : int VarHashtbl.t)
+    (env : (string, string) Hashtbl.t) (env_var : typ Ident.Hashtbl.t)
     ?(tabs = "  ") (deqs : deq list) : string =
   Basic_utils.join "\n"
     (List.map
        (fun deq ->
          match deq.content with
-         | Eqn ([ vl ], Fun (f, [ vr ]), _) when Ident.name f = "refresh" ->
+         | Eqn ([ vl ], Fun (f, [ vr ]), _)
+           when String.equal (Ident.name f) "refresh" ->
              (* No refresh needed if we are not masking *)
              Format.sprintf "%sREFRESH(%s,%s);" tabs (var_to_c lift_env env vl)
                (expr_to_c lift_env env env_var vr)
@@ -296,12 +298,12 @@ let c_header (arch : Config.arch) : string =
 
 let single_to_c (def : def) (_ : bool) (vars : p) (body : deq list)
     (conf : Config.config) : string =
-  let lift_env = Hashtbl.create 100 in
+  let lift_env = VarHashtbl.create 100 in
   if conf.lazylift then
     List.iter
       (fun vd ->
         if Utils.is_const vd then
-          Hashtbl.add lift_env (Var vd.vd_id) (get_lift_size vd))
+          VarHashtbl.add lift_env (Var vd.vd_id) (get_lift_size vd))
       def.p_in;
 
   Format.sprintf

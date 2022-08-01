@@ -1,5 +1,6 @@
-open Usuba_AST
+open Prelude
 open Basic_utils
+open Usuba_AST
 
 let default_conf : Config.config =
   {
@@ -58,17 +59,14 @@ let default_conf : Config.config =
     step_counter = ref 0;
   }
 
-let default_dir = Varslice (Ident.create_unbound "D")
-let default_m = Mvar (Ident.create_unbound "m")
+let default_dir = Varslice (Ident.create_constant "D")
+let default_m = Mvar (Ident.create_constant "m")
 let bool = Uint (Bslice, Mint 1, 1)
-let make_env () = Hashtbl.create 100
-let env_update env v e = Hashtbl.replace env v e
-let env_remove env v = Hashtbl.remove env v
 
 let rec eval_arith env (e : Usuba_AST.arith_expr) : int =
   match e with
   | Const_e n -> n
-  | Var_e id -> Hashtbl.find env id
+  | Var_e id -> Ident.Hashtbl.find env id
   | Op_e (op, x, y) -> (
       let x' = eval_arith env x in
       let y' = eval_arith env y in
@@ -80,16 +78,15 @@ let rec eval_arith env (e : Usuba_AST.arith_expr) : int =
       | Mod -> if x' >= 0 then x' mod y' else y' + (x' mod y'))
 
 let eval_arith_ne (e : Usuba_AST.arith_expr) : int =
-  eval_arith (Hashtbl.create 100) e
+  eval_arith (Ident.Hashtbl.create 100) e
 
 (* Evaluates the arithmetic expression as much as possible: if the variables are
    in the environment, then replaces them by their values, otherwise let them as is. *)
-let rec simpl_arith (env : (ident, int) Hashtbl.t) (e : arith_expr) : arith_expr
-    =
+let rec simpl_arith (env : int Ident.Hashtbl.t) (e : arith_expr) : arith_expr =
   match e with
   | Const_e _ -> e
   | Var_e id -> (
-      try Const_e (Hashtbl.find env id) with Not_found -> Var_e id)
+      try Const_e (Ident.Hashtbl.find env id) with Not_found -> Var_e id)
   | Op_e (op, x, y) -> (
       let x' = simpl_arith env x in
       let y' = simpl_arith env y in
@@ -105,7 +102,7 @@ let rec simpl_arith (env : (ident, int) Hashtbl.t) (e : arith_expr) : arith_expr
       | _ -> Op_e (op, x', y'))
 
 let simpl_arith_ne (e : arith_expr) : arith_expr =
-  simpl_arith (Hashtbl.create 100) e
+  simpl_arith (Ident.Hashtbl.create 100) e
 
 let gen_list (id : string) (n : int) : string list =
   let rec aux n acc =
@@ -142,23 +139,24 @@ let simple_var_d (id : ident) = make_var_d id bool [] []
 let simple_typed_var_d (id : ident) (typ : typ) = make_var_d id typ [] []
 
 let env_fetch env v =
-  (* try *)
-  Hashtbl.find env v
-
-(* with Not_found -> Printf.fprintf stderr "Not found: %s.\n" v.name; *)
-(*                   assert false *)
+  try Ident.Hashtbl.find env v
+  with Not_found ->
+    Format.eprintf "Not found: %a@." (Ident.pp ~detailed:true ()) v;
+    assert false
 
 (* Constructs a map { fun : def } *)
-let build_env_fun (nodes : def list) : (ident, def) Hashtbl.t =
-  let env_fun = Hashtbl.create 20 in
-  List.iter (fun d -> Hashtbl.add env_fun d.id d) nodes;
+let build_env_fun (nodes : def list) : def Ident.Hashtbl.t =
+  let env_fun = Ident.Hashtbl.create 20 in
+  List.iter (fun d -> Ident.Hashtbl.add env_fun d.id d) nodes;
   env_fun
 
 (* Constructs a map { variables : types } *)
-let build_env_var (p_in : p) (p_out : p) (vars : p) : (ident, typ) Hashtbl.t =
-  let env = Hashtbl.create 20 in
+let build_env_var (p_in : p) (p_out : p) (vars : p) : typ Ident.Hashtbl.t =
+  let env = Ident.Hashtbl.create 20 in
 
-  let add_to_env (vd : var_d) : unit = Hashtbl.replace env vd.vd_id vd.vd_typ in
+  let add_to_env (vd : var_d) : unit =
+    Ident.Hashtbl.replace env vd.vd_id vd.vd_typ
+  in
 
   List.iter add_to_env p_in;
   List.iter add_to_env p_out;
@@ -166,7 +164,7 @@ let build_env_var (p_in : p) (p_out : p) (vars : p) : (ident, typ) Hashtbl.t =
 
   env
 
-let rec typ_size ?(env = Hashtbl.create 10) (t : typ) : int =
+let rec typ_size ?(env = Ident.Hashtbl.create 10) (t : typ) : int =
   match t with
   | Uint (_, _, n) -> n
   | Array (t', s) -> typ_size ~env t' * eval_arith env s
@@ -201,7 +199,8 @@ let get_var_type env (v : var) : typ =
   try get_var_type env v
   with Not_found ->
     Format.eprintf "Error: get_var_type(%a): not found\n"
-      (Usuba_print.pp_var ()) v;
+      (Usuba_print.pp_var ~detailed:true ())
+      v;
     raise Not_found
 
 let get_var_size env (v : var) : int = typ_size @@ get_var_type env v
@@ -265,9 +264,10 @@ let rec get_expr_type env_fun env_var (e : expr) : typ list =
   | Pack (_, _, Some typ) -> [ typ ]
   | Pack (_, _, None) -> assert false
   | Fun (f, _) ->
-      if Ident.name f = "rand" then [ Uint (default_dir, Mint 1, 1) ]
+      if String.equal (Ident.name f) "rand" then
+        [ Uint (default_dir, Mint 1, 1) ]
       else
-        let def = Hashtbl.find env_fun f in
+        let def = Ident.Hashtbl.find env_fun f in
         List.map (fun vd -> vd.vd_typ) def.p_out
   | _ -> assert false
 
@@ -295,8 +295,8 @@ let rec expand_typ (typ : typ) : typ list =
   | Array (t, n) ->
       flat_map (fun _ -> expand_typ t) (gen_list_int (eval_arith_ne n))
 
-let rec expand_var env_var ?(env_it = Hashtbl.create 100) ?(bitslice = false)
-    ?(partial = false) (v : var) : var list =
+let rec expand_var env_var ?(env_it = Ident.Hashtbl.create 100)
+    ?(bitslice = false) ?(partial = false) (v : var) : var list =
   let typ = get_var_type env_var v in
   match typ with
   | Nat -> [ v ]
@@ -320,7 +320,7 @@ let rec expand_var env_var ?(env_it = Hashtbl.create 100) ?(bitslice = false)
           (fun i -> expand_var env_var ~env_it ~bitslice (Index (v, Const_e i)))
           (gen_list_0_int (eval_arith env_it s))
 
-let expand_var_partial env_var ?(env_it = Hashtbl.create 100) (v : var) :
+let expand_var_partial env_var ?(env_it = Ident.Hashtbl.create 100) (v : var) :
     var list =
   expand_var env_var ~env_it ~partial:true v
 
@@ -395,17 +395,14 @@ let rec update_type_m (typ : typ) (m : mtyp) : typ =
 let vd_to_var (vd : var_d) : var = Var vd.vd_id
 let p_to_vars (p : p) : var list = List.map vd_to_var p
 
-let env_fetch (env : ('b, 'a) Hashtbl.t) (id : ident) : 'a option =
+(* XXX: keys should be ident, using [uid] as a perfect hash *)
+type 'a env = (string, 'a) Hashtbl.t
+
+let env_fetch (env : 'a env) (id : ident) : 'a option =
   try
     let v = Hashtbl.find env (Ident.name id) in
     Some v
   with Not_found -> None
-
-let env_contains env key : bool =
-  match env_fetch env key with Some _ -> true | None -> false
-
-(* XXX: keys should be ident, using [uid] as a perfect hash *)
-type 'a env = (string, 'a) Hashtbl.t
 
 let env_add (env : 'a env) (id : ident) (value : 'a) : unit =
   Hashtbl.add env (Ident.name id) value
@@ -465,17 +462,18 @@ let rec get_var_name (v : var) : ident =
   | Var id -> id
   | Index (v, _) | Range (v, _, _) | Slice (v, _) -> get_var_name v
 
-let is_unroll (opts : stmt_opt list) : bool = List.mem Unroll opts
-let is_nounroll (opts : stmt_opt list) : bool = List.mem No_unroll opts
-let is_inline (def : def) : bool = List.mem Inline def.opt
-let is_noinline (def : def) : bool = List.mem No_inline def.opt
-let is_noopt (def : def) : bool = List.mem No_opt def.opt
+(* SMTLIB_IMPORT: List.mem of sum type is authorized *)
+let is_unroll (opts : stmt_opt list) : bool = Stdlib.List.mem Unroll opts
+let is_nounroll (opts : stmt_opt list) : bool = Stdlib.List.mem No_unroll opts
+let is_inline (def : def) : bool = Stdlib.List.mem Inline def.opt
+let is_noinline (def : def) : bool = Stdlib.List.mem No_inline def.opt
+let is_noopt (def : def) : bool = Stdlib.List.mem No_opt def.opt
 
 let is_perm (def : def) : bool =
   match def.node with Perm _ -> true | _ -> false
 
-let is_const (var : var_d) : bool = List.mem Pconst var.vd_opts
-let is_lazyLift (var : var_d) : bool = List.mem PlazyLift var.vd_opts
+let is_const (var : var_d) : bool = Stdlib.List.mem Pconst var.vd_opts
+let is_lazyLift (var : var_d) : bool = Stdlib.List.mem PlazyLift var.vd_opts
 
 let default_bits_per_reg (arch : Config.arch) : int =
   match arch with
@@ -515,8 +513,14 @@ let rec simpl_var_indices (v : var) : var =
   | Index (v', ae) -> Index (simpl_var_indices v', simpl_arith_ne ae)
   | _ -> assert false
 
-let is_builtin (f : ident) : bool =
-  List.mem (Ident.name f) [ "print"; "rand"; "refresh" ]
+let is_builtin =
+  let module ISet = Set.Make (struct
+    type t = Ident.t
+
+    let compare = Ident.compare
+  end) in
+  let set = ISet.add refresh (ISet.add print (ISet.singleton rand)) in
+  fun f -> ISet.mem f set
 
 (* Returns true if |defi| is a single; false otherwise *)
 let is_single (defi : def_i) = match defi with Single _ -> true | _ -> false
@@ -534,7 +538,7 @@ let get_deq_expr (deq : deq) : expr =
 
 let all_vars_same_m (var_l : var_d list) : bool =
   let first_m = get_type_m (List.hd var_l).vd_typ in
-  List.for_all (fun vd -> get_type_m vd.vd_typ = first_m) var_l
+  List.for_all (fun vd -> equal_mtyp (get_type_m vd.vd_typ) first_m) var_l
 
 let absolute_dir dir =
   if String.starts_with ~prefix:"~" dir then

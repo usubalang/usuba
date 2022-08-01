@@ -1,3 +1,4 @@
+open Prelude
 open Usuba_AST
 open Basic_utils
 
@@ -36,7 +37,8 @@ class pass_runner (def_conf : Config.config) =
         : 'a. Format.formatter -> ('a, Format.formatter, unit) format -> 'a =
       fun ppf msg ->
         Format.fprintf ppf "[%s]" (List.hd callers);
-        if List.tl callers <> [] then
+        (* STDLIB_IMPORT: Comparing to an empty list *)
+        if Stdlib.(List.tl callers <> []) then
           Format.fprintf ppf " (%s ->)"
             (join " -> " (List.rev (List.tl callers)));
         Format.fprintf ppf msg
@@ -51,7 +53,9 @@ class pass_runner (def_conf : Config.config) =
       if conf.verbose >= 2 then
         if depth = 1 then Format.eprintf "@,[@[<v 2>%s" name
         else Format.eprintf "@,%s_%03d" name (!(conf.step_counter) + 1);
-      if depth = 0 && conf.dump_steps <> Some AST then incr conf.step_counter;
+      (* STDLIB_IMPORT: Comparing to a sum option (similar to int comparison *)
+      if depth = 0 && Stdlib.(conf.dump_steps <> Some AST) then
+        incr conf.step_counter;
       let prog' = action self prog conf in
 
       if conf.verbose >= 5 then self#printf "done.";
@@ -64,7 +68,8 @@ class pass_runner (def_conf : Config.config) =
            @."
           Usuba_pp.String.(pp_lowercase ~ocaml_ident:true)
           (List.hd callers) !(conf.step_counter)
-          (if conf.dump_steps = Some AST then Usuba_AST.pp_prog
+          (if Option.equal Config.equal_dump_steps conf.dump_steps (Some AST)
+          then Usuba_AST.pp_prog
           else Usuba_print.pp_prog ())
           prog';
       (match conf.dump_steps with
@@ -184,9 +189,11 @@ class pass_runner (def_conf : Config.config) =
 
       Format.printf "[%s] %s: on:%.2f  --  off:%.2f ---> %s@."
         (join " | " in_bench) name perfs_on perfs_off
-        (if perfs_on < perfs_off then "enabling" else "disabling");
+        (* STDLIB_IMPORT: Comparing float *)
+        (if Stdlib.(perfs_on < perfs_off) then "enabling" else "disabling");
 
-      if perfs_on < perfs_off then prog_opt_on else prog_opt_off
+      (* STDLIB_IMPORT: Comparing float *)
+      if Stdlib.(perfs_on < perfs_off) then prog_opt_on else prog_opt_off
 
     (* Just a convenience wrapper to let a module benchmark iself. It is
        used in particular in the Inline and Interleave modules, which

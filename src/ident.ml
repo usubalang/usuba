@@ -3,15 +3,29 @@ open Sexplib.Std
 type uid = int [@@deriving sexp]
 type t = { name : string; uid : uid } [@@deriving sexp]
 
+let equal t1 t2 = String.equal t1.name t2.name
+let hash { name; _ } = Hashtbl.hash name
+let compare t1 t2 = String.compare t1.name t2.name
+
 module Hashtbl = struct
   include Hashtbl.Make (struct
     type nonrec t = t
 
-    let equal t1 t2 = String.equal t1.name t2.name && Int.equal t1.uid t2.uid
-
-    let hash { name; uid; _ } =
-      Hashtbl.hash (Hashtbl.hash name + Hashtbl.hash uid)
+    let equal = equal
+    let hash = hash
   end)
+
+  (* Retrieving the keys of a hash *)
+  let keys hash = fold (fun k _ acc -> k :: acc) hash []
+
+  (* Retrieving the values of a hash *)
+  let values hash = fold (fun _ v acc -> v :: acc) hash []
+
+  (* Getting a list of keys,values *)
+  let each hash = fold (fun k v acc -> (k, v) :: acc) hash []
+
+  (* Retrieving the keys of a HoH's 2nd layer*)
+  let keys_2nd_layer hash k = try keys (find hash k) with Not_found -> []
 end
 
 (* Getters *)
@@ -22,8 +36,22 @@ let uid { uid; _ } = uid
 (* Parsing phase *)
 let create_unbound name = { name; uid = -1 }
 
+(* let create_constant = *)
+(*   let counter = ref 0 in *)
+(*   fun name -> *)
+(*     decr counter; *)
+(*     { name; uid = !counter } *)
+let create_constant name = { name; uid = -1 }
+
 (* Fresh idents *)
-let create_free name = { name; uid = -1 }
+
+let create_free =
+  let counter = ref 0 in
+  fun name ->
+    incr counter;
+    { name; uid = !counter }
+
+(* let create_free name = { name; uid = -1 } *)
 let fresh_suffixed { name; _ } suff = create_free (name ^ suff)
 let fresh_prefixed { name; _ } suff = create_free (suff ^ name)
 let fresh_concat t1 t2 = create_free (t1.name ^ t2.name)
@@ -41,6 +69,3 @@ let pp ?(detailed = false) () ppf { name; uid } =
 
 let pp_create ppf t =
   Format.fprintf ppf {|(Ident.create_unbound "%a")|} (pp ()) t
-
-let equal t1 t2 = String.equal t1.name t2.name
-let compare t1 t2 = String.compare t1.name t2.name
