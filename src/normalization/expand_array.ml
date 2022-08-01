@@ -3,9 +3,15 @@
 
   ( *****************************************************************************)
 
+open Prelude
 open Usuba_AST
 
 type array_fate = Keep | Remove | Split
+
+let ( = ) a b =
+  match (a, b) with
+  | Keep, Keep | Remove, Remove | Split, Split -> true
+  | _ -> false
 
 (* Precision on the "force" parameter that we keep around in most functions:
    It has 3 values possible:
@@ -21,13 +27,11 @@ exception Need_unroll of ident
 
 (* Abstracting Hashtbl.
    This functions should replace the ones in Utils, one day. *)
-let make_env () = Hashtbl.create 100
-let env_add env v e = Hashtbl.replace env v e
-let env_update env v e = Hashtbl.replace env v e
-let env_remove env v = Hashtbl.remove env v
+let env_update env v e = Ident.Hashtbl.replace env v e
+let env_remove env v = Ident.Hashtbl.remove env v
 
 let env_fetch env v =
-  try Hashtbl.find env v
+  try Ident.Hashtbl.find env v
   with Not_found -> raise (Errors.Error ("Not found: " ^ Ident.name v))
 
 (* Using a custom eval_arith to raise Need_unroll with the correct
@@ -36,7 +40,7 @@ let rec eval_arith env (e : Usuba_AST.arith_expr) : int =
   match e with
   | Const_e n -> n
   | Var_e id -> (
-      match Hashtbl.find_opt env id with
+      match Ident.Hashtbl.find_opt env id with
       | Some v -> v
       | None -> raise (Need_unroll id))
   | Op_e (op, x, y) -> (
@@ -49,11 +53,11 @@ let rec eval_arith env (e : Usuba_AST.arith_expr) : int =
       | Div -> x' / y'
       | Mod -> if x' >= 0 then x' mod y' else y' + (x' mod y'))
 
-let rec check_need_unroll_it (env_it : (ident, bool) Hashtbl.t)
-    (ae : arith_expr) : unit =
+let rec check_need_unroll_it (env_it : bool Ident.Hashtbl.t) (ae : arith_expr) :
+    unit =
   match ae with
   | Const_e _ -> ()
-  | Var_e id -> if Hashtbl.mem env_it id then raise (Need_unroll id)
+  | Var_e id -> if Ident.Hashtbl.mem env_it id then raise (Need_unroll id)
   | Op_e (_, x, y) ->
       check_need_unroll_it env_it x;
       check_need_unroll_it env_it y
@@ -69,7 +73,9 @@ let rec uses_var (e : arith_expr) : bool =
 let rec need_to_keep env_keep (v : var) : bool =
   match v with
   | Var id -> (
-      match Hashtbl.find_opt env_keep id with Some _ -> true | _ -> false)
+      match Ident.Hashtbl.find_opt env_keep id with
+      | Some _ -> true
+      | _ -> false)
   | Index (v, _) -> need_to_keep env_keep v
   | _ -> assert false
 
@@ -130,7 +136,7 @@ let rec expand_expr env_var env_keep env env_it force (e : expr) : expr =
            (fun x ->
              match x with
              | Var id -> (
-                 match Hashtbl.find_opt env id with
+                 match Ident.Hashtbl.find_opt env id with
                  | Some i ->
                      Const (i, Some (Utils.get_var_type env_var (Var id)))
                  | None -> ExpVar x)
@@ -162,7 +168,7 @@ let rec expand_expr env_var env_keep env env_it force (e : expr) : expr =
   | Bitmask (e, ae) -> Bitmask (rec_call e, ae)
   | Pack (e1, e2, t) -> Pack (rec_call e1, rec_call e2, t)
   | Fun (f, el) ->
-      if Ident.name f = "refresh" then
+      if String.equal (Ident.name f) "refresh" then
         Fun
           ( f,
             List.map
@@ -190,9 +196,9 @@ let rec do_unroll env_var env_keep env force unroll x ei ef deqs : deq list =
   env_remove env x;
   eqs
 
-and expand_deqs env_var env_keep ?(env = make_env ())
-    ?(env_it : (ident, bool) Hashtbl.t = make_env ()) (force : array_fate)
-    (unroll : bool) (deqs : deq list) : deq list =
+and expand_deqs env_var env_keep ?(env = Ident.Hashtbl.create 100)
+    ?(env_it : bool Ident.Hashtbl.t = Ident.Hashtbl.create 100)
+    (force : array_fate) (unroll : bool) (deqs : deq list) : deq list =
   Basic_utils.flat_map
     (fun deq ->
       match deq.content with
@@ -208,10 +214,11 @@ and expand_deqs env_var env_keep ?(env = make_env ())
             };
           ]
       | Loop (x, ei, ef, deqs, opts) ->
-          Hashtbl.add env_var x Nat;
-          Hashtbl.add env_it x true;
+          Ident.Hashtbl.add env_var x Nat;
+          Ident.Hashtbl.add env_it x true;
+          (* STDLIB_IMPORT: List.mem of sum type *)
           let res =
-            if List.mem Unroll opts || force = Remove || unroll then
+            if Stdlib.List.mem Unroll opts || force = Remove || unroll then
               do_unroll env_var env_keep env force unroll x ei ef deqs
             else
               try
@@ -229,21 +236,21 @@ and expand_deqs env_var env_keep ?(env = make_env ())
                   };
                 ]
               with Need_unroll id ->
-                if id = x then (
+                if Ident.equal id x then (
                   try do_unroll env_var env_keep env force unroll x ei ef deqs
                   with Need_unroll id2 ->
                     (* Unrolling failed and needs to unroll one level
                        higher -> need to clean the environements. *)
-                    Hashtbl.remove env_var x;
-                    Hashtbl.remove env x;
+                    Ident.Hashtbl.remove env_var x;
+                    Ident.Hashtbl.remove env x;
                     raise (Need_unroll id2))
                 else (
                   (* Gonna update one loop above; need to clean the |env_var|. *)
-                  Hashtbl.remove env_var x;
+                  Ident.Hashtbl.remove env_var x;
                   (* No need to clean |env| since |x| can's be in |env| here. *)
                   raise (Need_unroll id))
           in
-          Hashtbl.remove env_var x;
+          Ident.Hashtbl.remove env_var x;
           res)
     deqs
 
@@ -279,19 +286,19 @@ let expand_p (p : p) : p =
    env_keep: in the main: contains the parameters (they should be expanded)
              in the other functions: is empty.*)
 let build_env_keep (p_in : p) (p_out : p) =
-  let env = Hashtbl.create 100 in
+  let env = Ident.Hashtbl.create 100 in
 
-  let f (vd : var_d) = Hashtbl.add env vd.vd_id true in
+  let f (vd : var_d) = Ident.Hashtbl.add env vd.vd_id true in
 
   List.iter f p_in;
   List.iter f p_out;
 
   env
 
-let update_env_var (env_var : (ident, typ) Hashtbl.t) (p_in : p) (p_out : p)
+let update_env_var (env_var : typ Ident.Hashtbl.t) (p_in : p) (p_out : p)
     (vars : p) : unit =
   let add_to_env (vd : var_d) : unit =
-    Hashtbl.replace env_var vd.vd_id vd.vd_typ
+    Ident.Hashtbl.replace env_var vd.vd_id vd.vd_typ
   in
 
   List.iter add_to_env p_in;
@@ -330,7 +337,7 @@ let expand_def (force : array_fate) (unroll : bool) (keep_param : bool)
                                 in the other functions: is empty. *)
           let env_keep =
             if keep_param then build_env_keep def.p_in def.p_out
-            else Hashtbl.create 100
+            else Ident.Hashtbl.create 100
           in
           Single (vars, expand_deqs env_var env_keep force unroll body)
       | _ -> def.node);

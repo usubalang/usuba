@@ -1,3 +1,4 @@
+open Prelude
 open Usuba_AST
 open Basic_utils
 open Utils
@@ -113,7 +114,7 @@ module Split_tuples = struct
             if contains_fun e then [ d ]
             else real_split_tuple env d.orig p e sync
         | Loop (i, ei, ef, dl, opts) ->
-            Hashtbl.add env i Nat;
+            Ident.Hashtbl.add env i Nat;
             let res =
               [
                 {
@@ -122,7 +123,7 @@ module Split_tuples = struct
                 };
               ]
             in
-            Hashtbl.remove env i;
+            Ident.Hashtbl.remove env i;
             res)
       body
 
@@ -144,7 +145,7 @@ let rec norm_tuples_def (def : def) : def =
   in
 
   (* Fixpoint to make sure every tuples are complitely simplified. *)
-  if def <> def' then norm_tuples_def def' else def
+  if not (equal_def def def') then norm_tuples_def def' else def
 
 let rec run (runner : pass_runner) (prog : prog) (conf : Config.config) : prog =
   let prog' =
@@ -154,6 +155,6 @@ let rec run (runner : pass_runner) (prog : prog) (conf : Config.config) : prog =
   in
 
   (* Fixpoint to make sure every tuples are complitely simplified. *)
-  if prog <> prog' then run runner prog' conf else prog'
+  if not (equal_prog prog prog') then run runner prog' conf else prog'
 
 let as_pass = (run, "Norm_tuples", 1)

@@ -1,3 +1,4 @@
+open Prelude
 open Usuba_AST
 
 let run _ prog _ =

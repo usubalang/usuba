@@ -1,3 +1,4 @@
+open Prelude
 open Usuba_AST
 
 let make_env () = Hashtbl.create 100
@@ -48,15 +49,15 @@ let arith_op_to_c_generic = function
   | Mod -> "MOD"
 
 let rec aexpr_to_c (e : arith_expr) : string =
-  match Utils.simpl_arith (make_env ()) e with
+  match Utils.simpl_arith (Ident.Hashtbl.create 100) e with
   | Const_e n -> Format.sprintf "%d" n
   | Var_e x -> rename (Ident.name x)
   | Op_e (op, x, y) ->
       Format.sprintf "(%s %s %s)" (aexpr_to_c x) (arith_op_to_c op)
         (aexpr_to_c y)
 
-let var_to_c (lift_env : (var, int) Hashtbl.t)
-    (env : (string, string) Hashtbl.t) (v : var) : string =
+let var_to_c (lift_env : int VarHashtbl.t) (env : (string, string) Hashtbl.t)
+    (v : var) : string =
   let rec aux (v : var) : string =
     match v with
     | Var id -> (
@@ -66,21 +67,21 @@ let var_to_c (lift_env : (var, int) Hashtbl.t)
     | _ -> assert false
   in
   let cvar = aux v in
-  match Hashtbl.find_opt lift_env (Utils.get_var_base v) with
+  match VarHashtbl.find_opt lift_env (Utils.get_var_base v) with
   | Some n -> Format.sprintf "LIFT_%d(%s)" n cvar
   | None -> cvar
 
-let ret_var_to_c (lift_env : (var, int) Hashtbl.t)
-    (env : (string, string) Hashtbl.t) (env_var : (ident, typ) Hashtbl.t)
-    (v : var) : string =
+let ret_var_to_c (lift_env : int VarHashtbl.t)
+    (env : (string, string) Hashtbl.t) (env_var : typ Ident.Hashtbl.t) (v : var)
+    : string =
   match Utils.get_var_type env_var v with
   | Uint (_, _, 1) -> "&" ^ var_to_c lift_env env v
   | Array _ | Uint _ -> var_to_c lift_env env v
   | _ -> assert false
 
 (* TODO: this 64 and 32 shouldn't be hardcoded *)
-let rec expr_to_c (lift_env : (var, int) Hashtbl.t) (conf : Config.config)
-    (env : (string, string) Hashtbl.t) (env_var : (ident, typ) Hashtbl.t)
+let rec expr_to_c (lift_env : int VarHashtbl.t) (conf : Config.config)
+    (env : (string, string) Hashtbl.t) (env_var : typ Ident.Hashtbl.t)
     (e : expr) : string =
   match e with
   | Const (n, _) -> (
@@ -110,7 +111,7 @@ let rec expr_to_c (lift_env : (var, int) Hashtbl.t) (conf : Config.config)
         (expr_to_c lift_env conf env env_var e)
         (aexpr_to_c ae)
         (Utils.get_expr_reg_size env_var e)
-  | Fun (f, [ v ]) when Ident.name f = "rand" ->
+  | Fun (f, [ v ]) when String.equal (Ident.name f) "rand" ->
       Format.sprintf "%s = RAND();" (expr_to_c lift_env conf env env_var v)
   | _ ->
       raise
@@ -118,8 +119,8 @@ let rec expr_to_c (lift_env : (var, int) Hashtbl.t) (conf : Config.config)
            (Format.asprintf "Wrong expr: %a" (Usuba_print.pp_expr ()) e))
 
 (* TODO: this 64 and 32 shouldn't be hardcoded *)
-let expr_to_c_ret (lift_env : (var, int) Hashtbl.t) (conf : Config.config)
-    (env : (string, string) Hashtbl.t) (env_var : (ident, typ) Hashtbl.t)
+let expr_to_c_ret (lift_env : int VarHashtbl.t) (conf : Config.config)
+    (env : (string, string) Hashtbl.t) (env_var : typ Ident.Hashtbl.t)
     (ret : string) (e : expr) : string =
   match e with
   | Const (n, _) -> (
@@ -150,15 +151,15 @@ let expr_to_c_ret (lift_env : (var, int) Hashtbl.t) (conf : Config.config)
         (expr_to_c lift_env conf env env_var e)
         (aexpr_to_c ae)
         (Utils.get_expr_reg_size env_var e)
-  | Fun (f, [ v ]) when Ident.name f = "rand" ->
+  | Fun (f, [ v ]) when String.equal (Ident.name f) "rand" ->
       Format.sprintf "%s = RAND();" (expr_to_c lift_env conf env env_var v)
   | _ ->
       raise
         (Errors.Error
            (Format.asprintf "Wrong expr: %a" (Usuba_print.pp_expr ()) e))
 
-let fun_call_to_c (lift_env : (var, int) Hashtbl.t) (conf : Config.config)
-    (env : (string, string) Hashtbl.t) (env_var : (ident, typ) Hashtbl.t)
+let fun_call_to_c (lift_env : int VarHashtbl.t) (conf : Config.config)
+    (env : (string, string) Hashtbl.t) (env_var : typ Ident.Hashtbl.t)
     ?(tabs = "  ") (p : var list) (f : ident) (args : expr list) : string =
   Format.sprintf "%s%s(%s,%s);" tabs
     (rename (Ident.name f))
@@ -166,14 +167,15 @@ let fun_call_to_c (lift_env : (var, int) Hashtbl.t) (conf : Config.config)
     (Basic_utils.join ","
        (List.map (fun v -> ret_var_to_c lift_env env env_var v) p))
 
-let rec deqs_to_c (lift_env : (var, int) Hashtbl.t)
-    (env : (string, string) Hashtbl.t) (env_var : (ident, typ) Hashtbl.t)
+let rec deqs_to_c (lift_env : int VarHashtbl.t)
+    (env : (string, string) Hashtbl.t) (env_var : typ Ident.Hashtbl.t)
     (deqs : deq list) ?(tabs = "  ") (conf : Config.config) : string =
   Basic_utils.join "\n"
     (List.map
        (fun deq ->
          match deq.content with
-         | Eqn ([ v ], Fun (f, []), _) when Ident.name f = "rand" ->
+         | Eqn ([ v ], Fun (f, []), _) when String.equal (Ident.name f) "rand"
+           ->
              Format.sprintf "%s%s = RAND();" tabs (var_to_c lift_env env v)
          | Eqn (p, Fun (f, l), _) ->
              fun_call_to_c lift_env conf env env_var ~tabs p f l
@@ -328,12 +330,12 @@ let c_header (arch : Config.arch) : string =
 
 let single_to_c (def : def) (array : bool) (vars : p) (body : deq list)
     (conf : Config.config) : string =
-  let lift_env = Hashtbl.create 100 in
+  let lift_env = VarHashtbl.create 100 in
   if conf.lazylift then
     List.iter
       (fun vd ->
         if Utils.is_const vd then
-          Hashtbl.add lift_env (Var vd.vd_id) (get_lift_size vd))
+          VarHashtbl.add lift_env (Var vd.vd_id) (get_lift_size vd))
       def.p_in;
 
   Format.sprintf

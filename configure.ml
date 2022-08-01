@@ -165,9 +165,9 @@ let gen_config () =
   Format.fprintf ppo {|@[<v 2>let tightprove =@,"%s"@]@,@.|} tightprove;
   Format.fprintf ppo
     {|
-type arch = Std | MMX | SSE | AVX | AVX512 | Neon | AltiVec [@@@deriving show]
-type slicing = H | V | B [@@@deriving show]
-type dump_steps = Usuba | Sexp | AST [@@@deriving show]
+type arch = Std | MMX | SSE | AVX | AVX512 | Neon | AltiVec [@@@deriving show, eq]
+type slicing = H | V | B [@@@deriving show, eq]
+type dump_steps = Usuba | Sexp | AST [@@@deriving show, eq]
 
 type config = {
   output : string;

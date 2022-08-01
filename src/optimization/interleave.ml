@@ -1,3 +1,4 @@
+open Prelude
 open Usuba_AST
 
 (* WARNING: this module contains some old code, poorly written and
@@ -55,9 +56,12 @@ open Usuba_AST
 *)
 module Interleave_generic = struct
   (* Adds the suffix |suffix| at the end of a var *)
-  let rec update_var (env_var : (ident, var_d) Hashtbl.t) (suffix : int)
-      (v : var) : var =
-    if List.mem Pconst (Hashtbl.find env_var (Utils.get_base_name v)).vd_opts
+  let rec update_var (env_var : var_d Ident.Hashtbl.t) (suffix : int) (v : var)
+      : var =
+    if
+      (* SMTLIB_IMPORT: List.mem of sum type is authorized *)
+      Stdlib.List.mem Pconst
+        (Ident.Hashtbl.find env_var (Utils.get_base_name v)).vd_opts
     then v
     else
       match v with
@@ -69,7 +73,7 @@ module Interleave_generic = struct
       | _ -> assert false
 
   (* Adds the suffix |suffix| at the end of the vars contained in |e| *)
-  let rec update_expr (env_var : (ident, var_d) Hashtbl.t) (suffix : int)
+  let rec update_expr (env_var : var_d Ident.Hashtbl.t) (suffix : int)
       (e : expr) : expr =
     match e with
     | Const _ -> e
@@ -86,7 +90,7 @@ module Interleave_generic = struct
 
   (* Duplicates variables in |lhs| (return values of |f|) and
      expressions of |l| (input arguments of |f|). *)
-  let update_funcall (inter_factor : int) (env_var : (ident, var_d) Hashtbl.t)
+  let update_funcall (inter_factor : int) (env_var : var_d Ident.Hashtbl.t)
       (lhs : var list) (f : ident) (l : expr list) (sync : bool) : deq_i =
     let lhs =
       Basic_utils.flat_map
@@ -112,7 +116,7 @@ module Interleave_generic = struct
 
   (* Returns |deqs| with the suffix |suffix| added at the end of each
      of the variables in each of the expression of |deqs|. *)
-  let schedule_deqs (env_var : (ident, var_d) Hashtbl.t) (suffix : int)
+  let schedule_deqs (env_var : var_d Ident.Hashtbl.t) (suffix : int)
       (deqs : deq list) : deq list =
     List.map
       (fun deq ->
@@ -133,7 +137,7 @@ module Interleave_generic = struct
 
   (* Returns |deqs| duplicated |inter_factor| times by calling
      |schedule_deqs| |inter_factor| times. *)
-  let schedule_now (inter_factor : int) (env_var : (ident, var_d) Hashtbl.t)
+  let schedule_now (inter_factor : int) (env_var : var_d Ident.Hashtbl.t)
       (deqs : deq list) : deq list =
     Basic_utils.flat_map
       (fun suffix -> schedule_deqs env_var suffix deqs)
@@ -141,7 +145,7 @@ module Interleave_generic = struct
 
   (* The function that actually does the interleaving. *)
   let interleave_deqs (inter_factor : int) (grain : int)
-      (env_var : (ident, var_d) Hashtbl.t) (deqs : deq list) : deq list =
+      (env_var : var_d Ident.Hashtbl.t) (deqs : deq list) : deq list =
     (* aux iterates |deqs| while constructing a list of |grain|
        instructions that need to be scheduled once after |grain|
        instructions have been seen.
@@ -207,7 +211,10 @@ module Interleave_generic = struct
       (fun vd ->
         vd
         ::
-        (if List.mem Pconst vd.vd_opts then []
+        (if
+         (* SMTLIB_IMPORT: List.mem of sum type is authorized *)
+         Stdlib.List.mem Pconst vd.vd_opts
+        then []
         else
           List.map
             (fun i ->
@@ -224,12 +231,11 @@ module Interleave_generic = struct
   (* Note that local variables (|vars|) can't be const, but it's
      easier it the environment contains all variables (no need to
      find_opt, find is enough). *)
-  let build_env_var (p_in : p) (p_out : p) (vars : p) : (ident, var_d) Hashtbl.t
-      =
-    let env_var = Hashtbl.create 100 in
-    List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd) p_in;
-    List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd) p_out;
-    List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd) vars;
+  let build_env_var (p_in : p) (p_out : p) (vars : p) : var_d Ident.Hashtbl.t =
+    let env_var = Ident.Hashtbl.create 100 in
+    List.iter (fun vd -> Ident.Hashtbl.add env_var vd.vd_id vd) p_in;
+    List.iter (fun vd -> Ident.Hashtbl.add env_var vd.vd_id vd) p_out;
+    List.iter (fun vd -> Ident.Hashtbl.add env_var vd.vd_id vd) vars;
     env_var
 
   let interleave_def (inter_factor : int) (grain : int) (def : def) : def =
@@ -511,10 +517,10 @@ module Dup2_nofunc_param = struct
    *)
 
   let build_complete_env_var (p_in : p) (p_out : p) (vars : p) :
-      (var, var_d) Hashtbl.t =
-    let env = Hashtbl.create 100 in
+      var_d VarHashtbl.t =
+    let env = VarHashtbl.create 100 in
 
-    let add_to_env (vd : var_d) : unit = Hashtbl.add env (Var vd.vd_id) vd in
+    let add_to_env (vd : var_d) : unit = VarHashtbl.add env (Var vd.vd_id) vd in
 
     List.iter add_to_env p_in;
     List.iter add_to_env p_out;
@@ -526,7 +532,9 @@ module Dup2_nofunc_param = struct
     match v with
     | Var id -> (
         match
-          List.mem Pconst (Hashtbl.find env_var (Utils.get_var_base v)).vd_opts
+          (* SMTLIB_IMPORT: List.mem of sum type is authorized *)
+          Stdlib.List.mem Pconst
+            (VarHashtbl.find env_var (Utils.get_var_base v)).vd_opts
         with
         | false -> Var (Ident.bound_copy2 id)
         | true -> v)
@@ -552,7 +560,9 @@ module Dup2_nofunc_param = struct
 
   let dup_var env_var (v : var) : var list =
     match
-      List.mem Pconst (Hashtbl.find env_var (Utils.get_var_base v)).vd_opts
+      (* SMTLIB_IMPORT: List.mem of sum type is authorized *)
+      Stdlib.List.mem Pconst
+        (VarHashtbl.find env_var (Utils.get_var_base v)).vd_opts
     with
     | false -> [ v; make_2nd_var env_var v ]
     | true -> [ v ]
@@ -623,7 +633,8 @@ module Dup2_nofunc_param = struct
   let dup_p (p : p) : p =
     Basic_utils.flat_map
       (fun vd ->
-        match List.mem Pconst vd.vd_opts with
+        (* SMTLIB_IMPORT: List.mem of sum type is authorized *)
+        match Stdlib.List.mem Pconst vd.vd_opts with
         | true -> [ vd ]
         | false -> [ vd; { vd with vd_id = Ident.bound_copy2 vd.vd_id } ])
       p

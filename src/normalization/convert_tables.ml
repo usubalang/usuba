@@ -12,6 +12,7 @@
 
   ( *****************************************************************************)
 
+open Prelude
 open Usuba_AST
 open Basic_utils
 open Utils
@@ -19,8 +20,8 @@ open Utils
 let bitslice = ref false
 
 let rewrite_p (p : p) : var list =
-  let env_var = Hashtbl.create 10 in
-  List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd.vd_typ) p;
+  let env_var = Ident.Hashtbl.create 10 in
+  List.iter (fun vd -> Ident.Hashtbl.add env_var vd.vd_id vd.vd_typ) p;
   flat_map (fun vd -> expand_var env_var ~bitslice:!bitslice (Var vd.vd_id)) p
 
 let tmp_var i = Ident.create_free ("tmp_" ^ string_of_int i)
@@ -129,7 +130,9 @@ let rewrite_single_table (id : ident) (p_in : p) (p_out : p)
     (opt : def_opt list) (l : int list) (conf : Config.config) : def =
   if conf.precal_tbl then
     try
-      let found, _ = List.find (fun (_, b) -> b = l) Sbox_index.sboxes in
+      let found, _ =
+        List.find (fun (_, b) -> List.equal Int.equal b l) Sbox_index.sboxes
+      in
       let sbox_dir = Config.data_dir ^ "/sboxes/" in
       let file_name = sbox_dir ^ found ^ ".ua" in
       let new_node =
@@ -146,13 +149,13 @@ let rewrite_single_table (id : ident) (p_in : p) (p_out : p)
     with Not_found ->
       Simple_opts.opt_def
         (Norm_tuples.norm_tuples_def
-           (Unfold_unnest.norm_def (Hashtbl.create 1)
+           (Unfold_unnest.norm_def (Ident.Hashtbl.create 1)
               (rewrite_table id p_in p_out opt l)))
   else
     let table = rewrite_table id p_in p_out opt l in
     Simple_opts.opt_def
       (Norm_tuples.norm_tuples_def
-         (Unfold_unnest.norm_def (Hashtbl.create 1) table))
+         (Unfold_unnest.norm_def (Ident.Hashtbl.create 1) table))
 
 let rewrite_def (def : def) (conf : Config.config) : def =
   let id = def.id in
@@ -164,7 +167,7 @@ let rewrite_def (def : def) (conf : Config.config) : def =
   | _ -> def
 
 let run _ (prog : prog) (conf : Config.config) : prog =
-  bitslice := conf.slicing_set && conf.slicing_type = B;
+  bitslice := conf.slicing_set && Config.equal_slicing conf.slicing_type B;
   if conf.keep_tables then prog
   else { nodes = List.map (fun x -> rewrite_def x conf) prog.nodes }
 

@@ -1,3 +1,4 @@
+open Prelude
 open Usuba_AST
 
 (* Note: this version of the type-checker is somewhat weak with regard
@@ -32,13 +33,13 @@ let warning_or_error pp_msg backtrace conf =
   Errors.warning_or_error set_error pp_msg backtrace conf
 
 (* Using a custom build_env_fun to check for node redefinition. *)
-let build_env_fun ~conf ~backtrace prog : (ident, def) Hashtbl.t =
+let build_env_fun ~conf ~backtrace prog : def Ident.Hashtbl.t =
   let backtrace = "build_env_fun()" :: backtrace in
-  let env = Hashtbl.create 100 in
+  let env = Ident.Hashtbl.create 100 in
   List.iter
     (fun def ->
-      match Hashtbl.mem env def.id with
-      | false -> Hashtbl.add env def.id def
+      match Ident.Hashtbl.mem env def.id with
+      | false -> Ident.Hashtbl.add env def.id def
       | true ->
           let pp_msg ppf () =
             Format.fprintf ppf "redefinition of function `%s'"
@@ -50,17 +51,17 @@ let build_env_fun ~conf ~backtrace prog : (ident, def) Hashtbl.t =
 
 (* Using a custom build_env_var to check for variable redefinition. *)
 let build_env_var ~conf ~backtrace ~p_in ~p_out vars =
-  let env = Hashtbl.create 100 in
+  let env = Ident.Hashtbl.create 100 in
 
   let add_to_env vd =
-    match Hashtbl.mem env vd.vd_id with
+    match Ident.Hashtbl.mem env vd.vd_id with
     | true ->
         let pp_msg ppf () =
           Format.fprintf ppf "redeclaration of variable `%s'"
             (Ident.name vd.vd_id)
         in
         warning_or_error pp_msg backtrace conf
-    | false -> Hashtbl.add env vd.vd_id vd.vd_typ
+    | false -> Ident.Hashtbl.add env vd.vd_id vd.vd_typ
   in
 
   List.iter add_to_env p_in;
@@ -70,10 +71,10 @@ let build_env_var ~conf ~backtrace ~p_in ~p_out vars =
   env
 
 (* Returns a string representation of env_it *)
-let env_it_to_str (env_it : (ident, int) Hashtbl.t) : string =
+let env_it_to_str (env_it : int Ident.Hashtbl.t) : string =
   Format.sprintf "{%s}"
     (Basic_utils.join ", "
-       (Hashtbl.fold
+       (Ident.Hashtbl.fold
           (fun k v acc -> Format.asprintf "%s:%d" (Ident.name k) v :: acc)
           env_it []))
 
@@ -86,10 +87,10 @@ let rec eval_arith ~backtrace ~env_var ~env_it ae =
   match ae with
   | Const_e n -> n
   | Var_e id -> (
-      match Hashtbl.find env_it id with
+      match Ident.Hashtbl.find env_it id with
       | i -> i
       | exception Not_found -> (
-          match Hashtbl.find env_var id with
+          match Ident.Hashtbl.find env_var id with
           | Nat -> raise Errors.Uncomputable
           | (exception Not_found) | _ ->
               let pp_msg ppf () =
@@ -195,18 +196,21 @@ and check_is_array ~conf ~backtrace ~env_var ~env_it v =
    - we want to check for out of bounds accesses *)
 and get_var_type ~conf ~backtrace ~env_var ~env_it v =
   let backtrace =
-    Format.asprintf "get_var_type(%a)" (Usuba_print.pp_var ()) v :: backtrace
+    Format.asprintf "get_var_type(%a)" (Usuba_print.pp_var ~detailed:true ()) v
+    :: backtrace
   in
   match v with
   | Var x -> (
-      match Hashtbl.find_opt env_var x with
+      match Ident.Hashtbl.find_opt env_var x with
       | Some typ -> typ
       | None -> (
-          match Hashtbl.find_opt env_it x with
+          match Ident.Hashtbl.find_opt env_it x with
           | Some _ -> Nat
           | _ ->
               let pp_msg ppf () =
-                Format.fprintf ppf "variable `%s' undeclared" (Ident.name x)
+                Format.fprintf ppf "variable `%a' undeclared"
+                  (Ident.pp ~detailed:true ())
+                  x
               in
               raise (Errors.Fatal_type_error (pp_msg, backtrace))))
   | Index (v', idx) -> (
@@ -371,7 +375,10 @@ let check_type_eq ~backtrace t1 t2 =
            (Usuba_print.pp_typ ()) t1 (Usuba_print.pp_typ ()) t2 n1 n2
        in
        raise (Errors.Fatal_type_error (pp_msg, backtrace)));
-      if m1 <> m2 && not (is_m_polymorphic m1 || is_m_polymorphic m2) then
+      if
+        (not (equal_mtyp m1 m2))
+        && not (is_m_polymorphic m1 || is_m_polymorphic m2)
+      then
         let pp_msg ppf () =
           Format.fprintf ppf
             "types `%a' and `%a' have different word size: %a vs %a"
@@ -487,7 +494,8 @@ let check_can_be_arithed ~conf ~backtrace typs =
     (fun typ ->
       match Utils.get_type_m typ with
       | Mint n ->
-          if not (List.mem n [ 8; 16; 32; 64 ]) then
+          (* SMTLIB_IMPORT: List.mem of int is authorized *)
+          if not (Stdlib.List.mem n [ 8; 16; 32; 64 ]) then
             let pp_msg ppf () =
               Format.fprintf ppf
                 "invalid word-size: can't perform arithmetics on %d bits" n
@@ -511,10 +519,10 @@ let rec check_aexpr_is_typed ~conf ~backtrace ~env_var ~env_it ae =
   match ae with
   | Const_e _ -> ()
   | Var_e x -> (
-      match Hashtbl.find_opt env_it x with
+      match Ident.Hashtbl.find_opt env_it x with
       | Some _ -> ()
       | None -> (
-          match Hashtbl.find_opt env_var x with
+          match Ident.Hashtbl.find_opt env_var x with
           | Some Nat -> ()
           | _ ->
               let pp_msg1 ppf () =
@@ -522,12 +530,13 @@ let rec check_aexpr_is_typed ~conf ~backtrace ~env_var ~env_it ae =
                   (Ident.name x)
               in
               let pp_msg2 ppf () =
-                if Hashtbl.mem env_var x then
+                if Ident.Hashtbl.mem env_var x then
                   Format.fprintf ppf
                     "a variable with the same name exists, but is not a loop \
                      iterator and therefore cannot be used in an aexpr \
                      (type=%a)"
-                    (Usuba_print.pp_typ ()) (Hashtbl.find env_var x)
+                    (Usuba_print.pp_typ ())
+                    (Ident.Hashtbl.find env_var x)
                 else ()
               in
               let pp_msg3 ppf () =
@@ -536,7 +545,7 @@ let rec check_aexpr_is_typed ~conf ~backtrace ~env_var ~env_it ae =
                     pp_print_list
                       ~pp_sep:(fun ppf () -> Format.fprintf ppf ",")
                       Usuba_pp.String.pp)
-                  (List.map (fun x -> Ident.name x) (Basic_utils.keys env_it))
+                  (List.map (fun x -> Ident.name x) (Ident.Hashtbl.keys env_it))
               in
               let pp_msg ppf () =
                 Format.fprintf ppf "@[<v 0>%a@,%a@,%a@]" pp_msg1 () pp_msg2 ()
@@ -586,8 +595,9 @@ let rec get_expr_type ~conf ~env_fun ~env_var ~env_it e =
         assert false
     | Arith (_, e, _) -> get_expr_type ~conf ~env_fun ~env_var ~env_it e
     | Fun (f, l) | Fun_v (f, _, l) ->
-        if Ident.name f = "rand" then [ Uint (Utils.default_dir, Mint 1, 1) ]
-        else if Ident.name f = "refresh" then (
+        if String.equal (Ident.name f) "rand" then
+          [ Uint (Utils.default_dir, Mint 1, 1) ]
+        else if String.equal (Ident.name f) "refresh" then (
           (if List.length l <> 1 then
            let pp_msg ppf () =
              Format.fprintf ppf "'refresh' can only take one argument for now"
@@ -602,7 +612,7 @@ let rec get_expr_type ~conf ~env_fun ~env_var ~env_it e =
               in
               raise (Errors.Fatal_type_error (pp_msg, backtrace)))
         else
-          let def = Hashtbl.find env_fun f in
+          let def = Ident.Hashtbl.find env_fun f in
           List.map (fun vd -> vd.vd_typ) def.p_out)
 
 (* Sets the type of all untyped consts in |e| to |typ| (not in
@@ -644,7 +654,7 @@ let rec get_nonconsts_bits ~conf ~backtrace ~env_fun ~env_var ~env_it e =
   | Bitmask (e, _) -> rec_call e
   | Pack (e1, e2, _) -> rec_call e1 + rec_call e2 (* TODO: is that correct? *)
   | Fun (f, _) | Fun_v (f, _, _) ->
-      let def = Hashtbl.find env_fun f in
+      let def = Ident.Hashtbl.find env_fun f in
       List.fold_left (fun _ vd -> typ_size vd.vd_typ) 0 def.p_out
 
 (* Gives a type to bitslice constants *)
@@ -656,7 +666,7 @@ let fix_consts_types ~conf ~backtrace ~env_fun ~env_var ~env_it
       (fun typ -> match typ with Uint (_, Mint m, _) -> m = 1 | _ -> false)
       !lhs_types
   in
-  if n_consts = 0 || bitslice = false then e (* Nothing to do *)
+  if n_consts = 0 || Bool.equal bitslice false then e (* Nothing to do *)
   else
     (* Gonna heuristically type constants. We need to find out the
        amount of bits left in the Tuple: we'll split them evenly
@@ -845,7 +855,7 @@ let rec type_expr ~conf ~backtrace ~env_fun ~env_var ~env_it
       (* TODO: check that |ae| is less than the number of bits in |e'| *)
       Bitmask (e, ae)
   | Pack (e1, e2, Some typ) ->
-      (if List.hd !lhs_types <> typ then
+      (if not (equal_typ (List.hd !lhs_types) typ) then
        let pp_msg ppf () =
          Format.fprintf ppf
            "pack should return type '%a' but type '%a' was specified as \
@@ -867,7 +877,7 @@ let rec type_expr ~conf ~backtrace ~env_fun ~env_var ~env_it
       (* Need to match |l| against the parameters of |f|, and the
          return values of |f| against |lhs_types|. *)
       (* TODO: check that |f| isn't a Multiple *)
-      if Ident.name f = "refresh" then (
+      if String.equal (Ident.name f) "refresh" then (
         (if List.length l <> 1 then
          let pp_msg ppf () =
            Format.fprintf ppf "'refresh' can only take one argument for now"
@@ -890,7 +900,7 @@ let rec type_expr ~conf ~backtrace ~env_fun ~env_var ~env_it
             raise (Errors.Fatal_type_error (pp_msg, backtrace)))
       else
         let f =
-          match Hashtbl.find_opt env_fun f with
+          match Ident.Hashtbl.find_opt env_fun f with
           | Some def -> def
           | None ->
               let pp_msg ppf () =
@@ -918,7 +928,7 @@ let rec type_expr ~conf ~backtrace ~env_fun ~env_var ~env_it
           (* Definitely not possible *)
         in
         (* if |param_types| is not empty, then |vs| is larger than |e| *)
-        (if !param_types <> [] then
+        (if List.compare_length_with !param_types 0 > 0 then
          let pp_msg ppf () =
            Format.fprintf ppf
              "unbalanced left/right types: type of rhs is smaller than type of \
@@ -951,7 +961,7 @@ let rec type_expr ~conf ~backtrace ~env_fun ~env_var ~env_it
       check_aexpr_is_typed ~conf ~backtrace ~env_var ~env_it ae;
       (* Note that if we reach that point, then the reccursive call on
          Fun(f,l) made sure that (Hashtbl.find env_fun f) succeeds. *)
-      let f = Hashtbl.find env_fun f in
+      let f = Ident.Hashtbl.find env_fun f in
       (match f.node with
       | Multiple l ->
           let size = List.length l in
@@ -996,7 +1006,8 @@ let type_eqn ~conf ~backtrace ~env_fun ~env_var ~env_it deq
     type_expr ~conf ~backtrace ~env_fun ~env_var ~env_it lhs_types e
   in
   (* if |lhs_types| is not empty, then |vs| is larger than |e| *)
-  (if !lhs_types <> [] then
+  (* STDLIB_IMPORT: Comparing to an empty list *)
+  (if Stdlib.(!lhs_types <> []) then
    let pp_msg ppf () =
      Format.fprintf ppf
        "unbalanced left/right types: type of rhs is smaller than type of lhs. \
@@ -1031,11 +1042,11 @@ let rec type_deqs ~conf ~backtrace ~env_fun ~env_var ~env_it body =
           let typed_dl =
             List.map
               (fun i ->
-                Hashtbl.add env_it x i;
+                Ident.Hashtbl.add env_it x i;
                 let dl =
                   type_deqs ~conf ~backtrace ~env_fun ~env_var ~env_it dl
                 in
-                Hashtbl.remove env_it x;
+                Ident.Hashtbl.remove env_it x;
                 dl)
               (Basic_utils.gen_list_bounds ei_evaled ef_evaled)
           in
@@ -1142,7 +1153,7 @@ let rec type_defi ~conf ~backtrace ~env_fun ~p_in ~p_out defi =
   | Single (vars, body) ->
       let backtrace = "type_defi(Single ...)" :: backtrace in
       let env_var = build_env_var ~conf ~backtrace ~p_in ~p_out vars in
-      let env_it = Hashtbl.create 10 in
+      let env_it = Ident.Hashtbl.create 10 in
       let body = type_deqs ~conf ~backtrace ~env_fun ~env_var ~env_it body in
       Single (vars, body)
   | Perm l ->

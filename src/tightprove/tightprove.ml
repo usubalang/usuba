@@ -1,14 +1,16 @@
+open Prelude
 open Usuba_AST
 open Pass_runner
 
 module Refresh = struct
   (* Replaces variables with their old names before inlining in |deqs|
      (|env| contains the association between old and new names) *)
-  let norm_after_inlining (env : (ident, ident) Hashtbl.t) (deqs : deq list) :
+  let norm_after_inlining (env : ident Ident.Hashtbl.t) (deqs : deq list) :
       deq list =
     let rec norm_var (v : var) : var =
       match v with
-      | Var id -> ( try Var (Hashtbl.find env id) with Not_found -> Var id)
+      | Var id -> (
+          try Var (Ident.Hashtbl.find env id) with Not_found -> Var id)
       | Index (v, ae) -> Index (norm_var v, ae)
       | _ -> assert false
     in
@@ -41,10 +43,10 @@ module Refresh = struct
 
   (* |vd| is a new variable (created using "refresh"), which should be
      added into |f|'s body based on the content of |full_prog|. *)
-  let refresh_function (env_corres : (ident, ident) Hashtbl.t)
-      (refreshes_created : (ident, (var, var) Hashtbl.t) Hashtbl.t)
-      (refreshes_created_back : (ident, (var, var) Hashtbl.t) Hashtbl.t)
-      (f : def) (full_prog : def) (vd : var_d) : deq list * var_d =
+  let refresh_function (env_corres : ident Ident.Hashtbl.t)
+      (refreshes_created : var VarHashtbl.t Ident.Hashtbl.t)
+      (refreshes_created_back : var VarHashtbl.t Ident.Hashtbl.t) (f : def)
+      (full_prog : def) (vd : var_d) : deq list * var_d =
     let new_var = Var vd.vd_id in
     let env_var = Utils.build_env_var f.p_in f.p_out (Utils.get_vars f.node) in
 
@@ -54,7 +56,7 @@ module Refresh = struct
       | [] -> assert false
       | hd :: tl -> (
           match hd.content with
-          | Eqn ([ v ], _, _) when v = new_var -> l
+          | Eqn ([ v ], _, _) when equal_var v new_var -> l
           | _ -> find_vd_init tl)
     in
     let full_prog =
@@ -70,7 +72,8 @@ module Refresh = struct
       | Eqn (_, Fun (_, [ ExpVar v ]), _) -> v
       | _ -> assert false
     in
-    Basic_utils.add_key_2nd_layer refreshes_created f.id new_var rv;
+    Basic_utils.add_key_2nd_layer refreshes_created f.id VarHashtbl.add
+      VarHashtbl.create new_var rv;
 
     (* Step 3: iterate |full_prog| up to where |vd| is first used. *)
     let rec find_first_vd_use (l : deq list) =
@@ -79,8 +82,11 @@ module Refresh = struct
       | hd :: tl -> (
           match hd.content with
           | Eqn (_, e, _) ->
-              if List.exists (fun v -> v = new_var) (Utils.get_used_vars e) then
-                l
+              if
+                List.exists
+                  (fun v -> equal_var v new_var)
+                  (Utils.get_used_vars e)
+              then l
               else find_first_vd_use tl
           | _ -> assert false)
     in
@@ -91,8 +97,11 @@ module Refresh = struct
        replaced by |rv|, and all variables are replaced with their
        names before inlining. *)
     let replace_vd_by_v_var (v : var) =
-      let v = if v = new_var then rv else v in
-      match Basic_utils.find_opt_2nd_layer refreshes_created f.id v with
+      let v = if equal_var v new_var then rv else v in
+      match
+        Basic_utils.find_opt_2nd_layer refreshes_created f.id
+          VarHashtbl.find_opt v
+      with
       | Some v' -> v'
       | None -> v
     in
@@ -129,9 +138,10 @@ module Refresh = struct
       match a with Some _ -> a | None -> b
     in
     let iter2_var (oldv : var) (newv : var) : var option =
-      if newv = new_var then
+      if equal_var newv new_var then
         match
-          Basic_utils.find_opt_2nd_layer refreshes_created_back f.id oldv
+          Basic_utils.find_opt_2nd_layer refreshes_created_back f.id
+            VarHashtbl.find_opt oldv
         with
         | Some r -> Some r
         | None -> Some oldv
@@ -185,7 +195,7 @@ module Refresh = struct
         content =
           Eqn
             ( [ new_var_to_write ],
-              Fun (Ident.create_free "refresh", [ ExpVar really_refreshed ]),
+              Fun (Usuba_AST.refresh, [ ExpVar really_refreshed ]),
               false );
       }
     in
@@ -203,7 +213,7 @@ module Refresh = struct
       match deqs with
       | [] -> []
       | hd :: tl -> (
-          if hd.content = old_first_use_deq then (
+          if equal_deq_i hd.content old_first_use_deq then (
             is_found := true;
             (* insert |vd|'s definition *)
             vd_init
@@ -226,7 +236,7 @@ module Refresh = struct
                   find_deq_in_f tl))
     (* Step 8's functions *)
     and merge_vars (vf : var) (vo : var) : var =
-      if vf = new_var then new_var_to_write else vo
+      if equal_var vf new_var then new_var_to_write else vo
     and merge_expr (ef : expr) (eo : expr) : expr =
       match (ef, eo) with
       | Const _, Const _ -> eo
@@ -241,7 +251,8 @@ module Refresh = struct
       | Arith (_, xf, yf), Arith (op, xo, yo) ->
           Arith (op, merge_expr xf xo, merge_expr yf yo)
       | Fun (_, lf), Fun (f, lo) -> Fun (f, List.map2 merge_expr lf lo)
-      | Fun (f, _), _ when Ident.name f = "refresh" -> raise Errors.Skip
+      | Fun (f, _), _ when String.equal (Ident.name f) "refresh" ->
+          raise Errors.Skip
       | _ -> assert false
     and is_same_orig_deq (d1 : deq) (d2 : deq) : bool =
       let c1 =
@@ -250,7 +261,7 @@ module Refresh = struct
       let c2 =
         match d2.orig with [] -> d2.content | l -> snd (Basic_utils.last l)
       in
-      c1 = c2
+      equal_deq_i c1 c2
     and update_f_body (f_body : deq list) : deq list =
       match f_body with
       | [] -> []
@@ -266,7 +277,7 @@ module Refresh = struct
                       Eqn (lhs, merge_expr e_full_prog e_f_body, sync)
                     in
                     let orig =
-                      if new_eqn <> hd.content then
+                      if not (equal_deq_i new_eqn hd.content) then
                         (f.id, hd.content) :: hd.orig
                       else hd.orig
                     in
@@ -292,18 +303,21 @@ module Refresh = struct
 
     (* Step 9: update |refreshes_created_back| *)
     let rec get_initial_rv (v : var) : var =
-      match Basic_utils.find_opt_2nd_layer refreshes_created f.id v with
+      match
+        Basic_utils.find_opt_2nd_layer refreshes_created f.id
+          VarHashtbl.find_opt v
+      with
       | Some v' -> get_initial_rv v'
       | None -> v
     in
     Basic_utils.replace_key_2nd_layer refreshes_created_back f.id
-      (get_initial_rv rv) new_var;
+      VarHashtbl.replace VarHashtbl.create (get_initial_rv rv) new_var;
 
     (new_body, vd)
 
   (* Finds which the first deq of |def| that is using |vd|, and get
      its origin: this is the def where the refresh needs to go *)
-  let find_node_to_refresh (prog_nodes : (ident, def) Hashtbl.t)
+  let find_node_to_refresh (prog_nodes : def Ident.Hashtbl.t)
       (entry_node : ident) (def : def) (vd : var_d) : def =
     (* Step 1: get list of deqs which use |vd|. *)
     let using_deq =
@@ -311,24 +325,25 @@ module Refresh = struct
         (fun deq ->
           match deq.content with
           | Eqn (_, Fun _, _) -> false (* a refresh -> won't have an origin *)
-          | Eqn (_, e, _) -> List.mem (Var vd.vd_id) (Utils.get_used_vars e)
+          | Eqn (_, e, _) ->
+              List.exists (equal_var (Var vd.vd_id)) (Utils.get_used_vars e)
           | _ -> assert false)
         (Utils.get_body def.node)
     in
     match using_deq.orig with
-    | [] -> Hashtbl.find prog_nodes entry_node
-    | [ (id, _) ] when Ident.name id = "" ->
+    | [] -> Ident.Hashtbl.find prog_nodes entry_node
+    | [ (id, _) ] when String.equal (Ident.name id) "" ->
         (* When inserting a refresh, the non-refreshed equation is
            added to the orig list, with an empty function name.
            (see Tightprove_to_usuba.find_orig) *)
-        Hashtbl.find prog_nodes entry_node
-    | l -> Hashtbl.find prog_nodes (fst (Basic_utils.last l))
+        Ident.Hashtbl.find prog_nodes entry_node
+    | l -> Ident.Hashtbl.find prog_nodes (fst (Basic_utils.last l))
 
   (* |vd| is a new variable (created using "refresh"), which appears
      in |def| and need to be propagated back to a node in |prog_nodes|. *)
-  let insert_refresh (prog_nodes : (ident, def) Hashtbl.t)
-      (refreshes_created : (ident, (var, var) Hashtbl.t) Hashtbl.t)
-      (refreshes_created_back : (ident, (var, var) Hashtbl.t) Hashtbl.t)
+  let insert_refresh (prog_nodes : def Ident.Hashtbl.t)
+      (refreshes_created : var VarHashtbl.t Ident.Hashtbl.t)
+      (refreshes_created_back : var VarHashtbl.t Ident.Hashtbl.t)
       (entry_node : ident) (def : def) (vd : var_d) : unit =
     let env_var = Hashtbl.create 100 in
     List.iter (fun vd -> Hashtbl.add env_var vd.vd_id vd) def.p_in;
@@ -342,12 +357,12 @@ module Refresh = struct
     let f = find_node_to_refresh prog_nodes entry_node def vd in
 
     (* Step 2: update |f| by adding refresh *)
-    let env_corres = Hashtbl.create 100 in
+    let env_corres = Ident.Hashtbl.create 100 in
     Hashtbl.iter
       (fun id vd ->
         match vd.vd_orig with
-        | [] -> Hashtbl.add env_corres id id
-        | l -> Hashtbl.add env_corres id (snd (Basic_utils.last l)).vd_id)
+        | [] -> Ident.Hashtbl.add env_corres id id
+        | l -> Ident.Hashtbl.add env_corres id (snd (Basic_utils.last l)).vd_id)
       env_var;
     let new_body, vd =
       refresh_function env_corres refreshes_created refreshes_created_back f def
@@ -355,7 +370,7 @@ module Refresh = struct
     in
     let new_vars = vd :: Utils.get_vars f.node in
 
-    Hashtbl.replace prog_nodes f.id
+    Ident.Hashtbl.replace prog_nodes f.id
       { f with node = Single (new_vars, new_body) }
 
   (* Computes a hash where keys are refreshed variables, and values
@@ -364,12 +379,12 @@ module Refresh = struct
      exactly the same function in the same way can be identified as
      being "the same". *)
   let compute_refresh_graph (def : def) (refreshed : var_d list) :
-      (var_d, deq list) Hashtbl.t =
+      deq list Var_dHashtbl.t =
     (* Computes a list of deq using |vd| on their right-hand side. *)
     let get_refreshed_list (vd : var_d) : deq list =
       match def.node with
       | Single (vars, body) ->
-          let env = Hashtbl.create 100 in
+          let env = Ident.Hashtbl.create 100 in
           (* Using |gen_id| to avoid false positive because two functions
              would be using the same variable names. *)
           let gen_id ((f, vd) : ident * var_d) =
@@ -380,7 +395,7 @@ module Refresh = struct
           let add_to_env (vd : var_d) : unit =
             match vd.vd_orig with
             | [] -> ()
-            | l -> Hashtbl.add env vd.vd_id (gen_id (Basic_utils.last l))
+            | l -> Ident.Hashtbl.add env vd.vd_id (gen_id (Basic_utils.last l))
           in
           List.iter add_to_env def.p_in;
           List.iter add_to_env def.p_out;
@@ -392,19 +407,19 @@ module Refresh = struct
                  match d.content with
                  | Eqn (_, e, _) ->
                      List.exists
-                       (fun v -> Utils.get_base_name v = vd.vd_id)
+                       (fun v -> Ident.equal (Utils.get_base_name v) vd.vd_id)
                        (Utils.get_used_vars e)
                  | _ -> assert false)
                body)
       | _ -> assert false
     in
 
-    let refresh_graph = Hashtbl.create 100 in
+    let refresh_graph = Var_dHashtbl.create 100 in
 
     List.iter
       (fun vd ->
         let l = get_refreshed_list vd in
-        Hashtbl.add refresh_graph vd l)
+        Var_dHashtbl.add refresh_graph vd l)
       refreshed;
 
     refresh_graph
@@ -420,7 +435,7 @@ module Refresh = struct
     let refreshed =
       List.filter
         (fun r ->
-          let graph = Hashtbl.find refresh_graph r in
+          let graph = Var_dHashtbl.find refresh_graph r in
           match Hashtbl.find_opt seen_graphs graph with
           | Some _ -> false
           | None ->
@@ -430,8 +445,8 @@ module Refresh = struct
     in
 
     (* Storing the nodes as a Hashtbl in order to edit them easily *)
-    let prog_nodes = Hashtbl.create 10 in
-    List.iter (fun d -> Hashtbl.add prog_nodes d.id d) init_prog.nodes;
+    let prog_nodes = Ident.Hashtbl.create 10 in
+    List.iter (fun d -> Ident.Hashtbl.add prog_nodes d.id d) init_prog.nodes;
 
     (* For each function, creating a hash containing the refreshes
        inserted in this function already. *)
@@ -444,13 +459,14 @@ module Refresh = struct
           meaning that x is refreshed by x_R, x_R by x_R_R.
        (This is usefull in function insert_refresh)
     *)
-    let refreshes_created = Hashtbl.create 10 in
-    let refreshes_created_back = Hashtbl.create 10 in
+    let refreshes_created = Ident.Hashtbl.create 10 in
+    let refreshes_created_back = Ident.Hashtbl.create 10 in
     List.iter
-      (fun d -> Hashtbl.add refreshes_created d.id (Hashtbl.create 10))
+      (fun d -> Ident.Hashtbl.add refreshes_created d.id (VarHashtbl.create 10))
       init_prog.nodes;
     List.iter
-      (fun d -> Hashtbl.add refreshes_created d.id (Hashtbl.create 10))
+      (fun d ->
+        Ident.Hashtbl.add refreshes_created_back d.id (VarHashtbl.create 10))
       init_prog.nodes;
 
     (* Now inserting the refreshes in the initial functions *)
@@ -463,13 +479,17 @@ module Refresh = struct
 
     (* Returning the new nodes by looking them up in the Hashtbl (but
        keeping the original order by maping over |init_prog|. *)
-    { nodes = List.map (fun d -> Hashtbl.find prog_nodes d.id) init_prog.nodes }
+    {
+      nodes =
+        List.map (fun d -> Ident.Hashtbl.find prog_nodes d.id) init_prog.nodes;
+    }
 end
 
 let is_call_and_loop_free (def : def) : bool =
   let deq_call_free (deq : deq) : bool =
     match deq.content with
-    | Eqn (_, Fun (f, _), _) -> if Ident.name f = "refresh" then true else false
+    | Eqn (_, Fun (f, _), _) ->
+        if String.equal (Ident.name f) "refresh" then true else false
     | Eqn _ -> true
     | Loop (_, _, _, _, _) -> false
   in
@@ -514,26 +534,26 @@ let match_variables (new_def : def) (old_def : def) : def * var_d list =
   match new_def.node with
   | Single (vars, body) ->
       (* Collecting old vars *)
-      let old_vars = Hashtbl.create 100 in
+      let old_vars = Ident.Hashtbl.create 100 in
       List.iter
-        (fun vd -> Hashtbl.add old_vars vd.vd_id vd)
+        (fun vd -> Ident.Hashtbl.add old_vars vd.vd_id vd)
         (get_varsd old_def.node);
 
       (* Hashtable for new refreshes *)
-      let new_refreshes = Hashtbl.create 10 in
+      let new_refreshes = Var_dHashtbl.create 10 in
 
       (* Updating new vars *)
       let new_vars =
         List.map
           (fun vd ->
-            try Hashtbl.find old_vars vd.vd_id
+            try Ident.Hashtbl.find old_vars vd.vd_id
             with Not_found ->
-              Hashtbl.add new_refreshes vd true;
+              Var_dHashtbl.add new_refreshes vd true;
               vd)
           vars
       in
       ( { new_def with node = Single (new_vars, body) },
-        Basic_utils.keys new_refreshes )
+        Basic_utils.keys new_refreshes Var_dHashtbl.fold )
   | _ -> assert false
 
 (* Refreshes a program which doesn't contain loops *)

@@ -1,5 +1,6 @@
 (* Note: this file needs a full rework. It's too hacky, poorly written, etc. *)
 
+open Prelude
 open Usuba_AST
 open Basic_utils
 open Utils
@@ -86,22 +87,24 @@ let rec get_iterators (ae : arith_expr) : ident list =
    depending on the iterators in |its|. *)
 let expand_with_iterators (its : (ident * arith_expr * arith_expr) list)
     (ae : arith_expr) : arith_expr list =
-  let used_iterators = Hashtbl.create 10 in
-  List.iter (fun idx -> Hashtbl.add used_iterators idx true) (get_iterators ae);
-  let env_it = Hashtbl.create 10 in
+  let used_iterators = Ident.Hashtbl.create 10 in
+  List.iter
+    (fun idx -> Ident.Hashtbl.add used_iterators idx true)
+    (get_iterators ae);
+  let env_it = Ident.Hashtbl.create 10 in
   let rec aux (remaining : (ident * arith_expr * arith_expr) list) :
       arith_expr list =
     match remaining with
     | [] -> [ simpl_arith env_it ae ]
     | (idx, ei, ef) :: tl ->
-        if Hashtbl.mem used_iterators idx then
+        if Ident.Hashtbl.mem used_iterators idx then
           let ei = eval_arith env_it ei in
           let ef = eval_arith env_it ef in
           flat_map
             (fun i ->
-              Hashtbl.add env_it idx i;
+              Ident.Hashtbl.add env_it idx i;
               let r = aux tl in
-              Hashtbl.remove env_it idx;
+              Ident.Hashtbl.remove env_it idx;
               r)
             (gen_list_bounds ei ef)
         else (* Iterator not used in |ae|, skipping it *)
@@ -112,7 +115,7 @@ let expand_with_iterators (its : (ident * arith_expr * arith_expr) list)
 (* Returns all the variables a var |v| can represent depending on
    |its|. *)
 let rec get_used_vars_var (its : (ident * arith_expr * arith_expr) list)
-    (env_var : (ident, typ) Hashtbl.t) (v : var) : var list =
+    (env_var : typ Ident.Hashtbl.t) (v : var) : var list =
   match v with
   | Var _ -> [ v ]
   | Index (v', ae) -> (
@@ -127,13 +130,13 @@ let rec get_used_vars_var (its : (ident * arith_expr * arith_expr) list)
 
 (* Shadowing the definition above *)
 let get_used_vars_var (its : (ident * arith_expr * arith_expr) list)
-    (env_var : (ident, typ) Hashtbl.t) (v : var) : var list =
+    (env_var : typ Ident.Hashtbl.t) (v : var) : var list =
   let vl = get_used_vars_var its env_var v in
   flat_map (expand_var env_var) vl
 
 (* Returns the variables used in an expr (concretized with |its|) *)
 let rec get_used_vars_expr (its : (ident * arith_expr * arith_expr) list)
-    (env_var : (ident, typ) Hashtbl.t) (e : expr) : var list =
+    (env_var : typ Ident.Hashtbl.t) (e : expr) : var list =
   match e with
   | Const _ -> []
   | ExpVar v -> get_used_vars_var its env_var v
@@ -148,7 +151,7 @@ let rec get_used_vars_expr (its : (ident * arith_expr * arith_expr) list)
 
 (* Returns the variables used in a deq (concretized with |its|) *)
 let rec get_used_vars_deq (its : (ident * arith_expr * arith_expr) list)
-    (env_var : (ident, typ) Hashtbl.t) (deq : deq) : var list =
+    (env_var : typ Ident.Hashtbl.t) (deq : deq) : var list =
   match deq.content with
   | Eqn (_, e, _) -> get_used_vars_expr its env_var e
   | Loop (i, ei, ef, dl, _) ->
@@ -156,37 +159,36 @@ let rec get_used_vars_deq (its : (ident * arith_expr * arith_expr) list)
       flat_map (get_used_vars_deq its env_var) dl
 
 let rec schedule_preds (its : (ident * arith_expr * arith_expr) list)
-    (env_var : (ident, typ) Hashtbl.t) (ready : (var, deq) Hashtbl.t)
-    (computed : (deq, bool) Hashtbl.t) (result : deq list ref) (deq : deq) :
-    unit =
+    (env_var : typ Ident.Hashtbl.t) (ready : deq VarHashtbl.t)
+    (computed : bool DeqHashtbl.t) (result : deq list ref) (deq : deq) : unit =
   List.iter
     (fun v ->
-      match Hashtbl.find_opt ready v with
+      match VarHashtbl.find_opt ready v with
       | Some deq' ->
-          if Hashtbl.mem computed deq' then ()
+          if DeqHashtbl.mem computed deq' then ()
           else (
             (* Starting by adding current |deq| to |computed|
                to avoid any cycle in the recursive call below *)
-            Hashtbl.add computed deq' true;
+            DeqHashtbl.add computed deq' true;
             schedule_preds its env_var ready computed result deq';
             result := deq' :: !result)
       | None -> ())
     (get_used_vars_deq its env_var deq)
 
 let add_to_ready (its : (ident * arith_expr * arith_expr) list)
-    (env_var : (ident, typ) Hashtbl.t) (ready : (var, deq) Hashtbl.t)
-    (lhs : var list) (deq : deq) : unit =
+    (env_var : typ Ident.Hashtbl.t) (ready : deq VarHashtbl.t) (lhs : var list)
+    (deq : deq) : unit =
   List.iter
-    (fun v -> Hashtbl.add ready v deq)
+    (fun v -> VarHashtbl.add ready v deq)
     (flat_map (get_used_vars_var its env_var) lhs)
 
 let rec schedule_deqs (its : (ident * arith_expr * arith_expr) list)
-    (env_var : (ident, typ) Hashtbl.t) (deqs : deq list) : deq list =
+    (env_var : typ Ident.Hashtbl.t) (deqs : deq list) : deq list =
   let result = ref [] in
   (* |deqs| but correctly scheduled; to be reversed at the end. *)
-  let computed = Hashtbl.create 10 in
+  let computed = DeqHashtbl.create 10 in
   (* Variables already computed *)
-  let ready = Hashtbl.create 10 in
+  let ready = VarHashtbl.create 10 in
 
   (* Equations ready to be scheduled *)
   List.iter
@@ -194,11 +196,11 @@ let rec schedule_deqs (its : (ident * arith_expr * arith_expr) list)
       match deq.content with
       | Eqn (_, Fun _, _) ->
           schedule_preds its env_var ready computed result deq;
-          Hashtbl.add computed deq true;
+          DeqHashtbl.add computed deq true;
           result := deq :: !result
       | Eqn (lhs, _, _) -> add_to_ready its env_var ready lhs deq
       | Loop (i, ei, ef, dl, opts) ->
-          Hashtbl.add computed deq true;
+          DeqHashtbl.add computed deq true;
           let its = (i, ei, ef) :: its in
           schedule_preds its env_var ready computed result deq;
           result :=
@@ -216,7 +218,7 @@ let rec schedule_deqs (its : (ident * arith_expr * arith_expr) list)
      there is no need to call schedule_preds in this step. *)
   List.iter
     (fun deq ->
-      if Hashtbl.mem computed deq then () else result := deq :: !result)
+      if DeqHashtbl.mem computed deq then () else result := deq :: !result)
     deqs;
 
   List.rev !result

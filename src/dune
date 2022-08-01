@@ -10,6 +10,7 @@
  (libraries unix str usuba_pp sexplib ppx_sexp_conv)
  ; Specifying modules one by one because we don't want to include them all
  (modules
+  prelude
   ; assert_lang
   ident
   ansi_terminal

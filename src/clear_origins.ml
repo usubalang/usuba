@@ -8,6 +8,7 @@
       - all deq's orig fields are set to [].
 *)
 
+open Prelude
 open Usuba_AST
 
 let rec clear_deqs (deqs : deq list) : deq list =

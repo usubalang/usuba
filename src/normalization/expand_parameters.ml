@@ -73,6 +73,7 @@
 
   ( *******************************************************************)
 
+open Prelude
 open Usuba_AST
 open Basic_utils
 open Utils
@@ -95,13 +96,13 @@ let get_vars = function Single (vars, _) -> vars | _ -> assert false
    iterator of the loop being unrolled has been replaced with its
    value for the current iteration. *)
 module Unroll = struct
-  let rec unroll_var (env_it : (ident, int) Hashtbl.t) (v : var) : var =
+  let rec unroll_var (env_it : int Ident.Hashtbl.t) (v : var) : var =
     match v with
     | Var _ -> v
     | Index (v', ae) -> Index (unroll_var env_it v', simpl_arith env_it ae)
     | _ -> assert false
 
-  let rec unroll_expr (env_it : (ident, int) Hashtbl.t) (e : expr) : expr =
+  let rec unroll_expr (env_it : int Ident.Hashtbl.t) (e : expr) : expr =
     match e with
     | Const _ -> e
     | ExpVar v -> ExpVar (unroll_var env_it v)
@@ -117,7 +118,7 @@ module Unroll = struct
     | Fun (f, l) -> Fun (f, List.map (unroll_expr env_it) l)
     | Fun_v _ -> assert false
 
-  let rec unroll_deq (env_it : (ident, int) Hashtbl.t) (deq : deq) : deq =
+  let rec unroll_deq (env_it : int Ident.Hashtbl.t) (deq : deq) : deq =
     {
       deq with
       content =
@@ -137,10 +138,10 @@ module Unroll = struct
      which should be like Loop(i, ei, ef, deqs, _)
   *)
   let do_unroll (i : ident) (ei : int) (ef : int) (deqs : deq list) : deq list =
-    let env_it = Hashtbl.create 1 in
+    let env_it = Ident.Hashtbl.create 1 in
     flat_map
       (fun i_val ->
-        Hashtbl.replace env_it i i_val;
+        Ident.Hashtbl.replace env_it i i_val;
         List.map (unroll_deq env_it) deqs)
       (gen_list_bounds ei ef)
 end
@@ -161,11 +162,11 @@ end
    (this should make it clear why propagate_var_in_index can therefore
     only return a single var while propagate_var returns a var list)
 *)
-let rec propagate_var_in_index (expand_env : (var, var list) Hashtbl.t)
-    (v : var) : var =
+let rec propagate_var_in_index (expand_env : var list VarHashtbl.t) (v : var) :
+    var =
   match v with
   | Index (v', i) -> (
-      match Hashtbl.find_opt expand_env v' with
+      match VarHashtbl.find_opt expand_env v' with
       | Some [ vr ] -> Index (vr, i)
       | None -> Index (propagate_var_in_index expand_env v', i)
       | Some _ ->
@@ -180,15 +181,14 @@ let rec propagate_var_in_index (expand_env : (var, var list) Hashtbl.t)
       assert false
 
 (* See propagate_var_in_index's comment *)
-let propagate_var (expand_env : (var, var list) Hashtbl.t) (v : var) : var list
-    =
+let propagate_var (expand_env : var list VarHashtbl.t) (v : var) : var list =
   (* Indices need to be canonical in order to match in |expand_env| *)
   let v = simpl_var_indices v in
-  match Hashtbl.find_opt expand_env (get_var_base v) with
+  match VarHashtbl.find_opt expand_env (get_var_base v) with
   | None -> [ v ] (* Not the variable we are expanding *)
   | Some _ -> (
       (* It's the variable we are expanding *)
-      match Hashtbl.find_opt expand_env v with
+      match VarHashtbl.find_opt expand_env v with
       | Some v' -> v' (* Not a nested index *)
       | None ->
           (* It's the variable we want to index, but as a
@@ -197,8 +197,7 @@ let propagate_var (expand_env : (var, var list) Hashtbl.t) (v : var) : var list
 
 (* propagate_expr just reccursve through the expressions to call
    propagate_var. *)
-let rec propagate_expr (expand_env : (var, var list) Hashtbl.t) (e : expr) :
-    expr =
+let rec propagate_expr (expand_env : var list VarHashtbl.t) (e : expr) : expr =
   match e with
   | Const _ -> e
   | ExpVar v -> (
@@ -225,8 +224,8 @@ let rec propagate_expr (expand_env : (var, var list) Hashtbl.t) (e : expr) :
    and propagate_vars. Note that in some case (described above in this
    file), loops must be expanded; the catcher for Need_unroll is here
    and takes care of unrolling loops. *)
-let rec propagate_deqs (expand_env : (var, var list) Hashtbl.t)
-    (deqs : deq list) : deq list =
+let rec propagate_deqs (expand_env : var list VarHashtbl.t) (deqs : deq list) :
+    deq list =
   flat_map
     (fun d ->
       match d.content with
@@ -271,7 +270,7 @@ let rec propagate_deqs (expand_env : (var, var list) Hashtbl.t)
    |size|: the size of the array layer being removed from |vd|
    |new_typ|: the type of |vd| after removing its outermost array
 *)
-let expand_in_node (env_fun : (ident, def) Hashtbl.t) (f : def) (vd : var_d)
+let expand_in_node (env_fun : def Ident.Hashtbl.t) (f : def) (vd : var_d)
     (size : int) (new_typ : typ) (is_p_in : bool) : unit =
   (* |expand_env| contains the replacements to use for |vd|.
      For instance:
@@ -279,9 +278,9 @@ let expand_in_node (env_fun : (ident, def) Hashtbl.t) (f : def) (vd : var_d)
       But also,
         x[0] becomes x0, x[1] becomes x1, ...
   *)
-  let expand_env = Hashtbl.create 100 in
+  let expand_env = VarHashtbl.create 100 in
   (* First, add the binding to expand the whole array into variables. *)
-  Hashtbl.replace expand_env (Var vd.vd_id)
+  VarHashtbl.replace expand_env (Var vd.vd_id)
     (List.map
        (fun i -> Var (Ident.fresh_suffixed vd.vd_id (sprintf "%d'" i)))
        (gen_list_0_int size));
@@ -291,7 +290,9 @@ let expand_in_node (env_fun : (ident, def) Hashtbl.t) (f : def) (vd : var_d)
     List.map
       (fun i ->
         let id' = Ident.fresh_suffixed vd.vd_id (sprintf "%d'" i) in
-        Hashtbl.replace expand_env (Index (Var vd.vd_id, Const_e i)) [ Var id' ];
+        VarHashtbl.replace expand_env
+          (Index (Var vd.vd_id, Const_e i))
+          [ Var id' ];
         make_var_d id' new_typ vd.vd_opts vd.vd_orig)
       (gen_list_0_int size)
   in
@@ -301,7 +302,9 @@ let expand_in_node (env_fun : (ident, def) Hashtbl.t) (f : def) (vd : var_d)
 
   (* Updating |f|: its body have been updated, and either its p_in or
      p_out need to be updated. *)
-  let replace l e e' = flat_map (fun x -> if x = e then e' else [ x ]) l in
+  let replace l e e' =
+    flat_map (fun x -> if equal_var_d x e then e' else [ x ]) l
+  in
   let new_node =
     if is_p_in then
       {
@@ -322,12 +325,12 @@ let expand_in_node (env_fun : (ident, def) Hashtbl.t) (f : def) (vd : var_d)
         node = Single (get_vars f.node, body);
       }
   in
-  Hashtbl.replace env_fun new_node.id new_node
+  Ident.Hashtbl.replace env_fun new_node.id new_node
 
 (* Expands |vd| in |f|. if |is_p_in| is true, then |vd| is in |f|'s
    p_in, otherwise, it is in its p_out. This expansion is propagated
    to |f|'s body using |expand_in_node|, which updates |env_fun|. *)
-let expand_p (env_fun : (ident, def) Hashtbl.t) (f : def) (vd : var_d)
+let expand_p (env_fun : def Ident.Hashtbl.t) (f : def) (vd : var_d)
     (is_p_in : bool) : unit =
   (* Getting the size of the array we are expanding, and the new type
      of |vd|. The size is useful because `x` would be expanded to `x0,
@@ -348,7 +351,7 @@ let expand_p (env_fun : (ident, def) Hashtbl.t) (f : def) (vd : var_d)
    and |e| is a function's argument. This function will expand one
    layer of |e|. (ie, if |e| is a 2d array, it will be come a list of
    1d arrays, rather than a List of list of non-arrays) *)
-let expand_expr (env_var : (ident, typ) Hashtbl.t) (e : expr) : expr list =
+let expand_expr (env_var : typ Ident.Hashtbl.t) (e : expr) : expr list =
   match e with
   | Const _ -> [ e ]
   | ExpVar v -> List.map (fun x -> ExpVar x) (expand_var_partial env_var v)
@@ -359,8 +362,8 @@ let expand_expr (env_var : (ident, typ) Hashtbl.t) (e : expr) : expr list =
       assert false
 
 (* See general explanations at the begining of the file. *)
-let rec match_args (env_fun : (ident, def) Hashtbl.t)
-    (env_var : (ident, typ) Hashtbl.t) (f : def) (p : p) (el : expr list) :
+let rec match_args (env_fun : def Ident.Hashtbl.t)
+    (env_var : typ Ident.Hashtbl.t) (f : def) (p : p) (el : expr list) :
     expr list =
   match (p, el) with
   | [], [] -> []
@@ -394,8 +397,8 @@ let rec match_args (env_fun : (ident, def) Hashtbl.t)
    difference is that this one taks as last argument a "var list"
    instead of a "expr list" (because left hand-side of equations are
    variables). *)
-let rec match_ret (env_fun : (ident, def) Hashtbl.t)
-    (env_var : (ident, typ) Hashtbl.t) (f : def) (p : p) (vars : var list) :
+let rec match_ret (env_fun : def Ident.Hashtbl.t)
+    (env_var : typ Ident.Hashtbl.t) (f : def) (p : p) (vars : var list) :
     var list =
   match (p, vars) with
   | [], [] -> []
@@ -422,8 +425,8 @@ let rec match_ret (env_fun : (ident, def) Hashtbl.t)
          successful. *)
       assert false
 
-let rec expand_deq (env_fun : (ident, def) Hashtbl.t)
-    (env_var : (ident, typ) Hashtbl.t) (deq : deq) : deq =
+let rec expand_deq (env_fun : def Ident.Hashtbl.t)
+    (env_var : typ Ident.Hashtbl.t) (deq : deq) : deq =
   {
     deq with
     content =
@@ -431,27 +434,27 @@ let rec expand_deq (env_fun : (ident, def) Hashtbl.t)
       | Eqn (lhs, Fun (id, args), sync) ->
           if is_builtin id then deq.content
           else
-            let f = Hashtbl.find env_fun id in
+            let f = Ident.Hashtbl.find env_fun id in
             let args = match_args env_fun env_var f f.p_in args in
             let ret = match_ret env_fun env_var f f.p_out lhs in
             Eqn (ret, Fun (id, args), sync)
       | Loop (i, ei, ef, dl, opts) ->
-          Hashtbl.add env_var i Nat;
+          Ident.Hashtbl.add env_var i Nat;
           let res =
             Loop (i, ei, ef, List.map (expand_deq env_fun env_var) dl, opts)
           in
-          Hashtbl.remove env_var i;
+          Ident.Hashtbl.remove env_var i;
           res
       | _ -> deq.content);
   }
 (* Not a Funcall, not a Loop, ignoring. *)
 
-let rec expand_def (env_fun : (ident, def) Hashtbl.t) (def : def) : unit =
+let rec expand_def (env_fun : def Ident.Hashtbl.t) (def : def) : unit =
   try
     match def.node with
     | Single (vars, body) ->
         let env_var = build_env_var def.p_in def.p_out vars in
-        Hashtbl.replace env_fun def.id
+        Ident.Hashtbl.replace env_fun def.id
           {
             def with
             node = Single (vars, List.map (expand_deq env_fun env_var) body);
@@ -467,8 +470,8 @@ let rec expand_def (env_fun : (ident, def) Hashtbl.t) (def : def) : unit =
     expand_def env_fun def
 
 let run _ prog _ =
-  let env_fun = Hashtbl.create 100 in
-  List.iter (fun node -> Hashtbl.add env_fun node.id node) prog.nodes;
+  let env_fun = Ident.Hashtbl.create 100 in
+  List.iter (fun node -> Ident.Hashtbl.add env_fun node.id node) prog.nodes;
 
   (* Need to iterate to a fixpoint, as expanding an array might
      introduce new unbalancing. For instance, consider:
@@ -483,10 +486,12 @@ let run _ prog _ =
   while not !stable do
     stable := true;
     List.iter
-      (fun node -> expand_def env_fun (Hashtbl.find env_fun node.id))
+      (fun node -> expand_def env_fun (Ident.Hashtbl.find env_fun node.id))
       prog.nodes
   done;
 
-  { nodes = List.map (fun node -> Hashtbl.find env_fun node.id) prog.nodes }
+  {
+    nodes = List.map (fun node -> Ident.Hashtbl.find env_fun node.id) prog.nodes;
+  }
 
 let as_pass = (run, "Expand_parameters", 0)

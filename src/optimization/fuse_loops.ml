@@ -3,6 +3,7 @@
 
  ********************************************************************)
 
+open Prelude
 open Usuba_AST
 open Basic_utils
 open Utils
@@ -31,29 +32,31 @@ let loop_rec_of_sum (loop : deq) : loop =
 (*                          Main functions                          *)
 
 (* Returns true if |deqs| doesn't use variables that were skipped. *)
-let rec is_mergeable (skipped : (ident, bool) Hashtbl.t) (deqs : deq list) :
-    bool =
+let rec is_mergeable (skipped : bool Ident.Hashtbl.t) (deqs : deq list) : bool =
   List.for_all
     (fun d ->
       match d.content with
       | Eqn (_, e, _) ->
           List.for_all
-            (fun id -> not (Hashtbl.mem skipped id))
+            (fun id -> not (Ident.Hashtbl.mem skipped id))
             (List.map get_base_name (get_used_vars e))
       | Loop (_, _, _, dl, _) -> is_mergeable skipped dl)
     deqs
 
 (* Marks all variables defined by |deq| as 'skipped'. *)
-let rec add_to_skipped (skipped : (ident, bool) Hashtbl.t) (deq : deq) : unit =
+let rec add_to_skipped (skipped : bool Ident.Hashtbl.t) (deq : deq) : unit =
   match deq.content with
   | Eqn (lhs, _, _) ->
-      List.iter (fun v -> Hashtbl.replace skipped (get_base_name v) true) lhs
+      List.iter
+        (fun v -> Ident.Hashtbl.replace skipped (get_base_name v) true)
+        lhs
   | Loop (_, _, _, dl, _) -> List.iter (add_to_skipped skipped) dl
 
 (* |skipped|: the variables definitions that are not going to be fused
    in |outer|. *)
-let rec partition_deqs ?(skipped : (ident, bool) Hashtbl.t = Hashtbl.create 10)
-    (outer : loop) (nexts : deq list) : deq list =
+let rec partition_deqs
+    ?(skipped : bool Ident.Hashtbl.t = Ident.Hashtbl.create 10) (outer : loop)
+    (nexts : deq list) : deq list =
   if !bitslice then
     (* This first version is less aggressive when fusing loops: it
        only fuses that are right next to each others. *)
@@ -69,7 +72,9 @@ let rec partition_deqs ?(skipped : (ident, bool) Hashtbl.t = Hashtbl.create 10)
                                 to check the size of the loop instead, and
                                 if two loops have the same size, fuse
                                 them. TODO! *)
-              (outer.id = i && outer.ei = ei && outer.ef = ef)
+              (Ident.equal outer.id i
+              && equal_arith_expr outer.ei ei
+              && equal_arith_expr outer.ef ef)
               && (* This loop has the same iterator as the
                                    current loop. We need to make sure that:
                                      - it doesn't rely on variables that are not
@@ -97,7 +102,9 @@ let rec partition_deqs ?(skipped : (ident, bool) Hashtbl.t = Hashtbl.create 10)
                     to check the size of the loop instead, and
                     if two loops have the same size, fuse
                     them. TODO! *)
-              (outer.id = i && outer.ei = ei && outer.ef = ef)
+              (Ident.equal outer.id i
+              && equal_arith_expr outer.ei ei
+              && equal_arith_expr outer.ef ef)
               && (* This loop has the same iterator as the
                        current loop. We need to make sure that:
                          - it doesn't rely on variables that are not
@@ -122,7 +129,7 @@ let rec fuse_loops_deqs (deqs : deq list) : deq list =
       match hd.content with
       | Eqn _ -> hd :: fuse_loops_deqs nexts
       | Loop (i, ei, ef, dl, opts) ->
-          if i = Mask.loop_idx then
+          if Ident.equal i Mask.loop_idx then
             let loop = loop_rec_of_sum hd in
             let after = partition_deqs loop nexts in
             { hd with content = Loop (i, ei, ef, loop.dl, opts) }
@@ -139,7 +146,7 @@ let fuse_loops_def (def : def) : def =
   | _ -> def
 
 let run _ (prog : prog) (conf : Config.config) : prog =
-  bitslice := conf.slicing_type = B;
+  bitslice := Config.equal_slicing conf.slicing_type B;
   let prog = { nodes = List.map fuse_loops_def prog.nodes } in
   { nodes = List.map fuse_loops_def prog.nodes }
 

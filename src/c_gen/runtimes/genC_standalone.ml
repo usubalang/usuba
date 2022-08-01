@@ -18,7 +18,8 @@ let bits_per_reg (prog : prog) (conf : Config.config) : int =
 let gen_runtime (orig : prog) (prog : prog) (conf : Config.config)
     (filename : string) : string =
   let entry =
-    if conf.fdti <> "" then
+    (* STDLIB_IMPORT: Comparing to an empty string *)
+    if Stdlib.(conf.fdti <> "") then
       List.(
         Nodes_to_c_fdti.def_to_c
           (nth prog.nodes (length prog.nodes - 1))
@@ -40,7 +41,8 @@ let gen_runtime (orig : prog) (prog : prog) (conf : Config.config)
           conf.arr_entry conf)
   in
   let prog_c =
-    if conf.fdti <> "" then
+    (* STDLIB_IMPORT: Comparing to an empty string *)
+    if Stdlib.(conf.fdti <> "") then
       map_no_end (fun x -> Nodes_to_c_fdti.def_to_c x false conf) prog.nodes
     else if conf.masked then
       map_no_end (fun x -> Nodes_to_c_masked.def_to_c x false conf) prog.nodes
@@ -89,7 +91,8 @@ let gen_runtime (orig : prog) (prog : prog) (conf : Config.config)
      Printf.sprintf "#define MASKING_ORDER %d" conf.shares
     else "")
     (bits_per_reg prog conf)
-    (if conf.fdti <> "" then Nodes_to_c_fdti.c_header conf.archi
+    (* STDLIB_IMPORT: Comparing to an empty string *)
+    (if Stdlib.(conf.fdti <> "") then Nodes_to_c_fdti.c_header conf.archi
     else if conf.masked then Nodes_to_c_masked.c_header conf.archi
     else if conf.ua_masked then Nodes_to_c_ua_masked.c_header conf.archi
     else Nodes_to_c.c_header conf.archi)

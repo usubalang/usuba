@@ -1,3 +1,4 @@
+open Prelude
 open Usuba_AST
 
 let sum_type = List.fold_left (fun tot vd -> tot + Utils.typ_size vd.vd_typ) 0
@@ -7,7 +8,7 @@ let sum_type = List.fold_left (fun tot vd -> tot + Utils.typ_size vd.vd_typ) 0
 let reduce_same_list l =
   try
     List.fold_left
-      (fun acc t -> if acc = t then acc else raise Exit)
+      (fun acc t -> if equal_typ acc t then acc else raise Exit)
       (List.hd l) l
   with Exit ->
     Format.eprintf "Error: list [%a] isn't type-homogeneous.@."
@@ -52,11 +53,12 @@ let rec get_expr_type env_fun env_var (ltyp : typ list) (e : expr) : typ list =
   | Bitmask (e, _) -> get_expr_type env_fun env_var ltyp e
   | Pack (_, _, Some typ) -> [ typ ]
   | Fun (f, l) ->
-      if Ident.name f = "rand" then [ Uint (Utils.default_dir, Mint 1, 1) ]
-      else if Ident.name f = "refresh" then
+      if String.equal (Ident.name f) "rand" then
+        [ Uint (Utils.default_dir, Mint 1, 1) ]
+      else if String.equal (Ident.name f) "refresh" then
         Basic_utils.flat_map (get_expr_type env_fun env_var ltyp) l
       else
-        let def = Hashtbl.find env_fun f in
+        let def = Ident.Hashtbl.find env_fun f in
         List.map (fun vd -> vd.vd_typ) def.p_out
   | _ -> assert false
 
@@ -80,13 +82,13 @@ let rec var_of_its (its : (ident * int) list) (id : ident) : var =
 
 let gen_tmp =
   let cpt = ref 0 in
-  fun (env_var : (ident, typ) Hashtbl.t) (its : (ident * int) list) (typ : typ) ->
+  fun (env_var : typ Ident.Hashtbl.t) (its : (ident * int) list) (typ : typ) ->
     incr cpt;
     let id = Ident.create_free ("_tmp" ^ string_of_int !cpt ^ "_") in
     let var = var_of_its its id in
     let its = List.rev its in
     let typ = typ_of_its its typ in
-    Hashtbl.replace env_var id typ;
+    Ident.Hashtbl.replace env_var id typ;
     (id, var, typ)
 
 (* flatten_expr removes nested tuples *)
@@ -137,7 +139,7 @@ let rec expand_expr env_var (e : expr) : expr list =
   | Bitmask _ -> [ e ] (* TODO: is that correct? *)
   | Pack _ -> [ e ] (* TODO: is that correct? *)
   | Fun (f, l) ->
-      if Ident.name f = "refresh" && List.length l <> 1 then
+      if String.equal (Ident.name f) "refresh" && List.length l <> 1 then
         Basic_utils.flat_map
           (fun v -> expand_expr env_var (Fun (f, [ v ])))
           (Basic_utils.flat_map (expand_expr env_var) l)
@@ -306,7 +308,7 @@ and norm_expr env_var env_fun (its : (ident * int) list)
         in
         Pack (e1', e2', typ) )
   | Fun (f, l) ->
-      if Ident.name f = "refresh" && List.length l > 1 then
+      if String.equal (Ident.name f) "refresh" && List.length l > 1 then
         norm_expr env_var env_fun its (dir, mtyp) ltyp
           (Tuple (List.map (fun v -> Fun (f, [ v ])) l))
       else

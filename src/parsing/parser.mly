@@ -1,5 +1,6 @@
 
 %{
+  open Prelude
   open Usuba_AST
   open Utils
   exception Syntax_error

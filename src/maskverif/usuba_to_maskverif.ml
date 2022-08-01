@@ -1,3 +1,4 @@
+open Prelude
 open Usuba_AST
 
 let ident_to_str id = Str.global_replace (Str.regexp "'") "_" (Ident.name id)
@@ -35,7 +36,7 @@ let var_to_str = function
         (Usuba_print.pp_var ()) v;
       assert false
 
-let rec expr_to_str (env_var : (ident, typ) Hashtbl.t) = function
+let rec expr_to_str (env_var : typ Ident.Hashtbl.t) = function
   | Const (c, Some (Uint (_, Mint m, _))) -> Format.sprintf "[0x%x:w%d; 0D]" c m
   | ExpVar v -> var_to_str v
   | Log (Xor, x, y) ->
@@ -66,7 +67,7 @@ let pat_to_str pat =
   | [ x ] -> var_to_str x
   | _ -> "(" ^ Basic_utils.join "," (List.map var_to_str pat) ^ ")"
 
-let deq_to_str (env_var : (ident, typ) Hashtbl.t) (d : deq) : string =
+let deq_to_str (env_var : typ Ident.Hashtbl.t) (d : deq) : string =
   match d.content with
   | Eqn (pat, e, _) ->
       Format.sprintf "  %s %s= %s;\n" (pat_to_str pat)

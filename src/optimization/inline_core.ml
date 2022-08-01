@@ -1,3 +1,4 @@
+open Prelude
 open Usuba_AST
 
 let gen_iterator =
@@ -6,12 +7,12 @@ let gen_iterator =
     incr cpt;
     Ident.create_free (Format.sprintf "%s%d" (Ident.name id) !cpt)
 
-let rec update_aexpr_idx (it_env : (var, var) Hashtbl.t) (ae : arith_expr) :
+let rec update_aexpr_idx (it_env : var VarHashtbl.t) (ae : arith_expr) :
     arith_expr =
   match ae with
   | Const_e _ -> ae
   | Var_e id -> (
-      match Hashtbl.find_opt it_env (Var id) with
+      match VarHashtbl.find_opt it_env (Var id) with
       | Some (Var v) -> Var_e v
       | _ -> Var_e id)
   | Op_e (op, x, y) ->
@@ -32,19 +33,19 @@ let add_iterators (its : (ident * int) list) (v : var) : var =
   let base = Utils.get_var_base v in
   replace_base v (create_new_base its base)
 
-let rec update_in_var (it_env : (var, var) Hashtbl.t) (v : var) : var =
+let rec update_in_var (it_env : var VarHashtbl.t) (v : var) : var =
   match v with
   | Var _ -> v
   | Index (v', ae) -> Index (update_in_var it_env v', update_aexpr_idx it_env ae)
   | _ -> assert false
 
-let rec update_var_to_var (it_env : (var, var) Hashtbl.t)
-    (var_env : (var, var) Hashtbl.t) (v : var) : var =
+let rec update_var_to_var (it_env : var VarHashtbl.t)
+    (var_env : var VarHashtbl.t) (v : var) : var =
   let v = update_in_var it_env v in
-  match Hashtbl.find_opt it_env v with
+  match VarHashtbl.find_opt it_env v with
   | Some v' -> v'
   | None -> (
-      match Hashtbl.find_opt var_env v with
+      match VarHashtbl.find_opt var_env v with
       | Some v' -> v'
       | None -> (
           match v with
@@ -55,25 +56,25 @@ let rec update_var_to_var (it_env : (var, var) Hashtbl.t)
           | _ -> assert false))
 
 (* /!\ Shadowing definition above *)
-let update_var_to_var (its : (ident * int) list) (it_env : (var, var) Hashtbl.t)
-    (var_env : (var, var) Hashtbl.t) (extern_vars : (ident, bool) Hashtbl.t)
-    (v : var) : var =
+let update_var_to_var (its : (ident * int) list) (it_env : var VarHashtbl.t)
+    (var_env : var VarHashtbl.t) (extern_vars : bool Ident.Hashtbl.t) (v : var)
+    : var =
   let v = update_var_to_var it_env var_env v in
-  match Hashtbl.find_opt extern_vars (Utils.get_base_name v) with
+  match Ident.Hashtbl.find_opt extern_vars (Utils.get_base_name v) with
   | Some _ ->
       v (* Variable comes from "outside" (ie, parameter/return values) *)
   | None -> add_iterators its v
 
-let rec update_var_to_expr (it_env : (var, var) Hashtbl.t)
-    (var_env : (var, var) Hashtbl.t) (expr_env : (var, expr) Hashtbl.t)
-    (v : var) : expr =
-  match Hashtbl.find_opt it_env v with
+let rec update_var_to_expr (it_env : var VarHashtbl.t)
+    (var_env : var VarHashtbl.t) (expr_env : expr VarHashtbl.t) (v : var) : expr
+    =
+  match VarHashtbl.find_opt it_env v with
   | Some v' -> ExpVar v'
   | None -> (
-      match Hashtbl.find_opt expr_env v with
+      match VarHashtbl.find_opt expr_env v with
       | Some e -> e
       | None -> (
-          match Hashtbl.find_opt var_env v with
+          match VarHashtbl.find_opt var_env v with
           | Some v' -> ExpVar v'
           | None -> (
               match v with
@@ -94,9 +95,8 @@ and expr_to_aexpr (e : expr) : arith_expr =
   | _ -> assert false
 
 (* TODO: this is quite messy, as we are mixing aexpr and expr ... *)
-and update_aexpr (it_env : (var, var) Hashtbl.t)
-    (var_env : (var, var) Hashtbl.t) (expr_env : (var, expr) Hashtbl.t)
-    (ae : arith_expr) : arith_expr =
+and update_aexpr (it_env : var VarHashtbl.t) (var_env : var VarHashtbl.t)
+    (expr_env : expr VarHashtbl.t) (ae : arith_expr) : arith_expr =
   let rec_call = update_aexpr it_env var_env expr_env in
   match ae with
   | Const_e _ -> ae
@@ -105,23 +105,22 @@ and update_aexpr (it_env : (var, var) Hashtbl.t)
   | Op_e (op, x, y) -> Op_e (op, rec_call x, rec_call y)
 
 (* /!\ Shadowing definition above *)
-let update_var_to_expr (its : (ident * int) list)
-    (it_env : (var, var) Hashtbl.t) (var_env : (var, var) Hashtbl.t)
-    (expr_env : (var, expr) Hashtbl.t) (extern_vars : (ident, bool) Hashtbl.t)
-    (v : var) : expr =
+let update_var_to_expr (its : (ident * int) list) (it_env : var VarHashtbl.t)
+    (var_env : var VarHashtbl.t) (expr_env : expr VarHashtbl.t)
+    (extern_vars : bool Ident.Hashtbl.t) (v : var) : expr =
   let e = update_var_to_expr it_env var_env expr_env v in
   match e with
   | ExpVar v -> (
-      match Hashtbl.find_opt extern_vars (Utils.get_base_name v) with
+      match Ident.Hashtbl.find_opt extern_vars (Utils.get_base_name v) with
       | Some _ ->
           e (* Variable comes from "outside" (ie, parameter/return values) *)
       | None -> ExpVar (add_iterators its v))
   | _ -> e
 
 (* Convert variables names inside an expression *)
-let rec update_expr (its : (ident * int) list) (it_env : (var, var) Hashtbl.t)
-    (var_env : (var, var) Hashtbl.t) (expr_env : (var, expr) Hashtbl.t)
-    (extern_vars : (ident, bool) Hashtbl.t) (e : expr) : expr =
+let rec update_expr (its : (ident * int) list) (it_env : var VarHashtbl.t)
+    (var_env : var VarHashtbl.t) (expr_env : expr VarHashtbl.t)
+    (extern_vars : bool Ident.Hashtbl.t) (e : expr) : expr =
   let rec_call = update_expr its it_env var_env expr_env extern_vars in
   match e with
   | Const _ -> e
@@ -145,8 +144,8 @@ let rec update_expr (its : (ident * int) list) (it_env : (var, var) Hashtbl.t)
 (* Convert the variable names, and update deq's orig with |f| (since
    those deqs are being inlined from |f| into another node). *)
 let rec update_vars_and_deqs (its : (ident * int) list)
-    (it_env : (var, var) Hashtbl.t) (var_env : (var, var) Hashtbl.t)
-    (expr_env : (var, expr) Hashtbl.t) (extern_vars : (ident, bool) Hashtbl.t)
+    (it_env : var VarHashtbl.t) (var_env : var VarHashtbl.t)
+    (expr_env : expr VarHashtbl.t) (extern_vars : bool Ident.Hashtbl.t)
     (f : ident) (body : deq list) : deq list =
   List.map
     (fun d ->
@@ -161,7 +160,7 @@ let rec update_vars_and_deqs (its : (ident * int) list)
                   sync )
           | Loop (i, ei, ef, dl, opts) ->
               let i' = gen_iterator i in
-              Hashtbl.add it_env (Var i) (Var i');
+              VarHashtbl.add it_env (Var i) (Var i');
               let updated =
                 Loop
                   ( i',
@@ -171,7 +170,7 @@ let rec update_vars_and_deqs (its : (ident * int) list)
                       f dl,
                     opts )
               in
-              Hashtbl.remove it_env (Var i);
+              VarHashtbl.remove it_env (Var i);
               updated);
       })
     body
@@ -206,21 +205,21 @@ let inline_call (its : (ident * int) list) (to_inl : def) (args : expr list)
   let p_out = to_inl.p_out in
 
   (* alpha-conversion environments *)
-  let var_env = Hashtbl.create 100 in
-  let extern_vars = Hashtbl.create 100 in
-  let expr_env = Hashtbl.create 100 in
+  let var_env = VarHashtbl.create 100 in
+  let extern_vars = Ident.Hashtbl.create 100 in
+  let expr_env = VarHashtbl.create 100 in
   (* p_out replaced by the lhs *)
   List.iter2
     (fun vd v ->
-      Hashtbl.add var_env (Var vd.vd_id) v;
-      Hashtbl.add extern_vars (Utils.get_base_name v) true)
+      VarHashtbl.add var_env (Var vd.vd_id) v;
+      Ident.Hashtbl.add extern_vars (Utils.get_base_name v) true)
     p_out lhs;
   (* p_in replaced by the expressions of arguments *)
   List.iter2
     (fun vd e ->
-      Hashtbl.add expr_env (Var vd.vd_id) e;
+      VarHashtbl.add expr_env (Var vd.vd_id) e;
       List.iter
-        (fun v -> Hashtbl.add extern_vars (Utils.get_base_name v) true)
+        (fun v -> Ident.Hashtbl.add extern_vars (Utils.get_base_name v) true)
         (Utils.get_used_vars e))
     p_in args;
   (* Create a list containing the new variables names *)
@@ -236,11 +235,11 @@ let inline_call (its : (ident * int) list) (to_inl : def) (args : expr list)
   in
   (* nodes variables alpha-converted *)
   List.iter2
-    (fun vd vd' -> Hashtbl.add var_env (Var vd.vd_id) (Var vd'.vd_id))
+    (fun vd vd' -> VarHashtbl.add var_env (Var vd.vd_id) (Var vd'.vd_id))
     vars_inl vars;
 
   ( update_vars its vars,
-    update_vars_and_deqs its (Hashtbl.create 10) var_env expr_env extern_vars
+    update_vars_and_deqs its (VarHashtbl.create 10) var_env expr_env extern_vars
       to_inl.id body_inl )
 
 (* Inline all the calls to "to_inl" in a given node
@@ -260,7 +259,7 @@ let rec inline_in_node ?(its : (ident * int) list = []) ?(cnt : int ref = ref 0)
       (List.map
          (fun eqn ->
            match eqn.content with
-           | Eqn (lhs, Fun (f, l), _) when Ident.name f = f_inl ->
+           | Eqn (lhs, Fun (f, l), _) when String.equal (Ident.name f) f_inl ->
                incr cnt;
                inline_call its to_inl l lhs !cnt
            | Eqn _ -> ([], [ eqn ])
@@ -281,7 +280,7 @@ let rec inline_in_node ?(its : (ident * int) list = []) ?(cnt : int ref = ref 0)
 let do_inline (prog : prog) (to_inline : def) : prog =
   {
     nodes =
-      List.filter (fun def -> def.id <> to_inline.id)
+      List.filter (fun def -> not (Ident.equal def.id to_inline.id))
       @@ List.map
            (fun def ->
              match def.node with
