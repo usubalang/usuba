@@ -19,3 +19,7 @@ opam install -y dune menhir
 
 # Installing required modules for Perl scripts
 sudo cpanm Crypt::Mode::ECB
+
+# Install samples and benchmarks
+git clone https://github.com/usubalang/examples.git && \
+git clone https://github.com/usubalang/benchmarks.git

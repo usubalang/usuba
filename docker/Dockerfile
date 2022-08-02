@@ -67,8 +67,15 @@ RUN echo ". ~/motd.sh" >> $HOME/.bashrc
 
 # Bring Usuba
 RUN git clone https://github.com/DadaIsCrazy/usuba.git && \
-    cd usuba && ./configure.pl && opam config exec -- make
+    git clone https://github.com/usubalang/examples.git && \
+    git clone https://github.com/usubalang/benchmarks.git
 
-ENTRYPOINT [ "opam", "config", "exec", "--" ]
-#CMD ["/bin/bash", "-c", "cd usuba/bench && perl run_benchs.pl" ]
-CMD ["/bin/bash", "-c", "ulimit -s unlimited && cd usuba && perl bench_perfs.pl" ]
+# Add new layer after cloning is finished
+ RUN cp -r ./examples/samples ./usuba/ && \
+    cp -r ./benchmarks/bench ./usuba/ && \
+ cd usuba && opam config exec -- make
+
+#ENTRYPOINT [ "opam", "config", "exec", "--" ]
+#CMD ["/bin/bash", "-c", "cd benchmarks && perl run_benchs.pl" ]
+#CMD ["/bin/bash", "-c", "ulimit -s unlimited && cd benchmarks && perl run_benchs.pl" ]
+
