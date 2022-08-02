@@ -32,15 +32,22 @@ USER eval
 ENV HOME /home/eval
 WORKDIR /home/eval
 
-# Bring Coq & Menhir
+# Bring Coq, Menhir, and dune
 RUN opam init --disable-sandboxing -a -y && \
     opam install -y -j4 coq.8.8.1           \
                         menhir.20180905
+                        #dune which version?
 
 # Bring up Perl dependencies
-RUN sudo cpanm install -f File::Copy::Recursive \
-                          JSON                  \
-                          Statistics::Test::WilcoxonRankSum
+RUN sudo cpanm install -f App::cpanminus \
+                        Crypt::Mode::ECB \
+                        Crypt::Mode::CTR \
+                        File::Copy::Recursive \
+                        JSON \
+                        List::MoreUtils \
+                        Data::Printer \
+                        Statistics::Test::WilcoxonRankSum \
+                        require::relative
 
 # Bring ICC
 COPY --chown=eval config.cfg /tmp/icc-config.cfg
@@ -65,10 +72,16 @@ ENV INTEL_LICENSE_FILE="/home/eval/intel/licenses/"
 COPY motd.sh $HOME/
 RUN echo ". ~/motd.sh" >> $HOME/.bashrc
 
-# Bring Usuba
-RUN git clone https://github.com/DadaIsCrazy/usuba.git && \
-    cd usuba && ./configure.pl && opam config exec -- make
+# Bring Usuba (not from live repo)
+RUN git clone https://github.com/DadaIsCrazy/usuba.git && \ 
+    git clone --recursive https://github.com/usubalang/benchmarks.git  
 
-ENTRYPOINT [ "opam", "config", "exec", "--" ]
-#CMD ["/bin/bash", "-c", "cd usuba/bench && perl run_benchs.pl" ]
-CMD ["/bin/bash", "-c", "ulimit -s unlimited && cd usuba && perl bench_perfs.pl" ]
+# Add new layer after cloning is finished
+WORKDIR /home/eval/usuba
+RUN ulimit -s unlimited && opam exec -- make
+
+
+
+#RUN cd ~/benchmarks/ && perl run_benchs.pl" ]
+
+
