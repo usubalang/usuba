@@ -1,302 +1,214 @@
-
 %{
   open Prelude
   open Usuba_AST
   open Utils
-  exception Syntax_error
 
-  (* convert a left_asgn list into an expression *)
+  (* convert a left_assign list into an expression *)
   let left_to_right (l: var list) : expr =
     match l with
-     | [] -> raise Syntax_error
-     | x::[] -> ExpVar x
+     | [] -> assert false
+     | [x] -> ExpVar x
      | _ -> Tuple (List.map (fun x -> ExpVar x) l)
+
+  type 'a decl = DSingle of 'a | DMultiple of 'a list
+
 %}
 
-/*******************\
-|*      tokens     *|
-\*******************/
-%token TOK_NODE
-%token TOK_RETURN
-%token TOK_VAR
-%token TOK_LET
-%token TOK_TEL
-%token TOK_PERM
-%token TOK_TABLE
-%token TOK_FORALL
-%token TOK_IN
-%token TOK_SHUFFLE
-%token TOK_BITMASK
-%token TOK_PACK
-%token TOK_INLINE
-%token TOK_NOINLINE
-%token TOK_UNROLL
-%token TOK_NOUNROLL
-%token TOK_INTERLEAVE
-%token TOK_NOOPT
-%token TOK_CONST
-%token TOK_LAZYLIFT
-%token TOK_PIPELINED
-%token TOK_SAFEEXIT
-%token TOK_INCLUDE
+/*******************/
+/*      TOKENS     */
+/*******************/
 
-%token TOK_NAT
-%token TOK_B
-%token TOK_U
-%token TOK_V
-%token TOK_CROSS
+/* Declaration type token */
+%token NODE PERM TABLE ARRAY INCLUDE
+/* Keywords inside declaration */
+%token RETURN
+%token VAR LET TEL FORALL IN
+/* Options */
+%token SHUFFLE BITMASK PACK INLINE NOINLINE UNROLL NOUNROLL INTERLEAVE NOOPT
+%token CONST LAZYLIFT PIPELINED
 
-%token TOK_LPAREN
-%token TOK_RPAREN
-%token TOK_LBRACKET
-%token TOK_RBRACKET
-%token TOK_LCURLY
-%token TOK_RCURLY
-%token TOK_EQUAL
-%token TOK_COMMA
-%token TOK_COLON
-%token TOK_SEMICOLON
-%token TOK_PIPE
-%token TOK_LROTATE
-%token TOK_LSHIFT
-%token TOK_RROTATE
-%token TOK_RSHIFT
-%token TOK_RASHIFT
-%token TOK_RANGE
-%token TOK_LT
-%token TOK_GT
-%token TOK_SQUOTE
+/* Characters */
+%token LPAREN RPAREN LBRACKET RBRACKET LCURLY RCURLY
+%token EQUAL COMMA COLON SEMICOLON PIPE
+%token LROTATE LSHIFT RROTATE RSHIFT RASHIFT
+%token RANGE LT GT
+/* Operators */
+%token AND TILDE BANG XOR
+%token PLUS STAR DASH SLASH MOD
 
-%token TOK_AND
-%token TOK_TILDE
-%token TOK_XOR
+/* Values */
+%token <Usuba_AST.ident * Usuba_AST.typ option> IDENT
+%token <Usuba_AST.typ> TYPE
+%token <string> STRING
+%token <int> INT
 
-%token TOK_PLUS
-%token TOK_STAR
-%token TOK_DASH
-%token TOK_SLASH
-%token TOK_MOD
-
-%token <Usuba_AST.ident> TOK_id
-%token <Usuba_AST.ident> TOK_id_no_x
-%token <int> TOK_int
-%token <Usuba_AST.dir> TOK_dir
-%token <string> TOK_str
-
-%token TOK_EOF
+/* End of file */
+%token EOF
 
 
 (***************************** Precedence levels ******************************)
 
-%nonassoc TOK_LSHIFT TOK_RSHIFT TOK_RASHIFT TOK_LROTATE TOK_RROTATE
+%nonassoc LSHIFT RSHIFT RASHIFT LROTATE RROTATE
 
-%left TOK_PLUS TOK_DASH
-%left TOK_STAR TOK_SLASH TOK_MOD
+%left PLUS DASH
+%left STAR SLASH MOD
 
-%left TOK_AND TOK_XOR TOK_PIPE
-%nonassoc TOK_TILDE
-
-%left TOK_id_no_x TOK_U TOK_B TOK_V TOK_IN TOK_CROSS TOK_dir
-%left TOK_id
+%left AND XOR PIPE
+%nonassoc TILDE BANG
 
 
 (******************************** Entry Point *********************************)
 %start<Usuba_AST.def_or_inc list> prog
-%start<Usuba_AST.arith_expr> arith_exp_a
-%start<Usuba_AST.var> var_a
-%start<Usuba_AST.expr> exp_a
-%start<Usuba_AST.deq> deq_a
-%start<Usuba_AST.def> def_a
 
 %%
 
 prog:
-  | body=list(def_or_inc) TOK_EOF { body }
+  | body=list(def_or_inc) EOF { body }
 
 %inline log_op:
-  | TOK_AND   { And }
-  | TOK_PIPE  { Or  }
-  | TOK_XOR   { Xor }
+  | AND   { And }
+  | PIPE  { Or  }
+  | XOR   { Xor }
 
 %inline arith_op:
-  | TOK_PLUS  { Add }
-  | TOK_STAR  { Mul }
-  | TOK_DASH  { Sub }
-  | TOK_SLASH { Div }
-  | TOK_MOD   { Mod }
+  | PLUS  { Add }
+  | STAR  { Mul }
+  | DASH  { Sub }
+  | SLASH { Div }
+  | MOD   { Mod }
 
 %inline shift_op:
-  | TOK_LSHIFT  { Lshift  }
-  | TOK_RSHIFT  { Rshift  }
-  | TOK_RASHIFT { RAshift }
-  | TOK_LROTATE { Lrotate }
-  | TOK_RROTATE { Rrotate }
+  | LSHIFT  { Lshift  }
+  | RSHIFT  { Rshift  }
+  | RASHIFT { RAshift }
+  | LROTATE { Lrotate }
+  | RROTATE { Rrotate }
 
-ident:
-  | id=ident_no_x { id }
-  | id=TOK_id     { id }
-  | s=ident e=ident %prec TOK_id_no_x { Ident.create_free (Ident.name s ^ Ident.name e) }
+%inline ident:
+  | id = IDENT { let id, _ = id in id }
 
-ident_no_x:
-  | id=TOK_id_no_x  { id }
-  | TOK_IN     { Ident.create_free "in" }
-  | TOK_CROSS  { Ident.create_free "x"  }
-  | TOK_U id=ident_no_x  { Ident.create_free ("u" ^ Ident.name id) }
-  | TOK_B id=ident_no_x  { Ident.create_free ("b" ^ Ident.name id) }
-  | TOK_V id=ident_no_x  { Ident.create_free ("v" ^ Ident.name id) }
-  | TOK_U n=TOK_int { Ident.create_free ("u" ^ (string_of_int n)) }
-  | TOK_B n=TOK_int { Ident.create_free ("b" ^ (string_of_int n)) }
-  | TOK_V n=TOK_int { Ident.create_free ("v" ^ (string_of_int n)) }
-  | TOK_U n=TOK_int id=ident_no_x { Ident.create_free ("u" ^ (string_of_int n) ^ Ident.name id) }
-  | TOK_B n=TOK_int id=ident_no_x { Ident.create_free ("b" ^ (string_of_int n) ^ Ident.name id) }
-  | TOK_V n=TOK_int id=ident_no_x { Ident.create_free ("v" ^ (string_of_int n) ^ Ident.name id) }
-  | TOK_U      { Ident.create_free "u"  }
-  | TOK_B      { Ident.create_free "b"  }
-  | TOK_V      { Ident.create_free "v"  }
-  | d=TOK_dir  { match d with
-                 | Hslice -> Ident.create_free "H"
-                 | Vslice -> Ident.create_free "V"
-                 | Bslice -> Ident.create_free "B"
-                 | _ -> raise Syntax_error }
+%inline typ_or_typ_ident:
+  | id = IDENT
+    { let id, t = id in
+      match t with
+      | None -> raise (Errors.Malformed_type (Ident.name id))
+      | Some t -> t }
+  | t = TYPE { t }
 
-arith_exp:
-  | TOK_LPAREN e=arith_exp TOK_RPAREN { e }
-  | n = TOK_int { Const_e n }
-  | x = ident  { Var_e x }
-  | e1=arith_exp op=arith_op e2=arith_exp { Op_e(op,e1,e2) }
-arith_exp_a: ae=arith_exp TOK_EOF { ae }
+%public arith_exp:
+  | LPAREN e = arith_exp RPAREN { e }
+  | n = INT { Const_e n }
+  | id = ident  { Var_e id }
+  | e1 = arith_exp op = arith_op e2 = arith_exp { Op_e (op, e1, e2) }
 
-var:
-  | id=ident { Var id  }
-  | v=var TOK_LBRACKET n=arith_exp TOK_RBRACKET { Index (v,n) }
-  | v=var TOK_LBRACKET ei=arith_exp TOK_RANGE ef=arith_exp TOK_RBRACKET
-    { Range(v,ei,ef) }
-  | v=var TOK_LBRACKET e1=arith_exp TOK_COMMA
-    l=separated_nonempty_list(TOK_COMMA,arith_exp) TOK_RBRACKET
-    { Slice(v,e1::l) }
-var_a: v=var TOK_EOF { v }
+%public var:
+  | id = ident
+    { Var id }
+  | v = var LBRACKET ae = arith_exp RBRACKET
+    { Index (v, ae) }
+  | v = var LBRACKET aei = arith_exp RANGE aef = arith_exp RBRACKET
+    { Range (v, aei, aef) }
+  | v = var LBRACKET ae = arith_exp COMMA ae_list = separated_nonempty_list(COMMA, arith_exp) RBRACKET
+    { Slice (v, ae :: ae_list) }
 
-exp:
-  | TOK_LPAREN e=exp TOK_RPAREN { e }
-  | x=TOK_int { Const(x,None) }
-  | x=TOK_int TOK_COLON t=typ { Const(x,Some t) }
-  | x=var { ExpVar x }
+
+typ_expl: COLON t = typ { t }
+
+%public exp:
+  | LPAREN e = exp RPAREN
+    { e }
+  | x = INT
+    { Const(x, None) }
+  | x = INT COLON t = typ
+    { Const(x, Some t) }
+  | x = var
+    { ExpVar x }
     (* note that a tuple has at least 2 elements (enforced by the following rule) *)
-  | TOK_LPAREN e1=exp TOK_COMMA t=explist TOK_RPAREN  { Tuple (e1::t) }
-  | TOK_SHUFFLE TOK_LPAREN v=var TOK_COMMA TOK_LBRACKET
-    l=separated_nonempty_list(TOK_COMMA, TOK_int) TOK_RBRACKET TOK_RPAREN
-     { Shuffle(v,l) }
-  | v=var TOK_LCURLY l=separated_nonempty_list(TOK_COMMA, TOK_int) TOK_RCURLY
-     { Shuffle(v,l) }
-  | x=exp o=log_op y=exp   { Log(o,x,y) }
-  | x=exp o=arith_op y=exp { Arith(o,x,y) }
-  | x=exp o=shift_op y=arith_exp { Shift(o,x,y) }
-  | TOK_TILDE x=exp { Not x }
-  | TOK_BITMASK TOK_LPAREN e=exp TOK_COMMA ae=arith_exp TOK_RPAREN { Bitmask(e,ae) }
-  | TOK_PACK TOK_LPAREN e1=exp TOK_COMMA e2=exp TOK_RPAREN { Pack(e1,e2,None) }
-  | TOK_PACK TOK_LPAREN e1=exp TOK_COMMA e2=exp TOK_RPAREN
-    TOK_COLON t=typ { Pack(e1,e2,Some t) }
-  | f=ident TOK_LPAREN args=explist TOK_RPAREN { Fun(f, args) }
-  | f=ident TOK_LT n=arith_exp TOK_GT
-    TOK_LPAREN args=explist TOK_RPAREN { Fun_v(f, n, args) }
-exp_a: e=exp TOK_EOF { e }
+  | LPAREN e = exp COMMA exp_list = separated_nonempty_list(COMMA, exp) RPAREN
+    { Tuple (e :: exp_list) }
+  | SHUFFLE LPAREN v=var COMMA LBRACKET
+      int_list = separated_nonempty_list(COMMA, INT) RBRACKET RPAREN
+    { Shuffle(v, int_list) }
+  | v = var LCURLY int_list = separated_nonempty_list(COMMA, INT) RCURLY
+    { Shuffle(v, int_list) }
+  | e1 = exp op = log_op e2 = exp
+    { Log(op , e1, e2) }
+  | e1 = exp op = arith_op e2 = exp
+    { Arith(op , e1, e2) }
+  | e1 = exp op = shift_op e2 = arith_exp
+    { Shift(op , e1, e2) }
+  | TILDE e = exp
+    { Not e }
+  | BANG e = exp
+    { Not e }
+  | BITMASK LPAREN e = exp COMMA ae = arith_exp RPAREN
+    { Bitmask(e, ae) }
+  | PACK LPAREN e1 = exp COMMA e2 = exp RPAREN t = option(typ_expl)
+    { Pack(e1, e2, t) }
+  | f = ident LPAREN args = explist RPAREN
+    { Fun(f, args) }
+  | f = ident LT ae = arith_exp GT LPAREN args = explist RPAREN
+    { Fun_v(f, ae , args) }
 
-explist: l=separated_nonempty_list(TOK_COMMA,exp) { l }
-
+explist: l = separated_nonempty_list(COMMA, exp) { l }
 
 pat:
   | p=var                      { [ p ] }
-  | TOK_LPAREN l=separated_nonempty_list(TOK_COMMA,var) TOK_RPAREN   { l }
+  | LPAREN l=separated_nonempty_list(COMMA,var) RPAREN   { l }
 
 _norec_deq:
-  | p=pat TOK_EQUAL e=exp              { Eqn( p, e, false ) }
-  | p=pat op=log_op TOK_EQUAL e=exp    { Eqn( p, Log(op,left_to_right p,e), false) }
-  | p=pat op=arith_op TOK_EQUAL e=exp  { Eqn( p, Arith(op,left_to_right p,e), false) }
-  | p=pat TOK_COLON TOK_EQUAL e=exp              { Eqn( p, e, true) }
-  | p=pat op=log_op TOK_COLON TOK_EQUAL e=exp    { Eqn( p, Log(op,left_to_right p,e), true) }
-  | p=pat op=arith_op TOK_COLON TOK_EQUAL e=exp  { Eqn( p, Arith(op,left_to_right p,e), true) }
+  | p = pat imperative = boption(COLON) EQUAL e = exp
+    { Eqn( p, e, imperative ) }
+  | p = pat op = log_op imperative = boption(COLON) EQUAL e=exp
+    { Eqn( p, Log(op, left_to_right p, e), imperative) }
+  | p = pat op = arith_op imperative = boption(COLON) EQUAL e=exp
+    { Eqn( p, Arith(op, left_to_right p, e), imperative) }
 
-norec_deq:
-  | d=_norec_deq { { content = d; orig = [] } }
+%public norec_deq:
+  | d = _norec_deq { { content = d; orig = [] } }
 
 opt_stmt:
-   | TOK_UNROLL    { Unroll    }
-   | TOK_NOUNROLL  { No_unroll }
-   | TOK_PIPELINED { Pipelined }
-   | TOK_SAFEEXIT  { Safe_exit }
+   | UNROLL    { Unroll    }
+   | NOUNROLL  { No_unroll }
+   | PIPELINED { Pipelined }
 
-deq_forall:
- | opts=list(opt_stmt) TOK_FORALL i=ident TOK_IN TOK_LBRACKET startr=arith_exp
-   TOK_COMMA endr=arith_exp TOK_RBRACKET TOK_LCURLY d=deqs TOK_RCURLY
-    { { content = Loop(i, startr, endr, d, opts); orig = [] } }
+%public deq_forall:
+ | opts = list(opt_stmt) FORALL id = ident IN LBRACKET startae = arith_exp
+   COMMA endae = arith_exp RBRACKET LCURLY d = deqs RCURLY
+    { { content = Loop(id, startae, endae, d, opts); orig = [] } }
 
 (* Doesn't use the |deq| rule because it would make semicolons mandatory after
    foralls. *)
 deqs:
-  | d=deq_forall list(TOK_SEMICOLON) ds=deqs { d :: ds }
-  | d=norec_deq  nonempty_list(TOK_SEMICOLON) ds=deqs { d :: ds }
-  | d=deq_forall list(TOK_SEMICOLON)  { [ d ] }
-  | d=norec_deq  list(TOK_SEMICOLON)  { [ d ] }
-
-deq:
-  | d=deq_forall { d }
-  | d=norec_deq  { d }
-deq_a: d=deq TOK_EOF { d }
+  | d = deq_forall list(SEMICOLON) ds=deqs { d :: ds }
+  | d = norec_deq  nonempty_list(SEMICOLON) ds=deqs { d :: ds }
+  | d = deq_forall list(SEMICOLON)  { [ d ] }
+  | d = norec_deq  list(SEMICOLON)  { [ d ] }
 
 opt_var_d:
-  TOK_CONST { Pconst }
-  | TOK_LAZYLIFT { PlazyLift }
+  | CONST    { Pconst }
+  | LAZYLIFT { PlazyLift }
 
 var_d:
-  ids=separated_list(TOK_COMMA, ident) TOK_COLON attr=list(opt_var_d) t=typ
-  { List.map (fun x -> { vd_id = x; vd_typ=t; vd_opts=attr; vd_orig=[] }) ids }
+  | ids = separated_nonempty_list(COMMA, ident) COLON vd_opts = list(opt_var_d)
+vd_typ = typ
+  { List.map (fun vd_id -> { vd_id; vd_typ; vd_opts; vd_orig = [] }) ids }
 
 p:
-  | l=separated_list(TOK_COMMA, var_d) { List.flatten l }
-
-dir:
-  | { default_dir }
-  | TOK_LT dir=TOK_dir TOK_GT { dir }
-  | TOK_LT i=TOK_int   TOK_GT { Mslice i }
-  | TOK_LT TOK_SQUOTE id=ident TOK_GT { Varslice id }
-
-mtyp:
-  | i=TOK_int { Mint i }
-  | TOK_SQUOTE id=ident_no_x { Mvar id }
-
-
-primitive_typ:
-  | TOK_NAT  { Nat  }
-  (* u<D>mxn *)
-  | TOK_U dir=dir m=mtyp xn=TOK_id
-    { let s  = Ident.name xn in
-      let re = Str.regexp "^x\\([0-9]+\\)$" in
-      match Str.string_match re s 0 with
-      | true ->  let n_str :string = Str.matched_group 1 s in
-                 let n:int     = int_of_string n_str in
-                 Uint(dir,m,n)
-      | false -> raise Syntax_error
-      }
-  (* u<D>m *)
-  | TOK_U dir=dir m=mtyp { Uint(dir, m, 1) }
-  (* b<D>n *)
-  | TOK_B dir=dir n=TOK_int { Uint(dir, Mint 1, n) }
-  (* v<D>n *)
-  | TOK_V dir=dir n=TOK_int { Uint(dir, default_m, n) }
-
+  | var_list = separated_list(COMMA, var_d) { List.flatten var_list }
 
 typ:
-  | t=primitive_typ sizes=list(delimited(TOK_LBRACKET,arith_exp,TOK_RBRACKET))
-    { match sizes with
+  | t = typ_or_typ_ident sizes = list(delimited(LBRACKET, arith_exp, RBRACKET))
+    {
+      match sizes with
       | [] -> t
       | _ -> List.fold_right (fun s i -> Array(i, Const_e (eval_arith_ne s))) sizes t }
 
-
 opt_def:
-   | TOK_INLINE   { Inline    }
-   | TOK_NOINLINE { No_inline }
-   | TOK_INTERLEAVE TOK_LPAREN n=TOK_int TOK_RPAREN { Interleave n }
-   | TOK_NOOPT    { No_opt    }
+   | INLINE   { Inline    }
+   | NOINLINE { No_inline }
+   | INTERLEAVE LPAREN n = INT RPAREN { Interleave n }
+   | NOOPT    { No_opt    }
 
 
 def_or_inc:
@@ -304,62 +216,70 @@ def_or_inc:
    | s=inc { Inc s }
 
 inc:
-  | TOK_INCLUDE s=TOK_str { s }
+  | INCLUDE s = STRING { s }
 
-def:
+is_perm:
+  | PERM { true }
+  | TABLE { false }
+
+%public def:
   (* A node *)
-  | opts=list(opt_def) TOK_NODE f=ident TOK_LPAREN p_in=p TOK_RPAREN
-    TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
-    TOK_VAR vars=p TOK_LET body=deqs TOK_TEL
-    { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Single(vars,body) } }
-  (* A node without local variables *)
-  | opts=list(opt_def) TOK_NODE f=ident TOK_LPAREN p_in=p TOK_RPAREN
-    TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
-    TOK_LET body=deqs TOK_TEL
-    { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Single([],body) } }
-  (* A permutation *)
-  | opts=list(opt_def) TOK_PERM f=ident TOK_LPAREN p_in=p TOK_RPAREN
-    TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
-    TOK_LCURLY l=intlist TOK_RCURLY
-  { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Perm l } }
-  (* A table *)
-  | opts=list(opt_def) TOK_TABLE f=ident TOK_LPAREN p_in=p TOK_RPAREN
-    TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN
-    TOK_LCURLY l=intlist TOK_RCURLY
-  { { id=f;p_in=p_in;p_out=p_out;opt=Is_table::opts;node=Table l } }
+  | opt = list(opt_def) NODE is_array = boption(ARRAY) id = ident
+    LPAREN p_in = p RPAREN
+    RETURN LPAREN p_out = p RPAREN
+    body = node_body
+    {
+      let node = match is_array, body with
+        | true, DMultiple l -> Multiple (List.map (fun (x, y) -> Single (x, y)) l)
+        | true, DSingle _ ->
+           let loc = $loc(is_array) in
+           raise (Errors.Table_of_single (loc, "node"))
+        | false, DSingle (vars, body) -> Single (vars, body)
+        | false, DMultiple _ ->
+           let loc = $loc(is_array) in
+           raise (Errors.Single_of_table (loc, "node"))
+      in
+      { id; p_in; p_out; opt; node } }
+  (* A permutation or table *)
+  | opt = list(opt_def) is_perm = is_perm is_array = boption(ARRAY) id = ident
+    LPAREN p_in = p RPAREN
+    RETURN LPAREN p_out = p RPAREN
+    body = perm_or_table_body
+    {
+      let opt = if is_perm then opt else Is_table::opt in
+      let node = match is_array, body with
+        | true, DMultiple l -> Multiple (List.map (fun x -> if is_perm then Perm x else Table x) l)
+        | true, DSingle _ ->
+           let loc = $loc(is_array) in
+           raise (Errors.Table_of_single (loc,
+                    (if is_perm then "perm" else "table")))
+        | false, DSingle e -> if is_perm then Perm e else Table e
+        | false, DMultiple _ ->
+           let loc = $loc(is_array) in
+           raise (Errors.Single_of_table (loc,
+                    (if is_perm then "perm" else "table")))
+      in
+      { id; p_in; p_out; opt; node } }
 
-  (* ARRAYS *)
-  (* An array of nodes *)
-  | opts=list(opt_def) TOK_NODE TOK_LBRACKET TOK_RBRACKET f=ident TOK_LPAREN p_in=p
-    TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
-    l = def_list TOK_RBRACKET
-    { { id=f;p_in=p_in;p_out=p_out;opt=opts;
-        node=Multiple (List.map (fun (x,y) -> Single(x,y)) l) } }
-  (* An array of permutations *)
-  | opts=list(opt_def) TOK_PERM TOK_LBRACKET TOK_RBRACKET f=ident TOK_LPAREN p_in=p
-    TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
-    l = permlist TOK_RBRACKET
-  { { id=f;p_in=p_in;p_out=p_out;opt=opts;node=Multiple (List.map (fun x -> Perm x ) l) } }
-  (* An array of table *)
-  | opts=list(opt_def) TOK_TABLE TOK_LBRACKET TOK_RBRACKET f=ident TOK_LPAREN p_in=p
-    TOK_RPAREN TOK_RETURN TOK_LPAREN p_out=p TOK_RPAREN TOK_LBRACKET
-    l = permlist TOK_RBRACKET
-  { { id=f;p_in=p_in;p_out=p_out;opt=Is_table::opts;
-      node=Multiple (List.map (fun x -> Table x) l) } }
-def_a: d=def TOK_EOF { d }
+/* Permutations or tables body */
+perm_or_table_body:
+  | e = p_or_t_body_elem
+    { DSingle e }
+  | LBRACKET dl = separated_nonempty_list(SEMICOLON, p_or_t_body_elem) RBRACKET
+    { DMultiple dl }
 
-intlist: l=separated_nonempty_list(TOK_COMMA, TOK_int) { l }
+p_or_t_body_elem:
+  | l = delimited(LCURLY, separated_nonempty_list(COMMA, INT), RCURLY)
+    { l }
 
-permlist:
-  | l=separated_nonempty_list(TOK_SEMICOLON,
-                              delimited(TOK_LCURLY,intlist,TOK_RCURLY)) { l }
+/* Nodes body */
+node_body:
+  | e = node_body_elem
+    { DSingle e }
+  | LBRACKET dl = separated_nonempty_list(SEMICOLON, node_body_elem) RBRACKET
+    { DMultiple dl }
 
-def_list:
-  l=separated_nonempty_list(TOK_SEMICOLON, def_list_elem)
-                           { l }
+node_body_elem:
+  | vars = loption (vars) LET body=deqs TEL { vars, body }
 
-def_list_elem:
-  | TOK_VAR vars=p TOK_LET body=deqs TOK_TEL { vars,body }
-  | TOK_LET body=deqs TOK_TEL { [],body }
-
-%%
+vars: VAR vars = p { vars }

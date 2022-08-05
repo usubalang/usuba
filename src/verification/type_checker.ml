@@ -29,6 +29,16 @@ open Usuba_AST
 let error = ref false
 let set_error () = error := true
 
+let pp ppf h =
+  Ident.Hashtbl.iter
+    (fun id t ->
+      Format.fprintf ppf "%a: %a@,"
+        Ident.(pp ~detailed:true ())
+        id
+        Usuba_print.(pp_typ ())
+        t)
+    h
+
 let warning_or_error pp_msg backtrace conf =
   Errors.warning_or_error set_error pp_msg backtrace conf
 
@@ -209,7 +219,7 @@ and get_var_type ~conf ~backtrace ~env_var ~env_it v =
           | _ ->
               let pp_msg ppf () =
                 Format.fprintf ppf "variable `%a' undeclared"
-                  (Ident.pp ~detailed:true ())
+                  Ident.(pp ~detailed:true ())
                   x
               in
               raise (Errors.Fatal_type_error (pp_msg, backtrace))))
@@ -959,8 +969,8 @@ let rec type_expr ~conf ~backtrace ~env_fun ~env_var ~env_it
       (* Making sure that |f| is a multiple and that |ae| is well
          typed, and within |f|'s bounds. *)
       check_aexpr_is_typed ~conf ~backtrace ~env_var ~env_it ae;
-      (* Note that if we reach that point, then the reccursive call on
-         Fun(f,l) made sure that (Hashtbl.find env_fun f) succeeds. *)
+      (* Note that if we reach that point, then the recursive call on
+         Fun(f,l) made sure that (Ident.Hashtbl.find env_fun f) succeeds. *)
       let f = Ident.Hashtbl.find env_fun f in
       (match f.node with
       | Multiple l ->

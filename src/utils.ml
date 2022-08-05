@@ -57,6 +57,8 @@ let default_conf : Config.config =
     dump_steps = None;
     dump_steps_base_file = "";
     step_counter = ref 0;
+    parse_only = false;
+    type_only = false;
   }
 
 let default_dir = Varslice (Ident.create_constant "D")
@@ -141,7 +143,7 @@ let simple_typed_var_d (id : ident) (typ : typ) = make_var_d id typ [] []
 let env_fetch env v =
   try Ident.Hashtbl.find env v
   with Not_found ->
-    Format.eprintf "Not found: %a@." (Ident.pp ~detailed:true ()) v;
+    Format.eprintf "Not found: %a@." Ident.(pp ~detailed:true ()) v;
     assert false
 
 (* Constructs a map { fun : def } *)
@@ -153,15 +155,12 @@ let build_env_fun (nodes : def list) : def Ident.Hashtbl.t =
 (* Constructs a map { variables : types } *)
 let build_env_var (p_in : p) (p_out : p) (vars : p) : typ Ident.Hashtbl.t =
   let env = Ident.Hashtbl.create 20 in
-
   let add_to_env (vd : var_d) : unit =
     Ident.Hashtbl.replace env vd.vd_id vd.vd_typ
   in
-
   List.iter add_to_env p_in;
   List.iter add_to_env p_out;
   List.iter add_to_env vars;
-
   env
 
 let rec typ_size ?(env = Ident.Hashtbl.create 10) (t : typ) : int =
@@ -295,8 +294,9 @@ let rec expand_typ (typ : typ) : typ list =
   | Array (t, n) ->
       flat_map (fun _ -> expand_typ t) (gen_list_int (eval_arith_ne n))
 
-let rec expand_var env_var ?(env_it = Ident.Hashtbl.create 100)
-    ?(bitslice = false) ?(partial = false) (v : var) : var list =
+let rec expand_var (env_var : typ Ident.Hashtbl.t)
+    ?(env_it = Ident.Hashtbl.create 100) ?(bitslice = false) ?(partial = false)
+    (v : var) : var list =
   let typ = get_var_type env_var v in
   match typ with
   | Nat -> [ v ]

@@ -12,6 +12,7 @@ exception Lexing_error of Lexing.lexbuf * (Format.formatter -> unit -> unit)
 
 exception Binding_to_unbound of string * string list
 exception Binding_unknown of string * string list
+exception Rename_to_unknown of string
 
 (* Other errors *)
 exception Error of string
@@ -120,6 +121,11 @@ let pp_error ppf = function
          ident@,\
          %a@]"
         s Backtrace.pp backtrace
+  | Rename_to_unknown s ->
+      Format.fprintf ppf
+        "@[<v 2>@{<fg_red>[Renaming Error]@}: '%s' can not be renamed because \
+         it isn't bounded to any ident@]"
+        s
   | Error msg -> Format.fprintf ppf "@[<v 2>@{<fg_red>[Error]@}: %s@]" msg
   | e ->
       Format.eprintf "@[<v 2>@{<fg_red>[Unhandled error]@}: %s@]"

@@ -1,0 +1,2742 @@
+prog: XOR
+##
+## Ends in an error in state: 0.
+##
+## prog' -> . prog [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+prog: XOR
+
+prog: INTERLEAVE XOR
+##
+## Ends in an error in state: 3.
+##
+## opt_def -> INTERLEAVE . LPAREN INT RPAREN [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE ]
+##
+## The known suffix of the stack is as follows:
+## INTERLEAVE
+##
+
+prog: INTERLEAVE XOR
+
+prog: INTERLEAVE LPAREN XOR
+##
+## Ends in an error in state: 4.
+##
+## opt_def -> INTERLEAVE LPAREN . INT RPAREN [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE ]
+##
+## The known suffix of the stack is as follows:
+## INTERLEAVE LPAREN
+##
+
+prog: INTERLEAVE LPAREN XOR
+
+prog: INTERLEAVE LPAREN INT XOR
+##
+## Ends in an error in state: 5.
+##
+## opt_def -> INTERLEAVE LPAREN INT . RPAREN [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE ]
+##
+## The known suffix of the stack is as follows:
+## INTERLEAVE LPAREN INT
+##
+
+prog: INTERLEAVE LPAREN INT XOR
+
+prog: INCLUDE XOR
+##
+## Ends in an error in state: 8.
+##
+## inc -> INCLUDE . STRING [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## INCLUDE
+##
+
+prog: INCLUDE XOR
+
+prog: INLINE XOR
+##
+## Ends in an error in state: 11.
+##
+## list(opt_def) -> opt_def . list(opt_def) [ TABLE PERM NODE ]
+##
+## The known suffix of the stack is as follows:
+## opt_def
+##
+
+prog: INLINE XOR
+
+prog: NODE XOR
+##
+## Ends in an error in state: 16.
+##
+## def -> list(opt_def) NODE . boption(ARRAY) IDENT LPAREN p RPAREN RETURN LPAREN p RPAREN node_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) NODE
+##
+
+prog: NODE XOR
+
+prog: NODE ARRAY XOR
+##
+## Ends in an error in state: 18.
+##
+## def -> list(opt_def) NODE boption(ARRAY) . IDENT LPAREN p RPAREN RETURN LPAREN p RPAREN node_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) NODE boption(ARRAY)
+##
+
+prog: NODE ARRAY XOR
+
+prog: NODE IDENT XOR
+##
+## Ends in an error in state: 19.
+##
+## def -> list(opt_def) NODE boption(ARRAY) IDENT . LPAREN p RPAREN RETURN LPAREN p RPAREN node_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) NODE boption(ARRAY) IDENT
+##
+
+prog: NODE IDENT XOR
+
+prog: NODE IDENT LPAREN XOR
+##
+## Ends in an error in state: 20.
+##
+## def -> list(opt_def) NODE boption(ARRAY) IDENT LPAREN . p RPAREN RETURN LPAREN p RPAREN node_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) NODE boption(ARRAY) IDENT LPAREN
+##
+
+prog: NODE IDENT LPAREN XOR
+
+prog: PERM IDENT LPAREN IDENT XOR
+##
+## Ends in an error in state: 21.
+##
+## separated_nonempty_list(COMMA,ident) -> IDENT . [ COLON ]
+## separated_nonempty_list(COMMA,ident) -> IDENT . COMMA separated_nonempty_list(COMMA,ident) [ COLON ]
+##
+## The known suffix of the stack is as follows:
+## IDENT
+##
+
+prog: PERM IDENT LPAREN IDENT XOR
+
+prog: PERM IDENT LPAREN IDENT COMMA XOR
+##
+## Ends in an error in state: 22.
+##
+## separated_nonempty_list(COMMA,ident) -> IDENT COMMA . separated_nonempty_list(COMMA,ident) [ COLON ]
+##
+## The known suffix of the stack is as follows:
+## IDENT COMMA
+##
+
+prog: PERM IDENT LPAREN IDENT COMMA XOR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT XOR
+##
+## Ends in an error in state: 24.
+##
+## separated_nonempty_list(COMMA,var_d) -> var_d . [ RPAREN LET ]
+## separated_nonempty_list(COMMA,var_d) -> var_d . COMMA separated_nonempty_list(COMMA,var_d) [ RPAREN LET ]
+##
+## The known suffix of the stack is as follows:
+## var_d
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 34, spurious reduction of production list(delimited(LBRACKET,arith_exp,RBRACKET)) ->
+## In state 54, spurious reduction of production typ -> IDENT list(delimited(LBRACKET,arith_exp,RBRACKET))
+## In state 55, spurious reduction of production var_d -> separated_nonempty_list(COMMA,ident) COLON list(opt_var_d) typ
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT XOR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT COMMA XOR
+##
+## Ends in an error in state: 25.
+##
+## separated_nonempty_list(COMMA,var_d) -> var_d COMMA . separated_nonempty_list(COMMA,var_d) [ RPAREN LET ]
+##
+## The known suffix of the stack is as follows:
+## var_d COMMA
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT COMMA XOR
+
+prog: PERM IDENT LPAREN IDENT COLON XOR
+##
+## Ends in an error in state: 28.
+##
+## var_d -> separated_nonempty_list(COMMA,ident) COLON . list(opt_var_d) typ [ RPAREN LET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## separated_nonempty_list(COMMA,ident) COLON
+##
+
+prog: PERM IDENT LPAREN IDENT COLON XOR
+
+prog: PERM IDENT LPAREN IDENT COLON CONST XOR
+##
+## Ends in an error in state: 31.
+##
+## list(opt_var_d) -> opt_var_d . list(opt_var_d) [ IDENT ]
+##
+## The known suffix of the stack is as follows:
+## opt_var_d
+##
+
+prog: PERM IDENT LPAREN IDENT COLON CONST XOR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT VAR
+##
+## Ends in an error in state: 34.
+##
+## typ -> IDENT . list(delimited(LBRACKET,arith_exp,RBRACKET)) [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LET DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## IDENT
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT VAR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET XOR
+##
+## Ends in an error in state: 35.
+##
+## list(delimited(LBRACKET,arith_exp,RBRACKET)) -> LBRACKET . arith_exp RBRACKET list(delimited(LBRACKET,arith_exp,RBRACKET)) [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LET DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LBRACKET
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET XOR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET LPAREN XOR
+##
+## Ends in an error in state: 36.
+##
+## arith_exp -> LPAREN . arith_exp RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET LPAREN XOR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET LPAREN IDENT XOR
+##
+## Ends in an error in state: 39.
+##
+## arith_exp -> LPAREN arith_exp . RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+## arith_exp -> arith_exp . PLUS arith_exp [ STAR SLASH RPAREN PLUS MOD DASH ]
+## arith_exp -> arith_exp . STAR arith_exp [ STAR SLASH RPAREN PLUS MOD DASH ]
+## arith_exp -> arith_exp . DASH arith_exp [ STAR SLASH RPAREN PLUS MOD DASH ]
+## arith_exp -> arith_exp . SLASH arith_exp [ STAR SLASH RPAREN PLUS MOD DASH ]
+## arith_exp -> arith_exp . MOD arith_exp [ STAR SLASH RPAREN PLUS MOD DASH ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN arith_exp
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET LPAREN IDENT XOR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT STAR XOR
+##
+## Ends in an error in state: 40.
+##
+## arith_exp -> arith_exp STAR . arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## arith_exp STAR
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT STAR XOR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT SLASH XOR
+##
+## Ends in an error in state: 42.
+##
+## arith_exp -> arith_exp SLASH . arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## arith_exp SLASH
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT SLASH XOR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT PLUS XOR
+##
+## Ends in an error in state: 45.
+##
+## arith_exp -> arith_exp PLUS . arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## arith_exp PLUS
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT PLUS XOR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT PLUS IDENT VAR
+##
+## Ends in an error in state: 46.
+##
+## arith_exp -> arith_exp . PLUS arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+## arith_exp -> arith_exp PLUS arith_exp . [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+## arith_exp -> arith_exp . STAR arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+## arith_exp -> arith_exp . DASH arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+## arith_exp -> arith_exp . SLASH arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+## arith_exp -> arith_exp . MOD arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## arith_exp PLUS arith_exp
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT PLUS IDENT VAR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT MOD XOR
+##
+## Ends in an error in state: 47.
+##
+## arith_exp -> arith_exp MOD . arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## arith_exp MOD
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT MOD XOR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT DASH XOR
+##
+## Ends in an error in state: 49.
+##
+## arith_exp -> arith_exp DASH . arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## arith_exp DASH
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT DASH XOR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT DASH IDENT VAR
+##
+## Ends in an error in state: 50.
+##
+## arith_exp -> arith_exp . PLUS arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+## arith_exp -> arith_exp . STAR arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+## arith_exp -> arith_exp . DASH arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+## arith_exp -> arith_exp DASH arith_exp . [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+## arith_exp -> arith_exp . SLASH arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+## arith_exp -> arith_exp . MOD arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RBRACKET RASHIFT RANGE PLUS PIPE MOD LSHIFT LROTATE GT DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## arith_exp DASH arith_exp
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT DASH IDENT VAR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT XOR
+##
+## Ends in an error in state: 51.
+##
+## arith_exp -> arith_exp . PLUS arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH ]
+## arith_exp -> arith_exp . STAR arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH ]
+## arith_exp -> arith_exp . DASH arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH ]
+## arith_exp -> arith_exp . SLASH arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH ]
+## arith_exp -> arith_exp . MOD arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH ]
+## list(delimited(LBRACKET,arith_exp,RBRACKET)) -> LBRACKET arith_exp . RBRACKET list(delimited(LBRACKET,arith_exp,RBRACKET)) [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LET DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LBRACKET arith_exp
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT XOR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT RBRACKET VAR
+##
+## Ends in an error in state: 52.
+##
+## list(delimited(LBRACKET,arith_exp,RBRACKET)) -> LBRACKET arith_exp RBRACKET . list(delimited(LBRACKET,arith_exp,RBRACKET)) [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LET DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LBRACKET arith_exp RBRACKET
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LBRACKET IDENT RBRACKET VAR
+
+prog: NODE IDENT LPAREN IDENT COLON IDENT LET
+##
+## Ends in an error in state: 57.
+##
+## def -> list(opt_def) NODE boption(ARRAY) IDENT LPAREN p . RPAREN RETURN LPAREN p RPAREN node_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) NODE boption(ARRAY) IDENT LPAREN p
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 34, spurious reduction of production list(delimited(LBRACKET,arith_exp,RBRACKET)) ->
+## In state 54, spurious reduction of production typ -> IDENT list(delimited(LBRACKET,arith_exp,RBRACKET))
+## In state 55, spurious reduction of production var_d -> separated_nonempty_list(COMMA,ident) COLON list(opt_var_d) typ
+## In state 24, spurious reduction of production separated_nonempty_list(COMMA,var_d) -> var_d
+## In state 56, spurious reduction of production loption(separated_nonempty_list(COMMA,var_d)) -> separated_nonempty_list(COMMA,var_d)
+## In state 65, spurious reduction of production p -> loption(separated_nonempty_list(COMMA,var_d))
+##
+
+prog: NODE IDENT LPAREN IDENT COLON IDENT LET
+
+prog: NODE IDENT LPAREN RPAREN XOR
+##
+## Ends in an error in state: 58.
+##
+## def -> list(opt_def) NODE boption(ARRAY) IDENT LPAREN p RPAREN . RETURN LPAREN p RPAREN node_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) NODE boption(ARRAY) IDENT LPAREN p RPAREN
+##
+
+prog: NODE IDENT LPAREN RPAREN XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN XOR
+##
+## Ends in an error in state: 59.
+##
+## def -> list(opt_def) NODE boption(ARRAY) IDENT LPAREN p RPAREN RETURN . LPAREN p RPAREN node_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) NODE boption(ARRAY) IDENT LPAREN p RPAREN RETURN
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN XOR
+##
+## Ends in an error in state: 60.
+##
+## def -> list(opt_def) NODE boption(ARRAY) IDENT LPAREN p RPAREN RETURN LPAREN . p RPAREN node_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) NODE boption(ARRAY) IDENT LPAREN p RPAREN RETURN LPAREN
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN IDENT COLON IDENT LET
+##
+## Ends in an error in state: 61.
+##
+## def -> list(opt_def) NODE boption(ARRAY) IDENT LPAREN p RPAREN RETURN LPAREN p . RPAREN node_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) NODE boption(ARRAY) IDENT LPAREN p RPAREN RETURN LPAREN p
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 34, spurious reduction of production list(delimited(LBRACKET,arith_exp,RBRACKET)) ->
+## In state 54, spurious reduction of production typ -> IDENT list(delimited(LBRACKET,arith_exp,RBRACKET))
+## In state 55, spurious reduction of production var_d -> separated_nonempty_list(COMMA,ident) COLON list(opt_var_d) typ
+## In state 24, spurious reduction of production separated_nonempty_list(COMMA,var_d) -> var_d
+## In state 56, spurious reduction of production loption(separated_nonempty_list(COMMA,var_d)) -> separated_nonempty_list(COMMA,var_d)
+## In state 65, spurious reduction of production p -> loption(separated_nonempty_list(COMMA,var_d))
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN IDENT COLON IDENT LET
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN XOR
+##
+## Ends in an error in state: 62.
+##
+## def -> list(opt_def) NODE boption(ARRAY) IDENT LPAREN p RPAREN RETURN LPAREN p RPAREN . node_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) NODE boption(ARRAY) IDENT LPAREN p RPAREN RETURN LPAREN p RPAREN
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN VAR XOR
+##
+## Ends in an error in state: 63.
+##
+## vars -> VAR . p [ LET ]
+##
+## The known suffix of the stack is as follows:
+## VAR
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN VAR XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LBRACKET XOR
+##
+## Ends in an error in state: 66.
+##
+## node_body -> LBRACKET . separated_nonempty_list(SEMICOLON,node_body_elem) RBRACKET [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## LBRACKET
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LBRACKET XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LBRACKET LET IDENT EQUAL IDENT TEL XOR
+##
+## Ends in an error in state: 70.
+##
+## separated_nonempty_list(SEMICOLON,node_body_elem) -> node_body_elem . [ RBRACKET ]
+## separated_nonempty_list(SEMICOLON,node_body_elem) -> node_body_elem . SEMICOLON separated_nonempty_list(SEMICOLON,node_body_elem) [ RBRACKET ]
+##
+## The known suffix of the stack is as follows:
+## node_body_elem
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LBRACKET LET IDENT EQUAL IDENT TEL XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LBRACKET LET IDENT EQUAL IDENT TEL SEMICOLON XOR
+##
+## Ends in an error in state: 71.
+##
+## separated_nonempty_list(SEMICOLON,node_body_elem) -> node_body_elem SEMICOLON . separated_nonempty_list(SEMICOLON,node_body_elem) [ RBRACKET ]
+##
+## The known suffix of the stack is as follows:
+## node_body_elem SEMICOLON
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LBRACKET LET IDENT EQUAL IDENT TEL SEMICOLON XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN VAR IDENT COLON IDENT RPAREN
+##
+## Ends in an error in state: 73.
+##
+## node_body_elem -> loption(vars) . LET deqs TEL [ TABLE SEMICOLON RBRACKET PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## loption(vars)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 34, spurious reduction of production list(delimited(LBRACKET,arith_exp,RBRACKET)) ->
+## In state 54, spurious reduction of production typ -> IDENT list(delimited(LBRACKET,arith_exp,RBRACKET))
+## In state 55, spurious reduction of production var_d -> separated_nonempty_list(COMMA,ident) COLON list(opt_var_d) typ
+## In state 24, spurious reduction of production separated_nonempty_list(COMMA,var_d) -> var_d
+## In state 56, spurious reduction of production loption(separated_nonempty_list(COMMA,var_d)) -> separated_nonempty_list(COMMA,var_d)
+## In state 65, spurious reduction of production p -> loption(separated_nonempty_list(COMMA,var_d))
+## In state 64, spurious reduction of production vars -> VAR p
+## In state 67, spurious reduction of production loption(vars) -> vars
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN VAR IDENT COLON IDENT RPAREN
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET XOR
+##
+## Ends in an error in state: 74.
+##
+## node_body_elem -> loption(vars) LET . deqs TEL [ TABLE SEMICOLON RBRACKET PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## loption(vars) LET
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET LPAREN XOR
+##
+## Ends in an error in state: 78.
+##
+## pat -> LPAREN . separated_nonempty_list(COMMA,var) RPAREN [ XOR STAR SLASH PLUS PIPE MOD EQUAL DASH COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET LPAREN XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET LPAREN IDENT XOR
+##
+## Ends in an error in state: 80.
+##
+## separated_nonempty_list(COMMA,var) -> var . [ RPAREN ]
+## separated_nonempty_list(COMMA,var) -> var . COMMA separated_nonempty_list(COMMA,var) [ RPAREN ]
+## var -> var . LBRACKET arith_exp RBRACKET [ RPAREN LBRACKET COMMA ]
+## var -> var . LBRACKET arith_exp RANGE arith_exp RBRACKET [ RPAREN LBRACKET COMMA ]
+## var -> var . LBRACKET arith_exp COMMA separated_nonempty_list(COMMA,arith_exp) RBRACKET [ RPAREN LBRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET LPAREN IDENT XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT LBRACKET XOR
+##
+## Ends in an error in state: 81.
+##
+## var -> var LBRACKET . arith_exp RBRACKET [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LCURLY LBRACKET EQUAL DASH COMMA COLON AND ]
+## var -> var LBRACKET . arith_exp RANGE arith_exp RBRACKET [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LCURLY LBRACKET EQUAL DASH COMMA COLON AND ]
+## var -> var LBRACKET . arith_exp COMMA separated_nonempty_list(COMMA,arith_exp) RBRACKET [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LCURLY LBRACKET EQUAL DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## var LBRACKET
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT LBRACKET XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT LBRACKET IDENT XOR
+##
+## Ends in an error in state: 82.
+##
+## arith_exp -> arith_exp . PLUS arith_exp [ STAR SLASH RBRACKET RANGE PLUS MOD DASH COMMA ]
+## arith_exp -> arith_exp . STAR arith_exp [ STAR SLASH RBRACKET RANGE PLUS MOD DASH COMMA ]
+## arith_exp -> arith_exp . DASH arith_exp [ STAR SLASH RBRACKET RANGE PLUS MOD DASH COMMA ]
+## arith_exp -> arith_exp . SLASH arith_exp [ STAR SLASH RBRACKET RANGE PLUS MOD DASH COMMA ]
+## arith_exp -> arith_exp . MOD arith_exp [ STAR SLASH RBRACKET RANGE PLUS MOD DASH COMMA ]
+## var -> var LBRACKET arith_exp . RBRACKET [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LCURLY LBRACKET EQUAL DASH COMMA COLON AND ]
+## var -> var LBRACKET arith_exp . RANGE arith_exp RBRACKET [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LCURLY LBRACKET EQUAL DASH COMMA COLON AND ]
+## var -> var LBRACKET arith_exp . COMMA separated_nonempty_list(COMMA,arith_exp) RBRACKET [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LCURLY LBRACKET EQUAL DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## var LBRACKET arith_exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT LBRACKET IDENT XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT LBRACKET IDENT RANGE XOR
+##
+## Ends in an error in state: 84.
+##
+## var -> var LBRACKET arith_exp RANGE . arith_exp RBRACKET [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LCURLY LBRACKET EQUAL DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## var LBRACKET arith_exp RANGE
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT LBRACKET IDENT RANGE XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT LBRACKET IDENT RANGE IDENT XOR
+##
+## Ends in an error in state: 85.
+##
+## arith_exp -> arith_exp . PLUS arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH ]
+## arith_exp -> arith_exp . STAR arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH ]
+## arith_exp -> arith_exp . DASH arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH ]
+## arith_exp -> arith_exp . SLASH arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH ]
+## arith_exp -> arith_exp . MOD arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH ]
+## var -> var LBRACKET arith_exp RANGE arith_exp . RBRACKET [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LCURLY LBRACKET EQUAL DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## var LBRACKET arith_exp RANGE arith_exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT LBRACKET IDENT RANGE IDENT XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT LBRACKET IDENT COMMA XOR
+##
+## Ends in an error in state: 87.
+##
+## var -> var LBRACKET arith_exp COMMA . separated_nonempty_list(COMMA,arith_exp) RBRACKET [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LCURLY LBRACKET EQUAL DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## var LBRACKET arith_exp COMMA
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT LBRACKET IDENT COMMA XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT LBRACKET IDENT COMMA IDENT XOR
+##
+## Ends in an error in state: 90.
+##
+## arith_exp -> arith_exp . PLUS arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH COMMA ]
+## arith_exp -> arith_exp . STAR arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH COMMA ]
+## arith_exp -> arith_exp . DASH arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH COMMA ]
+## arith_exp -> arith_exp . SLASH arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH COMMA ]
+## arith_exp -> arith_exp . MOD arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH COMMA ]
+## separated_nonempty_list(COMMA,arith_exp) -> arith_exp . [ RBRACKET ]
+## separated_nonempty_list(COMMA,arith_exp) -> arith_exp . COMMA separated_nonempty_list(COMMA,arith_exp) [ RBRACKET ]
+##
+## The known suffix of the stack is as follows:
+## arith_exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT LBRACKET IDENT COMMA IDENT XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT LBRACKET IDENT COMMA IDENT COMMA XOR
+##
+## Ends in an error in state: 91.
+##
+## separated_nonempty_list(COMMA,arith_exp) -> arith_exp COMMA . separated_nonempty_list(COMMA,arith_exp) [ RBRACKET ]
+##
+## The known suffix of the stack is as follows:
+## arith_exp COMMA
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT LBRACKET IDENT COMMA IDENT COMMA XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET LPAREN IDENT COMMA XOR
+##
+## Ends in an error in state: 93.
+##
+## separated_nonempty_list(COMMA,var) -> var COMMA . separated_nonempty_list(COMMA,var) [ RPAREN ]
+##
+## The known suffix of the stack is as follows:
+## var COMMA
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET LPAREN IDENT COMMA XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT VAR
+##
+## Ends in an error in state: 97.
+##
+## pat -> var . [ XOR STAR SLASH PLUS PIPE MOD EQUAL DASH COLON AND ]
+## var -> var . LBRACKET arith_exp RBRACKET [ XOR STAR SLASH PLUS PIPE MOD LBRACKET EQUAL DASH COLON AND ]
+## var -> var . LBRACKET arith_exp RANGE arith_exp RBRACKET [ XOR STAR SLASH PLUS PIPE MOD LBRACKET EQUAL DASH COLON AND ]
+## var -> var . LBRACKET arith_exp COMMA separated_nonempty_list(COMMA,arith_exp) RBRACKET [ XOR STAR SLASH PLUS PIPE MOD LBRACKET EQUAL DASH COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT VAR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET LPAREN IDENT RPAREN VAR
+##
+## Ends in an error in state: 98.
+##
+## _norec_deq -> pat . boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+## _norec_deq -> pat . AND boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+## _norec_deq -> pat . PIPE boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+## _norec_deq -> pat . XOR boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+## _norec_deq -> pat . PLUS boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+## _norec_deq -> pat . STAR boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+## _norec_deq -> pat . DASH boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+## _norec_deq -> pat . SLASH boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+## _norec_deq -> pat . MOD boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET LPAREN IDENT RPAREN VAR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT XOR XOR
+##
+## Ends in an error in state: 99.
+##
+## _norec_deq -> pat XOR . boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat XOR
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT XOR XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT XOR COLON XOR
+##
+## Ends in an error in state: 101.
+##
+## _norec_deq -> pat XOR boption(COLON) . EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat XOR boption(COLON)
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT XOR COLON XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT XOR EQUAL XOR
+##
+## Ends in an error in state: 102.
+##
+## _norec_deq -> pat XOR boption(COLON) EQUAL . exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat XOR boption(COLON) EQUAL
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT XOR EQUAL XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL TILDE XOR
+##
+## Ends in an error in state: 103.
+##
+## exp -> TILDE . exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## TILDE
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL TILDE XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL SHUFFLE XOR
+##
+## Ends in an error in state: 104.
+##
+## exp -> SHUFFLE . LPAREN var COMMA LBRACKET separated_nonempty_list(COMMA,INT) RBRACKET RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## SHUFFLE
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL SHUFFLE XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL SHUFFLE LPAREN XOR
+##
+## Ends in an error in state: 105.
+##
+## exp -> SHUFFLE LPAREN . var COMMA LBRACKET separated_nonempty_list(COMMA,INT) RBRACKET RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## SHUFFLE LPAREN
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL SHUFFLE LPAREN XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL SHUFFLE LPAREN IDENT XOR
+##
+## Ends in an error in state: 106.
+##
+## exp -> SHUFFLE LPAREN var . COMMA LBRACKET separated_nonempty_list(COMMA,INT) RBRACKET RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## var -> var . LBRACKET arith_exp RBRACKET [ LBRACKET COMMA ]
+## var -> var . LBRACKET arith_exp RANGE arith_exp RBRACKET [ LBRACKET COMMA ]
+## var -> var . LBRACKET arith_exp COMMA separated_nonempty_list(COMMA,arith_exp) RBRACKET [ LBRACKET COMMA ]
+##
+## The known suffix of the stack is as follows:
+## SHUFFLE LPAREN var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL SHUFFLE LPAREN IDENT XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL SHUFFLE LPAREN IDENT COMMA XOR
+##
+## Ends in an error in state: 107.
+##
+## exp -> SHUFFLE LPAREN var COMMA . LBRACKET separated_nonempty_list(COMMA,INT) RBRACKET RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## SHUFFLE LPAREN var COMMA
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL SHUFFLE LPAREN IDENT COMMA XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL SHUFFLE LPAREN IDENT COMMA LBRACKET XOR
+##
+## Ends in an error in state: 108.
+##
+## exp -> SHUFFLE LPAREN var COMMA LBRACKET . separated_nonempty_list(COMMA,INT) RBRACKET RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## SHUFFLE LPAREN var COMMA LBRACKET
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL SHUFFLE LPAREN IDENT COMMA LBRACKET XOR
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN LCURLY INT XOR
+##
+## Ends in an error in state: 109.
+##
+## separated_nonempty_list(COMMA,INT) -> INT . [ RCURLY RBRACKET ]
+## separated_nonempty_list(COMMA,INT) -> INT . COMMA separated_nonempty_list(COMMA,INT) [ RCURLY RBRACKET ]
+##
+## The known suffix of the stack is as follows:
+## INT
+##
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN LCURLY INT XOR
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN LCURLY INT COMMA XOR
+##
+## Ends in an error in state: 110.
+##
+## separated_nonempty_list(COMMA,INT) -> INT COMMA . separated_nonempty_list(COMMA,INT) [ RCURLY RBRACKET ]
+##
+## The known suffix of the stack is as follows:
+## INT COMMA
+##
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN LCURLY INT COMMA XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL SHUFFLE LPAREN IDENT COMMA LBRACKET INT RCURLY
+##
+## Ends in an error in state: 112.
+##
+## exp -> SHUFFLE LPAREN var COMMA LBRACKET separated_nonempty_list(COMMA,INT) . RBRACKET RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## SHUFFLE LPAREN var COMMA LBRACKET separated_nonempty_list(COMMA,INT)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 109, spurious reduction of production separated_nonempty_list(COMMA,INT) -> INT
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL SHUFFLE LPAREN IDENT COMMA LBRACKET INT RCURLY
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL SHUFFLE LPAREN IDENT COMMA LBRACKET INT RBRACKET XOR
+##
+## Ends in an error in state: 113.
+##
+## exp -> SHUFFLE LPAREN var COMMA LBRACKET separated_nonempty_list(COMMA,INT) RBRACKET . RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## SHUFFLE LPAREN var COMMA LBRACKET separated_nonempty_list(COMMA,INT) RBRACKET
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL SHUFFLE LPAREN IDENT COMMA LBRACKET INT RBRACKET XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL PACK XOR
+##
+## Ends in an error in state: 115.
+##
+## exp -> PACK . LPAREN exp COMMA exp RPAREN option(typ_expl) [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## PACK
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL PACK XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL PACK LPAREN XOR
+##
+## Ends in an error in state: 116.
+##
+## exp -> PACK LPAREN . exp COMMA exp RPAREN option(typ_expl) [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## PACK LPAREN
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL PACK LPAREN XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL LPAREN XOR
+##
+## Ends in an error in state: 117.
+##
+## exp -> LPAREN . exp RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> LPAREN . exp COMMA separated_nonempty_list(COMMA,exp) RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL LPAREN XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL INT VAR
+##
+## Ends in an error in state: 118.
+##
+## exp -> INT . [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> INT . COLON typ [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## INT
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL INT VAR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL INT COLON XOR
+##
+## Ends in an error in state: 119.
+##
+## exp -> INT COLON . typ [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## INT COLON
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL INT COLON XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT VAR
+##
+## Ends in an error in state: 121.
+##
+## exp -> IDENT . LPAREN explist RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> IDENT . LT arith_exp GT LPAREN explist RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## var -> IDENT . [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LCURLY LBRACKET DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## IDENT
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT VAR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LT XOR
+##
+## Ends in an error in state: 122.
+##
+## exp -> IDENT LT . arith_exp GT LPAREN explist RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## IDENT LT
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LT XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LT IDENT XOR
+##
+## Ends in an error in state: 123.
+##
+## arith_exp -> arith_exp . PLUS arith_exp [ STAR SLASH PLUS MOD GT DASH ]
+## arith_exp -> arith_exp . STAR arith_exp [ STAR SLASH PLUS MOD GT DASH ]
+## arith_exp -> arith_exp . DASH arith_exp [ STAR SLASH PLUS MOD GT DASH ]
+## arith_exp -> arith_exp . SLASH arith_exp [ STAR SLASH PLUS MOD GT DASH ]
+## arith_exp -> arith_exp . MOD arith_exp [ STAR SLASH PLUS MOD GT DASH ]
+## exp -> IDENT LT arith_exp . GT LPAREN explist RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## IDENT LT arith_exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LT IDENT XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LT IDENT GT XOR
+##
+## Ends in an error in state: 124.
+##
+## exp -> IDENT LT arith_exp GT . LPAREN explist RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## IDENT LT arith_exp GT
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LT IDENT GT XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LT IDENT GT LPAREN XOR
+##
+## Ends in an error in state: 125.
+##
+## exp -> IDENT LT arith_exp GT LPAREN . explist RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## IDENT LT arith_exp GT LPAREN
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LT IDENT GT LPAREN XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL BITMASK XOR
+##
+## Ends in an error in state: 126.
+##
+## exp -> BITMASK . LPAREN exp COMMA arith_exp RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## BITMASK
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL BITMASK XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL BITMASK LPAREN XOR
+##
+## Ends in an error in state: 127.
+##
+## exp -> BITMASK LPAREN . exp COMMA arith_exp RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## BITMASK LPAREN
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL BITMASK LPAREN XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL BANG XOR
+##
+## Ends in an error in state: 128.
+##
+## exp -> BANG . exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## BANG
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL BANG XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LBRACKET IDENT RBRACKET VAR
+##
+## Ends in an error in state: 129.
+##
+## exp -> var . [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> var . LCURLY separated_nonempty_list(COMMA,INT) RCURLY [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## var -> var . LBRACKET arith_exp RBRACKET [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LCURLY LBRACKET DASH COMMA AND ]
+## var -> var . LBRACKET arith_exp RANGE arith_exp RBRACKET [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LCURLY LBRACKET DASH COMMA AND ]
+## var -> var . LBRACKET arith_exp COMMA separated_nonempty_list(COMMA,arith_exp) RBRACKET [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE LCURLY LBRACKET DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LBRACKET IDENT RBRACKET VAR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LCURLY XOR
+##
+## Ends in an error in state: 130.
+##
+## exp -> var LCURLY . separated_nonempty_list(COMMA,INT) RCURLY [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## var LCURLY
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LCURLY XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LCURLY INT RBRACKET
+##
+## Ends in an error in state: 131.
+##
+## exp -> var LCURLY separated_nonempty_list(COMMA,INT) . RCURLY [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## var LCURLY separated_nonempty_list(COMMA,INT)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 109, spurious reduction of production separated_nonempty_list(COMMA,INT) -> INT
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LCURLY INT RBRACKET
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL BITMASK LPAREN IDENT TEL
+##
+## Ends in an error in state: 134.
+##
+## exp -> exp . AND exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PIPE exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . XOR exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PLUS exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . STAR exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . DASH exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . SLASH exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . MOD exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LROTATE arith_exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RROTATE arith_exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> BITMASK LPAREN exp . COMMA arith_exp RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## BITMASK LPAREN exp
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL BITMASK LPAREN IDENT TEL
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT XOR XOR
+##
+## Ends in an error in state: 135.
+##
+## exp -> exp XOR . exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp XOR
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT XOR XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT STAR XOR
+##
+## Ends in an error in state: 137.
+##
+## exp -> exp STAR . exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp STAR
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT STAR XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT STAR LPAREN IDENT RPAREN LET
+##
+## Ends in an error in state: 138.
+##
+## exp -> exp . AND exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PIPE exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . XOR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PLUS exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . STAR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp STAR exp . [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . DASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . SLASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . MOD exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp STAR exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT STAR LPAREN IDENT RPAREN LET
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT PIPE XOR
+##
+## Ends in an error in state: 139.
+##
+## exp -> exp PIPE . exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp PIPE
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT PIPE XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT AND XOR
+##
+## Ends in an error in state: 141.
+##
+## exp -> exp AND . exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp AND
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT AND XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT SLASH XOR
+##
+## Ends in an error in state: 143.
+##
+## exp -> exp SLASH . exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp SLASH
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT SLASH XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT SLASH LPAREN IDENT RPAREN LET
+##
+## Ends in an error in state: 144.
+##
+## exp -> exp . AND exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PIPE exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . XOR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PLUS exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . STAR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . DASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . SLASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp SLASH exp . [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . MOD exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp SLASH exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT SLASH LPAREN IDENT RPAREN LET
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RSHIFT XOR
+##
+## Ends in an error in state: 145.
+##
+## exp -> exp RSHIFT . arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp RSHIFT
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RSHIFT XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RSHIFT IDENT RBRACKET
+##
+## Ends in an error in state: 146.
+##
+## arith_exp -> arith_exp . PLUS arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . STAR arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . DASH arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . SLASH arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . MOD arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp RSHIFT arith_exp . [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp RSHIFT arith_exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RSHIFT IDENT RBRACKET
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RROTATE XOR
+##
+## Ends in an error in state: 147.
+##
+## exp -> exp RROTATE . arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp RROTATE
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RROTATE XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RROTATE IDENT RBRACKET
+##
+## Ends in an error in state: 148.
+##
+## arith_exp -> arith_exp . PLUS arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . STAR arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . DASH arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . SLASH arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . MOD arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp RROTATE arith_exp . [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp RROTATE arith_exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RROTATE IDENT RBRACKET
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RASHIFT XOR
+##
+## Ends in an error in state: 149.
+##
+## exp -> exp RASHIFT . arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp RASHIFT
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RASHIFT XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RASHIFT IDENT RBRACKET
+##
+## Ends in an error in state: 150.
+##
+## arith_exp -> arith_exp . PLUS arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . STAR arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . DASH arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . SLASH arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . MOD arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp RASHIFT arith_exp . [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp RASHIFT arith_exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RASHIFT IDENT RBRACKET
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT PLUS XOR
+##
+## Ends in an error in state: 151.
+##
+## exp -> exp PLUS . exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp PLUS
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT PLUS XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT PLUS LPAREN IDENT RPAREN LET
+##
+## Ends in an error in state: 152.
+##
+## exp -> exp . AND exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PIPE exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . XOR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PLUS exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp PLUS exp . [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . STAR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . DASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . SLASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . MOD exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp PLUS exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT PLUS LPAREN IDENT RPAREN LET
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT MOD XOR
+##
+## Ends in an error in state: 153.
+##
+## exp -> exp MOD . exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp MOD
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT MOD XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT MOD LPAREN IDENT RPAREN LET
+##
+## Ends in an error in state: 154.
+##
+## exp -> exp . AND exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PIPE exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . XOR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PLUS exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . STAR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . DASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . SLASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . MOD exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp MOD exp . [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp MOD exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT MOD LPAREN IDENT RPAREN LET
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LSHIFT XOR
+##
+## Ends in an error in state: 155.
+##
+## exp -> exp LSHIFT . arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp LSHIFT
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LSHIFT XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LSHIFT IDENT RBRACKET
+##
+## Ends in an error in state: 156.
+##
+## arith_exp -> arith_exp . PLUS arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . STAR arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . DASH arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . SLASH arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . MOD arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp LSHIFT arith_exp . [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp LSHIFT arith_exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LSHIFT IDENT RBRACKET
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LROTATE XOR
+##
+## Ends in an error in state: 157.
+##
+## exp -> exp LROTATE . arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp LROTATE
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LROTATE XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LROTATE IDENT RBRACKET
+##
+## Ends in an error in state: 158.
+##
+## arith_exp -> arith_exp . PLUS arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . STAR arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . DASH arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . SLASH arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## arith_exp -> arith_exp . MOD arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp LROTATE arith_exp . [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp LROTATE arith_exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LROTATE IDENT RBRACKET
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT DASH XOR
+##
+## Ends in an error in state: 159.
+##
+## exp -> exp DASH . exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp DASH
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT DASH XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT DASH LPAREN IDENT RPAREN LET
+##
+## Ends in an error in state: 160.
+##
+## exp -> exp . AND exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PIPE exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . XOR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PLUS exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . STAR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . DASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp DASH exp . [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . SLASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . MOD exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## exp DASH exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT DASH LPAREN IDENT RPAREN LET
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL BITMASK LPAREN IDENT COMMA XOR
+##
+## Ends in an error in state: 161.
+##
+## exp -> BITMASK LPAREN exp COMMA . arith_exp RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## BITMASK LPAREN exp COMMA
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL BITMASK LPAREN IDENT COMMA XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL BITMASK LPAREN IDENT COMMA IDENT XOR
+##
+## Ends in an error in state: 162.
+##
+## arith_exp -> arith_exp . PLUS arith_exp [ STAR SLASH RPAREN PLUS MOD DASH ]
+## arith_exp -> arith_exp . STAR arith_exp [ STAR SLASH RPAREN PLUS MOD DASH ]
+## arith_exp -> arith_exp . DASH arith_exp [ STAR SLASH RPAREN PLUS MOD DASH ]
+## arith_exp -> arith_exp . SLASH arith_exp [ STAR SLASH RPAREN PLUS MOD DASH ]
+## arith_exp -> arith_exp . MOD arith_exp [ STAR SLASH RPAREN PLUS MOD DASH ]
+## exp -> BITMASK LPAREN exp COMMA arith_exp . RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## BITMASK LPAREN exp COMMA arith_exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL BITMASK LPAREN IDENT COMMA IDENT XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LPAREN IDENT TEL
+##
+## Ends in an error in state: 167.
+##
+## exp -> exp . AND exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PIPE exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . XOR exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PLUS exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . STAR exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . DASH exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . SLASH exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . MOD exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LROTATE arith_exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RROTATE arith_exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## separated_nonempty_list(COMMA,exp) -> exp . [ RPAREN ]
+## separated_nonempty_list(COMMA,exp) -> exp . COMMA separated_nonempty_list(COMMA,exp) [ RPAREN ]
+##
+## The known suffix of the stack is as follows:
+## exp
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LPAREN IDENT TEL
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LPAREN IDENT COMMA XOR
+##
+## Ends in an error in state: 168.
+##
+## separated_nonempty_list(COMMA,exp) -> exp COMMA . separated_nonempty_list(COMMA,exp) [ RPAREN ]
+##
+## The known suffix of the stack is as follows:
+## exp COMMA
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LPAREN IDENT COMMA XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LPAREN XOR
+##
+## Ends in an error in state: 170.
+##
+## exp -> IDENT LPAREN . explist RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## IDENT LPAREN
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT LPAREN XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL LPAREN IDENT TEL
+##
+## Ends in an error in state: 173.
+##
+## exp -> LPAREN exp . RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> LPAREN exp . COMMA separated_nonempty_list(COMMA,exp) RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . AND exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PIPE exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . XOR exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PLUS exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . STAR exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . DASH exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . SLASH exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . MOD exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LROTATE arith_exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RROTATE arith_exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN exp
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL LPAREN IDENT TEL
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL LPAREN IDENT COMMA XOR
+##
+## Ends in an error in state: 175.
+##
+## exp -> LPAREN exp COMMA . separated_nonempty_list(COMMA,exp) RPAREN [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## LPAREN exp COMMA
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL LPAREN IDENT COMMA XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL PACK LPAREN IDENT TEL
+##
+## Ends in an error in state: 178.
+##
+## exp -> exp . AND exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PIPE exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . XOR exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . PLUS exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . STAR exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . DASH exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . SLASH exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . MOD exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . LROTATE arith_exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> exp . RROTATE arith_exp [ XOR STAR SLASH RSHIFT RROTATE RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+## exp -> PACK LPAREN exp . COMMA exp RPAREN option(typ_expl) [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## PACK LPAREN exp
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL PACK LPAREN IDENT TEL
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL PACK LPAREN IDENT COMMA XOR
+##
+## Ends in an error in state: 179.
+##
+## exp -> PACK LPAREN exp COMMA . exp RPAREN option(typ_expl) [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## PACK LPAREN exp COMMA
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL PACK LPAREN IDENT COMMA XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL PACK LPAREN IDENT COMMA IDENT TEL
+##
+## Ends in an error in state: 180.
+##
+## exp -> exp . AND exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PIPE exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . XOR exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PLUS exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . STAR exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . DASH exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . SLASH exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . MOD exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LROTATE arith_exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RROTATE arith_exp [ XOR STAR SLASH RSHIFT RROTATE RPAREN RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> PACK LPAREN exp COMMA exp . RPAREN option(typ_expl) [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## PACK LPAREN exp COMMA exp
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL PACK LPAREN IDENT COMMA IDENT TEL
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL PACK LPAREN IDENT COMMA IDENT RPAREN VAR
+##
+## Ends in an error in state: 181.
+##
+## exp -> PACK LPAREN exp COMMA exp RPAREN . option(typ_expl) [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## PACK LPAREN exp COMMA exp RPAREN
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL PACK LPAREN IDENT COMMA IDENT RPAREN VAR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL PACK LPAREN IDENT COMMA IDENT RPAREN COLON XOR
+##
+## Ends in an error in state: 182.
+##
+## typ_expl -> COLON . typ [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RPAREN RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH COMMA AND ]
+##
+## The known suffix of the stack is as follows:
+## COLON
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL PACK LPAREN IDENT COMMA IDENT RPAREN COLON XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT XOR EQUAL IDENT RPAREN
+##
+## Ends in an error in state: 187.
+##
+## _norec_deq -> pat XOR boption(COLON) EQUAL exp . [ TEL SEMICOLON RCURLY ]
+## exp -> exp . AND exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PIPE exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . XOR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PLUS exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . STAR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . DASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . SLASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . MOD exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+##
+## The known suffix of the stack is as follows:
+## pat XOR boption(COLON) EQUAL exp
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT XOR EQUAL IDENT RPAREN
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT STAR XOR
+##
+## Ends in an error in state: 188.
+##
+## _norec_deq -> pat STAR . boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat STAR
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT STAR XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT STAR COLON XOR
+##
+## Ends in an error in state: 189.
+##
+## _norec_deq -> pat STAR boption(COLON) . EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat STAR boption(COLON)
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT STAR COLON XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT STAR EQUAL XOR
+##
+## Ends in an error in state: 190.
+##
+## _norec_deq -> pat STAR boption(COLON) EQUAL . exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat STAR boption(COLON) EQUAL
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT STAR EQUAL XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT STAR EQUAL IDENT RPAREN
+##
+## Ends in an error in state: 191.
+##
+## _norec_deq -> pat STAR boption(COLON) EQUAL exp . [ TEL SEMICOLON RCURLY ]
+## exp -> exp . AND exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PIPE exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . XOR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PLUS exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . STAR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . DASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . SLASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . MOD exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+##
+## The known suffix of the stack is as follows:
+## pat STAR boption(COLON) EQUAL exp
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT STAR EQUAL IDENT RPAREN
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT SLASH XOR
+##
+## Ends in an error in state: 192.
+##
+## _norec_deq -> pat SLASH . boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat SLASH
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT SLASH XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT SLASH COLON XOR
+##
+## Ends in an error in state: 193.
+##
+## _norec_deq -> pat SLASH boption(COLON) . EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat SLASH boption(COLON)
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT SLASH COLON XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT SLASH EQUAL XOR
+##
+## Ends in an error in state: 194.
+##
+## _norec_deq -> pat SLASH boption(COLON) EQUAL . exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat SLASH boption(COLON) EQUAL
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT SLASH EQUAL XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT SLASH EQUAL IDENT RPAREN
+##
+## Ends in an error in state: 195.
+##
+## _norec_deq -> pat SLASH boption(COLON) EQUAL exp . [ TEL SEMICOLON RCURLY ]
+## exp -> exp . AND exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PIPE exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . XOR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PLUS exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . STAR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . DASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . SLASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . MOD exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+##
+## The known suffix of the stack is as follows:
+## pat SLASH boption(COLON) EQUAL exp
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT SLASH EQUAL IDENT RPAREN
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PLUS XOR
+##
+## Ends in an error in state: 196.
+##
+## _norec_deq -> pat PLUS . boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat PLUS
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PLUS XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PLUS COLON XOR
+##
+## Ends in an error in state: 197.
+##
+## _norec_deq -> pat PLUS boption(COLON) . EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat PLUS boption(COLON)
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PLUS COLON XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PLUS EQUAL XOR
+##
+## Ends in an error in state: 198.
+##
+## _norec_deq -> pat PLUS boption(COLON) EQUAL . exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat PLUS boption(COLON) EQUAL
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PLUS EQUAL XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PLUS EQUAL IDENT RPAREN
+##
+## Ends in an error in state: 199.
+##
+## _norec_deq -> pat PLUS boption(COLON) EQUAL exp . [ TEL SEMICOLON RCURLY ]
+## exp -> exp . AND exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PIPE exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . XOR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PLUS exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . STAR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . DASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . SLASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . MOD exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+##
+## The known suffix of the stack is as follows:
+## pat PLUS boption(COLON) EQUAL exp
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PLUS EQUAL IDENT RPAREN
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PIPE XOR
+##
+## Ends in an error in state: 200.
+##
+## _norec_deq -> pat PIPE . boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat PIPE
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PIPE XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PIPE COLON XOR
+##
+## Ends in an error in state: 201.
+##
+## _norec_deq -> pat PIPE boption(COLON) . EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat PIPE boption(COLON)
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PIPE COLON XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PIPE EQUAL XOR
+##
+## Ends in an error in state: 202.
+##
+## _norec_deq -> pat PIPE boption(COLON) EQUAL . exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat PIPE boption(COLON) EQUAL
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PIPE EQUAL XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PIPE EQUAL IDENT RPAREN
+##
+## Ends in an error in state: 203.
+##
+## _norec_deq -> pat PIPE boption(COLON) EQUAL exp . [ TEL SEMICOLON RCURLY ]
+## exp -> exp . AND exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PIPE exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . XOR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PLUS exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . STAR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . DASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . SLASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . MOD exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+##
+## The known suffix of the stack is as follows:
+## pat PIPE boption(COLON) EQUAL exp
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT PIPE EQUAL IDENT RPAREN
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT MOD XOR
+##
+## Ends in an error in state: 204.
+##
+## _norec_deq -> pat MOD . boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat MOD
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT MOD XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT MOD COLON XOR
+##
+## Ends in an error in state: 205.
+##
+## _norec_deq -> pat MOD boption(COLON) . EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat MOD boption(COLON)
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT MOD COLON XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT MOD EQUAL XOR
+##
+## Ends in an error in state: 206.
+##
+## _norec_deq -> pat MOD boption(COLON) EQUAL . exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat MOD boption(COLON) EQUAL
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT MOD EQUAL XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT MOD EQUAL IDENT RPAREN
+##
+## Ends in an error in state: 207.
+##
+## _norec_deq -> pat MOD boption(COLON) EQUAL exp . [ TEL SEMICOLON RCURLY ]
+## exp -> exp . AND exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PIPE exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . XOR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PLUS exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . STAR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . DASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . SLASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . MOD exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+##
+## The known suffix of the stack is as follows:
+## pat MOD boption(COLON) EQUAL exp
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT MOD EQUAL IDENT RPAREN
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT DASH XOR
+##
+## Ends in an error in state: 208.
+##
+## _norec_deq -> pat DASH . boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat DASH
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT DASH XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT DASH COLON XOR
+##
+## Ends in an error in state: 209.
+##
+## _norec_deq -> pat DASH boption(COLON) . EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat DASH boption(COLON)
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT DASH COLON XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT DASH EQUAL XOR
+##
+## Ends in an error in state: 210.
+##
+## _norec_deq -> pat DASH boption(COLON) EQUAL . exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat DASH boption(COLON) EQUAL
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT DASH EQUAL XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT DASH EQUAL IDENT RPAREN
+##
+## Ends in an error in state: 211.
+##
+## _norec_deq -> pat DASH boption(COLON) EQUAL exp . [ TEL SEMICOLON RCURLY ]
+## exp -> exp . AND exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PIPE exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . XOR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PLUS exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . STAR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . DASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . SLASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . MOD exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+##
+## The known suffix of the stack is as follows:
+## pat DASH boption(COLON) EQUAL exp
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT DASH EQUAL IDENT RPAREN
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT AND XOR
+##
+## Ends in an error in state: 212.
+##
+## _norec_deq -> pat AND . boption(COLON) EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat AND
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT AND XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT AND COLON XOR
+##
+## Ends in an error in state: 213.
+##
+## _norec_deq -> pat AND boption(COLON) . EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat AND boption(COLON)
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT AND COLON XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT AND EQUAL XOR
+##
+## Ends in an error in state: 214.
+##
+## _norec_deq -> pat AND boption(COLON) EQUAL . exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat AND boption(COLON) EQUAL
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT AND EQUAL XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT AND EQUAL IDENT RPAREN
+##
+## Ends in an error in state: 215.
+##
+## _norec_deq -> pat AND boption(COLON) EQUAL exp . [ TEL SEMICOLON RCURLY ]
+## exp -> exp . AND exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PIPE exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . XOR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PLUS exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . STAR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . DASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . SLASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . MOD exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+##
+## The known suffix of the stack is as follows:
+## pat AND boption(COLON) EQUAL exp
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT AND EQUAL IDENT RPAREN
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT COLON XOR
+##
+## Ends in an error in state: 216.
+##
+## _norec_deq -> pat boption(COLON) . EQUAL exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat boption(COLON)
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT COLON XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL XOR
+##
+## Ends in an error in state: 217.
+##
+## _norec_deq -> pat boption(COLON) EQUAL . exp [ TEL SEMICOLON RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## pat boption(COLON) EQUAL
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RPAREN
+##
+## Ends in an error in state: 218.
+##
+## _norec_deq -> pat boption(COLON) EQUAL exp . [ TEL SEMICOLON RCURLY ]
+## exp -> exp . AND exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PIPE exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . XOR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . PLUS exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . STAR exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . DASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . SLASH exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . MOD exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RSHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RASHIFT arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . LROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+## exp -> exp . RROTATE arith_exp [ XOR TEL STAR SLASH SEMICOLON RSHIFT RROTATE RCURLY RASHIFT PLUS PIPE MOD LSHIFT LROTATE DASH AND ]
+##
+## The known suffix of the stack is as follows:
+## pat boption(COLON) EQUAL exp
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RPAREN
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET NOUNROLL XOR
+##
+## Ends in an error in state: 219.
+##
+## list(opt_stmt) -> opt_stmt . list(opt_stmt) [ FORALL ]
+##
+## The known suffix of the stack is as follows:
+## opt_stmt
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET NOUNROLL XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT SEMICOLON XOR
+##
+## Ends in an error in state: 222.
+##
+## list(SEMICOLON) -> SEMICOLON . list(SEMICOLON) [ TEL RCURLY ]
+## nonempty_list(SEMICOLON) -> SEMICOLON . [ UNROLL PIPELINED NOUNROLL LPAREN IDENT FORALL ]
+## nonempty_list(SEMICOLON) -> SEMICOLON . nonempty_list(SEMICOLON) [ UNROLL PIPELINED NOUNROLL LPAREN IDENT FORALL ]
+##
+## The known suffix of the stack is as follows:
+## SEMICOLON
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT SEMICOLON XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL XOR
+##
+## Ends in an error in state: 227.
+##
+## deq_forall -> list(opt_stmt) FORALL . IDENT IN LBRACKET arith_exp COMMA arith_exp RBRACKET LCURLY deqs RCURLY [ UNROLL TEL SEMICOLON RCURLY PIPELINED NOUNROLL LPAREN IDENT FORALL ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_stmt) FORALL
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT XOR
+##
+## Ends in an error in state: 228.
+##
+## deq_forall -> list(opt_stmt) FORALL IDENT . IN LBRACKET arith_exp COMMA arith_exp RBRACKET LCURLY deqs RCURLY [ UNROLL TEL SEMICOLON RCURLY PIPELINED NOUNROLL LPAREN IDENT FORALL ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_stmt) FORALL IDENT
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN XOR
+##
+## Ends in an error in state: 229.
+##
+## deq_forall -> list(opt_stmt) FORALL IDENT IN . LBRACKET arith_exp COMMA arith_exp RBRACKET LCURLY deqs RCURLY [ UNROLL TEL SEMICOLON RCURLY PIPELINED NOUNROLL LPAREN IDENT FORALL ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_stmt) FORALL IDENT IN
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET XOR
+##
+## Ends in an error in state: 230.
+##
+## deq_forall -> list(opt_stmt) FORALL IDENT IN LBRACKET . arith_exp COMMA arith_exp RBRACKET LCURLY deqs RCURLY [ UNROLL TEL SEMICOLON RCURLY PIPELINED NOUNROLL LPAREN IDENT FORALL ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_stmt) FORALL IDENT IN LBRACKET
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT XOR
+##
+## Ends in an error in state: 231.
+##
+## arith_exp -> arith_exp . PLUS arith_exp [ STAR SLASH PLUS MOD DASH COMMA ]
+## arith_exp -> arith_exp . STAR arith_exp [ STAR SLASH PLUS MOD DASH COMMA ]
+## arith_exp -> arith_exp . DASH arith_exp [ STAR SLASH PLUS MOD DASH COMMA ]
+## arith_exp -> arith_exp . SLASH arith_exp [ STAR SLASH PLUS MOD DASH COMMA ]
+## arith_exp -> arith_exp . MOD arith_exp [ STAR SLASH PLUS MOD DASH COMMA ]
+## deq_forall -> list(opt_stmt) FORALL IDENT IN LBRACKET arith_exp . COMMA arith_exp RBRACKET LCURLY deqs RCURLY [ UNROLL TEL SEMICOLON RCURLY PIPELINED NOUNROLL LPAREN IDENT FORALL ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_stmt) FORALL IDENT IN LBRACKET arith_exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT COMMA XOR
+##
+## Ends in an error in state: 232.
+##
+## deq_forall -> list(opt_stmt) FORALL IDENT IN LBRACKET arith_exp COMMA . arith_exp RBRACKET LCURLY deqs RCURLY [ UNROLL TEL SEMICOLON RCURLY PIPELINED NOUNROLL LPAREN IDENT FORALL ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_stmt) FORALL IDENT IN LBRACKET arith_exp COMMA
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT COMMA XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT COMMA IDENT XOR
+##
+## Ends in an error in state: 233.
+##
+## arith_exp -> arith_exp . PLUS arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH ]
+## arith_exp -> arith_exp . STAR arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH ]
+## arith_exp -> arith_exp . DASH arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH ]
+## arith_exp -> arith_exp . SLASH arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH ]
+## arith_exp -> arith_exp . MOD arith_exp [ STAR SLASH RBRACKET PLUS MOD DASH ]
+## deq_forall -> list(opt_stmt) FORALL IDENT IN LBRACKET arith_exp COMMA arith_exp . RBRACKET LCURLY deqs RCURLY [ UNROLL TEL SEMICOLON RCURLY PIPELINED NOUNROLL LPAREN IDENT FORALL ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_stmt) FORALL IDENT IN LBRACKET arith_exp COMMA arith_exp
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT COMMA IDENT XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT COMMA IDENT RBRACKET XOR
+##
+## Ends in an error in state: 234.
+##
+## deq_forall -> list(opt_stmt) FORALL IDENT IN LBRACKET arith_exp COMMA arith_exp RBRACKET . LCURLY deqs RCURLY [ UNROLL TEL SEMICOLON RCURLY PIPELINED NOUNROLL LPAREN IDENT FORALL ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_stmt) FORALL IDENT IN LBRACKET arith_exp COMMA arith_exp RBRACKET
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT COMMA IDENT RBRACKET XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT COMMA IDENT RBRACKET LCURLY XOR
+##
+## Ends in an error in state: 235.
+##
+## deq_forall -> list(opt_stmt) FORALL IDENT IN LBRACKET arith_exp COMMA arith_exp RBRACKET LCURLY . deqs RCURLY [ UNROLL TEL SEMICOLON RCURLY PIPELINED NOUNROLL LPAREN IDENT FORALL ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_stmt) FORALL IDENT IN LBRACKET arith_exp COMMA arith_exp RBRACKET LCURLY
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT COMMA IDENT RBRACKET LCURLY XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT COMMA IDENT RBRACKET LCURLY IDENT EQUAL IDENT TEL
+##
+## Ends in an error in state: 236.
+##
+## deq_forall -> list(opt_stmt) FORALL IDENT IN LBRACKET arith_exp COMMA arith_exp RBRACKET LCURLY deqs . RCURLY [ UNROLL TEL SEMICOLON RCURLY PIPELINED NOUNROLL LPAREN IDENT FORALL ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_stmt) FORALL IDENT IN LBRACKET arith_exp COMMA arith_exp RBRACKET LCURLY deqs
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+## In state 218, spurious reduction of production _norec_deq -> pat boption(COLON) EQUAL exp
+## In state 242, spurious reduction of production norec_deq -> _norec_deq
+## In state 221, spurious reduction of production list(SEMICOLON) ->
+## In state 244, spurious reduction of production deqs -> norec_deq list(SEMICOLON)
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT COMMA IDENT RBRACKET LCURLY IDENT EQUAL IDENT TEL
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT COMMA IDENT RBRACKET LCURLY IDENT EQUAL IDENT RCURLY XOR
+##
+## Ends in an error in state: 238.
+##
+## deqs -> deq_forall . list(SEMICOLON) deqs [ TEL RCURLY ]
+## deqs -> deq_forall . list(SEMICOLON) [ TEL RCURLY ]
+##
+## The known suffix of the stack is as follows:
+## deq_forall
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT COMMA IDENT RBRACKET LCURLY IDENT EQUAL IDENT RCURLY XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT COMMA IDENT RBRACKET LCURLY IDENT EQUAL IDENT RCURLY SEMICOLON XOR
+##
+## Ends in an error in state: 239.
+##
+## list(SEMICOLON) -> SEMICOLON . list(SEMICOLON) [ UNROLL TEL RCURLY PIPELINED NOUNROLL LPAREN IDENT FORALL ]
+##
+## The known suffix of the stack is as follows:
+## SEMICOLON
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET FORALL IDENT IN LBRACKET IDENT COMMA IDENT RBRACKET LCURLY IDENT EQUAL IDENT RCURLY SEMICOLON XOR
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RCURLY
+##
+## Ends in an error in state: 245.
+##
+## node_body_elem -> loption(vars) LET deqs . TEL [ TABLE SEMICOLON RBRACKET PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## loption(vars) LET deqs
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 121, spurious reduction of production var -> IDENT
+## In state 129, spurious reduction of production exp -> var
+## In state 218, spurious reduction of production _norec_deq -> pat boption(COLON) EQUAL exp
+## In state 242, spurious reduction of production norec_deq -> _norec_deq
+## In state 221, spurious reduction of production list(SEMICOLON) ->
+## In state 244, spurious reduction of production deqs -> norec_deq list(SEMICOLON)
+##
+
+prog: NODE IDENT LPAREN RPAREN RETURN LPAREN RPAREN LET IDENT EQUAL IDENT RCURLY
+
+prog: PERM XOR
+##
+## Ends in an error in state: 249.
+##
+## def -> list(opt_def) is_perm . boption(ARRAY) IDENT LPAREN p RPAREN RETURN LPAREN p RPAREN perm_or_table_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) is_perm
+##
+
+prog: PERM XOR
+
+prog: PERM ARRAY XOR
+##
+## Ends in an error in state: 250.
+##
+## def -> list(opt_def) is_perm boption(ARRAY) . IDENT LPAREN p RPAREN RETURN LPAREN p RPAREN perm_or_table_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) is_perm boption(ARRAY)
+##
+
+prog: PERM ARRAY XOR
+
+prog: PERM IDENT XOR
+##
+## Ends in an error in state: 251.
+##
+## def -> list(opt_def) is_perm boption(ARRAY) IDENT . LPAREN p RPAREN RETURN LPAREN p RPAREN perm_or_table_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) is_perm boption(ARRAY) IDENT
+##
+
+prog: PERM IDENT XOR
+
+prog: PERM IDENT LPAREN XOR
+##
+## Ends in an error in state: 252.
+##
+## def -> list(opt_def) is_perm boption(ARRAY) IDENT LPAREN . p RPAREN RETURN LPAREN p RPAREN perm_or_table_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) is_perm boption(ARRAY) IDENT LPAREN
+##
+
+prog: PERM IDENT LPAREN XOR
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LET
+##
+## Ends in an error in state: 253.
+##
+## def -> list(opt_def) is_perm boption(ARRAY) IDENT LPAREN p . RPAREN RETURN LPAREN p RPAREN perm_or_table_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) is_perm boption(ARRAY) IDENT LPAREN p
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 34, spurious reduction of production list(delimited(LBRACKET,arith_exp,RBRACKET)) ->
+## In state 54, spurious reduction of production typ -> IDENT list(delimited(LBRACKET,arith_exp,RBRACKET))
+## In state 55, spurious reduction of production var_d -> separated_nonempty_list(COMMA,ident) COLON list(opt_var_d) typ
+## In state 24, spurious reduction of production separated_nonempty_list(COMMA,var_d) -> var_d
+## In state 56, spurious reduction of production loption(separated_nonempty_list(COMMA,var_d)) -> separated_nonempty_list(COMMA,var_d)
+## In state 65, spurious reduction of production p -> loption(separated_nonempty_list(COMMA,var_d))
+##
+
+prog: PERM IDENT LPAREN IDENT COLON IDENT LET
+
+prog: PERM IDENT LPAREN RPAREN XOR
+##
+## Ends in an error in state: 254.
+##
+## def -> list(opt_def) is_perm boption(ARRAY) IDENT LPAREN p RPAREN . RETURN LPAREN p RPAREN perm_or_table_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) is_perm boption(ARRAY) IDENT LPAREN p RPAREN
+##
+
+prog: PERM IDENT LPAREN RPAREN XOR
+
+prog: PERM IDENT LPAREN RPAREN RETURN XOR
+##
+## Ends in an error in state: 255.
+##
+## def -> list(opt_def) is_perm boption(ARRAY) IDENT LPAREN p RPAREN RETURN . LPAREN p RPAREN perm_or_table_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) is_perm boption(ARRAY) IDENT LPAREN p RPAREN RETURN
+##
+
+prog: PERM IDENT LPAREN RPAREN RETURN XOR
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN XOR
+##
+## Ends in an error in state: 256.
+##
+## def -> list(opt_def) is_perm boption(ARRAY) IDENT LPAREN p RPAREN RETURN LPAREN . p RPAREN perm_or_table_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) is_perm boption(ARRAY) IDENT LPAREN p RPAREN RETURN LPAREN
+##
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN XOR
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN IDENT COLON IDENT LET
+##
+## Ends in an error in state: 257.
+##
+## def -> list(opt_def) is_perm boption(ARRAY) IDENT LPAREN p RPAREN RETURN LPAREN p . RPAREN perm_or_table_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) is_perm boption(ARRAY) IDENT LPAREN p RPAREN RETURN LPAREN p
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 34, spurious reduction of production list(delimited(LBRACKET,arith_exp,RBRACKET)) ->
+## In state 54, spurious reduction of production typ -> IDENT list(delimited(LBRACKET,arith_exp,RBRACKET))
+## In state 55, spurious reduction of production var_d -> separated_nonempty_list(COMMA,ident) COLON list(opt_var_d) typ
+## In state 24, spurious reduction of production separated_nonempty_list(COMMA,var_d) -> var_d
+## In state 56, spurious reduction of production loption(separated_nonempty_list(COMMA,var_d)) -> separated_nonempty_list(COMMA,var_d)
+## In state 65, spurious reduction of production p -> loption(separated_nonempty_list(COMMA,var_d))
+##
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN IDENT COLON IDENT LET
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN XOR
+##
+## Ends in an error in state: 258.
+##
+## def -> list(opt_def) is_perm boption(ARRAY) IDENT LPAREN p RPAREN RETURN LPAREN p RPAREN . perm_or_table_body [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## list(opt_def) is_perm boption(ARRAY) IDENT LPAREN p RPAREN RETURN LPAREN p RPAREN
+##
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN XOR
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN LCURLY XOR
+##
+## Ends in an error in state: 259.
+##
+## p_or_t_body_elem -> LCURLY . separated_nonempty_list(COMMA,INT) RCURLY [ TABLE SEMICOLON RBRACKET PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## LCURLY
+##
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN LCURLY XOR
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN LCURLY INT RBRACKET
+##
+## Ends in an error in state: 260.
+##
+## p_or_t_body_elem -> LCURLY separated_nonempty_list(COMMA,INT) . RCURLY [ TABLE SEMICOLON RBRACKET PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## LCURLY separated_nonempty_list(COMMA,INT)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 109, spurious reduction of production separated_nonempty_list(COMMA,INT) -> INT
+##
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN LCURLY INT RBRACKET
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN LBRACKET XOR
+##
+## Ends in an error in state: 262.
+##
+## perm_or_table_body -> LBRACKET . separated_nonempty_list(SEMICOLON,p_or_t_body_elem) RBRACKET [ TABLE PERM NOOPT NOINLINE NODE INTERLEAVE INLINE INCLUDE EOF ]
+##
+## The known suffix of the stack is as follows:
+## LBRACKET
+##
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN LBRACKET XOR
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN LBRACKET LCURLY INT RCURLY XOR
+##
+## Ends in an error in state: 265.
+##
+## separated_nonempty_list(SEMICOLON,p_or_t_body_elem) -> p_or_t_body_elem . [ RBRACKET ]
+## separated_nonempty_list(SEMICOLON,p_or_t_body_elem) -> p_or_t_body_elem . SEMICOLON separated_nonempty_list(SEMICOLON,p_or_t_body_elem) [ RBRACKET ]
+##
+## The known suffix of the stack is as follows:
+## p_or_t_body_elem
+##
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN LBRACKET LCURLY INT RCURLY XOR
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN LBRACKET LCURLY INT RCURLY SEMICOLON XOR
+##
+## Ends in an error in state: 266.
+##
+## separated_nonempty_list(SEMICOLON,p_or_t_body_elem) -> p_or_t_body_elem SEMICOLON . separated_nonempty_list(SEMICOLON,p_or_t_body_elem) [ RBRACKET ]
+##
+## The known suffix of the stack is as follows:
+## p_or_t_body_elem SEMICOLON
+##
+
+prog: PERM IDENT LPAREN RPAREN RETURN LPAREN RPAREN LBRACKET LCURLY INT RCURLY SEMICOLON XOR
+
+prog: INCLUDE STRING XOR
+##
+## Ends in an error in state: 273.
+##
+## list(def_or_inc) -> def_or_inc . list(def_or_inc) [ EOF ]
+##
+## The known suffix of the stack is as follows:
+## def_or_inc
+##
+
+prog: INCLUDE STRING XOR

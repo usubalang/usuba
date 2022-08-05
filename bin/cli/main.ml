@@ -25,13 +25,35 @@ let gen_output_filename ?(ext = ".c") file_in =
   | None -> failwith "You didn't provide a file suffixed with '.ua'"
   | Some base -> base ^ ext
 
-let compile (file_in : string) (prog : Usuba_AST.prog) (conf : config) : unit =
-  (* Type-checking *)
+let compile file conf =
+  (* Parsing *)
   let prog =
     Errors.exec_with_print_and_fail
-      (Type_checker.type_prog ~conf)
+      (Parser_api.parse_file conf.path)
+      (fun prog -> if conf.parse_only then exit 0 else prog)
+      file
+  in
+
+  (* Variables binding *)
+  let prog =
+    Errors.exec_with_print_and_fail
+      (Variable_binding.bind_prog ~conf)
       (fun prog -> prog)
       prog
+  in
+
+  (* Format.eprintf "--------BINDING--------@.@.%a@."
+   *   (Usuba_print.pp_prog ~detailed:(conf.verbose > 10) ())
+   *   prog; *)
+
+  (* Type-checking *)
+  let prog =
+    if conf.type_check then
+      Errors.exec_with_print_and_fail
+        (Type_checker.type_prog ~conf)
+        (fun prog -> if conf.type_only then exit 0 else prog)
+        prog
+    else prog
   in
 
   (* Normalizing AND optimizing *)
@@ -40,7 +62,7 @@ let compile (file_in : string) (prog : Usuba_AST.prog) (conf : config) : unit =
   | true ->
       let out =
         match conf.output with
-        | "" -> open_out (gen_output_filename ~ext:".ua0" file_in)
+        | "" -> open_out (gen_output_filename ~ext:".ua0" file)
         | str -> open_out str
       in
       let ppf = Format.formatter_of_out_channel out in
@@ -49,26 +71,27 @@ let compile (file_in : string) (prog : Usuba_AST.prog) (conf : config) : unit =
       close_out out
   | false ->
       (* Generating a string of C code *)
-      let c_prog_str = Usuba_to_c.prog_to_c prog normed_prog conf file_in in
+      let c_prog_str = Usuba_to_c.prog_to_c prog normed_prog conf file in
 
       (* Opening out file *)
       let out =
         match conf.output with
-        | "" -> open_out (gen_output_filename file_in)
+        | "" -> open_out (gen_output_filename file)
         | str -> open_out str
       in
       (* Printing the C code *)
       Printf.fprintf out "%s" c_prog_str;
       close_out out
 
-let run_tests () : unit =
-  Test_constant_folding.test ();
-  Test_CSE.test ();
-  Test_copy_propagation.test ();
-  Test_remove_dead_code.test ();
-  Test_pass_runner.test ();
-  Test_monomorphize.test ();
-  Printf.printf "All tests ran.\n"
+let run_tests () : unit = ()
+(* Do nothing for now *)
+(* Test_constant_folding.test (); *)
+(* Test_CSE.test (); *)
+(* Test_copy_propagation.test (); *)
+(* Test_remove_dead_code.test (); *)
+(* Test_pass_runner.test (); *)
+(* Test_monomorphize.test (); *)
+(* Printf.printf "All tests ran.\n" *)
 
 let main () =
   Printexc.record_backtrace true;
@@ -77,6 +100,8 @@ let main () =
   let nocolor = ref false in
   let verbose = ref 1 in
   let path = ref [ "." ] in
+  let parse_only = ref false in
+  let type_only = ref false in
   let type_check = ref true in
   let check_tbl = ref false in
   let no_inline = ref false in
@@ -273,12 +298,16 @@ let main () =
       ( "-compact",
         Arg.Set compact,
         "Generates more compact code (for bitslicing only)" );
+      ("-parse-only", Arg.Set parse_only, "Only parse files");
+      ("-type-only", Arg.Set type_only, "Only parse and type files");
       ("-tests", Arg.Unit (fun () -> run_tests ()), "Run tests");
     ]
   in
   let usage_msg = "Usage: usuba [switches] [files]" in
 
-  let compile s =
+  let generate_conf_and_compile file =
+    let path = Filename.dirname file :: List.rev !path in
+
     let bits_per_reg =
       if !bits_per_reg <> 64 then !bits_per_reg
       else if !shares <> 1 then 32
@@ -286,8 +315,6 @@ let main () =
     in
 
     let pre_sched = !pre_schedule (* && !scheduling *) in
-
-    let path = Filename.dirname s :: List.rev !path in
 
     if !maskVerif then (
       unroll := true;
@@ -298,7 +325,7 @@ let main () =
       (* When -no-arr is combined with -ua-masked, the linearization
          could take forever, and is obviously not necessary. *)
       linearize_arr := false;
-    let base_file = Filename.(basename @@ chop_suffix s ".ua") in
+    let base_file = Filename.(basename @@ chop_suffix file ".ua") in
     let dump_steps_dir = Filename.(concat !dump_steps_dir base_file) in
     (if !dump_steps <> None then
      try Sys.mkdir dump_steps_dir 0o777 with Sys_error _ -> ());
@@ -311,6 +338,8 @@ let main () =
         verbose = !verbose;
         path;
         (* local var *)
+        parse_only = !parse_only;
+        type_only = !type_only;
         type_check = !type_check;
         check_tbl = !check_tbl;
         auto_inline = !auto_inline;
@@ -353,28 +382,24 @@ let main () =
         gen_bench = !gen_bench;
         keep_tables = !keep_tables;
         compact = !compact;
+        step_counter = ref 0;
+        dump_sexp = !dump_sexp;
+        dump_steps = !dump_steps;
+        dump_steps_base_file;
         bench_inline = !bench_inline || !bench_all;
         bench_inter = !bench_inter || !bench_all;
         bench_bitsched = !bench_bitsched || !bench_all;
         bench_msched = !bench_msched || !bench_all;
         bench_sharevar = !bench_sharevar || !bench_all;
-        step_counter = ref 0;
-        dump_sexp = !dump_sexp;
-        dump_steps = !dump_steps;
-        dump_steps_base_file;
       }
     in
-
-    let prog = Parser_api.parse_file conf.path s in
-
-    compile s prog conf
+    compile file conf
   in
 
   let input_files = ref [] in
   let anon_fun filename = input_files := filename :: !input_files in
-
   Arg.parse speclist anon_fun usage_msg;
 
-  List.iter (fun file -> compile file) !input_files
+  List.iter (fun file -> generate_conf_and_compile file) !input_files
 
 let () = main ()

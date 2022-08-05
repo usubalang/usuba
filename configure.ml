@@ -174,6 +174,8 @@ type config = {
   warning_as_error : bool;
   verbose : int;
   path : string list;
+  parse_only : bool;
+  type_only : bool;
   type_check : bool;
   check_tbl : bool;
   auto_inline : bool;

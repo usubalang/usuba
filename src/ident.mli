@@ -38,6 +38,9 @@ val uid : t -> uid
 val create_unbound : string -> t
 (** [create_unbound name] returns a new unbound {!t}. *)
 
+val free_unbound : t -> t
+(** [free_unbound t] returns a new {!t} with an unique identifier. *)
+
 val create_free : string -> t
 (** [create_free name] returns a free [t] with its unique identifier.
 
@@ -101,6 +104,33 @@ val hash : t -> int
 
     {e Warning: [hash] is currently implemented on names to stay coherent with how it was done before. This is subject to change..} *)
 
+module NameMap : sig
+  include Map.S with type key = string
+
+  val pp :
+    ?pp_sep:(Format.formatter -> unit -> unit) ->
+    ?left:string ->
+    ?right:string ->
+    (Format.formatter -> 'a -> unit) ->
+    Format.formatter ->
+    'a t ->
+    unit
+end
+
+(** See {!compare} for details about how identifiers are compared *)
+module Map : sig
+  include Map.S with type key = t
+
+  val pp :
+    ?pp_sep:(Format.formatter -> unit -> unit) ->
+    ?left:string ->
+    ?right:string ->
+    (Format.formatter -> 'a -> unit) ->
+    Format.formatter ->
+    'a t ->
+    unit
+end
+
 (** [hash] and [equal] are currently based on the name of the identifier *)
 module Hashtbl : sig
   include Hashtbl.S with type key = t
@@ -110,6 +140,11 @@ module Hashtbl : sig
   val each : 'a t -> (key * 'a) list
   val keys_2nd_layer : 'a t t -> key -> key list
 end
+
+(** {1 Explicit binding} *)
+
+val bind : backtrace:string list -> t NameMap.t -> t -> t
+(** [bind ~backtrace map t] binds an unbound {!t} to its corresponding  *)
 
 (** {1 S-expressions} *)
 

@@ -216,8 +216,8 @@ and expand_deqs env_var env_keep ?(env = Ident.Hashtbl.create 100)
       | Loop (x, ei, ef, deqs, opts) ->
           Ident.Hashtbl.add env_var x Nat;
           Ident.Hashtbl.add env_it x true;
-          (* STDLIB_IMPORT: List.mem of sum type *)
           let res =
+            (* STDLIB_IMPORT: List.mem of sum type *)
             if Stdlib.List.mem Unroll opts || force = Remove || unroll then
               do_unroll env_var env_keep env force unroll x ei ef deqs
             else

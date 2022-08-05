@@ -135,8 +135,8 @@ let rewrite_single_table (id : ident) (p_in : p) (p_out : p)
       in
       let sbox_dir = Config.data_dir ^ "/sboxes/" in
       let file_name = sbox_dir ^ found ^ ".ua" in
-      let new_node =
-        Rename.rename_def
+      let _, new_node =
+        Rename.rename_def Ident.Map.empty
           (List.nth (Parser_api.parse_file [ sbox_dir ] file_name).nodes 0)
       in
       {
