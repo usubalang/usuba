@@ -7,7 +7,7 @@
  (name Usuba_lib)
  (public_name usuba_lib)
  ; external dependencies
- (libraries unix str usuba_pp sexplib ppx_sexp_conv)
+ (libraries unix str usuba_pp sexplib ppx_sexp_conv menhirLib)
  ; Specifying modules one by one because we don't want to include them all
  (modules
   prelude
@@ -57,6 +57,7 @@
   ; verification
   ; bdd_verif
   soundness
+  variable_binding
   type_checker
   ; c_gen
   nodes_to_c_fdti
@@ -91,7 +92,9 @@
   backtrace
   errors
   parser_api
+  parser_helper
   parser
+  parser_messages
   ; tests
   test_constant_folding
   test_copy_propagation

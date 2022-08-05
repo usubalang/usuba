@@ -19,21 +19,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code of the current branch
+      # Checkout the code of the current branch and the submodules
       - name: Checkout code
         uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       - name: Checkout repo examples
         uses: actions/checkout@v2
         with:
           repository: usubalang/examples
           path: './examples'
-
-      - name: Checkout repo unit_tests
-        uses: actions/checkout@v2
-        with:
-          repository: usubalang/unit_tests
-          path: './unit_tests'
 
       # Retrieve the opam cache with unique key
       # A new cache is created/used if the `.opam` files changes or

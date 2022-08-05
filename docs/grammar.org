@@ -1,0 +1,317 @@
+#+OPTIONS: ^:nil
+#+TITLE: Quite formal documentation of usuba syntax
+#+AUTHOR: Usuba team
+#+LaTeX_HEADER: \usepackage[x11names]{xcolor}
+#+LaTeX_HEADER: \hypersetup{linktoc = all, colorlinks = true, urlcolor = DodgerBlue4, citecolor = PaleGreen1, linkcolor = blue}
+
+** Notes
+
+- Symbols in ~< >~ are nonterminal. Other symbols are terminal
+- When the construction ~< <nt_symbol> list <t_symbol> >~ appears it means a list of ~<nt_symbol>~ separated by ~<t_symbol>~ (if no ~<t_symbol>~ is provided, the list is separated by spaces)
+  - example: ~<int list ,>~ is  a list of ~<int>~ separated by ~,~ or ~<int>, <int>, ..., <int>~
+  - this list can be empty. A non-empty list is marked as ~< <nt_symbol> ne_list <t_symbol> >~
+- Symbols preceded by ~\~ are escaped (i.e. ~\|~ or ~\<~)
+- ~(...)?~ means that the symbol inside the parentheses is optional
+
+** Utility
+
+*** Identifier
+
+An ASCII word starting with ~_~ or a letter (majuscule or minuscule) followed by ~_~, ~'~, letters or digits (i.e.: ~_b1'A~). Keywords, types etc can obviously not be identifiers.
+
+#+begin_src
+<ident>: [a-zA-Z_][[a-zA-Z0-9_']*
+#+end_src
+
+*** Integer
+
+A decimal or hexadecimal integer (i.e. ~12~, ~0xAF3~)
+    #+begin_src
+<int>:
+| [0-9]+
+| 0x[0-9a-fA-F]+
+#+end_src
+
+*** Simple type
+
+A simple type is a symbol represented by either:
+  - ~nat~
+  - ~u~ followed by:
+    - an optional ~<dir>~,
+    - an [[* Integer][integer]] or a ~'~[[* Identifier][identifier]]
+    - an optional ~x~[[* Integer][integer]]
+  - ~v|b~ followed by
+    - an optional ~<dir>~
+    - an [[* Integer][integer]]
+  - a ~<dir>~ is ~H~, ~V~, ~B~, an [[* Integer][integer]] or a '[[* Identifier][identifier]] delimited by chevrons
+
+#+begin_src
+<simple_type>: nat | u(<dir>)?(<int>|'<ident>)(x<int>)? | (v|b)(<dir>)?<int>
+
+<dir>: \< ( H | V | B | <int> | '<ident> ) \>
+#+end_src
+*** Binary operators
+
+**** Arithmetic operators
+#+begin_src
+<arith_op>: + | * | / | - | %
+#+end_src
+
+**** Logical operators
+
+Notice the absence of ~not~ as this is not a binary operator.
+
+#+begin_src
+<log_op>: & | \| | ^
+#+end_src
+
+**** Shifting and rotation operators
+
+#+begin_src
+// < and > are terminal symbols here
+<shift_op>: << | <<< | >> | >>> | >>!
+#+end_src
+
+*** Variable
+
+An [[* Identifier][identifier]] or a variable followed by:
+  - an array access: [[[* Arithmetic expression][arithmetic expression]]],
+  - a range: [[[* Arithmetic expression][arithmetic expression]]..[[* Arithmetic expression][arithmetic expression]]],
+  - a slice: [[[* Arithmetic expression][arithmetic expression]], ..., [[* Arithmetic expression][arithmetic expression]]]
+(i.e., ~arr[2..3][3,2]~)
+
+#+begin_src
+<var>:
+| <ident>
+| <var> [<arith_exp>]
+| <var> [<arith_exp>..<arith_exp>]
+| <var> [<arith_exp list ,>]
+#+end_src
+
+*** Parameter
+
+Parameters are built according to the following:
+- a non-empty comma separated list of [[* Identifier][identifiers]],
+- ~:~,
+- nothing, ~const~ and/or ~lazyLift~
+- a [[* Type][type]] (i.e. ~a1,a2,b1,b2: const u32~)
+
+#+begin_src
+<param>: <ident ne_list ,> : <opt_param list> <type>
+
+<opt_param>: const | lazyLift
+#+end_src
+
+** Type
+
+- a type is composed of a [[* Simple type][simple type]] and a (possibly empty) list of ~<size>~,
+- a size is a bracketed [[* Arithmetic expression][arithmetic expression]]
+
+*** Example
+
+#+begin_example
+u32x2[17][5]
+u<U>32
+#+end_example
+
+*** Grammar
+
+    #+begin_src
+<type>: <simple_type><size list>
+
+<size>: [<arith_exp>]
+#+end_src
+
+** Arithmetic expression
+
+A parenthesized ~<arith_exp>~, an [[* Integer][integer]], an [[* Identifier][identifier]] or an arithmetic operation over two [[* Arithmetic expression][arithmetic expressions]] (i.e. ~(3+foo)~).
+
+#+begin_src
+<arith_exp>:
+| (<arith_exp>)
+| <int>
+| <ident>
+| <arith_exp> <arith_op> <arith_exp>
+#+end_src
+
+
+** Usuba program
+
+An usuba program is a list of:
+- includes: statements of the form ~include "<string>"~,
+- [[* Declaration][declarations]]
+
+    #+begin_src
+<usuba_program>: <decl_or_include list>
+
+<decl_or_include>:
+| include "<string>"
+| <declaration>
+
+<string>: ( [^\"] | \. )+
+#+end_src
+
+*** Declaration
+
+A declaration is build according to the following sequence:
+- a (possibly empty) list of options (~_no_inline~, ~_inline~, ~_no_opt~, ~_interleave (<int>)~,
+- the type of declaration (~node~, ~perm~ or ~table~),
+- the [[* Identifier][identifier]] of the node
+- ~[]~ if the body is an array, nothing otherwise
+- a parenthesized list of [[* Parameter][parameters]] separated by commas
+- the ~returns~ keyword
+- a parenthesized [[* Parameter][output]] (same syntax as the parameters)
+- if the type of the declaration is ~node~ then a [[* Node body][node_body]]
+- else if the type of the declaration is ~perm/table~ then a [[* Permutation/Table body][perm_or_table_body]]
+
+**** Example
+
+#+begin_example
+_inline node f(x:u32) returns (y:u32)
+let
+    y = ((x <<< 5) & refresh(x)) ^ (x <<< 1)
+tel
+
+perm sbox_perm(a:b8) returns (b:b8) {
+     6, 7, 1, 2, 4, 8, 5, 3
+}
+
+table[] sbox (input:v4) returns (out:v4) [
+    { 3, 8,15, 1,10, 6, 5,11,14,13, 4, 2, 7, 0, 9,12 } ;
+    {15,12, 2, 7, 9, 0, 5,10, 1,11,14, 8, 6,13, 3, 4 }
+]
+#+end_example
+
+**** Grammar
+
+#+begin_src
+<node>:
+| <opt list> node <ident> (<param list ,>) returns (<output>) <node_body>
+| <opt list> (perm|table) <ident> (<param list ,>) returns (<output>)
+     <perm_or_table>
+
+<opt>: _no_inline | _inline | _no_opt | _interleave (<int>)
+#+end_src
+
+*** Node body
+
+A node body is a ~<deq>~ or a bracketed non-empty semi-colon separated list (an array) of ~<deq>~
+
+A ~<deq>~ consists of:
+- Optional variable declarations ~vars <[[* Parameter][parameter]] list ,>
+- ~let~ [[* Assignment][assignment]] ~tel~
+
+#+begin_src
+<node_body>:
+| <deq>
+| [ <deq ne_list ;> ]
+
+<deq>: { (vars <param list ,>)? let <assignments> tel }
+#+end_src
+
+**** Assignment
+
+An assignment is a list of [[* Forall assignment][forall assignments]] and [[* Simple assignment][simple assignments]].
+
+The list has semicolons separators after simple assignments but they're optional if for forall assignments.
+
+#+begin_src
+assignment:
+  | <forall_assignment> <; list> (<assignment>)?
+  | <simple_assignment> <; ne_list> (<assignment>)?
+#+end_src
+
+**** Forall assignment
+
+A forall assignment is a way of enclosing assignment in a for loop. The forall loop can be parameterized by one or more options then is built in the following way:
+- ~forall~
+- [[* Identifier][identifier]]
+- ~in~
+- ~[~ [[* Arithmetic expression][arithmetic expression]] ~,~ [[* Arithmetic expression][arithmetic expression]] ~]~
+- ~{~ [[* Assignment][assignment]] ~}~
+
+***** Example
+
+#+begin_example
+forall i in [0, 15] {
+    state[i+1] = ACE_step(state[i], RC[0,1,2][i],SC[0,1,2][i]);
+}
+#+end_example
+
+***** Grammar
+
+#+begin_src
+<forall_assignment>: <opt list> forall <ident> in [ <arith_exp>, <arith_exp>] { <assignment> }
+
+<opt>: _unroll | _no_unroll | _pipelined
+#+end_src
+
+**** Simple assignment
+
+A simple assignment (simple because it can not contain assignments and thus no ~forall~ constructions) is either an imperative assignment or an "equational" assignment of an [[* Expression][expression]] to a single [[* Variable][variable]] or a parenthesized comma separated of [[* Variable][variables]].
+
+#+begin_src
+<simple_assignment>: <var_pattern> (<op>)?(:)?= <expr>
+
+<var_pattern>: <var> | (<var list ,>)
+
+<op>: <log_op> | <arith_op>
+#+end_src
+
+
+**** Expression
+
+Expressions are a bit long to describe with words but simple to understand so let's jump directly to their grammar (expressions use [[* Integer][integers]], [[* Identifier][identifiers]], [[* Variable][variables]], [[* Type][types]], [[* Arithmetic expression][arithmetic expressions]], [[* Binary operators][binary operators]]. Patterns marked with a number are explained here:
+
+
+1. Tuple of ~<exp>~
+2. Shuffle bits in a variable according to a list of [[* Integer][integers]]
+3. Extracts a mask of ~0xfff~ or ~0~ from a single bit
+4. Merge an uk and ul variable into an u(k+l) variable
+5. Function call
+6. Function call in an array of function (node[], table[] or perm[])
+
+#+begin_src
+<exp>:
+| (<exp>)
+| <int>
+| <int> : <type>
+| <var>
+| (<exp ne_list ,>)                          1
+| Shuffle (<var, [<int ne_list ,>])          2
+| <var> { <int ne_list ,> }
+| <exp> <log_op> <exp>
+| <exp> <arith_op> <exp>
+| <exp> <shift_op> <exp>
+| ~<exp>
+| !<exp>
+| Bitmask (<exp>, <arith_exp>)               3
+| Pack (<exp>, <exp>)(: <type>)?             4
+| <ident>(<exp ne_list ,>)                   5
+| <ident>\< <arith_exp> \>(<exp ne_list ,>)  6
+#+end_src
+
+*** Permutation/Table body
+
+A permutation or a table are simply an ~<int_list>~ (a comma separated list of [[* Integer][integers]]) or an array of ~<int_list>~
+
+**** Examples
+
+#+begin_example
+6, 7, 1, 2, 4, 8, 5, 3
+
+[ { 3, 8,15, 1,10, 6, 5,11,14,13, 4, 2, 7, 0, 9,12 } ;
+  {15,12, 2, 7, 9, 0, 5,10, 1,11,14, 8, 6,13, 3, 4 } ;
+  { 1,13,15, 0,14, 8, 2,11, 7, 4,12,10, 9, 3, 5, 6 }
+]
+#+end_example
+
+**** Grammar
+
+#+begin_src
+<perm_or_table>:
+| <int_list>
+| [ <int_list list ;> ]
+
+<int_list>: { <int list ,> }
+#+end_src

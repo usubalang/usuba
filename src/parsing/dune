@@ -2,6 +2,13 @@
  (modules lexer))
 
 (menhir
- (infer true)
  (modules parser)
- (flags --explain))
+ (flags --table))
+
+(rule
+ (targets parser_messages.ml)
+ (deps parser.messages parser.mly)
+ (action
+  (with-stdout-to
+   %{targets}
+   (run menhir --compile-errors %{deps}))))

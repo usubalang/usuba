@@ -24,9 +24,11 @@ clean:
 	$(DUNE) clean
 
 test: all
+	ulimit -s unlimited
 	./usubac -tests
 	@echo $(SAMPLES_DIR)
 	dune build @runtest
+	./tests/test_parsing.sh --path $(SAMPLES_DIR)
 	./run_checks.pl --samples $(SAMPLES_DIR)
 
 unit-test: all

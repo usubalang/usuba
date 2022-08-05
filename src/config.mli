@@ -15,6 +15,8 @@ type config = {
       (** 5 = prints which passes are getting executed,
       100 = prints the Usuba program after each pass *)
   path : string list;  (** Path to search for "include" directives *)
+  parse_only : bool;  (** Stop after parsing *)
+  type_only : bool;  (** Stop after typing *)
   type_check : bool;  (** Enables type-checking *)
   check_tbl : bool;  (** Enables verification of tables to circuit conversion *)
   auto_inline : bool;  (** Lets Usuba chose which nodes to inline or not *)

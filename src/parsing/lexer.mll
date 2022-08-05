@@ -1,123 +1,170 @@
-
-
 {
 open Lexing
 open Usuba_AST
 open Parser
-
-exception SyntaxError of string
+open Errors
 
 (* keyword table *)
-let kwd_table = Hashtbl.create 10
-let _ =
-  List.iter (fun (a,b) -> Hashtbl.add kwd_table a b)
+let kwd_table =
+let t = Hashtbl.create 10 in
+  List.iter
+    (fun (a, b) -> Hashtbl.add t a b)
     [
-     "node",  TOK_NODE;
-     "returns", TOK_RETURN;
-     "vars", TOK_VAR;
-     "let", TOK_LET;
-     "tel", TOK_TEL;
-     "perm", TOK_PERM;
-     "table", TOK_TABLE;
-     "forall", TOK_FORALL;
-     "in", TOK_IN;
-     "Shuffle", TOK_SHUFFLE;
-     "Bitmask", TOK_BITMASK;
-     "Pack", TOK_PACK;
-     "_inline", TOK_INLINE;
-     "_no_inline", TOK_NOINLINE;
-     "_unroll", TOK_UNROLL;
-     "_no_unroll", TOK_NOUNROLL;
-     "_interleave", TOK_INTERLEAVE;
-     "_no_opt", TOK_NOOPT;
-     "const", TOK_CONST;
-     "lazyLift", TOK_LAZYLIFT;
-     "_pipelined", TOK_PIPELINED;
-     "_safe_exit", TOK_SAFEEXIT;
-     "include", TOK_INCLUDE;
-    ]
+      ("node", NODE);
+      ("returns", RETURN);
+      ("vars", VAR);
+      ("let", LET);
+      ("tel", TEL);
+      ("perm", PERM);
+      ("table", TABLE);
+      ("forall", FORALL);
+      ("in", IN);
+      ("Shuffle", SHUFFLE);
+      ("Bitmask", BITMASK);
+      ("Pack", PACK);
+      ("_inline", INLINE);
+      ("_no_inline", NOINLINE);
+      ("_unroll", UNROLL);
+      ("_no_unroll", NOUNROLL);
+      ("_interleave", INTERLEAVE);
+      ("_no_opt", NOOPT);
+      ("const", CONST);
+      ("lazyLift", LAZYLIFT);
+      ("_pipelined", PIPELINED);
+      ("include", INCLUDE);
+    ]; t
 
 let next_line lexbuf =
-    let pos = lexbuf.lex_curr_p in
-    lexbuf.lex_curr_p <-
-      { pos with pos_bol = pos.pos_cnum; (*lexbuf.lex_curr_pos;*)
-                 pos_lnum = pos.pos_lnum + 1
-    }
+  let pos = lexbuf.lex_curr_p in
+  lexbuf.lex_curr_p <-
+    { pos with pos_bol = pos.pos_cnum; pos_lnum = pos.pos_lnum + 1 }
 
+let parse s rule = rule (Lexing.from_string s)
+
+let parse_opt ~default s rule =
+  match s with None -> default | Some s -> rule (Lexing.from_string s)
 }
 
+let newline = [ '\n' '\r' ]
+let space = [' ' '\t' '\r']
+let all_but_newline = [^ '\n' '\r']
+
+let integer = '0' | ['1'-'9']['0'-'9']* | "0x" ['0'-'9' 'a'-'f' 'A'-'F']+
+
+let ident = ['a'-'z' 'A'-'Z' '_']['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']*
+
+let quoted_ident = '\'' ident
+
+let dir = 'H' | 'V' | 'B' | integer | quoted_ident
+let mtyp = integer | quoted_ident
 
 rule token = parse
 
-| "__END__" { TOK_EOF }
+| "__END__" { EOF }
 
 (* spaces *)
-| [' ' '\t']+  { token lexbuf; }
-| ['\n']       { next_line lexbuf; token lexbuf; }
-| '#' [^ '\n' '\r']*     { token lexbuf; }
-| "//" [^ '\n' '\r']*    { token lexbuf; }
 
+| space+  { token lexbuf; }
+| newline { next_line lexbuf; token lexbuf; }
 
-(* types *)
-| "u"    { TOK_U    }
-| "b"    { TOK_B    }
-| "v"    { TOK_V    }
-| "nat"  { TOK_NAT  }
-| "H"    { TOK_dir Hslice }
-| "V"    { TOK_dir Vslice }
-| "B"    { TOK_dir Bslice }
-| "x"    { TOK_CROSS }
+(* Comments *)
+
+| ('#' | "//") all_but_newline*     { token lexbuf; }
 
 (* identifiers / keywords *)
-(* This pattern is a bit hacky: it doesn't match types (like u8, v15, b2 etc.) *)
-| ['a' 'c'-'t' 'w' 'y' 'z' 'A'-'Z' '_' ] ['a'-'w' 'y' 'z' 'A'-'Z' '0'-'9' '_' '\'']*
-| [ 'u' 'v' 'b' ] ['a'-'w' 'y' 'z' 'A'-'Z' '_' ] ['a'-'w' 'y' 'z' 'A'-'Z' '0'-'9' '_' '\'']* as id
-  { try Hashtbl.find kwd_table id with Not_found -> TOK_id_no_x (Ident.create_free id) }
-| ['a' 'c'-'t' 'w'-'z' 'A'-'Z' '_' ] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']*
-| [ 'u' 'v' 'b' ] ['a'-'z' 'A'-'Z' '_' ] ['a'-'z' 'A'-'Z' '0'-'9' '_' '\'']* as id
-  { try Hashtbl.find kwd_table id with Not_found -> TOK_id (Ident.create_free id) }
+| ident as id
+{
+  try Hashtbl.find kwd_table id with Not_found ->
+  IDENT (Ident.create_unbound id, parse id parse_typ)
+}
+
+(* This is copy/pasted to its own lexer *)
+| "nat"  { TYPE Nat }
+| 'u' (('<' (dir as d) '>')?) (mtyp as m) ('x' (integer as i))? {
+  let dir = parse_opt ~default:Utils.default_dir d parse_dir in
+  let m = parse m parse_mtyp in
+  let xi = match i with None -> 1 | Some i -> int_of_string i in
+  TYPE (Uint (dir, m, xi))
+}
+| 'b' (('<' (dir as d) '>')?) (integer as i) {
+  let dir = parse_opt ~default:Utils.default_dir d parse_dir in
+  TYPE (Uint (dir, Mint 1, int_of_string i))
+}
+| 'v' (('<' (dir as d) '>')?) (integer as i) {
+  let dir = parse_opt ~default:Utils.default_dir d parse_dir in
+  TYPE (Uint (dir, Utils.default_m, int_of_string i))
+}
 
 (* strings *)
-| '"' ( [^'\\' '"'] | '\\' '.' ) + '"' as str
-  { TOK_str (String.sub str 1 ((String.length str)-2)) }
+| '"' (( [^'\\' '"'] | '\\' '.' ) + as str) '"' { STRING str }
 
 (* symbols *)
-| "'"    { TOK_SQUOTE    }
-| "("    { TOK_LPAREN    }
-| ")"    { TOK_RPAREN    }
-| "["    { TOK_LBRACKET  }
-| "]"    { TOK_RBRACKET  }
-| "{"    { TOK_LCURLY    }
-| "}"    { TOK_RCURLY    }
-| "="    { TOK_EQUAL     }
-| "<<<"  { TOK_LROTATE   }
-| "<<"   { TOK_LSHIFT    }
-| ">>>"  { TOK_RROTATE   }
-| ">>!"  { TOK_RASHIFT   }
-| ">>"   { TOK_RSHIFT    }
-| "<"    { TOK_LT        }
-| ">"    { TOK_GT        }
-| ","    { TOK_COMMA     }
-| ":"    { TOK_COLON     }
-| ";"    { TOK_SEMICOLON }
-| "|"    { TOK_PIPE      }
-| ".."   { TOK_RANGE     }
-| "&"    { TOK_AND       }
-| "~"    { TOK_TILDE     }
-| "!"    { TOK_TILDE     } (* for now, both ~ and ! have the same semantic *)
-| "^"    { TOK_XOR       }
-| "+"    { TOK_PLUS      }
-| "*"    { TOK_STAR      }
-| "-"    { TOK_DASH      }
-| "/"    { TOK_SLASH     }
-| "%"    { TOK_MOD       }
+| "[]"   { ARRAY }
+| "("    { LPAREN    }
+| ")"    { RPAREN    }
+| "["    { LBRACKET  }
+| "]"    { RBRACKET  }
+| "{"    { LCURLY    }
+| "}"    { RCURLY    }
+| "="    { EQUAL     }
+| "<<<"  { LROTATE   }
+| "<<"   { LSHIFT    }
+| ">>>"  { RROTATE   }
+| ">>!"  { RASHIFT   }
+| ">>"   { RSHIFT    }
+| "<"    { LT        }
+| ">"    { GT        }
+| ","    { COMMA     }
+| ":"    { COLON     }
+| ";"    { SEMICOLON }
+| "|"    { PIPE      }
+| ".."   { RANGE     }
+| "&"    { AND       }
+| "~"    { TILDE     }
+| "!"    { BANG      } (* for now, both ~ and ! have the same semantic *)
+| "^"    { XOR       }
+| "+"    { PLUS      }
+| "*"    { STAR      }
+| "-"    { DASH      }
+| "/"    { SLASH     }
+| "%"    { MOD       }
 
 (* integers *)
-| ['0'-'9']+ as i { TOK_int (int_of_string i) }
-| "0x" ['0'-'9' 'a'-'f' 'A'-'F']+ as i { TOK_int (int_of_string i) }
+| integer as i { INT (int_of_string i) }
 
 (* end of file *)
-| eof   { TOK_EOF }
+| eof   { EOF }
 
 (* error *)
-| _ { raise (SyntaxError ("Unexpected char: " ^ Lexing.lexeme lexbuf)) }
+| _ as c { raise (Lexing_error (lexbuf, (fun ppf () -> Format.fprintf ppf "Unexpected character \'%c\'" c))) }
+
+
+and parse_dir = parse
+| 'H' { Hslice }
+| 'V' { Vslice }
+| 'B' { Bslice }
+| integer as i { Mslice (int_of_string i) }
+| '\'' ident as id { Varslice (Ident.create_unbound id) }
+| _ { raise Exit }
+
+and parse_mtyp = parse
+| integer as i { Mint (int_of_string i) }
+| '\'' (ident as id) { Mvar (Ident.create_unbound id) }
+
+and parse_typ = parse
+| "nat"  { Some Nat }
+| 'u' (('<' (dir as d) '>')?) (mtyp as m) ('x' (integer as i))? {
+  let dir = parse_opt ~default:Utils.default_dir d parse_dir in
+  let m = parse m parse_mtyp in
+  let xi = match i with None -> 1 | Some i -> int_of_string i in
+  Some (Uint (dir, m, xi))
+}
+| 'b' (('<' (dir as d) '>')?) (integer as i) {
+  let dir = parse_opt ~default:Utils.default_dir d parse_dir in
+  Some (Uint (dir, Mint 1, int_of_string i))
+}
+| 'v' (('<' (dir as d) '>')?) (integer as i) {
+  let dir = parse_opt ~default:Utils.default_dir d parse_dir in
+  Some (Uint (dir, Utils.default_m, int_of_string i))
+}
+| _ { None }
