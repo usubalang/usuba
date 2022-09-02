@@ -63,61 +63,28 @@ let pack ?typ e1 e2 = Pack (e1, e2, typ)
 let call f args = Fun (f, args)
 let call_at f k args = Fun_v (f, k, args)
 
-type z = ZZ
-type 'a s = SS
-
-type _ vars =
-  | Z : z vars
-  | S : string * typ * 'n vars -> ('n s) vars
-
-type ('a, _) tup =
-  | T0 : ('a, z) tup
-  | T1 : 'a -> ('a, z s) tup
-  | T2 : 'a * 'a -> ('a, z s s) tup
-  | T3 : 'a * 'a * 'a -> ('a, z s s s) tup
-
 let mk_var_d s typ =
   { vd_id = { (* TODO: fresh *) uid = 0; name = s };
     vd_typ = typ;
     vd_opts = [];
     vd_orig = [] }
 
-let mk_tup : type k. k vars -> (var_d, k) tup =
-  fun k ->
-  match k with
-  | Z -> T0
-  | S (ident, typ, Z) ->
-     T1 (mk_var_d ident typ)
-  | S (ident1, typ1, S (ident2, typ2, Z)) ->
-     T2 (mk_var_d ident1 typ1, mk_var_d ident2 typ2)
-  | S (ident1, typ1, S (ident2, typ2, S (ident3, typ3, Z))) ->
-     T3 (mk_var_d ident1 typ1, mk_var_d ident2 typ2, mk_var_d ident3 typ3)
-  | _ -> failwith "tup: unsupported beyond 3"
-
-let map_tup: type k. ('a -> 'b) -> ('a, k) tup -> ('b, k) tup =
-  fun f -> function
-        | T0 -> T0
-        | T1 a -> T1 (f a)
-        | T2 (a1, a2) -> T2 (f a1, f a2)
-        | T3 (a1, a2, a3) -> T3 (f a1, f a2, f a3)
-
-let to_list : type n. ('a, n) tup -> 'a list  = function
-    | T0 -> []
-    | T1 a -> [a]
-    | T2 (a, b) -> [a; b]
-    | T3 (a, b, c) -> [a; b; c]
-
-let node : type i o l. ?def_opt: def_opt list -> string -> i vars -> o vars -> l vars -> ((expr, i) tup -> (expr, o) tup -> (expr, l) tup -> deq_i list) -> def =
-  fun ?(def_opt = []) s i o l k ->
-  let p_in = mk_tup i in
-  let p_out = mk_tup o in
-  let p_loc = mk_tup l in
+let node ?(def_opt = []) s in_vars out_vars loc_vars k =
+  let mk_vars = List.map (fun (x, t) -> mk_var_d x t) in
+  let mk_exp = List.map (fun v -> ExpVar (Var v.vd_id)) in
+  let p_in = mk_vars in_vars in
+  let p_out = mk_vars out_vars in
+  let p_loc = mk_vars loc_vars in
   { (* TODO: use fresh *)
     id = { uid = 0; name = s };
-    p_in = to_list p_in;
-    p_out = to_list p_out;
+    p_in = p_in;
+    p_out = p_out;
     opt = def_opt;
-    node = Single (to_list p_loc , List.map (fun eqs -> { content = eqs; orig = [] }) (k (map_tup (fun v -> ExpVar (Var v.vd_id)) p_in) (map_tup (fun v -> ExpVar (Var v.vd_id)) p_out) (map_tup (fun v -> ExpVar (Var v.vd_id)) p_loc))) }
+    node = Single (p_loc ,
+                   List.map (fun eqs -> { content = eqs; orig = [] })
+                     (k (mk_exp p_in)
+                        (mk_exp p_out)
+                        (mk_exp p_loc))) }
 
 let (=) vs e =
   let force = function
@@ -131,16 +98,14 @@ let loop ?(opts = []) ki ke eqs =
   let x = { uid = 0; name = "foo" } in
   Loop (x, ki, ke, eqs x, opts)
 
-let f = node "foo"
-          (S ("a", Nat,
-              S ("b", Nat,
-                 S ("c", Nat, Z))))
-          (S ("x", Nat,
-              S ("y", Nat, Z)))
-          (S ("l1", Nat, Z))
-          (fun (T3 (a, b, c)) (T2 (x, y)) (T1 l1) ->
-            [[y] = x + a;
-             [b; c] = b * y;
-             [l1] = x * a])
+let [@warning "-8"] f =
+  node "foo"
+    ["a", Nat; "b", Nat; "c", Nat]
+    ["x", Nat; "y", Nat]
+    ["l1", Nat]
+    (fun [a; b; c] [x; y] [l1] ->
+      [[y] = x + a;
+       [b; c] = b * y;
+       [l1] = x * a])
 
 let _ = Format.printf "%a\n" pp_def f
