@@ -154,12 +154,12 @@ let rec clean_deqs (env_var : typ Ident.Hashtbl.t)
         d with
         content =
           (match d.content with
-          | Loop (x, ei, ef, dl, opts) ->
-              Ident.Hashtbl.add env_var x Nat;
+          | Loop t ->
+              Ident.Hashtbl.add env_var t.id Nat;
               let res =
-                Loop (x, ei, ef, clean_deqs env_var env_replace dl, opts)
+                Loop { t with body = clean_deqs env_var env_replace t.body }
               in
-              Ident.Hashtbl.remove env_var x;
+              Ident.Hashtbl.remove env_var t.id;
               res
           | Eqn (lhs, e, sync) -> (
               let e' = clean_expr env_var env_replace e in

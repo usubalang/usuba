@@ -80,16 +80,16 @@ let iter_env_it (env_it : it_env_t) (f : int Ident.Hashtbl.t -> unit) : unit =
    type that allows to easily access loop's members. *)
 type loop = {
   id : ident;
-  ei : arith_expr;
-  ef : arith_expr;
-  mutable dl : deq list;
+  start : arith_expr;
+  stop : arith_expr;
+  mutable body : deq list;
   opts : stmt_opt list;
 }
 
 let loop_rec_of_sum (loop : deq) : loop =
   match loop.content with
   | Eqn _ -> assert false
-  | Loop (i, ei, ef, dl, opts) -> { id = i; ei; ef; dl; opts }
+  | Loop { id; start; stop; body; opts } -> { id; start; stop; body; opts }
 
 (* **************************************************************** *)
 (*                          Main functions                          *)
@@ -118,17 +118,19 @@ let rec is_ready_deq (env_var : typ Ident.Hashtbl.t) (env_it : it_env_t)
   (match deq.content with
   | Eqn (_, e, _) ->
       is_ready := !is_ready && is_ready_expr env_var env_it env_ready e
-  | Loop (i, ei, ef, dl, _) ->
-      push_it_env env_it i ei ef;
+  | Loop { id; start; stop; body; _ } ->
+      push_it_env env_it id start stop;
       is_ready :=
-        !is_ready && List.for_all (is_ready_deq env_var env_it env_ready) dl;
+        !is_ready && List.for_all (is_ready_deq env_var env_it env_ready) body;
       pop_it_env env_it);
   !is_ready
 
 let is_ready_loop (env_var : typ Ident.Hashtbl.t) (env_it : it_env_t)
     (env_ready : bool VarHashtbl.t) (loop : loop) : bool =
-  push_it_env env_it loop.id loop.ei loop.ef;
-  let is_ready = List.for_all (is_ready_deq env_var env_it env_ready) loop.dl in
+  push_it_env env_it loop.id loop.start loop.stop;
+  let is_ready =
+    List.for_all (is_ready_deq env_var env_it env_ready) loop.body
+  in
   pop_it_env env_it;
   is_ready
 
@@ -151,21 +153,21 @@ let is_mergeable (env_var : typ Ident.Hashtbl.t) (env_it : it_env_t)
               (fun v ->
                 VarHashtbl.replace env_ready (instanciate_var env_it v) true)
               (flat_map (expand_var env_var ~env_it) lhs)
-        | Loop (i, ei, ef, dl, _) ->
-            let ei = eval_arith env_it ei in
-            let ef = eval_arith env_it ef in
+        | Loop { id; start; stop; body; _ } ->
+            let start = eval_arith env_it start in
+            let stop = eval_arith env_it stop in
             List.iter
               (fun i_val ->
-                Ident.Hashtbl.add env_it i i_val;
-                iter_loop env_it check_ready dl;
-                Ident.Hashtbl.remove env_it i)
-              (gen_list_bounds ei ef))
+                Ident.Hashtbl.add env_it id i_val;
+                iter_loop env_it check_ready body;
+                Ident.Hashtbl.remove env_it id)
+              (gen_list_bounds start stop))
       deqs
   in
-  push_it_env env_it loop1.id loop1.ei loop1.ef;
+  push_it_env env_it loop1.id loop1.start loop1.stop;
   iter_env_it env_it (fun env_it ->
-      iter_loop env_it false loop1.dl;
-      iter_loop env_it true loop2.dl);
+      iter_loop env_it false loop1.body;
+      iter_loop env_it true loop2.body);
   pop_it_env env_it;
   !res
 
@@ -182,9 +184,9 @@ let rec update_env_ready (env_var : typ Ident.Hashtbl.t) (env_it : it_env_t)
                   VarHashtbl.replace env_ready (instanciate_var env_it v) true)
                 (expand_var env_var ~env_it v))
             lhs)
-  | Loop (i, ei, ef, dl, _) ->
-      push_it_env env_it i ei ef;
-      List.iter (update_env_ready env_var env_it env_ready) dl;
+  | Loop { id; start; stop; body; _ } ->
+      push_it_env env_it id start stop;
+      List.iter (update_env_ready env_var env_it env_ready) body;
       pop_it_env env_it
 
 let partition_deqs (env_var : typ Ident.Hashtbl.t) (env_it : it_env_t)
@@ -194,7 +196,7 @@ let partition_deqs (env_var : typ Ident.Hashtbl.t) (env_it : it_env_t)
     (fun deq ->
       match deq.content with
       | Eqn (_, _, _) -> [ deq ]
-      | Loop (i', ei', ef', dl, _) ->
+      | Loop { id; start; stop; body; _ } ->
           let loop = loop_rec_of_sum deq in
           if
             (* For now, ignoring any loop that doesn't use
@@ -203,8 +205,8 @@ let partition_deqs (env_var : typ Ident.Hashtbl.t) (env_it : it_env_t)
                if two loops have the same size, fuse
                them. TODO! *)
             (Ident.equal outer.id loop.id
-            && equal_arith_expr outer.ei loop.ei
-            && equal_arith_expr outer.ef loop.ef)
+            && equal_arith_expr outer.start loop.start
+            && equal_arith_expr outer.stop loop.stop)
             && (* This loop has the same iterator as the
                   current loop. We need to make sure that:
                     - it doesn't rely on variables that are not
@@ -214,11 +216,11 @@ let partition_deqs (env_var : typ Ident.Hashtbl.t) (env_it : it_env_t)
                (* (is_ready_loop env_var env_it env_ready loop) && *)
             is_mergeable env_var env_it (VarHashtbl.copy env_ready) outer loop
           then (
-            push_it_env env_it i' ei' ef';
+            push_it_env env_it id start stop;
             update_env_ready env_var env_it env_ready deq;
             pop_it_env env_it;
             (* Quadratic insertion; OK for now. *)
-            outer.dl <- outer.dl @ dl;
+            outer.body <- outer.body @ body;
             [])
           else [ deq ])
     nexts
@@ -232,20 +234,20 @@ let rec fuse_loops_deqs (env_var : typ Ident.Hashtbl.t) (env_it : it_env_t)
       | Eqn _ ->
           update_env_ready env_var env_it env_ready hd;
           hd :: fuse_loops_deqs env_var env_it env_ready nexts
-      | Loop (i, ei, ef, dl, opts) ->
-          push_it_env env_it i ei ef;
+      | Loop t ->
+          push_it_env env_it t.id t.start t.stop;
           (* Reccursive call with a copy of |env_ready|: we don't want
              to mark this loop's body as ready just yet... *)
-          let dl =
-            fuse_loops_deqs env_var env_it (VarHashtbl.copy env_ready) dl
+          let body =
+            fuse_loops_deqs env_var env_it (VarHashtbl.copy env_ready) t.body
           in
           pop_it_env env_it;
-          let loop = { (loop_rec_of_sum hd) with dl } in
+          let loop = { (loop_rec_of_sum hd) with body } in
           let after = partition_deqs env_var env_it env_ready loop nexts in
-          push_it_env env_it i ei ef;
-          List.iter (update_env_ready env_var env_it env_ready) loop.dl;
+          push_it_env env_it t.id t.start t.stop;
+          List.iter (update_env_ready env_var env_it env_ready) loop.body;
           pop_it_env env_it;
-          { hd with content = Loop (i, ei, ef, loop.dl, opts) }
+          { hd with content = Loop { t with body = loop.body } }
           :: fuse_loops_deqs env_var env_it env_ready after)
 
 let fuse_loops_def (def : def) : def =

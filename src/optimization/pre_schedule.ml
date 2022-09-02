@@ -154,9 +154,9 @@ let rec get_used_vars_deq (its : (ident * arith_expr * arith_expr) list)
     (env_var : typ Ident.Hashtbl.t) (deq : deq) : var list =
   match deq.content with
   | Eqn (_, e, _) -> get_used_vars_expr its env_var e
-  | Loop (i, ei, ef, dl, _) ->
-      let its = (i, ei, ef) :: its in
-      flat_map (get_used_vars_deq its env_var) dl
+  | Loop { id; start; stop; body; _ } ->
+      let its = (id, start, stop) :: its in
+      flat_map (get_used_vars_deq its env_var) body
 
 let rec schedule_preds (its : (ident * arith_expr * arith_expr) list)
     (env_var : typ Ident.Hashtbl.t) (ready : deq VarHashtbl.t)
@@ -199,14 +199,14 @@ let rec schedule_deqs (its : (ident * arith_expr * arith_expr) list)
           DeqHashtbl.add computed deq true;
           result := deq :: !result
       | Eqn (lhs, _, _) -> add_to_ready its env_var ready lhs deq
-      | Loop (i, ei, ef, dl, opts) ->
+      | Loop t ->
           DeqHashtbl.add computed deq true;
-          let its = (i, ei, ef) :: its in
+          let its = (t.id, t.start, t.stop) :: its in
           schedule_preds its env_var ready computed result deq;
           result :=
             {
               deq with
-              content = Loop (i, ei, ef, schedule_deqs its env_var dl, opts);
+              content = Loop { t with body = schedule_deqs its env_var t.body };
             }
             :: !result)
     deqs;
@@ -230,7 +230,7 @@ let rec deqs_contain_funcall (deqs : deq list) : bool =
       match deqs.content with
       | Eqn (_, Fun _, _) -> true
       | Eqn _ -> false
-      | Loop (_, _, _, dl, _) -> deqs_contain_funcall dl)
+      | Loop { body; _ } -> deqs_contain_funcall body)
     deqs
 
 (*

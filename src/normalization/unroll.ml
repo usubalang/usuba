@@ -62,22 +62,23 @@ let rec unroll_deqs (env_it : int Ident.Hashtbl.t) (force : bool) (f : ident)
           in
 
           [ { orig = new_orig; content = new_eqn } ]
-      | Loop (i, ei, ef, dl, opts) ->
-          if force || is_unroll opts then
-            let ei = eval_arith env_it ei in
-            let ef = eval_arith env_it ef in
+      | Loop t ->
+          if force || is_unroll t.opts then
+            let start = eval_arith env_it t.start in
+            let stop = eval_arith env_it t.stop in
             flat_map
               (fun n ->
-                Ident.Hashtbl.add env_it i n;
-                let res = unroll_deqs env_it force f dl in
-                Ident.Hashtbl.remove env_it i;
+                Ident.Hashtbl.add env_it t.id n;
+                let res = unroll_deqs env_it force f t.body in
+                Ident.Hashtbl.remove env_it t.id;
                 res)
-              (gen_list_bounds ei ef)
+              (gen_list_bounds start stop)
           else
             [
               {
                 orig = deq.orig;
-                content = Loop (i, ei, ef, unroll_deqs env_it force f dl, opts);
+                content =
+                  Loop { t with body = unroll_deqs env_it force f t.body };
               };
             ])
     deqs

@@ -64,7 +64,7 @@ module Simplify_tuples = struct
           content =
             (match d.content with
             | Eqn (p, e, sync) -> Eqn (p, expr_from_list (simpl_tuple e), sync)
-            | Loop (i, ei, ef, dl, opts) -> Loop (i, ei, ef, simpl_deqs dl, opts));
+            | Loop t -> Loop { t with body = simpl_deqs t.body });
         })
       deq
 
@@ -113,17 +113,17 @@ module Split_tuples = struct
         | Eqn (p, e, sync) ->
             if contains_fun e then [ d ]
             else real_split_tuple env d.orig p e sync
-        | Loop (i, ei, ef, dl, opts) ->
-            Ident.Hashtbl.add env i Nat;
+        | Loop t ->
+            Ident.Hashtbl.add env t.id Nat;
             let res =
               [
                 {
                   d with
-                  content = Loop (i, ei, ef, split_tuples_deq env dl, opts);
+                  content = Loop { t with body = split_tuples_deq env t.body };
                 };
               ]
             in
-            Ident.Hashtbl.remove env i;
+            Ident.Hashtbl.remove env t.id;
             res)
       body
 

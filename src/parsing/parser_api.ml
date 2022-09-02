@@ -1,5 +1,4 @@
 open Prelude
-open Lexer
 open Lexing
 open Usuba_AST
 module I = Parser.MenhirInterpreter

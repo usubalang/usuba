@@ -17,16 +17,16 @@ let bitslice = ref false
    type that allows to easily access loop's members. *)
 type loop = {
   id : ident;
-  ei : arith_expr;
-  ef : arith_expr;
-  mutable dl : deq list;
+  start : arith_expr;
+  stop : arith_expr;
+  mutable body : deq list;
   opts : stmt_opt list;
 }
 
 let loop_rec_of_sum (loop : deq) : loop =
   match loop.content with
   | Eqn _ -> assert false
-  | Loop (i, ei, ef, dl, opts) -> { id = i; ei; ef; dl; opts }
+  | Loop { id; start; stop; body; opts } -> { id; start; stop; body; opts }
 
 (* **************************************************************** *)
 (*                          Main functions                          *)
@@ -40,7 +40,7 @@ let rec is_mergeable (skipped : bool Ident.Hashtbl.t) (deqs : deq list) : bool =
           List.for_all
             (fun id -> not (Ident.Hashtbl.mem skipped id))
             (List.map get_base_name (get_used_vars e))
-      | Loop (_, _, _, dl, _) -> is_mergeable skipped dl)
+      | Loop { body; _ } -> is_mergeable skipped body)
     deqs
 
 (* Marks all variables defined by |deq| as 'skipped'. *)
@@ -50,7 +50,7 @@ let rec add_to_skipped (skipped : bool Ident.Hashtbl.t) (deq : deq) : unit =
       List.iter
         (fun v -> Ident.Hashtbl.replace skipped (get_base_name v) true)
         lhs
-  | Loop (_, _, _, dl, _) -> List.iter (add_to_skipped skipped) dl
+  | Loop { body; _ } -> List.iter (add_to_skipped skipped) body
 
 (* |skipped|: the variables definitions that are not going to be fused
    in |outer|. *)
@@ -65,16 +65,16 @@ let rec partition_deqs
     | hd :: tl -> (
         match hd.content with
         | Eqn _ -> nexts
-        | Loop (i, ei, ef, dl, _) ->
+        | Loop { id; start; stop; body; _ } ->
             if
               (* For now, ignoring any loop that doesn't use
                                 the same iterator. An improvement would be
                                 to check the size of the loop instead, and
                                 if two loops have the same size, fuse
                                 them. TODO! *)
-              (Ident.equal outer.id i
-              && equal_arith_expr outer.ei ei
-              && equal_arith_expr outer.ef ef)
+              (Ident.equal outer.id id
+              && equal_arith_expr outer.start start
+              && equal_arith_expr outer.stop stop)
               && (* This loop has the same iterator as the
                                    current loop. We need to make sure that:
                                      - it doesn't rely on variables that are not
@@ -82,10 +82,10 @@ let rec partition_deqs
                                      - there is no conficts with current loop.
                                    If both conditions are satisfied, merge it. *)
                  (* (is_ready_loop env_var env_it env_ready loop) && *)
-              is_mergeable skipped dl
+              is_mergeable skipped body
             then (
               (* Quadratic insertion; OK for now. *)
-              outer.dl <- outer.dl @ dl;
+              outer.body <- outer.body @ body;
               partition_deqs ~skipped outer tl)
             else nexts)
   else
@@ -95,16 +95,16 @@ let rec partition_deqs
         | Eqn (_, _, _) ->
             add_to_skipped skipped deq;
             [ deq ]
-        | Loop (i, ei, ef, dl, _) ->
+        | Loop { id; start; stop; body; _ } ->
             if
               (* For now, ignoring any loop that doesn't use
                     the same iterator. An improvement would be
                     to check the size of the loop instead, and
                     if two loops have the same size, fuse
                     them. TODO! *)
-              (Ident.equal outer.id i
-              && equal_arith_expr outer.ei ei
-              && equal_arith_expr outer.ef ef)
+              (Ident.equal outer.id id
+              && equal_arith_expr outer.start start
+              && equal_arith_expr outer.stop stop)
               && (* This loop has the same iterator as the
                        current loop. We need to make sure that:
                          - it doesn't rely on variables that are not
@@ -112,10 +112,10 @@ let rec partition_deqs
                          - there is no conficts with current loop.
                        If both conditions are satisfied, merge it. *)
                  (* (is_ready_loop env_var env_it env_ready loop) && *)
-              is_mergeable skipped dl
+              is_mergeable skipped body
             then (
               (* Quadratic insertion; OK for now. *)
-              outer.dl <- outer.dl @ dl;
+              outer.body <- outer.body @ body;
               [])
             else (
               add_to_skipped skipped deq;
@@ -128,14 +128,14 @@ let rec fuse_loops_deqs (deqs : deq list) : deq list =
   | hd :: nexts -> (
       match hd.content with
       | Eqn _ -> hd :: fuse_loops_deqs nexts
-      | Loop (i, ei, ef, dl, opts) ->
-          if Ident.equal i Mask.loop_idx then
+      | Loop t ->
+          if Ident.equal t.id Mask.loop_idx then
             let loop = loop_rec_of_sum hd in
             let after = partition_deqs loop nexts in
-            { hd with content = Loop (i, ei, ef, loop.dl, opts) }
+            { hd with content = Loop { t with body = loop.body } }
             :: fuse_loops_deqs after
           else
-            { hd with content = Loop (i, ei, ef, fuse_loops_deqs dl, opts) }
+            { hd with content = Loop { t with body = fuse_loops_deqs t.body } }
             :: fuse_loops_deqs nexts)
 
 let fuse_loops_def (def : def) : def =

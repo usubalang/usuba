@@ -125,25 +125,27 @@ module Unroll = struct
         (match deq.content with
         | Eqn (lhs, e, sync) ->
             Eqn (List.map (unroll_var env_it) lhs, unroll_expr env_it e, sync)
-        | Loop (i, ei, ef, dl, opts) ->
+        | Loop t ->
             Loop
-              ( i,
-                simpl_arith env_it ei,
-                simpl_arith env_it ef,
-                List.map (unroll_deq env_it) dl,
-                opts ));
+              {
+                t with
+                start = simpl_arith env_it t.start;
+                stop = simpl_arith env_it t.stop;
+                body = List.map (unroll_deq env_it) t.body;
+              });
     }
 
-  (* |i|, |ei|, |ef| and |deqs| are from the loop being expanded,
-     which should be like Loop(i, ei, ef, deqs, _)
+  (* |id|, |start|, |stop| and |body| are from the loop being expanded,
+     which should be like Loop {id; start; stop; body; _}
   *)
-  let do_unroll (i : ident) (ei : int) (ef : int) (deqs : deq list) : deq list =
+  let do_unroll (id : ident) (start : int) (stop : int) (body : deq list) :
+      deq list =
     let env_it = Ident.Hashtbl.create 1 in
     flat_map
       (fun i_val ->
-        Ident.Hashtbl.replace env_it i i_val;
-        List.map (unroll_deq env_it) deqs)
-      (gen_list_bounds ei ef)
+        Ident.Hashtbl.replace env_it id i_val;
+        List.map (unroll_deq env_it) body)
+      (gen_list_bounds start stop)
 end
 
 (* We need two functions to propagate the expansion into variables,
@@ -240,26 +242,27 @@ let rec propagate_deqs (expand_env : var list VarHashtbl.t) (deqs : deq list) :
                     sync );
             };
           ]
-      | Loop (i, ei, ef, dl, opts) -> (
+      | Loop t -> (
           try
             [
               {
                 d with
-                content = Loop (i, ei, ef, propagate_deqs expand_env dl, opts);
+                content =
+                  Loop { t with body = propagate_deqs expand_env t.body };
               };
             ]
           with Need_unroll ->
             (* raise one more Need_unroll if ei/ef can't be computed
                because they are in a nested loop and use surrounding
                loop variable *)
-            let ei =
-              try eval_arith_ne ei with Not_found -> raise Need_unroll
+            let start =
+              try eval_arith_ne t.start with Not_found -> raise Need_unroll
             in
-            let ef =
-              try eval_arith_ne ef with Not_found -> raise Need_unroll
+            let stop =
+              try eval_arith_ne t.stop with Not_found -> raise Need_unroll
             in
 
-            let new_eqns = Unroll.do_unroll i ei ef dl in
+            let new_eqns = Unroll.do_unroll t.id start stop t.body in
             propagate_deqs expand_env new_eqns))
     deqs
 
@@ -438,12 +441,12 @@ let rec expand_deq (env_fun : def Ident.Hashtbl.t)
             let args = match_args env_fun env_var f f.p_in args in
             let ret = match_ret env_fun env_var f f.p_out lhs in
             Eqn (ret, Fun (id, args), sync)
-      | Loop (i, ei, ef, dl, opts) ->
-          Ident.Hashtbl.add env_var i Nat;
+      | Loop t ->
+          Ident.Hashtbl.add env_var t.id Nat;
           let res =
-            Loop (i, ei, ef, List.map (expand_deq env_fun env_var) dl, opts)
+            Loop { t with body = List.map (expand_deq env_fun env_var) t.body }
           in
-          Ident.Hashtbl.remove env_var i;
+          Ident.Hashtbl.remove env_var t.id;
           res
       | _ -> deq.content);
   }

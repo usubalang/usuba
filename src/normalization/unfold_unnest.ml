@@ -334,20 +334,19 @@ let rec norm_deq env_var env_fun (its : (ident * int) list) (body : deq list) :
               let m = Utils.get_type_m t in
               let expr_l, e' = norm_expr env_var env_fun its (dir, m) ltyp e in
               expr_l @ [ { d with content = Eqn (lhs, e', sync) } ])
-      | Loop (x, ei, ef, dl, opts) ->
+      | Loop t ->
           let size =
-            abs (Utils.eval_arith_ne ei - Utils.eval_arith_ne ef) + 1
+            abs (Utils.eval_arith_ne t.start - Utils.eval_arith_ne t.stop) + 1
           in
           [
             {
               d with
               content =
                 Loop
-                  ( x,
-                    ei,
-                    ef,
-                    norm_deq env_var env_fun ((x, size) :: its) dl,
-                    opts );
+                  {
+                    t with
+                    body = norm_deq env_var env_fun ((t.id, size) :: its) t.body;
+                  };
             };
           ])
     body

@@ -66,7 +66,7 @@ module Find_used_variables = struct
                       updated := true;
                       Ident.Hashtbl.replace used_vars (get_base_name v) true)
                 (get_used_vars e))
-        | Loop (_, _, _, dl, _) -> find_used_in_deqs used_vars (List.rev dl))
+        | Loop { body; _ } -> find_used_in_deqs used_vars (List.rev body))
       deqs
 
   let find_used_variables (def : def) : bool Ident.Hashtbl.t =
@@ -102,14 +102,13 @@ let rec remove_dead_deqs (used_vars : bool Ident.Hashtbl.t) (deqs : deq list) :
             [ { d with content = Eqn (lhs, e, sync) } ]
           else (* Unused equation, removing it *)
             []
-      | Loop (i, ei, ef, dl, opts) -> (
-          let dl' = remove_dead_deqs used_vars dl in
-          (* if |dl'| is empty, removing the loop altogether. *)
-          match dl' with
+      | Loop t -> (
+          match remove_dead_deqs used_vars t.body with
+          (* if |body| is empty, removing the loop altogether. *)
           | [] -> []
-          | _ ->
+          | body ->
               (* |dl'| not empty, keeping the loop *)
-              [ { d with content = Loop (i, ei, ef, dl', opts) } ]))
+              [ { d with content = Loop { t with body } } ]))
     deqs
 
 let remove_dead_code_def (def : def) : def =

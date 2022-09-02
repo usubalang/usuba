@@ -83,11 +83,17 @@ type stmt_opt = Unroll | No_unroll | Pipelined | Safe_exit
 
 (** The type of equations:
     - [Eqn] a simple equation ({i i.e. [x = a + b]})
-    - [Loop _ start stop dl _] a for loop from [start] to [stop] of [Eqn] or [Loop]
+    - [Loop _ start stop body _] a for loop from [start] to [stop] of [Eqn] or [Loop]
  *)
 type deq_i =
   | Eqn of var list * expr * bool
-  | Loop of ident * arith_expr * arith_expr * deq list * stmt_opt list
+  | Loop of {
+      id : ident;
+      start : arith_expr;
+      stop : arith_expr;
+      body : deq list;
+      opts : stmt_opt list;
+    }
 
 and deq = {
   content : deq_i;

@@ -200,7 +200,13 @@ type stmt_opt = Unroll | No_unroll | Pipelined | Safe_exit
 
 type deq_i =
   | Eqn of var list * expr * bool
-  | Loop of ident * arith_expr * arith_expr * deq list * stmt_opt list
+  | Loop of {
+      id : ident;
+      start : arith_expr;
+      stop : arith_expr;
+      body : deq list;
+      opts : stmt_opt list;
+    }
 [@@deriving show { with_path = false }, eq, sexp]
 
 (* orig is debug info *)
@@ -213,12 +219,15 @@ let rec alpha_equal_deq_i ?(no_context = false) d1 d2 =
       List.equal (alpha_equal_var ~no_context) vl1 vl2
       && alpha_equal_expr ~no_context e1 e2
       && Bool.equal b1 b2
-  | Loop (id1, ae11, ae12, dl1, sl1), Loop (id2, ae21, ae22, dl2, sl2) ->
+  | ( Loop { id = id1; start = start1; stop = stop1; body = body1; opts = opts1 },
+      Loop
+        { id = id2; start = start2; stop = stop2; body = body2; opts = opts2 } )
+    ->
       alpha_equal_ident ~no_context:true id1 id2
-      && alpha_equal_arith_expr ~no_context ae11 ae21
-      && alpha_equal_arith_expr ~no_context ae12 ae22
-      && List.equal (alpha_equal_deq ~no_context) dl1 dl2
-      && List.equal equal_stmt_opt sl1 sl2
+      && alpha_equal_arith_expr ~no_context start1 start2
+      && alpha_equal_arith_expr ~no_context stop1 stop2
+      && List.equal (alpha_equal_deq ~no_context) body1 body2
+      && List.equal equal_stmt_opt opts1 opts2
   | _ -> false
 
 and alpha_equal_deq ?(no_context = false) (d1 : deq) d2 =
@@ -232,10 +241,10 @@ and alpha_equal_deq ?(no_context = false) (d1 : deq) d2 =
 let rec hash_deq_i = function
   | Eqn (vl, e, b) ->
       Hashtbl.hash (50 + hash_list hash_var vl + hash_expr e + Hashtbl.hash b)
-  | Loop (id, ae1, ae2, dl, sol) ->
+  | Loop { id; start; stop; body; opts } ->
       Hashtbl.hash
-        (51 + Ident.hash id + hash_arith_expr ae1 + hash_arith_expr ae2
-       + hash_list hash_deq dl + Hashtbl.hash sol)
+        (51 + Ident.hash id + hash_arith_expr start + hash_arith_expr stop
+       + hash_list hash_deq body + Hashtbl.hash opts)
 
 and hash_deq { content; _ } = Hashtbl.hash (52 + hash_deq_i content)
 

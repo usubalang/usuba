@@ -56,7 +56,7 @@ module Must_inline = struct
       (fun d ->
         match d.content with
         | Eqn (_, e, _) -> must_inline_expr env_var env_in e
-        | Loop (_, _, _, dl, _) -> must_inline_deqs env_var env_in dl)
+        | Loop { body; _ } -> must_inline_deqs env_var env_in body)
       deqs
 
   let must_inline_def (def : def) : bool =

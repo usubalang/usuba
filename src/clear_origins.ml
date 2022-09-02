@@ -19,7 +19,7 @@ let rec clear_deqs (deqs : deq list) : deq list =
         content =
           (match d.content with
           | Eqn _ -> d.content
-          | Loop (i, ei, ef, dl, opts) -> Loop (i, ei, ef, clear_deqs dl, opts));
+          | Loop t -> Loop { t with body = clear_deqs t.body });
       })
     deqs
 

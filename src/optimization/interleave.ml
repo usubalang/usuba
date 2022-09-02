@@ -186,7 +186,7 @@ module Interleave_generic = struct
                       };
                     ]
                   @ aux grain [] nexts_tl
-              | Loop (i, ei, ef, dls, opts) ->
+              | Loop t ->
                   (* A loop -> need to schedule |ready| now, duplicate
                      the loops body, and continue with the next
                      instructions. *)
@@ -194,7 +194,7 @@ module Interleave_generic = struct
                   @ [
                       {
                         nexts_hd with
-                        content = Loop (i, ei, ef, aux grain [] dls, opts);
+                        content = Loop { t with body = aux grain [] t.body };
                       };
                     ]
                   @ aux grain [] nexts_tl
@@ -322,8 +322,10 @@ module Dup3 = struct
                 content = Eqn (List.map dup3_var lhs, dup3_expr e, sync);
               };
             ]
-        | Loop (i, ei, ef, l, opts) ->
-            [ { d with content = Loop (i, ei, ef, interleave_deqs l, opts) } ])
+        | Loop t ->
+            [
+              { d with content = Loop { t with body = interleave_deqs t.body } };
+            ])
       deqs
 
   let dup_p (p : p) : p =
@@ -388,11 +390,11 @@ module Dup2 = struct
                 content = Eqn (List.map dup_var lhs, dup_expr e, sync);
               };
             ]
-        | Loop (i, ei, ef, l, opts) ->
+        | Loop t ->
             [
               {
                 orig = d.orig;
-                content = Loop (i, ei, ef, interleave_deqs l, opts);
+                content = Loop { t with body = interleave_deqs t.body };
               };
             ])
       deqs
@@ -473,8 +475,10 @@ module Dup2_nofunc = struct
                       Eqn (List.map make_2nd_var lhs, make_2nd_expr e, sync);
                   };
                 ])
-        | Loop (i, ei, ef, l, opts) ->
-            [ { d with content = Loop (i, ei, ef, interleave_deqs l, opts) } ])
+        | Loop t ->
+            [
+              { d with content = Loop { t with body = interleave_deqs t.body } };
+            ])
       deqs
 
   let dup_p (p : p) : p =
@@ -621,12 +625,13 @@ module Dup2_nofunc_param = struct
                             make_2nd_expr env_var e,
                             sync );
                     } ))
-        | Loop (i, ei, ef, l, opts) ->
+        | Loop t ->
             ( None,
               Some
                 {
                   d with
-                  content = Loop (i, ei, ef, interleave_deqs env_var g l, opts);
+                  content =
+                    Loop { t with body = interleave_deqs env_var g t.body };
                 } ))
       deqs
 

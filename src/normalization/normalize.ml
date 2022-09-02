@@ -110,6 +110,5 @@ let optimize prog conf =
 
 let compile prog (conf : Config.config) =
   let normalized = norm_prog true prog conf in
-
   (* Get_live_var.run normalized; *)
   optimize normalized conf

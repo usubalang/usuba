@@ -169,11 +169,11 @@ module Compute_keeps = struct
             if in_loop then (
               compute_keep_expr env_keep env_var e;
               List.iter (compute_keep_var env_keep env_var) lhs)
-        | Loop (i, _, _, dl, _) ->
+        | Loop { id; body; _ } ->
             (* Just reccursive call with |in_loop|=true *)
-            Ident.Hashtbl.add env_var i Nat;
-            compute_keep_deqs backward env_keep env_var ~in_loop:true dl;
-            Ident.Hashtbl.remove env_var i)
+            Ident.Hashtbl.add env_var id Nat;
+            compute_keep_deqs backward env_keep env_var ~in_loop:true body;
+            Ident.Hashtbl.remove env_var id)
       deqs
 
   (* If |backward| is true, then this function is called for the
@@ -348,15 +348,16 @@ module Backwards_cp = struct
                       sync );
               };
             ]
-        | Loop (i, ei, ef, dl, opts) ->
+        | Loop t ->
             (* A loop -> reccursive call *)
-            Ident.Hashtbl.add env_var i Nat;
-            let dl =
+            Ident.Hashtbl.add env_var t.id Nat;
+            let body =
               List.rev
-                (cp_deqs env_var keep_env out_env optimized_away (List.rev dl))
+                (cp_deqs env_var keep_env out_env optimized_away
+                   (List.rev t.body))
             in
-            let deq' = { deq with content = Loop (i, ei, ef, dl, opts) } in
-            Ident.Hashtbl.remove env_var i;
+            let deq' = { deq with content = Loop { t with body } } in
+            Ident.Hashtbl.remove env_var t.id;
             [ deq' ])
       deqs
 
@@ -524,18 +525,21 @@ let rec cp_deqs (env_var : typ Ident.Hashtbl.t)
           (* A non-copy expression -> propagate copies inside *)
           let deq', e' = propagate_in_expr optimized_away e in
           deq' @ [ { deq with content = Eqn (lhs, e', sync) } ]
-      | Loop (i, ei, ef, dl, opts) ->
+      | Loop t ->
           (* A loop -> reccursive call *)
-          Ident.Hashtbl.add env_var i Nat;
+          Ident.Hashtbl.add env_var t.id Nat;
           let deq' =
             {
               deq with
               content =
                 Loop
-                  (i, ei, ef, cp_deqs env_var keep_env optimized_away dl, opts);
+                  {
+                    t with
+                    body = cp_deqs env_var keep_env optimized_away t.body;
+                  };
             }
           in
-          Ident.Hashtbl.remove env_var i;
+          Ident.Hashtbl.remove env_var t.id;
           [ deq' ])
     deqs
 

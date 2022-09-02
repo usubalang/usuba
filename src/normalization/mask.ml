@@ -90,7 +90,7 @@ module Get_consts = struct
                   | None -> ()))
               lhs
               (expr_is_const env_fun env_const env_not_const e)
-        | Loop (_, _, _, _, _) -> assert false
+        | Loop _ -> assert false
         (* Loops have been unrolled *))
       deqs
 
@@ -202,20 +202,23 @@ let mask_var (env_var : typ Ident.Hashtbl.t) (env_const : bool Ident.Hashtbl.t)
               orig;
               content =
                 Loop
-                  ( loop_idx,
-                    Const_e 1,
-                    loop_end,
-                    [
-                      {
-                        orig;
-                        content =
-                          Eqn
-                            ( [ make_loop_indexed vl ],
-                              Const (0, Some typ),
-                              false );
-                      };
-                    ],
-                    [] );
+                  {
+                    id = loop_idx;
+                    start = Const_e 1;
+                    stop = loop_end;
+                    body =
+                      [
+                        {
+                          orig;
+                          content =
+                            Eqn
+                              ( [ make_loop_indexed vl ],
+                                Const (0, Some typ),
+                                false );
+                        };
+                      ];
+                    opts = [];
+                  };
             };
           ]
       | false ->
@@ -225,20 +228,23 @@ let mask_var (env_var : typ Ident.Hashtbl.t) (env_const : bool Ident.Hashtbl.t)
               orig;
               content =
                 Loop
-                  ( loop_idx,
-                    Const_e 0,
-                    loop_end,
-                    [
-                      {
-                        orig;
-                        content =
-                          Eqn
-                            ( [ make_loop_indexed vl ],
-                              ExpVar (make_loop_indexed ve),
-                              false );
-                      };
-                    ],
-                    [] );
+                  {
+                    id = loop_idx;
+                    start = Const_e 0;
+                    stop = loop_end;
+                    body =
+                      [
+                        {
+                          orig;
+                          content =
+                            Eqn
+                              ( [ make_loop_indexed vl ],
+                                ExpVar (make_loop_indexed ve),
+                                false );
+                        };
+                      ];
+                    opts = [];
+                  };
             };
           ])
 (*                                                            ^^^^^    ^^ *)
@@ -258,17 +264,20 @@ let mask_cst (env_const : bool Ident.Hashtbl.t) (orig : (ident * deq_i) list)
             orig;
             content =
               Loop
-                ( loop_idx,
-                  Const_e 0,
-                  loop_end,
-                  [
-                    {
-                      orig;
-                      content =
-                        Eqn ([ make_loop_indexed vl ], Const (0, typ), false);
-                    };
-                  ],
-                  [] );
+                {
+                  id = loop_idx;
+                  start = Const_e 0;
+                  stop = loop_end;
+                  body =
+                    [
+                      {
+                        orig;
+                        content =
+                          Eqn ([ make_loop_indexed vl ], Const (0, typ), false);
+                      };
+                    ];
+                  opts = [];
+                };
           };
         ]
       else
@@ -281,17 +290,20 @@ let mask_cst (env_const : bool Ident.Hashtbl.t) (orig : (ident * deq_i) list)
             orig;
             content =
               Loop
-                ( loop_idx,
-                  Const_e 1,
-                  loop_end,
-                  [
-                    {
-                      orig;
-                      content =
-                        Eqn ([ make_loop_indexed vl ], Const (0, typ), false);
-                    };
-                  ],
-                  [] );
+                {
+                  id = loop_idx;
+                  start = Const_e 1;
+                  stop = loop_end;
+                  body =
+                    [
+                      {
+                        orig;
+                        content =
+                          Eqn ([ make_loop_indexed vl ], Const (0, typ), false);
+                      };
+                    ];
+                  opts = [];
+                };
           };
         ]
 
@@ -319,20 +331,23 @@ let mask_shift (env_var : typ Ident.Hashtbl.t)
               orig;
               content =
                 Loop
-                  ( loop_idx,
-                    Const_e 1,
-                    loop_end,
-                    [
-                      {
-                        orig;
-                        content =
-                          Eqn
-                            ( [ make_loop_indexed vl ],
-                              Const (0, Some typ),
-                              false );
-                      };
-                    ],
-                    [] );
+                  {
+                    id = loop_idx;
+                    start = Const_e 1;
+                    stop = loop_end;
+                    body =
+                      [
+                        {
+                          orig;
+                          content =
+                            Eqn
+                              ( [ make_loop_indexed vl ],
+                                Const (0, Some typ),
+                                false );
+                        };
+                      ];
+                    opts = [];
+                  };
             };
           ]
       | false ->
@@ -342,20 +357,23 @@ let mask_shift (env_var : typ Ident.Hashtbl.t)
               orig;
               content =
                 Loop
-                  ( loop_idx,
-                    Const_e 0,
-                    loop_end,
-                    [
-                      {
-                        orig;
-                        content =
-                          Eqn
-                            ( [ make_loop_indexed vl ],
-                              Shift (op, ExpVar (make_loop_indexed ve), ae),
-                              false );
-                      };
-                    ],
-                    [] );
+                  {
+                    id = loop_idx;
+                    start = Const_e 0;
+                    stop = loop_end;
+                    body =
+                      [
+                        {
+                          orig;
+                          content =
+                            Eqn
+                              ( [ make_loop_indexed vl ],
+                                Shift (op, ExpVar (make_loop_indexed ve), ae),
+                                false );
+                        };
+                      ];
+                    opts = [];
+                  };
             };
           ])
 
@@ -385,20 +403,23 @@ let mask_not (env_var : typ Ident.Hashtbl.t) (env_const : bool Ident.Hashtbl.t)
               orig;
               content =
                 Loop
-                  ( loop_idx,
-                    Const_e 1,
-                    loop_end,
-                    [
-                      {
-                        orig;
-                        content =
-                          Eqn
-                            ( [ make_loop_indexed vl ],
-                              Const (0, Some typ),
-                              false );
-                      };
-                    ],
-                    [] );
+                  {
+                    id = loop_idx;
+                    start = Const_e 1;
+                    stop = loop_end;
+                    body =
+                      [
+                        {
+                          orig;
+                          content =
+                            Eqn
+                              ( [ make_loop_indexed vl ],
+                                Const (0, Some typ),
+                                false );
+                        };
+                      ];
+                    opts = [];
+                  };
             };
           ]
       | false ->
@@ -416,20 +437,23 @@ let mask_not (env_var : typ Ident.Hashtbl.t) (env_const : bool Ident.Hashtbl.t)
               orig;
               content =
                 Loop
-                  ( loop_idx,
-                    Const_e 1,
-                    loop_end,
-                    [
-                      {
-                        orig;
-                        content =
-                          Eqn
-                            ( [ make_loop_indexed vl ],
-                              ExpVar (make_loop_indexed ve),
-                              false );
-                      };
-                    ],
-                    [] );
+                  {
+                    id = loop_idx;
+                    start = Const_e 1;
+                    stop = loop_end;
+                    body =
+                      [
+                        {
+                          orig;
+                          content =
+                            Eqn
+                              ( [ make_loop_indexed vl ],
+                                ExpVar (make_loop_indexed ve),
+                                false );
+                        };
+                      ];
+                    opts = [];
+                  };
             };
           ])
 
@@ -462,23 +486,26 @@ let mask_xor (env_var : typ Ident.Hashtbl.t) (env_const : bool Ident.Hashtbl.t)
               orig;
               content =
                 Loop
-                  ( loop_idx,
-                    Const_e 0,
-                    loop_end,
-                    [
-                      {
-                        orig;
-                        content =
-                          Eqn
-                            ( [ make_loop_indexed vl ],
-                              Log
-                                ( Xor,
-                                  ExpVar (make_loop_indexed x),
-                                  ExpVar (make_loop_indexed y) ),
-                              false );
-                      };
-                    ],
-                    [] );
+                  {
+                    id = loop_idx;
+                    start = Const_e 0;
+                    stop = loop_end;
+                    body =
+                      [
+                        {
+                          orig;
+                          content =
+                            Eqn
+                              ( [ make_loop_indexed vl ],
+                                Log
+                                  ( Xor,
+                                    ExpVar (make_loop_indexed x),
+                                    ExpVar (make_loop_indexed y) ),
+                                false );
+                        };
+                      ];
+                    opts = [];
+                  };
             };
           ])
   | One -> (
@@ -503,23 +530,26 @@ let mask_xor (env_var : typ Ident.Hashtbl.t) (env_const : bool Ident.Hashtbl.t)
               orig;
               content =
                 Loop
-                  ( loop_idx,
-                    Const_e 1,
-                    loop_end,
-                    [
-                      {
-                        orig;
-                        content =
-                          Eqn
-                            ( [ make_loop_indexed vl ],
-                              Log
-                                ( Xor,
-                                  ExpVar (make_loop_indexed x),
-                                  Const (0, Some typ) ),
-                              false );
-                      };
-                    ],
-                    [] );
+                  {
+                    id = loop_idx;
+                    start = Const_e 1;
+                    stop = loop_end;
+                    body =
+                      [
+                        {
+                          orig;
+                          content =
+                            Eqn
+                              ( [ make_loop_indexed vl ],
+                                Log
+                                  ( Xor,
+                                    ExpVar (make_loop_indexed x),
+                                    Const (0, Some typ) ),
+                                false );
+                        };
+                      ];
+                    opts = [];
+                  };
             };
           ])
   | Two -> (
@@ -548,20 +578,23 @@ let mask_xor (env_var : typ Ident.Hashtbl.t) (env_const : bool Ident.Hashtbl.t)
               orig;
               content =
                 Loop
-                  ( loop_idx,
-                    Const_e 1,
-                    loop_end,
-                    [
-                      {
-                        orig;
-                        content =
-                          Eqn
-                            ( [ make_loop_indexed vl ],
-                              Const (0, Some typ),
-                              false );
-                      };
-                    ],
-                    [] );
+                  {
+                    id = loop_idx;
+                    start = Const_e 1;
+                    stop = loop_end;
+                    body =
+                      [
+                        {
+                          orig;
+                          content =
+                            Eqn
+                              ( [ make_loop_indexed vl ],
+                                Const (0, Some typ),
+                                false );
+                        };
+                      ];
+                    opts = [];
+                  };
             };
           ])
 
@@ -607,20 +640,23 @@ let mask_and_or (env_var : typ Ident.Hashtbl.t)
               orig;
               content =
                 Loop
-                  ( loop_idx,
-                    Const_e 0,
-                    loop_end,
-                    [
-                      {
-                        orig;
-                        content =
-                          Eqn
-                            ( [ make_loop_indexed vl ],
-                              Log (op, ExpVar (make_loop_indexed x), ExpVar y),
-                              false );
-                      };
-                    ],
-                    [] );
+                  {
+                    id = loop_idx;
+                    start = Const_e 0;
+                    stop = loop_end;
+                    body =
+                      [
+                        {
+                          orig;
+                          content =
+                            Eqn
+                              ( [ make_loop_indexed vl ],
+                                Log (op, ExpVar (make_loop_indexed x), ExpVar y),
+                                false );
+                        };
+                      ];
+                    opts = [];
+                  };
             };
           ])
   | Two -> (
@@ -649,20 +685,23 @@ let mask_and_or (env_var : typ Ident.Hashtbl.t)
               orig;
               content =
                 Loop
-                  ( loop_idx,
-                    Const_e 1,
-                    loop_end,
-                    [
-                      {
-                        orig;
-                        content =
-                          Eqn
-                            ( [ make_loop_indexed vl ],
-                              Const (0, Some typ),
-                              false );
-                      };
-                    ],
-                    [] );
+                  {
+                    id = loop_idx;
+                    start = Const_e 1;
+                    stop = loop_end;
+                    body =
+                      [
+                        {
+                          orig;
+                          content =
+                            Eqn
+                              ( [ make_loop_indexed vl ],
+                                Const (0, Some typ),
+                                false );
+                        };
+                      ];
+                    opts = [];
+                  };
             };
           ])
 
@@ -697,11 +736,12 @@ let rec mask_deqs (env_var : typ Ident.Hashtbl.t)
           [ { d with content = Eqn (lhs, Fun (f, l), sync) } ]
       | Eqn ([ lv ], e, _) -> mask_eqn env_var env_const d.orig lv e
       | Eqn _ -> assert false (* Not normalized *)
-      | Loop (i, ei, ef, dl, sync) ->
+      | Loop t ->
           [
             {
               d with
-              content = Loop (i, ei, ef, mask_deqs env_var env_const dl, sync);
+              content =
+                Loop { t with body = mask_deqs env_var env_const t.body };
             };
           ])
     deqs
