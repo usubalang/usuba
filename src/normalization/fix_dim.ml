@@ -145,8 +145,8 @@ let rec dim_deq (v_tgt : var) (dim : int) (size : int) (deq : deq) : deq =
             ( List.map (dim_var v_tgt dim size) vs,
               dim_expr v_tgt dim size e,
               sync )
-      | Loop (i, ei, ef, dl, opts) ->
-          Loop (i, ei, ef, List.map (dim_deq v_tgt dim size) dl, opts));
+      | Loop t ->
+          Loop { t with body = List.map (dim_deq v_tgt dim size) t.body });
   }
 
 (* Merges the two innermost dimensions of |t|. For instance:
@@ -300,12 +300,12 @@ module Dir_params = struct
             (* A simple equation can't contain funcall -> ignore *)
             | Eqn (_, _, _) -> deq.content
             (* Reccursive call on loops *)
-            | Loop (i, ei, ef, dl, opts) ->
-                Ident.Hashtbl.add env_var i Nat;
+            | Loop t ->
+                Ident.Hashtbl.add env_var t.id Nat;
                 let res =
-                  Loop (i, ei, ef, fix_deqs env_fun env_var def dl, opts)
+                  Loop { t with body = fix_deqs env_fun env_var def t.body }
                 in
-                Ident.Hashtbl.remove env_var i;
+                Ident.Hashtbl.remove env_var t.id;
                 res);
         })
       deqs
@@ -434,12 +434,12 @@ module Dir_inner = struct
             (* A simple equation can't contain funcall -> ignore *)
             | Eqn (_, _, _) -> deq.content
             (* Reccursive call on loops *)
-            | Loop (i, ei, ef, dl, opts) ->
-                Ident.Hashtbl.add env_var i Nat;
+            | Loop t ->
+                Ident.Hashtbl.add env_var t.id Nat;
                 let res =
-                  Loop (i, ei, ef, fix_deqs env_fun env_var def dl, opts)
+                  Loop { t with body = fix_deqs env_fun env_var def t.body }
                 in
-                Ident.Hashtbl.remove env_var i;
+                Ident.Hashtbl.remove env_var t.id;
                 res);
         })
       deqs

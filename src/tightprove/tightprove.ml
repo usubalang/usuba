@@ -223,8 +223,11 @@ module Refresh = struct
             (* Keep searching*)
             match hd.content with
             | Eqn _ -> hd :: find_deq_in_f tl
-            | Loop (i, ei, ef, dl, opts) ->
-                { hd with content = Loop (i, ei, ef, find_deq_in_f dl, opts) }
+            | Loop t ->
+                {
+                  hd with
+                  content = Loop { t with body = find_deq_in_f t.body };
+                }
                 ::
                 (if !is_found then
                  (* |old_first_use_deq| was found inside the loop
@@ -294,8 +297,8 @@ module Refresh = struct
                    skip in |f|. *)
                 full_prog := List.tl !full_prog;
                 update_f_body f_body)
-          | Loop (i, ei, ef, dl, opts) ->
-              { hd with content = Loop (i, ei, ef, update_f_body dl, opts) }
+          | Loop t ->
+              { hd with content = Loop { t with body = update_f_body t.body } }
               :: update_f_body tl)
     in
 
@@ -491,7 +494,7 @@ let is_call_and_loop_free (def : def) : bool =
     | Eqn (_, Fun (f, _), _) ->
         if String.equal (Ident.name f) "refresh" then true else false
     | Eqn _ -> true
-    | Loop (_, _, _, _, _) -> false
+    | Loop _ -> false
   in
   match def.node with
   | Single (_, body) -> List.for_all deq_call_free body

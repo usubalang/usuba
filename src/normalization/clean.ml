@@ -36,7 +36,7 @@ let clean_in_deqs (vars : p) (deqs : deq list) : p =
     | Eqn (l, e, _) ->
         List.iter (collect_var env) l;
         collect_expr env e
-    | Loop (_, _, _, d, _) -> List.iter aux d
+    | Loop { body; _ } -> List.iter aux body
   in
   List.iter aux deqs;
   List.sort_uniq compare_var_d

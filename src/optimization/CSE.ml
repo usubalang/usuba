@@ -104,11 +104,14 @@ let rec cse_deqs (env_expr : var list ExprHashtbl.t) (deqs : deq list) :
               | Some _ -> ()
               | None -> ExprHashtbl.add env_expr e' lhs));
           { d with content = Eqn (lhs, e', sync) }
-      | Loop (i, ei, ef, dl, opts) ->
+      | Loop t ->
           (* Passing a copy of |env_expr| to the loop, so that nothing
              from the loop's body leaks outside. *)
           let env_expr_copy = ExprHashtbl.copy env_expr in
-          { d with content = Loop (i, ei, ef, cse_deqs env_expr_copy dl, opts) })
+          {
+            d with
+            content = Loop { t with body = cse_deqs env_expr_copy t.body };
+          })
     deqs
 
 let cse_def (def : def) : def =

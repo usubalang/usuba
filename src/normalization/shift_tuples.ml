@@ -93,8 +93,7 @@ let rec shift_deq (env_var : typ Ident.Hashtbl.t) (deq : deq) : deq =
     content =
       (match deq.content with
       | Eqn (p, e, sync) -> Eqn (p, shift_expr env_var e, sync)
-      | Loop (id, ei, ef, d, opts) ->
-          Loop (id, ei, ef, List.map (shift_deq env_var) d, opts));
+      | Loop t -> Loop { t with body = List.map (shift_deq env_var) t.body });
   }
 
 let shift_def (def : def) : def =

@@ -73,10 +73,10 @@ let rec rename_deq map deqs =
           (match d.content with
           | Eqn (pat, expr, sync) ->
               Eqn (rename_pat map pat, rename_expr map expr, sync)
-          | Loop (id, ei, ef, d, opts) ->
-              let new_id = Ident.fresh_suffixed id "'" in
-              let map = Ident.Map.add id new_id map in
-              Loop (new_id, ei, ef, rename_deq map d, opts));
+          | Loop t ->
+              let id = Ident.fresh_suffixed t.id "'" in
+              let map = Ident.Map.add t.id id map in
+              Loop { t with id; body = rename_deq map t.body });
       })
     deqs
 

@@ -1038,31 +1038,31 @@ let rec type_deqs ~conf ~backtrace ~env_fun ~env_var ~env_it body =
       match deq.content with
       | Eqn (vs, e, sync) ->
           type_eqn ~conf ~backtrace ~env_fun ~env_var ~env_it deq vs e sync
-      | Loop (x, ei, ef, dl, opts) ->
+      | Loop t ->
           (* Iterating over all values of x. This will detect out of
              bounds array access. *)
           let backtrace =
             Format.asprintf "  deq = forall %s in [%a, %a] { ... }"
-              (Ident.name x) (Usuba_print.pp_arith ()) ei
-              (Usuba_print.pp_arith ()) ef
+              (Ident.name t.id) (Usuba_print.pp_arith ()) t.start
+              (Usuba_print.pp_arith ()) t.stop
             :: backtrace
           in
-          let ei_evaled = eval_arith ~backtrace ~env_var ~env_it ei in
-          let ef_evaled = eval_arith ~backtrace ~env_var ~env_it ef in
-          let typed_dl =
+          let start_evaled = eval_arith ~backtrace ~env_var ~env_it t.start in
+          let stop_evaled = eval_arith ~backtrace ~env_var ~env_it t.stop in
+          let typed_body =
             List.map
               (fun i ->
-                Ident.Hashtbl.add env_it x i;
+                Ident.Hashtbl.add env_it t.id i;
                 let dl =
-                  type_deqs ~conf ~backtrace ~env_fun ~env_var ~env_it dl
+                  type_deqs ~conf ~backtrace ~env_fun ~env_var ~env_it t.body
                 in
-                Ident.Hashtbl.remove env_it x;
+                Ident.Hashtbl.remove env_it t.id;
                 dl)
-              (Basic_utils.gen_list_bounds ei_evaled ef_evaled)
+              (Basic_utils.gen_list_bounds start_evaled stop_evaled)
           in
           (* Need to rebuild the loop. Every elements of type_dl should
              be the same. Arbitrarily picking the first one. *)
-          { deq with content = Loop (x, ei, ef, List.hd typed_dl, opts) })
+          { deq with content = Loop { t with body = List.hd typed_body } })
     body
 
 (* In a permutation, we check that:

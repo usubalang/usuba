@@ -261,20 +261,23 @@ module Bslice = struct
               orig;
               content =
                 Loop
-                  ( loop_log_it,
-                    Const_e 0,
-                    Op_e (Sub, Const_e m, Const_e 1),
-                    [
-                      {
-                        orig;
-                        content =
-                          Eqn
-                            ( List.map apply_loop_it vs,
-                              ExpVar (apply_loop_it v),
-                              false );
-                      };
-                    ],
-                    [] );
+                  {
+                    id = loop_log_it;
+                    start = Const_e 0;
+                    stop = Op_e (Sub, Const_e m, Const_e 1);
+                    body =
+                      [
+                        {
+                          orig;
+                          content =
+                            Eqn
+                              ( List.map apply_loop_it vs,
+                                ExpVar (apply_loop_it v),
+                                false );
+                        };
+                      ];
+                    opts = [];
+                  };
             }
         | _ ->
             (* Not between two arrays -> leave it as a simple equation *)
@@ -287,23 +290,26 @@ module Bslice = struct
               orig;
               content =
                 Loop
-                  ( loop_log_it,
-                    Const_e 0,
-                    Op_e (Sub, Const_e m, Const_e 1),
-                    [
-                      {
-                        orig;
-                        content =
-                          Eqn
-                            ( List.map apply_loop_it vs,
-                              Log
-                                ( op,
-                                  ExpVar (apply_loop_it x),
-                                  ExpVar (apply_loop_it y) ),
-                              false );
-                      };
-                    ],
-                    [] );
+                  {
+                    id = loop_log_it;
+                    start = Const_e 0;
+                    stop = Op_e (Sub, Const_e m, Const_e 1);
+                    body =
+                      [
+                        {
+                          orig;
+                          content =
+                            Eqn
+                              ( List.map apply_loop_it vs,
+                                Log
+                                  ( op,
+                                    ExpVar (apply_loop_it x),
+                                    ExpVar (apply_loop_it y) ),
+                                false );
+                        };
+                      ];
+                    opts = [];
+                  };
             }
         | _ ->
             (* Not between two arrays -> leave it as a simple equation *)
@@ -316,20 +322,23 @@ module Bslice = struct
               orig;
               content =
                 Loop
-                  ( loop_log_it,
-                    Const_e 0,
-                    Op_e (Sub, Const_e m, Const_e 1),
-                    [
-                      {
-                        orig;
-                        content =
-                          Eqn
-                            ( List.map apply_loop_it vs,
-                              Not (ExpVar (apply_loop_it v)),
-                              false );
-                      };
-                    ],
-                    [] );
+                  {
+                    id = loop_log_it;
+                    start = Const_e 0;
+                    stop = Op_e (Sub, Const_e m, Const_e 1);
+                    body =
+                      [
+                        {
+                          orig;
+                          content =
+                            Eqn
+                              ( List.map apply_loop_it vs,
+                                Not (ExpVar (apply_loop_it v)),
+                                false );
+                        };
+                      ];
+                    opts = [];
+                  };
             }
         | _ ->
             (* Not between two arrays -> leave it as a simple equation *)
@@ -440,7 +449,7 @@ let rec node_call_can_be_optimized (all_nodes : def Ident.Hashtbl.t) (f : ident)
   (*                     match deq.content with *)
   (*                     | Eqn(_,Log(_,_,_),_) *)
   (*                       | Eqn(_,Not _,_) -> (logs+1, tot+1) *)
-  (*                     | Loop(_,_,_,dl,_) -> *)
+  (*                     | Loop { body; _} -> *)
   (*                        let (logs',tot') = get_logs dl in *)
   (*                        (logs+logs', tot+tot') *)
   (*                     | _ -> (logs, tot+1)) (0,0) deqs in *)
@@ -466,7 +475,7 @@ let rec node_call_can_be_optimized (all_nodes : def Ident.Hashtbl.t) (f : ident)
   let rec deq_can_opt (d : deq) : bool =
     match d.content with
     | Eqn (_, e, _) -> expr_can_opt e
-    | Loop (_, _, _, dl, _) -> List.for_all deq_can_opt dl
+    | Loop { body; _ } -> List.for_all deq_can_opt body
   in
 
   let all_vd_same_m (vdl : var_d list) : bool =
@@ -592,9 +601,9 @@ and specialize_opt_fun_call (all_nodes : def Ident.Hashtbl.t)
           | _ -> def.node);
       };
 
-    let idx = gen_counter () in
+    let id = gen_counter () in
     let l' =
-      List.map (indexify_expr idx)
+      List.map (indexify_expr id)
         (Basic_utils.flat_map Norm_tuples.Simplify_tuples.simpl_tuple
            (List.map
               (Expand_array.expand_expr env_var (Ident.Hashtbl.create 1)
@@ -604,21 +613,24 @@ and specialize_opt_fun_call (all_nodes : def Ident.Hashtbl.t)
     in
     let loop =
       Loop
-        ( idx,
-          Const_e 0,
-          Utils.simpl_arith_ne (Op_e (Sub, Const_e m_size, Const_e 1)),
-          [
-            {
-              orig = [];
-              content =
-                Eqn
-                  ( List.map (indexify_var idx)
-                      (Basic_utils.flat_map (Utils.expand_var env_var) vs),
-                    Fun (f', l'),
-                    false );
-            };
-          ],
-          [] )
+        {
+          id;
+          start = Const_e 0;
+          stop = Utils.simpl_arith_ne (Op_e (Sub, Const_e m_size, Const_e 1));
+          body =
+            [
+              {
+                orig = [];
+                content =
+                  Eqn
+                    ( List.map (indexify_var id)
+                        (Basic_utils.flat_map (Utils.expand_var env_var) vs),
+                      Fun (f', l'),
+                      false );
+              };
+            ];
+          opts = [];
+        }
     in
 
     { orig; content = loop }
@@ -680,18 +692,18 @@ and specialize_deqs (all_nodes : def Ident.Hashtbl.t)
       | Eqn (vs, e, sync) ->
           specialize_expr all_nodes specialized_nodes env_dir env_m env_var
             d.orig vs e sync
-      | Loop (e, ei, ef, l, opts) ->
-          Ident.Hashtbl.add env_var e Nat;
+      | Loop t ->
+          Ident.Hashtbl.add env_var t.id Nat;
           let x' =
             Loop
-              ( e,
-                ei,
-                ef,
-                specialize_deqs all_nodes specialized_nodes env_dir env_m
-                  env_var l,
-                opts )
+              {
+                t with
+                body =
+                  specialize_deqs all_nodes specialized_nodes env_dir env_m
+                    env_var t.body;
+              }
           in
-          Ident.Hashtbl.remove env_var e;
+          Ident.Hashtbl.remove env_var t.id;
           { d with content = x' })
     deqs
 

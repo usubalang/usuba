@@ -158,19 +158,20 @@ let rec update_vars_and_deqs (its : (ident * int) list)
                 ( List.map (update_var_to_var its it_env var_env extern_vars) lhs,
                   update_expr its it_env var_env expr_env extern_vars e,
                   sync )
-          | Loop (i, ei, ef, dl, opts) ->
-              let i' = gen_iterator i in
-              VarHashtbl.add it_env (Var i) (Var i');
+          | Loop t ->
+              let id = gen_iterator t.id in
+              VarHashtbl.add it_env (Var t.id) (Var id);
               let updated =
                 Loop
-                  ( i',
-                    ei,
-                    ef,
-                    update_vars_and_deqs its it_env var_env expr_env extern_vars
-                      f dl,
-                    opts )
+                  {
+                    t with
+                    id;
+                    body =
+                      update_vars_and_deqs its it_env var_env expr_env
+                        extern_vars f t.body;
+                  }
               in
-              VarHashtbl.remove it_env (Var i);
+              VarHashtbl.remove it_env (Var id);
               updated);
       })
     body
@@ -263,14 +264,15 @@ let rec inline_in_node ?(its : (ident * int) list = []) ?(cnt : int ref = ref 0)
                incr cnt;
                inline_call its to_inl l lhs !cnt
            | Eqn _ -> ([], [ eqn ])
-           | Loop (i, ei, ef, dl, opts) ->
+           | Loop t ->
                let size =
-                 abs (Utils.eval_arith_ne ei - Utils.eval_arith_ne ef) + 1
+                 abs (Utils.eval_arith_ne t.start - Utils.eval_arith_ne t.stop)
+                 + 1
                in
-               let vars, deqs =
-                 inline_in_node ~its:((i, size) :: its) ~cnt dl to_inl
+               let vars, body =
+                 inline_in_node ~its:((t.id, size) :: its) ~cnt t.body to_inl
                in
-               (vars, [ { eqn with content = Loop (i, ei, ef, deqs, opts) } ]))
+               (vars, [ { eqn with content = Loop { t with body } } ]))
          deqs)
   in
   (List.flatten vars, List.flatten deqs)

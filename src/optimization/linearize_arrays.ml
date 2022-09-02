@@ -148,8 +148,7 @@ let rec linearize to_linearize (deqs : deq list) : deq list =
                 ( List.map (replace_var to_linearize) v,
                   replace_expr to_linearize e,
                   sync )
-          | Loop (i, ei, ef, dl, opts) ->
-              Loop (i, ei, ef, linearize to_linearize dl, opts));
+          | Loop t -> Loop { t with body = linearize to_linearize t.body });
       })
     deqs
 
@@ -274,21 +273,21 @@ and can_linearize_def_body (env_fun : def Ident.Hashtbl.t)
               | false -> ()
               (* Does not write to |v_out| -> do nothing *))
             (List.map (simpl_var env_it) lhs)
-      | Loop (x, ei, ef, dl, _) ->
+      | Loop { id; start; stop; body; _ } ->
           (* A loop: gonna look at every iterations (it is easier that
              trying to do some symbolic reasoning with the loop
              variable) *)
-          let ei = Utils.eval_arith env_it ei in
-          let ef = Utils.eval_arith env_it ef in
+          let start = Utils.eval_arith env_it start in
+          let stop = Utils.eval_arith env_it stop in
           List.iter
             (fun i ->
-              Ident.Hashtbl.add env_it x i;
-              Ident.Hashtbl.add env_var x Nat;
-              can_linearize_def_body env_fun env_it env_var defined dl v_in
+              Ident.Hashtbl.add env_it id i;
+              Ident.Hashtbl.add env_var id Nat;
+              can_linearize_def_body env_fun env_it env_var defined body v_in
                 v_out;
-              Ident.Hashtbl.remove env_var x;
-              Ident.Hashtbl.remove env_it x)
-            (Basic_utils.gen_list_bounds ei ef))
+              Ident.Hashtbl.remove env_var id;
+              Ident.Hashtbl.remove env_it id)
+            (Basic_utils.gen_list_bounds start stop))
     deqs
 
 (* can_linearize returns nothing if the array defined by |id| can be
@@ -310,7 +309,7 @@ and can_linearize_def_body (env_fun : def Ident.Hashtbl.t)
 let rec can_linearize (env_fun : def Ident.Hashtbl.t)
     ?(env_it : int Ident.Hashtbl.t = Ident.Hashtbl.create 10)
     ?(defined : var VarHashtbl.t = VarHashtbl.create 100) (deqs : deq list)
-    (id : ident) (env_var : typ Ident.Hashtbl.t) =
+    (ident : ident) (env_var : typ Ident.Hashtbl.t) =
   List.iter
     (fun d ->
       match d.content with
@@ -327,14 +326,14 @@ let rec can_linearize (env_fun : def Ident.Hashtbl.t)
                   Basic_utils.find_get_i
                     (fun e ->
                       match e with
-                      | ExpVar v -> Ident.equal (Utils.get_base_name v) id
+                      | ExpVar v -> Ident.equal (Utils.get_base_name v) ident
                       | _ -> false)
                     l
                 in
                 let v_in = List.nth def.p_in param_idx in
                 let return_idx =
                   Basic_utils.find_get_i
-                    (fun v -> Ident.equal (Utils.get_base_name v) id)
+                    (fun v -> Ident.equal (Utils.get_base_name v) ident)
                     lhs
                 in
                 let v_out = List.nth def.p_out return_idx in
@@ -349,7 +348,7 @@ let rec can_linearize (env_fun : def Ident.Hashtbl.t)
              (e) doesn't use overriten variables *)
           List.iter
             (fun v ->
-              match Ident.equal (Utils.get_base_name v) id with
+              match Ident.equal (Utils.get_base_name v) ident with
               | true ->
                   (* Need to make sure the index accessed are accessible *)
                   List.iter
@@ -365,7 +364,7 @@ let rec can_linearize (env_fun : def Ident.Hashtbl.t)
           (* Updating |defined| variables *)
           List.iter
             (fun v ->
-              match Ident.equal (Utils.get_base_name v) id with
+              match Ident.equal (Utils.get_base_name v) ident with
               | true ->
                   (* Need to update |defined| *)
                   List.iter
@@ -376,20 +375,20 @@ let rec can_linearize (env_fun : def Ident.Hashtbl.t)
               | false -> ()
               (* not the variable we are interested into -> do nothing *))
             (List.map (simpl_var env_it) lhs)
-      | Loop (x, ei, ef, dl, _) ->
+      | Loop { id; start; stop; body; _ } ->
           (* A loop: gonna look at every iterations (it is easier that
              trying to do some symbolic reasoning with the loop
              variable) *)
-          let ei = Utils.eval_arith env_it ei in
-          let ef = Utils.eval_arith env_it ef in
+          let start = Utils.eval_arith env_it start in
+          let stop = Utils.eval_arith env_it stop in
           List.iter
             (fun i ->
-              Ident.Hashtbl.add env_it x i;
-              Ident.Hashtbl.add env_var x Nat;
-              can_linearize env_fun ~env_it ~defined dl id env_var;
-              Ident.Hashtbl.remove env_var x;
-              Ident.Hashtbl.remove env_it x)
-            (Basic_utils.gen_list_bounds ei ef))
+              Ident.Hashtbl.add env_it id i;
+              Ident.Hashtbl.add env_var id Nat;
+              can_linearize env_fun ~env_it ~defined body ident env_var;
+              Ident.Hashtbl.remove env_var id;
+              Ident.Hashtbl.remove env_it id)
+            (Basic_utils.gen_list_bounds start stop))
     deqs
 
 (* Returns variables that are arrays *)

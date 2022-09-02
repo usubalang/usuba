@@ -49,7 +49,7 @@ module Is_linear = struct
       (fun deq ->
         match deq.content with
         | Eqn (_, e, _) -> is_linear_expr env_fun e
-        | Loop (_, _, _, dl, _) -> is_linear_deqs env_fun dl)
+        | Loop { body; _ } -> is_linear_deqs env_fun body)
       deqs
 
   and is_linear_def_i (env_fun : (string, def) Hashtbl.t) (def_i : def_i) : bool
@@ -96,8 +96,8 @@ let is_more_than_n_percent_assign (n : int) (deqs : deq list) : bool =
       (fun (asgns, tot) deq ->
         match deq.content with
         | Eqn (_, ExpVar _, _) -> (asgns + 1, tot + 1)
-        | Loop (_, _, _, dl, _) ->
-            let asgns', tot' = get_assigns dl in
+        | Loop { body; _ } ->
+            let asgns', tot' = get_assigns body in
             (asgns + asgns', tot + tot')
         | _ -> (asgns, tot + 1))
       (0, 0) deqs
@@ -150,7 +150,7 @@ let rec is_call_free env inlined conf (def : def) : bool =
         if String.equal (Ident.name f) "refresh" then true
         else not (can_inline env inlined conf (Hashtbl.find env (Ident.name f)))
     | Eqn _ -> true
-    | Loop (_, _, _, dl, _) -> List.for_all deq_call_free dl
+    | Loop { body; _ } -> List.for_all deq_call_free body
   in
   match def.node with
   | Single (_, body) -> List.for_all deq_call_free body

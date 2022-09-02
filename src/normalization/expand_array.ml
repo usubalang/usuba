@@ -213,13 +213,14 @@ and expand_deqs env_var env_keep ?(env = Ident.Hashtbl.create 100)
                     sync );
             };
           ]
-      | Loop (x, ei, ef, deqs, opts) ->
-          Ident.Hashtbl.add env_var x Nat;
-          Ident.Hashtbl.add env_it x true;
+      | Loop t ->
+          Ident.Hashtbl.add env_var t.id Nat;
+          Ident.Hashtbl.add env_it t.id true;
           let res =
             (* STDLIB_IMPORT: List.mem of sum type *)
-            if Stdlib.List.mem Unroll opts || force = Remove || unroll then
-              do_unroll env_var env_keep env force unroll x ei ef deqs
+            if Stdlib.List.mem Unroll t.opts || force = Remove || unroll then
+              do_unroll env_var env_keep env force unroll t.id t.start t.stop
+                t.body
             else
               try
                 [
@@ -227,30 +228,32 @@ and expand_deqs env_var env_keep ?(env = Ident.Hashtbl.create 100)
                     deq with
                     content =
                       Loop
-                        ( x,
-                          ei,
-                          ef,
-                          expand_deqs env_var env_keep ~env ~env_it force unroll
-                            deqs,
-                          opts );
+                        {
+                          t with
+                          body =
+                            expand_deqs env_var env_keep ~env ~env_it force
+                              unroll t.body;
+                        };
                   };
                 ]
-              with Need_unroll id ->
-                if Ident.equal id x then (
-                  try do_unroll env_var env_keep env force unroll x ei ef deqs
-                  with Need_unroll id2 ->
+              with Need_unroll nu_id ->
+                if Ident.equal t.id nu_id then (
+                  try
+                    do_unroll env_var env_keep env force unroll t.id t.start
+                      t.stop t.body
+                  with Need_unroll nu_id2 ->
                     (* Unrolling failed and needs to unroll one level
                        higher -> need to clean the environements. *)
-                    Ident.Hashtbl.remove env_var x;
-                    Ident.Hashtbl.remove env x;
-                    raise (Need_unroll id2))
+                    Ident.Hashtbl.remove env_var t.id;
+                    Ident.Hashtbl.remove env t.id;
+                    raise (Need_unroll nu_id2))
                 else (
                   (* Gonna update one loop above; need to clean the |env_var|. *)
-                  Ident.Hashtbl.remove env_var x;
+                  Ident.Hashtbl.remove env_var t.id;
                   (* No need to clean |env| since |x| can's be in |env| here. *)
-                  raise (Need_unroll id))
+                  raise (Need_unroll nu_id))
           in
-          Ident.Hashtbl.remove env_var x;
+          Ident.Hashtbl.remove env_var t.id;
           res)
     deqs
 

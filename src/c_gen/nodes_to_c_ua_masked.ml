@@ -184,15 +184,15 @@ let rec deqs_to_c (lift_env : int VarHashtbl.t)
              | _ ->
                  Format.sprintf "%s%s;" tabs
                    (expr_to_c_ret lift_env env env_var v e))
-         | Loop (i, ei, ef, l, _) ->
+         | Loop { id; start; stop; body; _ } ->
              Format.sprintf "%sfor (int %s = %s; %s <= %s; %s++) {\n%s\n%s}"
                tabs
-               (rename (Ident.name i))
-               (aexpr_to_c ei)
-               (rename (Ident.name i))
-               (aexpr_to_c ef)
-               (rename (Ident.name i))
-               (deqs_to_c lift_env env env_var ~tabs:(tabs ^ "  ") l)
+               (rename (Ident.name id))
+               (aexpr_to_c start)
+               (rename (Ident.name id))
+               (aexpr_to_c stop)
+               (rename (Ident.name id))
+               (deqs_to_c lift_env env env_var ~tabs:(tabs ^ "  ") body)
                tabs
          | _ ->
              Format.eprintf "%a@." (Usuba_print.pp_deq ()) deq;

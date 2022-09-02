@@ -455,7 +455,7 @@ let rec get_used_vars (e : expr) : var list =
 let rec get_used_vars_deq (deq : deq) : var list =
   match deq.content with
   | Eqn (_, e, _) -> get_used_vars e
-  | Loop (_, _, _, dl, _) -> flat_map get_used_vars_deq dl
+  | Loop { body; _ } -> flat_map get_used_vars_deq body
 
 let rec get_var_name (v : var) : ident =
   match v with

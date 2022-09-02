@@ -203,8 +203,8 @@ let rec fold_deqs (env_var : typ Ident.Hashtbl.t) (deqs : deq list) : deq list =
       match d.content with
       | Eqn (lhs, e, sync) ->
           { d with content = Eqn (lhs, fold_expr env_var e, sync) }
-      | Loop (i, ei, ef, dl, opts) ->
-          { d with content = Loop (i, ei, ef, fold_deqs env_var dl, opts) })
+      | Loop t ->
+          { d with content = Loop { t with body = fold_deqs env_var t.body } })
     deqs
 
 let fold_def (def : def) : def =

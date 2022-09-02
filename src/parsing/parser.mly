@@ -173,9 +173,9 @@ opt_stmt:
    | PIPELINED { Pipelined }
 
 %public deq_forall:
- | opts = list(opt_stmt) FORALL id = ident IN LBRACKET startae = arith_exp
-   COMMA endae = arith_exp RBRACKET LCURLY d = deqs RCURLY
-    { { content = Loop(id, startae, endae, d, opts); orig = [] } }
+ | opts = list(opt_stmt) FORALL id = ident IN LBRACKET start = arith_exp
+   COMMA stop = arith_exp RBRACKET LCURLY body = deqs RCURLY
+    { { content = Loop {id; start; stop; body; opts}; orig = [] } }
 
 (* Doesn't use the |deq| rule because it would make semicolons mandatory after
    foralls. *)

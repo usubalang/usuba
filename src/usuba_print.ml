@@ -269,18 +269,18 @@ let rec pp_deq_i ?(typed = false) ?(detailed = false) () ppf (deq_i : deq_i) =
         (if sync then ":" else "")
         (pp_expr ~typed ~detailed ())
         e
-  | Loop (id, ei, ef, d, opts) ->
+  | Loop { id; start; stop; body; opts } ->
       Format.fprintf ppf
         "@[<v 0>@[<v 2>%a%sforall %a in [%a,%a] {@,@[<v 2>%a@]@]@,}@]"
         (pp_list_space pp_optstmt) opts
         (if List.length opts > 0 then " " else "")
         (Ident.pp ~detailed ()) id
         (pp_arith ~typed ~detailed ())
-        ei
+        start
         (pp_arith ~typed ~detailed ())
-        ef
+        stop
         (pp_list_semi_cut (pp_deq ~detailed ()))
-        d
+        body
 
 and pp_deq ?(typed = false) ?(detailed = false) () ppf (deq : deq) =
   pp_deq_i ~detailed ~typed () ppf deq.content

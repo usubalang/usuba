@@ -121,20 +121,20 @@ let rec bind_deqs ~conf ~backtrace ~vars_env ~fun_env body =
           let vs = List.map (bind_var ~backtrace vars_env) vs in
           let e = bind_expr ~conf ~backtrace ~vars_env ~fun_env e in
           { deq with content = Eqn (vs, e, sync) }
-      | Loop (id, ei, ef, dl, opts) ->
+      | Loop { id; start; stop; body; opts } ->
           let backtrace =
             Format.asprintf "  deq = forall %a in [%a, %a] { ... }"
-              (Ident.pp ()) id (Usuba_print.pp_arith ()) ei
-              (Usuba_print.pp_arith ()) ef
+              (Ident.pp ()) id (Usuba_print.pp_arith ()) start
+              (Usuba_print.pp_arith ()) stop
             :: backtrace
           in
           let vars_env, id =
             Bindings.refresh_id_and_store ~conf ~backtrace ~id vars_env
           in
-          let ei = bind_arith ~backtrace ~vars_env ei in
-          let ef = bind_arith ~backtrace ~vars_env ef in
-          let dl = bind_deqs ~conf ~backtrace ~vars_env ~fun_env dl in
-          { deq with content = Loop (id, ei, ef, dl, opts) })
+          let start = bind_arith ~backtrace ~vars_env start in
+          let stop = bind_arith ~backtrace ~vars_env stop in
+          let body = bind_deqs ~conf ~backtrace ~vars_env ~fun_env body in
+          { deq with content = Loop { id; start; stop; body; opts } })
     body
 
 module Var_d = struct

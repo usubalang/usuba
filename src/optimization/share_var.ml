@@ -70,16 +70,17 @@ let rec get_last_used (env_var : typ Ident.Hashtbl.t)
       | Eqn (_, e, _) ->
           incr cpt;
           List.iter (update_used env_var env_it last_used) (get_used_vars e)
-      | Loop (x, ei, ef, dl, _) ->
-          let ei = eval_arith env_it ei in
-          let ef = eval_arith env_it ef in
+      | Loop { id; start; stop; body; _ } ->
+          let start = eval_arith env_it start in
+          let stop = eval_arith env_it stop in
           List.iter
             (fun i ->
-              Ident.Hashtbl.add env_it x i;
-              get_last_used env_var ~env_it ~cpt_start:!cpt last_used dl no_arr;
-              Ident.Hashtbl.remove env_it x)
-            (gen_list_bounds ei ef);
-          cpt := !cpt + List.length dl)
+              Ident.Hashtbl.add env_it id i;
+              get_last_used env_var ~env_it ~cpt_start:!cpt last_used body
+                no_arr;
+              Ident.Hashtbl.remove env_it id)
+            (gen_list_bounds start stop);
+          cpt := !cpt + List.length body)
     deqs
 
 let share_deqs (p_in : p) (p_out : p) (vars : p) (deqs : deq list)
@@ -153,9 +154,9 @@ let share_deqs (p_in : p) (p_out : p) (vars : p) (deqs : deq list)
                       lhs,
                     e,
                     sync )
-            | Loop (i, ei, ef, dl, opts) ->
-                let r = Loop (i, ei, ef, do_it ~cpt_start:!cpt dl, opts) in
-                cpt := !cpt + List.length dl;
+            | Loop t ->
+                let r = Loop { t with body = do_it ~cpt_start:!cpt t.body } in
+                cpt := !cpt + List.length t.body;
                 r);
         })
       deqs

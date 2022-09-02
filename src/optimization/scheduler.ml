@@ -393,10 +393,11 @@ module Low_pressure_sched = struct
   let rec inner_sched env_var (parallel_lvl : int) (deq : deq) : deq =
     match deq.content with
     | Eqn _ -> deq
-    | Loop (x, ei, ef, dl, opts) ->
+    | Loop t ->
         {
           deq with
-          content = Loop (x, ei, ef, schedule_deqs env_var parallel_lvl dl, opts);
+          content =
+            Loop { t with body = schedule_deqs env_var parallel_lvl t.body };
         }
 
   and schedule_deqs env_var (parallel_lvl : int) (deqs : deq list) : deq list =
