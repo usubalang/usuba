@@ -112,21 +112,8 @@ jobs:
           | sudo tee /etc/apt/sources.list.d/oneAPI.list
           sudo apt update
 
-      - name: Install ICC
-        run: sudo apt install -y intel-hpckit
-
-      - name: check ICC
-        run: |
-          /opt/intel/oneapi/compiler/latest/linux/bin/intel64/icc --version
-
-      - name: path with icc
-        run: echo "/opt/intel/oneapi/compiler/latest/linux/bin/intel64/" >> $GITHUB_PATH
-
       - name: path
         run: echo $GITHUB_PATH
-
-      - name: Check icc in path
-        run: icc --version
 
       - name: Temporary ulimit
         run: ulimit -s unlimited
