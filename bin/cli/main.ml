@@ -83,16 +83,6 @@ let compile file conf =
       Printf.fprintf out "%s" c_prog_str;
       close_out out
 
-let run_tests () : unit = ()
-(* Do nothing for now *)
-(* Test_constant_folding.test (); *)
-(* Test_CSE.test (); *)
-(* Test_copy_propagation.test (); *)
-(* Test_remove_dead_code.test (); *)
-(* Test_pass_runner.test (); *)
-(* Test_monomorphize.test (); *)
-(* Printf.printf "All tests ran.\n" *)
-
 let main () =
   Printexc.record_backtrace true;
 
@@ -300,7 +290,6 @@ let main () =
         "Generates more compact code (for bitslicing only)" );
       ("-parse-only", Arg.Set parse_only, "Only parse files");
       ("-type-only", Arg.Set type_only, "Only parse and type files");
-      ("-tests", Arg.Unit (fun () -> run_tests ()), "Run tests");
     ]
   in
   let usage_msg = "Usage: usuba [switches] [files]" in

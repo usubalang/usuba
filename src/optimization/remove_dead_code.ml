@@ -124,3 +124,70 @@ let remove_dead_code_def (def : def) : def =
 
 let run _ prog _ = { nodes = List.map remove_dead_code_def prog.nodes }
 let as_pass = (run, "Remove_dead_code", 0)
+
+let%test_module "Remove Dead Code" =
+  (module struct
+    open Parser_api
+
+    let ( =! ) dl1 dl2 = equal_def dl1 dl2
+
+    let%test "simple" =
+      let def =
+        parse_def
+          "node f(x,y:u1) returns (z:u1)\n\
+          \   vars a,b,c,d:u1\n\
+           let\n\
+          \    a = x ^ y;\n\
+          \    b = 1;\n\
+          \    c = a ^ b;\n\
+          \    z = a;\n\
+           tel"
+      in
+      let expected =
+        parse_def
+          "node f(x,y:u1) returns (z:u1)\n\
+          \   vars a:u1\n\
+           let\n\
+          \    a = x ^ y;\n\
+          \    z = a;\n\
+           tel"
+      in
+      remove_dead_code_def def =! expected
+
+    let%test "loop_feedback" =
+      let def =
+        parse_def
+          "node f(x,y:u1[2]) returns (z:u1[2])\n\
+          \   vars zt:u1[2],t1:u1[3],t2:u1[3],u:u1\n\
+           let\n\
+          \    t1[0] = y[0];\n\
+          \    t2[0] = y[1];\n\
+          \    u = 1;\n\
+          \    forall i in [0,1] {\n\
+          \      zt[i] = t1[i] ^ x[i];\n\
+          \      t1[i+1] = t1[i] ^ t2[i];\n\
+          \      t2[i+1] = u ^ 1\n\
+          \    }\n\
+          \    z[0] = zt[1];\n\
+          \    z[1] = zt[2];\n\
+          \ tel"
+      in
+      let expected =
+        parse_def
+          "node f(x,y:u1[2]) returns (z:u1[2])\n\
+          \   vars zt:u1[2],t1:u1[3],t2:u1[3],u:u1\n\
+           let\n\
+          \    t1[0]  = y[0];\n\
+          \    t2[0] = y[1];\n\
+          \    u = 1;\n\
+          \    forall i in [0,1] {\n\
+          \      zt[i] = t1[i] ^ x[i];\n\
+          \      t1[i+1] = t1[i] ^ t2[i];\n\
+          \      t2[i+1] = u ^ 1\n\
+          \    }\n\
+          \    z[0] = zt[1];\n\
+          \    z[1] = zt[2];\n\
+          \ tel"
+      in
+      remove_dead_code_def def =! expected
+  end)

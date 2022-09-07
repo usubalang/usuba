@@ -131,3 +131,34 @@ let run (runner : pass_runner) prog conf =
   runner#run_module Norm_tuples.as_pass prog'
 
 let as_pass = (run, "CSE", 1)
+
+let%test_module "CSE" =
+  (module struct
+    open Parser_api
+
+    let ( =! ) dl1 dl2 = List.equal equal_deq dl1 dl2
+
+    let%test "simple" =
+      let deqs = List.map parse_deq [ "x = a + b"; "y = a + b"; "z = a + b" ] in
+      let deqs' = cse_deqs (Usuba_AST.ExprHashtbl.create 10) deqs in
+      deqs' =! List.map parse_deq [ "x = a + b"; "y = x"; "z = x" ]
+
+    (* Make sure that consts aren't getting replaced by variables *)
+    let%test "const" =
+      let deqs = List.map parse_deq [ "x = 0"; "y = 0" ] in
+      let deqs' = cse_deqs (Usuba_AST.ExprHashtbl.create 10) deqs in
+      assert (not (deqs' =! List.map parse_deq [ "x = 0"; "y = x" ]));
+      deqs' =! List.map parse_deq [ "x = 0"; "y = 0" ]
+
+    let%test "loop" =
+      (* Making sure loops aren't uncorrectly optimized *)
+      let deqs =
+        List.map parse_deq
+          [
+            "forall i in [1,2] { x[i] = y[i] ^ z[i] }";
+            "forall i in [3,4] { x[i] = y[i] ^ z[i] }";
+          ]
+      in
+      let deqs' = cse_deqs (Usuba_AST.ExprHashtbl.create 10) deqs in
+      deqs' =! deqs
+  end)
