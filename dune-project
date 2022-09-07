@@ -51,6 +51,7 @@ TODO")
   (odoc :with-doc)
   (ocamlformat (= 0.23.0))
   (alcotest :with-test)
+  (ppx_inline_test :with-test)
  )
 )
 

@@ -60,6 +60,14 @@
 (******************************** Entry Point *********************************)
 %start<Usuba_AST.def_or_inc list> prog
 
+(********************************** Testing ***********************************)
+
+%start<Usuba_AST.arith_expr> isolated_arith_expr
+%start<Usuba_AST.var> isolated_var
+%start<Usuba_AST.expr> isolated_expr
+%start<Usuba_AST.deq> isolated_deq
+%start<Usuba_AST.def> isolated_def
+
 %%
 
 prog:
@@ -95,27 +103,30 @@ prog:
       | Some t -> t }
   | t = TYPE { t }
 
-%public arith_exp:
-  | LPAREN e = arith_exp RPAREN { e }
+arith_expr:
+  | LPAREN e = arith_expr RPAREN { e }
   | n = INT { Const_e n }
   | id = ident  { Var_e id }
-  | e1 = arith_exp op = arith_op e2 = arith_exp { Op_e (op, e1, e2) }
+  | e1 = arith_expr op = arith_op e2 = arith_expr { Op_e (op, e1, e2) }
 
-%public var:
+isolated_arith_expr: ae = arith_expr EOF { ae }
+
+var:
   | id = ident
     { Var id }
-  | v = var LBRACKET ae = arith_exp RBRACKET
+  | v = var LBRACKET ae = arith_expr RBRACKET
     { Index (v, ae) }
-  | v = var LBRACKET aei = arith_exp RANGE aef = arith_exp RBRACKET
+  | v = var LBRACKET aei = arith_expr RANGE aef = arith_expr RBRACKET
     { Range (v, aei, aef) }
-  | v = var LBRACKET ae = arith_exp COMMA ae_list = separated_nonempty_list(COMMA, arith_exp) RBRACKET
+  | v = var LBRACKET ae = arith_expr COMMA ae_list = separated_nonempty_list(COMMA, arith_expr) RBRACKET
     { Slice (v, ae :: ae_list) }
 
+isolated_var: v = var EOF { v }
 
 typ_expl: COLON t = typ { t }
 
-%public exp:
-  | LPAREN e = exp RPAREN
+expr:
+  | LPAREN e = expr RPAREN
     { e }
   | x = INT
     { Const(x, None) }
@@ -124,47 +135,49 @@ typ_expl: COLON t = typ { t }
   | x = var
     { ExpVar x }
     (* note that a tuple has at least 2 elements (enforced by the following rule) *)
-  | LPAREN e = exp COMMA exp_list = separated_nonempty_list(COMMA, exp) RPAREN
+  | LPAREN e = expr COMMA exp_list = separated_nonempty_list(COMMA, expr) RPAREN
     { Tuple (e :: exp_list) }
   | SHUFFLE LPAREN v=var COMMA LBRACKET
       int_list = separated_nonempty_list(COMMA, INT) RBRACKET RPAREN
     { Shuffle(v, int_list) }
   | v = var LCURLY int_list = separated_nonempty_list(COMMA, INT) RCURLY
     { Shuffle(v, int_list) }
-  | e1 = exp op = log_op e2 = exp
+  | e1 = expr op = log_op e2 = expr
     { Log(op , e1, e2) }
-  | e1 = exp op = arith_op e2 = exp
+  | e1 = expr op = arith_op e2 = expr
     { Arith(op , e1, e2) }
-  | e1 = exp op = shift_op e2 = arith_exp
+  | e1 = expr op = shift_op e2 = arith_expr
     { Shift(op , e1, e2) }
-  | TILDE e = exp
+  | TILDE e = expr
     { Not e }
-  | BANG e = exp
+  | BANG e = expr
     { Not e }
-  | BITMASK LPAREN e = exp COMMA ae = arith_exp RPAREN
+  | BITMASK LPAREN e = expr COMMA ae = arith_expr RPAREN
     { Bitmask(e, ae) }
-  | PACK LPAREN e1 = exp COMMA e2 = exp RPAREN t = option(typ_expl)
+  | PACK LPAREN e1 = expr COMMA e2 = expr RPAREN t = option(typ_expl)
     { Pack(e1, e2, t) }
   | f = ident LPAREN args = explist RPAREN
     { Fun(f, args) }
-  | f = ident LT ae = arith_exp GT LPAREN args = explist RPAREN
+  | f = ident LT ae = arith_expr GT LPAREN args = explist RPAREN
     { Fun_v(f, ae , args) }
 
-explist: l = separated_nonempty_list(COMMA, exp) { l }
+isolated_expr: e = expr EOF { e }
+
+explist: l = separated_nonempty_list(COMMA, expr) { l }
 
 pat:
   | p=var                      { [ p ] }
   | LPAREN l=separated_nonempty_list(COMMA,var) RPAREN   { l }
 
 _norec_deq:
-  | p = pat imperative = boption(COLON) EQUAL e = exp
+  | p = pat imperative = boption(COLON) EQUAL e = expr
     { Eqn( p, e, imperative ) }
-  | p = pat op = log_op imperative = boption(COLON) EQUAL e=exp
+  | p = pat op = log_op imperative = boption(COLON) EQUAL e = expr
     { Eqn( p, Log(op, left_to_right p, e), imperative) }
-  | p = pat op = arith_op imperative = boption(COLON) EQUAL e=exp
+  | p = pat op = arith_op imperative = boption(COLON) EQUAL e = expr
     { Eqn( p, Arith(op, left_to_right p, e), imperative) }
 
-%public norec_deq:
+norec_deq:
   | d = _norec_deq { { content = d; orig = [] } }
 
 opt_stmt:
@@ -172,9 +185,9 @@ opt_stmt:
    | NOUNROLL  { No_unroll }
    | PIPELINED { Pipelined }
 
-%public deq_forall:
- | opts = list(opt_stmt) FORALL id = ident IN LBRACKET start = arith_exp
-   COMMA stop = arith_exp RBRACKET LCURLY body = deqs RCURLY
+deq_forall:
+ | opts = list(opt_stmt) FORALL id = ident IN LBRACKET start = arith_expr
+   COMMA stop = arith_expr RBRACKET LCURLY body = deqs RCURLY
     { { content = Loop {id; start; stop; body; opts}; orig = [] } }
 
 (* Doesn't use the |deq| rule because it would make semicolons mandatory after
@@ -184,6 +197,12 @@ deqs:
   | d = norec_deq  nonempty_list(SEMICOLON) ds=deqs { d :: ds }
   | d = deq_forall list(SEMICOLON)  { [ d ] }
   | d = norec_deq  list(SEMICOLON)  { [ d ] }
+
+deq:
+  | d = deq_forall { d }
+  | d = norec_deq  { d }
+
+isolated_deq: d = deq EOF { d }
 
 opt_var_d:
   | CONST    { Pconst }
@@ -198,7 +217,7 @@ p:
   | var_list = separated_list(COMMA, var_d) { List.flatten var_list }
 
 typ:
-  | t = typ_or_typ_ident sizes = list(delimited(LBRACKET, arith_exp, RBRACKET))
+  | t = typ_or_typ_ident sizes = list(delimited(LBRACKET, arith_expr, RBRACKET))
     {
       match sizes with
       | [] -> t
@@ -222,7 +241,7 @@ is_perm:
   | PERM { true }
   | TABLE { false }
 
-%public def:
+def:
   (* A node *)
   | opt = list(opt_def) NODE is_array = boption(ARRAY) id = ident
     LPAREN p_in = p RPAREN
@@ -260,6 +279,8 @@ is_perm:
                     (if is_perm then "perm" else "table")))
       in
       { id; p_in; p_out; opt; node } }
+
+isolated_def: d = def EOF { d }
 
 /* Permutations or tables body */
 perm_or_table_body:

@@ -792,3 +792,22 @@ let run _ (prog : prog) (conf : Config.config) : prog =
   }
 
 let as_pass = (run, "Monomorphize", 0)
+
+let%test_module "Monomorphize" =
+  (module struct
+    open Parser_api
+
+    let%test "specialize_shuffle_vslice" =
+      let v = Ident.create_free "v" in
+      let e = Shuffle (Var v, [ 0; 3; 1; 2 ]) in
+      let env = Ident.Hashtbl.create 1 in
+      Ident.Hashtbl.add env v (Uint (Vslice, Mint 4, 1));
+      let expected =
+        parse_expr
+          "(v & 8:u<V>4) ^ ((v << 2) & 4:u<V>4) ^ ((v >> 1) & 2:u<V>4) ^ ((v \
+           >> 1) & 1:u<V>4)"
+      in
+      equal_expr
+        (Vslice.specialize_expr (Hashtbl.create 1) (Hashtbl.create 1) env e)
+        expected
+  end)

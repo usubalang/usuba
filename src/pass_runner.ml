@@ -204,3 +204,40 @@ class pass_runner (def_conf : Config.config) =
       (* Note that the module called (|action|) is supposed to empty self#nexts *)
       action self prog conf
   end
+
+let%test_module "Pass Runner" =
+  (module struct
+    open Parser_api
+
+    let%test "simple" =
+      let prog = parse_prog "node f(x:b1) returns (y:b1) let y = x tel" in
+      let expected =
+        parse_prog "node f_a_b(x:b1) returns (y:b1) let y = x tel"
+      in
+      let runner = new pass_runner Utils.default_conf in
+      let result =
+        runner#run_modules
+          [
+            ( (fun _ p _ ->
+                {
+                  nodes =
+                    List.map
+                      (fun n -> { n with id = Ident.fresh_suffixed n.id "_a" })
+                      p.nodes;
+                }),
+              "a",
+              0 );
+            ( (fun _ p _ ->
+                {
+                  nodes =
+                    List.map
+                      (fun n -> { n with id = Ident.fresh_suffixed n.id "_b" })
+                      p.nodes;
+                }),
+              "b",
+              0 );
+          ]
+          prog
+      in
+      equal_prog result expected
+  end)

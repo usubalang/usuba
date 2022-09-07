@@ -119,17 +119,12 @@ let parse_prog (str : string) : Usuba_AST.prog =
     nodes = resolve_includes [ "" ] (parse_generic Parser.Incremental.prog str);
   }
 
-let parse_arith_expr (_str : string) : Usuba_AST.arith_expr = raise Exit
-(* parse_generic Parser.Incremental.test_arith_exp_a str *)
+(* Used for inline testing *)
 
-let parse_var (_str : string) : Usuba_AST.var = raise Exit
-(* parse_generic Parser.Incremental.test_var_a str *)
+let parse_arith_expr str =
+  parse_generic Parser.Incremental.isolated_arith_expr str
 
-let parse_expr (_str : string) : Usuba_AST.expr = raise Exit
-(* parse_generic Parser.Incremental.test_exp_a str *)
-
-let parse_deq (_str : string) : Usuba_AST.deq = raise Exit
-(* parse_generic Parser.Incremental.test_deq_a str *)
-
-let parse_def (_str : string) : Usuba_AST.def = raise Exit
-(* parse_generic Parser.Incremental.test_def_a str *)
+let parse_var str = parse_generic Parser.Incremental.isolated_var str
+let parse_expr str = parse_generic Parser.Incremental.isolated_expr str
+let parse_deq str = parse_generic Parser.Incremental.isolated_deq str
+let parse_def str = parse_generic Parser.Incremental.isolated_def str

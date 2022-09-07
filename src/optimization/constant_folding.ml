@@ -216,3 +216,324 @@ let fold_def (def : def) : def =
 
 let run _ prog _ : prog = { nodes = List.map fold_def prog.nodes }
 let as_pass = (run, "Constant_folding", 0)
+
+let%test_module "Constant Folding" =
+  (module struct
+    open Parser_api
+
+    let ( =! ) e1 e2 = equal_expr e1 e2
+
+    (* Initialisation of the variables environment *)
+    let env_var = Ident.Hashtbl.create 10
+
+    let () =
+      Ident.Hashtbl.add env_var (Ident.create_unbound "x")
+        (Uint (Vslice, Mint 8, 1));
+      Ident.Hashtbl.add env_var (Ident.create_unbound "y")
+        (Uint (Vslice, Mint 8, 1))
+
+    (*                            Arithmetics                       *)
+    (* Multiplication *)
+    let%test "test_vslice_arith_mul1" =
+      fold_expr env_var (parse_expr "x * y") =! parse_expr "x * y"
+
+    let%test "test_vslice_arith_mul2" =
+      fold_expr env_var (parse_expr "x * 1:u<V>8") =! parse_expr "x"
+
+    let%test "test_vslice_arith_mul3" =
+      fold_expr env_var (parse_expr "1:u<V>8 * x") =! parse_expr "x"
+
+    let%test "test_vslice_arith_mul4" =
+      fold_expr env_var (parse_expr "x * 0xff:u<V>8")
+      =! parse_expr "x * 0xff:u<V>8"
+
+    let%test "test_vslice_arith_mul5" =
+      fold_expr env_var (parse_expr "0xff:u<V>8 * x")
+      =! parse_expr "0xff:u<V>8 * x"
+
+    let%test "test_vslice_arith_mul6" =
+      fold_expr env_var (parse_expr "x * 0:u<V>8") =! parse_expr "0:u<V>8"
+
+    let%test "test_vslice_arith_mul7" =
+      fold_expr env_var (parse_expr "0:u<V>8 * x") =! parse_expr "0:u<V>8"
+
+    let%test "test_vslice_arith_mul8" =
+      fold_expr env_var (parse_expr "2:u<V>8 * 3:u<V>8") =! parse_expr "6:u<V>8"
+
+    (* Addition *)
+    let%test "test_vslice_arith_add1" =
+      fold_expr env_var (parse_expr "x + y") =! parse_expr "x + y"
+
+    let%test "test_vslice_arith_add2" =
+      fold_expr env_var (parse_expr "x + 0:u<V>8") =! parse_expr "x"
+
+    let%test "test_vslice_arith_add3" =
+      fold_expr env_var (parse_expr "0:u<V>8 + x") =! parse_expr "x"
+
+    let%test "test_vslice_arith_add4" =
+      fold_expr env_var (parse_expr "0:u<V>8 + 5:u<V>8") =! parse_expr "5:u<V>8"
+
+    (* Subtraction *)
+    let%test "test_vslice_arith_sub1" =
+      fold_expr env_var (parse_expr "x - y") =! parse_expr "x - y"
+
+    let%test "test_vslice_arith_sub2" =
+      fold_expr env_var (parse_expr "x - 0:u<V>8") =! parse_expr "x"
+
+    let%test "test_vslice_arith_sub3" =
+      fold_expr env_var (parse_expr "0:u<V>8 - x") =! parse_expr "0:u<V>8 - x"
+
+    let%test "test_vslice_arith_sub4" =
+      fold_expr env_var (parse_expr "11:u<V>8 - 5:u<V>8")
+      =! parse_expr "6:u<V>8"
+
+    (* Division *)
+    let%test "test_vslice_arith_div1" =
+      fold_expr env_var (parse_expr "x / y") =! parse_expr "x / y"
+
+    let%test "test_vslice_arith_div2" =
+      fold_expr env_var (parse_expr "x / 1:u<V>8") =! parse_expr "x"
+
+    let%test "test_vslice_arith_div3" =
+      fold_expr env_var (parse_expr "0:u<V>8 / x") =! parse_expr "0:u<V>8"
+
+    let%test "test_vslice_arith_div4" =
+      fold_expr env_var (parse_expr "11:u<V>8 / 5:u<V>8")
+      =! parse_expr "2:u<V>8"
+
+    (* Modulo *)
+    let%test "test_vslice_arith_mod1" =
+      fold_expr env_var (parse_expr "x % y") =! parse_expr "x % y"
+
+    let%test "test_vslice_arith_mod2" =
+      fold_expr env_var (parse_expr "x % 1:u<V>8") =! parse_expr "0:u<V>8"
+
+    let%test "test_vslice_arith_mod3" =
+      fold_expr env_var (parse_expr "0:u<V>8 / x") =! parse_expr "0:u<V>8"
+
+    let%test "test_vslice_arith_mod4" =
+      fold_expr env_var (parse_expr "11:u<V>8 % 5:u<V>8")
+      =! parse_expr "1:u<V>8"
+
+    (*                              Logical                         *)
+    (* And *)
+    let%test "test_vslice_log_and1" =
+      fold_expr env_var (parse_expr "x & y") =! parse_expr "x & y"
+
+    let%test "test_vslice_log_and2" =
+      fold_expr env_var (parse_expr "x & 0xff:u<V>8") =! parse_expr "x"
+
+    let%test "test_vslice_log_and3" =
+      fold_expr env_var (parse_expr "0xff:u<V>8 & x") =! parse_expr "x"
+
+    let%test "test_vslice_log_and4" =
+      fold_expr env_var (parse_expr "x & 0:u<V>8") =! parse_expr "0:u<V>8"
+
+    let%test "test_vslice_log_and5" =
+      fold_expr env_var (parse_expr "0:u<V>8 & x") =! parse_expr "0:u<V>8"
+
+    let%test "test_vslice_log_and6" =
+      fold_expr env_var (parse_expr "x & 1:u<V>8") =! parse_expr "x & 1:u<V>8"
+
+    let%test "test_vslice_log_and7" =
+      fold_expr env_var (parse_expr "1:u<V>8 & x") =! parse_expr "1:u<V>8 & x"
+
+    let%test "test_vslice_log_and8" =
+      fold_expr env_var (parse_expr "1:u<V>8 & 0x10:u<V>8")
+      =! parse_expr "0:u<V>8"
+
+    let%test "test_vslice_log_and9" =
+      fold_expr env_var (parse_expr "1:u<V>8 & 0x11:u<V>8")
+      =! parse_expr "1:u<V>8"
+
+    let%test "test_vslice_log_and10" =
+      fold_expr env_var (parse_expr "x & x") =! parse_expr "x"
+
+    (* Or *)
+    let%test "test_vslice_log_or1" =
+      fold_expr env_var (parse_expr "x | y") =! parse_expr "x | y"
+
+    let%test "test_vslice_log_or2" =
+      fold_expr env_var (parse_expr "x | 0xff:u<V>8") =! parse_expr "0xff:u<V>8"
+
+    let%test "test_vslice_log_or3" =
+      fold_expr env_var (parse_expr "0xff:u<V>8 | x") =! parse_expr "0xff:u<V>8"
+
+    let%test "test_vslice_log_or4" =
+      fold_expr env_var (parse_expr "x | 0:u<V>8") =! parse_expr "x"
+
+    let%test "test_vslice_log_or5" =
+      fold_expr env_var (parse_expr "0:u<V>8 | x") =! parse_expr "x"
+
+    let%test "test_vslice_log_or6" =
+      fold_expr env_var (parse_expr "x | 1:u<V>8") =! parse_expr "x | 1:u<V>8"
+
+    let%test "test_vslice_log_or7" =
+      fold_expr env_var (parse_expr "1:u<V>8 | x") =! parse_expr "1:u<V>8 | x"
+
+    let%test "test_vslice_log_or8" =
+      fold_expr env_var (parse_expr "1:u<V>8 | 0x10:u<V>8")
+      =! parse_expr "0x11:u<V>8"
+
+    let%test "test_vslice_log_or9" =
+      fold_expr env_var (parse_expr "1:u<V>8 | 0x11:u<V>8")
+      =! parse_expr "0x11:u<V>8"
+
+    let%test "test_vslice_log_or10" =
+      fold_expr env_var (parse_expr "x | x") =! parse_expr "x"
+
+    (* Xor *)
+    let%test "test_vslice_log_xor1" =
+      fold_expr env_var (parse_expr "x ^ y") =! parse_expr "x ^ y"
+
+    let%test "test_vslice_log_xor2" =
+      fold_expr env_var (parse_expr "x ^ 0xff:u<V>8") =! parse_expr "~x"
+
+    let%test "test_vslice_log_xor3" =
+      fold_expr env_var (parse_expr "0xff:u<V>8 ^ x") =! parse_expr "~x"
+
+    let%test "test_vslice_log_xor4" =
+      fold_expr env_var (parse_expr "x ^ 0:u<V>8") =! parse_expr "x"
+
+    let%test "test_vslice_log_xor5" =
+      fold_expr env_var (parse_expr "0:u<V>8 ^ x") =! parse_expr "x"
+
+    let%test "test_vslice_log_xor6" =
+      fold_expr env_var (parse_expr "x ^ 1:u<V>8") =! parse_expr "x ^ 1:u<V>8"
+
+    let%test "test_vslice_log_xor7" =
+      fold_expr env_var (parse_expr "1:u<V>8 ^ x") =! parse_expr "1:u<V>8 ^ x"
+
+    let%test "test_vslice_log_xor8" =
+      fold_expr env_var (parse_expr "1:u<V>8 ^ 0x10:u<V>8")
+      =! parse_expr "0x11:u<V>8"
+
+    let%test "test_vslice_log_xor9" =
+      fold_expr env_var (parse_expr "1:u<V>8 ^ 0x11:u<V>8")
+      =! parse_expr "0x10:u<V>8"
+
+    let%test "test_vslice_log_xor10" =
+      fold_expr env_var (parse_expr "x ^ x") =! parse_expr "0:u<V>8"
+
+    (* Not *)
+    let%test "test_vslice_log_not1" =
+      fold_expr env_var (parse_expr "~(0xff:u<V>8)") =! parse_expr "0:u<V>8"
+
+    let%test "test_vslice_log_not2" =
+      fold_expr env_var (parse_expr "~(0x0:u<V>8)") =! parse_expr "0xff:u<V>8"
+
+    let%test "test_vslice_log_not3" =
+      fold_expr env_var (parse_expr "~x") =! parse_expr "~x"
+
+    (* Skipping Andn tests because for now, I don't think Usuba ever
+       generates Andn instructions... *)
+
+    (* Setting up env *)
+    let env_var = Ident.Hashtbl.create 10
+
+    let () =
+      Ident.Hashtbl.add env_var (Ident.create_unbound "x")
+        (Uint (Bslice, Mint 1, 1));
+      Ident.Hashtbl.add env_var (Ident.create_unbound "y")
+        (Uint (Bslice, Mint 1, 1))
+
+    (*                              Logical                         *)
+    (* And *)
+    let%test "test_bitslice_log_and1" =
+      fold_expr env_var (parse_expr "x & x") =! parse_expr "x"
+
+    let%test "test_bitslice_log_and2" =
+      fold_expr env_var (parse_expr "x & y") =! parse_expr "x & y"
+
+    let%test "test_bitslice_log_and3" =
+      fold_expr env_var (parse_expr "x & 1:u<B>1") =! parse_expr "x"
+
+    let%test "test_bitslice_log_and4" =
+      fold_expr env_var (parse_expr "0x1:u<B>1 & x") =! parse_expr "x"
+
+    let%test "test_bitslice_log_and5" =
+      fold_expr env_var (parse_expr "x & 0:u<B>1") =! parse_expr "0:u<B>1"
+
+    let%test "test_bitslice_log_and6" =
+      fold_expr env_var (parse_expr "0:u<B>1 & x") =! parse_expr "0:u<B>1"
+
+    let%test "test_bitslice_log_and7" =
+      fold_expr env_var (parse_expr "1:u<B>1 & 0x0:u<B>1")
+      =! parse_expr "0:u<B>1"
+
+    let%test "test_bitslice_log_and8" =
+      fold_expr env_var (parse_expr "1:u<B>1 & 0x1:u<B>1")
+      =! parse_expr "1:u<B>1"
+
+    (* Or *)
+    let%test "test_bitslice_log_or1" =
+      fold_expr env_var (parse_expr "x | y") =! parse_expr "x | y"
+
+    let%test "test_bitslice_log_or2" =
+      fold_expr env_var (parse_expr "x | 1:u<B>1") =! parse_expr "1:u<B>1"
+
+    let%test "test_bitslice_log_or3" =
+      fold_expr env_var (parse_expr "0x1:u<B>1 | x") =! parse_expr "1:u<B>1"
+
+    let%test "test_bitslice_log_or4" =
+      fold_expr env_var (parse_expr "x | 0:u<B>1") =! parse_expr "x"
+
+    let%test "test_bitslice_log_or5" =
+      fold_expr env_var (parse_expr "0:u<B>1 | x") =! parse_expr "x"
+
+    let%test "test_bitslice_log_or6" =
+      fold_expr env_var (parse_expr "1:u<B>1 | 0x0:u<B>1")
+      =! parse_expr "1:u<B>1"
+
+    let%test "test_bitslice_log_or7" =
+      fold_expr env_var (parse_expr "1:u<B>1 | 0x1:u<B>1")
+      =! parse_expr "1:u<B>1"
+
+    let%test "test_bitslice_log_or8" =
+      fold_expr env_var (parse_expr "0:u<B>1 | 0x0:u<B>1")
+      =! parse_expr "0:u<B>1"
+
+    let%test "test_bitslice_log_or9" =
+      fold_expr env_var (parse_expr "x | x") =! parse_expr "x"
+
+    (* Xor *)
+    let%test "test_bitslice_log_xor1" =
+      fold_expr env_var (parse_expr "x ^ y") =! parse_expr "x ^ y"
+
+    let%test "test_bitslice_log_xor2" =
+      fold_expr env_var (parse_expr "x ^ 1:u<B>1") =! parse_expr "~x"
+
+    let%test "test_bitslice_log_xor3" =
+      fold_expr env_var (parse_expr "0x1:u<B>1 ^ x") =! parse_expr "~x"
+
+    let%test "test_bitslice_log_xor4" =
+      fold_expr env_var (parse_expr "x ^ 0:u<B>1") =! parse_expr "x"
+
+    let%test "test_bitslice_log_xor5" =
+      fold_expr env_var (parse_expr "0:u<B>1 ^ x") =! parse_expr "x"
+
+    let%test "test_bitslice_log_xor6" =
+      fold_expr env_var (parse_expr "1:u<B>1 ^ 0x0:u<B>1")
+      =! parse_expr "1:u<B>1"
+
+    let%test "test_bitslice_log_xor7" =
+      fold_expr env_var (parse_expr "1:u<B>1 ^ 0x1:u<B>1")
+      =! parse_expr "0:u<B>1"
+
+    let%test "test_bitslice_log_xor8" =
+      fold_expr env_var (parse_expr "0:u<B>1 ^ 0x0:u<B>1")
+      =! parse_expr "0:u<B>1"
+
+    let%test "test_bitslice_log_xor9" =
+      fold_expr env_var (parse_expr "x ^ x") =! parse_expr "0:u<B>1"
+
+    (* Not *)
+    let%test "test_bitslice_log_not1" =
+      fold_expr env_var (parse_expr "~(1:u<B>1)") =! parse_expr "0:u<B>1"
+
+    let%test "test_bitslice_log_not2" =
+      fold_expr env_var (parse_expr "~(0:u<B>1)") =! parse_expr "1:u<B>1"
+
+    let%test "test_bitslice_log_not3" =
+      fold_expr env_var (parse_expr "~x") =! parse_expr "~x"
+  end)

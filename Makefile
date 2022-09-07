@@ -25,7 +25,6 @@ clean:
 
 test: all
 	ulimit -s unlimited
-	./usubac -tests
 	@echo $(SAMPLES_DIR)
 	dune build @runtest
 	./tests/test_parsing.sh --path $(SAMPLES_DIR)
