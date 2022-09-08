@@ -90,9 +90,10 @@ let (=) vs e =
 
 let mk_deq_i = List.map (fun eqs -> { content = eqs; orig = [] })
 
-let forall ?(opts = []) i ki ke eqs =
-  let x = Ident.create_unbound i in
-  Loop (x, ki, ke, mk_deq_i (eqs (Var_e x)), opts)
+let forall ?(opts = []) i start stop eqs =
+  let id = Ident.create_unbound i in
+  let body = mk_deq_i (eqs (Var_e id)) in
+  Loop { id; start; stop; body; opts }
 
 let mk_var_d s typ =
   { vd_id = Ident.create_unbound s;
