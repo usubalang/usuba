@@ -169,24 +169,67 @@ let eof = []
 
 module Examples = struct
   let [@warning "-8"] [f] =
-    node "foo"
-      ["a", Nat; "b", Nat; "c", Nat]
-      ["x", Nat; "y", Nat]
-      ~locals:["l1", Nat]
-      (fun [a; b; c] [x; y] [l1] ->
-        [[y] = x + a;
-         [b; c] = b * y;
-         [l1] = x * a]) (fun _ -> [])
+    main 
+      (node "foo"
+         ["a", Nat; "b", Nat; "c", Nat]
+         ["x", Nat; "y", Nat]
+         ~locals:["l1", Nat]
+         (fun [a; b; c] [x; y] [l1] ->
+           [[y] = x + a;
+            [b; c] = b * y;
+            [l1] = x * a]))
 
   let%test "foo_test" = 
-    let res = Format.sprintf "%a" pp_def f in
-    let expect = "" in
-    Format.fprintf "%s\n" res;
-    res = expect
+    let res = Format.asprintf "%a" pp_def f in
+    let expect = {|{ id = (Ident.create_unbound "foo");
+  p_in =
+  [{ vd_id = (Ident.create_unbound "a"); vd_typ = Nat; vd_opts = [];
+     vd_orig = [] };
+    { vd_id = (Ident.create_unbound "b"); vd_typ = Nat; vd_opts = [];
+      vd_orig = [] };
+    { vd_id = (Ident.create_unbound "c"); vd_typ = Nat; vd_opts = [];
+      vd_orig = [] }
+    ];
+  p_out =
+  [{ vd_id = (Ident.create_unbound "x"); vd_typ = Nat; vd_opts = [];
+     vd_orig = [] };
+    { vd_id = (Ident.create_unbound "y"); vd_typ = Nat; vd_opts = [];
+      vd_orig = [] }
+    ];
+  opt = [];
+  node =
+  (Single (
+     [{ vd_id = (Ident.create_unbound "l1"); vd_typ = Nat; vd_opts = [];
+        vd_orig = [] }
+       ],
+     [{ content =
+        (Eqn ([(Var (Ident.create_unbound "y"))],
+           (Arith (Add, (ExpVar (Var (Ident.create_unbound "x"))),
+              (ExpVar (Var (Ident.create_unbound "a"))))),
+           false));
+        orig = [] };
+       { content =
+         (Eqn (
+            [(Var (Ident.create_unbound "b"));
+              (Var (Ident.create_unbound "c"))],
+            (Arith (Mul, (ExpVar (Var (Ident.create_unbound "b"))),
+               (ExpVar (Var (Ident.create_unbound "y"))))),
+            false));
+         orig = [] };
+       { content =
+         (Eqn ([(Var (Ident.create_unbound "l1"))],
+            (Arith (Mul, (ExpVar (Var (Ident.create_unbound "x"))),
+               (ExpVar (Var (Ident.create_unbound "a"))))),
+            false));
+         orig = [] }
+       ]
+     ))
+  }|} in
+    Stdlib.(res = expect)
 
   let [@warning "-8"] aes =
     let* _SubBytes_single =
-      table "SubBytes_single" ("input", v 8) ("output", v 8)
+      table ~def_opt:[Is_table] "SubBytes_single" ("input", v 8) ("output", v 8)
         [99; 124; 119; 123; 242; 107; 111; 197; 48; 1; 103; 43; 254; 215; 171; 118;
          202; 130; 201; 125; 250; 89; 71; 240; 173; 212; 162; 175; 156; 164; 114; 192;
          183; 253; 147; 38; 54; 63; 247; 204; 52; 165; 229; 241; 113; 216; 49; 21;
@@ -240,7 +283,7 @@ module Examples = struct
           let inp3 = proj (S.c 3) inp in
           [[out0] = times2 inp0 lxor times3 inp1 lxor inp2 lxor inp3;
            [out1] = inp0 lxor times2 inp1 lxor times3 inp2 lxor inp3;
-           [out2] = inp0 lxor inp1 lxor times2 inp2 lxor times2 inp3;
+           [out2] = inp0 lxor inp1 lxor times2 inp2 lxor times3 inp3;
            [out3] = times3 inp0 lxor inp1 lxor inp2 lxor times2 inp3]) in
 
     let* _MixColumn =
@@ -254,7 +297,7 @@ module Examples = struct
         (fun [i; key] [r] [] ->
           [[r] = i lxor key]) in
 
-    main (node "AES" ["plain", b 128; "key", array (b 128) (S.c 11)] ["cipher", (b 128)]
+    main (node "AES" ["plain", b 128; "key", array (b 128) (S.c 11)] ["cipher", array (b 1) (S.c 128)]
             ~locals:["tmp", array (b 128) (S.c 10)]
             (fun [plain; key] [cipher] [tmp] ->
               let _AddRoundKey plain key = _AddRoundKey [plain; key] in
@@ -265,5 +308,10 @@ module Examples = struct
                forall "i" (S.c 1) (S.c 9) (fun i ->
                    [[proj i tmp] = _AddRoundKey (_MixColumn(_ShiftRows(_SubBytes(proj S.(i - c 1) tmp)))) (proj i key)]);
                [cipher] = _AddRoundKey (_ShiftRows (_SubBytes (proj (S.c 9) tmp))) (proj (S.c 10) key)]))
+
+    let%test "internal_aes" =
+      let res = { nodes = aes } in
+      let expect = Parser_api.parse_file [] "../../../../examples/samples/usuba/aes.ua" in
+      Usuba_AST.equal_prog res expect
 
 end
