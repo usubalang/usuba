@@ -169,7 +169,7 @@ let share_def (def : def) (no_arr : bool) : def =
   | Single (vars, body) ->
       let body = share_deqs def.p_in def.p_out vars body no_arr in
       { def with node = Single (vars, body) }
-  | _ -> def
+  | _ -> assert false
 
 let run _ (prog : prog) (conf : Config.config) : prog =
   { nodes = apply_last prog.nodes (fun x -> share_def x conf.no_arr) }
