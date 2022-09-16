@@ -34,18 +34,20 @@ Finally, some additional resources that could be useful:
 
 
 
-## Installation
+## Development setup
 
-Usuba is written in OCaml. On a Debian system, you should be able to
-setup the base environment with
+Usuba is written in OCaml. A minimal development & benchmark
+environment is specified in the Docker file `./docker/Dockerfile`
+starting from an `unstable` Debian distribution. You can either use
+this image through
 
-    ./install_deps.sh
+```sh
+cd docker; make build && make bench
+```
 
-You can then compile Usuba with:
-
-    ./configure.pl
-    make
-
+or take inspiration from it to reproduce the build environment on your
+local machine. Once the environment is setup, the usuba
+compiler is available as `./usubac`.
 
 ## A few examples
 
