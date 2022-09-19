@@ -22,6 +22,7 @@
   perfs
   rename
   usuba_AST
+  syntax
   usuba_print
   utils
   ; maskverif

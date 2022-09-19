@@ -135,20 +135,26 @@ let as_pass = (run, "CSE", 1)
 let%test_module "CSE" =
   (module struct
     open Parser_api
+    open Syntax
 
     let ( =! ) dl1 dl2 = List.equal equal_deq dl1 dl2
+    let a = v "a"
+    let b = v "b"
+    let x = v "x"
+    let y = v "y"
+    let z = v "z"
 
     let%test "simple" =
-      let deqs = List.map parse_deq [ "x = a + b"; "y = a + b"; "z = a + b" ] in
-      let deqs' = cse_deqs (Usuba_AST.ExprHashtbl.create 10) deqs in
-      deqs' =! List.map parse_deq [ "x = a + b"; "y = x"; "z = x" ]
+      let deq = mk_deq_i [ [ x ] = a + b; [ y ] = a + b; [ z ] = a + b ] in
+      let cse_deq = cse_deqs (Usuba_AST.ExprHashtbl.create 10) deq in
+      let exp_deq = mk_deq_i [ [ x ] = a + b; [ y ] = x; [ z ] = x ] in
+      cse_deq =! exp_deq
 
     (* Make sure that consts aren't getting replaced by variables *)
     let%test "const" =
-      let deqs = List.map parse_deq [ "x = 0"; "y = 0" ] in
-      let deqs' = cse_deqs (Usuba_AST.ExprHashtbl.create 10) deqs in
-      assert (not (deqs' =! List.map parse_deq [ "x = 0"; "y = x" ]));
-      deqs' =! List.map parse_deq [ "x = 0"; "y = 0" ]
+      let deq = mk_deq_i [ [ x ] = c 0; [ y ] = c 0 ] in
+      let cse_deq = cse_deqs (Usuba_AST.ExprHashtbl.create 10) deq in
+      cse_deq =! deq
 
     let%test "loop" =
       (* Making sure loops aren't uncorrectly optimized *)
@@ -161,4 +167,4 @@ let%test_module "CSE" =
       in
       let deqs' = cse_deqs (Usuba_AST.ExprHashtbl.create 10) deqs in
       deqs' =! deqs
-  end)
+  end [@warning "-8"])
