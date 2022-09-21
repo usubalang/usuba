@@ -380,8 +380,10 @@ let main () =
         bench_bitsched = !bench_bitsched || !bench_all;
         bench_msched = !bench_msched || !bench_all;
         bench_sharevar = !bench_sharevar || !bench_all;
+        simple_opts = true;
       }
     in
+
     compile file conf
   in
 

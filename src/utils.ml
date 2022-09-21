@@ -59,6 +59,7 @@ let default_conf : Config.config =
     step_counter = ref 0;
     parse_only = false;
     type_only = false;
+    simple_opts = true;
   }
 
 let default_dir = Varslice (Ident.create_constant "D")

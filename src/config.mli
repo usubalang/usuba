@@ -82,6 +82,7 @@ type config = {
         Dumps can be Usuba_AST.prog values in OCaml files or sexp or usuba files in .ua files *)
   dump_steps_base_file : string;
       (** Directory where step dumps will be dumped *)
+  simple_opts : bool;
 }
 (** The compiler's configuration *)
 

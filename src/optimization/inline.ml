@@ -205,7 +205,10 @@ let rec _inline (runner : pass_runner) (prog : prog) (conf : Config.config)
     Hashtbl.replace inlined (Ident.name to_inline.id) true;
     (* Running basic optimizations; copy propagation in particular is
        useful for the heuristic inlining *)
-    let prog' = runner#run_module Simple_opts.as_pass prog' in
+    let prog' =
+      if conf.simple_opts then runner#run_module Simple_opts.as_pass prog'
+      else prog'
+    in
 
     (* continue inlining *)
     _inline runner prog' conf inlined)
@@ -223,7 +226,6 @@ let run_common (runner : pass_runner) (prog : prog) (conf : Config.config) :
     List.iter (fun x -> Hashtbl.add inlined (Ident.name x.id) false) prog.nodes;
     (* The last node is the entry point, it wouldn't make sense to try inline it *)
     Hashtbl.replace inlined (Ident.name (last prog.nodes).id) true;
-
     (* And now, perform the inlining *)
     _inline runner prog conf inlined
 
