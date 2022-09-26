@@ -186,6 +186,17 @@ module PArray = struct
 
   and reroot t = rerootk t (fun () -> ())
 
+  let fold_lefti f x a =
+    let r = ref x in
+    for i = 0 to Array.length a - 1 do
+      r := f !r i
+    done;
+    !r
+
+  let fold_lefti f acc t =
+    reroot t;
+    match !t with Array a -> fold_lefti f acc a | _ -> assert false
+
   let ( = ) a1 a2 =
     let a1, a2 =
       match (!a1, !a2) with
@@ -266,6 +277,25 @@ module PUnion = struct
     let f, rx = find_aux t.father x in
     t.father <- f;
     rx
+
+  let iter e f t =
+    let rep_e = find t e in
+    PArray.fold_lefti (fun () i -> if rep_e == find t i then f i) () t.father
+
+  let fold_left e f acc t =
+    let rep_e = find t e in
+    PArray.fold_lefti
+      (fun acc i -> if rep_e == find t i then f acc i else acc)
+      acc t.father
+
+  let find_all e t =
+    let rep_e = find t e in
+    let rec aux i =
+      match find t i with
+      | rep_i -> if rep_e = rep_i then Some (i, i + 1) else aux (i + 1)
+      | exception Invalid_argument _ -> None
+    in
+    Seq.unfold aux 0
 
   let union h x y =
     let rep_x = find h x in
@@ -400,4 +430,12 @@ let%test_module "Union Find" =
       let uf3 = PUnion.union uf 2 3 in
       let uf4 = PUnion.union uf3 1 2 in
       PUnion.(uf2 != uf4)
+
+    let%test "find gives " =
+      let uf = PUnion.create 6 in
+      let uf = PUnion.union uf 1 2 in
+      let uf = PUnion.union uf 3 4 in
+      let uf = PUnion.union uf 4 1 in
+      let reps = PUnion.find_all 1 uf |> List.of_seq in
+      List.equal Int.equal reps [ 1; 2; 3; 4 ]
   end)

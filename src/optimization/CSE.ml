@@ -151,15 +151,13 @@ let%test_module "CSE" =
     let y = v "y"
     let z = v "z"
 
-    let _ =
+    let _conf =
+      let current = ref 0 in
       let parser =
-        let current = ref 0 in
         Arg.parse_argv ~current
           [| ""; "-inline-all"; "-type-only"; "-o"; "test"; "-sched-n"; "49" |]
       in
-
-      let conf = Parse_opt.generate_conf parser in
-      Format.eprintf "@[<v 0>Conf: %a@." Config.pp_config conf
+      Parse_opt.generate_conf parser
 
     let%test "simple" =
       let deq = mk_deq_i [ [ x ] = a + b; [ y ] = a + b; [ z ] = a + b ] in
