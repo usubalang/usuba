@@ -49,6 +49,9 @@ open Prelude
 open Usuba_AST
 open Pass_runner
 
+exception Not_inlined
+exception Not_unrolled
+
 let rec cse_expr (env_expr : var list ExprHashtbl.t) (e : expr) : expr =
   match ExprHashtbl.find_opt env_expr e with
   | Some vl -> (
@@ -70,14 +73,13 @@ let rec cse_expr (env_expr : var list ExprHashtbl.t) (e : expr) : expr =
       | Arith (op, x, y) -> Arith (op, cse_expr env_expr x, cse_expr env_expr y)
       | Bitmask (e', ae) -> Bitmask (cse_expr env_expr e', ae)
       | Pack (e1, e2, t) -> Pack (cse_expr env_expr e1, cse_expr env_expr e2, t)
-      | Fun (f, l) -> Fun (f, List.map (cse_expr env_expr) l)
+      | Fun _ -> raise Not_inlined
       | _ ->
           Format.eprintf "cse_expr: invalid expr: %a.@."
             (Usuba_print.pp_expr ()) e;
           assert false)
 
-let rec cse_deqs (env_expr : var list ExprHashtbl.t) (deqs : deq list) :
-    deq list =
+let cse_deqs (env_expr : var list ExprHashtbl.t) (deqs : deq list) : deq list =
   List.map
     (fun d ->
       match d.content with
@@ -104,14 +106,7 @@ let rec cse_deqs (env_expr : var list ExprHashtbl.t) (deqs : deq list) :
               | Some _ -> ()
               | None -> ExprHashtbl.add env_expr e' lhs));
           { d with content = Eqn (lhs, e', sync) }
-      | Loop t ->
-          (* Passing a copy of |env_expr| to the loop, so that nothing
-             from the loop's body leaks outside. *)
-          let env_expr_copy = ExprHashtbl.copy env_expr in
-          {
-            d with
-            content = Loop { t with body = cse_deqs env_expr_copy t.body };
-          })
+      | Loop _ -> raise Not_unrolled)
     deqs
 
 let cse_def (def : def) : def =
@@ -125,10 +120,22 @@ let cse_def (def : def) : def =
   | Multiple _ -> assert false
 
 let run (runner : pass_runner) prog conf =
-  let prog' = { nodes = List.map cse_def prog.nodes } in
-  if Option.equal Config.equal_dump_steps conf.Config.dump_steps (Some AST) then
-    Basic_utils.dump_to_file prog' conf;
-  runner#run_module Norm_tuples.as_pass prog'
+  try
+    let prog' = { nodes = List.map cse_def prog.nodes } in
+    if Option.equal Config.equal_dump_steps conf.Config.dump_steps (Some AST)
+    then Basic_utils.dump_to_file prog' conf;
+    runner#run_module Norm_tuples.as_pass prog'
+  with
+  | Not_inlined ->
+      Format.eprintf "@[<v 2>Functions should have been inlined in %a@]@."
+        Ident.(pp ())
+        (Basic_utils.last prog.nodes).id;
+      failwith "Not_inlined"
+  | Not_unrolled ->
+      Format.eprintf "@[<v 2>Loops should have been unrolled in %a@]@."
+        Ident.(pp ())
+        (Basic_utils.last prog.nodes).id;
+      failwith "Not_unrolled"
 
 let as_pass = (run, "CSE", 1)
 
@@ -143,6 +150,14 @@ let%test_module "CSE" =
     let x = v "x"
     let y = v "y"
     let z = v "z"
+
+    let _conf =
+      let current = ref 0 in
+      let parser =
+        Arg.parse_argv ~current
+          [| ""; "-inline-all"; "-type-only"; "-o"; "test"; "-sched-n"; "49" |]
+      in
+      Parse_opt.generate_conf parser
 
     let%test "simple" =
       let deq = mk_deq_i [ [ x ] = a + b; [ y ] = a + b; [ z ] = a + b ] in
