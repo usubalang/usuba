@@ -56,6 +56,7 @@ let default_conf : Config.config =
     dump_sexp = false;
     dump_steps = None;
     dump_steps_base_file = "";
+    dump_steps_dir = "";
     step_counter = ref 0;
     parse_only = false;
     type_only = false;

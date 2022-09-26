@@ -81,7 +81,8 @@ type config = {
       (** Dump the AST at each steps of normalisation/optimisation.
         Dumps can be Usuba_AST.prog values in OCaml files or sexp or usuba files in .ua files *)
   dump_steps_base_file : string;
-      (** Directory where step dumps will be dumped *)
+      (** Common radix to name the files that will be dumped *)
+  dump_steps_dir : string;  (** Directory where step dumps will be dumped *)
   simple_opts : bool;
 }
 (** The compiler's configuration *)

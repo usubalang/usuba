@@ -225,6 +225,7 @@ type config = {
   dump_sexp : bool;
   dump_steps : dump_steps option;
   dump_steps_base_file : string;
+  dump_steps_dir : string;
   simple_opts: bool;
 }
 [@@@deriving show]
