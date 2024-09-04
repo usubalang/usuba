@@ -1,4 +1,4 @@
-FROM debian:unstable-slim
+FROM debian:bullseye-slim
 
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update &&                                                            \
@@ -30,8 +30,8 @@ RUN opam init --disable-sandboxing -a -y && \
 RUN git clone --recurse-submodules https://github.com/usubalang/usuba.git &&      \
     git clone --recurse-submodules https://github.com/usubalang/benchmarks.git && \
     cd usuba &&                                                                   \
-    opam exec -- ./configure &&                                                   \
-    opam exec -- dune build
+    opam switch create . --yes --deps-only --with-doc --with-test &&              \
+    opam exec -- ./configure
 
 # Bring up Perl dependencies (for benchmarks)
 RUN sudo cpanm install -f File::Copy::Recursive             \
