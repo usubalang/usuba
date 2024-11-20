@@ -55,7 +55,7 @@ module Find_used_variables = struct
                   | Some _ -> ()
                   | None ->
                       updated := true;
-                      Ident.Hashtbl.replace used_vars (get_base_name v) true)
+                      Ident.Hashtbl.add used_vars (get_base_name v) true)
                 lhs;
               (* The adding all variables of |e| to |used_vars|. *)
               List.iter
@@ -64,7 +64,7 @@ module Find_used_variables = struct
                   | Some _ -> ()
                   | None ->
                       updated := true;
-                      Ident.Hashtbl.replace used_vars (get_base_name v) true)
+                      Ident.Hashtbl.add used_vars (get_base_name v) true)
                 (get_used_vars e))
         | Loop { body; _ } -> find_used_in_deqs used_vars (List.rev body))
       deqs
@@ -83,7 +83,7 @@ module Find_used_variables = struct
           updated := false;
           find_used_in_deqs used_vars (List.rev body)
         done
-    | _ -> ());
+    | _ -> assert false);
     used_vars
 end
 

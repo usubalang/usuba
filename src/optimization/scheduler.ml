@@ -442,10 +442,6 @@ module Low_pressure_sched = struct
           => scheduling will actually introduce more spilling *)
       def
 
-  (* TODO: make this more precise.
-     Could be 1 on ARM/PowerPC. *)
-  let parallel_arch (arch : Config.arch) : int = match arch with _ -> 15
-
   let schedule (prog : prog) (conf : Config.config) : prog =
     (* let parallel_lvl = parallel_arch conf.archi in *)
     let parallel_lvl = conf.schedule_n in
