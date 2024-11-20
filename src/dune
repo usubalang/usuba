@@ -22,6 +22,8 @@
   perfs
   rename
   usuba_AST
+  parse_opt
+  hash_union
   syntax
   usuba_print
   utils

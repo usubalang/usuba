@@ -56,19 +56,21 @@ let norm_prog _ prog conf =
 
 let optimize prog conf =
   let runner = new pass_runner conf in
+  let guard_pre_inline =
+    conf.pre_schedule && Inline.is_more_aggressive_than_auto conf
+  in
 
   let prog =
     runner#run_modules_guard
+      ~conf:{ conf with simple_opts = false }
       [
+        (Inline.as_pass_pre, guard_pre_inline);
+        (Inline.as_pass, true);
         (Simple_opts.as_pass, true);
         (Pre_schedule.as_pass, conf.pre_schedule);
         (Normalize_core.as_pass, true);
       ]
       prog
-  in
-
-  let guard_pre_inline =
-    conf.pre_schedule && Inline.is_more_aggressive_than_auto conf
   in
 
   runner#run_modules_bench
